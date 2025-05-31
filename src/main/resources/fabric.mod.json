@@ -1,31 +1,31 @@
 {
 	"schemaVersion": 1,
-	"id": "modid",
+	"id": "server_waypoint",
 	"version": "${version}",
-	"name": "Example mod",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "ServerWaypoint",
+	"description": "",
 	"authors": [
-		"Me!"
+		"2676959"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "https://github.com/2676959/server_waypoint"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/modid/icon.png",
+	"icon": "assets/server_waypoint/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.example.ExampleMod"
+			"_959.server_waypoint.ServerWaypoint"
 		],
 		"client": [
-			"com.example.ExampleModClient"
+			"_959.server_waypoint.ServerWaypointClient"
 		]
 	},
 	"mixins": [
-		"modid.mixins.json",
+		"server_waypoint.mixins.json",
 		{
-			"config": "modid.client.mixins.json",
+			"config": "server_waypoint.client.mixins.json",
 			"environment": "client"
 		}
 	],

@@ -1,9 +1,8 @@
 {
 	"required": true,
-	"package": "com.example.mixin",
+	"package": "_959.server_waypoint.mixin.client",
 	"compatibilityLevel": "JAVA_21",
-	"mixins": [
-		"ExampleMixin"
+	"client": [
 	],
 	"injectors": {
 		"defaultRequire": 1
