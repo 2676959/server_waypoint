@@ -40,4 +40,4 @@ replay_*.log
 *.jfr
 
 # test
-unused_java_file/
+test_files/
