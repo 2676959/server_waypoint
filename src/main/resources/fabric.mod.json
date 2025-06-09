@@ -8,14 +8,14 @@
 		"2676959"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
+		"homepage": "https://github.com/2676959/server_waypoint",
 		"sources": "https://github.com/2676959/server_waypoint"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/server_waypoint/icon.png",
 	"environment": "*",
 	"entrypoints": {
-		"main": [
+		"server": [
 			"_959.server_waypoint.ServerWaypoint"
 		],
 		"client": [
