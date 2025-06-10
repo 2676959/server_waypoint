@@ -1,9 +1,7 @@
 package _959.server_waypoint.util;
 import _959.server_waypoint.server.waypoint.SimpleWaypoint;
 
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
+import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import xaero.common.minimap.waypoints.Waypoint;
@@ -47,11 +45,12 @@ public class SimpleWaypointHelper {
         );
     }
 
-    public static MutableText simpleWaypointToFormattedText(SimpleWaypoint waypoint) {
-        Style initialStyle = Style.EMPTY.withBold(true).withColor(Formatting.byColorIndex(waypoint.colorIdx()));
+    public static MutableText simpleWaypointToFormattedText(SimpleWaypoint waypoint, String command) {
+        Style initialStyle = Style.EMPTY.withBold(true).withColor(Formatting.byColorIndex(waypoint.colorIdx())).withClickEvent(new ClickEvent.RunCommand(command));
         MutableText waypointText = Text.literal("[" + waypoint.initials() + "]").setStyle(initialStyle);
         waypointText.append(Text.literal(" ").setStyle(DEFAULT_STYLE));
-        waypointText.append(Text.literal(waypoint.name()).setStyle(DEFAULT_STYLE));
+        Style nameStyle = DEFAULT_STYLE.withHoverEvent(new HoverEvent.ShowText(Text.of("tp " + waypoint.pos().toShortString())));
+        waypointText.append(Text.literal(waypoint.name()).setStyle(nameStyle));
         return waypointText;
     }
 

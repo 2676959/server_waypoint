@@ -11,6 +11,7 @@ import _959.server_waypoint.network.payload.WaypointListS2CPayload;
 import _959.server_waypoint.server.WaypointServer;
 import _959.server_waypoint.server.waypoint.DimensionManager;
 import _959.server_waypoint.util.SimpleWaypointHelper;
+import _959.server_waypoint.util.TeleportCommandGenerator;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
@@ -197,7 +198,7 @@ public class WaypointCommand {
             dimensionManger.saveDimension();
             source.sendFeedback(() -> {
                 MutableText feedback = text("Waypoint ");
-                feedback.append(SimpleWaypointHelper.simpleWaypointToFormattedText(simpleWaypoint));
+                feedback.append(SimpleWaypointHelper.simpleWaypointToFormattedText(simpleWaypoint, TeleportCommandGenerator.tpCmd(dimKey, pos, yaw)));
                 feedback.append(text(" has been added to set: %s".formatted(listName)).setStyle(SimpleWaypointHelper.DEFAULT_STYLE));
                 return feedback;
             }, true);
@@ -258,18 +259,18 @@ public class WaypointCommand {
             MutableText listMsg = text("");
             listMsg.append(END_LINE);
 //            player.sendMessage(Text.of("----------------------"));
-            for (RegistryKey<World> dimensionKey : dimensionManagerMap.keySet()) {
+            for (RegistryKey<World> dimKey : dimensionManagerMap.keySet()) {
                 // Dimension header
 
 //                player.sendMessage(
-//                    Text.literal(dimensionKey.getValue().toString())
-//                        .formatted(getDimensionColor(dimensionKey))
+//                    Text.literal(dimKey.getValue().toString())
+//                        .formatted(getDimensionColor(dimKey))
 //                );
 
-                listMsg.append(Text.literal(dimensionKey.getValue().toString()).formatted(getDimensionColor(dimensionKey)));
+                listMsg.append(Text.literal(dimKey.getValue().toString()).formatted(getDimensionColor(dimKey)));
                 listMsg.append(END_LINE);
 
-                DimensionManager dimensionManager = dimensionManagerMap.get(dimensionKey);
+                DimensionManager dimensionManager = dimensionManagerMap.get(dimKey);
                 if (dimensionManager == null) {
                     continue;
                 }
@@ -295,7 +296,7 @@ public class WaypointCommand {
                     for (SimpleWaypoint waypoint : list.simpleWaypoints()) {
                         String currentWaypointPrefix = (isLastList ? "        " : "  ┃     ");
                         Text waypointText = Text.literal(currentWaypointPrefix).setStyle(SimpleWaypointHelper.DEFAULT_STYLE)
-                                .append(SimpleWaypointHelper.simpleWaypointToFormattedText(waypoint));
+                                .append(SimpleWaypointHelper.simpleWaypointToFormattedText(waypoint, TeleportCommandGenerator.tpCmd(dimKey, waypoint.pos(), waypoint.yaw())));
                         listMsg.append(waypointText);
                         listMsg.append(END_LINE);
 //                        player.sendMessage(waypointText, false);
