@@ -18,12 +18,13 @@ Command `/wp` is **only** registered on **dedicated server**.
 
 ## Server & Client Compatibility
 
-| Server | Client | Description                                                                       |
-|:------:|:------:|-----------------------------------------------------------------------------------|
-|   ✅    |   ✅    | All functionalities supported.                                                    |
+| Server | Client | Description |
+| :---: | :---: | --- |
+|   ✅    |   ✅    | All functionalities supported.|
 |   ✅    |   ❌    | Downloading waypoints are unsupported.<br/>Client can still connect to the server | 
-|   ❌    |   ✅    | No functionalities supported.<br/>Client can still connect to any server.         |
-|   ❌    |   ❌    | No functionalities supported.                                                     |
+|   ❌    |   ✅    | No functionalities supported.<br/>Client can still connect to any server. |
+|   ❌    |   ❌    | No functionalities supported. |
+
 ✅ : Installed with this mod. ❌ : Not installed with this mod.\
 Generally, the server with this mod installed will not prevent clients without this mod installed from connecting.
 
