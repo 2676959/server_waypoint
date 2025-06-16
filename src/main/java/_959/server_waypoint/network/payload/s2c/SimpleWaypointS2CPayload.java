@@ -1,4 +1,4 @@
-package _959.server_waypoint.network.payload;
+package _959.server_waypoint.network.payload.s2c;
 
 import _959.server_waypoint.ServerWaypoint;
 import _959.server_waypoint.server.waypoint.SimpleWaypoint;

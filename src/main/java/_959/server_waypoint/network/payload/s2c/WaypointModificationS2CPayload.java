@@ -1,0 +1,40 @@
+package _959.server_waypoint.network.payload.s2c;
+
+import _959.server_waypoint.ServerWaypoint;
+import _959.server_waypoint.server.waypoint.SimpleWaypoint;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
+
+public record WaypointModificationS2CPayload(
+    RegistryKey<World> dimKey,
+    String listName,
+    SimpleWaypoint waypoint,
+    ModificationType type
+) implements CustomPayload {
+    public static final Identifier WAYPOINT_MODIFICATION_PAYLOAD_ID = Identifier.of(ServerWaypoint.MOD_ID, "waypoint_modification");
+    public static final CustomPayload.Id<WaypointModificationS2CPayload> ID = new CustomPayload.Id<>(WAYPOINT_MODIFICATION_PAYLOAD_ID);
+    
+    public static final PacketCodec<RegistryByteBuf, WaypointModificationS2CPayload> PACKET_CODEC = PacketCodec.tuple(
+        PacketCodecs.registryCodec(World.CODEC), WaypointModificationS2CPayload::dimKey,
+        PacketCodecs.STRING, WaypointModificationS2CPayload::listName,
+        SimpleWaypoint.PACKET_CODEC, WaypointModificationS2CPayload::waypoint,
+        PacketCodecs.STRING.xmap(ModificationType::valueOf, ModificationType::name), WaypointModificationS2CPayload::type,
+        WaypointModificationS2CPayload::new
+    );
+
+    @Override
+    public Id<? extends CustomPayload> getId() {
+        return ID;
+    }
+
+    public enum ModificationType {
+        ADD,
+        REMOVE,
+        UPDATE
+    }
+} 

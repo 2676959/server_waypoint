@@ -1,15 +1,20 @@
 package _959.server_waypoint;
 
-import _959.server_waypoint.network.payload.DimensionWaypointS2CPayload;
-import _959.server_waypoint.network.payload.WaypointListS2CPayload;
-import _959.server_waypoint.network.payload.SimpleWaypointS2CPayload;
-import _959.server_waypoint.network.payload.WorldWaypointS2CPayload;
+import _959.server_waypoint.network.ClientHandshakeHandler;
+import _959.server_waypoint.network.payload.c2s.HandshakeC2SPayload;
+import _959.server_waypoint.network.payload.s2c.DimensionWaypointS2CPayload;
+import _959.server_waypoint.network.payload.s2c.WaypointListS2CPayload;
+import _959.server_waypoint.network.payload.s2c.SimpleWaypointS2CPayload;
+import _959.server_waypoint.network.payload.s2c.WorldWaypointS2CPayload;
+import _959.server_waypoint.network.payload.s2c.WaypointModificationS2CPayload;
 import _959.server_waypoint.server.WaypointServer;
 import _959.server_waypoint.server.command.WaypointCommand;
 import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.api.DedicatedServerModInitializer;
+import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager.RegistrationEnvironment;
 import net.minecraft.server.command.ServerCommandSource;
@@ -31,10 +36,6 @@ public class ServerWaypoint implements DedicatedServerModInitializer {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
-
-		this.registerPayloads();
-		CommandRegistrationCallback.EVENT.register(ServerWaypoint::registerCommands);
-
 		LOGGER.info("Initialize waypoint server.");
 		WaypointServer waypointServer = new WaypointServer();
         try {
@@ -43,6 +44,9 @@ public class ServerWaypoint implements DedicatedServerModInitializer {
 			LOGGER.error("Failed to initialize server waypoint", e);
             throw new RuntimeException(e);
         }
+		this.registerPayloads();
+		this.registerHandlers();
+		CommandRegistrationCallback.EVENT.register(ServerWaypoint::registerCommands);
     }
 
 	public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, RegistrationEnvironment registrationEnvironment) {
@@ -54,5 +58,11 @@ public class ServerWaypoint implements DedicatedServerModInitializer {
 		PayloadTypeRegistry.playS2C().register(WaypointListS2CPayload.ID, WaypointListS2CPayload.PACKET_CODEC);
 		PayloadTypeRegistry.playS2C().register(DimensionWaypointS2CPayload.ID, DimensionWaypointS2CPayload.PACKET_CODEC);
 		PayloadTypeRegistry.playS2C().register(WorldWaypointS2CPayload.ID, WorldWaypointS2CPayload.PACKET_CODEC);
+		PayloadTypeRegistry.playS2C().register(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC);
+		PayloadTypeRegistry.playC2S().register(HandshakeC2SPayload.ID, HandshakeC2SPayload.PACKET_CODEC);
+	}
+
+	private void registerHandlers() {
+		ServerPlayNetworking.registerGlobalReceiver(HandshakeC2SPayload.ID, ClientHandshakeHandler::onClientHandshake);
 	}
 }

@@ -6,6 +6,7 @@ import _959.server_waypoint.server.waypoint.SimpleWaypoint;
 import _959.server_waypoint.server.waypoint.WaypointList;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.world.World;
+import xaero.hud.minimap.BuiltInHudModules;
 import xaero.hud.minimap.module.MinimapSession;
 import xaero.hud.minimap.waypoint.set.WaypointSet;
 import xaero.hud.minimap.world.MinimapWorld;
@@ -16,11 +17,18 @@ import java.io.IOException;
 import java.util.List;
 
 public class XaeroMinimapHelper {
+    public static MinimapSession getMinimapSession() {
+        return BuiltInHudModules.MINIMAP.getCurrentSession();
+    }
+
     public static MinimapWorld getMinimapWorld(MinimapSession session, RegistryKey<World> dimKey) {
         String dimId = session.getDimensionHelper().getDimensionDirectoryName(dimKey);
         MinimapWorldManager manager = session.getWorldManager();
         XaeroPath root = manager.getAutoRootContainer().getPath();
-        XaeroPath fullPath = root.resolve(dimId).resolve(manager.getCurrentWorld().getNode());
+        boolean worldmap = session.getModMain().getSupportMods().worldmap();
+        String node = session.getWorldStateUpdater().getPotentialWorldNode(dimKey, worldmap);
+        ServerWaypointClient.LOGGER.info("node: {}", node);
+        XaeroPath fullPath = root.resolve(dimId).resolve(node);
         return manager.getWorld(fullPath);
     }
 

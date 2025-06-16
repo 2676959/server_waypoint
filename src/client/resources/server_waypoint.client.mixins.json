@@ -3,8 +3,12 @@
 	"package": "_959.server_waypoint.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"ClientPlayNetworkHandlerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
-	}
+	},
+	"mixins": [
+
+	]
 }

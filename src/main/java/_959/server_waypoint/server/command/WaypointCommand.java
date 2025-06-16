@@ -1,13 +1,13 @@
 package _959.server_waypoint.server.command;
 
 import _959.server_waypoint.ServerWaypoint;
-import _959.server_waypoint.network.payload.DimensionWaypointS2CPayload;
-import _959.server_waypoint.network.payload.WorldWaypointS2CPayload;
+import _959.server_waypoint.network.payload.s2c.DimensionWaypointS2CPayload;
+import _959.server_waypoint.network.payload.s2c.WorldWaypointS2CPayload;
 import _959.server_waypoint.network.waypoint.DimensionWaypoint;
 import _959.server_waypoint.network.waypoint.WorldWaypoint;
 import _959.server_waypoint.server.waypoint.SimpleWaypoint;
 import _959.server_waypoint.server.waypoint.WaypointList;
-import _959.server_waypoint.network.payload.WaypointListS2CPayload;
+import _959.server_waypoint.network.payload.s2c.WaypointListS2CPayload;
 import _959.server_waypoint.server.WaypointServer;
 import _959.server_waypoint.server.waypoint.DimensionManager;
 import _959.server_waypoint.util.SimpleWaypointHelper;
@@ -205,6 +205,12 @@ public class WaypointCommand {
         } catch (IOException e) {
             throw IO_EXCEPTION.create(dimensionManger.dimensionFilePath);
         }
+        WaypointServer.EDITION++;
+        try {
+            WaypointServer.INSTANCE.saveEdition();
+        } catch (IOException e) {
+            source.sendError(text("Failed to save edition file, sync may not work properly."));
+        }
     }
 
     private static void executeDownload(ServerCommandSource source) {
@@ -213,7 +219,7 @@ public class WaypointCommand {
             WaypointServer waypointServer = WaypointServer.INSTANCE;
             WorldWaypoint worldWaypoint = waypointServer.toWorldWaypoint();
             if (worldWaypoint != null) {
-                WorldWaypointS2CPayload payload = new WorldWaypointS2CPayload(worldWaypoint);
+                WorldWaypointS2CPayload payload = new WorldWaypointS2CPayload(worldWaypoint, WaypointServer.EDITION);
                 ServerPlayNetworking.send(player, payload);
             } else {
                 source.sendError(Text.of("This server does not have any waypoints."));
