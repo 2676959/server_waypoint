@@ -47,6 +47,7 @@ import static net.minecraft.command.argument.DimensionArgumentType.getDimensionA
 import static _959.server_waypoint.util.DimensionColorHelper.getDimensionColor;
 import static _959.server_waypoint.util.TextHelper.text;
 import static _959.server_waypoint.util.TextHelper.END_LINE;
+import static _959.server_waypoint.network.payload.s2c.WaypointModificationS2CPayload.ModificationType;
 
 public class WaypointCommand {
     public static final DynamicCommandExceptionType IO_EXCEPTION = new DynamicCommandExceptionType(file -> Text.of("IO Exception: Failed to write to %s.".formatted(file)));
@@ -199,19 +200,22 @@ public class WaypointCommand {
             source.sendFeedback(() -> {
                 MutableText feedback = text("Waypoint ");
                 feedback.append(SimpleWaypointHelper.simpleWaypointToFormattedText(simpleWaypoint, TeleportCommandGenerator.tpCmd(dimKey, pos, yaw)));
-                feedback.append(text(" has been added to set: %s".formatted(listName)).setStyle(SimpleWaypointHelper.DEFAULT_STYLE));
+                feedback.append(text(" has been added to set: %s.".formatted(listName)).setStyle(SimpleWaypointHelper.DEFAULT_STYLE));
                 return feedback;
             }, true);
         } catch (IOException e) {
             throw IO_EXCEPTION.create(dimensionManger.dimensionFilePath);
         }
         WaypointServer.EDITION++;
+        WaypointServer.INSTANCE.broadcastWaypointModification(dimKey, listName, simpleWaypoint, ModificationType.ADD, source.getPlayer());
         try {
             WaypointServer.INSTANCE.saveEdition();
         } catch (IOException e) {
             source.sendError(text("Failed to save edition file, sync may not work properly."));
         }
     }
+
+
 
     private static void executeDownload(ServerCommandSource source) {
         ServerPlayerEntity player = source.getPlayer();

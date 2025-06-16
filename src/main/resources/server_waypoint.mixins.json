@@ -2,7 +2,8 @@
 	"required": true,
 	"package": "_959.server_waypoint.mixin",
 	"compatibilityLevel": "JAVA_21",
-	"mixins": [
+	"server": [
+		"MinecraftServerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

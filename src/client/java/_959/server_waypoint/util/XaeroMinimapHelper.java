@@ -20,13 +20,16 @@ public class XaeroMinimapHelper {
     public static MinimapSession getMinimapSession() {
         return BuiltInHudModules.MINIMAP.getCurrentSession();
     }
+    
+    public static String getMinimapWorldNode(MinimapSession session, RegistryKey<World> dimKey) {
+        return session.getWorldStateUpdater().getPotentialWorldNode(dimKey, session.getModMain().getSupportMods().worldmap());
+    }
 
     public static MinimapWorld getMinimapWorld(MinimapSession session, RegistryKey<World> dimKey) {
         String dimId = session.getDimensionHelper().getDimensionDirectoryName(dimKey);
         MinimapWorldManager manager = session.getWorldManager();
         XaeroPath root = manager.getAutoRootContainer().getPath();
-        boolean worldmap = session.getModMain().getSupportMods().worldmap();
-        String node = session.getWorldStateUpdater().getPotentialWorldNode(dimKey, worldmap);
+        String node = getMinimapWorldNode(session, dimKey);
         ServerWaypointClient.LOGGER.info("node: {}", node);
         XaeroPath fullPath = root.resolve(dimId).resolve(node);
         return manager.getWorld(fullPath);

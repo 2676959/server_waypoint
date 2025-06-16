@@ -8,6 +8,7 @@ import _959.server_waypoint.server.waypoint.DimensionManager;
 import _959.server_waypoint.server.waypoint.SimpleWaypoint;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
@@ -22,11 +23,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static  _959.server_waypoint.ServerWaypoint.LOGGER;
+import static _959.server_waypoint.ServerWaypoint.LOGGER;
+import static _959.server_waypoint.util.SimpleWaypointHelper.DEFAULT_STYLE;
+import static _959.server_waypoint.util.TextHelper.text;
+import static _959.server_waypoint.util.SimpleWaypointHelper.simpleWaypointToFormattedText;
+import static _959.server_waypoint.util.TeleportCommandGenerator.tpCmd;
 
 public class WaypointServer {
     public static int EDITION = 0;
     public static WaypointServer INSTANCE;
+    public MinecraftServer MINECRAFT_SERVER;
     public static final MinimapDimensionHelper DIMENSION_HELPER = new MinimapDimensionHelper();
     public Path waypointsDir;
     public Path editionFile;    
@@ -122,13 +128,17 @@ public class WaypointServer {
         }
     }
 
-    public void broadcastWaypointModification(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint, WaypointModificationS2CPayload.ModificationType type) {
-        WaypointModificationS2CPayload payload = new WaypointModificationS2CPayload(dimKey, listName, waypoint, type);
-        Object gameInstance = FabricLoader.getInstance().getGameInstance();
-        if (gameInstance instanceof MinecraftServer server) {
-            server.getPlayerManager().getPlayerList().forEach(player -> 
-                ServerPlayNetworking.send(player, payload));
+    public void broadcastWaypointModification(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint, WaypointModificationS2CPayload.ModificationType type, @Nullable PlayerEntity source) {
+        WaypointModificationS2CPayload payload = new WaypointModificationS2CPayload(dimKey, listName, waypoint, type, EDITION);
+        this.MINECRAFT_SERVER.getPlayerManager().getPlayerList().forEach(player -> {
+            ServerPlayNetworking.send(player, payload);
+            player.sendMessage(
+                text((source != null ? source.getName().getString() : "Server") + " " + type.toString() + " waypoint: ")
+                .append(simpleWaypointToFormattedText(waypoint, tpCmd(dimKey, waypoint.pos(), waypoint.yaw()))
+                .append(text(" on server.").setStyle(DEFAULT_STYLE)))
+                );
         }
+        );
     }
 
     // save edition to file
@@ -139,5 +149,9 @@ public class WaypointServer {
             LOGGER.error("Failed to save edition to file, sync may not work properly.", e);
             throw e;
         }
+    }
+
+    public void setMinecraftServer(MinecraftServer server) {
+        this.MINECRAFT_SERVER = server;
     }
 }

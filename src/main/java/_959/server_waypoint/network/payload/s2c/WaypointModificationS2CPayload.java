@@ -14,7 +14,8 @@ public record WaypointModificationS2CPayload(
     RegistryKey<World> dimKey,
     String listName,
     SimpleWaypoint waypoint,
-    ModificationType type
+    ModificationType type,
+    int edition
 ) implements CustomPayload {
     public static final Identifier WAYPOINT_MODIFICATION_PAYLOAD_ID = Identifier.of(ServerWaypoint.MOD_ID, "waypoint_modification");
     public static final CustomPayload.Id<WaypointModificationS2CPayload> ID = new CustomPayload.Id<>(WAYPOINT_MODIFICATION_PAYLOAD_ID);
@@ -24,6 +25,7 @@ public record WaypointModificationS2CPayload(
         PacketCodecs.STRING, WaypointModificationS2CPayload::listName,
         SimpleWaypoint.PACKET_CODEC, WaypointModificationS2CPayload::waypoint,
         PacketCodecs.STRING.xmap(ModificationType::valueOf, ModificationType::name), WaypointModificationS2CPayload::type,
+        PacketCodecs.INTEGER, WaypointModificationS2CPayload::edition,
         WaypointModificationS2CPayload::new
     );
 
@@ -35,6 +37,15 @@ public record WaypointModificationS2CPayload(
     public enum ModificationType {
         ADD,
         REMOVE,
-        UPDATE
+        UPDATE;
+
+        @Override
+        public String toString() {
+            return switch (this) {
+                case ADD -> "added";
+                case REMOVE -> "removed";
+                case UPDATE -> "updated";
+            };
+        }
     }
 } 

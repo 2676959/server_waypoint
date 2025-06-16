@@ -1,14 +1,11 @@
 package _959.server_waypoint.util;
 
-import _959.server_waypoint.ServerWaypoint;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class TeleportCommandGenerator {
     public static String tpCmd(RegistryKey<World> dimKey, BlockPos pos, int yaw) {
-        String cmd = "/execute in %s run tp @s %d %d %d %d 0".formatted(dimKey.getValue().toString(), pos.getX(), pos.getY(), pos.getZ(), yaw);
-        ServerWaypoint.LOGGER.info(cmd);
-        return cmd;
+        return "/execute in %s run tp @s %d %d %d %d 0".formatted(dimKey.getValue().toString(), pos.getX(), pos.getY(), pos.getZ(), yaw);
     }
 }

@@ -1,6 +1,7 @@
 package _959.server_waypoint.util;
 
 import _959.server_waypoint.ServerWaypointClient;
+import net.minecraft.world.World;
 import xaero.hud.minimap.module.MinimapSession;
 
 import java.io.DataInputStream;
@@ -15,7 +16,8 @@ public class LocalEditionFileManager {
     public static Path getEditionFile(MinimapSession session) {
         Path configDir = session.getWorldManager().getAutoRootContainer().getDirectoryPath();
         ServerWaypointClient.LOGGER.info(configDir.toString());
-        return configDir.resolve("EDITION");
+        String node = XaeroMinimapHelper.getMinimapWorldNode(session, World.OVERWORLD);
+        return configDir.resolve("EDITION$" + node);
     }
 
     // read edition from file and check whether it exists, if not creates a new one
