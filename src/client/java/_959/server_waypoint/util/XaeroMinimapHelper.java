@@ -30,7 +30,7 @@ public class XaeroMinimapHelper {
         MinimapWorldManager manager = session.getWorldManager();
         XaeroPath root = manager.getAutoRootContainer().getPath();
         String node = getMinimapWorldNode(session, dimKey);
-        ServerWaypointClient.LOGGER.info("node: {}", node);
+//        ServerWaypointClient.LOGGER.info("node: {}", node);
         XaeroPath fullPath = root.resolve(dimId).resolve(node);
         return manager.getWorld(fullPath);
     }

@@ -10,7 +10,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 public class ClientHandshakeHandler {
     public static void onClientHandshake(HandshakeC2SPayload payload, ServerPlayNetworking.Context context) {
         int edition = payload.waypointsEdition();
-        ServerWaypoint.LOGGER.info("client edition: {}", edition);
+        ServerWaypoint.LOGGER.info("new connection with client edition: {}", edition);
         if (edition != WaypointServer.EDITION) {
             WorldWaypoint worldWaypoint = WaypointServer.INSTANCE.toWorldWaypoint();
             if (worldWaypoint != null) {

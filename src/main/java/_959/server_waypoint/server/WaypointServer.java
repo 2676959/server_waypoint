@@ -131,17 +131,16 @@ public class WaypointServer {
     public void broadcastWaypointModification(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint, WaypointModificationS2CPayload.ModificationType type, @Nullable PlayerEntity source) {
         WaypointModificationS2CPayload payload = new WaypointModificationS2CPayload(dimKey, listName, waypoint, type, EDITION);
         this.MINECRAFT_SERVER.getPlayerManager().getPlayerList().forEach(player -> {
-            ServerPlayNetworking.send(player, payload);
             player.sendMessage(
                 text((source != null ? source.getName().getString() : "Server") + " " + type.toString() + " waypoint: ")
                 .append(simpleWaypointToFormattedText(waypoint, tpCmd(dimKey, waypoint.pos(), waypoint.yaw()))
                 .append(text(" on server.").setStyle(DEFAULT_STYLE)))
                 );
+            ServerPlayNetworking.send(player, payload);
         }
         );
     }
 
-    // save edition to file
     public void saveEdition() throws IOException {
         try (DataOutputStream out = new DataOutputStream(new FileOutputStream(this.editionFile.toFile()))) {
             out.writeInt(EDITION);

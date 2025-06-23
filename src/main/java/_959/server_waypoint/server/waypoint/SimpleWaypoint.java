@@ -61,29 +61,24 @@ public class SimpleWaypoint {
         return this;
     }
 
-    public SimpleWaypoint setInitials(String initials) {
+    public void setInitials(String initials) {
         this.initials = initials;
-        return this;
     }
 
-    public SimpleWaypoint setPos(BlockPos pos) {
+    public void setPos(BlockPos pos) {
         this.pos = pos;
-        return this;
     }
 
-    public SimpleWaypoint setColorIdx(int colorIdx) {
+    public void setColorIdx(int colorIdx) {
         this.colorIdx = colorIdx;
-        return this;
     }
 
-    public SimpleWaypoint setYaw(int yaw) {
+    public void setYaw(int yaw) {
         this.yaw = yaw;
-        return this;
     }
 
-    public SimpleWaypoint setGlobal(boolean global) {
+    public void setGlobal(boolean global) {
         this.global = global;
-        return this;
     }
     
     @Override
@@ -96,5 +91,13 @@ public class SimpleWaypoint {
                 ", yaw=" + yaw +
                 ", global=" + global +
                 '}';
+    }
+
+    public boolean compareValues(String initials, BlockPos pos, int colorIdx, int yaw, boolean global) {
+        return this.initials.equals(initials) &&
+                this.pos.equals(pos) &&
+                this.colorIdx == colorIdx &&
+                this.yaw == yaw &&
+                this.global == global;
     }
 }

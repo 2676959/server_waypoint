@@ -15,7 +15,7 @@ import java.nio.file.Path;
 public class LocalEditionFileManager {
     public static Path getEditionFile(MinimapSession session) {
         Path configDir = session.getWorldManager().getAutoRootContainer().getDirectoryPath();
-        ServerWaypointClient.LOGGER.info(configDir.toString());
+//        ServerWaypointClient.LOGGER.info(configDir.toString());
         String node = XaeroMinimapHelper.getMinimapWorldNode(session, World.OVERWORLD);
         return configDir.resolve("EDITION$" + node);
     }

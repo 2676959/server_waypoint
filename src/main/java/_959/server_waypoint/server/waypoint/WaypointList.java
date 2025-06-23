@@ -7,6 +7,8 @@ import net.minecraft.network.codec.PacketCodecs;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetbrains.annotations.Nullable;
+
 public class WaypointList {
     private String name;
     private final List<SimpleWaypoint> simpleWaypoints;
@@ -20,6 +22,14 @@ public class WaypointList {
     private WaypointList(String name, List<SimpleWaypoint> simpleWaypoints) {
         this.name = name;
         this.simpleWaypoints = simpleWaypoints;
+    }
+
+    @Nullable
+    public SimpleWaypoint getWaypointByName(String name) {
+        return this.simpleWaypoints.stream()
+                .filter(waypoint -> waypoint.name().equals(name))
+                .findFirst()
+                .orElse(null);
     }
 
     public String name() {
