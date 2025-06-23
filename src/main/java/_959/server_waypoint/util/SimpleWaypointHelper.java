@@ -35,11 +35,12 @@ public class SimpleWaypointHelper {
 
     public static SimpleWaypoint stringToSimpleWaypoint(String waypointString) {
         String[] args = waypointString.split(SEPARATOR);
+        int colorIdx = Integer.parseInt(args[5]);
         return new SimpleWaypoint(
                 args[0],
                 args[1],
                 new BlockPos(Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4])),
-                Integer.parseInt(args[5]),
+                colorIdx >= 0 && colorIdx <= 15 ? colorIdx : 15,
                 Integer.parseInt(args[6]),
                 Boolean.parseBoolean(args[7])
         );
