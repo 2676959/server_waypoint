@@ -27,7 +27,7 @@ import static _959.server_waypoint.ServerWaypoint.LOGGER;
 import static _959.server_waypoint.util.SimpleWaypointHelper.DEFAULT_STYLE;
 import static _959.server_waypoint.util.TextHelper.text;
 import static _959.server_waypoint.util.SimpleWaypointHelper.simpleWaypointToFormattedText;
-import static _959.server_waypoint.util.TeleportCommandGenerator.tpCmd;
+import static _959.server_waypoint.util.CommandGenerator.tpCmd;
 
 public class WaypointServer {
     public static int EDITION = 0;

@@ -24,12 +24,11 @@ import xaero.hud.minimap.world.MinimapWorld;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Objects;
 
 import static _959.server_waypoint.util.SimpleWaypointHelper.*;
 import static _959.server_waypoint.util.TextHelper.text;
 import static _959.server_waypoint.util.DimensionColorHelper.getDimensionColor;
-import static _959.server_waypoint.util.TeleportCommandGenerator.tpCmd;
+import static _959.server_waypoint.util.CommandGenerator.tpCmd;
 
 public class ServerWaypointPayloadHandler {
 

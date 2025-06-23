@@ -9,8 +9,6 @@ import _959.server_waypoint.server.waypoint.WaypointList;
 import _959.server_waypoint.network.payload.s2c.WaypointListS2CPayload;
 import _959.server_waypoint.server.WaypointServer;
 import _959.server_waypoint.server.waypoint.DimensionManager;
-import _959.server_waypoint.util.SimpleWaypointHelper;
-import _959.server_waypoint.util.TeleportCommandGenerator;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
@@ -18,6 +16,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.ClickEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -28,7 +27,6 @@ import net.minecraft.world.World;
 import java.io.IOException;
 import java.util.Map;
 
-import static _959.server_waypoint.util.TextHelper.*;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.minecraft.command.argument.BlockPosArgumentType.blockPos;
@@ -44,8 +42,13 @@ import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static net.minecraft.command.argument.DimensionArgumentType.dimension;
 import static net.minecraft.command.argument.DimensionArgumentType.getDimensionArgument;
 
+import static _959.server_waypoint.util.TextHelper.*;
 import static _959.server_waypoint.util.DimensionColorHelper.getDimensionColor;
 import static _959.server_waypoint.network.payload.s2c.WaypointModificationS2CPayload.ModificationType;
+import static _959.server_waypoint.util.SimpleWaypointHelper.DEFAULT_STYLE;
+import static _959.server_waypoint.util.SimpleWaypointHelper.simpleWaypointToFormattedText;
+import static _959.server_waypoint.util.CommandGenerator.tpCmd;
+import static _959.server_waypoint.util.CommandGenerator.editCmd;
 
 public class WaypointCommand {
     public static final DynamicCommandExceptionType IO_EXCEPTION = new DynamicCommandExceptionType(file -> Text.of("IO Exception: Failed to write to %s.".formatted(file)));
@@ -57,7 +60,7 @@ public class WaypointCommand {
                                 .then(argument("dimension", dimension())
                                         .then(argument("pos", blockPos())
                                                 .then(argument("name", string())
-                                                        .then(argument("initial", string())
+                                                        .then(argument("initials", string())
                                                                 .then(argument("list", string())
                                                                         .then(argument("color", color())
                                                                                 .then(argument("yaw", integer())
@@ -68,7 +71,7 @@ public class WaypointCommand {
                                                                                                                     getDimensionArgument(context, "dimension").getRegistryKey(),
                                                                                                                     getBlockPos(context, "pos"),
                                                                                                                     getString(context, "name"),
-                                                                                                                    getString(context, "initial"),
+                                                                                                                    getString(context, "initials"),
                                                                                                                     getString(context, "list"),
                                                                                                                     getColor(context, "color"),
                                                                                                                     getInteger(context, "yaw"),
@@ -87,7 +90,7 @@ public class WaypointCommand {
                                 )
                                 .then(argument("pos", blockPos())
                                         .then(argument("name", string())
-                                                .then(argument("initial", string())
+                                                .then(argument("initials", string())
                                                         .then(argument("list", string())
                                                                 .then(argument("color", color())
                                                                         .then(argument("yaw", integer())
@@ -99,7 +102,7 @@ public class WaypointCommand {
                                                                                                         source.getWorld().getRegistryKey(),
                                                                                                         getBlockPos(context, "pos"),
                                                                                                         getString(context, "name"),
-                                                                                                        getString(context, "initial"),
+                                                                                                        getString(context, "initials"),
                                                                                                         getString(context, "list"),
                                                                                                         getColor(context, "color"),
                                                                                                         getInteger(context, "yaw"),
@@ -128,7 +131,7 @@ public class WaypointCommand {
                                 .then(argument("dimension", dimension())
                                         .then(argument("list", string())
                                                 .then(argument("name", string())
-                                                        .then(argument("initial", string())
+                                                        .then(argument("initials", string())
                                                                 .then(argument("pos", blockPos())
                                                                         .then(argument("color", color())
                                                                                 .then(argument("yaw", integer())
@@ -139,7 +142,7 @@ public class WaypointCommand {
                                                                                                                     getDimensionArgument(context, "dimension").getRegistryKey(),
                                                                                                                     getString(context, "list"),
                                                                                                                     getString(context, "name"),
-                                                                                                                    getString(context, "initial"),
+                                                                                                                    getString(context, "initials"),
                                                                                                                     getBlockPos(context, "pos"),
                                                                                                                     getColor(context, "color"),
                                                                                                                     getInteger(context, "yaw"),
@@ -197,27 +200,43 @@ public class WaypointCommand {
             dimensionManger = waypointServer.addDimensionManager(dimKey);
         }
         WaypointList waypointList = dimensionManger.getWaypointListByName(listName);
-        SimpleWaypoint simpleWaypoint = new SimpleWaypoint(name, initials, pos, colorIdx, yaw, global);
+        SimpleWaypoint newWaypoint = new SimpleWaypoint(name, initials, pos, colorIdx, yaw, global);
         if (waypointList == null) {
             waypointList = WaypointList.build(listName);
-            waypointList.add(simpleWaypoint);
+            waypointList.add(newWaypoint);
             dimensionManger.addWaypointList(waypointList);
+            waypointList.add(newWaypoint);
         } else {
-            waypointList.add(simpleWaypoint);
+            SimpleWaypoint waypointFound = waypointList.getWaypointByName(name);
+            if (waypointFound == null) {
+                waypointList.add(newWaypoint);
+            } else {
+                source.sendFeedback(() -> {
+                    MutableText feedback = text("Waypoint ");
+                    feedback.append(simpleWaypointToFormattedText(waypointFound, tpCmd(dimKey, waypointFound.pos(), waypointFound.yaw())));
+                    feedback.append(text(" already exists. ").setStyle(DEFAULT_STYLE));
+                    feedback.append(text("[REPLACE]").setStyle(Style.EMPTY
+                            .withColor(Formatting.AQUA)
+                            .withClickEvent(new ClickEvent.SuggestCommand(editCmd(dimKey, listName, newWaypoint)))));
+                    return feedback;
+                    }
+                , false);
+                return;
+            }
         }
         try {
             dimensionManger.saveDimension();
             source.sendFeedback(() -> {
                 MutableText feedback = text("Waypoint ");
-                feedback.append(SimpleWaypointHelper.simpleWaypointToFormattedText(simpleWaypoint, TeleportCommandGenerator.tpCmd(dimKey, pos, yaw)));
-                feedback.append(text(" has been added to list: %s.".formatted(listName)).setStyle(SimpleWaypointHelper.DEFAULT_STYLE));
+                feedback.append(simpleWaypointToFormattedText(newWaypoint, tpCmd(dimKey, pos, yaw)));
+                feedback.append(text(" has been added to list: %s.".formatted(listName)).setStyle(DEFAULT_STYLE));
                 return feedback;
             }, true);
         } catch (IOException e) {
             throw IO_EXCEPTION.create(dimensionManger.dimensionFilePath);
         }
         WaypointServer.EDITION++;
-        WaypointServer.INSTANCE.broadcastWaypointModification(dimKey, listName, simpleWaypoint, ModificationType.ADD, source.getPlayer());
+        WaypointServer.INSTANCE.broadcastWaypointModification(dimKey, listName, newWaypoint, ModificationType.ADD, source.getPlayer());
         try {
             WaypointServer.INSTANCE.saveEdition();
         } catch (IOException e) {
@@ -231,21 +250,18 @@ public class WaypointCommand {
         DimensionManager dimensionManager = waypointServer.getDimensionManager(dimKey);
         if (dimensionManager == null) {
             source.sendError(text("Dimension \"%s\" does not exist.".formatted(dimKey.getValue().toString())));
-            return;
         } else {
             WaypointList waypointList = dimensionManager.getWaypointListByName(listName);
             if (waypointList == null) {
                 source.sendError(text("Waypoint list \"%s\" does not exist.".formatted(listName)));
-                return;
             } else {
                 SimpleWaypoint waypoint = waypointList.getWaypointByName(waypointName);
                 if (waypoint == null) {
                     source.sendError(text("Waypoint \"%s\" does not exist.".formatted(waypointName)));
-                    return;
                 } else {
                     int colorIdx = formattingToColorIndex(color);
                     if (waypoint.compareValues(initials, pos, colorIdx, yaw, global)) {
-                        source.sendFeedback(() -> text("Identical properties, no changes made.".formatted(waypointName)), false);
+                        source.sendFeedback(() -> text("Identical properties, no changes made."), false);
                         return;
                     } else {
                         waypoint.setInitials(initials);
@@ -264,12 +280,12 @@ public class WaypointCommand {
                         WaypointServer.INSTANCE.saveEdition();
                     } catch (IOException e) {
                         source.sendError(text("Failed to save edition file, sync may not work properly."));
-                    };
+                    }
                     WaypointServer.INSTANCE.broadcastWaypointModification(dimKey, listName, waypoint, ModificationType.UPDATE, source.getPlayer());
                     source.sendFeedback(() -> {
                         MutableText feedback = text("Waypoint ");
-                        feedback.append(SimpleWaypointHelper.simpleWaypointToFormattedText(waypoint, TeleportCommandGenerator.tpCmd(dimKey, pos, yaw)));
-                        feedback.append(text(" has been updated.").setStyle(SimpleWaypointHelper.DEFAULT_STYLE));
+                        feedback.append(simpleWaypointToFormattedText(waypoint, tpCmd(dimKey, pos, yaw)));
+                        feedback.append(text(" has been updated.").setStyle(DEFAULT_STYLE));
                         return feedback;
                     }, true);
                 }
@@ -355,7 +371,7 @@ public class WaypointCommand {
                     String listPrefix = isLastList ? "  ┗━━╸" : "  ┣━━╸";
                     
                     // List header
-                    MutableText listNameText = Text.literal(listPrefix).setStyle(SimpleWaypointHelper.DEFAULT_STYLE)
+                    MutableText listNameText = Text.literal(listPrefix).setStyle(DEFAULT_STYLE)
                         .append(Text.literal(listEntry.getKey()).setStyle(Style.EMPTY.withBold(true)));
 //                    player.sendMessage(listNameText);
                     listMsg.append(listNameText);
@@ -365,8 +381,8 @@ public class WaypointCommand {
                     WaypointList list = listEntry.getValue();
                     for (SimpleWaypoint waypoint : list.simpleWaypoints()) {
                         String currentWaypointPrefix = (isLastList ? "        " : "  ┃     ");
-                        Text waypointText = Text.literal(currentWaypointPrefix).setStyle(SimpleWaypointHelper.DEFAULT_STYLE)
-                                .append(SimpleWaypointHelper.simpleWaypointToFormattedText(waypoint, TeleportCommandGenerator.tpCmd(dimKey, waypoint.pos(), waypoint.yaw())));
+                        Text waypointText = Text.literal(currentWaypointPrefix).setStyle(DEFAULT_STYLE)
+                                .append(simpleWaypointToFormattedText(waypoint, tpCmd(dimKey, waypoint.pos(), waypoint.yaw())));
                         listMsg.append(waypointText);
                         listMsg.append(END_LINE);
 //                        player.sendMessage(waypointText, false);
