@@ -19,6 +19,7 @@ Install Fabric Loader and all dependencies with this mod on both server and clie
 Command `/wp` is **only** registered on **dedicated server**.
 - `/wp add` To add a new waypoint.
 - `/wp list` To list all waypoints. Click the waypoint displayed can teleport the player to waypoint directly if the player has the permission.
+- `/wp edit` To edit an existing waypoint.
 - `/wp download` To download waypoints and add to Xaero's Minimap.
 
 ## Server & Client Compatibility
