@@ -5,6 +5,7 @@ import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jetbrains.annotations.Nullable;
@@ -50,9 +51,21 @@ public class WaypointList {
         return this;
     }
 
-    public WaypointList remove(SimpleWaypoint waypoint) {
+    public void remove(SimpleWaypoint waypoint) {
         this.simpleWaypoints.remove(waypoint);
-        return this;
+    }
+
+    public List<SimpleWaypoint> removeByName(String name) {
+        Iterator<SimpleWaypoint> iter = this.simpleWaypoints.iterator();
+        List<SimpleWaypoint> removedWaypoints = new ArrayList<>();
+        while (iter.hasNext()) {
+            SimpleWaypoint waypoint = iter.next();
+            if (name.equals(waypoint.name())) {
+                removedWaypoints.add(waypoint);
+                iter.remove();
+            }
+        }
+        return removedWaypoints;
     }
 
     public WaypointList clear() {

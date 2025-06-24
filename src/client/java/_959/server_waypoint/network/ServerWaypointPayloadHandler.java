@@ -17,18 +17,18 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
-import xaero.common.minimap.waypoints.Waypoint;
 import xaero.hud.minimap.module.MinimapSession;
 import xaero.hud.minimap.waypoint.set.WaypointSet;
 import xaero.hud.minimap.world.MinimapWorld;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import static _959.server_waypoint.util.SimpleWaypointHelper.*;
 import static _959.server_waypoint.util.TextHelper.text;
-import static _959.server_waypoint.util.DimensionColorHelper.getDimensionColor;
+import static _959.server_waypoint.util.TextHelper.DimensionColorHelper.getDimensionColor;
 import static _959.server_waypoint.util.CommandGenerator.tpCmd;
+import static _959.server_waypoint.util.TextHelper.waypointInfoText;
+import static _959.server_waypoint.util.XaeroMinimapHelper.removeWaypointsByName;
 
 public class ServerWaypointPayloadHandler {
 
@@ -111,30 +111,21 @@ public class ServerWaypointPayloadHandler {
             case ADD -> {
                 waypointSet.add(simpleWaypointToWaypoint(payload.waypoint()));
                 context.player().sendMessage(text("Waypoint ")
-                .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimKey, simpleWaypoint.pos(), simpleWaypoint.yaw()))
+                .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimKey, simpleWaypoint.pos(), simpleWaypoint.yaw()), waypointInfoText(dimKey, simpleWaypoint))
                         .append(text(" has been added to Xaero's minimap.").setStyle(DEFAULT_STYLE))), false);
 
             }
             case REMOVE -> {
-                waypointSet.remove(simpleWaypointToWaypoint(payload.waypoint()));
+                removeWaypointsByName(waypointSet, simpleWaypoint);
                 context.player().sendMessage(text("Waypoint ")
-                .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimKey, simpleWaypoint.pos(), simpleWaypoint.yaw()))
+                .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimKey, simpleWaypoint.pos(), simpleWaypoint.yaw()), waypointInfoText(dimKey, simpleWaypoint))
                         .append(text(" has been removed from Xaero's minimap.").setStyle(DEFAULT_STYLE))), false);
             }
             case UPDATE -> {
-                String name = simpleWaypoint.name();
-                Iterator<Waypoint> iter =  waypointSet.getWaypoints().iterator();
-                while (iter.hasNext()) {
-                    Waypoint waypoint = iter.next();
-                    if (waypoint.getName().equals(name)) {
-                        iter.remove();
-                        ServerWaypointClient.LOGGER.info("Waypoint {} has been removed.", name);
-                    }
-                }
-
+                removeWaypointsByName(waypointSet, simpleWaypoint);
                 waypointSet.add(simpleWaypointToWaypoint(payload.waypoint()));
                 context.player().sendMessage(text("Waypoint ")
-                .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimKey, simpleWaypoint.pos(), simpleWaypoint.yaw()))
+                .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimKey, simpleWaypoint.pos(), simpleWaypoint.yaw()), waypointInfoText(dimKey, simpleWaypoint))
                     .append(text(" has been updated on Xaero's minimap.").setStyle(DEFAULT_STYLE))), false);
             }
         }
@@ -147,5 +138,7 @@ public class ServerWaypointPayloadHandler {
         }
         LocalEditionFileManager.writeEdition(session, payload.edition());
     }
+
+
 
 }

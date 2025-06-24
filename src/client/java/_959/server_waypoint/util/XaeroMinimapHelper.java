@@ -6,6 +6,7 @@ import _959.server_waypoint.server.waypoint.SimpleWaypoint;
 import _959.server_waypoint.server.waypoint.WaypointList;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.world.World;
+import xaero.common.minimap.waypoints.Waypoint;
 import xaero.hud.minimap.BuiltInHudModules;
 import xaero.hud.minimap.module.MinimapSession;
 import xaero.hud.minimap.waypoint.set.WaypointSet;
@@ -14,6 +15,7 @@ import xaero.hud.minimap.world.MinimapWorldManager;
 import xaero.hud.path.XaeroPath;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 public class XaeroMinimapHelper {
@@ -67,5 +69,17 @@ public class XaeroMinimapHelper {
     public static void addDimensionWaypoint(MinimapSession session, DimensionWaypoint dimensionWaypoint) {
         MinimapWorld minimapWorld = getMinimapWorld(session, dimensionWaypoint.dimKey());
         addWaypointLists(minimapWorld, dimensionWaypoint.waypointLists());
+    }
+
+    public static void removeWaypointsByName(WaypointSet waypointSet, SimpleWaypoint simpleWaypoint) {
+        String name = simpleWaypoint.name();
+        Iterator<Waypoint> iter =  waypointSet.getWaypoints().iterator();
+        while (iter.hasNext()) {
+            Waypoint waypoint = iter.next();
+            if (name.equals(waypoint.getName())) {
+                iter.remove();
+                ServerWaypointClient.LOGGER.info("Waypoint {} has been removed.", name);
+            }
+        }
     }
 }

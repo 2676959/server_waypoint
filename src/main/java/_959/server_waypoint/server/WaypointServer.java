@@ -28,6 +28,7 @@ import static _959.server_waypoint.util.SimpleWaypointHelper.DEFAULT_STYLE;
 import static _959.server_waypoint.util.TextHelper.text;
 import static _959.server_waypoint.util.SimpleWaypointHelper.simpleWaypointToFormattedText;
 import static _959.server_waypoint.util.CommandGenerator.tpCmd;
+import static _959.server_waypoint.util.TextHelper.waypointInfoText;
 
 public class WaypointServer {
     public static int EDITION = 0;
@@ -133,7 +134,7 @@ public class WaypointServer {
         this.MINECRAFT_SERVER.getPlayerManager().getPlayerList().forEach(player -> {
             player.sendMessage(
                 text((source != null ? source.getName().getString() : "Server") + " " + type.toString() + " waypoint: ")
-                .append(simpleWaypointToFormattedText(waypoint, tpCmd(dimKey, waypoint.pos(), waypoint.yaw()))
+                .append(simpleWaypointToFormattedText(waypoint, tpCmd(dimKey, waypoint.pos(), waypoint.yaw()), waypointInfoText(dimKey, waypoint))
                 .append(text(" on server.").setStyle(DEFAULT_STYLE)))
                 );
             ServerPlayNetworking.send(player, payload);

@@ -46,11 +46,11 @@ public class SimpleWaypointHelper {
         );
     }
 
-    public static MutableText simpleWaypointToFormattedText(SimpleWaypoint waypoint, String command) {
+    public static MutableText simpleWaypointToFormattedText(SimpleWaypoint waypoint, String command, Text hoverText) {
         Style initialStyle = Style.EMPTY.withBold(true).withColor(Formatting.byColorIndex(waypoint.colorIdx())).withClickEvent(new ClickEvent.RunCommand(command));
         MutableText waypointText = Text.literal("[" + waypoint.initials() + "]").setStyle(initialStyle);
         waypointText.append(Text.literal(" ").setStyle(DEFAULT_STYLE));
-        Style nameStyle = DEFAULT_STYLE.withHoverEvent(new HoverEvent.ShowText(Text.of("tp " + waypoint.pos().toShortString())));
+        Style nameStyle = DEFAULT_STYLE.withHoverEvent(new HoverEvent.ShowText(hoverText));
         waypointText.append(Text.literal(waypoint.name()).setStyle(nameStyle));
         return waypointText;
     }
