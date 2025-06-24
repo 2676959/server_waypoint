@@ -205,7 +205,6 @@ public class WaypointCommand {
             waypointList = WaypointList.build(listName);
             waypointList.add(newWaypoint);
             dimensionManger.addWaypointList(waypointList);
-            waypointList.add(newWaypoint);
         } else {
             SimpleWaypoint waypointFound = waypointList.getWaypointByName(name);
             if (waypointFound == null) {
