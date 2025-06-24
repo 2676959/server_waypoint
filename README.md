@@ -6,6 +6,7 @@ Host waypoints on Minecraft server and allow players to download waypoints to th
 - Syncing waypoints from server automatically.
 - Support server proxies like Velocity.
 - Tree style display of waypoints.
+- Easy to use waypoint list allowing player click to teleport, or remove waypoint. 
 
 ## Dependencies
 
@@ -18,8 +19,9 @@ Install Fabric Loader and all dependencies with this mod on both server and clie
 ## Server Command
 Command `/wp` is **only** registered on **dedicated server**.
 - `/wp add` To add a new waypoint.
-- `/wp list` To list all waypoints. Click the waypoint displayed can teleport the player to waypoint directly if the player has the permission.
-- `/wp edit` To edit an existing waypoint.
+- `/wp list` To list all waypoints.
+- `/wp edit` To edit a waypoint.
+- `/wp remove` To remove a waypoint by name.
 - `/wp download` To download waypoints and add to Xaero's Minimap.
 
 ## Server & Client Compatibility
