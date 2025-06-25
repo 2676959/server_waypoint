@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import static _959.server_waypoint.server.command.suggestion.SuggestionProviders.*;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 import static net.minecraft.command.argument.BlockPosArgumentType.blockPos;
@@ -58,24 +59,28 @@ public class WaypointCommand {
                         .then(literal("add").requires(source -> source.hasPermissionLevel(0))
                                 .then(argument("dimension", dimension())
                                         .then(argument("pos", blockPos())
-                                                .then(argument("name", string())
-                                                        .then(argument("initials", string())
-                                                                .then(argument("list", string())
+                                                .then(argument("list", string())
+                                                        .suggests(WAYPOINT_LIST)
+                                                        .then(argument("name", string())
+                                                                .suggests(WAYPOINT_NAMES)
+                                                                .then(argument("initials", string())
+                                                                        .suggests(NAME_INITIALS)
                                                                         .then(argument("color", color())
                                                                                 .then(argument("yaw", integer())
+                                                                                        .suggests(PLAYER_YAW)
                                                                                         .then(argument("global", bool())
                                                                                                 .executes(
                                                                                                         context -> {
                                                                                                             executeAdd(context.getSource(),
                                                                                                                     getDimensionArgument(context, "dimension").getRegistryKey(),
+                                                                                                                    getString(context, "list"),
                                                                                                                     getBlockPos(context, "pos"),
                                                                                                                     getString(context, "name"),
                                                                                                                     getString(context, "initials"),
-                                                                                                                    getString(context, "list"),
                                                                                                                     getColor(context, "color"),
                                                                                                                     getInteger(context, "yaw"),
                                                                                                                     getBool(context, "global")
-                                                                                                                    );
+                                                                                                            );
                                                                                                             return 1;
                                                                                                         }
                                                                                                 )
@@ -88,26 +93,30 @@ public class WaypointCommand {
                                         )
                                 )
                                 .then(argument("pos", blockPos())
-                                        .then(argument("name", string())
-                                                .then(argument("initials", string())
-                                                        .then(argument("list", string())
+                                        .then(argument("list", string())
+                                                .suggests(WAYPOINT_LIST)
+                                                .then(argument("name", string())
+                                                        .suggests(WAYPOINT_NAMES)
+                                                        .then(argument("initials", string())
+                                                                .suggests(NAME_INITIALS)
                                                                 .then(argument("color", color())
                                                                         .then(argument("yaw", integer())
+                                                                                .suggests(PLAYER_YAW)
                                                                                 .then(argument("global", bool())
                                                                                         .executes(
                                                                                                 context -> {
                                                                                                     ServerCommandSource source = context.getSource();
-                                                                                                executeAdd(source,
-                                                                                                        source.getWorld().getRegistryKey(),
-                                                                                                        getBlockPos(context, "pos"),
-                                                                                                        getString(context, "name"),
-                                                                                                        getString(context, "initials"),
-                                                                                                        getString(context, "list"),
-                                                                                                        getColor(context, "color"),
-                                                                                                        getInteger(context, "yaw"),
-                                                                                                        getBool(context, "global")
-                                                                                                        );
-                                                                                                return 1;
+                                                                                                    executeAdd(source,
+                                                                                                            source.getWorld().getRegistryKey(),
+                                                                                                            getString(context, "list"),
+                                                                                                            getBlockPos(context, "pos"),
+                                                                                                            getString(context, "name"),
+                                                                                                            getString(context, "initials"),
+                                                                                                            getColor(context, "color"),
+                                                                                                            getInteger(context, "yaw"),
+                                                                                                            getBool(context, "global")
+                                                                                                    );
+                                                                                                    return 1;
                                                                                                 }
                                                                                         )
                                                                                 )
@@ -129,11 +138,15 @@ public class WaypointCommand {
                         .then(literal("edit")
                                 .then(argument("dimension", dimension())
                                         .then(argument("list", string())
+                                                .suggests(WAYPOINT_LIST)
                                                 .then(argument("name", string())
+                                                        .suggests(WAYPOINT_NAMES)
                                                         .then(argument("initials", string())
+                                                                .suggests(NAME_INITIALS)
                                                                 .then(argument("pos", blockPos())
                                                                         .then(argument("color", color())
                                                                                 .then(argument("yaw", integer())
+                                                                                        .suggests(PLAYER_YAW)
                                                                                         .then(argument("global", bool())
                                                                                                 .executes(
                                                                                                         context -> {
@@ -162,11 +175,13 @@ public class WaypointCommand {
                         .then(literal("remove")
                                 .then(argument("dimension", dimension())
                                         .then(argument("list", string())
+                                                .suggests(WAYPOINT_LIST)
                                                 .then(argument("name", string())
+                                                        .suggests(WAYPOINT_NAMES)
                                                         .executes(
                                                                 context -> {
                                                                     executeRemove(context.getSource(),
-                                                                            getDimensionArgument(context,"dimension").getRegistryKey(),
+                                                                            getDimensionArgument(context, "dimension").getRegistryKey(),
                                                                             getString(context, "list"),
                                                                             getString(context, "name")
                                                                     );
@@ -182,12 +197,13 @@ public class WaypointCommand {
                                         .executes(
                                                 context -> {
                                                     executeDownload(context.getSource(),
-                                                        getDimensionArgument(context, "dimension").getRegistryKey()
+                                                            getDimensionArgument(context, "dimension").getRegistryKey()
                                                     );
                                                     return 1;
                                                 }
                                         )
                                         .then(argument("list", string())
+                                                .suggests(WAYPOINT_LIST)
                                                 .executes(
                                                         context -> {
                                                             executeDownload(context.getSource(),
@@ -209,7 +225,7 @@ public class WaypointCommand {
         );
     }
 
-    private static void executeAdd(ServerCommandSource source, RegistryKey<World> dimKey, BlockPos pos, String name, String initials, String listName, Formatting color, int yaw, boolean global) throws CommandSyntaxException {
+    private static void executeAdd(ServerCommandSource source, RegistryKey<World> dimKey, String listName, BlockPos pos, String name, String initials, Formatting color, int yaw, boolean global) throws CommandSyntaxException {
         int colorIdx = formattingToColorIndex(color);
         WaypointServer waypointServer = WaypointServer.INSTANCE;
         DimensionManager dimensionManger = waypointServer.getDimensionManager(dimKey);

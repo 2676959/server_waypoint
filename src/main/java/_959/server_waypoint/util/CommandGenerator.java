@@ -24,9 +24,9 @@ public class CommandGenerator {
                                 waypoint.pos().getX(),
                                 waypoint.pos().getY(),
                                 waypoint.pos().getZ(),
+                                listName,
                                 waypoint.name(),
                                 waypoint.initials(),
-                                listName,
                                 colorIndexToName(waypoint.colorIdx()),
                                 waypoint.yaw(),
                                 waypoint.global()
