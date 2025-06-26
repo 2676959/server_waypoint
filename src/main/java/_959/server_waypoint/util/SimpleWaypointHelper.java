@@ -7,7 +7,7 @@ import net.minecraft.util.math.BlockPos;
 import xaero.common.minimap.waypoints.Waypoint;
 import xaero.hud.minimap.waypoint.WaypointColor;
 import xaero.hud.minimap.waypoint.WaypointPurpose;
-import xaero.hud.minimap.waypoint.WaypointVisibilityType;
+import xaero.common.minimap.waypoints.WaypointVisibilityType;
 
 public class SimpleWaypointHelper {
     public static final String SEPARATOR = ":";
@@ -47,10 +47,10 @@ public class SimpleWaypointHelper {
     }
 
     public static MutableText simpleWaypointToFormattedText(SimpleWaypoint waypoint, String command, Text hoverText) {
-        Style initialStyle = Style.EMPTY.withBold(true).withColor(Formatting.byColorIndex(waypoint.colorIdx())).withClickEvent(new ClickEvent.RunCommand(command));
+        Style initialStyle = Style.EMPTY.withBold(true).withColor(Formatting.byColorIndex(waypoint.colorIdx())).withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command));
         MutableText waypointText = Text.literal("[" + waypoint.initials() + "]").setStyle(initialStyle);
         waypointText.append(Text.literal(" ").setStyle(DEFAULT_STYLE));
-        Style nameStyle = DEFAULT_STYLE.withHoverEvent(new HoverEvent.ShowText(hoverText));
+        Style nameStyle = DEFAULT_STYLE.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText));
         waypointText.append(Text.literal(waypoint.name()).setStyle(nameStyle));
         return waypointText;
     }

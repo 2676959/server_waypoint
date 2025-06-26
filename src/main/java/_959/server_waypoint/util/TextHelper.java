@@ -40,8 +40,8 @@ public class TextHelper {
         Style btnStyle = Style.EMPTY
                 .withBold(true)
                 .withColor(Formatting.AQUA)
-                .withClickEvent(new ClickEvent.SuggestCommand(editCmd(dimKey, listName, waypoint)))
-                .withHoverEvent(new HoverEvent.ShowText(text("click to replace")));
+                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, editCmd(dimKey, listName, waypoint)))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, text("click to replace")));
         return text("[⇄]").setStyle(btnStyle);
     }
 
@@ -49,8 +49,8 @@ public class TextHelper {
         Style btnStyle = Style.EMPTY
                 .withBold(true)
                 .withColor(Formatting.LIGHT_PURPLE)
-                .withClickEvent(new ClickEvent.SuggestCommand(addCmd(dimKey, listName, waypoint)))
-                .withHoverEvent(new HoverEvent.ShowText(text("click to restore")));
+                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, addCmd(dimKey, listName, waypoint)))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, text("click to restore")));
         return text("[↓]").setStyle(btnStyle);
     }
 
@@ -58,8 +58,8 @@ public class TextHelper {
         Style btnStyle = Style.EMPTY
                 .withBold(true)
                 .withColor(Formatting.RED)
-                .withClickEvent(new ClickEvent.SuggestCommand(removeCmd(dimKey, listName, waypoint)))
-                .withHoverEvent(new HoverEvent.ShowText(text("click to remove")));
+                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, removeCmd(dimKey, listName, waypoint)))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, text("click to remove")));
         return text("[❌]").setStyle(btnStyle);
     }
 
@@ -67,8 +67,8 @@ public class TextHelper {
         Style btnStyle = Style.EMPTY
                 .withBold(true)
                 .withColor(Formatting.GREEN)
-                .withClickEvent(new ClickEvent.SuggestCommand(editCmd(dimKey, listName, waypoint)))
-                .withHoverEvent(new HoverEvent.ShowText(text("edit")));
+                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, editCmd(dimKey, listName, waypoint)))
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, text("edit")));
         return text("[📝]").setStyle(btnStyle);
     }
     public static MutableText text(String text) {

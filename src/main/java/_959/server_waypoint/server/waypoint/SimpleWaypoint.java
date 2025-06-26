@@ -19,7 +19,7 @@ public class SimpleWaypoint {
             BlockPos.PACKET_CODEC, SimpleWaypoint::pos,
             PacketCodecs.INTEGER, SimpleWaypoint::colorIdx,
             PacketCodecs.INTEGER, SimpleWaypoint::yaw,
-            PacketCodecs.BOOLEAN, SimpleWaypoint::global,
+            PacketCodecs.BOOL, SimpleWaypoint::global,
             SimpleWaypoint::new
     );
 
