@@ -15,7 +15,9 @@ public class NameInitialsSuggestionProvider implements SuggestionProvider<Server
     public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
         String name = getString(context, "name");
         builder.suggest(name.toUpperCase().substring(0, 1));
-        builder.suggest(name.substring(0, 2).toUpperCase());
+        if (name.length() > 1) {
+            builder.suggest(name.substring(0, 2).toUpperCase());
+        }
         builder.suggest(name);
         return builder.buildFuture();
     }
