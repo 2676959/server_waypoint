@@ -4,10 +4,9 @@ import _959.server_waypoint.server.waypoint.SimpleWaypoint;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
-import xaero.common.minimap.waypoints.Waypoint;
-import xaero.hud.minimap.waypoint.WaypointColor;
-import xaero.hud.minimap.waypoint.WaypointPurpose;
-import xaero.hud.minimap.waypoint.WaypointVisibilityType;
+
+import static _959.server_waypoint.util.TextHelper.ClickEventHelper.RunCommand;
+import static _959.server_waypoint.util.TextHelper.HoverEventHelper.ShowText;
 
 public class SimpleWaypointHelper {
     public static final String SEPARATOR = ":";
@@ -47,29 +46,12 @@ public class SimpleWaypointHelper {
     }
 
     public static MutableText simpleWaypointToFormattedText(SimpleWaypoint waypoint, String command, Text hoverText) {
-        Style initialStyle = Style.EMPTY.withBold(true).withColor(Formatting.byColorIndex(waypoint.colorIdx())).withClickEvent(new ClickEvent.RunCommand(command));
+        Style initialStyle = Style.EMPTY.withBold(true).withColor(Formatting.byColorIndex(waypoint.colorIdx())).withClickEvent(RunCommand.apply(command));
         MutableText waypointText = Text.literal("[" + waypoint.initials() + "]").setStyle(initialStyle);
         waypointText.append(Text.literal(" ").setStyle(DEFAULT_STYLE));
-        Style nameStyle = DEFAULT_STYLE.withHoverEvent(new HoverEvent.ShowText(hoverText));
+        Style nameStyle = DEFAULT_STYLE.withHoverEvent(ShowText.apply(hoverText));
         waypointText.append(Text.literal(waypoint.name()).setStyle(nameStyle));
         return waypointText;
     }
 
-    public static Waypoint simpleWaypointToWaypoint(SimpleWaypoint simpleWaypoint) {
-        Waypoint waypoint = new Waypoint(
-                simpleWaypoint.pos().getX(),
-                simpleWaypoint.pos().getY(),
-                simpleWaypoint.pos().getZ(),
-                simpleWaypoint.name(),
-                simpleWaypoint.initials(),
-                WaypointColor.fromIndex(simpleWaypoint.colorIdx()),
-                WaypointPurpose.NORMAL,
-                false,
-                true
-        );
-        waypoint.setYaw(simpleWaypoint.yaw());
-        waypoint.setRotation(true);
-        waypoint.setVisibility(simpleWaypoint.global() ? WaypointVisibilityType.GLOBAL : WaypointVisibilityType.LOCAL);
-        return waypoint;
-    }
 }

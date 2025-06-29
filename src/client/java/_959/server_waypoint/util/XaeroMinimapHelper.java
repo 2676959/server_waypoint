@@ -51,7 +51,7 @@ public class XaeroMinimapHelper {
         for (SimpleWaypoint simpleWaypoint : waypointList.simpleWaypoints()) {  
             if (simpleWaypoint != null) {
                 ServerWaypointClient.LOGGER.info("waypoint {} added", simpleWaypoint.name());
-                waypointSet.add(SimpleWaypointHelper.simpleWaypointToWaypoint(simpleWaypoint));
+                waypointSet.add(XaeroWaypointConverter.simpleWaypointToWaypoint(simpleWaypoint));
             } else {
                 ServerWaypointClient.LOGGER.warn("waypoint is null");
             }

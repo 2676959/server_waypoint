@@ -7,7 +7,8 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import static _959.server_waypoint.util.CommandGenerator.*;
+import java.util.function.Function;
+
 import static _959.server_waypoint.util.BlockPosConverter.netherToOverWorld;
 import static _959.server_waypoint.util.BlockPosConverter.overWorldToNether;
 
@@ -36,41 +37,6 @@ public class TextHelper {
         return info;
     }
 
-    public static Text replaceButton(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint) {
-        Style btnStyle = Style.EMPTY
-                .withBold(true)
-                .withColor(Formatting.AQUA)
-                .withClickEvent(new ClickEvent.SuggestCommand(editCmd(dimKey, listName, waypoint)))
-                .withHoverEvent(new HoverEvent.ShowText(text("click to replace")));
-        return text("[⇄]").setStyle(btnStyle);
-    }
-
-    public static Text restoreButton(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint) {
-        Style btnStyle = Style.EMPTY
-                .withBold(true)
-                .withColor(Formatting.LIGHT_PURPLE)
-                .withClickEvent(new ClickEvent.SuggestCommand(addCmd(dimKey, listName, waypoint)))
-                .withHoverEvent(new HoverEvent.ShowText(text("click to restore")));
-        return text("[↓]").setStyle(btnStyle);
-    }
-
-    public static Text removeButton(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint) {
-        Style btnStyle = Style.EMPTY
-                .withBold(true)
-                .withColor(Formatting.RED)
-                .withClickEvent(new ClickEvent.SuggestCommand(removeCmd(dimKey, listName, waypoint)))
-                .withHoverEvent(new HoverEvent.ShowText(text("click to remove")));
-        return text("[❌]").setStyle(btnStyle);
-    }
-
-    public static Text editButton(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint) {
-        Style btnStyle = Style.EMPTY
-                .withBold(true)
-                .withColor(Formatting.GREEN)
-                .withClickEvent(new ClickEvent.SuggestCommand(editCmd(dimKey, listName, waypoint)))
-                .withHoverEvent(new HoverEvent.ShowText(text("edit")));
-        return text("[📝]").setStyle(btnStyle);
-    }
     public static MutableText text(String text) {
         return Text.literal(text);
     }
@@ -87,5 +53,23 @@ public class TextHelper {
                 return Formatting.YELLOW;
             }
         }
+    }
+
+    public static class ClickEventHelper {
+        //#if MC>=12105
+        public static final Function<String, ClickEvent> SuggestCommand = ClickEvent.SuggestCommand::new;
+        public static final Function<String, ClickEvent> RunCommand = ClickEvent.RunCommand::new;
+        //#else
+        //$$ public static final Function<String, ClickEvent> SuggestCommand = (command) -> new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command);
+        //$$ public static final Function<String, ClickEvent> RunCommand = (command) -> new ClickEvent(ClickEvent.Action.RUN_COMMAND, command);
+        //#endif
+    }
+
+    public static class HoverEventHelper {
+        //#if MC>=12105
+        public static Function<Text, HoverEvent> ShowText = HoverEvent.ShowText::new;
+        //#else
+        //$$ public static Function<Text, HoverEvent> ShowText = (text) -> new HoverEvent(HoverEvent.Action.SHOW_TEXT, text);
+        //#endif
     }
 }
