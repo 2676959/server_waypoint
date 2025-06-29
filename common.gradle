@@ -48,33 +48,31 @@ dependencies {
 
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "maven.modrinth:xaeros-minimap:${rootProject.xaeros_minimap_fabric_version}"
+    // Xaero's Minimap
+    modImplementation "maven.modrinth:xaeros-minimap:${project.xaeros_minimap_fabric_version}"
 
 }
 
-String modVersionSuffix = ''
-String artifactVersion = project.mod_version
-String artifactVersionSuffix = ''
 // detect github action environment variables
 // https://docs.github.com/en/actions/learn-github-actions/environment-variables#default-environment-variables
-if (System.getenv("BUILD_RELEASE") != "true") {
-    String buildNumber = System.getenv("BUILD_ID")
-    modVersionSuffix += buildNumber != null ? ('+build.' + buildNumber) : '-SNAPSHOT'
-    artifactVersionSuffix = '-SNAPSHOT'  // A non-release artifact is always a SNAPSHOT artifact
-}
-String fullModVersion = project.mod_version + modVersionSuffix
+String fullProjectVersion
+
+base.archivesName = project.archives_base_name
+fullProjectVersion = project.mod_version + '-mc' + project.game_versions
+
+version = fullProjectVersion
 
 processResources {
     inputs.property "id", project.mod_id
     inputs.property "name", project.mod_name
-    inputs.property "version", fullModVersion
+    inputs.property "version", project.mod_version 
     inputs.property "minecraft_dependency", project.minecraft_dependency
 
     filesMatching("fabric.mod.json") {
         def valueMap = [
                 "id": project.mod_id,
                 "name": project.mod_name,
-                "version": fullModVersion,
+                "version": project.mod_version,
                 "xaeros_minimap_fabric_version": project.xaeros_minimap_fabric_version,
                 "minecraft_dependency": project.minecraft_dependency,
         ]
@@ -99,10 +97,8 @@ java {
 }
 
 jar {
-    inputs.property "archivesName", project.base.archivesName
-
     from("LICENSE") {
-        rename { "${it}_${inputs.properties.archivesName}"}
+        rename { "${it}_${project.archives_base_name}"}
     }
 }
 
@@ -110,8 +106,9 @@ jar {
 publishing {
     publications {
         create("mavenJava", MavenPublication) {
-            artifactId = project.archives_base_name
             from components.java
+            artifactId = base.archivesName.get()
+            version = fullProjectVersion
         }
     }
 
