@@ -9,6 +9,7 @@ import _959.server_waypoint.server.waypoint.WaypointList;
 import _959.server_waypoint.network.payload.s2c.WaypointListS2CPayload;
 import _959.server_waypoint.server.WaypointServer;
 import _959.server_waypoint.server.waypoint.DimensionManager;
+import _959.server_waypoint.util.TextButton;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
@@ -247,7 +248,7 @@ public class WaypointCommand {
                     MutableText feedback = text("Waypoint ");
                     feedback.append(simpleWaypointToFormattedText(waypointFound, tpCmd(dimKey, waypointFound.pos(), waypointFound.yaw()), waypointInfoText(dimKey, waypointFound)));
                     feedback.append(text(" already exists. ").setStyle(DEFAULT_STYLE));
-                    feedback.append(replaceButton(dimKey, listName, newWaypoint));
+                    feedback.append(TextButton.replaceButton(dimKey, listName, newWaypoint));
                     return feedback;
                     }
                 , false);
@@ -338,7 +339,7 @@ public class WaypointCommand {
                 for (SimpleWaypoint removedWaypoint : removedWaypoints) {
                     waypointNameList.append(simpleWaypointToFormattedText(removedWaypoint, tpCmd(dimKey, removedWaypoint.pos(), removedWaypoint.yaw()), waypointInfoText(dimKey, removedWaypoint)));
                     waypointNameList.append(" ");
-                    waypointNameList.append(restoreButton(dimKey, listName, removedWaypoint));
+                    waypointNameList.append(TextButton.restoreButton(dimKey, listName, removedWaypoint));
                     if (idx != lastIdx) {
                         waypointNameList.append(END_LINE);
                     }
@@ -434,8 +435,8 @@ public class WaypointCommand {
                     Text waypointText = Text.literal(currentWaypointPrefix).setStyle(DEFAULT_STYLE)
                             .append(simpleWaypointToFormattedText(waypoint, tpCmd(dimKey, waypoint.pos(), waypoint.yaw()), waypointInfoText(dimKey, waypoint)))
                             .append(" ")
-                            .append(editButton(dimKey, listName, waypoint))
-                            .append(removeButton(dimKey, listName, waypoint));
+                            .append(TextButton.editButton(dimKey, listName, waypoint))
+                            .append(TextButton.removeButton(dimKey, listName, waypoint));
                     listMsg.append(waypointText);
                     listMsg.append(END_LINE);
                 }

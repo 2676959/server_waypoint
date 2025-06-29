@@ -11,6 +11,7 @@ import _959.server_waypoint.server.waypoint.SimpleWaypoint;
 import _959.server_waypoint.server.waypoint.WaypointList;
 import _959.server_waypoint.util.LocalEditionFileManager;
 import _959.server_waypoint.util.XaeroMinimapHelper;
+import _959.server_waypoint.util.XaeroWaypointConverter;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.MutableText;
@@ -109,7 +110,7 @@ public class ServerWaypointPayloadHandler {
         SimpleWaypoint simpleWaypoint = payload.waypoint();
         switch (payload.type()) {
             case ADD -> {
-                waypointSet.add(simpleWaypointToWaypoint(payload.waypoint()));
+                waypointSet.add(XaeroWaypointConverter.simpleWaypointToWaypoint(payload.waypoint()));
                 context.player().sendMessage(text("Waypoint ")
                 .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimKey, simpleWaypoint.pos(), simpleWaypoint.yaw()), waypointInfoText(dimKey, simpleWaypoint))
                         .append(text(" has been added to Xaero's minimap.").setStyle(DEFAULT_STYLE))), false);
@@ -123,7 +124,7 @@ public class ServerWaypointPayloadHandler {
             }
             case UPDATE -> {
                 removeWaypointsByName(waypointSet, simpleWaypoint);
-                waypointSet.add(simpleWaypointToWaypoint(payload.waypoint()));
+                waypointSet.add(XaeroWaypointConverter.simpleWaypointToWaypoint(payload.waypoint()));
                 context.player().sendMessage(text("Waypoint ")
                 .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimKey, simpleWaypoint.pos(), simpleWaypoint.yaw()), waypointInfoText(dimKey, simpleWaypoint))
                     .append(text(" has been updated on Xaero's minimap.").setStyle(DEFAULT_STYLE))), false);
