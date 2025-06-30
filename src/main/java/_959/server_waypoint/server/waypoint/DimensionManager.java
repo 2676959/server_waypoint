@@ -53,17 +53,17 @@ public class DimensionManager {
     }
 
     public void readDimension() throws IOException {
-        this.readFromFile(this.dimensionFilePath.toFile());
+        this.readFromFile(this.dimensionFilePath);
     }
 
     public void saveDimension() throws IOException {
-        this.writeToFile(this.dimensionFilePath.toFile());
+        this.writeToFile(this.dimensionFilePath);
     }
 
-    private void readFromFile(File file) throws IOException {
+    private void readFromFile(Path filePath) throws IOException {
         WaypointList currentList = null;
         
-        for (String line : Files.readAllLines(file.toPath())) {
+        for (String line : Files.readAllLines(filePath)) {
             line = line.trim();
             if (line.isEmpty()) continue;
             
@@ -86,7 +86,7 @@ public class DimensionManager {
         }
     }
 
-    private void writeToFile(File file) throws IOException {
+    private void writeToFile(Path filePath) throws IOException {
         List<String> lines = new ArrayList<>();
         
         for (Map.Entry<String, WaypointList> entry : this.waypointListMap.entrySet()) {
@@ -108,7 +108,7 @@ public class DimensionManager {
             }
         }
         
-        Files.write(file.toPath(), lines);
-        ServerWaypoint.LOGGER.info("Saved waypointList to file: {}", file);
+        Files.write(filePath, lines);
+        ServerWaypoint.LOGGER.info("Saved waypointList to file: {}", filePath);
     }
 } 

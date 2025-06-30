@@ -73,7 +73,6 @@ processResources {
                 "id": project.mod_id,
                 "name": project.mod_name,
                 "version": project.mod_version,
-                "xaeros_minimap_fabric_version": project.xaeros_minimap_fabric_version,
                 "minecraft_dependency": project.minecraft_dependency,
         ]
         expand valueMap

@@ -30,14 +30,27 @@ import static _959.server_waypoint.util.SimpleWaypointHelper.simpleWaypointToFor
 import static _959.server_waypoint.util.CommandGenerator.tpCmd;
 import static _959.server_waypoint.util.TextHelper.waypointInfoText;
 
+import com.google.gson.Gson;
+
 public class WaypointServer {
+    public record Config(CommandPermission CommandPermission) {
+        public record CommandPermission(int add, int edit, int remove) {}
+    }
+
     public static int EDITION = 0;
+    public static Config CONFIG;
     public static WaypointServer INSTANCE;
     public MinecraftServer MINECRAFT_SERVER;
     public static final MinimapDimensionHelper DIMENSION_HELPER = new MinimapDimensionHelper();
     public Path waypointsDir;
-    public Path editionFile;    
+    public Path editionFile;
+    public Path configFile;
     private LinkedHashMap<RegistryKey<World>, DimensionManager> dimensionManagerMap;
+
+    public void loadConfig(FileReader reader) {
+        Gson gson = new Gson();
+        CONFIG = gson.fromJson(reader, Config.class);
+    }
     
     public void initServer() throws IOException {
         this.dimensionManagerMap = new LinkedHashMap<>();
@@ -49,6 +62,7 @@ public class WaypointServer {
         Path configDir = FabricLoader.getInstance().getConfigDir().resolve("server_waypoint");
         Path waypointsFolder = configDir.resolve("waypoints");
         this.editionFile = configDir.resolve("EDITION");
+        this.configFile = configDir.resolve("config.json");
         
         try {
             if (!Files.exists(waypointsFolder) || !Files.isDirectory(waypointsFolder)) {
@@ -57,7 +71,7 @@ public class WaypointServer {
             }
 
             // Read or create VERSION file
-            if (!Files.exists(this.editionFile)) {
+            if (!Files.exists(this.editionFile) || !Files.isRegularFile(this.editionFile)) {
                 try (DataOutputStream out = new DataOutputStream(new FileOutputStream(this.editionFile.toFile()))) {
                     out.writeInt(EDITION);
                     LOGGER.info("Created EDITION file with edition: {}", EDITION);
@@ -71,6 +85,17 @@ public class WaypointServer {
         } catch (Exception e) {
             LOGGER.error("Failed to initialize server_waypoints directory or EDITION file", e);
             throw e;
+        }
+
+        try {
+            if (!Files.exists(this.configFile) || !Files.isRegularFile(this.configFile)) {
+                Files.createFile(this.configFile);
+                Files.write(this.configFile, this.getDefaultConfig().getBytes());
+                LOGGER.info("Created config file at: {}", this.configFile);
+            }
+            this.loadConfig(new FileReader(configFile.toFile()));
+        } catch (Exception e) {
+            LOGGER.error("Failed to initialize config file, use default config instead", e);
         }
 
         this.waypointsDir = waypointsFolder;
@@ -153,5 +178,17 @@ public class WaypointServer {
 
     public void setMinecraftServer(MinecraftServer server) {
         this.MINECRAFT_SERVER = server;
+    }
+
+    private String getDefaultConfig() {
+        return """
+                {
+                  "CommandPermission": {
+                    "add": 0,
+                    "edit": 0,
+                    "remove": 0
+                  }
+                }
+                """;
     }
 }

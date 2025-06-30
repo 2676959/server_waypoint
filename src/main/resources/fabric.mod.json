@@ -34,7 +34,7 @@
 		"minecraft": "${minecraft_dependency}",
 		"java": ">=21",
 		"fabric-api": "*",
-		"xaerominimap": "${xaeros_minimap_fabric_version}"
+		"xaerominimap": "~25.2.6"
 	},
 	"suggests": {
 		"another-mod": "*"
