@@ -44,6 +44,7 @@ import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static net.minecraft.command.argument.DimensionArgumentType.dimension;
 import static net.minecraft.command.argument.DimensionArgumentType.getDimensionArgument;
 
+import static _959.server_waypoint.server.WaypointServer.CONFIG;
 import static _959.server_waypoint.util.TextHelper.*;
 import static _959.server_waypoint.util.TextHelper.DimensionColorHelper.getDimensionColor;
 import static _959.server_waypoint.network.payload.s2c.WaypointModificationS2CPayload.ModificationType;
@@ -57,7 +58,8 @@ public class WaypointCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("wp")
-                        .then(literal("add").requires(source -> source.hasPermissionLevel(0))
+                        .then(literal("add")
+                                .requires(source -> source.hasPermissionLevel(CONFIG.CommandPermission().add()))
                                 .then(argument("dimension", dimension())
                                         .then(argument("pos", blockPos())
                                                 .then(argument("list", string())
@@ -137,6 +139,7 @@ public class WaypointCommand {
                                 )
                         )
                         .then(literal("edit")
+                                .requires(source -> source.hasPermissionLevel(CONFIG.CommandPermission().edit()))
                                 .then(argument("dimension", dimension())
                                         .then(argument("list", string())
                                                 .suggests(WAYPOINT_LIST)
@@ -174,6 +177,7 @@ public class WaypointCommand {
 
                         )
                         .then(literal("remove")
+                                .requires(source -> source.hasPermissionLevel(CONFIG.CommandPermission().remove()))
                                 .then(argument("dimension", dimension())
                                         .then(argument("list", string())
                                                 .suggests(WAYPOINT_LIST)
