@@ -41,3 +41,7 @@ replay_*.log
 
 # test
 test_files/
+
+builds/
+.java-version
+move_builds.sh
