@@ -2,7 +2,6 @@ package _959.server_waypoint.server.waypoint;
 
 import _959.server_waypoint.ServerWaypoint;
 import _959.server_waypoint.network.waypoint.DimensionWaypoint;
-import _959.server_waypoint.server.WaypointServer;
 import _959.server_waypoint.util.SimpleWaypointHelper;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.world.World;
@@ -16,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static _959.server_waypoint.util.DimensionFileHelper.getFileName;
+
 public class DimensionManager {
     public Path dimensionFilePath;
     private final RegistryKey<World> dimensionKey;
@@ -24,7 +25,7 @@ public class DimensionManager {
     public DimensionManager(RegistryKey<World> dimensionKey, Path waypointFilePath) {
         this.dimensionKey = dimensionKey;
         this.waypointListMap = new HashMap<>();
-        this.dimensionFilePath = waypointFilePath.resolve(WaypointServer.DIMENSION_HELPER.getDimensionDirectoryName(dimensionKey) + ".txt");
+        this.dimensionFilePath = waypointFilePath.resolve(getFileName(dimensionKey) + ".txt");
     }
 
     public RegistryKey<World> getDimensionKey() {

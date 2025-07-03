@@ -13,7 +13,6 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import xaero.hud.minimap.world.MinimapDimensionHelper;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -24,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import static _959.server_waypoint.ServerWaypoint.LOGGER;
+import static _959.server_waypoint.util.DimensionFileHelper.getDimensionKey;
 import static _959.server_waypoint.util.SimpleWaypointHelper.DEFAULT_STYLE;
 import static _959.server_waypoint.util.TextHelper.text;
 import static _959.server_waypoint.util.SimpleWaypointHelper.simpleWaypointToFormattedText;
@@ -41,7 +41,6 @@ public class WaypointServer {
     public static Config CONFIG;
     public static WaypointServer INSTANCE;
     public MinecraftServer MINECRAFT_SERVER;
-    public static final MinimapDimensionHelper DIMENSION_HELPER = new MinimapDimensionHelper();
     public Path waypointsDir;
     public Path editionFile;
     public Path configFile;
@@ -102,7 +101,11 @@ public class WaypointServer {
         for (Path path : Files.newDirectoryStream(waypointsFolder)) {
             String fileName = path.getFileName().toString().replace(".txt", "");
             if (fileName.startsWith("dim%")) {
-                RegistryKey<World> dimensionKey = DIMENSION_HELPER.getDimensionKeyForDirectoryName(fileName);
+                RegistryKey<World> dimensionKey = getDimensionKey(fileName);
+                if (dimensionKey == null) {
+                    LOGGER.error("Invalid dimension file name {}, skip", fileName);
+                    continue;
+                }
                 LOGGER.info("Found dimension file: {}, id: {}", fileName, dimensionKey.getValue());
                 DimensionManager dimLists = new DimensionManager(dimensionKey, this.waypointsDir);
                 this.dimensionManagerMap.put(dimensionKey, dimLists);
