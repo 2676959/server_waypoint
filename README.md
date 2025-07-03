@@ -13,7 +13,7 @@ Host waypoints on Minecraft server and allow players to download waypoints to th
 ## Dependencies
 
 - [Fabric API](https://modrinth.com/mod/fabric-api)
-- [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap)
+- [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap) This is not required for serverside installation.
 
 ## Setup
 Install Fabric Loader and all dependencies with this mod on both server and client.
