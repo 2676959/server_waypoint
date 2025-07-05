@@ -4,6 +4,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 public class DimensionFileHelper {
     public static String getFileName(RegistryKey<World> dimKey) {
@@ -19,6 +20,7 @@ public class DimensionFileHelper {
         }
     }
 
+    @Nullable
     public static RegistryKey<World> getDimensionKey(String folderName) {
         String dimId = folderName.substring(4);
         switch (dimId) {
