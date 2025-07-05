@@ -413,12 +413,13 @@ public class WaypointCommand {
         listMsg.append(END_LINE);
         for (RegistryKey<World> dimKey : dimensionManagerMap.keySet()) {
             // Dimension header
-            listMsg.append(Text.literal(dimKey.getValue().toString()).formatted(getDimensionColor(dimKey)));
-            listMsg.append(END_LINE);
             DimensionManager dimensionManager = dimensionManagerMap.get(dimKey);
             if (dimensionManager == null) {
                 continue;
             }
+            listMsg.append(Text.literal(dimKey.getValue().toString()).formatted(getDimensionColor(dimKey)));
+            listMsg.append(END_LINE);
+
             Map<String, WaypointList> lists = dimensionManager.getWaypointListMap();
             int listCount = lists.size();
             int currentList = 0;
