@@ -18,6 +18,7 @@ import java.util.Map;
 import static _959.server_waypoint.util.DimensionFileHelper.getFileName;
 
 public class DimensionManager {
+    public static final String DEFAULT_LIST_NAME = "default";
     public Path dimensionFilePath;
     private final RegistryKey<World> dimensionKey;
     private final Map<String, WaypointList> waypointListMap;
@@ -25,6 +26,7 @@ public class DimensionManager {
     public DimensionManager(RegistryKey<World> dimensionKey, Path waypointFilePath) {
         this.dimensionKey = dimensionKey;
         this.waypointListMap = new HashMap<>();
+        this.waypointListMap.put(DEFAULT_LIST_NAME, WaypointList.build(DEFAULT_LIST_NAME));
         this.dimensionFilePath = waypointFilePath.resolve(getFileName(dimensionKey) + ".txt");
     }
 
