@@ -5,6 +5,6 @@
     "remove": 0
   },
   "AddWaypointFromChatSharing": {
-    "auto": false
+    "enable": true
   }
 }

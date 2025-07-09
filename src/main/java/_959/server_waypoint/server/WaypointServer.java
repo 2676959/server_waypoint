@@ -6,6 +6,7 @@ import _959.server_waypoint.network.waypoint.WorldWaypoint;
 import _959.server_waypoint.network.payload.s2c.WaypointModificationS2CPayload;
 import _959.server_waypoint.server.waypoint.DimensionManager;
 import _959.server_waypoint.server.waypoint.SimpleWaypoint;
+import _959.server_waypoint.config.Config;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
@@ -33,9 +34,7 @@ import static _959.server_waypoint.util.TextHelper.waypointInfoText;
 import com.google.gson.Gson;
 
 public class WaypointServer {
-    public record Config(CommandPermission CommandPermission) {
-        public record CommandPermission(int add, int edit, int remove) {}
-    }
+
 
     public static int EDITION = 0;
     public static Config CONFIG;
@@ -91,10 +90,13 @@ public class WaypointServer {
                 Files.createFile(this.configFile);
                 Files.write(this.configFile, this.getDefaultConfig().getBytes());
                 LOGGER.info("Created config file at: {}", this.configFile);
+                CONFIG = new Config();
+            } else {
+                this.loadConfig(new FileReader(configFile.toFile()));
             }
-            this.loadConfig(new FileReader(configFile.toFile()));
         } catch (Exception e) {
-            LOGGER.error("Failed to initialize config file, use default config instead", e);
+            CONFIG = new Config();
+            LOGGER.error("Failed to read config file, use default config instead", e);
         }
 
         this.waypointsDir = waypointsFolder;
@@ -184,12 +186,16 @@ public class WaypointServer {
     }
 
     private String getDefaultConfig() {
-        return """
+        return
+                """
                 {
                   "CommandPermission": {
                     "add": 0,
                     "edit": 0,
                     "remove": 0
+                  },
+                  "AddWaypointFromChatSharing": {
+                    "enable": false
                   }
                 }
                 """;
