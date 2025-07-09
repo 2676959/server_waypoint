@@ -7,6 +7,7 @@ import _959.server_waypoint.network.payload.s2c.WaypointModificationS2CPayload;
 import _959.server_waypoint.server.waypoint.DimensionManager;
 import _959.server_waypoint.server.waypoint.SimpleWaypoint;
 import _959.server_waypoint.config.Config;
+import com.google.gson.GsonBuilder;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
@@ -37,16 +38,17 @@ public class WaypointServer {
 
 
     public static int EDITION = 0;
-    public static Config CONFIG;
+    public static Config CONFIG = new Config();
     public static WaypointServer INSTANCE;
     public MinecraftServer MINECRAFT_SERVER;
     public Path waypointsDir;
     public Path editionFile;
     public Path configFile;
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final byte[] DEFAULT_CONFIG = gson.toJson(CONFIG).getBytes();
     private LinkedHashMap<RegistryKey<World>, DimensionManager> dimensionManagerMap;
 
     public void loadConfig(FileReader reader) {
-        Gson gson = new Gson();
         CONFIG = gson.fromJson(reader, Config.class);
     }
     
@@ -88,14 +90,12 @@ public class WaypointServer {
         try {
             if (!Files.exists(this.configFile) || !Files.isRegularFile(this.configFile)) {
                 Files.createFile(this.configFile);
-                Files.write(this.configFile, this.getDefaultConfig().getBytes());
+                Files.write(this.configFile, DEFAULT_CONFIG);
                 LOGGER.info("Created config file at: {}", this.configFile);
-                CONFIG = new Config();
             } else {
                 this.loadConfig(new FileReader(configFile.toFile()));
             }
         } catch (Exception e) {
-            CONFIG = new Config();
             LOGGER.error("Failed to read config file, use default config instead", e);
         }
 
@@ -182,22 +182,9 @@ public class WaypointServer {
     }
 
     public void setMinecraftServer(MinecraftServer server) {
+        if (this.MINECRAFT_SERVER != null) {
+            return;
+        }
         this.MINECRAFT_SERVER = server;
-    }
-
-    private String getDefaultConfig() {
-        return
-                """
-                {
-                  "CommandPermission": {
-                    "add": 0,
-                    "edit": 0,
-                    "remove": 0
-                  },
-                  "AddWaypointFromChatSharing": {
-                    "enable": false
-                  }
-                }
-                """;
     }
 }
