@@ -32,7 +32,6 @@ public class XaeroMinimapHelper {
         MinimapWorldManager manager = session.getWorldManager();
         XaeroPath root = manager.getAutoRootContainer().getPath();
         String node = getMinimapWorldNode(session, dimKey);
-//        ServerWaypointClient.LOGGER.info("node: {}", node);
         XaeroPath fullPath = root.resolve(dimId).resolve(node);
         return manager.getWorld(fullPath);
     }
@@ -44,6 +43,19 @@ public class XaeroMinimapHelper {
     public static void saveMinimapWorld(MinimapSession session, RegistryKey<World> dimKey) throws IOException {
         MinimapWorld minimapWorld = getMinimapWorld(session, dimKey);
         saveMinimapWorld(session, minimapWorld);
+    }
+
+    public static void replaceWaypoint(WaypointSet waypointSet, Waypoint waypoint) {
+        Iterator<Waypoint> iter =  waypointSet.getWaypoints().iterator();
+        String name = waypoint.getName();
+        while (iter.hasNext()) {
+            Waypoint nextWaypoint = iter.next();
+            if (name.equals(nextWaypoint.getName())) {
+                iter.remove();
+                ServerWaypointClient.LOGGER.info("Waypoint {} has been removed.", name);
+            }
+        }
+        waypointSet.add(waypoint);
     }
 
     public static void addWaypointList(MinimapWorld minimapWorld, WaypointList waypointList){

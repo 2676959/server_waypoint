@@ -123,8 +123,7 @@ public class ServerWaypointPayloadHandler {
                         .append(text(" has been removed from Xaero's minimap.").setStyle(DEFAULT_STYLE))), false);
             }
             case UPDATE -> {
-                removeWaypointsByName(waypointSet, simpleWaypoint);
-                waypointSet.add(XaeroWaypointConverter.simpleWaypointToWaypoint(payload.waypoint()));
+                XaeroMinimapHelper.replaceWaypoint(waypointSet, XaeroWaypointConverter.simpleWaypointToWaypoint(payload.waypoint()));
                 context.player().sendMessage(text("Waypoint ")
                 .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimKey, simpleWaypoint.pos(), simpleWaypoint.yaw()), waypointInfoText(dimKey, simpleWaypoint))
                     .append(text(" has been updated on Xaero's minimap.").setStyle(DEFAULT_STYLE))), false);
