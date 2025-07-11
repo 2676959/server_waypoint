@@ -10,11 +10,6 @@ on:
       - 'README.md'
       - 'LICENSE'
       - '**.md'
-  push:
-    paths-ignore:
-      - 'README.md'
-      - 'LICENSE'
-      - '**.md'
 
 jobs:
   build:
