@@ -12,7 +12,6 @@ import org.jetbrains.annotations.Nullable;
 import static _959.server_waypoint.util.TextHelper.ClickEventHelper.RunCommand;
 import static _959.server_waypoint.util.TextHelper.HoverEventHelper.ShowText;
 import static _959.server_waypoint.util.XaeroDimensionStringConverter.convert;
-
 import static _959.server_waypoint.ServerWaypoint.LOGGER;
 
 public class SimpleWaypointHelper {
@@ -90,5 +89,4 @@ public class SimpleWaypointHelper {
         }
         return null;
     }
-
 }

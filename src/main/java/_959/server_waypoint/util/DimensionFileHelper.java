@@ -4,6 +4,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+
 import org.jetbrains.annotations.Nullable;
 
 public class DimensionFileHelper {

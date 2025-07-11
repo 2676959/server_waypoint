@@ -23,6 +23,7 @@ public class TextButton {
     }
 
     public static MutableText restoreButton(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint) {
+
         Style btnStyle = Style.EMPTY
                 .withBold(true)
                 .withColor(Formatting.LIGHT_PURPLE)

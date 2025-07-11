@@ -35,8 +35,6 @@ import static _959.server_waypoint.util.TextHelper.waypointInfoText;
 import com.google.gson.Gson;
 
 public class WaypointServer {
-
-
     public static int EDITION = 0;
     public static Config CONFIG = new Config();
     public static WaypointServer INSTANCE;
@@ -186,5 +184,17 @@ public class WaypointServer {
             return;
         }
         this.MINECRAFT_SERVER = server;
+    }
+
+    private String getDefaultConfig() {
+        return """
+                {
+                  "CommandPermission": {
+                    "add": 0,
+                    "edit": 0,
+                    "remove": 0
+                  }
+                }
+                """;
     }
 }
