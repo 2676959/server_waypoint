@@ -18,6 +18,7 @@ import static _959.server_waypoint.server.WaypointServer.CONFIG;
 import static _959.server_waypoint.util.CommandGenerator.tpCmd;
 import static _959.server_waypoint.util.SimpleWaypointHelper.*;
 import static _959.server_waypoint.util.TextButton.addButton;
+import static _959.server_waypoint.util.TextButton.addListButton;
 import static _959.server_waypoint.util.TextHelper.text;
 import static _959.server_waypoint.util.TextHelper.waypointInfoText;
 
@@ -27,32 +28,25 @@ public class ChatMessageHandler {
             return;
         };
         String messageString = message.getContent().getString();
-        LOGGER.info("{}, {}, {}", messageString, player.toString(), parameters.toString());
         if (messageString.startsWith(XAERO_SHARE_PREFIX)) {
             LOGGER.info("found chat shared waypoint");
             Pair<SimpleWaypoint, RegistryKey<World>> waypointWithDim = chatShareToSimpleWaypoint(messageString);
             if (waypointWithDim == null) {
-                LOGGER.info("invalid waypoint sharing format");
+                LOGGER.info("invalid waypoint sharing message");
                 return;
             }
-            LOGGER.info("{}, {}", waypointWithDim.getLeft().toString(), waypointWithDim.getRight().getValue().toString());
             SimpleWaypoint waypoint = waypointWithDim.getLeft();
             RegistryKey<World> dimKey = waypointWithDim.getRight();
             if (waypoint == null) {
                 LOGGER.info("unknown waypoint received");
                 return;
             }
-            if (dimKey == null) {
-                LOGGER.info("unknown dimension received");
-                dimKey = World.OVERWORLD;
-            }
-
             if (CONFIG.AddWaypointFromChatSharing().auto()) {
                 DimensionManager dimensionManager = INSTANCE.getDimensionManager(dimKey);
                 if (dimensionManager != null) {
                     Set<String> listNames = dimensionManager.getWaypointListMap().keySet();
                     if (listNames.isEmpty()) {
-                        player.sendMessage(text(""));
+                        promptNoWaypointList(player, dimKey);
                     } else {
                         player.sendMessage(text("Found chat shared waypoint: ").append(
                                 simpleWaypointToFormattedText(
@@ -69,12 +63,16 @@ public class ChatMessageHandler {
                     }
                 } else {
                     LOGGER.info("dimension not found, add new dimension");
-//                    INSTANCE.addDimensionManager(dimKey).getDefaultWaypointList().add(waypoint);
+                    INSTANCE.addDimensionManager(dimKey);
+                    promptNoWaypointList(player, dimKey);
                 }
-                LOGGER.info("added waypoint from chat");
-            } else {
-                return;
             }
         }
+    }
+
+    private static void promptNoWaypointList(ServerPlayerEntity player, RegistryKey<World> dimKey) {
+        MutableText feedback = text("No waypoint list available. Add a waypoint list first. ");
+        feedback.append(addListButton(dimKey, ""));
+        player.sendMessage(feedback);
     }
 }

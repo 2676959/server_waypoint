@@ -247,7 +247,7 @@ public class WaypointCommand {
         );
     }
 
-    private static void executeAddList(ServerCommandSource source, RegistryKey<World> dimKey, String listName) {
+    private static void executeAddList(ServerCommandSource source, RegistryKey<World> dimKey, String listName) throws CommandSyntaxException {
         DimensionManager dimensionManager = WaypointServer.INSTANCE.getDimensionManager(dimKey);
         if (dimensionManager == null) {
             source.sendError(text("Dimension: %s does not exist.".formatted(dimKey.getValue().toString())));
@@ -262,6 +262,7 @@ public class WaypointCommand {
                 feedback.append(text(dimKey.getValue().toString()).setStyle(Style.EMPTY.withColor(getDimensionColor(dimKey))));
                 return feedback;
             }, true);
+            saveChanges(source, dimensionManager);
         }
     }
 
@@ -397,7 +398,7 @@ public class WaypointCommand {
         }
     }
 
-    private static void executeRemoveList(ServerCommandSource source, RegistryKey<World> dimKey, String listName) {
+    private static void executeRemoveList(ServerCommandSource source, RegistryKey<World> dimKey, String listName) throws CommandSyntaxException {
         DimensionManager dimensionManager = WaypointServer.INSTANCE.getDimensionManager(dimKey);
         if (dimensionManager == null) {
             source.sendError(text("Dimension: %s does not exist.".formatted(dimKey.getValue().toString())));
@@ -415,7 +416,7 @@ public class WaypointCommand {
             } else {
                 source.sendError(text("Cannot remove non-empty waypoint list: %s".formatted(listName)));
             }
-
+            saveChanges(source, dimensionManager);
         }
     }
 
@@ -468,10 +469,14 @@ public class WaypointCommand {
         Map<RegistryKey<World>, DimensionManager> dimensionManagerMap = waypointServer.getDimensionManagerMap();
         MutableText listMsg = text("");
         listMsg.append(END_LINE);
+        boolean empty = true;
         for (RegistryKey<World> dimKey : dimensionManagerMap.keySet()) {
             // Dimension header
             DimensionManager dimensionManager = dimensionManagerMap.get(dimKey);
             if (dimensionManager == null) {
+                continue;
+            }
+            if (dimensionManager.getWaypointListMap().isEmpty()) {
                 continue;
             }
             listMsg.append(Text.literal(dimKey.getValue().toString()).formatted(getDimensionColor(dimKey)));
@@ -503,7 +508,12 @@ public class WaypointCommand {
                     listMsg.append(END_LINE);
                 }
             }
+            empty = false;
         }
-        source.sendMessage(listMsg);
+        if (empty) {
+            source.sendMessage(text("No waypoints to list."));
+        } else {
+            source.sendMessage(listMsg);
+        }
     }
 }

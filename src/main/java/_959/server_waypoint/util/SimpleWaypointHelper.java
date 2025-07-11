@@ -79,10 +79,13 @@ public class SimpleWaypointHelper {
                     Integer.parseInt(args[8]),
                     true
             );
-            int firstBarIdx = args[9].lastIndexOf("-");
+            int firstBarIdx = args[9].indexOf('-');
             String dimString = args[9].substring(firstBarIdx + 1);
-            LOGGER.info(dimString);
             RegistryKey<World> dimKey = convert(dimString);
+            if (dimKey == null) {
+                LOGGER.warn("unrecognized dimension '{}'", dimString);
+                return null;
+            }
             return new Pair<>(simpleWaypoint, dimKey);
         }
         return null;

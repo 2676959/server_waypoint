@@ -58,4 +58,12 @@ public class CommandGenerator {
                         waypoint.name()
                 );
     }
+
+    public static String addListCmd(RegistryKey<World> dimKey, String listName) {
+        return WAYPOINT_COMMAND + " " + ADD_ARGUMENT + " " +
+                "%s %s".formatted(
+                        dimKey.getValue().toString(),
+                        listName
+                );
+    }
 }

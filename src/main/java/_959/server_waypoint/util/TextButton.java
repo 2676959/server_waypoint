@@ -54,7 +54,16 @@ public class TextButton {
                 .withBold(true)
                 .withColor(Formatting.GREEN)
                 .withClickEvent(SuggestCommand.apply(addCmd(dimKey, listName, waypoint)))
-                .withHoverEvent(ShowText.apply(text("click to add")));
+                .withHoverEvent(ShowText.apply(text("click to add waypoint")));
+        return text("[+]").setStyle(btnStyle);
+    }
+
+    public static MutableText addListButton(RegistryKey<World> dimKey, String listName) {
+        Style btnStyle = Style.EMPTY
+                .withBold(true)
+                .withColor(Formatting.GREEN)
+                .withClickEvent(SuggestCommand.apply(addListCmd(dimKey, listName)))
+                .withHoverEvent(ShowText.apply(text("click to add waypoint list")));
         return text("[+]").setStyle(btnStyle);
     }
 }
