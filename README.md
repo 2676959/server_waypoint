@@ -9,6 +9,7 @@ Host waypoints on Minecraft server and allow players to download waypoints to th
 - Easy to use waypoint list allowing player click to teleport, or remove waypoint.
 - Commands auto-completion.
 - Custom permission for `/wp <options>` commands.
+- Support adding waypoint conveniently from Xaero's minimap waypoint chat sharing message without requiring client side installation.
 
 ## Dependencies
 
@@ -21,9 +22,11 @@ Install Fabric Loader and all dependencies with this mod on both server and clie
 ## Server Command
 Command `/wp` is **only** registered on **dedicated server**.
 - `/wp add` add a new waypoint. Cannot add waypoint with duplicate name. Prompts user to use `/wp edit` to replace the existing one.
+  - `/wp add <dimension> <list>` add a waypoint list.
 - `/wp list` list all waypoints. Shows all waypoints in a tree hierarchy. Allowing user to click to teleport, edit and remove the waypoint.
 - `/wp edit` edit a waypoint.
 - `/wp remove` remove a waypoint by name. Shows the removed waypoint and click it to restore that waypoint.
+  - `/wp remove <dimension> <list>` remove an empty waypoint list.
 - `/wp download` download waypoints and add to Xaero's Minimap (will not work without client installation).
 
 ## Configuration
@@ -48,7 +51,17 @@ Changes made in `config.json` will take effects after server restarts.
       }
     }
     ```
+- ### Add waypoint from chat sharing
+  Prompts user to add the waypoint they shared in chat. Requires `/wp add` permission.
 
+  Example:
+  ```json5
+  {
+    "AddWaypointFromChatSharing": {
+      "enable": true
+    }
+  }
+  ```
 
 ## Server & Client Compatibility
 
