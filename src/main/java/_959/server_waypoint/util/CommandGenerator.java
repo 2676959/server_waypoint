@@ -18,13 +18,13 @@ public class CommandGenerator {
 
     public static String addCmd(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint) {
         return WAYPOINT_COMMAND + " " + ADD_ARGUMENT + " " +
-                "%s %d %d %d %s %s %s %s %d %b"
+                "%s %s %d %d %d %s %s %s %d %b"
                         .formatted(
                                 dimKey.getValue().toString(),
+                                listName,
                                 waypoint.pos().getX(),
                                 waypoint.pos().getY(),
                                 waypoint.pos().getZ(),
-                                listName,
                                 waypoint.name(),
                                 waypoint.initials(),
                                 colorIndexToName(waypoint.colorIdx()),
@@ -56,6 +56,14 @@ public class CommandGenerator {
                         dimKey.getValue().toString(),
                         listName,
                         waypoint.name()
+                );
+    }
+
+    public static String addListCmd(RegistryKey<World> dimKey, String listName) {
+        return WAYPOINT_COMMAND + " " + ADD_ARGUMENT + " " +
+                "%s %s".formatted(
+                        dimKey.getValue().toString(),
+                        listName
                 );
     }
 }

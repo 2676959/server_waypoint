@@ -61,9 +61,17 @@ public class WaypointCommand {
                         .then(literal("add")
                                 .requires(source -> source.hasPermissionLevel(CONFIG.CommandPermission().add()))
                                 .then(argument("dimension", dimension())
-                                        .then(argument("pos", blockPos())
-                                                .then(argument("list", string())
-                                                        .suggests(WAYPOINT_LIST)
+                                        .then(argument("list", string())
+                                                .suggests(WAYPOINT_LIST)
+                                                .executes(
+                                                        context -> {
+                                                            executeAddList(context.getSource(),
+                                                                    getDimensionArgument(context, "dimension").getRegistryKey(),
+                                                                    getString(context, "list"));
+                                                            return 1;
+                                                        }
+                                                )
+                                                .then(argument("pos", blockPos())
                                                         .then(argument("name", string())
                                                                 .suggests(WAYPOINT_NAMES)
                                                                 .then(argument("initials", string())
@@ -181,6 +189,14 @@ public class WaypointCommand {
                                 .then(argument("dimension", dimension())
                                         .then(argument("list", string())
                                                 .suggests(WAYPOINT_LIST)
+                                                .executes(
+                                                        context -> {
+                                                            executeRemoveList(context.getSource(),
+                                                                    getDimensionArgument(context, "dimension").getRegistryKey(),
+                                                                    getString(context, "list"));
+                                                            return 1;
+                                                        }
+                                                )
                                                 .then(argument("name", string())
                                                         .suggests(WAYPOINT_NAMES)
                                                         .executes(
@@ -228,6 +244,25 @@ public class WaypointCommand {
                                 )
                         )
         );
+    }
+
+    private static void executeAddList(ServerCommandSource source, RegistryKey<World> dimKey, String listName) throws CommandSyntaxException {
+        DimensionManager dimensionManager = WaypointServer.INSTANCE.getDimensionManager(dimKey);
+        if (dimensionManager == null) {
+            source.sendError(text("Dimension: %s does not exist.".formatted(dimKey.getValue().toString())));
+        } else {
+            if (dimensionManager.getWaypointListByName(listName) != null) {
+                source.sendError(text("List: %s already exists.".formatted(listName)));
+                return;
+            }
+            dimensionManager.addWaypointList(WaypointList.build(listName));
+            source.sendFeedback(() -> {
+                MutableText feedback = text("Add waypoint list %s under dimension: ".formatted(listName));
+                feedback.append(text(dimKey.getValue().toString()).setStyle(Style.EMPTY.withColor(getDimensionColor(dimKey))));
+                return feedback;
+            }, true);
+            saveChanges(source, dimensionManager);
+        }
     }
 
     private static void executeAdd(ServerCommandSource source, RegistryKey<World> dimKey, String listName, BlockPos pos, String name, String initials, Formatting color, int yaw, boolean global) throws CommandSyntaxException {
@@ -362,6 +397,28 @@ public class WaypointCommand {
         }
     }
 
+    private static void executeRemoveList(ServerCommandSource source, RegistryKey<World> dimKey, String listName) throws CommandSyntaxException {
+        DimensionManager dimensionManager = WaypointServer.INSTANCE.getDimensionManager(dimKey);
+        if (dimensionManager == null) {
+            source.sendError(text("Dimension: %s does not exist.".formatted(dimKey.getValue().toString())));
+        } else {
+            WaypointList waypointList = dimensionManager.getWaypointListByName(listName);
+            if (waypointList == null) {
+                source.sendError(text("Waypoint list: %s does not exist.".formatted(dimKey.getValue().toString())));
+            } else if (waypointList.simpleWaypoints().isEmpty()) {
+                dimensionManager.removeWaypointListByName(listName);
+                source.sendFeedback(() -> {
+                    MutableText feedback = text("Removed waypoint list %s under dimension: ".formatted(listName));
+                    feedback.append(text(dimKey.getValue().toString()).setStyle(Style.EMPTY.withColor(getDimensionColor(dimKey))));
+                    return feedback;
+                }, true);
+            } else {
+                source.sendError(text("Cannot remove non-empty waypoint list: %s".formatted(listName)));
+            }
+            saveChanges(source, dimensionManager);
+        }
+    }
+
     private static void executeDownload(ServerCommandSource source) {
         ServerPlayerEntity player = source.getPlayer();
         if (player != null) {
@@ -411,14 +468,19 @@ public class WaypointCommand {
         Map<RegistryKey<World>, DimensionManager> dimensionManagerMap = waypointServer.getDimensionManagerMap();
         MutableText listMsg = text("");
         listMsg.append(END_LINE);
+        boolean empty = true;
         for (RegistryKey<World> dimKey : dimensionManagerMap.keySet()) {
             // Dimension header
-            listMsg.append(Text.literal(dimKey.getValue().toString()).formatted(getDimensionColor(dimKey)));
-            listMsg.append(END_LINE);
             DimensionManager dimensionManager = dimensionManagerMap.get(dimKey);
             if (dimensionManager == null) {
                 continue;
             }
+            if (dimensionManager.getWaypointListMap().isEmpty()) {
+                continue;
+            }
+            listMsg.append(Text.literal(dimKey.getValue().toString()).formatted(getDimensionColor(dimKey)));
+            listMsg.append(END_LINE);
+
             Map<String, WaypointList> lists = dimensionManager.getWaypointListMap();
             int listCount = lists.size();
             int currentList = 0;
@@ -445,7 +507,12 @@ public class WaypointCommand {
                     listMsg.append(END_LINE);
                 }
             }
+            empty = false;
         }
-        source.sendMessage(listMsg);
+        if (empty) {
+            source.sendMessage(text("No waypoints to list."));
+        } else {
+            source.sendMessage(listMsg);
+        }
     }
 }

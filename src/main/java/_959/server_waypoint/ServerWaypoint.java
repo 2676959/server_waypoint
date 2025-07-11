@@ -1,5 +1,6 @@
 package _959.server_waypoint;
 
+import _959.server_waypoint.network.ChatMessageHandler;
 import _959.server_waypoint.network.ClientHandshakeHandler;
 import _959.server_waypoint.network.payload.c2s.HandshakeC2SPayload;
 import _959.server_waypoint.network.payload.s2c.DimensionWaypointS2CPayload;
@@ -11,8 +12,8 @@ import _959.server_waypoint.server.WaypointServer;
 import _959.server_waypoint.server.command.WaypointCommand;
 import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.api.DedicatedServerModInitializer;
-import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.command.CommandRegistryAccess;
@@ -47,6 +48,7 @@ public class ServerWaypoint implements DedicatedServerModInitializer {
 		this.registerPayloads();
 		this.registerHandlers();
 		CommandRegistrationCallback.EVENT.register(ServerWaypoint::registerCommands);
+		ServerMessageEvents.CHAT_MESSAGE.register(ChatMessageHandler::onChatMessage);
     }
 
 	public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, RegistrationEnvironment registrationEnvironment) {

@@ -6,6 +6,8 @@ import _959.server_waypoint.network.waypoint.WorldWaypoint;
 import _959.server_waypoint.network.payload.s2c.WaypointModificationS2CPayload;
 import _959.server_waypoint.server.waypoint.DimensionManager;
 import _959.server_waypoint.server.waypoint.SimpleWaypoint;
+import _959.server_waypoint.config.Config;
+import com.google.gson.GsonBuilder;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
@@ -33,21 +35,18 @@ import static _959.server_waypoint.util.TextHelper.waypointInfoText;
 import com.google.gson.Gson;
 
 public class WaypointServer {
-    public record Config(CommandPermission CommandPermission) {
-        public record CommandPermission(int add, int edit, int remove) {}
-    }
-
     public static int EDITION = 0;
-    public static Config CONFIG;
+    public static Config CONFIG = new Config();
     public static WaypointServer INSTANCE;
     public MinecraftServer MINECRAFT_SERVER;
     public Path waypointsDir;
     public Path editionFile;
     public Path configFile;
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final byte[] DEFAULT_CONFIG = gson.toJson(CONFIG).getBytes();
     private LinkedHashMap<RegistryKey<World>, DimensionManager> dimensionManagerMap;
 
     public void loadConfig(FileReader reader) {
-        Gson gson = new Gson();
         CONFIG = gson.fromJson(reader, Config.class);
     }
     
@@ -89,12 +88,13 @@ public class WaypointServer {
         try {
             if (!Files.exists(this.configFile) || !Files.isRegularFile(this.configFile)) {
                 Files.createFile(this.configFile);
-                Files.write(this.configFile, this.getDefaultConfig().getBytes());
+                Files.write(this.configFile, DEFAULT_CONFIG);
                 LOGGER.info("Created config file at: {}", this.configFile);
+            } else {
+                this.loadConfig(new FileReader(configFile.toFile()));
             }
-            this.loadConfig(new FileReader(configFile.toFile()));
         } catch (Exception e) {
-            LOGGER.error("Failed to initialize config file, use default config instead", e);
+            LOGGER.error("Failed to read config file, use default config instead", e);
         }
 
         this.waypointsDir = waypointsFolder;
@@ -180,6 +180,9 @@ public class WaypointServer {
     }
 
     public void setMinecraftServer(MinecraftServer server) {
+        if (this.MINECRAFT_SERVER != null) {
+            return;
+        }
         this.MINECRAFT_SERVER = server;
     }
 

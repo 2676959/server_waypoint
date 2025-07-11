@@ -32,7 +32,6 @@ public class XaeroMinimapHelper {
         MinimapWorldManager manager = session.getWorldManager();
         XaeroPath root = manager.getAutoRootContainer().getPath();
         String node = getMinimapWorldNode(session, dimKey);
-//        ServerWaypointClient.LOGGER.info("node: {}", node);
         XaeroPath fullPath = root.resolve(dimId).resolve(node);
         return manager.getWorld(fullPath);
     }
@@ -46,9 +45,15 @@ public class XaeroMinimapHelper {
         saveMinimapWorld(session, minimapWorld);
     }
 
-    public static void addWaypointList(MinimapWorld minimapWorld, WaypointList waypointList){
-        WaypointSet waypointSet = WaypointSet.Builder.begin().setName(waypointList.name()).build();
-        for (SimpleWaypoint simpleWaypoint : waypointList.simpleWaypoints()) {  
+    public static void replaceWaypoint(WaypointSet waypointSet, Waypoint waypoint) {
+        String name = waypoint.getName();
+        removeWaypointsByName(waypointSet, name);
+        waypointSet.add(waypoint);
+    }
+
+    public static void replaceWaypointList(MinimapWorld minimapWorld, WaypointList waypointList) {
+       WaypointSet waypointSet = WaypointSet.Builder.begin().setName(waypointList.name()).build();
+        for (SimpleWaypoint simpleWaypoint : waypointList.simpleWaypoints()) {
             if (simpleWaypoint != null) {
                 ServerWaypointClient.LOGGER.info("waypoint {} added", simpleWaypoint.name());
                 waypointSet.add(XaeroWaypointConverter.simpleWaypointToWaypoint(simpleWaypoint));
@@ -59,20 +64,19 @@ public class XaeroMinimapHelper {
         minimapWorld.addWaypointSet(waypointSet);
     }
 
-    public static void addWaypointLists(MinimapWorld minimapWorld, List<WaypointList> waypointLists) {
+    public static void replaceWaypointLists(MinimapWorld minimapWorld, List<WaypointList> waypointLists) {
         for (WaypointList waypointList : waypointLists) {
-            addWaypointList(minimapWorld, waypointList);
+            replaceWaypointList(minimapWorld, waypointList);
             ServerWaypointClient.LOGGER.info("waypoint set {} added", waypointList.name());
         }
     }
 
     public static void addDimensionWaypoint(MinimapSession session, DimensionWaypoint dimensionWaypoint) {
         MinimapWorld minimapWorld = getMinimapWorld(session, dimensionWaypoint.dimKey());
-        addWaypointLists(minimapWorld, dimensionWaypoint.waypointLists());
+        replaceWaypointLists(minimapWorld, dimensionWaypoint.waypointLists());
     }
 
-    public static void removeWaypointsByName(WaypointSet waypointSet, SimpleWaypoint simpleWaypoint) {
-        String name = simpleWaypoint.name();
+    public static void removeWaypointsByName(WaypointSet waypointSet, String name) {
         Iterator<Waypoint> iter =  waypointSet.getWaypoints().iterator();
         while (iter.hasNext()) {
             Waypoint waypoint = iter.next();
