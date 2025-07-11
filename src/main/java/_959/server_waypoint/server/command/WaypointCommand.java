@@ -1,6 +1,5 @@
 package _959.server_waypoint.server.command;
 
-import _959.server_waypoint.ServerWaypoint;
 import _959.server_waypoint.network.payload.s2c.DimensionWaypointS2CPayload;
 import _959.server_waypoint.network.payload.s2c.WorldWaypointS2CPayload;
 import _959.server_waypoint.network.waypoint.DimensionWaypoint;

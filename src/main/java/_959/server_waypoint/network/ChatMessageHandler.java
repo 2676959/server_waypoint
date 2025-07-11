@@ -26,7 +26,7 @@ public class ChatMessageHandler {
     public static void onChatMessage(SignedMessage message, ServerPlayerEntity player, MessageType.Parameters parameters) {
         if (! player.hasPermissionLevel(CONFIG.CommandPermission().add())) {
             return;
-        };
+        }
         String messageString = message.getContent().getString();
         if (messageString.startsWith(XAERO_SHARE_PREFIX)) {
             LOGGER.info("found chat shared waypoint");
