@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class ServerWaypointClient implements ClientModInitializer {
+public class ServerWaypointFabricClient implements ClientModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_client");
 	private static boolean handshakeFinished = false;
 
@@ -23,7 +23,7 @@ public class ServerWaypointClient implements ClientModInitializer {
     }
 
     public static void setHandshakeFinished(boolean handshakeFinished) {
-        ServerWaypointClient.handshakeFinished = handshakeFinished;
+        ServerWaypointFabricClient.handshakeFinished = handshakeFinished;
     }
 
     @Override

@@ -1,6 +1,6 @@
 package _959.server_waypoint.server.waypoint;
 
-import _959.server_waypoint.ServerWaypoint;
+import _959.server_waypoint.ServerWaypointFabric;
 import _959.server_waypoint.network.waypoint.DimensionWaypoint;
 import _959.server_waypoint.util.SimpleWaypointHelper;
 import net.minecraft.registry.RegistryKey;
@@ -73,15 +73,15 @@ public class DimensionManager {
                 String name = line.substring(1).trim();
                 currentList = WaypointList.build(name);
                 addWaypointList(currentList);
-                ServerWaypoint.LOGGER.info("Created waypoint list: {}", name);
+                ServerWaypointFabric.LOGGER.info("Created waypoint list: {}", name);
             } else if (currentList != null) {
                 // Waypoint line
                 try {
                     SimpleWaypoint waypoint = SimpleWaypointHelper.stringToSimpleWaypoint(line);
                     currentList.add(waypoint);
-                    ServerWaypoint.LOGGER.info("Added waypoint: {} to list: {}", waypoint.name(), currentList.name());
+                    ServerWaypointFabric.LOGGER.info("Added waypoint: {} to list: {}", waypoint.name(), currentList.name());
                 } catch (Exception e) {
-                    ServerWaypoint.LOGGER.error("Failed to parse waypoint line: {}", line, e);
+                    ServerWaypointFabric.LOGGER.error("Failed to parse waypoint line: {}", line, e);
                 }
             }
         }
@@ -102,14 +102,14 @@ public class DimensionManager {
                 try {
                     String waypointLine = SimpleWaypointHelper.simpleWaypointToString(waypoint);
                     lines.add(waypointLine);
-                    ServerWaypoint.LOGGER.info("Wrote waypoint: {} from list: {}", waypoint.name(), name);
+                    ServerWaypointFabric.LOGGER.info("Wrote waypoint: {} from list: {}", waypoint.name(), name);
                 } catch (Exception e) {
-                    ServerWaypoint.LOGGER.error("Failed to write waypoint: {} from list: {}", waypoint.name(), name, e);
+                    ServerWaypointFabric.LOGGER.error("Failed to write waypoint: {} from list: {}", waypoint.name(), name, e);
                 }
             }
         }
         
         Files.write(filePath, lines);
-        ServerWaypoint.LOGGER.info("Saved waypointList to file: {}", filePath);
+        ServerWaypointFabric.LOGGER.info("Saved waypointList to file: {}", filePath);
     }
 } 

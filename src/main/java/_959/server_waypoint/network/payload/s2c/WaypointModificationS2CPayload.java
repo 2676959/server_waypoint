@@ -1,6 +1,6 @@
 package _959.server_waypoint.network.payload.s2c;
 
-import _959.server_waypoint.ServerWaypoint;
+import _959.server_waypoint.ServerWaypointFabric;
 import _959.server_waypoint.server.waypoint.SimpleWaypoint;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
@@ -17,7 +17,7 @@ public record WaypointModificationS2CPayload(
     ModificationType type,
     int edition
 ) implements CustomPayload {
-    public static final Identifier WAYPOINT_MODIFICATION_PAYLOAD_ID = Identifier.of(ServerWaypoint.MOD_ID, "waypoint_modification");
+    public static final Identifier WAYPOINT_MODIFICATION_PAYLOAD_ID = Identifier.of(ServerWaypointFabric.MOD_ID, "waypoint_modification");
     public static final CustomPayload.Id<WaypointModificationS2CPayload> ID = new CustomPayload.Id<>(WAYPOINT_MODIFICATION_PAYLOAD_ID);
     
     public static final PacketCodec<RegistryByteBuf, WaypointModificationS2CPayload> PACKET_CODEC = PacketCodec.tuple(
