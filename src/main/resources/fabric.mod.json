@@ -16,10 +16,10 @@
 	"environment": "*",
 	"entrypoints": {
 		"server": [
-			"_959.server_waypoint.ServerWaypointFabric"
+			"_959.server_waypoint.fabric.ServerWaypointFabric"
 		],
 		"client": [
-			"_959.server_waypoint.ServerWaypointFabricClient"
+			"_959.server_waypoint.fabric.ServerWaypointFabricClient"
 		]
 	},
 	"mixins": [
