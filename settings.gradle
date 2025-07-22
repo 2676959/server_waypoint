@@ -1,35 +1,29 @@
-import groovy.json.JsonSlurper
-
 pluginManagement {
 	repositories {
+		gradlePluginPortal()
 		maven {
 			name = 'Fabric'
 			url = 'https://maven.fabricmc.net/'
 		}
 		maven {
-			name = 'Jitpack'
-			url = 'https://maven.fallenbreath.me/jitpack'
+			name = 'KikuGie Snapshots'
+			url = 'https://maven.kikugie.dev/snapshots'
 		}
 		mavenCentral()
-		gradlePluginPortal()
-	}
-	resolutionStrategy {
-		eachPlugin {
-			switch (requested.id.id) {
-				case "com.replaymod.preprocess": {
-					useModule("com.github.Fallen-Breath:preprocessor:${requested.version}")
-					break
-				}
-			}
-		}
 	}
 }
 
-def settings = new JsonSlurper().parseText(file('settings.json').text)
-for (String version : settings.versions) {
-	include(":$version")
+plugins {
+	id("dev.kikugie.stonecutter") version "0.7.1"
+}
 
-	def proj = project(":$version")
-	proj.projectDir = file("versions/$version")
-	proj.buildFileName = "../../common.gradle"
+stonecutter {
+	kotlinController = false
+	centralScript = "build.gradle"
+
+	// Subproject configuration
+	create(getRootProject()) {
+		versions "1.21", "1.21.3", "1.21.5"
+		vcsVersion = "1.21.5"
+	}
 }

@@ -19,7 +19,12 @@ public class SimpleWaypoint {
             BlockPos.PACKET_CODEC, SimpleWaypoint::pos,
             PacketCodecs.INTEGER, SimpleWaypoint::colorIdx,
             PacketCodecs.INTEGER, SimpleWaypoint::yaw,
-            PacketCodecs.BOOLEAN, SimpleWaypoint::global,
+            //? if >= 1.21.5 {
+            PacketCodecs.BOOLEAN,
+            //?} else {
+            //PacketCodecs.BOOL,
+            //?}
+            SimpleWaypoint::global,
             SimpleWaypoint::new
     );
 

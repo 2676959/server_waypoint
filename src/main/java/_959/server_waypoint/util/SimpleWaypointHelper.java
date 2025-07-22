@@ -8,7 +8,14 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-
+import xaero.common.minimap.waypoints.Waypoint;
+import xaero.hud.minimap.waypoint.WaypointColor;
+import xaero.hud.minimap.waypoint.WaypointPurpose;
+//? if >= 1.21.5 {
+import xaero.hud.minimap.waypoint.WaypointVisibilityType;
+//?} else {
+/*import xaero.common.minimap.waypoints.WaypointVisibilityType;
+*///?}
 import static _959.server_waypoint.util.TextHelper.ClickEventHelper.RunCommand;
 import static _959.server_waypoint.util.TextHelper.HoverEventHelper.ShowText;
 import static _959.server_waypoint.util.XaeroDimensionStringConverter.convert;
@@ -88,5 +95,23 @@ public class SimpleWaypointHelper {
             return new Pair<>(simpleWaypoint, dimKey);
         }
         return null;
+    }
+
+    public static Waypoint simpleWaypointToWaypoint(SimpleWaypoint simpleWaypoint) {
+        Waypoint waypoint = new Waypoint(
+                simpleWaypoint.pos().getX(),
+                simpleWaypoint.pos().getY(),
+                simpleWaypoint.pos().getZ(),
+                simpleWaypoint.name(),
+                simpleWaypoint.initials(),
+                WaypointColor.fromIndex(simpleWaypoint.colorIdx()),
+                WaypointPurpose.NORMAL,
+                false,
+                true
+        );
+        waypoint.setYaw(simpleWaypoint.yaw());
+        waypoint.setRotation(true);
+        waypoint.setVisibility(simpleWaypoint.global() ? WaypointVisibilityType.GLOBAL : WaypointVisibilityType.LOCAL);
+        return waypoint;
     }
 }
