@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class ServerWaypoint implements DedicatedServerModInitializer {
+public class ServerWaypointFabric implements DedicatedServerModInitializer {
 	public static final String MOD_ID = "server_waypoint";
 
 	// This logger is used to write text to the console and the log file.
@@ -47,7 +47,7 @@ public class ServerWaypoint implements DedicatedServerModInitializer {
         }
 		this.registerPayloads();
 		this.registerHandlers();
-		CommandRegistrationCallback.EVENT.register(ServerWaypoint::registerCommands);
+		CommandRegistrationCallback.EVENT.register(ServerWaypointFabric::registerCommands);
 		ServerMessageEvents.CHAT_MESSAGE.register(ChatMessageHandler::onChatMessage);
     }
 

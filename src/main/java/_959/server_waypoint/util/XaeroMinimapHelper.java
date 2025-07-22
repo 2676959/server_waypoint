@@ -1,6 +1,6 @@
 package _959.server_waypoint.util;
 
-import _959.server_waypoint.ServerWaypointClient;
+import _959.server_waypoint.ServerWaypointFabricClient;
 import _959.server_waypoint.network.waypoint.DimensionWaypoint;
 import _959.server_waypoint.server.waypoint.SimpleWaypoint;
 import _959.server_waypoint.server.waypoint.WaypointList;
@@ -55,10 +55,10 @@ public class XaeroMinimapHelper {
        WaypointSet waypointSet = WaypointSet.Builder.begin().setName(waypointList.name()).build();
         for (SimpleWaypoint simpleWaypoint : waypointList.simpleWaypoints()) {
             if (simpleWaypoint != null) {
-                ServerWaypointClient.LOGGER.info("waypoint {} added", simpleWaypoint.name());
+                ServerWaypointFabricClient.LOGGER.info("waypoint {} added", simpleWaypoint.name());
                 waypointSet.add(XaeroWaypointConverter.simpleWaypointToWaypoint(simpleWaypoint));
             } else {
-                ServerWaypointClient.LOGGER.warn("waypoint is null");
+                ServerWaypointFabricClient.LOGGER.warn("waypoint is null");
             }
         }
         minimapWorld.addWaypointSet(waypointSet);
@@ -67,7 +67,7 @@ public class XaeroMinimapHelper {
     public static void replaceWaypointLists(MinimapWorld minimapWorld, List<WaypointList> waypointLists) {
         for (WaypointList waypointList : waypointLists) {
             replaceWaypointList(minimapWorld, waypointList);
-            ServerWaypointClient.LOGGER.info("waypoint set {} added", waypointList.name());
+            ServerWaypointFabricClient.LOGGER.info("waypoint set {} added", waypointList.name());
         }
     }
 
@@ -82,7 +82,7 @@ public class XaeroMinimapHelper {
             Waypoint waypoint = iter.next();
             if (name.equals(waypoint.getName())) {
                 iter.remove();
-                ServerWaypointClient.LOGGER.info("Waypoint {} has been removed.", name);
+                ServerWaypointFabricClient.LOGGER.info("Waypoint {} has been removed.", name);
             }
         }
     }

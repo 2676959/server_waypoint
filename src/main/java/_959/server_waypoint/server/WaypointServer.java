@@ -1,6 +1,6 @@
 package _959.server_waypoint.server;
 
-import _959.server_waypoint.ServerWaypoint;
+import _959.server_waypoint.ServerWaypointFabric;
 import _959.server_waypoint.network.waypoint.DimensionWaypoint;
 import _959.server_waypoint.network.waypoint.WorldWaypoint;
 import _959.server_waypoint.network.payload.s2c.WaypointModificationS2CPayload;
@@ -24,7 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static _959.server_waypoint.ServerWaypoint.LOGGER;
+import static _959.server_waypoint.ServerWaypointFabric.LOGGER;
 import static _959.server_waypoint.util.DimensionFileHelper.getDimensionKey;
 import static _959.server_waypoint.util.SimpleWaypointHelper.DEFAULT_STYLE;
 import static _959.server_waypoint.util.TextHelper.text;
@@ -148,7 +148,7 @@ public class WaypointServer {
     public DimensionManager addDimensionManager(RegistryKey<World> dimensionKey) {
         DimensionManager dimensionManager = this.dimensionManagerMap.get(dimensionKey);
         if (dimensionManager != null) {
-            ServerWaypoint.LOGGER.warn("Duplicate dimension key: {}", dimensionKey.getValue().toString());
+            ServerWaypointFabric.LOGGER.warn("Duplicate dimension key: {}", dimensionKey.getValue().toString());
             return dimensionManager;
         } else {
             DimensionManager newDimManager = new DimensionManager(dimensionKey, this.waypointsDir);

@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 
 import java.util.Set;
 
-import static _959.server_waypoint.ServerWaypoint.LOGGER;
+import static _959.server_waypoint.ServerWaypointFabric.LOGGER;
 import static _959.server_waypoint.server.WaypointServer.INSTANCE;
 import static _959.server_waypoint.server.WaypointServer.CONFIG;
 import static _959.server_waypoint.util.CommandGenerator.tpCmd;

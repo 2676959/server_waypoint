@@ -5,6 +5,10 @@
 	"server": [
 		"MinecraftServerMixin"
 	],
+	"client": [
+		"ClientPlayNetworkHandlerMixin",
+		"MinimapWorldStateUpdaterMixin"
+	],
 	"injectors": {
 		"defaultRequire": 1
 	}
