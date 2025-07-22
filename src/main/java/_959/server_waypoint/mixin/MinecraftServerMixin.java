@@ -1,6 +1,6 @@
 package _959.server_waypoint.mixin;
 
-import _959.server_waypoint.server.WaypointServer;
+import _959.server_waypoint.fabric.server.WaypointServer;
 import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
