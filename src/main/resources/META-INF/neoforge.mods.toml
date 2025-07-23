@@ -1,0 +1,34 @@
+modLoader = "javafml"
+loaderVersion = "*"
+license = "LGPLv3"
+
+[[mods]]
+modId = "server_waypoint"
+version = "${version}"
+displayName = "${name}"
+authors = "2676959"
+description = ""
+logoFile = "assets/server_waypoint/icon.png"
+logoBlur = false
+
+[[dependencies.${id}]]
+modId="minecraft"
+type="required"
+# This version range declares a minimum of the current minecraft version up to but not including the next major version
+versionRange="${minecraft_dependency}"
+ordering="NONE"
+side="BOTH"
+
+# Xaero's Minimap
+[[dependencies.${id}]]
+modId="xaerominimap"
+type="required"
+versionRange="[5.2.6,)"
+ordering="NONE"
+side="CLIENT"
+
+[[mixins]]
+config = "server_waypoint-common.mixins.json"
+
+[[mixins]]
+config = "server_waypoint-neoforge.mixins.json"
