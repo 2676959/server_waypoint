@@ -22,8 +22,8 @@ public class SimpleWaypoint {
             //? if >= 1.21.5 {
             PacketCodecs.BOOLEAN,
             //?} else {
-            //PacketCodecs.BOOL,
-            //?}
+            /*PacketCodecs.BOOL,
+            *///?}
             SimpleWaypoint::global,
             SimpleWaypoint::new
     );

@@ -23,7 +23,7 @@
 		]
 	},
 	"mixins": [
-		"server_waypoint.mixins.json"
+		"server_waypoint-fabric.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.16.10",

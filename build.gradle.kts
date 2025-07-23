@@ -1,0 +1,135 @@
+plugins {
+    id("dev.architectury.loom")
+    id("architectury-plugin")
+    id("com.github.johnrengelman.shadow")
+}
+
+val minecraft = stonecutter.current.version
+val loader = loom.platform.get().name.lowercase()
+val mcVersionRange: String by project
+val mod_id: String by project
+val mod_name: String by project
+val mod_version: String by project
+val maven_group: String by project
+
+group = maven_group
+
+base {
+    archivesName.set("$mod_id-$mod_version-$loader-mc$mcVersionRange")
+}
+
+stonecutter {
+    constants.match(loader, "fabric", "neoforge")
+}
+
+architectury.common(stonecutter.tree.branches.mapNotNull {
+    if (stonecutter.current.project !in it) null
+    else property("loom.platform")?.toString()
+})
+
+repositories {
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = uri("https://api.modrinth.com/maven")
+            }
+        }
+        filter {
+            includeGroup("maven.modrinth")
+        }
+    }
+    maven("https://maven.neoforged.net/releases/")
+    maven("https://maven.architectury.dev/")
+}
+
+dependencies {
+    val yarn_build: String by project
+    minecraft("com.mojang:minecraft:$minecraft")
+    if (loader == "fabric") {
+        val fabric_api: String by project
+        val fabric_loader: String by project
+        val xaeros_minimap_fabric: String by project
+        modImplementation("net.fabricmc:fabric-loader:$fabric_loader")
+        modImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_fabric")
+        mappings("net.fabricmc:yarn:$minecraft+build.$yarn_build:v2")
+        modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_api")
+    }
+    if (loader == "neoforge") {
+        val neoforge_loader: String by project
+        val neoforge_patch: String by project
+        val xaeros_minimap_neoforge: String by project
+        "neoForge"("net.neoforged:neoforge:$neoforge_loader")
+        modImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
+        mappings(loom.layered {
+            mappings("net.fabricmc:yarn:$minecraft+build.$yarn_build:v2")
+            neoforge_patch.takeUnless { it.startsWith('[') }?.let {
+                mappings("dev.architectury:yarn-mappings-patch-neoforge:$it")
+            }
+        })
+    }
+}
+
+// Resource processing
+val mcVersionFabric: String by project
+val mcVersionForge: String by project
+
+tasks.processResources {
+    inputs.property("id", mod_id)
+    inputs.property("name", mod_name)
+    inputs.property("version", mod_version)
+    inputs.property("minecraft_dependency", mcVersionFabric)
+    filesMatching("fabric.mod.json") {
+        expand(mapOf(
+            "id" to mod_id,
+            "name" to mod_name,
+            "version" to mod_version,
+            "minecraft_dependency" to mcVersionFabric
+        ))
+    }
+    inputs.property("minecraft_dependency", mcVersionForge)
+    filesMatching("META-INF/neoforge.mods.toml") {
+        expand(mapOf(
+            "id" to mod_id,
+            "name" to mod_name,
+            "version" to mod_version,
+            "minecraft_dependency" to mcVersionForge,
+        ))
+    }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(21)
+    options.encoding = "UTF-8"
+    options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+val shadowBundle: Configuration by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
+tasks.shadowJar {
+    configurations = listOf(shadowBundle)
+    archiveClassifier = "dev-shadow"
+}
+
+tasks.remapJar {
+    injectAccessWidener = true
+    input = tasks.shadowJar.get().archiveFile
+    archiveClassifier = null
+    dependsOn(tasks.shadowJar)
+}
+
+// License in jar
+tasks.jar {
+    from("LICENSE") {
+        rename { "${it}_$mod_name" }
+    }
+}
