@@ -27,6 +27,29 @@ architectury.common(stonecutter.tree.branches.mapNotNull {
     else property("loom.platform")?.toString()
 })
 
+sourceSets.main {
+    if (loader == "fabric") {
+        java {
+            exclude("_959/server_waypoint/neoforge")
+        }
+        resources {
+            exclude("META-INF")
+            exclude("server_waypoint-neoforge.mixins.json")
+        }
+    }
+
+    if (loader == "neoforge") {
+        java {
+            exclude("_959/server_waypoint/fabric")
+            exclude("_959/server_waypoint/mixin")
+        }
+        resources {
+            exclude("fabric.mod.json")
+            exclude("server_waypoint-fabric.mixins.json")
+        }
+    }
+}
+
 repositories {
     exclusiveContent {
         forRepository {
@@ -39,6 +62,7 @@ repositories {
             includeGroup("maven.modrinth")
         }
     }
+    maven("https://maven.parchmentmc.org")
     maven("https://maven.neoforged.net/releases/")
     maven("https://maven.architectury.dev/")
 }
@@ -59,8 +83,13 @@ dependencies {
         val neoforge_loader: String by project
         val neoforge_patch: String by project
         val xaeros_minimap_neoforge: String by project
+//        val parchment_version: String by project
         "neoForge"("net.neoforged:neoforge:$neoforge_loader")
         modImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
+//        mappings(loom.layered {
+//            officialMojangMappings()
+//            parchment("org.parchmentmc.data:parchment-$parchment_version@zip")
+//        })
         mappings(loom.layered {
             mappings("net.fabricmc:yarn:$minecraft+build.$yarn_build:v2")
             neoforge_patch.takeUnless { it.startsWith('[') }?.let {
