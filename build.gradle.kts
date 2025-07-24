@@ -41,7 +41,6 @@ sourceSets.main {
     if (loader == "neoforge") {
         java {
             exclude("_959/server_waypoint/fabric")
-            exclude("_959/server_waypoint/mixin")
         }
         resources {
             exclude("fabric.mod.json")
@@ -100,30 +99,35 @@ dependencies {
 }
 
 // Resource processing
-val mcVersionFabric: String by project
-val mcVersionForge: String by project
-
 tasks.processResources {
     inputs.property("id", mod_id)
     inputs.property("name", mod_name)
     inputs.property("version", mod_version)
-    inputs.property("minecraft_dependency", mcVersionFabric)
-    filesMatching("fabric.mod.json") {
-        expand(mapOf(
-            "id" to mod_id,
-            "name" to mod_name,
-            "version" to mod_version,
-            "minecraft_dependency" to mcVersionFabric
-        ))
+
+    if (loader == "fabric") {
+        val mcVersionFabric: String by project
+        inputs.property("minecraft_dependency", mcVersionFabric)
+        filesMatching("fabric.mod.json") {
+            expand(mapOf(
+                "id" to mod_id,
+                "name" to mod_name,
+                "version" to mod_version,
+                "minecraft_dependency" to mcVersionFabric
+            ))
+        }
     }
-    inputs.property("minecraft_dependency", mcVersionForge)
-    filesMatching("META-INF/neoforge.mods.toml") {
-        expand(mapOf(
-            "id" to mod_id,
-            "name" to mod_name,
-            "version" to mod_version,
-            "minecraft_dependency" to mcVersionForge,
-        ))
+
+    if (loader == "neoforge") {
+        val mcVersionForge: String by project
+        inputs.property("minecraft_dependency", mcVersionForge)
+        filesMatching("META-INF/neoforge.mods.toml") {
+            expand(mapOf(
+                "id" to mod_id,
+                "name" to mod_name,
+                "version" to mod_version,
+                "minecraft_dependency" to mcVersionForge,
+            ))
+        }
     }
 }
 

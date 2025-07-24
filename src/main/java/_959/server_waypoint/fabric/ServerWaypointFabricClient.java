@@ -1,31 +1,18 @@
+//? if fabric {
 package _959.server_waypoint.fabric;
 
-import _959.server_waypoint.fabric.network.*;
-import _959.server_waypoint.fabric.network.payload.c2s.HandshakeC2SPayload;
-import _959.server_waypoint.fabric.network.payload.s2c.DimensionWaypointS2CPayload;
-import _959.server_waypoint.fabric.network.payload.s2c.SimpleWaypointS2CPayload;
-import _959.server_waypoint.fabric.network.payload.s2c.WaypointListS2CPayload;
-import _959.server_waypoint.fabric.network.payload.s2c.WorldWaypointS2CPayload;
-import _959.server_waypoint.fabric.network.payload.s2c.WaypointModificationS2CPayload;
+import _959.server_waypoint.common.network.ServerWaypointPayloadHandler;
+import _959.server_waypoint.common.network.payload.c2s.HandshakeC2SPayload;
+import _959.server_waypoint.common.network.payload.s2c.DimensionWaypointS2CPayload;
+import _959.server_waypoint.common.network.payload.s2c.SimpleWaypointS2CPayload;
+import _959.server_waypoint.common.network.payload.s2c.WaypointListS2CPayload;
+import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
+import _959.server_waypoint.common.network.payload.s2c.WaypointModificationS2CPayload;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 public class ServerWaypointFabricClient implements ClientModInitializer {
-	public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_client");
-	private static boolean handshakeFinished = false;
-
-    public static boolean isHandshakeFinished() {
-        return handshakeFinished;
-    }
-
-    public static void setHandshakeFinished(boolean handshakeFinished) {
-        ServerWaypointFabricClient.handshakeFinished = handshakeFinished;
-    }
-
     @Override
 	public void onInitializeClient() {
 		// This entrypoint is suitable for setting up client-specific logic, such as rendering.
@@ -50,3 +37,4 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
 		PayloadTypeRegistry.playC2S().register(HandshakeC2SPayload.ID, HandshakeC2SPayload.PACKET_CODEC);
 	}
 }
+//?}
