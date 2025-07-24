@@ -1,16 +1,18 @@
+//? if fabric {
 package _959.server_waypoint.fabric;
 
-import _959.server_waypoint.fabric.network.ChatMessageHandler;
-import _959.server_waypoint.fabric.network.ClientHandshakeHandler;
-import _959.server_waypoint.fabric.network.payload.c2s.HandshakeC2SPayload;
-import _959.server_waypoint.fabric.network.payload.s2c.DimensionWaypointS2CPayload;
-import _959.server_waypoint.fabric.network.payload.s2c.WaypointListS2CPayload;
-import _959.server_waypoint.fabric.network.payload.s2c.SimpleWaypointS2CPayload;
-import _959.server_waypoint.fabric.network.payload.s2c.WorldWaypointS2CPayload;
-import _959.server_waypoint.fabric.network.payload.s2c.WaypointModificationS2CPayload;
-import _959.server_waypoint.fabric.server.WaypointServer;
-import _959.server_waypoint.fabric.server.command.WaypointCommand;
+import _959.server_waypoint.common.ServerWaypointMod;
+import _959.server_waypoint.common.network.ChatMessageHandler;
+import _959.server_waypoint.common.network.ClientHandshakeHandler;
+import _959.server_waypoint.common.network.payload.c2s.HandshakeC2SPayload;
+import _959.server_waypoint.common.network.payload.s2c.DimensionWaypointS2CPayload;
+import _959.server_waypoint.common.network.payload.s2c.WaypointListS2CPayload;
+import _959.server_waypoint.common.network.payload.s2c.SimpleWaypointS2CPayload;
+import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
+import _959.server_waypoint.common.network.payload.s2c.WaypointModificationS2CPayload;
+import _959.server_waypoint.common.server.command.WaypointCommand;
 import com.mojang.brigadier.CommandDispatcher;
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
@@ -19,32 +21,15 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager.RegistrationEnvironment;
 import net.minecraft.server.command.ServerCommandSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.nio.file.Path;
 
-import java.io.IOException;
-
-public class ServerWaypointFabric implements DedicatedServerModInitializer {
-	public static final String MOD_ID = "server_waypoint";
-
-	// This logger is used to write text to the console and the log file.
-	// It is considered best practice to use your mod id as the logger's name.
-	// That way, it's clear which mod wrote info, warnings, and errors.
-	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-
+public class ServerWaypointFabric extends ServerWaypointMod implements DedicatedServerModInitializer {
 	@Override
 	public void onInitializeServer() {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
-		LOGGER.info("Initialize waypoint server.");
-		WaypointServer waypointServer = new WaypointServer();
-        try {
-            waypointServer.initServer();
-        } catch (IOException e) {
-			LOGGER.error("Failed to initialize server waypoint", e);
-            throw new RuntimeException(e);
-        }
+		initServer();
 		this.registerPayloads();
 		this.registerHandlers();
 		CommandRegistrationCallback.EVENT.register(ServerWaypointFabric::registerCommands);
@@ -67,4 +52,10 @@ public class ServerWaypointFabric implements DedicatedServerModInitializer {
 	private void registerHandlers() {
 		ServerPlayNetworking.registerGlobalReceiver(HandshakeC2SPayload.ID, ClientHandshakeHandler::onClientHandshake);
 	}
+
+	@Override
+	public Path getConfigDirectory() {
+		return FabricLoader.getInstance().getConfigDir();
+	}
 }
+//?}
