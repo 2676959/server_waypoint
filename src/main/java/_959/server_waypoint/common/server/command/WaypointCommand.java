@@ -310,15 +310,29 @@ public class WaypointCommand {
     }
 
     private static void saveChanges(ServerCommandSource source, DimensionManager dimensionManger) throws CommandSyntaxException {
-        try {
-            dimensionManger.saveDimension();
-        } catch (IOException e) {
+        AtomicBoolean waypointSaved = new AtomicBoolean(false);
+        AtomicBoolean editionSaved = new AtomicBoolean(false);
+        source.getServer().execute(
+                () -> {
+                    try {
+                        dimensionManger.saveDimension();
+                        waypointSaved.set(true);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    WaypointServer.EDITION++;
+                    try {
+                        WaypointServer.INSTANCE.saveEdition();
+                        editionSaved.set(true);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
+        if (!waypointSaved.get()) {
             throw IO_EXCEPTION.create(dimensionManger.dimensionFilePath);
         }
-        WaypointServer.EDITION++;
-        try {
-            WaypointServer.INSTANCE.saveEdition();
-        } catch (IOException e) {
+        if (!editionSaved.get()) {
             source.sendError(text("Failed to save edition file, sync may not work properly."));
         }
     }
