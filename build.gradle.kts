@@ -73,10 +73,12 @@ dependencies {
         val fabric_api: String by project
         val fabric_loader: String by project
         val xaeros_minimap_fabric: String by project
+        val fabric_permissions_api: String by project
         modImplementation("net.fabricmc:fabric-loader:$fabric_loader")
         modImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_fabric")
         mappings("net.fabricmc:yarn:$minecraft+build.$yarn_build:v2")
         modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_api")
+        modImplementation("me.lucko:fabric-permissions-api:$fabric_permissions_api")
     }
     if (loader == "neoforge") {
         val neoforge_loader: String by project

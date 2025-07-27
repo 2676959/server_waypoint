@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public abstract class ServerWaypointMod implements PlatformConfigPath {
+public abstract class ServerWaypointMod implements IPlatformConfigPath {
     public static final String MOD_ID = "server_waypoint";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
