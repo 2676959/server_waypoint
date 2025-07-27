@@ -99,16 +99,12 @@ public class DimensionManager {
             
             // Write waypointList
             for (SimpleWaypoint waypoint : list.simpleWaypoints()) {
-                try {
-                    String waypointLine = SimpleWaypointHelper.simpleWaypointToString(waypoint);
-                    lines.add(waypointLine);
-                    LOGGER.info("Wrote waypoint: {} from list: {}", waypoint.name(), name);
-                } catch (Exception e) {
-                    LOGGER.error("Failed to write waypoint: {} from list: {}", waypoint.name(), name, e);
-                }
+                String waypointLine = SimpleWaypointHelper.simpleWaypointToString(waypoint);
+                lines.add(waypointLine);
+//                LOGGER.info("Wrote waypoint: {} from list: {}", waypoint.name(), name);
             }
         }
-        
+
         Files.write(filePath, lines);
         LOGGER.info("Saved waypointList to file: {}", filePath);
     }
