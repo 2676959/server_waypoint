@@ -184,6 +184,7 @@ public class WaypointServer {
     public void saveEdition() throws IOException {
         try (DataOutputStream out = new DataOutputStream(new FileOutputStream(this.editionFile.toFile()))) {
             out.writeInt(EDITION);
+            LOGGER.info("Saved edition: {}", EDITION);
         } catch (IOException e) {
             LOGGER.error("Failed to save edition to file, sync may not work properly.", e);
             throw e;

@@ -6,19 +6,21 @@ import _959.server_waypoint.common.network.ChatMessageHandler;
 import _959.server_waypoint.common.network.ClientHandshakeHandler;
 import _959.server_waypoint.common.network.payload.c2s.HandshakeC2SPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
+import _959.server_waypoint.common.permission.PermissionKey;
 import _959.server_waypoint.common.server.command.WaypointCommand;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
 import net.neoforged.fml.loading.FMLConfig;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.ServerChatEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.neoforged.neoforge.server.permission.events.PermissionGatherEvent;
 
 import java.nio.file.Path;
 
@@ -27,11 +29,18 @@ import java.nio.file.Path;
 public class ServerWaypointNeoForge extends ServerWaypointMod {
     public ServerWaypointNeoForge(IEventBus modEventBus) {
         modEventBus.addListener(this::initWaypointServer);
+    }
+
+    private void initWaypointServer(FMLDedicatedServerSetupEvent event) {
+        initServer();
 
     }
 
-    private void initWaypointServer(FMLCommonSetupEvent event) {
-        initServer();
+    @SubscribeEvent
+    public static void registerPermissionNodes(PermissionGatherEvent.Nodes event) {
+        for (PermissionKey permissionKey: PermissionKey.values()) {
+            event.addNodes(permissionKey.getNode());
+        }
     }
 
     @SubscribeEvent

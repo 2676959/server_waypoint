@@ -4,6 +4,7 @@ import _959.server_waypoint.common.network.payload.s2c.DimensionWaypointS2CPaylo
 import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
 import _959.server_waypoint.common.network.waypoint.DimensionWaypoint;
 import _959.server_waypoint.common.network.waypoint.WorldWaypoint;
+import _959.server_waypoint.common.permission.PermissionKey;
 import _959.server_waypoint.common.server.waypoint.SimpleWaypoint;
 import _959.server_waypoint.common.server.waypoint.WaypointList;
 import _959.server_waypoint.common.network.payload.s2c.WaypointListS2CPayload;
@@ -11,8 +12,6 @@ import _959.server_waypoint.common.server.WaypointServer;
 import _959.server_waypoint.common.server.waypoint.DimensionManager;
 import _959.server_waypoint.common.util.TextButton;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -34,7 +33,6 @@ import static _959.server_waypoint.neoforge.permission.NeoForgePermissionManager
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static _959.server_waypoint.common.server.command.suggestion.SuggestionProviders.*;
 import static net.minecraft.server.command.CommandManager.argument;
@@ -61,13 +59,11 @@ import static _959.server_waypoint.common.util.SimpleWaypointHelper.simpleWaypoi
 import static _959.server_waypoint.common.util.CommandGenerator.tpCmd;
 
 public class WaypointCommand {
-    public static final DynamicCommandExceptionType IO_EXCEPTION = new DynamicCommandExceptionType(file -> Text.of("IO Exception: Failed to write to %s.".formatted(file)));
-
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
                 literal("wp")
                         .then(literal("add")
-                                .requires(source -> hasPermission(source, "server_waypoint.command.add", CONFIG.CommandPermission().add()))
+                                .requires(source -> hasPermission(source, PermissionKey.COMMAND_ADD, CONFIG.CommandPermission().add()))
                                 .then(argument("dimension", dimension())
                                         .then(argument("list", string())
                                                 .suggests(WAYPOINT_LIST)
@@ -155,7 +151,7 @@ public class WaypointCommand {
                                 )
                         )
                         .then(literal("edit")
-                                .requires(source -> hasPermission(source, "server_waypoint.command.edit", CONFIG.CommandPermission().edit()))
+                                .requires(source -> hasPermission(source, PermissionKey.COMMAND_EDIT, CONFIG.CommandPermission().edit()))
                                 .then(argument("dimension", dimension())
                                         .then(argument("list", string())
                                                 .suggests(WAYPOINT_LIST)
@@ -193,7 +189,7 @@ public class WaypointCommand {
 
                         )
                         .then(literal("remove")
-                                .requires(source -> hasPermission(source, "server_waypoint.command.remove", CONFIG.CommandPermission().remove()))
+                                .requires(source -> hasPermission(source, PermissionKey.COMMAND_REMOVE, CONFIG.CommandPermission().remove()))
                                 .then(argument("dimension", dimension())
                                         .then(argument("list", string())
                                                 .suggests(WAYPOINT_LIST)
@@ -254,7 +250,7 @@ public class WaypointCommand {
         );
     }
 
-    private static void executeAddList(ServerCommandSource source, RegistryKey<World> dimKey, String listName) throws CommandSyntaxException {
+    private static void executeAddList(ServerCommandSource source, RegistryKey<World> dimKey, String listName) {
         DimensionManager dimensionManager = WaypointServer.INSTANCE.getDimensionManager(dimKey);
         if (dimensionManager == null) {
             source.sendError(text("Dimension: %s does not exist.".formatted(dimKey.getValue().toString())));
@@ -273,7 +269,7 @@ public class WaypointCommand {
         }
     }
 
-    private static void executeAdd(ServerCommandSource source, RegistryKey<World> dimKey, String listName, BlockPos pos, String name, String initials, Formatting color, int yaw, boolean global) throws CommandSyntaxException {
+    private static void executeAdd(ServerCommandSource source, RegistryKey<World> dimKey, String listName, BlockPos pos, String name, String initials, Formatting color, int yaw, boolean global) {
         int colorIdx = formattingToColorIndex(color);
         WaypointServer waypointServer = WaypointServer.INSTANCE;
         DimensionManager dimensionManger = waypointServer.getDimensionManager(dimKey);
@@ -312,36 +308,28 @@ public class WaypointCommand {
         }, true);
     }
 
-    private static void saveChanges(ServerCommandSource source, DimensionManager dimensionManger) throws CommandSyntaxException {
-        AtomicBoolean waypointSaved = new AtomicBoolean(false);
-        AtomicBoolean editionSaved = new AtomicBoolean(false);
+    private static void saveChanges(ServerCommandSource source, DimensionManager dimensionManger) {
+        WaypointServer.EDITION++;
         source.getServer().execute(
                 () -> {
                     try {
                         dimensionManger.saveDimension();
-                        waypointSaved.set(true);
                     } catch (IOException e) {
+                        source.sendError(text("IO Exception: Failed to write to %s.".formatted(dimensionManger.dimensionFilePath)));
                         throw new RuntimeException(e);
                     }
-                    WaypointServer.EDITION++;
                     try {
                         WaypointServer.INSTANCE.saveEdition();
-                        editionSaved.set(true);
                     } catch (IOException e) {
+                        source.sendError(text("Failed to save edition file, sync may not work properly."));
                         throw new RuntimeException(e);
                     }
                 }
         );
-        if (!waypointSaved.get()) {
-            throw IO_EXCEPTION.create(dimensionManger.dimensionFilePath);
-        }
-        if (!editionSaved.get()) {
-            source.sendError(text("Failed to save edition file, sync may not work properly."));
-        }
     }
 
     // edit existing waypoint
-    private static void executeEdit(ServerCommandSource source, RegistryKey<World> dimKey, String listName, String waypointName, String initials, BlockPos pos, Formatting color, int yaw, boolean global) throws CommandSyntaxException {
+    private static void executeEdit(ServerCommandSource source, RegistryKey<World> dimKey, String listName, String waypointName, String initials, BlockPos pos, Formatting color, int yaw, boolean global) {
         WaypointServer waypointServer = WaypointServer.INSTANCE;
         DimensionManager dimensionManager = waypointServer.getDimensionManager(dimKey);
         if (dimensionManager == null) {
@@ -379,7 +367,7 @@ public class WaypointCommand {
         }
     }
 
-    private static void executeRemove(ServerCommandSource source, RegistryKey<World> dimKey, String listName, String waypointName) throws CommandSyntaxException {
+    private static void executeRemove(ServerCommandSource source, RegistryKey<World> dimKey, String listName, String waypointName) {
         WaypointServer waypointServer = WaypointServer.INSTANCE;
         DimensionManager dimensionManager = waypointServer.getDimensionManager(dimKey);
         if (dimensionManager == null) {
@@ -419,7 +407,7 @@ public class WaypointCommand {
         }
     }
 
-    private static void executeRemoveList(ServerCommandSource source, RegistryKey<World> dimKey, String listName) throws CommandSyntaxException {
+    private static void executeRemoveList(ServerCommandSource source, RegistryKey<World> dimKey, String listName) {
         DimensionManager dimensionManager = WaypointServer.INSTANCE.getDimensionManager(dimKey);
         if (dimensionManager == null) {
             source.sendError(text("Dimension: %s does not exist.".formatted(dimKey.getValue().toString())));

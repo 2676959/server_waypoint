@@ -1,7 +1,6 @@
 plugins {
     id("dev.architectury.loom")
     id("architectury-plugin")
-    id("com.github.johnrengelman.shadow")
 }
 
 val minecraft = stonecutter.current.version
@@ -143,23 +142,6 @@ java {
     withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
-}
-
-val shadowBundle: Configuration by configurations.creating {
-    isCanBeConsumed = false
-    isCanBeResolved = true
-}
-
-tasks.shadowJar {
-    configurations = listOf(shadowBundle)
-    archiveClassifier = "dev-shadow"
-}
-
-tasks.remapJar {
-    injectAccessWidener = true
-    input = tasks.shadowJar.get().archiveFile
-    archiveClassifier = null
-    dependsOn(tasks.shadowJar)
 }
 
 // License in jar
