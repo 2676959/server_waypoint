@@ -25,13 +25,16 @@ import net.minecraft.world.World;
 
 //? if fabric {
  import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-//?} else {
+ import static _959.server_waypoint.fabric.permission.FabricPermissionManager.hasPermission;
+        //?} else {
 /*import net.neoforged.neoforge.network.PacketDistributor;
+import static _959.server_waypoint.neoforge.permission.NeoForgePermissionManager.hasPermission;
 *///?}
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static _959.server_waypoint.common.server.command.suggestion.SuggestionProviders.*;
 import static net.minecraft.server.command.CommandManager.argument;
@@ -64,7 +67,7 @@ public class WaypointCommand {
         dispatcher.register(
                 literal("wp")
                         .then(literal("add")
-                                .requires(source -> source.hasPermissionLevel(CONFIG.CommandPermission().add()))
+                                .requires(source -> hasPermission(source, "server_waypoint.command.add", CONFIG.CommandPermission().add()))
                                 .then(argument("dimension", dimension())
                                         .then(argument("list", string())
                                                 .suggests(WAYPOINT_LIST)
@@ -152,7 +155,7 @@ public class WaypointCommand {
                                 )
                         )
                         .then(literal("edit")
-                                .requires(source -> source.hasPermissionLevel(CONFIG.CommandPermission().edit()))
+                                .requires(source -> hasPermission(source, "server_waypoint.command.edit", CONFIG.CommandPermission().edit()))
                                 .then(argument("dimension", dimension())
                                         .then(argument("list", string())
                                                 .suggests(WAYPOINT_LIST)
@@ -190,7 +193,7 @@ public class WaypointCommand {
 
                         )
                         .then(literal("remove")
-                                .requires(source -> source.hasPermissionLevel(CONFIG.CommandPermission().remove()))
+                                .requires(source -> hasPermission(source, "server_waypoint.command.remove", CONFIG.CommandPermission().remove()))
                                 .then(argument("dimension", dimension())
                                         .then(argument("list", string())
                                                 .suggests(WAYPOINT_LIST)

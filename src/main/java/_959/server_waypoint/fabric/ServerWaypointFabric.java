@@ -11,6 +11,7 @@ import _959.server_waypoint.common.network.payload.s2c.SimpleWaypointS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WaypointModificationS2CPayload;
 import _959.server_waypoint.common.server.command.WaypointCommand;
+import _959.server_waypoint.fabric.permission.FabricPermissionManager;
 import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.api.DedicatedServerModInitializer;
@@ -24,38 +25,46 @@ import net.minecraft.server.command.ServerCommandSource;
 import java.nio.file.Path;
 
 public class ServerWaypointFabric extends ServerWaypointMod implements DedicatedServerModInitializer {
-	@Override
-	public void onInitializeServer() {
-		// This code runs as soon as Minecraft is in a mod-load-ready state.
-		// However, some things (like resources) may still be uninitialized.
-		// Proceed with mild caution.
-		initServer();
-		this.registerPayloads();
-		this.registerHandlers();
-		CommandRegistrationCallback.EVENT.register(ServerWaypointFabric::registerCommands);
-		ServerMessageEvents.CHAT_MESSAGE.register(ChatMessageHandler::onChatMessage);
+    @Override
+    public void onInitializeServer() {
+        // This code runs as soon as Minecraft is in a mod-load-ready state.
+        // However, some things (like resources) may still be uninitialized.
+        // Proceed with mild caution.
+        initServer();
+        registerPayloads();
+        this.registerHandlers();
+
+        if (FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0")) {
+            FabricPermissionManager.setFabricPermissionAPILoaded(true);
+            LOGGER.info("found fabric-permissions-api, disable vanilla permission system");
+        } else {
+            LOGGER.info("fabric-permissions-api is not loaded, use vanilla permission system");
+        }
+
+        CommandRegistrationCallback.EVENT.register(ServerWaypointFabric::registerCommands);
+        ServerMessageEvents.CHAT_MESSAGE.register(ChatMessageHandler::onChatMessage);
     }
 
-	public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, RegistrationEnvironment registrationEnvironment) {
-		WaypointCommand.register(dispatcher);
-	}
+    public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess, RegistrationEnvironment registrationEnvironment) {
+        WaypointCommand.register(dispatcher);
+    }
 
-	private void registerPayloads() {
-		PayloadTypeRegistry.playS2C().register(SimpleWaypointS2CPayload.ID, SimpleWaypointS2CPayload.PACKET_CODEC);
-		PayloadTypeRegistry.playS2C().register(WaypointListS2CPayload.ID, WaypointListS2CPayload.PACKET_CODEC);
-		PayloadTypeRegistry.playS2C().register(DimensionWaypointS2CPayload.ID, DimensionWaypointS2CPayload.PACKET_CODEC);
-		PayloadTypeRegistry.playS2C().register(WorldWaypointS2CPayload.ID, WorldWaypointS2CPayload.PACKET_CODEC);
-		PayloadTypeRegistry.playS2C().register(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC);
-		PayloadTypeRegistry.playC2S().register(HandshakeC2SPayload.ID, HandshakeC2SPayload.PACKET_CODEC);
-	}
+    public static void registerPayloads() {
+        PayloadTypeRegistry.playS2C().register(SimpleWaypointS2CPayload.ID, SimpleWaypointS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(WaypointListS2CPayload.ID, WaypointListS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(DimensionWaypointS2CPayload.ID, DimensionWaypointS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(WorldWaypointS2CPayload.ID, WorldWaypointS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(HandshakeC2SPayload.ID, HandshakeC2SPayload.PACKET_CODEC);
+    }
 
-	private void registerHandlers() {
-		ServerPlayNetworking.registerGlobalReceiver(HandshakeC2SPayload.ID, ClientHandshakeHandler::onClientHandshake);
-	}
+    private void registerHandlers() {
+        ServerPlayNetworking.registerGlobalReceiver(HandshakeC2SPayload.ID, ClientHandshakeHandler::onClientHandshake);
+    }
 
-	@Override
-	public Path getConfigDirectory() {
-		return FabricLoader.getInstance().getConfigDir();
-	}
+    @Override
+    public Path getConfigDirectory() {
+        return FabricLoader.getInstance().getConfigDir();
+    }
 }
 //?}
