@@ -3,7 +3,7 @@ package _959.server_waypoint.common.server;
 import _959.server_waypoint.common.network.waypoint.DimensionWaypoint;
 import _959.server_waypoint.common.network.waypoint.WorldWaypoint;
 import _959.server_waypoint.common.network.payload.s2c.WaypointModificationS2CPayload;
-import _959.server_waypoint.common.server.waypoint.DimensionManager;
+import _959.server_waypoint.common.server.waypoint.WaypointFileManager;
 import _959.server_waypoint.common.server.waypoint.SimpleWaypoint;
 import _959.server_waypoint.config.Config;
 import com.google.gson.GsonBuilder;
@@ -49,7 +49,7 @@ public class WaypointServer {
     private final Path configDir;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final byte[] DEFAULT_CONFIG = gson.toJson(CONFIG).getBytes();
-    private LinkedHashMap<RegistryKey<World>, DimensionManager> dimensionManagerMap;
+    private LinkedHashMap<RegistryKey<World>, WaypointFileManager> dimensionManagerMap;
 
     public WaypointServer(Path configDir) {
         this.configDir = configDir.resolve(MOD_ID);
@@ -115,7 +115,7 @@ public class WaypointServer {
                     continue;
                 }
                 LOGGER.info("Found dimension file: {}, id: {}", fileName, dimensionKey.getValue());
-                DimensionManager dimLists = new DimensionManager(dimensionKey, this.waypointsDir);
+                WaypointFileManager dimLists = new WaypointFileManager(dimensionKey, this.waypointsDir);
                 this.dimensionManagerMap.put(dimensionKey, dimLists);
                 if (Files.exists(dimLists.dimensionFilePath)) {
                     LOGGER.info("Loading waypointList from: {}", dimLists.dimensionFilePath);
@@ -133,9 +133,9 @@ public class WaypointServer {
     @Nullable
     public WorldWaypoint toWorldWaypoint() {
         List<DimensionWaypoint> dimensionWaypoints = new ArrayList<>();
-        for (DimensionManager dimensionManager : this.dimensionManagerMap.values()) {
-            if (dimensionManager != null) {
-                dimensionWaypoints.add(dimensionManager.toDimensionWaypoint());
+        for (WaypointFileManager waypointFileManager : this.dimensionManagerMap.values()) {
+            if (waypointFileManager != null) {
+                dimensionWaypoints.add(waypointFileManager.toDimensionWaypoint());
             }
         }
         if (dimensionWaypoints.isEmpty()) {
@@ -144,22 +144,22 @@ public class WaypointServer {
         return new WorldWaypoint(dimensionWaypoints);
     }
 
-    public Map<RegistryKey<World>, DimensionManager> getDimensionManagerMap() {
+    public Map<RegistryKey<World>, WaypointFileManager> getDimensionManagerMap() {
         return this.dimensionManagerMap;
     }
 
     @Nullable
-    public DimensionManager getDimensionManager(RegistryKey<World> dimensionKey) {
+    public WaypointFileManager getDimensionManager(RegistryKey<World> dimensionKey) {
         return this.dimensionManagerMap.get(dimensionKey);
     }
 
-    public DimensionManager addDimensionManager(RegistryKey<World> dimensionKey) {
-        DimensionManager dimensionManager = this.dimensionManagerMap.get(dimensionKey);
-        if (dimensionManager != null) {
+    public WaypointFileManager addDimensionManager(RegistryKey<World> dimensionKey) {
+        WaypointFileManager waypointFileManager = this.dimensionManagerMap.get(dimensionKey);
+        if (waypointFileManager != null) {
             LOGGER.warn("Duplicate dimension key: {}", dimensionKey.getValue().toString());
-            return dimensionManager;
+            return waypointFileManager;
         } else {
-            DimensionManager newDimManager = new DimensionManager(dimensionKey, this.waypointsDir);
+            WaypointFileManager newDimManager = new WaypointFileManager(dimensionKey, this.waypointsDir);
             this.dimensionManagerMap.put(dimensionKey, newDimManager);
             return newDimManager;
         }

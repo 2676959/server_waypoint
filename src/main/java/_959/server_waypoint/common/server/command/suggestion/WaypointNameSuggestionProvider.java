@@ -1,7 +1,7 @@
 package _959.server_waypoint.common.server.command.suggestion;
 
 import _959.server_waypoint.common.server.WaypointServer;
-import _959.server_waypoint.common.server.waypoint.DimensionManager;
+import _959.server_waypoint.common.server.waypoint.WaypointFileManager;
 import _959.server_waypoint.common.server.waypoint.SimpleWaypoint;
 import _959.server_waypoint.common.server.waypoint.WaypointList;
 import com.mojang.brigadier.context.CommandContext;
@@ -26,11 +26,11 @@ public class WaypointNameSuggestionProvider implements SuggestionProvider<Server
         } catch (Exception e) {
             dimKey = context.getSource().getWorld().getRegistryKey();
         }
-        DimensionManager dimensionManager = WaypointServer.INSTANCE.getDimensionManager(dimKey);
-        if (dimensionManager == null) {
+        WaypointFileManager waypointFileManager = WaypointServer.INSTANCE.getDimensionManager(dimKey);
+        if (waypointFileManager == null) {
             return Suggestions.empty();
         }
-        WaypointList waypointList = dimensionManager.getWaypointListByName(getString(context, "list"));
+        WaypointList waypointList = waypointFileManager.getWaypointListByName(getString(context, "list"));
         if (waypointList == null) {
             return Suggestions.empty();
         } else {
