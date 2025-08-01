@@ -1,9 +1,6 @@
 package _959.server_waypoint.common.server.waypoint;
 
-import _959.server_waypoint.common.network.waypoint.DimensionWaypoint;
 import _959.server_waypoint.common.util.SimpleWaypointHelper;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
@@ -15,30 +12,20 @@ import java.util.List;
 import java.util.Map;
 
 import static _959.server_waypoint.common.ServerWaypointMod.LOGGER;
-import static _959.server_waypoint.common.util.DimensionFileHelper.getFileName;
 
-public class DimensionManager {
+public class WaypointFileManager {
     public Path dimensionFilePath;
-    private final RegistryKey<World> dimensionKey;
     private final Map<String, WaypointList> waypointListMap;
 
-    public DimensionManager(RegistryKey<World> dimensionKey, Path waypointFilePath) {
-        this.dimensionKey = dimensionKey;
+    public WaypointFileManager(String fileName, Path waypointsDir) {
         this.waypointListMap = new HashMap<>();
-        this.dimensionFilePath = waypointFilePath.resolve(getFileName(dimensionKey) + ".txt");
-    }
-
-    public RegistryKey<World> getDimensionKey() {
-        return this.dimensionKey;
+        this.dimensionFilePath = waypointsDir.resolve(fileName + ".txt");
     }
 
     public Map<String, WaypointList> getWaypointListMap() {
         return this.waypointListMap;
     }
 
-    public DimensionWaypoint toDimensionWaypoint() {
-        return new DimensionWaypoint(this.dimensionKey, this.waypointListMap.values().stream().toList());
-    }
 
     @Nullable
     public WaypointList getWaypointListByName(String name) {

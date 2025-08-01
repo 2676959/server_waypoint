@@ -1,6 +1,6 @@
 package _959.server_waypoint.common.network;
 
-import _959.server_waypoint.common.server.waypoint.DimensionManager;
+import _959.server_waypoint.common.server.waypoint.WaypointFileManager;
 import _959.server_waypoint.common.server.waypoint.SimpleWaypoint;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SignedMessage;
@@ -55,9 +55,9 @@ public class ChatMessageHandler {
                 return;
             }
             if (CONFIG.AddWaypointFromChatSharing().auto()) {
-                DimensionManager dimensionManager = INSTANCE.getDimensionManager(dimKey);
-                if (dimensionManager != null) {
-                    Set<String> listNames = dimensionManager.getWaypointListMap().keySet();
+                WaypointFileManager waypointFileManager = INSTANCE.getDimensionManager(dimKey);
+                if (waypointFileManager != null) {
+                    Set<String> listNames = waypointFileManager.getWaypointListMap().keySet();
                     if (listNames.isEmpty()) {
                         promptNoWaypointList(player, dimKey);
                     } else {
