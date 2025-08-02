@@ -1,15 +1,14 @@
 package _959.server_waypoint.common.server.command;
 
+import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.common.network.payload.s2c.DimensionWaypointS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
 import _959.server_waypoint.common.network.waypoint.DimensionWaypoint;
-import _959.server_waypoint.common.network.waypoint.WorldWaypoint;
 import _959.server_waypoint.common.permission.PermissionKey;
-import _959.server_waypoint.common.server.waypoint.SimpleWaypoint;
-import _959.server_waypoint.common.server.waypoint.WaypointList;
 import _959.server_waypoint.common.network.payload.s2c.WaypointListS2CPayload;
-import _959.server_waypoint.common.server.WaypointServer;
-import _959.server_waypoint.common.server.waypoint.WaypointFileManager;
+import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.common.util.TextButton;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.registry.RegistryKey;
@@ -24,7 +23,11 @@ import net.minecraft.world.World;
 
 //? if fabric {
  import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
- import static _959.server_waypoint.fabric.permission.FabricPermissionManager.hasPermission;
+
+import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionKey;
+import static _959.server_waypoint.common.util.DimensionFileHelper.getFileName;
+import static _959.server_waypoint.common.util.WaypointPosHelper.fromBlockPos;
+import static _959.server_waypoint.fabric.permission.FabricPermissionManager.hasPermission;
         //?} else {
 /*import net.neoforged.neoforge.network.PacketDistributor;
 import static _959.server_waypoint.neoforge.permission.NeoForgePermissionManager.hasPermission;
@@ -50,7 +53,7 @@ import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static net.minecraft.command.argument.DimensionArgumentType.dimension;
 import static net.minecraft.command.argument.DimensionArgumentType.getDimensionArgument;
 
-import static _959.server_waypoint.common.server.WaypointServer.CONFIG;
+import static _959.server_waypoint.common.server.WaypointServerMod.CONFIG;
 import static _959.server_waypoint.common.util.TextHelper.*;
 import static _959.server_waypoint.common.util.TextHelper.DimensionColorHelper.getDimensionColor;
 import static _959.server_waypoint.common.network.payload.s2c.WaypointModificationS2CPayload.ModificationType;
@@ -251,7 +254,7 @@ public class WaypointCommand {
     }
 
     private static void executeAddList(ServerCommandSource source, RegistryKey<World> dimKey, String listName) {
-        WaypointFileManager waypointFileManager = WaypointServer.INSTANCE.getDimensionManager(dimKey);
+        WaypointFileManager waypointFileManager = WaypointServerMod.INSTANCE.getWaypointFileManager(getFileName(dimKey));
         if (waypointFileManager == null) {
             source.sendError(text("Dimension: %s does not exist.".formatted(dimKey.getValue().toString())));
         } else {
@@ -271,13 +274,13 @@ public class WaypointCommand {
 
     private static void executeAdd(ServerCommandSource source, RegistryKey<World> dimKey, String listName, BlockPos pos, String name, String initials, Formatting color, int yaw, boolean global) {
         int colorIdx = formattingToColorIndex(color);
-        WaypointServer waypointServer = WaypointServer.INSTANCE;
-        WaypointFileManager dimensionManger = waypointServer.getDimensionManager(dimKey);
+        String fileName = getFileName(dimKey);
+        WaypointFileManager dimensionManger = WaypointServerMod.INSTANCE.getWaypointFileManager(fileName);
         if (dimensionManger == null) {
-            dimensionManger = waypointServer.addDimensionManager(dimKey);
+            dimensionManger = WaypointServerMod.INSTANCE.addWaypointFileManager(fileName);
         }
         WaypointList waypointList = dimensionManger.getWaypointListByName(listName);
-        SimpleWaypoint newWaypoint = new SimpleWaypoint(name, initials, pos, colorIdx, yaw, global);
+        SimpleWaypoint newWaypoint = new SimpleWaypoint(name, initials, fromBlockPos(pos), colorIdx, yaw, global);
         if (waypointList == null) {
             waypointList = WaypointList.build(listName);
             waypointList.add(newWaypoint);
@@ -299,7 +302,7 @@ public class WaypointCommand {
             }
         }
         saveChanges(source, dimensionManger);
-        WaypointServer.INSTANCE.broadcastWaypointModification(dimKey, listName, newWaypoint, ModificationType.ADD, source.getPlayer());
+        WaypointServerMod.INSTANCE.broadcastWaypointModification(dimKey, listName, newWaypoint, ModificationType.ADD, source.getPlayer());
         source.sendFeedback(() -> {
             MutableText feedback = text("Waypoint ");
             feedback.append(simpleWaypointToFormattedText(newWaypoint, tpCmd(dimKey, pos, yaw), waypointInfoText(dimKey, newWaypoint)));
@@ -309,17 +312,17 @@ public class WaypointCommand {
     }
 
     private static void saveChanges(ServerCommandSource source, WaypointFileManager dimensionManger) {
-        WaypointServer.EDITION++;
+        WaypointServerMod.EDITION++;
         source.getServer().execute(
                 () -> {
                     try {
                         dimensionManger.saveDimension();
                     } catch (IOException e) {
-                        source.sendError(text("IO Exception: Failed to write to %s.".formatted(dimensionManger.dimensionFilePath)));
+                        source.sendError(text("IO Exception: Failed to write to %s.".formatted(dimensionManger.getDimensionFile())));
                         throw new RuntimeException(e);
                     }
                     try {
-                        WaypointServer.INSTANCE.saveEdition();
+                        WaypointServerMod.INSTANCE.saveEdition();
                     } catch (IOException e) {
                         source.sendError(text("Failed to save edition file, sync may not work properly."));
                         throw new RuntimeException(e);
@@ -330,8 +333,8 @@ public class WaypointCommand {
 
     // edit existing waypoint
     private static void executeEdit(ServerCommandSource source, RegistryKey<World> dimKey, String listName, String waypointName, String initials, BlockPos pos, Formatting color, int yaw, boolean global) {
-        WaypointServer waypointServer = WaypointServer.INSTANCE;
-        WaypointFileManager waypointFileManager = waypointServer.getDimensionManager(dimKey);
+        WaypointServerMod waypointServerMod = WaypointServerMod.INSTANCE;
+        WaypointFileManager waypointFileManager = waypointServerMod.getWaypointFileManager(getFileName(dimKey));
         if (waypointFileManager == null) {
             source.sendError(text("Dimension \"%s\" does not exist.".formatted(dimKey.getValue().toString())));
         } else {
@@ -344,18 +347,18 @@ public class WaypointCommand {
                     source.sendError(text("Waypoint \"%s\" does not exist.".formatted(waypointName)));
                 } else {
                     int colorIdx = formattingToColorIndex(color);
-                    if (waypoint.compareValues(initials, pos, colorIdx, yaw, global)) {
+                    if (waypoint.compareProperties(initials, fromBlockPos(pos), colorIdx, yaw, global)) {
                         source.sendFeedback(() -> text("Identical properties, no changes made."), false);
                         return;
                     } else {
                         waypoint.setInitials(initials);
-                        waypoint.setPos(pos);
+                        waypoint.setPos(fromBlockPos(pos));
                         waypoint.setColorIdx(colorIdx);
                         waypoint.setYaw(yaw);
                         waypoint.setGlobal(global);
                     }
                     saveChanges(source, waypointFileManager);
-                    WaypointServer.INSTANCE.broadcastWaypointModification(dimKey, listName, waypoint, ModificationType.UPDATE, source.getPlayer());
+                    WaypointServerMod.INSTANCE.broadcastWaypointModification(dimKey, listName, waypoint, ModificationType.UPDATE, source.getPlayer());
                     source.sendFeedback(() -> {
                         MutableText feedback = text("Waypoint ");
                         feedback.append(simpleWaypointToFormattedText(waypoint, tpCmd(dimKey, pos, yaw), waypointInfoText(dimKey, waypoint)));
@@ -368,8 +371,8 @@ public class WaypointCommand {
     }
 
     private static void executeRemove(ServerCommandSource source, RegistryKey<World> dimKey, String listName, String waypointName) {
-        WaypointServer waypointServer = WaypointServer.INSTANCE;
-        WaypointFileManager waypointFileManager = waypointServer.getDimensionManager(dimKey);
+        WaypointServerMod waypointServerMod = WaypointServerMod.INSTANCE;
+        WaypointFileManager waypointFileManager = waypointServerMod.getWaypointFileManager(getFileName(dimKey));
         if (waypointFileManager == null) {
             source.sendError(text("Dimension \"%s\" does not exist.".formatted(dimKey.getValue().toString())));
         } else {
@@ -396,7 +399,7 @@ public class WaypointCommand {
                 }
                 saveChanges(source, waypointFileManager);
                 for (SimpleWaypoint removedWaypoint : removedWaypoints) {
-                    WaypointServer.INSTANCE.broadcastWaypointModification(dimKey, listName, removedWaypoint, ModificationType.REMOVE, source.getPlayer());
+                    WaypointServerMod.INSTANCE.broadcastWaypointModification(dimKey, listName, removedWaypoint, ModificationType.REMOVE, source.getPlayer());
                 }
                 source.sendFeedback(() -> {
                     MutableText feedback = text("Removed waypoint:").append(END_LINE);
@@ -408,7 +411,7 @@ public class WaypointCommand {
     }
 
     private static void executeRemoveList(ServerCommandSource source, RegistryKey<World> dimKey, String listName) {
-        WaypointFileManager waypointFileManager = WaypointServer.INSTANCE.getDimensionManager(dimKey);
+        WaypointFileManager waypointFileManager = WaypointServerMod.INSTANCE.getWaypointFileManager(getFileName(dimKey));
         if (waypointFileManager == null) {
             source.sendError(text("Dimension: %s does not exist.".formatted(dimKey.getValue().toString())));
         } else {
@@ -432,10 +435,8 @@ public class WaypointCommand {
     private static void executeDownload(ServerCommandSource source) {
         ServerPlayerEntity player = source.getPlayer();
         if (player != null) {
-            WaypointServer waypointServer = WaypointServer.INSTANCE;
-            WorldWaypoint worldWaypoint = waypointServer.toWorldWaypoint();
-            if (worldWaypoint != null) {
-                WorldWaypointS2CPayload payload = new WorldWaypointS2CPayload(worldWaypoint, WaypointServer.EDITION);
+            WorldWaypointS2CPayload payload = WaypointServerMod.INSTANCE.toWorldWaypointPayload();
+            if (payload != null) {
                 //? if fabric {
                 ServerPlayNetworking.send(player, payload);
                 //?} else {
@@ -450,9 +451,9 @@ public class WaypointCommand {
     private static void executeDownload(ServerCommandSource source, RegistryKey<World> dimKey) {
         ServerPlayerEntity player = source.getPlayer();
         if (player != null) {
-            WaypointFileManager waypointFileManager = WaypointServer.INSTANCE.getDimensionManager(dimKey);
+            WaypointFileManager waypointFileManager = WaypointServerMod.INSTANCE.getWaypointFileManager(getFileName(dimKey));
             if (waypointFileManager != null) {
-                DimensionWaypoint dimWaypoint = waypointFileManager.toDimensionWaypoint();
+                DimensionWaypoint dimWaypoint = WaypointServerMod.toDimensionWaypoint(waypointFileManager);
                 DimensionWaypointS2CPayload payload = new DimensionWaypointS2CPayload(dimWaypoint);
                 //? if fabric {
                 ServerPlayNetworking.send(player, payload);
@@ -468,7 +469,7 @@ public class WaypointCommand {
     private static void executeDownload(ServerCommandSource source, RegistryKey<World> dimKey, String name) {
         ServerPlayerEntity player = source.getPlayer();
         if (player != null) {
-            WaypointFileManager waypointFileManager = WaypointServer.INSTANCE.getDimensionManager(dimKey);
+            WaypointFileManager waypointFileManager = WaypointServerMod.INSTANCE.getWaypointFileManager(getFileName(dimKey));
             if (waypointFileManager != null) {
                 WaypointList waypointList = waypointFileManager.getWaypointListByName(name);
                 if (waypointList != null) {
@@ -488,18 +489,22 @@ public class WaypointCommand {
     }
 
     private static void executeList(ServerCommandSource source) {
-        WaypointServer waypointServer = WaypointServer.INSTANCE;
-        Map<RegistryKey<World>, WaypointFileManager> dimensionManagerMap = waypointServer.getDimensionManagerMap();
+        WaypointServerMod waypointServerMod = WaypointServerMod.INSTANCE;
+        Map<String, WaypointFileManager> dimensionManagerMap = waypointServerMod.getFileManagerMap();
         MutableText listMsg = text("");
         listMsg.append(END_LINE);
         boolean empty = true;
-        for (RegistryKey<World> dimKey : dimensionManagerMap.keySet()) {
+        for (String fileName : dimensionManagerMap.keySet()) {
             // Dimension header
-            WaypointFileManager waypointFileManager = dimensionManagerMap.get(dimKey);
+            WaypointFileManager waypointFileManager = dimensionManagerMap.get(fileName);
             if (waypointFileManager == null) {
                 continue;
             }
             if (waypointFileManager.getWaypointListMap().isEmpty()) {
+                continue;
+            }
+            RegistryKey<World> dimKey = getDimensionKey(fileName);
+            if  (dimKey == null) {
                 continue;
             }
             listMsg.append(Text.literal(dimKey.getValue().toString()).formatted(getDimensionColor(dimKey)));

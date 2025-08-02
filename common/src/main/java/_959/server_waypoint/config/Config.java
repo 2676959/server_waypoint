@@ -5,18 +5,18 @@ public class Config {
     AddWaypointFromChatSharing AddWaypointFromChatSharing = new AddWaypointFromChatSharing();
 
     public CommandPermission CommandPermission() {
-        return CommandPermission;
+        return this.CommandPermission;
     }
 
     public AddWaypointFromChatSharing AddWaypointFromChatSharing() {
-        return AddWaypointFromChatSharing;
+        return this.AddWaypointFromChatSharing;
     }
 
-    @Override
-    public String toString() {
-        return "Config{" +
-                "CommandPermission=" + CommandPermission +
-                ", AddWaypointFromChatSharing=" + AddWaypointFromChatSharing +
-                '}';
-    }
+   @Override
+   public String toString() {
+      return "Config{" +
+              "CommandPermission=" + CommandPermission +
+              ", AddWaypointFromChatSharing=" + AddWaypointFromChatSharing +
+              '}';
+   }
 }

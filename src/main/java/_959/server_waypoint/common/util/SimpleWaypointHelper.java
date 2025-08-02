@@ -1,11 +1,12 @@
 package _959.server_waypoint.common.util;
-import _959.server_waypoint.common.server.waypoint.SimpleWaypoint;
+
+import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointPos;
 
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xaero.common.minimap.waypoints.Waypoint;
@@ -19,45 +20,12 @@ import xaero.hud.minimap.waypoint.WaypointVisibilityType;
 import static _959.server_waypoint.common.util.TextHelper.ClickEventHelper.RunCommand;
 import static _959.server_waypoint.common.util.TextHelper.HoverEventHelper.ShowText;
 import static _959.server_waypoint.common.util.XaeroDimensionStringConverter.convert;
-import static _959.server_waypoint.common.ServerWaypointMod.LOGGER;
+import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
 
 public class SimpleWaypointHelper {
     public static final String SEPARATOR = ":";
     public static final Style DEFAULT_STYLE = Style.EMPTY.withBold(false).withColor(Formatting.WHITE);
     public static final String XAERO_SHARE_PREFIX = "xaero-waypoint";
-
-    public static String simpleWaypointToString(SimpleWaypoint simpleWaypoint) {
-        //format: name:initials:x:y:z:color:yaw:global
-        //          0 :    1   :2:3:4:  5  : 6 :  7
-        return simpleWaypoint.name() +
-                SEPARATOR +
-                simpleWaypoint.initials() +
-                SEPARATOR +
-                simpleWaypoint.pos().getX() +
-                SEPARATOR +
-                simpleWaypoint.pos().getY() +
-                SEPARATOR +
-                simpleWaypoint.pos().getZ() +
-                SEPARATOR +
-                simpleWaypoint.colorIdx() +
-                SEPARATOR +
-                simpleWaypoint.yaw() +
-                SEPARATOR +
-                simpleWaypoint.global();
-    }
-
-    public static SimpleWaypoint stringToSimpleWaypoint(String waypointString) {
-        String[] args = waypointString.split(SEPARATOR);
-        int colorIdx = Integer.parseInt(args[5]);
-        return new SimpleWaypoint(
-                args[0],
-                args[1],
-                new BlockPos(Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4])),
-                colorIdx >= 0 && colorIdx <= 15 ? colorIdx : 15,
-                Integer.parseInt(args[6]),
-                Boolean.parseBoolean(args[7])
-        );
-    }
 
     public static MutableText simpleWaypointToFormattedText(SimpleWaypoint waypoint, String command, Text hoverText) {
         Style initialStyle = Style.EMPTY.withBold(true).withColor(Formatting.byColorIndex(waypoint.colorIdx())).withClickEvent(RunCommand.apply(command));
@@ -80,7 +48,7 @@ public class SimpleWaypointHelper {
             SimpleWaypoint simpleWaypoint = new SimpleWaypoint(
                     args[1],
                     args[2],
-                    new BlockPos(Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5])),
+                    new WaypointPos(Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5])),
                     Integer.parseInt(args[6]),
                     Integer.parseInt(args[8]),
                     true
@@ -99,9 +67,9 @@ public class SimpleWaypointHelper {
 
     public static Waypoint simpleWaypointToWaypoint(SimpleWaypoint simpleWaypoint) {
         Waypoint waypoint = new Waypoint(
-                simpleWaypoint.pos().getX(),
-                simpleWaypoint.pos().getY(),
-                simpleWaypoint.pos().getZ(),
+                simpleWaypoint.pos().x(),
+                simpleWaypoint.pos().y(),
+                simpleWaypoint.pos().z(),
                 simpleWaypoint.name(),
                 simpleWaypoint.initials(),
                 WaypointColor.fromIndex(simpleWaypoint.colorIdx()),

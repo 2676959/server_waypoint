@@ -1,13 +1,14 @@
 package _959.server_waypoint.common.network;
 
-import _959.server_waypoint.common.server.waypoint.WaypointFileManager;
-import _959.server_waypoint.common.server.waypoint.SimpleWaypoint;
+import _959.server_waypoint.common.server.WaypointServerMod;
+import _959.server_waypoint.core.WaypointFileManager;
+import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
-
 import net.minecraft.util.Pair;
 import net.minecraft.world.World;
 
@@ -16,10 +17,10 @@ import java.util.Set;
 //? if neoforge
 /*import net.minecraft.text.Text;*/
 
-import static _959.server_waypoint.common.ServerWaypointMod.LOGGER;
-import static _959.server_waypoint.common.server.WaypointServer.INSTANCE;
-import static _959.server_waypoint.common.server.WaypointServer.CONFIG;
+import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
+import static _959.server_waypoint.common.server.WaypointServerMod.CONFIG;
 import static _959.server_waypoint.common.util.CommandGenerator.tpCmd;
+import static _959.server_waypoint.common.util.DimensionFileHelper.getFileName;
 import static _959.server_waypoint.common.util.SimpleWaypointHelper.*;
 import static _959.server_waypoint.common.util.TextButton.addButton;
 import static _959.server_waypoint.common.util.TextButton.addListButton;
@@ -54,8 +55,9 @@ public class ChatMessageHandler {
                 LOGGER.info("unknown waypoint received");
                 return;
             }
-            if (CONFIG.AddWaypointFromChatSharing().auto()) {
-                WaypointFileManager waypointFileManager = INSTANCE.getDimensionManager(dimKey);
+            if (CONFIG.AddWaypointFromChatSharing().enable()) {
+                String fileName = getFileName(dimKey);
+                WaypointFileManager waypointFileManager = WaypointServerMod.INSTANCE.getWaypointFileManager(fileName);
                 if (waypointFileManager != null) {
                     Set<String> listNames = waypointFileManager.getWaypointListMap().keySet();
                     if (listNames.isEmpty()) {
@@ -76,7 +78,7 @@ public class ChatMessageHandler {
                     }
                 } else {
                     LOGGER.info("dimension not found, add new dimension");
-                    INSTANCE.addDimensionManager(dimKey);
+                    WaypointServerMod.INSTANCE.addWaypointFileManager(fileName);
                     promptNoWaypointList(player, dimKey);
                 }
             }

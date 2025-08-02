@@ -1,6 +1,7 @@
 plugins {
     id("dev.architectury.loom")
     id("architectury-plugin")
+    id("com.github.johnrengelman.shadow")
 }
 
 val minecraft = stonecutter.current.version
@@ -68,6 +69,7 @@ repositories {
 dependencies {
     val yarn_build: String by project
     minecraft("com.mojang:minecraft:$minecraft")
+    implementation(project(":common"))
     if (loader == "fabric") {
         val fabric_api: String by project
         val fabric_loader: String by project
@@ -142,6 +144,20 @@ java {
     withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
+}
+
+tasks.shadowJar {
+    dependencies {
+        include(project(":common"))
+        exclude("mappings/mappings.tiny")
+    }
+    archiveClassifier = "dev-shadow"
+}
+
+tasks.remapJar {
+    input = tasks.shadowJar.get().archiveFile
+    archiveClassifier = null
+    dependsOn(tasks.shadowJar)
 }
 
 // License in jar

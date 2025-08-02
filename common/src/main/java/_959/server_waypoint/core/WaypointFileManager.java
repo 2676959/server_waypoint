@@ -1,9 +1,9 @@
-package _959.server_waypoint.common.server.waypoint;
+package _959.server_waypoint.core;
 
-import _959.server_waypoint.common.util.SimpleWaypointHelper;
-import org.jetbrains.annotations.Nullable;
+import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointList;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -11,24 +11,36 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static _959.server_waypoint.common.ServerWaypointMod.LOGGER;
+import org.jetbrains.annotations.Nullable;
 
 public class WaypointFileManager {
-    public Path dimensionFilePath;
+    private final String fileName;
+    private final Path dimensionFilePath;
     private final Map<String, WaypointList> waypointListMap;
 
     public WaypointFileManager(String fileName, Path waypointsDir) {
+        this.fileName = fileName;
         this.waypointListMap = new HashMap<>();
         this.dimensionFilePath = waypointsDir.resolve(fileName + ".txt");
+    }
+
+    public String getFileName() {
+        return this.fileName;
+    }
+
+    public Path getDimensionFile() {
+        return this.dimensionFilePath;
+    }
+
+    public List<WaypointList> getWaypointLists() {
+        return new ArrayList<>(this.waypointListMap.values());
     }
 
     public Map<String, WaypointList> getWaypointListMap() {
         return this.waypointListMap;
     }
 
-
-    @Nullable
-    public WaypointList getWaypointListByName(String name) {
+    public @Nullable WaypointList getWaypointListByName(String name) {
         return this.waypointListMap.get(name);
     }
 
@@ -50,49 +62,43 @@ public class WaypointFileManager {
 
     private void readFromFile(Path filePath) throws IOException {
         WaypointList currentList = null;
-        
+
         for (String line : Files.readAllLines(filePath)) {
             line = line.trim();
-            if (line.isEmpty()) continue;
-            
-            if (line.startsWith("#")) {
-                // New waypoint list
-                String name = line.substring(1).trim();
-                currentList = WaypointList.build(name);
-                addWaypointList(currentList);
-                LOGGER.info("Created waypoint list: {}", name);
-            } else if (currentList != null) {
-                // Waypoint line
-                try {
-                    SimpleWaypoint waypoint = SimpleWaypointHelper.stringToSimpleWaypoint(line);
-                    currentList.add(waypoint);
-                    LOGGER.info("Added waypoint: {} to list: {}", waypoint.name(), currentList.name());
-                } catch (Exception e) {
-                    LOGGER.error("Failed to parse waypoint line: {}", line, e);
+            if (!line.isEmpty()) {
+                if (line.startsWith("#")) {
+                    String name = line.substring(1).trim();
+                    currentList = WaypointList.build(name);
+                    this.addWaypointList(currentList);
+                    WaypointServerCore.LOGGER.info("Created waypoint list: {}", name);
+                } else if (currentList != null) {
+                    try {
+                        SimpleWaypoint waypoint = SimpleWaypoint.fromString(line);
+                        currentList.add(waypoint);
+                        WaypointServerCore.LOGGER.info("Added waypoint: {} to list: {}", waypoint.name(), currentList.name());
+                    } catch (Exception e) {
+                        WaypointServerCore.LOGGER.error("Failed to parse waypoint line: {}", line, e);
+                    }
                 }
             }
         }
+
     }
 
     private void writeToFile(Path filePath) throws IOException {
         List<String> lines = new ArrayList<>();
-        
+
         for (Map.Entry<String, WaypointList> entry : this.waypointListMap.entrySet()) {
             String name = entry.getKey();
             WaypointList list = entry.getValue();
-            
-            // Write list header
             lines.add("#" + name);
-            
-            // Write waypointList
+
             for (SimpleWaypoint waypoint : list.simpleWaypoints()) {
-                String waypointLine = SimpleWaypointHelper.simpleWaypointToString(waypoint);
-                lines.add(waypointLine);
-//                LOGGER.info("Wrote waypoint: {} from list: {}", waypoint.name(), name);
+                lines.add(waypoint.toSaveString());
             }
         }
 
         Files.write(filePath, lines);
-        LOGGER.info("Saved waypointList to file: {}", filePath);
+        WaypointServerCore.LOGGER.info("Saved waypointList to file: {}", filePath);
     }
-} 
+}

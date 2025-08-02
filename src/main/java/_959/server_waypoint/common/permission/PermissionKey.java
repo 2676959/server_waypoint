@@ -7,7 +7,7 @@ import net.neoforged.neoforge.server.permission.nodes.PermissionTypes;
 import static _959.server_waypoint.common.server.WaypointServer.CONFIG;
 *///?}
 
-import static _959.server_waypoint.common.ServerWaypointMod.MOD_ID;
+import static _959.server_waypoint.common.server.WaypointServerMod.GROUP_ID;
 
 
 public enum PermissionKey {
@@ -35,6 +35,6 @@ public enum PermissionKey {
     /*public PermissionNode<Boolean> getNode() { return this.node; }*/
 
     @Override public String toString() {
-        return MOD_ID + "." + nodeString;
+        return GROUP_ID + "." + nodeString;
     }
 }

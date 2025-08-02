@@ -1,6 +1,6 @@
 package _959.server_waypoint.mixin;
 
-import _959.server_waypoint.common.server.WaypointServer;
+import _959.server_waypoint.common.server.WaypointServerMod;
 import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,6 +11,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MinecraftServerMixin {
     @Inject(method = "loadWorld", at = @At("TAIL"))
     private void onLoadWorld(CallbackInfo ci) {
-        WaypointServer.INSTANCE.setMinecraftServer((MinecraftServer) (Object) this);
+        WaypointServerMod.INSTANCE.setMinecraftServer((MinecraftServer) (Object) this);
     }
 }

@@ -1,14 +1,13 @@
 package _959.server_waypoint.common.network;
 
+import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.common.ServerWaypointClientMod;
 import _959.server_waypoint.common.network.payload.s2c.DimensionWaypointS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WaypointListS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WaypointModificationS2CPayload;
 import _959.server_waypoint.common.network.waypoint.DimensionWaypoint;
-import _959.server_waypoint.common.network.waypoint.WorldWaypoint;
-import _959.server_waypoint.common.server.waypoint.SimpleWaypoint;
-import _959.server_waypoint.common.server.waypoint.WaypointList;
 import _959.server_waypoint.common.util.LocalEditionFileManager;
 import _959.server_waypoint.common.util.XaeroMinimapHelper;
 import net.minecraft.registry.RegistryKey;
@@ -21,6 +20,7 @@ import xaero.hud.minimap.waypoint.set.WaypointSet;
 import xaero.hud.minimap.world.MinimapWorld;
 
 import java.io.IOException;
+import java.util.List;
 
 
 //? if fabric {
@@ -94,13 +94,13 @@ public class ServerWaypointPayloadHandler {
             *///?}
     ) {
         ServerWaypointClientMod.LOGGER.info("received worldWaypoint");
-        WorldWaypoint worldWaypoint = payload.worldWaypoint();
+        List<DimensionWaypoint> dimensionWaypointList = payload.dimensionWaypoints();
         MinimapSession session = XaeroMinimapHelper.getMinimapSession();
-        for (DimensionWaypoint dimensionWaypoint : worldWaypoint.dimensionWaypoints()) {
+        for (DimensionWaypoint dimensionWaypoint : dimensionWaypointList) {
             XaeroMinimapHelper.addDimensionWaypoint(session, dimensionWaypoint);
         }
         context.player().sendMessage(Text.of("All waypoints on this server have been added to Xaero's minimap successfully."), false);
-        for (DimensionWaypoint dimensionWaypoint : worldWaypoint.dimensionWaypoints()) {
+        for (DimensionWaypoint dimensionWaypoint : dimensionWaypointList) {
             try {
                 XaeroMinimapHelper.saveMinimapWorld(session, dimensionWaypoint.dimKey());
             } catch (IOException e) {
