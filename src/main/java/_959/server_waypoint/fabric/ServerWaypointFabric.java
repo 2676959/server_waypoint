@@ -1,7 +1,7 @@
 //? if fabric {
 package _959.server_waypoint.fabric;
 
-import _959.server_waypoint.common.ServerWaypointMod;
+import _959.server_waypoint.common.IPlatformConfigPath;
 import _959.server_waypoint.common.network.ChatMessageHandler;
 import _959.server_waypoint.common.network.ClientHandshakeHandler;
 import _959.server_waypoint.common.network.payload.c2s.HandshakeC2SPayload;
@@ -10,6 +10,7 @@ import _959.server_waypoint.common.network.payload.s2c.WaypointListS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.SimpleWaypointS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WaypointModificationS2CPayload;
+import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.common.server.command.WaypointCommand;
 import _959.server_waypoint.fabric.permission.FabricPermissionManager;
 import com.mojang.brigadier.CommandDispatcher;
@@ -22,17 +23,28 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager.RegistrationEnvironment;
 import net.minecraft.server.command.ServerCommandSource;
+
+import java.io.IOException;
 import java.nio.file.Path;
 
-public class ServerWaypointFabric extends ServerWaypointMod implements DedicatedServerModInitializer {
+import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
+
+public class ServerWaypointFabric implements DedicatedServerModInitializer, IPlatformConfigPath {
     @Override
     public void onInitializeServer() {
         // This code runs as soon as Minecraft is in a mod-load-ready state.
         // However, some things (like resources) may still be uninitialized.
         // Proceed with mild caution.
-        initServer();
+
+        WaypointServerMod waypointServer = new WaypointServerMod(this.getRootConfigDirectory());
+        try {
+            waypointServer.initServer();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         registerPayloads();
-        this.registerHandlers();
+        registerHandlers();
 
         if (FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0")) {
             FabricPermissionManager.setFabricPermissionAPILoaded(true);
@@ -63,7 +75,7 @@ public class ServerWaypointFabric extends ServerWaypointMod implements Dedicated
     }
 
     @Override
-    public Path getConfigDirectory() {
+    public Path getRootConfigDirectory() {
         return FabricLoader.getInstance().getConfigDir();
     }
 }

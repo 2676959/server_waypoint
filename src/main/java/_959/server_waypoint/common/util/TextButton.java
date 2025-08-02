@@ -1,6 +1,6 @@
 package _959.server_waypoint.common.util;
 
-import _959.server_waypoint.common.server.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;

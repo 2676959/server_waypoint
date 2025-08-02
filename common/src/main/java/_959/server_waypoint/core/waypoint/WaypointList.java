@@ -1,8 +1,4 @@
-package _959.server_waypoint.common.server.waypoint;
-
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
+package _959.server_waypoint.core.waypoint;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,23 +10,13 @@ public class WaypointList {
     private String name;
     private final List<SimpleWaypoint> simpleWaypoints;
 
-    public static final PacketCodec<PacketByteBuf, WaypointList> PACKET_CODEC = PacketCodec.tuple(
-            PacketCodecs.STRING, WaypointList::name,
-            PacketCodecs.collection(ArrayList::new, SimpleWaypoint.PACKET_CODEC), WaypointList::simpleWaypoints,
-            WaypointList::new
-    );
-
-    private WaypointList(String name, List<SimpleWaypoint> simpleWaypoints) {
+    public WaypointList(String name, List<SimpleWaypoint> simpleWaypoints) {
         this.name = name;
         this.simpleWaypoints = simpleWaypoints;
     }
 
-    @Nullable
-    public SimpleWaypoint getWaypointByName(String name) {
-        return this.simpleWaypoints.stream()
-                .filter(waypoint -> waypoint.name().equals(name))
-                .findFirst()
-                .orElse(null);
+    public @Nullable SimpleWaypoint getWaypointByName(String name) {
+        return this.simpleWaypoints.stream().filter((waypoint) -> waypoint.name().equals(name)).findFirst().orElse(null);
     }
 
     public String name() {
@@ -58,6 +44,7 @@ public class WaypointList {
     public List<SimpleWaypoint> removeByName(String name) {
         Iterator<SimpleWaypoint> iter = this.simpleWaypoints.iterator();
         List<SimpleWaypoint> removedWaypoints = new ArrayList<>();
+
         while (iter.hasNext()) {
             SimpleWaypoint waypoint = iter.next();
             if (name.equals(waypoint.name())) {
@@ -65,6 +52,7 @@ public class WaypointList {
                 iter.remove();
             }
         }
+
         return removedWaypoints;
     }
 
@@ -73,12 +61,8 @@ public class WaypointList {
         return this;
     }
 
-    @Override
     public String toString() {
-        return "WaypointList{" +
-                "name='" + name + '\'' +
-                ", simpleWaypoints=" + this.simpleWaypoints +
-                '}';
+        return "WaypointList{name='" + this.name + "', simpleWaypoints=" + this.simpleWaypoints + "}";
     }
 
     public static WaypointList build(String name) {

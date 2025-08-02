@@ -1,13 +1,13 @@
 package _959.server_waypoint.common.util;
 
-import net.minecraft.util.math.BlockPos;
+import _959.server_waypoint.core.waypoint.WaypointPos;
 
 public class BlockPosConverter {
-    public static BlockPos netherToOverWorld(BlockPos pos) {
-        return new BlockPos(pos.getX() * 8, pos.getY(), pos.getZ() * 8);
+    public static WaypointPos netherToOverWorld(WaypointPos pos) {
+        return new WaypointPos(pos.x() * 8, pos.y(), pos.z() * 8);
     }
 
-    public static BlockPos overWorldToNether(BlockPos pos) {
-        return new BlockPos(Math.floorDiv(pos.getX(), 8), pos.getY(), Math.floorDiv(pos.getZ(), 8));
+    public static WaypointPos overWorldToNether(WaypointPos pos) {
+        return new WaypointPos(Math.floorDiv(pos.x(), 8), pos.y(), Math.floorDiv(pos.z(), 8));
     }
 }

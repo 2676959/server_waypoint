@@ -1,9 +1,9 @@
 package _959.server_waypoint.common.util;
 
+import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.common.ServerWaypointClientMod;
 import _959.server_waypoint.common.network.waypoint.DimensionWaypoint;
-import _959.server_waypoint.common.server.waypoint.SimpleWaypoint;
-import _959.server_waypoint.common.server.waypoint.WaypointList;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.world.World;
 import xaero.common.minimap.waypoints.Waypoint;

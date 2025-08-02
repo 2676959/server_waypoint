@@ -1,10 +1,10 @@
 package _959.server_waypoint.common.util;
 
-import _959.server_waypoint.common.server.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointPos;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.function.Function;
@@ -25,7 +25,7 @@ public class TextHelper {
     }
 
     public static Text waypointInfoText(RegistryKey<World> dimKey, SimpleWaypoint waypoint) {
-        BlockPos pos = waypoint.pos();
+        WaypointPos pos = waypoint.pos();
         MutableText info = text(pos.toShortString());
         if (dimKey == World.OVERWORLD) {
             info.append(END_LINE);

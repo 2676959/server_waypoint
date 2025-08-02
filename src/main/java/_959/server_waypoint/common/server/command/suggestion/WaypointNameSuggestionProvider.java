@@ -1,9 +1,9 @@
 package _959.server_waypoint.common.server.command.suggestion;
 
-import _959.server_waypoint.common.server.WaypointServer;
-import _959.server_waypoint.common.server.waypoint.WaypointFileManager;
-import _959.server_waypoint.common.server.waypoint.SimpleWaypoint;
-import _959.server_waypoint.common.server.waypoint.WaypointList;
+import _959.server_waypoint.core.WaypointFileManager;
+import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.common.server.WaypointServerMod;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -14,6 +14,7 @@ import net.minecraft.world.World;
 
 import java.util.concurrent.CompletableFuture;
 
+import static _959.server_waypoint.common.util.DimensionFileHelper.getFileName;
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static net.minecraft.command.argument.DimensionArgumentType.getDimensionArgument;
 
@@ -26,7 +27,7 @@ public class WaypointNameSuggestionProvider implements SuggestionProvider<Server
         } catch (Exception e) {
             dimKey = context.getSource().getWorld().getRegistryKey();
         }
-        WaypointFileManager waypointFileManager = WaypointServer.INSTANCE.getDimensionManager(dimKey);
+        WaypointFileManager waypointFileManager = WaypointServerMod.INSTANCE.getWaypointFileManager(getFileName(dimKey));
         if (waypointFileManager == null) {
             return Suggestions.empty();
         }

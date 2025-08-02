@@ -29,3 +29,4 @@ stonecutter {
 }
 
 rootProject.name = "server_waypoint"
+include("common")
