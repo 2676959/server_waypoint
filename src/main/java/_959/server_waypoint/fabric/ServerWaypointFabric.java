@@ -1,7 +1,7 @@
 //? if fabric {
 package _959.server_waypoint.fabric;
 
-import _959.server_waypoint.common.IPlatformConfigPath;
+import _959.server_waypoint.core.IPlatformConfigPath;
 import _959.server_waypoint.common.network.ChatMessageHandler;
 import _959.server_waypoint.common.network.ClientHandshakeHandler;
 import _959.server_waypoint.common.network.payload.c2s.HandshakeC2SPayload;
@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
+import static _959.server_waypoint.core.WaypointServerCore.GROUP_ID;
 
 public class ServerWaypointFabric implements DedicatedServerModInitializer, IPlatformConfigPath {
     @Override
@@ -36,7 +37,7 @@ public class ServerWaypointFabric implements DedicatedServerModInitializer, IPla
         // However, some things (like resources) may still be uninitialized.
         // Proceed with mild caution.
 
-        WaypointServerMod waypointServer = new WaypointServerMod(this.getRootConfigDirectory());
+        WaypointServerMod waypointServer = new WaypointServerMod(this.getAssignedConfigDirectory());
         try {
             waypointServer.initServer();
         } catch (IOException e) {
@@ -75,8 +76,8 @@ public class ServerWaypointFabric implements DedicatedServerModInitializer, IPla
     }
 
     @Override
-    public Path getRootConfigDirectory() {
-        return FabricLoader.getInstance().getConfigDir();
+    public Path getAssignedConfigDirectory() {
+        return FabricLoader.getInstance().getConfigDir().resolve(GROUP_ID);
     }
 }
 //?}

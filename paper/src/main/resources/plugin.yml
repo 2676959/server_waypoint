@@ -1,0 +1,4 @@
+name: server_waypoint
+version: '1.0-SNAPSHOT'
+main: _959.server_waypoint.ServerWaypointPaperMC
+api-version: '1.21'
