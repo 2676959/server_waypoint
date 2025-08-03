@@ -118,10 +118,21 @@ public abstract class WaypointServerCore {
                 }
             }
         }
+    }
 
+    private void initConfigDir(Path configDir) throws IOException {
+        if (!Files.isDirectory(configDir)) {
+            try {
+                Files.createDirectories(configDir);
+            } catch (IOException e) {
+                LOGGER.error("Failed to initialize config directory");
+                throw e;
+            }
+        };
     }
 
     public void initServer() throws IOException {
+        this.initConfigDir(this.configDir);
         this.fileManagerMap = new LinkedHashMap<>();
         this.fileManagerMap.put("dim%0", null);
         this.fileManagerMap.put("dim%-1", null);
