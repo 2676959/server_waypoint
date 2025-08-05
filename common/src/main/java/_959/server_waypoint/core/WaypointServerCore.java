@@ -1,20 +1,18 @@
 package _959.server_waypoint.core;
 
 import _959.server_waypoint.config.Config;
+import _959.server_waypoint.translation.LanguageFilesManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.function.Predicate;
 
 import org.jetbrains.annotations.Nullable;
@@ -26,6 +24,7 @@ public abstract class WaypointServerCore {
     public static Config CONFIG = new Config();
     public static final String GROUP_ID = "server_waypoint";
     public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_core");
+    private static int worldId;
     private final Predicate<String> fileNameVerifier;
     private Path waypointsDir;
     private Path editionFile;
@@ -131,6 +130,16 @@ public abstract class WaypointServerCore {
         };
     }
 
+    private void initLanguageManager(Path configDir) {
+        try {
+            new LanguageFilesManager(configDir);
+            LOGGER.info("Loaded language files.");
+            LOGGER.info("{}", LanguageFilesManager.getTranslation("a"));
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void initServer() throws IOException {
         this.initConfigDir(this.configDir);
         this.fileManagerMap = new LinkedHashMap<>();
@@ -140,6 +149,7 @@ public abstract class WaypointServerCore {
         this.initConfigFile(this.configDir);
         this.initEditionFile(this.configDir);
         this.initWaypointsFile(this.configDir, this.fileNameVerifier);
+        this.initLanguageManager(this.configDir);
     }
 
     public Map<String, WaypointFileManager> getFileManagerMap() {
@@ -174,4 +184,35 @@ public abstract class WaypointServerCore {
             throw e;
         }
     }
+
+    public void initXearoWorldId(Path saveDir) {
+        try {
+            Path xaeromapFile = saveDir.resolve("xaeromap.txt");
+            if (Files.exists(xaeromapFile) && Files.isRegularFile(xaeromapFile)) {
+                //read xaeromap.txt and get the id
+                String id = Files.readString(xaeromapFile);
+                if (id.startsWith("id:")) {
+                    worldId = Integer.parseInt(id.split(":")[1]);
+                } else {
+                    LOGGER.error("Invalid xaeromap.txt file, id not found");
+                }
+            } else {
+                try {
+                    int id = (new Random()).nextInt();
+                    String idString = "id:" + id;
+                    Files.writeString(xaeromapFile, idString);
+                    worldId = id;
+                } catch (Exception e) {
+                    LOGGER.error("Failed to create xaeromap.txt: " + e);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("Failed to get world ID: " + e);
+        }
+    }
+
+    public static int getWorldId() {
+        return worldId;
+    }
+
 }
