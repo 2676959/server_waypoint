@@ -2,14 +2,17 @@ package _959.server_waypoint.common.server;
 
 import _959.server_waypoint.common.network.payload.s2c.WaypointModificationS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
-import _959.server_waypoint.common.network.waypoint.DimensionWaypoint;
-import _959.server_waypoint.common.util.DimensionFileHelper;
+import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
+import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
+import _959.server_waypoint.core.waypoint.DimensionWaypoint;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKey;
@@ -20,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static _959.server_waypoint.common.util.CommandGenerator.tpCmd;
+import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionKey;
+import static _959.server_waypoint.common.util.DimensionFileHelper.getFileName;
 import static _959.server_waypoint.common.util.SimpleWaypointHelper.DEFAULT_STYLE;
 import static _959.server_waypoint.common.util.SimpleWaypointHelper.simpleWaypointToFormattedText;
 import static _959.server_waypoint.common.util.TextHelper.text;
@@ -36,7 +41,7 @@ public class WaypointServerMod extends WaypointServerCore {
     }
 
     private static boolean isFileNameValid(String fileName) {
-        return DimensionFileHelper.getDimensionKey(fileName) != null;
+        return getDimensionKey(fileName) != null;
     }
 
     public @Nullable WorldWaypointS2CPayload toWorldWaypointPayload() {
@@ -45,30 +50,27 @@ public class WaypointServerMod extends WaypointServerCore {
         for(WaypointFileManager fileManager : this.getFileManagerMap().values()) {
             if (fileManager != null) {
                 DimensionWaypoint dimensionWaypoint = toDimensionWaypoint(fileManager);
-                if (dimensionWaypoint != null) {
-                    dimensionWaypoints.add(dimensionWaypoint);
-                }
+                dimensionWaypoints.add(dimensionWaypoint);
             }
         }
 
         if (dimensionWaypoints.isEmpty()) {
             return null;
         } else {
-            return new WorldWaypointS2CPayload(dimensionWaypoints, EDITION);
+            return new WorldWaypointS2CPayload(new WorldWaypointBuffer(dimensionWaypoints, EDITION));
         }
     }
 
-    public static @Nullable DimensionWaypoint toDimensionWaypoint(WaypointFileManager fileManager) {
+    public static DimensionWaypoint toDimensionWaypoint(WaypointFileManager fileManager) {
         String fileName = fileManager.getFileName();
-        RegistryKey<World> dimKey = DimensionFileHelper.getDimensionKey(fileName);
-        return dimKey == null ? null : new DimensionWaypoint(dimKey, fileManager.getWaypointLists());
+        return new DimensionWaypoint(fileName, fileManager.getWaypointLists());
     }
 
-    public void broadcastWaypointModification(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint, WaypointModificationS2CPayload.ModificationType type, @Nullable PlayerEntity source) {
-        WaypointModificationS2CPayload payload = new WaypointModificationS2CPayload(dimKey, listName, waypoint, type, EDITION);
+    public void broadcastWaypointModification(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint, WaypointModificationType type, @Nullable PlayerEntity source) {
+        WaypointModificationS2CPayload payload = new WaypointModificationS2CPayload(new WaypointModificationBuffer(getFileName(dimKey), listName, waypoint, type, EDITION));
         this.MINECRAFT_SERVER.getPlayerManager().getPlayerList().forEach(player -> {
             player.sendMessage(
-                    text((source != null ? source.getName().getString() : "Server") + " " + type.toString() + " waypoint: ")
+                    text((source != null ? source.getName().getString() : "Server") + " " + type.toVerb() + " waypoint: ")
                             .append(simpleWaypointToFormattedText(waypoint, tpCmd(dimKey, waypoint.pos(), waypoint.yaw()), waypointInfoText(dimKey, waypoint))
                                     .append(text(" on server.").setStyle(DEFAULT_STYLE)))
             );

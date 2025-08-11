@@ -23,7 +23,7 @@ public class ClientHandshakeHandler {
             /*IPayloadContext context
             *///?}
     ) {
-        int edition = payload.waypointsEdition();
+        int edition = payload.handshakeBuffer().edition();
         LOGGER.info("new connection with client edition: {}", edition);
         if (edition != WaypointServerMod.EDITION) {
             WorldWaypointS2CPayload worldWaypointPayload = WaypointServerMod.INSTANCE.toWorldWaypointPayload();
