@@ -1,33 +1,32 @@
 package _959.server_waypoint.common.network.payload.s2c;
 
-import _959.server_waypoint.core.waypoint.SimpleWaypoint;
-import _959.server_waypoint.common.network.WaypointCodecs;
+import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
+import _959.server_waypoint.core.network.codec.WaypointModificationBufferCodec;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 
 import static _959.server_waypoint.common.server.WaypointServerMod.GROUP_ID;
+import static _959.server_waypoint.core.waypoint.WaypointTypeID.WAYPOINT_MODIFICATION;
 
-public record WaypointModificationS2CPayload(
-    RegistryKey<World> dimKey,
-    String listName,
-    SimpleWaypoint waypoint,
-    ModificationType type,
-    int edition
-) implements CustomPayload {
-    public static final Identifier WAYPOINT_MODIFICATION_PAYLOAD_ID = Identifier.of(GROUP_ID, "waypoint_modification");
+public record WaypointModificationS2CPayload(WaypointModificationBuffer waypointModification) implements CustomPayload {
+    public static final Identifier WAYPOINT_MODIFICATION_PAYLOAD_ID = Identifier.of(GROUP_ID, WAYPOINT_MODIFICATION);
     public static final CustomPayload.Id<WaypointModificationS2CPayload> ID = new CustomPayload.Id<>(WAYPOINT_MODIFICATION_PAYLOAD_ID);
-    
+    private static final PacketCodec<ByteBuf, WaypointModificationBuffer> CODEC = new PacketCodec<>() {
+        @Override
+        public void encode(ByteBuf buf, WaypointModificationBuffer value) {
+            WaypointModificationBufferCodec.encode(buf, value);
+        }
+
+        @Override
+        public WaypointModificationBuffer decode(ByteBuf buf) {
+            return WaypointModificationBufferCodec.decode(buf);
+        }
+    };
     public static final PacketCodec<RegistryByteBuf, WaypointModificationS2CPayload> PACKET_CODEC = PacketCodec.tuple(
-            PacketCodecs.registryCodec(World.CODEC), WaypointModificationS2CPayload::dimKey,
-            PacketCodecs.STRING, WaypointModificationS2CPayload::listName,
-            WaypointCodecs.SIMPLE_WAYPOINT, WaypointModificationS2CPayload::waypoint,
-            PacketCodecs.STRING.xmap(ModificationType::valueOf, ModificationType::name), WaypointModificationS2CPayload::type,
-            PacketCodecs.INTEGER, WaypointModificationS2CPayload::edition,
+            CODEC, WaypointModificationS2CPayload::waypointModification,
             WaypointModificationS2CPayload::new
     );
 
@@ -35,19 +34,4 @@ public record WaypointModificationS2CPayload(
     public Id<? extends CustomPayload> getId() {
         return ID;
     }
-
-    public enum ModificationType {
-        ADD,
-        REMOVE,
-        UPDATE;
-
-        @Override
-        public String toString() {
-            return switch (this) {
-                case ADD -> "added";
-                case REMOVE -> "removed";
-                case UPDATE -> "updated";
-            };
-        }
-    }
-} 
+}

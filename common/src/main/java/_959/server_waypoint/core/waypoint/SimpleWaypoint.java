@@ -14,8 +14,16 @@ public class SimpleWaypoint {
         this.initials = initials;
         this.pos = pos;
         this.colorIdx = colorIdx;
-        this.yaw = yaw;
+        this.yaw = convertYaw(yaw);
         this.global = global;
+    }
+
+    private int convertYaw(int yaw) {
+        boolean isNegative = yaw < 0;
+        int r = Math.abs(yaw) % 360;
+        r = (r <= 180) ? r : r - 360;
+        r = isNegative ? -r : r;
+        return r;
     }
 
     public String name() {
@@ -60,7 +68,7 @@ public class SimpleWaypoint {
     }
 
     public void setYaw(int yaw) {
-        this.yaw = yaw;
+        this.yaw = convertYaw(yaw);
     }
 
     public void setGlobal(boolean global) {
@@ -82,6 +90,6 @@ public class SimpleWaypoint {
     }
 
     public boolean compareProperties(String initials, WaypointPos pos, int colorIdx, int yaw, boolean global) {
-        return this.initials.equals(initials) && this.pos.equals(pos) && this.colorIdx == colorIdx && this.yaw == yaw && this.global == global;
+        return this.initials.equals(initials) && this.pos.equals(pos) && this.colorIdx == colorIdx && this.yaw == convertYaw(yaw) && this.global == global;
     }
 }

@@ -22,8 +22,8 @@ public class DimensionFileHelper {
     }
 
     @Nullable
-    public static RegistryKey<World> getDimensionKey(String folderName) {
-        String dimId = folderName.substring(4);
+    public static RegistryKey<World> getDimensionKey(String fileName) {
+        String dimId = fileName.substring(4);
         switch (dimId) {
             case "0" -> {
                 return World.OVERWORLD;

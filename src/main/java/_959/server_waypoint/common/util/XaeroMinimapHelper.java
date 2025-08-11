@@ -3,7 +3,7 @@ package _959.server_waypoint.common.util;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.common.ServerWaypointClientMod;
-import _959.server_waypoint.common.network.waypoint.DimensionWaypoint;
+import _959.server_waypoint.core.waypoint.DimensionWaypoint;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.world.World;
 import xaero.common.minimap.waypoints.Waypoint;
@@ -17,6 +17,8 @@ import xaero.hud.path.XaeroPath;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+
+import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionKey;
 
 public class XaeroMinimapHelper {
     public static MinimapSession getMinimapSession() {
@@ -72,7 +74,7 @@ public class XaeroMinimapHelper {
     }
 
     public static void addDimensionWaypoint(MinimapSession session, DimensionWaypoint dimensionWaypoint) {
-        MinimapWorld minimapWorld = getMinimapWorld(session, dimensionWaypoint.dimKey());
+        MinimapWorld minimapWorld = getMinimapWorld(session, getDimensionKey(dimensionWaypoint.dimString()));
         replaceWaypointLists(minimapWorld, dimensionWaypoint.waypointLists());
     }
 
