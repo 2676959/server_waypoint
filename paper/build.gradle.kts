@@ -15,8 +15,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.21-R0.1-SNAPSHOT")
-    paperweight.paperDevBundle("1.21-R0.1-SNAPSHOT")
+    val paperApiVersion : String by project
+    compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
+    paperweight.paperDevBundle(paperApiVersion)
     implementation(project(":common"))
 }
 
@@ -25,7 +26,8 @@ tasks {
         // Configure the Minecraft version for our task.
         // This is the only required configuration besides applying the plugin.
         // Your plugin's jar (or shadowJar if present) will be used automatically.
-        minecraftVersion("1.21")
+        val mcVersion : String by project
+        minecraftVersion(mcVersion)
     }
 }
 

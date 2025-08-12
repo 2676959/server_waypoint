@@ -18,14 +18,18 @@ stonecutter {
 	centralScript = "build.gradle.kts"
 
 	// Subproject configuration
-	shared {
+	create(rootProject) {
 		fun mc(loader: String, vararg versions: String) {
 			for (version in versions) vers("$version-$loader", version)
 		}
 		mc("fabric", "1.21", "1.21.3", "1.21.5")
 		mc("neoforge", "1.21", "1.21.3", "1.21.5")
 	}
-	create(rootProject)
+
+	create("paper") {
+		vers("1.21-paper", "1.21")
+		vers("1.20-paper", "1.20")
+	}
 }
 
 rootProject.name = "server_waypoint"
