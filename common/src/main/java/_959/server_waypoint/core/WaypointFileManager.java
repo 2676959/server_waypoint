@@ -1,5 +1,6 @@
 package _959.server_waypoint.core;
 
+import _959.server_waypoint.core.waypoint.DimensionWaypoint;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 
@@ -22,6 +23,10 @@ public class WaypointFileManager {
         this.fileName = fileName;
         this.waypointListMap = new HashMap<>();
         this.dimensionFilePath = waypointsDir.resolve(fileName + ".txt");
+    }
+
+    public DimensionWaypoint toDimensionWaypoint() {
+        return new DimensionWaypoint(this.fileName, this.getWaypointLists());
     }
 
     public String getFileName() {

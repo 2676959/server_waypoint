@@ -456,7 +456,7 @@ public class WaypointCommand {
         if (player != null) {
             WaypointFileManager waypointFileManager = WaypointServerMod.INSTANCE.getWaypointFileManager(getFileName(dimKey));
             if (waypointFileManager != null) {
-                DimensionWaypoint dimWaypoint = WaypointServerMod.toDimensionWaypoint(waypointFileManager);
+                DimensionWaypoint dimWaypoint = waypointFileManager.toDimensionWaypoint();
                 DimensionWaypointS2CPayload payload = new DimensionWaypointS2CPayload(dimWaypoint);
                 //? if fabric {
                 ServerPlayNetworking.send(player, payload);

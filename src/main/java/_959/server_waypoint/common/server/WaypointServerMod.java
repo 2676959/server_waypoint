@@ -49,8 +49,7 @@ public class WaypointServerMod extends WaypointServerCore {
 
         for(WaypointFileManager fileManager : this.getFileManagerMap().values()) {
             if (fileManager != null) {
-                DimensionWaypoint dimensionWaypoint = toDimensionWaypoint(fileManager);
-                dimensionWaypoints.add(dimensionWaypoint);
+                dimensionWaypoints.add(fileManager.toDimensionWaypoint());
             }
         }
 
@@ -59,11 +58,6 @@ public class WaypointServerMod extends WaypointServerCore {
         } else {
             return new WorldWaypointS2CPayload(new WorldWaypointBuffer(dimensionWaypoints, EDITION));
         }
-    }
-
-    public static DimensionWaypoint toDimensionWaypoint(WaypointFileManager fileManager) {
-        String fileName = fileManager.getFileName();
-        return new DimensionWaypoint(fileName, fileManager.getWaypointLists());
     }
 
     public void broadcastWaypointModification(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint, WaypointModificationType type, @Nullable PlayerEntity source) {

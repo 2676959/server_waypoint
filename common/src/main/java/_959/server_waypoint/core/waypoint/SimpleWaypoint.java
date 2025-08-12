@@ -18,6 +18,15 @@ public class SimpleWaypoint {
         this.global = global;
     }
 
+    public SimpleWaypoint(String name, String initials, int x, int y, int z, int colorIdx, int yaw, boolean global) {
+        this.name = name;
+        this.initials = initials;
+        this.pos = new WaypointPos(x, y, z);
+        this.colorIdx = colorIdx;
+        this.yaw = convertYaw(yaw);
+        this.global = global;
+    }
+
     private int convertYaw(int yaw) {
         boolean isNegative = yaw < 0;
         int r = Math.abs(yaw) % 360;

@@ -10,9 +10,10 @@ import net.minecraft.util.Identifier;
 import io.netty.buffer.ByteBuf;
 
 import static _959.server_waypoint.common.server.WaypointServerMod.GROUP_ID;
+import static _959.server_waypoint.core.network.PayloadID.HANDSHAKE;
 
 public record HandshakeC2SPayload(HandshakeBuffer handshakeBuffer) implements CustomPayload {
-    public static final Identifier HANDSHAKE_PAYLOAD_ID = Identifier.of(GROUP_ID, "handshake");
+    public static final Identifier HANDSHAKE_PAYLOAD_ID = Identifier.of(GROUP_ID, HANDSHAKE);
     public static final CustomPayload.Id<HandshakeC2SPayload> ID = new CustomPayload.Id<>(HANDSHAKE_PAYLOAD_ID);
     private static final PacketCodec<ByteBuf, HandshakeBuffer> CODEC = new PacketCodec<>() {
         @Override
