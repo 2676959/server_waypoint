@@ -203,11 +203,11 @@ public abstract class WaypointServerCore {
                     Files.writeString(xaeromapFile, idString);
                     worldId = id;
                 } catch (Exception e) {
-                    LOGGER.error("Failed to create xaeromap.txt: " + e);
+                    LOGGER.error("Failed to create xaeromap.txt: ", e);
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("Failed to get world ID: " + e);
+            LOGGER.error("Failed to get world ID: ", e);
         }
     }
 
