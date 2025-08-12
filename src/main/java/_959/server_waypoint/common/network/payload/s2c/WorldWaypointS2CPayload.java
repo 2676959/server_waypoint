@@ -8,7 +8,7 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
 import static _959.server_waypoint.common.server.WaypointServerMod.GROUP_ID;
-import static _959.server_waypoint.core.waypoint.WaypointTypeID.WORLD_WAYPOINT;
+import static _959.server_waypoint.core.network.PayloadID.WORLD_WAYPOINT;
 
 
 public record WorldWaypointS2CPayload(WorldWaypointBuffer worldWaypointBuffer) implements CustomPayload {

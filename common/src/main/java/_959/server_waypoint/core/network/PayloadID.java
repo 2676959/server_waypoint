@@ -1,9 +1,10 @@
-package _959.server_waypoint.core.waypoint;
+package _959.server_waypoint.core.network;
 
-public class WaypointTypeID {
+public class PayloadID {
     public static final String SIMPLE_WAYPOINT = "waypoint";
     public static final String WAYPOINT_LIST = "waypoint_list";
     public static final String DIMENSION_WAYPOINT = "dimension_waypoint";
     public static final String WORLD_WAYPOINT = "world_waypoint";
     public static final String WAYPOINT_MODIFICATION = "waypoint_modification";
+    public static final String HANDSHAKE = "handshake";
 }
