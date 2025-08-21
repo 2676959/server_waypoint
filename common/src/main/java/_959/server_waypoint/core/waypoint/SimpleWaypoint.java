@@ -92,7 +92,7 @@ public class SimpleWaypoint {
         return this.name() + SEPARATOR + this.initials() + SEPARATOR + this.pos().x() + SEPARATOR + this.pos().y() + SEPARATOR + this.pos().z() + SEPARATOR + this.colorIdx() + SEPARATOR + this.yaw() + SEPARATOR + this.global();
     }
 
-    public static SimpleWaypoint fromString(String waypointString) {
+    public static SimpleWaypoint fromString(String waypointString) throws NumberFormatException {
         String[] args = waypointString.split(SEPARATOR);
         int colorIdx = Integer.parseInt(args[5]);
         return new SimpleWaypoint(args[0], args[1], new WaypointPos(Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4])), colorIdx >= 0 && colorIdx <= 15 ? colorIdx : 15, Integer.parseInt(args[6]), Boolean.parseBoolean(args[7]));
