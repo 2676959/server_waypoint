@@ -6,11 +6,9 @@ import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SignedMessage;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.util.Pair;
-import net.minecraft.world.World;
 
 import java.util.Set;
 
@@ -19,8 +17,7 @@ import java.util.Set;
 
 import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
 import static _959.server_waypoint.common.server.WaypointServerMod.CONFIG;
-import static _959.server_waypoint.common.util.CommandGenerator.tpCmd;
-import static _959.server_waypoint.common.util.DimensionFileHelper.getFileName;
+import static _959.server_waypoint.util.CommandGenerator.tpCmd;
 import static _959.server_waypoint.common.util.SimpleWaypointHelper.*;
 import static _959.server_waypoint.common.util.TextButton.addButton;
 import static _959.server_waypoint.common.util.TextButton.addListButton;
@@ -44,50 +41,49 @@ public class ChatMessageHandler {
                 .getString();
         if (messageString.startsWith(XAERO_SHARE_PREFIX)) {
             LOGGER.info("found chat shared waypoint");
-            Pair<SimpleWaypoint, RegistryKey<World>> waypointWithDim = chatShareToSimpleWaypoint(messageString);
+            Pair<SimpleWaypoint, String> waypointWithDim = chatShareToSimpleWaypoint(messageString);
             if (waypointWithDim == null) {
                 LOGGER.info("invalid waypoint sharing message");
                 return;
             }
             SimpleWaypoint waypoint = waypointWithDim.getLeft();
-            RegistryKey<World> dimKey = waypointWithDim.getRight();
-            if (waypoint == null) {
-                LOGGER.info("unknown waypoint received");
-                return;
-            }
+            String dimString = waypointWithDim.getRight();
+//            if (waypoint == null) {
+//                LOGGER.info("unknown waypoint received");
+//                return;
+//            }
             if (CONFIG.AddWaypointFromChatSharing().enable()) {
-                String fileName = getFileName(dimKey);
-                WaypointFileManager waypointFileManager = WaypointServerMod.INSTANCE.getWaypointFileManager(fileName);
+                WaypointFileManager waypointFileManager = WaypointServerMod.INSTANCE.getWaypointFileManager(dimString);
                 if (waypointFileManager != null) {
                     Set<String> listNames = waypointFileManager.getWaypointListMap().keySet();
                     if (listNames.isEmpty()) {
-                        promptNoWaypointList(player, dimKey);
+                        promptNoWaypointList(player, dimString);
                     } else {
                         player.sendMessage(text("Found chat shared waypoint: ").append(
                                 simpleWaypointToFormattedText(
                                         waypoint,
-                                        tpCmd(dimKey, waypoint.pos(), waypoint.yaw()),
-                                        waypointInfoText(dimKey, waypoint))
+                                        tpCmd(dimString, waypoint.pos(), waypoint.yaw()),
+                                        waypointInfoText(dimString, waypoint))
                         ));
                         player.sendMessage(text("Select list to add:"));
                         for (String name : listNames) {
-                            MutableText listItem = addButton(dimKey, name, waypoint);
+                            MutableText listItem = addButton(dimString, name, waypoint);
                             listItem.append(text(" " + name).setStyle(DEFAULT_STYLE));
                             player.sendMessage(listItem);
                         }
                     }
                 } else {
                     LOGGER.info("dimension not found, add new dimension");
-                    WaypointServerMod.INSTANCE.addWaypointFileManager(fileName);
-                    promptNoWaypointList(player, dimKey);
+                    WaypointServerMod.INSTANCE.addWaypointFileManager(dimString);
+                    promptNoWaypointList(player, dimString);
                 }
             }
         }
     }
 
-    private static void promptNoWaypointList(ServerPlayerEntity player, RegistryKey<World> dimKey) {
+    private static void promptNoWaypointList(ServerPlayerEntity player, String dimString) {
         MutableText feedback = text("No waypoint list available. Add a waypoint list first. ");
-        feedback.append(addListButton(dimKey, ""));
+        feedback.append(addListButton(dimString,""));
         player.sendMessage(feedback);
     }
 }

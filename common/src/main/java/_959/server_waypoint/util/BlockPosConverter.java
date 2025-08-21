@@ -1,4 +1,4 @@
-package _959.server_waypoint.common.util;
+package _959.server_waypoint.util;
 
 import _959.server_waypoint.core.waypoint.WaypointPos;
 

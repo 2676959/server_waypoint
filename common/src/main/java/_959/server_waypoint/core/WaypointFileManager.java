@@ -15,22 +15,27 @@ import java.util.Map;
 import org.jetbrains.annotations.Nullable;
 
 public class WaypointFileManager {
-    private final String fileName;
+    private final String dimString;
     private final Path dimensionFilePath;
     private final Map<String, WaypointList> waypointListMap;
 
-    public WaypointFileManager(String fileName, Path waypointsDir) {
-        this.fileName = fileName;
+    public WaypointFileManager(String fileName, String dimString, Path waypointsDir) {
+        if (fileName == null && dimString != null) {
+            fileName = dimString.replace("/", "%").replace(":", "$");
+        } else if (fileName != null && dimString == null) {
+            dimString = fileName.replace("%", "/").replace("$", ":");
+        }
+        this.dimString = dimString;
         this.waypointListMap = new HashMap<>();
         this.dimensionFilePath = waypointsDir.resolve(fileName + ".txt");
     }
 
     public DimensionWaypoint toDimensionWaypoint() {
-        return new DimensionWaypoint(this.fileName, this.getWaypointLists());
+        return new DimensionWaypoint(this.dimString, this.getWaypointLists());
     }
 
-    public String getFileName() {
-        return this.fileName;
+    public String getDimString() {
+        return this.dimString;
     }
 
     public Path getDimensionFile() {
@@ -68,6 +73,7 @@ public class WaypointFileManager {
     private void readFromFile(Path filePath) throws IOException {
         WaypointList currentList = null;
 
+        int waypointsNumber = 0;
         for (String line : Files.readAllLines(filePath)) {
             line = line.trim();
             if (!line.isEmpty()) {
@@ -75,35 +81,39 @@ public class WaypointFileManager {
                     String name = line.substring(1).trim();
                     currentList = WaypointList.build(name);
                     this.addWaypointList(currentList);
-                    WaypointServerCore.LOGGER.info("Created waypoint list: {}", name);
+//                    WaypointServerCore.LOGGER.info("Created waypoint list: {}", name);
                 } else if (currentList != null) {
                     try {
                         SimpleWaypoint waypoint = SimpleWaypoint.fromString(line);
                         currentList.add(waypoint);
-                        WaypointServerCore.LOGGER.info("Added waypoint: {} to list: {}", waypoint.name(), currentList.name());
+//                        WaypointServerCore.LOGGER.info("Added waypoint: {} to list: {}", waypoint.name(), currentList.name());
+                        waypointsNumber++;
                     } catch (Exception e) {
                         WaypointServerCore.LOGGER.error("Failed to parse waypoint line: {}", line, e);
                     }
                 }
             }
         }
-
+        WaypointServerCore.LOGGER.info("Loaded {} lists and {} waypoints from file: {}", this.waypointListMap.size(), waypointsNumber, filePath);
     }
 
     private void writeToFile(Path filePath) throws IOException {
         List<String> lines = new ArrayList<>();
 
+        int waypointsNumber = 0;
         for (Map.Entry<String, WaypointList> entry : this.waypointListMap.entrySet()) {
             String name = entry.getKey();
             WaypointList list = entry.getValue();
             lines.add("#" + name);
 
-            for (SimpleWaypoint waypoint : list.simpleWaypoints()) {
+            List<SimpleWaypoint> waypointList = list.simpleWaypoints();
+            for (SimpleWaypoint waypoint : waypointList) {
                 lines.add(waypoint.toSaveString());
             }
+            waypointsNumber += waypointList.size();
         }
 
         Files.write(filePath, lines);
-        WaypointServerCore.LOGGER.info("Saved waypointList to file: {}", filePath);
+        WaypointServerCore.LOGGER.info("Saved {} lists and {} waypoints to file: {}", waypointListMap.size(), waypointsNumber, filePath);
     }
 }

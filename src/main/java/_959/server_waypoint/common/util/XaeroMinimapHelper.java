@@ -2,7 +2,6 @@ package _959.server_waypoint.common.util;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
-import _959.server_waypoint.common.ServerWaypointClientMod;
 import _959.server_waypoint.core.waypoint.DimensionWaypoint;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.world.World;
@@ -57,10 +56,8 @@ public class XaeroMinimapHelper {
        WaypointSet waypointSet = WaypointSet.Builder.begin().setName(waypointList.name()).build();
         for (SimpleWaypoint simpleWaypoint : waypointList.simpleWaypoints()) {
             if (simpleWaypoint != null) {
-                ServerWaypointClientMod.LOGGER.info("waypoint {} added", simpleWaypoint.name());
+//                ServerWaypointClientMod.LOGGER.info("waypoint {} added", simpleWaypoint.name());
                 waypointSet.add(SimpleWaypointHelper.simpleWaypointToWaypoint(simpleWaypoint));
-            } else {
-                ServerWaypointClientMod.LOGGER.warn("waypoint is null");
             }
         }
         minimapWorld.addWaypointSet(waypointSet);
@@ -69,7 +66,7 @@ public class XaeroMinimapHelper {
     public static void replaceWaypointLists(MinimapWorld minimapWorld, List<WaypointList> waypointLists) {
         for (WaypointList waypointList : waypointLists) {
             replaceWaypointList(minimapWorld, waypointList);
-            ServerWaypointClientMod.LOGGER.info("waypoint set {} added", waypointList.name());
+//            ServerWaypointClientMod.LOGGER.info("waypoint set {} added", waypointList.name());
         }
     }
 
@@ -84,7 +81,7 @@ public class XaeroMinimapHelper {
             Waypoint waypoint = iter.next();
             if (name.equals(waypoint.getName())) {
                 iter.remove();
-                ServerWaypointClientMod.LOGGER.info("Waypoint {} has been removed.", name);
+//                ServerWaypointClientMod.LOGGER.info("Waypoint {} has been removed.", name);
             }
         }
     }

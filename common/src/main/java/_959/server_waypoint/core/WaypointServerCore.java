@@ -13,11 +13,12 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.function.Predicate;
 
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static _959.server_waypoint.util.VanillaDimensionNames.*;
 
 public abstract class WaypointServerCore {
     public static int EDITION = 0;
@@ -25,7 +26,6 @@ public abstract class WaypointServerCore {
     public static final String GROUP_ID = "server_waypoint";
     public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_core");
     private static int worldId;
-    private final Predicate<String> fileNameVerifier;
     private Path waypointsDir;
     private Path editionFile;
     private final Path configDir;
@@ -33,11 +33,22 @@ public abstract class WaypointServerCore {
     private final byte[] DEFAULT_CONFIG;
     private LinkedHashMap<String, WaypointFileManager> fileManagerMap;
 
-    public WaypointServerCore(Path configDir, Predicate<String> verifyFileName) {
+    public WaypointServerCore(Path configDir) {
         this.DEFAULT_CONFIG = this.gson.toJson(CONFIG).getBytes();
         this.configDir = configDir;
-        this.fileNameVerifier = verifyFileName;
     }
+
+    public abstract boolean isDimensionKeyValid(String dimString);
+
+    /** Can only be called after Minecraft server initialized.
+     */
+    public void removeInvalidDimensions() {
+        for (String fileName : this.fileManagerMap.keySet()) {
+            if (this.isDimensionKeyValid(fileName)) {
+                fileManagerMap.remove(fileName);
+            }
+        }
+    };
 
     public void loadConfig(FileReader reader) {
         CONFIG = this.gson.fromJson(reader, Config.class);
@@ -82,7 +93,7 @@ public abstract class WaypointServerCore {
 
     }
 
-    private void initWaypointsFile(Path configDir, Predicate<String> isFileNameValid) throws IOException {
+    private void initWaypointsFile(Path configDir) throws IOException {
         Path waypointsFolder = configDir.resolve("waypoints");
 
         try {
@@ -99,24 +110,47 @@ public abstract class WaypointServerCore {
 
         try (DirectoryStream<Path> entries = Files.newDirectoryStream(waypointsFolder)) {
             for (Path path : entries) {
-                String fileName = path.getFileName().toString().replace(".txt", "");
-                if (!path.toFile().isDirectory() && fileName.startsWith("dim%")) {
-                    if (!isFileNameValid.test(fileName)) {
-                        LOGGER.error("Invalid dimension file name {}, skip", fileName);
-                    } else {
-                        WaypointFileManager dimLists = new WaypointFileManager(fileName, this.waypointsDir);
-
-                        try {
-                            dimLists.readDimension();
-                            this.fileManagerMap.put(fileName, dimLists);
-                        } catch (IOException e) {
-                            LOGGER.error("Failed to load dimension file", e);
-                            throw e;
-                        }
-                    }
+                if (path.toFile().isDirectory()) {
+                    continue;
+                }
+                String fileName = path.getFileName().toString();
+                if (fileName.endsWith(".txt")) {
+                    fileName = fileName.substring(0, fileName.length() - 4);
+                } else {
+                    continue;
+                }
+                if (fileName.startsWith("dim%")) {
+                    fileName = convertToNewFileName(fileName);
+                    Files.move(path, path.resolveSibling(fileName + ".txt"));
+                    LOGGER.info("Old file moved to {}", fileName);
+                } else if (isFileNameInvalid(fileName)) {
+                    LOGGER.error("Invalid dimension file name {}, skip", fileName);
+                    continue;
+                }
+                WaypointFileManager fileManager = new WaypointFileManager(fileName, null, this.waypointsDir);
+                try {
+                    fileManager.readDimension();
+                    this.fileManagerMap.put(fileManager.getDimString(), fileManager);
+                } catch (IOException e) {
+                    LOGGER.error("Failed to load dimension file", e);
+                    throw e;
                 }
             }
         }
+    }
+
+    private boolean isFileNameInvalid(String fileName) {
+        return fileName.split("\\$").length != 2;
+    }
+
+    private String convertToNewFileName(String fileName) {
+        fileName = fileName.substring(4);
+        return switch (fileName) {
+            case "0" -> "minecraft$overworld";
+            case "1" -> "minecraft$the_end";
+            case "-1" -> "minecraft$the_nether";
+            default -> fileName;
+        };
     }
 
     private void initConfigDir(Path configDir) throws IOException {
@@ -143,12 +177,12 @@ public abstract class WaypointServerCore {
     public void initServer() throws IOException {
         this.initConfigDir(this.configDir);
         this.fileManagerMap = new LinkedHashMap<>();
-        this.fileManagerMap.put("dim%0", null);
-        this.fileManagerMap.put("dim%-1", null);
-        this.fileManagerMap.put("dim%1", null);
+        this.fileManagerMap.put(MINECRAFT_OVERWORLD, null);
+        this.fileManagerMap.put(MINECRAFT_THE_NETHER, null);
+        this.fileManagerMap.put(MINECRAFT_THE_END, null);
         this.initConfigFile(this.configDir);
         this.initEditionFile(this.configDir);
-        this.initWaypointsFile(this.configDir, this.fileNameVerifier);
+        this.initWaypointsFile(this.configDir);
         this.initLanguageManager(this.configDir);
     }
 
@@ -156,18 +190,18 @@ public abstract class WaypointServerCore {
         return this.fileManagerMap;
     }
 
-    public @Nullable WaypointFileManager getWaypointFileManager(String dimensionKey) {
-        return this.fileManagerMap.get(dimensionKey);
+    public @Nullable WaypointFileManager getWaypointFileManager(String dimString) {
+        return this.fileManagerMap.get(dimString);
     }
 
-    public WaypointFileManager addWaypointFileManager(String dimensionKey) {
-        WaypointFileManager waypointFileManager = this.fileManagerMap.get(dimensionKey);
+    public WaypointFileManager addWaypointFileManager(String dimString) {
+        WaypointFileManager waypointFileManager = this.fileManagerMap.get(dimString);
         if (waypointFileManager != null) {
-            LOGGER.warn("Duplicate dimension key: {}", dimensionKey);
+            LOGGER.warn("Duplicate dimension key: {}", dimString);
             return waypointFileManager;
         } else {
-            WaypointFileManager fileManager = new WaypointFileManager(dimensionKey, this.waypointsDir);
-            this.fileManagerMap.put(dimensionKey, fileManager);
+            WaypointFileManager fileManager = new WaypointFileManager(null, dimString, this.waypointsDir);
+            this.fileManagerMap.put(dimString, fileManager);
             return fileManager;
         }
     }

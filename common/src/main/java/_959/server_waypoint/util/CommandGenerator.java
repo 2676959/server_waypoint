@@ -1,31 +1,45 @@
-package _959.server_waypoint.common.util;
+package _959.server_waypoint.util;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
-import static _959.server_waypoint.common.util.TextHelper.colorIndexToName;
 
 public class CommandGenerator {
     public static final String WAYPOINT_COMMAND = "/wp";
     public static final String ADD_ARGUMENT = "add";
     public static final String EDIT_ARGUMENT = "edit";
     public static final String REMOVE_ARGUMENT = "remove";
-    public static String tpCmd(RegistryKey<World> dimKey, BlockPos pos, int yaw) {
-        return "/execute in %s run tp @s %d %d %d %d 0".formatted(dimKey.getValue().toString(), pos.getX(), pos.getY(), pos.getZ(), yaw);
+    public static final String[] COLOR_NAMES = {
+            "black",
+            "dark_blue",
+            "dark_green",
+            "dark_aqua",
+            "dark_red",
+            "dark_purple",
+            "gold",
+            "gray",
+            "dark_gray",
+            "blue",
+            "green",
+            "aqua",
+            "red",
+            "light_purple",
+            "yellow",
+            "white"
+    };
+
+    public static String colorIndexToName(int colorIdx) {
+        return COLOR_NAMES[colorIdx];
     }
 
-    public static String tpCmd(RegistryKey<World> dimKey, WaypointPos pos, int yaw) {
-        return "/execute in %s run tp @s %d %d %d %d 0".formatted(dimKey.getValue().toString(), pos.x(), pos.y(), pos.z(), yaw);
+    public static String tpCmd(String dimString, WaypointPos pos, int yaw) {
+        return "/execute in %s run tp @s %d %d %d %d 0".formatted(dimString, pos.x(), pos.y(), pos.z(), yaw);
     }
 
-    public static String addCmd(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint) {
+    public static String addCmd(String dimString, String listName, SimpleWaypoint waypoint) {
         return WAYPOINT_COMMAND + " " + ADD_ARGUMENT + " " +
                 "%s %s %d %d %d %s %s %s %d %b"
                         .formatted(
-                                dimKey.getValue().toString(),
+                                dimString,
                                 listName,
                                 waypoint.pos().x(),
                                 waypoint.pos().y(),
@@ -38,11 +52,11 @@ public class CommandGenerator {
                 );
     }
 
-    public static String editCmd(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint) {
+    public static String editCmd(String dimString, String listName, SimpleWaypoint waypoint) {
         return WAYPOINT_COMMAND + " " + EDIT_ARGUMENT + " " +
                 "%s %s %s %s %d %d %d %s %d %b"
                         .formatted(
-                                dimKey.getValue().toString(),
+                                dimString,
                                 listName,
                                 waypoint.name(),
                                 waypoint.initials(),
@@ -55,19 +69,19 @@ public class CommandGenerator {
                         );
     }
 
-    public static String removeCmd(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint) {
+    public static String removeCmd(String dimString, String listName, SimpleWaypoint waypoint) {
         return WAYPOINT_COMMAND + " " + REMOVE_ARGUMENT + " " +
                 "%s %s %s".formatted(
-                        dimKey.getValue().toString(),
+                        dimString,
                         listName,
                         waypoint.name()
                 );
     }
 
-    public static String addListCmd(RegistryKey<World> dimKey, String listName) {
+    public static String addListCmd(String dimString, String listName) {
         return WAYPOINT_COMMAND + " " + ADD_ARGUMENT + " " +
                 "%s %s".formatted(
-                        dimKey.getValue().toString(),
+                        dimString,
                         listName
                 );
     }
