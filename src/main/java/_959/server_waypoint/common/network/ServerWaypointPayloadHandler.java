@@ -37,7 +37,7 @@ import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionK
 import static _959.server_waypoint.common.util.SimpleWaypointHelper.*;
 import static _959.server_waypoint.common.util.TextHelper.text;
 import static _959.server_waypoint.common.util.TextHelper.DimensionColorHelper.getDimensionColor;
-import static _959.server_waypoint.common.util.CommandGenerator.tpCmd;
+import static _959.server_waypoint.util.CommandGenerator.tpCmd;
 import static _959.server_waypoint.common.util.TextHelper.waypointInfoText;
 import static _959.server_waypoint.common.util.XaeroMinimapHelper.removeWaypointsByName;
 
@@ -57,7 +57,7 @@ public class ServerWaypointPayloadHandler {
             warnInvalidDimension(context.player(), dimString);
             return;
         }
-        ServerWaypointClientMod.LOGGER.info("received waypoint list in {}", dimKey.getValue().toString());
+        ServerWaypointClientMod.LOGGER.info("received waypoint list in {}", dimString);
         WaypointList waypointList = waypointListBuffer.waypointList();
         MinimapSession session = XaeroMinimapHelper.getMinimapSession();
         MinimapWorld minimapWorld = XaeroMinimapHelper.getMinimapWorld(session, dimKey);
@@ -86,7 +86,7 @@ public class ServerWaypointPayloadHandler {
             warnInvalidDimension(context.player(), dimString);
             return;
         }
-        ServerWaypointClientMod.LOGGER.info("received dimensionWaypoint in {}", dimKey.getValue().toString());
+        ServerWaypointClientMod.LOGGER.info("received dimensionWaypoint in {}", dimString);
         MinimapSession session = XaeroMinimapHelper.getMinimapSession();
         MinimapWorld minimapWorld = XaeroMinimapHelper.getMinimapWorld(session, dimKey);
         XaeroMinimapHelper.replaceWaypointLists(minimapWorld, dimensionWaypoint.waypointLists());
@@ -118,17 +118,17 @@ public class ServerWaypointPayloadHandler {
         }
         context.player().sendMessage(Text.of("All waypoints on this server have been added to Xaero's minimap successfully."), false);
         for (DimensionWaypoint dimensionWaypoint : dimensionWaypointList) {
-            String fileName = dimensionWaypoint.dimString();
-            RegistryKey<World> dimKey = getDimensionKey(fileName);
+            String dimString = dimensionWaypoint.dimString();
+            RegistryKey<World> dimKey = getDimensionKey(dimString);
             if (dimKey == null) {
-                warnInvalidDimension(context.player(), fileName);
+                warnInvalidDimension(context.player(), dimString);
                 continue;
             }
             try {
                 XaeroMinimapHelper.saveMinimapWorld(session, dimKey);
             } catch (IOException e) {
-                ServerWaypointClientMod.LOGGER.warn("Failed to save waypoints for dimension {}.", dimKey.getValue().toString(), e);
-                MutableText msg = text("Failed to save waypoints for dimension").append(text(" \"" + dimKey.getValue().toString() + "\" ").formatted(getDimensionColor(dimKey)));
+                ServerWaypointClientMod.LOGGER.warn("Failed to save waypoints for dimension {}.", dimString, e);
+                MutableText msg = text("Failed to save waypoints for dimension").append(text(" \"" + dimString + "\" ").formatted(getDimensionColor(dimKey)));
                 msg.append(text("to file.").formatted(Formatting.WHITE));
                 context.player().sendMessage(msg, false);
             }
@@ -172,20 +172,20 @@ public class ServerWaypointPayloadHandler {
             case ADD -> {
                 waypointSet.add(simpleWaypointToWaypoint(waypointModification.waypoint()));
                 context.player().sendMessage(text("Waypoint ")
-                .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimKey, simpleWaypoint.pos(), simpleWaypoint.yaw()), waypointInfoText(dimKey, simpleWaypoint))
+                .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimString, simpleWaypoint.pos(), simpleWaypoint.yaw()), waypointInfoText(dimString, simpleWaypoint))
                         .append(text(" has been added to Xaero's minimap.").setStyle(DEFAULT_STYLE))), false);
 
             }
             case REMOVE -> {
                 removeWaypointsByName(waypointSet, simpleWaypoint.name());
                 context.player().sendMessage(text("Waypoint ")
-                .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimKey, simpleWaypoint.pos(), simpleWaypoint.yaw()), waypointInfoText(dimKey, simpleWaypoint))
+                .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimString, simpleWaypoint.pos(), simpleWaypoint.yaw()), waypointInfoText(dimString, simpleWaypoint))
                         .append(text(" has been removed from Xaero's minimap.").setStyle(DEFAULT_STYLE))), false);
             }
             case UPDATE -> {
                 XaeroMinimapHelper.replaceWaypoint(waypointSet, simpleWaypointToWaypoint(waypointModification.waypoint()));
                 context.player().sendMessage(text("Waypoint ")
-                .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimKey, simpleWaypoint.pos(), simpleWaypoint.yaw()), waypointInfoText(dimKey, simpleWaypoint))
+                .append(simpleWaypointToFormattedText(simpleWaypoint, tpCmd(dimString, simpleWaypoint.pos(), simpleWaypoint.yaw()), waypointInfoText(dimString, simpleWaypoint))
                     .append(text(" has been updated on Xaero's minimap.").setStyle(DEFAULT_STYLE))), false);
             }
         }

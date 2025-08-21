@@ -9,8 +9,9 @@ import net.minecraft.world.World;
 
 import java.util.function.Function;
 
-import static _959.server_waypoint.common.util.BlockPosConverter.netherToOverWorld;
-import static _959.server_waypoint.common.util.BlockPosConverter.overWorldToNether;
+import static _959.server_waypoint.util.BlockPosConverter.netherToOverWorld;
+import static _959.server_waypoint.util.BlockPosConverter.overWorldToNether;
+import static _959.server_waypoint.util.VanillaDimensionNames.*;
 
 public class TextHelper {
     public static Text END_LINE = Text.literal("\n");
@@ -19,18 +20,13 @@ public class TextHelper {
         return (formatting.getColorIndex() < 0) ? 15 : formatting.getColorIndex();
     }
 
-    public static String colorIndexToName(int colorIdx) {
-        Formatting color = Formatting.byColorIndex(colorIdx);
-        return color != null ? color.asString() : "white";
-    }
-
-    public static Text waypointInfoText(RegistryKey<World> dimKey, SimpleWaypoint waypoint) {
+    public static Text waypointInfoText(String dimKey, SimpleWaypoint waypoint) {
         WaypointPos pos = waypoint.pos();
         MutableText info = text(pos.toShortString());
-        if (dimKey == World.OVERWORLD) {
+        if (MINECRAFT_OVERWORLD.equals(dimKey)) {
             info.append(END_LINE);
             info.append(text(overWorldToNether(pos).toShortString()).setStyle(Style.EMPTY.withColor(Formatting.RED).withItalic(true)));
-        } else if (dimKey == World.NETHER) {
+        } else if (MINECRAFT_THE_NETHER.equals(dimKey)) {
             info.append(END_LINE);
             info.append(text(netherToOverWorld(pos).toShortString()).setStyle(Style.EMPTY.withColor(Formatting.GREEN).withItalic(true)));
         }
@@ -52,6 +48,15 @@ public class TextHelper {
             } else {
                 return Formatting.YELLOW;
             }
+        }
+
+        public static Formatting getDimensionColor(String dimString) {
+            return switch (dimString) {
+                case MINECRAFT_OVERWORLD -> Formatting.GREEN;
+                case MINECRAFT_THE_NETHER -> Formatting.RED;
+                case MINECRAFT_THE_END -> Formatting.LIGHT_PURPLE;
+                default -> Formatting.YELLOW;
+            };
         }
     }
 

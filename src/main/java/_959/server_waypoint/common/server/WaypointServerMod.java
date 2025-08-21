@@ -8,6 +8,7 @@ import _959.server_waypoint.core.waypoint.DimensionWaypoint;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,15 +17,15 @@ import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static _959.server_waypoint.common.util.CommandGenerator.tpCmd;
-import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionKey;
-import static _959.server_waypoint.common.util.DimensionFileHelper.getFileName;
+import static _959.server_waypoint.util.CommandGenerator.tpCmd;
+import static _959.server_waypoint.common.util.DimensionFileHelper.*;
 import static _959.server_waypoint.common.util.SimpleWaypointHelper.DEFAULT_STYLE;
 import static _959.server_waypoint.common.util.SimpleWaypointHelper.simpleWaypointToFormattedText;
 import static _959.server_waypoint.common.util.TextHelper.text;
@@ -36,12 +37,25 @@ public class WaypointServerMod extends WaypointServerCore {
     public static WaypointServerMod INSTANCE;
 
     public WaypointServerMod(Path configDir) {
-        super(configDir, WaypointServerMod::isFileNameValid);
+        super(configDir);
         INSTANCE = this;
     }
 
-    private static boolean isFileNameValid(String fileName) {
-        return getDimensionKey(fileName) != null;
+    @Override
+    public boolean isDimensionKeyValid(String dimString) {
+        if (MINECRAFT_SERVER == null) {
+            LOGGER.warn("MinecraftServer is not initialized");
+            return false;
+        } else {
+            RegistryKey<World> dimKey = getDimensionKey(dimString);
+            RegistryEntry.Reference<World> ref = MINECRAFT_SERVER.getRegistryManager().getEntryOrThrow(dimKey);
+            if (ref != null) {
+                LOGGER.info("ref: {}", ref.getKey().toString());
+            } else {
+                return false;
+            }
+        }
+        return true;
     }
 
     public @Nullable WorldWaypointS2CPayload toWorldWaypointPayload() {
@@ -60,8 +74,8 @@ public class WaypointServerMod extends WaypointServerCore {
         }
     }
 
-    public void broadcastWaypointModification(RegistryKey<World> dimKey, String listName, SimpleWaypoint waypoint, WaypointModificationType type, @Nullable PlayerEntity source) {
-        WaypointModificationS2CPayload payload = new WaypointModificationS2CPayload(new WaypointModificationBuffer(getFileName(dimKey), listName, waypoint, type, EDITION));
+    public void broadcastWaypointModification(String dimKey, String listName, SimpleWaypoint waypoint, WaypointModificationType type, @Nullable PlayerEntity source) {
+        WaypointModificationS2CPayload payload = new WaypointModificationS2CPayload(new WaypointModificationBuffer(dimKey, listName, waypoint, type, EDITION));
         this.MINECRAFT_SERVER.getPlayerManager().getPlayerList().forEach(player -> {
             player.sendMessage(
                     text((source != null ? source.getName().getString() : "Server") + " " + type.toVerb() + " waypoint: ")

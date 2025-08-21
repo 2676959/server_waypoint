@@ -3,11 +3,9 @@ package _959.server_waypoint.common.util;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Pair;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import xaero.common.minimap.waypoints.Waypoint;
 import xaero.hud.minimap.waypoint.WaypointColor;
@@ -19,8 +17,7 @@ import xaero.hud.minimap.waypoint.WaypointVisibilityType;
 *///?}
 import static _959.server_waypoint.common.util.TextHelper.ClickEventHelper.RunCommand;
 import static _959.server_waypoint.common.util.TextHelper.HoverEventHelper.ShowText;
-import static _959.server_waypoint.common.util.XaeroDimensionStringConverter.convert;
-import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
+import static _959.server_waypoint.util.XaeroDimensionStringConverter.toVanilla;
 
 public class SimpleWaypointHelper {
     public static final String SEPARATOR = ":";
@@ -39,7 +36,7 @@ public class SimpleWaypointHelper {
     // xaero-waypoint:a:A:-4:72:-9:13:false:0:Internal-overworld
     //        0      :1:2: 3: 4: 5: 6:  7  :8:        9
     @Nullable
-    public static Pair<@Nullable SimpleWaypoint, @Nullable RegistryKey<World>> chatShareToSimpleWaypoint(String shareString) {
+    public static Pair<SimpleWaypoint, String> chatShareToSimpleWaypoint(String shareString) {
         String[] args = shareString.split(SEPARATOR);
         if (args.length < 9) {
             return null;
@@ -54,13 +51,9 @@ public class SimpleWaypointHelper {
                     true
             );
             int firstBarIdx = args[9].indexOf('-');
-            String dimString = args[9].substring(firstBarIdx + 1);
-            RegistryKey<World> dimKey = convert(dimString);
-            if (dimKey == null) {
-                LOGGER.warn("unrecognized dimension '{}'", dimString);
-                return null;
-            }
-            return new Pair<>(simpleWaypoint, dimKey);
+            String xaeroDimString = args[9].substring(firstBarIdx + 1);
+            String dimString = toVanilla(xaeroDimString);
+            return new Pair<>(simpleWaypoint, dimString);
         }
         return null;
     }

@@ -12,9 +12,8 @@ import net.minecraft.world.World;
 
 import java.util.concurrent.CompletableFuture;
 
-import static _959.server_waypoint.common.util.DimensionFileHelper.getFileName;
+import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionString;
 import static net.minecraft.command.argument.DimensionArgumentType.getDimensionArgument;
-
 
 public class WaypointListSuggestionProvider implements SuggestionProvider<ServerCommandSource> {
     @Override
@@ -26,7 +25,7 @@ public class WaypointListSuggestionProvider implements SuggestionProvider<Server
         } catch (Exception e) {
             dimKey = context.getSource().getWorld().getRegistryKey();
         }
-        WaypointFileManager waypointFileManager = waypointServerMod.getWaypointFileManager(getFileName(dimKey));
+        WaypointFileManager waypointFileManager = waypointServerMod.getWaypointFileManager(getDimensionString(dimKey));
         if (waypointFileManager == null) {
             return Suggestions.empty();
         } else {
