@@ -2,6 +2,7 @@ package _959.server_waypoint.translation;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,21 +93,18 @@ public class LanguageFilesManager {
         }
     }
 
+    @Nullable
     public static String getTranslation(String key) {
         return getTranslation(currentLanguage, key);
     }
 
+    @Nullable
     public static String getTranslation(String languageCode, String key) {
         Map<String, String> languageMap = translations.get(languageCode);
         if (languageMap == null) {
-            return key;
+            return null;
         }
-        
-        String translation = languageMap.get(key);
-        if (translation == null) {
-            return key;
-        }
-        return translation;
+        return languageMap.get(key);
     }
 
     public static void setCurrentLanguage(String languageCode) {
