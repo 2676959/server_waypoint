@@ -70,6 +70,7 @@ dependencies {
     val yarn_build: String by project
     minecraft("com.mojang:minecraft:$minecraft")
     implementation(project(":common"))
+    modCompileOnly("net.kyori:adventure-platform-mod-shared-fabric-repack:6.5.1")
     if (loader == "fabric") {
         val fabric_api: String by project
         val fabric_loader: String by project
