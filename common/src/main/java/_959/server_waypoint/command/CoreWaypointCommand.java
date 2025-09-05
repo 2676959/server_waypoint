@@ -11,11 +11,11 @@ import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.text.TextButton;
+import _959.server_waypoint.util.TriConsumer;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -26,9 +26,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
+import static _959.server_waypoint.text.TextButton.restoreButton;
 import static _959.server_waypoint.text.WaypointTextHelper.*;
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
@@ -117,9 +120,9 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
         return (CommandNode<S>) argument(INITIALS_ARG, string())
                 .suggests((SuggestionProvider<Object>) NAME_INITIALS_SUGGESTION)
                 .then(argument(POS_ARG, blockPosArgumentProvider.get())
-                        .then(argument(YAW_ARG, integer())
-                                .suggests((SuggestionProvider<Object>) PLAYER_YAW_SUGGESTION)
-                                .then(argument(COLOR_ARG, colorArgumentProvider.get())
+                        .then(argument(COLOR_ARG, colorArgumentProvider.get())
+                                .then(argument(YAW_ARG, integer())
+                                        .suggests((SuggestionProvider<Object>) PLAYER_YAW_SUGGESTION)
                                         .then(argument(VISIBILITY_ARG, bool())
                                                 .executes((Command<Object>) command)
                                         )
@@ -127,9 +130,6 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
                         )
                 ).build();
     }
-
-
-
 
     @SuppressWarnings("unchecked")
     public @NotNull LiteralCommandNode<S> buildCore() {
@@ -139,32 +139,39 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
                         .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
                                 .then(argument(LIST_NAME_ARG, string())
                                         .suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)
-                                        .then(argument(WAYPOINT_NAME_ARG, string())
-                                                .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
-                                                .then(argument(INITIALS_ARG, string())
-                                                        .suggests((SuggestionProvider<Object>) NAME_INITIALS_SUGGESTION)
-                                                        .then(argument(POS_ARG, blockPosArgumentProvider.get())
-                                                                .then(argument(YAW_ARG, integer())
-                                                                        .suggests((SuggestionProvider<Object>) PLAYER_YAW_SUGGESTION)
-                                                                        .then(argument(COLOR_ARG, colorArgumentProvider.get())
+                                        .executes(cxt -> {
+                                            CommandContext<S> context = (CommandContext<S>) cxt;
+                                            executeAddWaypointList(
+                                                    context.getSource(),
+                                                    getArgument(context, DIMENSION_ARG),
+                                                    getString(context, LIST_NAME_ARG)
+                                            );
+                                            return Command.SINGLE_SUCCESS;
+                                        })
+                                        .then(argument(POS_ARG, blockPosArgumentProvider.get())
+                                                .then(argument(WAYPOINT_NAME_ARG, string())
+                                                        .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
+                                                        .then(argument(INITIALS_ARG, string())
+                                                                .suggests((SuggestionProvider<Object>) NAME_INITIALS_SUGGESTION)
+                                                                .then(argument(COLOR_ARG, colorArgumentProvider.get())
+                                                                        .then(argument(YAW_ARG, integer())
+                                                                                .suggests((SuggestionProvider<Object>) PLAYER_YAW_SUGGESTION)
                                                                                 .then(argument(VISIBILITY_ARG, bool())
-                                                                                        .executes(
-                                                                                                cxt -> {
-                                                                                                    CommandContext<S> context = (CommandContext<S>) cxt;
-                                                                                                    executeAddWaypoint(
-                                                                                                            context.getSource(),
-                                                                                                            getArgument(context, DIMENSION_ARG),
-                                                                                                            getString(context, LIST_NAME_ARG),
-                                                                                                            getString(context, WAYPOINT_NAME_ARG),
-                                                                                                            getString(context, INITIALS_ARG),
-                                                                                                            getArgument(context, POS_ARG),
-                                                                                                            getInteger(context, YAW_ARG),
-                                                                                                            getArgument(context, COLOR_ARG),
-                                                                                                            getBool(context, VISIBILITY_ARG)
-                                                                                                    );
-                                                                                                    return 1;
-                                                                                                }
-                                                                                        )
+                                                                                        .executes(cxt -> {
+                                                                                            CommandContext<S> context = (CommandContext<S>) cxt;
+                                                                                            executeAddWaypoint(
+                                                                                                    context.getSource(),
+                                                                                                    getArgument(context, DIMENSION_ARG),
+                                                                                                    getString(context, LIST_NAME_ARG),
+                                                                                                    getString(context, WAYPOINT_NAME_ARG),
+                                                                                                    getString(context, INITIALS_ARG),
+                                                                                                    getArgument(context, POS_ARG),
+                                                                                                    getInteger(context, YAW_ARG),
+                                                                                                    getArgument(context, COLOR_ARG),
+                                                                                                    getBool(context, VISIBILITY_ARG)
+                                                                                            );
+                                                                                            return Command.SINGLE_SUCCESS;
+                                                                                        })
                                                                                 )
                                                                         )
                                                                 )
@@ -180,9 +187,9 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
                                                 .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
                                                 .then(argument(INITIALS_ARG, string())
                                                         .suggests((SuggestionProvider<Object>) NAME_INITIALS_SUGGESTION)
-                                                        .then(argument(YAW_ARG, integer())
-                                                                .suggests((SuggestionProvider<Object>) PLAYER_YAW_SUGGESTION)
-                                                                .then(argument(COLOR_ARG, colorArgumentProvider.get())
+                                                        .then(argument(COLOR_ARG, colorArgumentProvider.get())
+                                                                .then(argument(YAW_ARG, integer())
+                                                                        .suggests((SuggestionProvider<Object>) PLAYER_YAW_SUGGESTION)
                                                                         .then(argument(VISIBILITY_ARG, bool())
                                                                                 .executes(cxt -> {
                                                                                             CommandContext<S> context = (CommandContext<S>) cxt;
@@ -211,107 +218,69 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
                 )
                 .then(literal(EDIT_COMMAND)
                         .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.edit(), CONFIG.CommandPermission().edit()))
-                        .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
-                                .then(argument(LIST_NAME_ARG, string())
-                                        .suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)
-                                        .then(argument(WAYPOINT_NAME_ARG, string())
-                                                .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
-                                                .then(argument(INITIALS_ARG, string())
-                                                        .suggests((SuggestionProvider<Object>) NAME_INITIALS_SUGGESTION)
-                                                        .then(argument(POS_ARG, blockPosArgumentProvider.get())
-                                                                .then(argument(YAW_ARG, integer())
-                                                                        .suggests((SuggestionProvider<Object>) PLAYER_YAW_SUGGESTION)
-                                                                        .then(argument(COLOR_ARG, colorArgumentProvider.get())
-                                                                                .then(argument(VISIBILITY_ARG, bool())
-                                                                                        .executes(
-                                                                                                cxt -> {
-                                                                                                    CommandContext<S> context = (CommandContext<S>) cxt;
-                                                                                                    executeEdit(
-                                                                                                            context.getSource(),
-                                                                                                            getArgument(context, DIMENSION_ARG),
-                                                                                                            getString(context, LIST_NAME_ARG),
-                                                                                                            getString(context, WAYPOINT_NAME_ARG),
-                                                                                                            getString(context, INITIALS_ARG),
-                                                                                                            getArgument(context, POS_ARG),
-                                                                                                            getInteger(context, YAW_ARG),
-                                                                                                            getArgument(context, COLOR_ARG),
-                                                                                                            getBool(context, VISIBILITY_ARG)
-                                                                                                    );
-                                                                                                    return 1;
-                                                                                                }
-                                                                                        )
-                                                                                )
-                                                                        )
-                                                                )
-                                                        )
-                                                )
-                                        )
+                        .then((CommandNode<Object>)
+                                selectorArguments(
+                                        propertiesArguments(context -> {
+                                            executeEdit(
+                                                    context.getSource(),
+                                                    getArgument(context, DIMENSION_ARG),
+                                                    getString(context, LIST_NAME_ARG),
+                                                    getString(context, WAYPOINT_NAME_ARG),
+                                                    getString(context, INITIALS_ARG),
+                                                    getArgument(context, POS_ARG),
+                                                    getInteger(context, YAW_ARG),
+                                                    getArgument(context, COLOR_ARG),
+                                                    getBool(context, VISIBILITY_ARG)
+                                            );
+                                            return 1;
+                                        })
                                 )
                         )
                 )
                 .then(literal(REMOVE_COMMAND)
                         .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.remove(), CONFIG.CommandPermission().remove()))
-                        .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
-                                .then(argument(LIST_NAME_ARG, string())
-                                        .suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)
-                                        .then(argument(WAYPOINT_NAME_ARG, string())
-                                                .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
-                                                .executes(
-                                                        cxt -> {
-                                                            CommandContext<S> context = (CommandContext<S>) cxt;
-                                                            executeRemove(
-                                                                    context.getSource(),
-                                                                    getArgument(context, DIMENSION_ARG),
-                                                                    getString(context, LIST_NAME_ARG),
-                                                                    getString(context, WAYPOINT_NAME_ARG)
-                                                            );
-                                                            return 1;
-                                                        }
-                                                )
-                                        )
+                        .then((CommandNode<Object>)
+                                selectorArguments(
+                                        context -> {
+                                            executeRemove(
+                                                    context.getSource(),
+                                                    getArgument(context, DIMENSION_ARG),
+                                                    getString(context, LIST_NAME_ARG),
+                                                    getString(context, WAYPOINT_NAME_ARG)
+                                            );
+                                            return 1;
+                                        }
                                 )
                         )
                 )
                 .then(literal(TP_COMMAND)
                         .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.tp(), CONFIG.CommandPermission().tp()))
-                        .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
-                                .then(argument(LIST_NAME_ARG, string())
-                                        .suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)
-                                        .then(argument(WAYPOINT_NAME_ARG, string())
-                                                .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
-                                                .executes(    cxt -> {
-                                                            CommandContext<S> context = (CommandContext<S>) cxt;
-                                                            executeTp(
-                                                                    context.getSource(),
-                                                                    getArgument(context, DIMENSION_ARG),
-                                                                    getString(context, LIST_NAME_ARG),
-                                                                    getString(context, WAYPOINT_NAME_ARG)
-                                                            );
-                                                            return 1;
-                                                        }
-                                                )
-                                        )
+                        .then((CommandNode<Object>)
+                                selectorArguments(
+                                        context -> {
+                                            executeTp(
+                                                    context.getSource(),
+                                                    getArgument(context, DIMENSION_ARG),
+                                                    getString(context, LIST_NAME_ARG),
+                                                    getString(context, WAYPOINT_NAME_ARG)
+                                            );
+                                            return 1;
+                                        }
                                 )
                         )
                 )
                 .then(literal(DOWNLOAD_COMMAND)
-                        .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
-                                .then(argument(LIST_NAME_ARG, string())
-                                        .suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)
-                                        .then(argument(WAYPOINT_NAME_ARG, string())
-                                                .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
-                                                .executes(    cxt -> {
-                                                            CommandContext<S> context = (CommandContext<S>) cxt;
-                                                            executeDownload(
-                                                                    context.getSource(),
-                                                                    getArgument(context, DIMENSION_ARG),
-                                                                    getString(context, LIST_NAME_ARG),
-                                                                    getString(context, WAYPOINT_NAME_ARG)
-                                                            );
-                                                            return 1;
-                                                        }
-                                                )
-                                        )
+                        .then((CommandNode<Object>)
+                                selectorArguments(
+                                        context -> {
+                                            executeDownload(
+                                                    context.getSource(),
+                                                    getArgument(context, DIMENSION_ARG),
+                                                    getString(context, LIST_NAME_ARG),
+                                                    getString(context, WAYPOINT_NAME_ARG)
+                                            );
+                                            return 1;
+                                        }
                                 )
                         )
                 )
@@ -326,15 +295,32 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
                 .build();
     }
 
-
-
-
     private void sendDimensionError(S source, String dimensionName) {
         this.sender.sendError(source, Component.translatable("argument.dimension.invalid", Component.text(dimensionName)));
     }
 
     private void sendPosArgumentError(S source) {
         this.sender.sendError(source, Component.translatable("argument.pos.invalid"));
+    }
+
+    private void executeAddWaypointList(S source, D dimensionArgument, String listName) {
+        String dimensionName = toDimensionName(dimensionArgument);
+        WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(dimensionName);
+        if (fileManager == null) {
+            this.sender.sendError(source, Component.translatable("argument.waypoint.invalid"));
+        } else {
+            if (fileManager.getWaypointListByName(listName) != null) {
+                source.sendError(text("List: %s already exists.".formatted(listName)));
+                return;
+            }
+            fileManager.addWaypointList(WaypointList.build(listName));
+            source.sendFeedback(() -> {
+                MutableText feedback = text("Add waypoint list %s under dimension: ".formatted(listName));
+                feedback.append(text(dimString).setStyle(Style.EMPTY.withColor(getDimensionColor(dimKey))));
+                return feedback;
+            }, true);
+            saveChanges(source, fileManager);
+        }
     }
 
     private void executeAddWaypoint(S source, D dimensionArgument, String listName, String name, String initials, P blockPosArgument, int yaw, C color, boolean global) {
@@ -346,6 +332,7 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
         }
         WaypointPos waypointPos = toWaypointPos(source, blockPosArgument);
         if (waypointPos == null) {
+            sendPosArgumentError(source);
             return;
         }
         WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(dimensionName);
@@ -398,59 +385,122 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
         );
     }
 
-    private void executeEdit(S source, D dimensionArgument, String listName, String name, String initials, P blockPosArgument, int yaw, C color, boolean global) {
+    private boolean runWithSelectorTarget(S source, D dimensionArgument, String listName, Consumer<WaypointFileManager> action) {
         String dimensionName = toDimensionName(dimensionArgument);
         if  (!isDimensionValid(source, dimensionArgument)) {
             sendDimensionError(source, dimensionName);
-            return;
-        }
-        WaypointPos waypointPos = toWaypointPos(source, blockPosArgument);
-        if (waypointPos == null) {
-            return;
+            return false;
         }
         WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(dimensionName);
         if (fileManager == null) {
             this.sender.sendError(source, Component.translatable("waypoint.nonexist.dimension", Component.text(dimensionName)));
-            return;
+            return false;
         } else if (fileManager.isEmpty()) {
             this.sender.sendError(source, Component.translatable("waypoint.edit.empty.dimension", Component.text(dimensionName)));
-            return;
+            return false;
+        } else {
+            action.accept(fileManager);
+            return true;
+        }
+    }
+
+    private boolean runWithSelectorTarget(S source, D dimensionArgument, String listName, BiConsumer<WaypointFileManager, WaypointList> action) {
+        String dimensionName = toDimensionName(dimensionArgument);
+        if  (!isDimensionValid(source, dimensionArgument)) {
+            sendDimensionError(source, dimensionName);
+            return false;
+        }
+        WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(dimensionName);
+        if (fileManager == null) {
+            this.sender.sendError(source, Component.translatable("waypoint.nonexist.dimension", Component.text(dimensionName)));
+            return false;
+        } else if (fileManager.isEmpty()) {
+            this.sender.sendError(source, Component.translatable("waypoint.edit.empty.dimension", Component.text(dimensionName)));
+            return false;
         } else {
             WaypointList waypointList = fileManager.getWaypointListByName(listName);
             if (waypointList == null) {
                 this.sender.sendError(source, Component.translatable("waypoint.nonexist.list", Component.text(listName)));
-                return;
+                return false;
             } else if (waypointList.isEmpty()) {
                 this.sender.sendError(source, Component.translatable("waypoint.edit.empty.list", Component.text(listName)));
-                return;
+                return false;
+            } else {
+                action.accept(fileManager, waypointList);
+                return true;
+            }
+        }
+    }
+
+    private boolean runWithSelectorTarget(S source, D dimensionArgument, String listName, String name, TriConsumer<WaypointFileManager, WaypointList, SimpleWaypoint> action) {
+        String dimensionName = toDimensionName(dimensionArgument);
+        if  (!isDimensionValid(source, dimensionArgument)) {
+            sendDimensionError(source, dimensionName);
+            return false;
+        }
+        WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(dimensionName);
+        if (fileManager == null) {
+            this.sender.sendError(source, Component.translatable("waypoint.nonexist.dimension", Component.text(dimensionName)));
+            return false;
+        } else if (fileManager.isEmpty()) {
+            this.sender.sendError(source, Component.translatable("waypoint.edit.empty.dimension", Component.text(dimensionName)));
+            return false;
+        } else {
+            WaypointList waypointList = fileManager.getWaypointListByName(listName);
+            if (waypointList == null) {
+                this.sender.sendError(source, Component.translatable("waypoint.nonexist.list", Component.text(listName)));
+                return false;
+            } else if (waypointList.isEmpty()) {
+                this.sender.sendError(source, Component.translatable("waypoint.edit.empty.list", Component.text(listName)));
+                return false;
             } else {
                 SimpleWaypoint waypoint = waypointList.getWaypointByName(name);
                 if (waypoint == null) {
                     this.sender.sendError(source, Component.translatable("waypoint.nonexist.waypoint", Component.text(name)));
-                    return;
+                    return false;
                 } else {
-                    int colorIdx = toColorIdx(color);
-                    if (waypoint.compareProperties(initials, waypointPos, colorIdx, yaw, global)) {
-                        this.sender.sendMessage(source, Component.translatable("waypoint.edit.identical", Component.text(name)));
-                        return;
-                    } else {
-                        waypoint.setInitials(initials);
-                        waypoint.setPos(waypointPos);
-                        waypoint.setColorIdx(colorIdx);
-                        waypoint.setYaw(yaw);
-                        waypoint.setGlobal(global);
-                    }
-                    saveChanges(source, fileManager);
-                    WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.UPDATE, WaypointServerCore.EDITION);
-                    this.sender.broadcastWaypointModification(source, buffer);
-                    this.sender.sendMessage(source, Component.translatable("waypoint.edit.success", defaultWaypointText(waypoint, dimensionName)));
+                    action.accept(fileManager, waypointList, waypoint);
+                    return true;
                 }
             }
         }
     }
 
-    private void executeRemove(S source, D dimensionArgument, String listName, String name) {
+    private void executeEdit(S source, D dimensionArgument, String listName, String name, String initials, P blockPosArgument, int yaw, C color, boolean global) {
+        WaypointPos waypointPos = toWaypointPos(source, blockPosArgument);
+        if (waypointPos == null) {
+            sendPosArgumentError(source);
+            return;
+        }
+        runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) -> {
+            int colorIdx = toColorIdx(color);
+            if (waypoint.compareProperties(initials, waypointPos, colorIdx, yaw, global)) {
+                this.sender.sendMessage(source, Component.translatable("waypoint.edit.identical", Component.text(name)));
+                return;
+            } else {
+                waypoint.setInitials(initials);
+                waypoint.setPos(waypointPos);
+                waypoint.setColorIdx(colorIdx);
+                waypoint.setYaw(yaw);
+                waypoint.setGlobal(global);
+            }
+            saveChanges(source, fileManager);
+            String dimensionName = fileManager.getDimensionName();
+            WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.UPDATE, WaypointServerCore.EDITION);
+            this.sender.broadcastWaypointModification(source, buffer);
+            this.sender.sendMessage(source, Component.translatable("waypoint.edit.success", defaultWaypointText(waypoint, dimensionName)));
+        });
+    }
 
+    private void executeRemove(S source, D dimensionArgument, String listName, String name) {
+        runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) -> {
+           waypointList.remove(waypoint);
+           saveChanges(source, fileManager);
+           String dimensionName = fileManager.getDimensionName();
+            WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.REMOVE, WaypointServerCore.EDITION);
+            this.sender.broadcastWaypointModification(source, buffer);
+            this.sender.sendMessage(source, Component.translatable("waypoint.remove.success", defaultWaypointText(waypoint, dimensionName), restoreButton(dimensionName, listName, waypoint)));
+        });
     }
 
     private void executeTp(S source, D dimensionArgument, String listName, String name) {
@@ -514,13 +564,13 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
     private class WaypointNameSuggestion implements SuggestionProvider<S> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-            CommandContext<S> lastChild = context.getLastChild();
-            D dimension = getDefaultDimension(lastChild);
+            CommandContext<S> currentContext = context.getLastChild();
+            D dimension = getDefaultDimension(currentContext);
             WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(toDimensionName(dimension));
             if (fileManager == null) {
                 return Suggestions.empty();
             }
-            WaypointList waypointList = fileManager.getWaypointListByName(getString(lastChild, LIST_NAME_ARG));
+            WaypointList waypointList = fileManager.getWaypointListByName(getString(currentContext, LIST_NAME_ARG));
             if (waypointList == null) {
                 return Suggestions.empty();
             } else {
@@ -535,7 +585,7 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
     private class NameInitialsSuggestion implements SuggestionProvider<S> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-            String name = context.getLastChild().getArgument(WAYPOINT_NAME_ARG, String.class);
+            String name = getString(context.getLastChild(), WAYPOINT_NAME_ARG);
             if (name.isEmpty()) {
                 return Suggestions.empty();
             }
