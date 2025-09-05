@@ -128,27 +128,49 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
                 ).build();
     }
 
+
+
+
     @SuppressWarnings("unchecked")
     public @NotNull LiteralCommandNode<S> buildCore() {
         return (LiteralCommandNode<S>) literal(WAYPOINT_COMMAND)
                 .then(literal(ADD_COMMAND)
                         .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.add(), CONFIG.CommandPermission().add()))
-                        .then((CommandNode<Object>)
-                                selectorArguments(
-                                        propertiesArguments(context -> {
-                                            executeAddWaypoint(
-                                                    context.getSource(),
-                                                    getArgument(context, DIMENSION_ARG),
-                                                    getString(context, LIST_NAME_ARG),
-                                                    getString(context, WAYPOINT_NAME_ARG),
-                                                    getString(context, INITIALS_ARG),
-                                                    getArgument(context, POS_ARG),
-                                                    getInteger(context, YAW_ARG),
-                                                    getArgument(context, COLOR_ARG),
-                                                    getBool(context, VISIBILITY_ARG)
-                                            );
-                                            return 1;
-                                        })
+                        .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
+                                .then(argument(LIST_NAME_ARG, string())
+                                        .suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)
+                                        .then(argument(WAYPOINT_NAME_ARG, string())
+                                                .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
+                                                .then(argument(INITIALS_ARG, string())
+                                                        .suggests((SuggestionProvider<Object>) NAME_INITIALS_SUGGESTION)
+                                                        .then(argument(POS_ARG, blockPosArgumentProvider.get())
+                                                                .then(argument(YAW_ARG, integer())
+                                                                        .suggests((SuggestionProvider<Object>) PLAYER_YAW_SUGGESTION)
+                                                                        .then(argument(COLOR_ARG, colorArgumentProvider.get())
+                                                                                .then(argument(VISIBILITY_ARG, bool())
+                                                                                        .executes(
+                                                                                                cxt -> {
+                                                                                                    CommandContext<S> context = (CommandContext<S>) cxt;
+                                                                                                    executeAddWaypoint(
+                                                                                                            context.getSource(),
+                                                                                                            getArgument(context, DIMENSION_ARG),
+                                                                                                            getString(context, LIST_NAME_ARG),
+                                                                                                            getString(context, WAYPOINT_NAME_ARG),
+                                                                                                            getString(context, INITIALS_ARG),
+                                                                                                            getArgument(context, POS_ARG),
+                                                                                                            getInteger(context, YAW_ARG),
+                                                                                                            getArgument(context, COLOR_ARG),
+                                                                                                            getBool(context, VISIBILITY_ARG)
+                                                                                                    );
+                                                                                                    return 1;
+                                                                                                }
+                                                                                        )
+                                                                                )
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
                                 )
                         )
                         .then(argument(POS_ARG, blockPosArgumentProvider.get())
@@ -189,69 +211,107 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
                 )
                 .then(literal(EDIT_COMMAND)
                         .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.edit(), CONFIG.CommandPermission().edit()))
-                        .then((CommandNode<Object>)
-                                selectorArguments(
-                                        propertiesArguments(context -> {
-                                            executeEdit(
-                                                    context.getSource(),
-                                                    getArgument(context, DIMENSION_ARG),
-                                                    getString(context, LIST_NAME_ARG),
-                                                    getString(context, WAYPOINT_NAME_ARG),
-                                                    getString(context, INITIALS_ARG),
-                                                    getArgument(context, POS_ARG),
-                                                    getInteger(context, YAW_ARG),
-                                                    getArgument(context, COLOR_ARG),
-                                                    getBool(context, VISIBILITY_ARG)
-                                            );
-                                            return 1;
-                                        })
+                        .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
+                                .then(argument(LIST_NAME_ARG, string())
+                                        .suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)
+                                        .then(argument(WAYPOINT_NAME_ARG, string())
+                                                .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
+                                                .then(argument(INITIALS_ARG, string())
+                                                        .suggests((SuggestionProvider<Object>) NAME_INITIALS_SUGGESTION)
+                                                        .then(argument(POS_ARG, blockPosArgumentProvider.get())
+                                                                .then(argument(YAW_ARG, integer())
+                                                                        .suggests((SuggestionProvider<Object>) PLAYER_YAW_SUGGESTION)
+                                                                        .then(argument(COLOR_ARG, colorArgumentProvider.get())
+                                                                                .then(argument(VISIBILITY_ARG, bool())
+                                                                                        .executes(
+                                                                                                cxt -> {
+                                                                                                    CommandContext<S> context = (CommandContext<S>) cxt;
+                                                                                                    executeEdit(
+                                                                                                            context.getSource(),
+                                                                                                            getArgument(context, DIMENSION_ARG),
+                                                                                                            getString(context, LIST_NAME_ARG),
+                                                                                                            getString(context, WAYPOINT_NAME_ARG),
+                                                                                                            getString(context, INITIALS_ARG),
+                                                                                                            getArgument(context, POS_ARG),
+                                                                                                            getInteger(context, YAW_ARG),
+                                                                                                            getArgument(context, COLOR_ARG),
+                                                                                                            getBool(context, VISIBILITY_ARG)
+                                                                                                    );
+                                                                                                    return 1;
+                                                                                                }
+                                                                                        )
+                                                                                )
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
                                 )
                         )
                 )
                 .then(literal(REMOVE_COMMAND)
                         .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.remove(), CONFIG.CommandPermission().remove()))
-                        .then((CommandNode<Object>)
-                                selectorArguments(
-                                        context -> {
-                                            executeRemove(
-                                                    context.getSource(),
-                                                    getArgument(context, DIMENSION_ARG),
-                                                    getString(context, LIST_NAME_ARG),
-                                                    getString(context, WAYPOINT_NAME_ARG)
-                                            );
-                                            return 1;
-                                        }
+                        .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
+                                .then(argument(LIST_NAME_ARG, string())
+                                        .suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)
+                                        .then(argument(WAYPOINT_NAME_ARG, string())
+                                                .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
+                                                .executes(
+                                                        cxt -> {
+                                                            CommandContext<S> context = (CommandContext<S>) cxt;
+                                                            executeRemove(
+                                                                    context.getSource(),
+                                                                    getArgument(context, DIMENSION_ARG),
+                                                                    getString(context, LIST_NAME_ARG),
+                                                                    getString(context, WAYPOINT_NAME_ARG)
+                                                            );
+                                                            return 1;
+                                                        }
+                                                )
+                                        )
                                 )
                         )
                 )
                 .then(literal(TP_COMMAND)
                         .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.tp(), CONFIG.CommandPermission().tp()))
-                        .then((CommandNode<Object>)
-                                selectorArguments(
-                                        context -> {
-                                            executeTp(
-                                                    context.getSource(),
-                                                    getArgument(context, DIMENSION_ARG),
-                                                    getString(context, LIST_NAME_ARG),
-                                                    getString(context, WAYPOINT_NAME_ARG)
-                                            );
-                                            return 1;
-                                        }
+                        .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
+                                .then(argument(LIST_NAME_ARG, string())
+                                        .suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)
+                                        .then(argument(WAYPOINT_NAME_ARG, string())
+                                                .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
+                                                .executes(    cxt -> {
+                                                            CommandContext<S> context = (CommandContext<S>) cxt;
+                                                            executeTp(
+                                                                    context.getSource(),
+                                                                    getArgument(context, DIMENSION_ARG),
+                                                                    getString(context, LIST_NAME_ARG),
+                                                                    getString(context, WAYPOINT_NAME_ARG)
+                                                            );
+                                                            return 1;
+                                                        }
+                                                )
+                                        )
                                 )
                         )
                 )
                 .then(literal(DOWNLOAD_COMMAND)
-                        .then((CommandNode<Object>)
-                                selectorArguments(
-                                        context -> {
-                                            executeDownload(
-                                                    context.getSource(),
-                                                    getArgument(context, DIMENSION_ARG),
-                                                    getString(context, LIST_NAME_ARG),
-                                                    getString(context, WAYPOINT_NAME_ARG)
-                                            );
-                                            return 1;
-                                        }
+                        .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
+                                .then(argument(LIST_NAME_ARG, string())
+                                        .suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)
+                                        .then(argument(WAYPOINT_NAME_ARG, string())
+                                                .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
+                                                .executes(    cxt -> {
+                                                            CommandContext<S> context = (CommandContext<S>) cxt;
+                                                            executeDownload(
+                                                                    context.getSource(),
+                                                                    getArgument(context, DIMENSION_ARG),
+                                                                    getString(context, LIST_NAME_ARG),
+                                                                    getString(context, WAYPOINT_NAME_ARG)
+                                                            );
+                                                            return 1;
+                                                        }
+                                                )
+                                        )
                                 )
                         )
                 )
@@ -265,6 +325,9 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
                 )
                 .build();
     }
+
+
+
 
     private void sendDimensionError(S source, String dimensionName) {
         this.sender.sendError(source, Component.translatable("argument.dimension.invalid", Component.text(dimensionName)));
@@ -435,7 +498,7 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
     private class WaypointListSuggestion implements SuggestionProvider<S> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-            D dimension = getDefaultDimension(context);
+            D dimension = getDefaultDimension(context.getLastChild());
             WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(toDimensionName(dimension));
             if (fileManager == null) {
                 return Suggestions.empty();
@@ -451,12 +514,13 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
     private class WaypointNameSuggestion implements SuggestionProvider<S> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-            D dimension = getDefaultDimension(context);
+            CommandContext<S> lastChild = context.getLastChild();
+            D dimension = getDefaultDimension(lastChild);
             WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(toDimensionName(dimension));
             if (fileManager == null) {
                 return Suggestions.empty();
             }
-            WaypointList waypointList = fileManager.getWaypointListByName(getString(context, LIST_NAME_ARG));
+            WaypointList waypointList = fileManager.getWaypointListByName(getString(lastChild, LIST_NAME_ARG));
             if (waypointList == null) {
                 return Suggestions.empty();
             } else {
@@ -471,7 +535,7 @@ public abstract class CoreWaypointCommand<S, C, P, D, K> {
     private class NameInitialsSuggestion implements SuggestionProvider<S> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-            String name = getString(context, WAYPOINT_NAME_ARG);
+            String name = context.getLastChild().getArgument(WAYPOINT_NAME_ARG, String.class);
             if (name.isEmpty()) {
                 return Suggestions.empty();
             }
