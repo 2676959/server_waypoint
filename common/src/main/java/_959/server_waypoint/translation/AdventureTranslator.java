@@ -18,7 +18,7 @@ public class AdventureTranslator implements Translator {
 
     @Override
     public @Nullable MessageFormat translate(@NotNull String key, @NotNull Locale locale) {
-        String translation = getTranslation(locale.toString().toLowerCase(), key);
+        String translation = getTranslation(locale, key);
         if (translation == null) {
             return null;
         }

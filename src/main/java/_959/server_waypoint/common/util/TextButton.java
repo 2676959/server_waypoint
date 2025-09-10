@@ -10,6 +10,7 @@ import static _959.server_waypoint.common.util.TextHelper.text;
 import static _959.server_waypoint.common.util.TextHelper.ClickEventHelper.SuggestCommand;
 import static _959.server_waypoint.common.util.TextHelper.HoverEventHelper.ShowText;
 
+@Deprecated
 public class TextButton {
     public static MutableText replaceButton(String dimString, String listName, SimpleWaypoint waypoint) {
         Style btnStyle = Style.EMPTY

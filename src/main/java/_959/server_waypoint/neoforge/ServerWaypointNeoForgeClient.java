@@ -18,7 +18,6 @@ public class ServerWaypointNeoForgeClient extends ServerWaypointClientMod {
     public static void registerPayloads(RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar("1");
         // S2C
-        registrar.playToClient(SimpleWaypointS2CPayload.ID, SimpleWaypointS2CPayload.PACKET_CODEC, (payload, context) -> {});
         registrar.playToClient(WaypointListS2CPayload.ID, WaypointListS2CPayload.PACKET_CODEC, ServerWaypointPayloadHandler::onWaypointListPayload);
         registrar.playToClient(DimensionWaypointS2CPayload.ID, DimensionWaypointS2CPayload.PACKET_CODEC, ServerWaypointPayloadHandler::onDimensionWaypointPayload);
         registrar.playToClient(WorldWaypointS2CPayload.ID, WorldWaypointS2CPayload.PACKET_CODEC, ServerWaypointPayloadHandler::onWorldWaypointPayload);

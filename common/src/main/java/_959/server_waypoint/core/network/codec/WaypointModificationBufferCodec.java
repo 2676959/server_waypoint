@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf;
 
 public class WaypointModificationBufferCodec {
     public static void encode(ByteBuf buf, WaypointModificationBuffer modification) {
-        UtfStringCodec.encode(buf, modification.dimString());
+        UtfStringCodec.encode(buf, modification.dimensionName());
         UtfStringCodec.encode(buf, modification.listName());
         SimpleWaypointCodec.encode(buf, modification.waypoint());
         buf.writeByte(modification.type().ordinal());

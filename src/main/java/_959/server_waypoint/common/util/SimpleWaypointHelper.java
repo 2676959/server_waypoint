@@ -11,19 +11,20 @@ import xaero.common.minimap.waypoints.Waypoint;
 import xaero.hud.minimap.waypoint.WaypointColor;
 import xaero.hud.minimap.waypoint.WaypointPurpose;
 //? if >= 1.21.5 {
-import xaero.hud.minimap.waypoint.WaypointVisibilityType;
-//?} else {
-/*import xaero.common.minimap.waypoints.WaypointVisibilityType;
-*///?}
+/*import xaero.hud.minimap.waypoint.WaypointVisibilityType;
+*///?} else {
+import xaero.common.minimap.waypoints.WaypointVisibilityType;
+//?}
 import static _959.server_waypoint.common.util.TextHelper.ClickEventHelper.RunCommand;
 import static _959.server_waypoint.common.util.TextHelper.HoverEventHelper.ShowText;
-import static _959.server_waypoint.util.XaeroDimensionStringConverter.toVanilla;
+import static _959.server_waypoint.util.XaerosMapHelper.toVanilla;
 
 public class SimpleWaypointHelper {
     public static final String SEPARATOR = ":";
     public static final Style DEFAULT_STYLE = Style.EMPTY.withBold(false).withColor(Formatting.WHITE);
     public static final String XAERO_SHARE_PREFIX = "xaero-waypoint";
 
+    @Deprecated
     public static MutableText simpleWaypointToFormattedText(SimpleWaypoint waypoint, String command, Text hoverText) {
         Style initialStyle = Style.EMPTY.withBold(true).withColor(Formatting.byColorIndex(waypoint.colorIdx())).withClickEvent(RunCommand.apply(command));
         MutableText waypointText = Text.literal("[" + waypoint.initials() + "]").setStyle(initialStyle);
@@ -35,6 +36,7 @@ public class SimpleWaypointHelper {
 
     // xaero-waypoint:a:A:-4:72:-9:13:false:0:Internal-overworld
     //        0      :1:2: 3: 4: 5: 6:  7  :8:        9
+    @Deprecated
     @Nullable
     public static Pair<SimpleWaypoint, String> chatShareToSimpleWaypoint(String shareString) {
         String[] args = shareString.split(SEPARATOR);

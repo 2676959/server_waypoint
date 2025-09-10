@@ -1,0 +1,52 @@
+{
+  "a": "测试",
+  "b": "测试 {0}",
+  "edition.save.failed": "EDITION文件保存失败，同步功能可能受到影响",
+
+  "waypoint.save.failed": "写入文件失败：{0}",
+
+  "waypoint.add.success": "路径点{0}已添加至列表：{1}",
+  "waypoint.add.exists": "路径点{0}已存在，替换该路径点？{1}",
+  "waypoint.add.list.success": "已在维度“{1}”新建路径点列表“{0}”",
+  "waypoint.add.list.exists": "路径点列表“{0}”已存在",
+
+  "waypoint.empty.dimension": "维度“{0}”没有任何路径点",
+  "waypoint.empty.list": "路径点列表“{0}”为空",
+  "waypoint.nonexist.list": "路径点列表“{0}”不存在",
+  "waypoint.nonexist.waypoint": "路径点“{0}”不存在",
+
+  "waypoint.edit.identical": "提供的参数与此路径点相同，未做出修改",
+  "waypoint.edit.success": "路径点{0}已更新",
+
+  "waypoint.remove.success": "路径点{0}已被移除，恢复该路径点？{1}",
+  "waypoint.remove.list.success": "路径点列表“{0}”已被移除",
+  "waypoint.remove.list.nonempty": "无法移除非空列表“{0}”",
+
+  "waypoint.nowaypoints": "该服务器上没有任何路径点",
+
+  "waypoint.download.all": "已向你的客户端发送服务器上所有路径点",
+  "waypoint.download.dimension": "已向你的客户端发送维度“{0}”中的所有路径点",
+  "waypoint.download.list": "已向你的客户端发送列表“{0}”中的全部路径点",
+  "waypoint.download.waypoint": "已向你的客户端发送路径点{0}",
+
+  "waypoint.tp": "已将{0}传送至路径点{1}",
+
+  "waypoint.xaeros.sharing.no.list": "没有可用的路径点列表，添加路径点列表{0}",
+  "waypoint.xaeros.sharing.invalid.dimension": "发现Xaero模组分享的路径点：{0}，位于无效的维度{1}",
+  "waypoint.xaeros.sharing.found": "发现Xaero模组分享的路径点：{0}，位于维度{1}",
+  "waypoint.sharing.add.to.list": "选择添加至路径点列表：\n{0}",
+
+  "waypoint.modification.broadcast.player": "{0}{1}路径点{2}",
+  "waypoint.modification.broadcast.server": "服务器{0}路径点{1}",
+  "waypoint.modification.type.add": "添加了",
+  "waypoint.modification.type.remove": "删除了",
+  "waypoint.modification.type.update": "更新了",
+
+  "button.initials.tp": "点击传送",
+  "button.replace": "点击替换路径点",
+  "button.restore": "点击恢复路径点",
+  "button.remove": "点击删除路径点",
+  "button.edit": "编辑路径点",
+  "button.add.waypoint": "点击添加路径点",
+  "button.add.list": "点击创建路径点列表"
+}

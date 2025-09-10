@@ -1,6 +1,6 @@
 package _959.server_waypoint.core;
 
-import _959.server_waypoint.core.waypoint.DimensionWaypoint;
+import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 
@@ -15,27 +15,35 @@ import java.util.Map;
 import org.jetbrains.annotations.Nullable;
 
 public class WaypointFileManager {
-    private final String dimString;
+    private final String dimensionName;
     private final Path dimensionFilePath;
     private final Map<String, WaypointList> waypointListMap;
 
-    public WaypointFileManager(String fileName, String dimString, Path waypointsDir) {
-        if (fileName == null && dimString != null) {
-            fileName = dimString.replace("/", "%").replace(":", "$");
-        } else if (fileName != null && dimString == null) {
-            dimString = fileName.replace("%", "/").replace("$", ":");
+    public WaypointFileManager(String fileName, String dimensionName, Path waypointsDir) {
+        if (fileName == null && dimensionName != null) {
+            fileName = dimensionName.replace("/", "%").replace(":", "$");
+        } else if (fileName != null && dimensionName == null) {
+            dimensionName = fileName.replace("%", "/").replace("$", ":");
         }
-        this.dimString = dimString;
+        this.dimensionName = dimensionName;
         this.waypointListMap = new HashMap<>();
         this.dimensionFilePath = waypointsDir.resolve(fileName + ".txt");
     }
 
-    public DimensionWaypoint toDimensionWaypoint() {
-        return new DimensionWaypoint(this.dimString, this.getWaypointLists());
+    @Nullable
+    public DimensionWaypointBuffer toDimensionWaypoint() {
+        if (this.isEmpty()) {
+            return null;
+        }
+        return new DimensionWaypointBuffer(this.dimensionName, this.getWaypointLists());
     }
 
-    public String getDimString() {
-        return this.dimString;
+    public boolean isEmpty() {
+        return this.waypointListMap.isEmpty();
+    }
+
+    public String getDimensionName() {
+        return this.dimensionName;
     }
 
     public Path getDimensionFile() {

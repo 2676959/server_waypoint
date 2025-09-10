@@ -14,10 +14,7 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
@@ -25,7 +22,6 @@ import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 public class LanguageFilesManager {
     private final Path EXTERNAL_LANG_PATH;
     private static final String ASSETS_PATH = "assets/server_waypoint/lang/";
-    private static String currentLanguage = "en_us";
     private static final Map<String, Map<String, String>> translations = new HashMap<>();
 
     public LanguageFilesManager(Path configDir) throws IOException, URISyntaxException {
@@ -93,9 +89,8 @@ public class LanguageFilesManager {
         }
     }
 
-    @Nullable
-    public static String getTranslation(String key) {
-        return getTranslation(currentLanguage, key);
+    public static Set<String> getLoadedLanguages() {
+        return translations.keySet();
     }
 
     @Nullable
@@ -107,8 +102,22 @@ public class LanguageFilesManager {
         return languageMap.get(key);
     }
 
-    public static void setCurrentLanguage(String languageCode) {
-        currentLanguage = languageCode;
+    @Nullable
+    public static String getTranslation(Locale locale, String key) {
+        String fullCode = locale.toString().toLowerCase();
+        Map<String, String> languageMap = translations.get(fullCode);
+        if (languageMap == null) {
+            // try without region code
+            String language = locale.getLanguage().toLowerCase();
+            Set<String> allLanguageCodes = translations.keySet();
+            for (String languageCode : allLanguageCodes) {
+                if (languageCode.toLowerCase().contains(language)) {
+                    return translations.get(languageCode).get(key);
+                }
+            }
+            return null;
+        }
+        return languageMap.get(key);
     }
 
     private List<Path> getInternalLanguageFiles() throws URISyntaxException, IOException {

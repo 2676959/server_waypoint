@@ -1,16 +1,21 @@
 package _959.server_waypoint;
 
 import _959.server_waypoint.core.IPlatformConfigPath;
+import _959.server_waypoint.core.network.ClientHandshakeHandler;
 import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
 import _959.server_waypoint.core.network.codec.WaypointModificationBufferCodec;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
+import _959.server_waypoint.network.PaperChatMessageHandler;
+import _959.server_waypoint.network.PaperMessageSender;
 import _959.server_waypoint.server.WaypointServerPlugin;
 import _959.server_waypoint.server.command.WaypointCommand;
+import _959.server_waypoint.server.command.permission.PaperPermissionManager;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -20,11 +25,15 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.nio.file.Path;
 
+import static _959.server_waypoint.core.network.MessageChannelID.*;
 import static _959.server_waypoint.server.WaypointServerPlugin.LOGGER;
+import static _959.server_waypoint.util.DimensionFileHelper.getFileName;
+import static net.kyori.adventure.text.Component.text;
 
 public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageListener, IPlatformConfigPath {
     public static final String worldmapChannel = "xaeroworldmap:main";
     public static final String minimapChannel = "xaerominimap:main";
+    private @SuppressWarnings("UnstableApiUsage") ClientHandshakeHandler<CommandSourceStack, Player> handshakeHandler;
 
     @Override
     @SuppressWarnings("UnstableApiUsage")
@@ -37,17 +46,26 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        PaperMessageSender sender = new PaperMessageSender(this);
+        PaperPermissionManager permissionManager = new PaperPermissionManager();
+        WaypointCommand waypointCommand = new WaypointCommand(sender, permissionManager);
+        ServerWaypointListener listener = new ServerWaypointListener(new PaperChatMessageHandler(this.getServer(), sender, permissionManager));
+        this.handshakeHandler = new ClientHandshakeHandler<>(sender);
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
-            commands.registrar().register(WaypointCommand.build());
+            commands.registrar().register(waypointCommand.build());
         });
-
-        getServer().getPluginManager().registerEvents(new ServerWaypointListener(), this);
+        getServer().getPluginManager().registerEvents(listener, this);
+        registerChannels();
     }
 
     private void registerChannels() {
         // register for server_waypoint mod
-        getServer().getMessenger().registerOutgoingPluginChannel(this, modificationChannel);
-        getServer().getMessenger().registerIncomingPluginChannel(this, handShakeChannel, this);
+        getServer().getMessenger().registerOutgoingPluginChannel(this, WAYPOINT_LIST_CHANNEL.toString());
+        getServer().getMessenger().registerOutgoingPluginChannel(this, DIMENSION_WAYPOINT_CHANNEL.toString());
+        getServer().getMessenger().registerOutgoingPluginChannel(this, WORLD_WAYPOINT_CHANNEL.toString());
+        getServer().getMessenger().registerOutgoingPluginChannel(this, WAYPOINT_MODIFICATION_CHANNEL.toString());
+
+        getServer().getMessenger().registerIncomingPluginChannel(this, HANDSHAKE_CHANNEL.toString(), this);
 
         // register for xaero's minimap and world map mod
         getServer().getMessenger().registerOutgoingPluginChannel(this, worldmapChannel);
@@ -55,27 +73,11 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
     }
 
     @Override
-    public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte[] message) {
-        LOGGER.info("channel: {}", channel);
+    public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
         if (channel.equals("server_waypoint:handshake")) {
             ByteArrayDataInput input = ByteStreams.newDataInput(message);
-//            String subchannel = input.readUTF();
-//            LOGGER.info(subchannel);
-//            LOGGER.info("received handshake message");
-            int version = input.readInt();
-            LOGGER.info("client version: {}", version);
-            ByteBuf out = Unpooled.buffer();
-            SimpleWaypoint waypoint = new SimpleWaypoint("NETWORK_TEST", "T", 0,0,0,1,0, true);
-            WaypointModificationBuffer modificationBuffer = new WaypointModificationBuffer(
-                    "dim%0",
-                    "a",
-                    waypoint,
-                    WaypointModificationType.ADD,
-                    1
-            );
-            WaypointModificationBufferCodec.encode(out, modificationBuffer);
-            out.capacity(out.writerIndex());
-            player.sendPluginMessage(this, modificationChannel, out.array());
+            int clientEdition = input.readInt();
+            this.handshakeHandler.onHandshake(player, clientEdition);
         }
     }
 
