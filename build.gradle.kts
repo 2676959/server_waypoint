@@ -70,7 +70,14 @@ dependencies {
     val yarn_build: String by project
     minecraft("com.mojang:minecraft:$minecraft")
     implementation(project(":common"))
-    modCompileOnly("net.kyori:adventure-platform-mod-shared-fabric-repack:6.5.1")
+    if (minecraft == "1.21") {
+        implementation("net.kyori:adventure-text-serializer-gson:4.17.0")
+    } else if (minecraft == "1.21.3") {
+        implementation("net.kyori:adventure-text-serializer-gson:4.20.0")
+    } else if (minecraft == "1.21.5") {
+        implementation("net.kyori:adventure-text-serializer-gson:4.24.0")
+    }
+
     if (loader == "fabric") {
         val fabric_api: String by project
         val fabric_loader: String by project
