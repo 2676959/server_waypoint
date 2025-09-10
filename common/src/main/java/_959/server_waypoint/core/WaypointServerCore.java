@@ -1,6 +1,9 @@
 package _959.server_waypoint.core;
 
 import _959.server_waypoint.config.Config;
+import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
+import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
+import _959.server_waypoint.translation.AdventureTranslator;
 import _959.server_waypoint.translation.LanguageFilesManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -10,17 +13,19 @@ import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
+import net.kyori.adventure.translation.GlobalTranslator;
+import net.kyori.adventure.translation.Translator;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static _959.server_waypoint.translation.LanguageFilesManager.getLoadedLanguages;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 
 public abstract class WaypointServerCore {
+    public static WaypointServerCore INSTANCE;
     public static int EDITION = 0;
     public static Config CONFIG = new Config();
     public static final String GROUP_ID = "server_waypoint";
@@ -32,10 +37,12 @@ public abstract class WaypointServerCore {
     private final Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
     private final byte[] DEFAULT_CONFIG;
     private LinkedHashMap<String, WaypointFileManager> fileManagerMap;
+    private Translator translator;
 
     public WaypointServerCore(Path configDir) {
         this.DEFAULT_CONFIG = this.gson.toJson(CONFIG).getBytes();
         this.configDir = configDir;
+        INSTANCE = this;
     }
 
     public abstract boolean isDimensionKeyValid(String dimString);
@@ -48,7 +55,24 @@ public abstract class WaypointServerCore {
                 fileManagerMap.remove(fileName);
             }
         }
-    };
+    }
+
+    @Nullable
+    public WorldWaypointBuffer toWorldWaypointBuffer() {
+        List<DimensionWaypointBuffer> dimensionWaypointBuffers = new ArrayList<>();
+
+        for(WaypointFileManager fileManager : this.getFileManagerMap().values()) {
+            if (fileManager != null && !fileManager.isEmpty()) {
+                dimensionWaypointBuffers.add(fileManager.toDimensionWaypoint());
+            }
+        }
+
+        if (dimensionWaypointBuffers.isEmpty()) {
+            return null;
+        } else {
+            return new WorldWaypointBuffer(dimensionWaypointBuffers, EDITION);
+        }
+    }
 
     public void loadConfig(FileReader reader) {
         CONFIG = this.gson.fromJson(reader, Config.class);
@@ -130,7 +154,7 @@ public abstract class WaypointServerCore {
                 WaypointFileManager fileManager = new WaypointFileManager(fileName, null, this.waypointsDir);
                 try {
                     fileManager.readDimension();
-                    this.fileManagerMap.put(fileManager.getDimString(), fileManager);
+                    this.fileManagerMap.put(fileManager.getDimensionName(), fileManager);
                 } catch (IOException e) {
                     LOGGER.error("Failed to load dimension file", e);
                     throw e;
@@ -161,17 +185,23 @@ public abstract class WaypointServerCore {
                 LOGGER.error("Failed to initialize config directory");
                 throw e;
             }
-        };
+        }
     }
 
     private void initLanguageManager(Path configDir) {
         try {
             new LanguageFilesManager(configDir);
-            LOGGER.info("Loaded language files.");
-            LOGGER.info("{}", LanguageFilesManager.getTranslation("a"));
+            Set<String> languages = getLoadedLanguages();
+            String log = String.join(".",  languages.toArray(new String[0]));
+            LOGGER.info("Loaded {} languages: {}", languages.size(), log);
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void initAdventureTranslator() {
+        this.translator = new AdventureTranslator();
+        GlobalTranslator.translator().addSource(this.translator);
     }
 
     public void initServer() throws IOException {
@@ -184,6 +214,7 @@ public abstract class WaypointServerCore {
         this.initEditionFile(this.configDir);
         this.initWaypointsFile(this.configDir);
         this.initLanguageManager(this.configDir);
+        this.initAdventureTranslator();
     }
 
     public Map<String, WaypointFileManager> getFileManagerMap() {

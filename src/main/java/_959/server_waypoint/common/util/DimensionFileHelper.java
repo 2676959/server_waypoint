@@ -10,8 +10,8 @@ public class DimensionFileHelper {
         return dimKey.getValue().toString();
     }
 
-    public static RegistryKey<World> getDimensionKey(String dimString) {
-        String[] idParts = dimString.split(":");
+    public static RegistryKey<World> getDimensionKey(String dimensionName) {
+        String[] idParts = dimensionName.split(":");
         return RegistryKey.of(RegistryKeys.WORLD, Identifier.of(idParts[0], idParts[1]));
     }
 }

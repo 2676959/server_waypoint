@@ -8,6 +8,7 @@ public class CommandGenerator {
     public static final String ADD_ARGUMENT = "add";
     public static final String EDIT_ARGUMENT = "edit";
     public static final String REMOVE_ARGUMENT = "remove";
+    public static final String TP_ARGUMENT = "tp";
     public static final String[] COLOR_NAMES = {
             "black",
             "dark_blue",
@@ -31,8 +32,9 @@ public class CommandGenerator {
         return COLOR_NAMES[colorIdx];
     }
 
-    public static String tpCmd(String dimString, WaypointPos pos, int yaw) {
-        return "/execute in %s run tp @s %d %d %d %d 0".formatted(dimString, pos.x(), pos.y(), pos.z(), yaw);
+    public static String tpCmd(String dimensionName, String waypointList, String waypointName) {
+        return WAYPOINT_COMMAND + " " + TP_ARGUMENT + " " +
+        "%s %s %s".formatted(dimensionName, waypointList, waypointName);
     }
 
     public static String addCmd(String dimString, String listName, SimpleWaypoint waypoint) {

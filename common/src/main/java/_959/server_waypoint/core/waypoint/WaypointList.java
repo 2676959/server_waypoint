@@ -23,6 +23,10 @@ public class WaypointList {
         return this.name;
     }
 
+    public boolean isEmpty() {
+        return this.simpleWaypoints.isEmpty();
+    }
+
     public List<SimpleWaypoint> simpleWaypoints() {
         return this.simpleWaypoints;
     }

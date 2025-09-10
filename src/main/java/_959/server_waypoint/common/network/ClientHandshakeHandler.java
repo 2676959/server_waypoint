@@ -14,6 +14,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
 
+@Deprecated
 public class ClientHandshakeHandler {
     public static void onClientHandshake(
             HandshakeC2SPayload payload,

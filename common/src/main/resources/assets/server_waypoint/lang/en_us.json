@@ -1,3 +1,52 @@
 {
-  "a": "test"
+  "a": "test",
+  "b": "test {0}",
+  "edition.save.failed": "Failed to save EDITION file, syncing may not work properly",
+
+  "waypoint.save.failed": "Failed to write to {0}",
+
+  "waypoint.add.success": "Waypoint {0} has been added to list: {1}",
+  "waypoint.add.exists": "Waypoint {0} already exists. Replace it? {1}",
+  "waypoint.add.list.success": "Waypoint list \"{0}\" has been added to dimension {1}",
+  "waypoint.add.list.exists": "Waypoint list \"{0}\" already exists",
+
+  "waypoint.empty.dimension": "Dimension {0} has no waypoints",
+  "waypoint.empty.list": "Waypoint list {0} is empty",
+  "waypoint.nonexist.list": "Waypoint list {0} does not exist",
+  "waypoint.nonexist.waypoint": "Waypoint {0} does not exist",
+
+  "waypoint.edit.identical": "Identical properties provided, no changes made",
+  "waypoint.edit.success": "Waypoint {0} has been updated",
+
+  "waypoint.remove.success": "Waypoint {0} has been removed, Restore it? {1}",
+  "waypoint.remove.list.success": "Waypoint list {0} has been removed",
+  "waypoint.remove.list.nonempty": "Cannot remove non-empty waypoint list: {0}",
+
+  "waypoint.nowaypoints": "No waypoints on this server",
+
+  "waypoint.download.all": "Sent all waypoints on this server to your client",
+  "waypoint.download.dimension": "Sent all waypoints in dimension {0} to your client",
+  "waypoint.download.list": "Sent all waypoints in list {0} to your client",
+  "waypoint.download.waypoint": "Sent Waypoint {0} to your client",
+
+  "waypoint.tp": "Teleported {0} to waypoint {1}",
+
+  "waypoint.modification.broadcast.player": "{0} {1} waypoint {2} on server",
+  "waypoint.modification.broadcast.server": "Server {0} waypoint {1}",
+  "waypoint.modification.type.add": "added",
+  "waypoint.modification.type.remove": "removed",
+  "waypoint.modification.type.update": "updated",
+
+  "waypoint.xaeros.sharing.no.list": "No waypoint list available, add a waypoint list first {0}",
+  "waypoint.xaeros.sharing.invalid.dimension": "Found Xaero's mod sharing waypoint: {0} with invalid dimension {1}",
+  "waypoint.xaeros.sharing.found": "Found Xaero's mod sharing waypoint: {0} in dimension {1}",
+  "waypoint.sharing.add.to.list": "Select list to add:\n{0}",
+
+  "button.initials.tp": "click to tp",
+  "button.replace": "click to replace",
+  "button.restore": "click to restore",
+  "button.remove": "click to remove",
+  "button.edit": "edit",
+  "button.add.waypoint": "click to add waypoint",
+  "button.add.list": "click to add waypoint list"
 }
