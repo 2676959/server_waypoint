@@ -229,7 +229,9 @@ public abstract class WaypointServerCore {
     public void saveAllFiles() {
         for (WaypointFileManager fileManager : this.fileManagerMap.values()) {
             try {
-                fileManager.saveDimension();
+                if (fileManager != null) {
+                    fileManager.saveDimension();
+                }
             } catch (IOException e) {
                 LOGGER.error("Failed to save dimension file {}", fileManager.getDimensionFile());
             }
