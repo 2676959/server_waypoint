@@ -65,6 +65,7 @@ public class ServerWaypointFabric implements DedicatedServerModInitializer, IPla
         };
         ClientHandshakeHandler<ServerCommandSource, ServerPlayerEntity> handshakeHandler = new ClientHandshakeHandler<>(sender);
         ServerLifecycleEvents.SERVER_STARTING.register(handler::setServer);
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> waypointServer.saveAllFiles());
         ServerMessageEvents.CHAT_MESSAGE.register(handler::onChatMessage);
         ServerPlayNetworking.registerGlobalReceiver(HandshakeC2SPayload.ID, ((handshakeC2SPayload, context) ->
                 handshakeHandler.onHandshake(context.player(), handshakeC2SPayload.handshakeBuffer().edition())
