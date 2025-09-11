@@ -28,6 +28,8 @@ import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -37,6 +39,7 @@ import java.util.function.Supplier;
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 import static _959.server_waypoint.text.TextButton.*;
 import static _959.server_waypoint.text.WaypointTextHelper.*;
+import static _959.server_waypoint.translation.LanguageFilesManager.getLoadedLanguages;
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
@@ -349,7 +352,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
                         )
                 )
                 .then(literal(RELOAD_COMMAND)
-                        .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.reload(), CONFIG.CommandPermission().remove()))
+                        .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.reload(), CONFIG.CommandPermission().reload()))
                         .executes(
                                 context -> {
                                     executeReload((S) context.getSource());
@@ -642,6 +645,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
     private void executeReload(S source) {
         executeByServer(source, () -> {
             WaypointServerCore.INSTANCE.reload();
+            String[] lang = getLoadedLanguages().toArray(new String[0]);
+            this.sender.sendMessage(source, Component.translatable("waypoint.loaded.languages",
+                    Component.text(lang.length), Component.text(String.join(" ", lang))));
         });
         this.sender.sendMessage(source, Component.translatable("waypoint.reload"));
     }

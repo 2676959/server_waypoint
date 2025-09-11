@@ -40,7 +40,8 @@
   "waypoint.modification.type.remove": "删除了",
   "waypoint.modification.type.update": "更新了",
 
-  "waypoint.reload": "重新加载配置文件和语言文件",
+  "waypoint.reload": "正在重新加载配置文件和语言文件",
+  "waypoint.loaded.languages": "已加载{0}种语言: {1}",
 
   "button.initials.tp": "点击传送",
   "button.replace": "点击替换路径点",
