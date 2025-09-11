@@ -36,11 +36,12 @@
   "waypoint.modification.type.update": "updated",
 
   "waypoint.xaeros.sharing.no.list": "No waypoint list available, add a waypoint list first {0}",
-  "waypoint.xaeros.sharing.invalid.dimension": "Found Xaero\'s mod sharing waypoint {0} with invalid dimension {1}",
-  "waypoint.xaeros.sharing.found": "Found Xaero\'s mod sharing waypoint {0} in dimension {1}",
+  "waypoint.xaeros.sharing.invalid.dimension": "Found Xaero''s mod sharing waypoint {0} with invalid dimension {1}",
+  "waypoint.xaeros.sharing.found": "Found Xaero''s mod sharing waypoint {0} in dimension {1}",
   "waypoint.sharing.add.to.list": "Select list to add:\n{0}",
 
   "waypoint.reload": "Reload config file and language files",
+  "waypoint.loaded.languages": "Loaded {0} languages: {1}",
 
   "button.initials.tp": "click to tp",
   "button.replace": "click to replace",
