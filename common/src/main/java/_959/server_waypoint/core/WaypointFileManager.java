@@ -32,10 +32,25 @@ public class WaypointFileManager {
 
     @Nullable
     public DimensionWaypointBuffer toDimensionWaypoint() {
-        if (this.isEmpty()) {
+        List<WaypointList> waypointLists = new ArrayList<>();
+        for (WaypointList waypointList : this.waypointListMap.values()) {
+            if (!waypointList.isEmpty()) {
+                waypointLists.add(waypointList);
+            }
+        }
+        if (waypointLists.isEmpty()) {
             return null;
         }
-        return new DimensionWaypointBuffer(this.dimensionName, this.getWaypointLists());
+        return new DimensionWaypointBuffer(this.dimensionName, waypointLists);
+    }
+
+    public boolean hasNoWaypoints() {
+        for (WaypointList waypointList : this.waypointListMap.values()) {
+            if (!waypointList.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public boolean isEmpty() {
@@ -89,12 +104,10 @@ public class WaypointFileManager {
                     String name = line.substring(1).trim();
                     currentList = WaypointList.build(name);
                     this.addWaypointList(currentList);
-//                    WaypointServerCore.LOGGER.info("Created waypoint list: {}", name);
                 } else if (currentList != null) {
                     try {
                         SimpleWaypoint waypoint = SimpleWaypoint.fromString(line);
                         currentList.add(waypoint);
-//                        WaypointServerCore.LOGGER.info("Added waypoint: {} to list: {}", waypoint.name(), currentList.name());
                         waypointsNumber++;
                     } catch (Exception e) {
                         WaypointServerCore.LOGGER.error("Failed to parse waypoint line: {}", line, e);

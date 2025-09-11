@@ -223,6 +223,9 @@ public abstract class WaypointServerCore {
         this.languageFilesManager.loadAllExternalLanguageFiles();
     }
 
+    /**
+     * save all waypoint files and EDITION file
+     */
     public void saveAllFiles() {
         for (WaypointFileManager fileManager : this.fileManagerMap.values()) {
             try {

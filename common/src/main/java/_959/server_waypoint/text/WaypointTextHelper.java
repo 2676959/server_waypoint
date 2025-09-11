@@ -107,6 +107,10 @@ public class WaypointTextHelper {
         return hover;
     }
 
+    public static Component dimensionNameWithColor(String dimensionName) {
+        return Component.text(dimensionName).color(getDimensionColor(dimensionName));
+    }
+
     public static NamedTextColor getDimensionColor(String dimensionName) {
         return switch (dimensionName) {
             case MINECRAFT_OVERWORLD -> NamedTextColor.GREEN;
