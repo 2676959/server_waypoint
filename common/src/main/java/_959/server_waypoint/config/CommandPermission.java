@@ -5,6 +5,7 @@ public class CommandPermission {
     int edit = 0;
     int remove = 0;
     int tp = 2;
+    int reload = 2;
 
     public int add() {
         return this.add;
@@ -22,6 +23,10 @@ public class CommandPermission {
         return this.tp;
     }
 
+    public int reload() {
+        return this.reload;
+    }
+
    @Override
    public String toString() {
       return "CommandPermission{" +
@@ -29,6 +34,7 @@ public class CommandPermission {
               ", edit=" + edit +
               ", remove=" + remove +
               ", tp=" + tp +
+              ", reload=" + reload +
               '}';
    }
 }
