@@ -16,15 +16,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
+import static java.nio.file.Files.isRegularFile;
+import static java.nio.file.Files.walk;
 
 public class LanguageFilesManager {
     private final Path EXTERNAL_LANG_PATH;
+    private static final String FALL_BACK_LANGUAGE = "en_us";
     private static final String ASSETS_PATH = "assets/server_waypoint/lang/";
     private static final Map<String, Map<String, String>> translations = new HashMap<>();
 
-    public LanguageFilesManager(Path configDir) throws IOException, URISyntaxException {
+    public LanguageFilesManager(Path configDir) throws IOException {
         EXTERNAL_LANG_PATH = configDir.resolve("lang");
         initExternalLangDirectory();
         loadAllInternalLanguageFiles();
@@ -43,17 +47,22 @@ public class LanguageFilesManager {
         if (Files.exists(EXTERNAL_LANG_PATH) && Files.isDirectory(EXTERNAL_LANG_PATH)) {
             return;
         }
-        Files.createDirectory(EXTERNAL_LANG_PATH);
+        try {
+            Files.createDirectory(EXTERNAL_LANG_PATH);
+        } catch (IOException e) {
+            LOGGER.error("Could not create language file directory {}", EXTERNAL_LANG_PATH);
+            throw e;
+        }
     }
 
-    private void loadAllInternalLanguageFiles() throws URISyntaxException, IOException {
+    private void loadAllInternalLanguageFiles() {
         List<Path> langFiles = getInternalLanguageFiles();
         for (Path langFile : langFiles) {
             loadInternalLanguageFile(langFile.getFileName().toString());
         }
     }
 
-    public void loadAllExternalLanguageFiles() throws IOException {
+    public void loadAllExternalLanguageFiles() {
         List<Path> langFiles = getExternalLanguageFiles();
         for (Path langFile : langFiles) {
             loadExternalLanguageFile(langFile);
@@ -82,8 +91,6 @@ public class LanguageFilesManager {
                     .getAsJsonObject();
             Map<String, String> languageMap = convertJsonToHashMap(jsonObject);
             translations.put(fullPath.getFileName().toString().split("\\.")[0], languageMap);
-        } catch (IOException e) {
-            LOGGER.error("Error loading language file {}: {}", fullPath, e.getMessage());
         } catch (Exception e) {
             LOGGER.error("Error parsing language file {}: {}", fullPath, e.getMessage());
         }
@@ -115,33 +122,45 @@ public class LanguageFilesManager {
                     return translations.get(languageCode).get(key);
                 }
             }
-            return null;
+            return translations.get(FALL_BACK_LANGUAGE).get(key);
         }
         return languageMap.get(key);
     }
 
-    private List<Path> getInternalLanguageFiles() throws URISyntaxException, IOException {
-        List<Path> result;
-        // get path of the current running JAR
-        String jarPath = getClass().getProtectionDomain()
-                .getCodeSource()
-                .getLocation()
-                .toURI()
-                .getPath();
+    private List<Path> getInternalLanguageFiles() {
+        String jarPath;
+        try {
+            // get path of the mod jar itself
+            jarPath = getClass().getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI()
+                    .getPath();
+        } catch (URISyntaxException e) {
+            LOGGER.error("Failed to get path of the mod jar itself: {}", e.getMessage());
+            return new ArrayList<>();
+        }
         // file walks JAR
         URI uri = URI.create("jar:file:" + jarPath);
-        try (FileSystem fs = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
-            result = Files.walk(fs.getPath(LanguageFilesManager.ASSETS_PATH))
-                    .filter(Files::isRegularFile)
-                    .collect(Collectors.toList());
+        try (FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
+            try (Stream<Path> paths = walk(fileSystem.getPath(ASSETS_PATH), 1)) {
+                return paths.filter((file) -> isRegularFile(file) && file.endsWith(".json"))
+                        .collect(Collectors.toList());
+            }
+        } catch (IOException e) {
+            LOGGER.error("Error loading internal language file: {}", e.getMessage());
+            return new ArrayList<>();
         }
-        return result;
     }
 
-    private List<Path> getExternalLanguageFiles() throws IOException {
-        return Files.walk(EXTERNAL_LANG_PATH)
-                .filter(Files::isRegularFile)
-                .collect(Collectors.toList());
+    private List<Path> getExternalLanguageFiles() {
+        try (Stream<Path> paths = walk(EXTERNAL_LANG_PATH, 1)) {
+            return paths.filter((file) -> isRegularFile(file) && file.endsWith(".json"))
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            LOGGER.error("External language files not found: {}", e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
 }
