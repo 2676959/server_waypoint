@@ -28,8 +28,6 @@ import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -60,6 +58,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
     private final SuggestionProvider<S> WAYPOINT_LIST_SUGGESTION = new WaypointListSuggestion();
     private final SuggestionProvider<S> NAME_INITIALS_SUGGESTION = new NameInitialsSuggestion();
     private final SuggestionProvider<S> PLAYER_YAW_SUGGESTION = new PlayerYawSuggestion();
+    private boolean enabled = true;
     private static final String WAYPOINT_COMMAND;
     private static final String ADD_COMMAND;
     private static final String EDIT_COMMAND;
@@ -96,6 +95,14 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
     protected abstract P getPlayer(S source);
     protected abstract String getPlayerName(P player);
     protected abstract void teleportPlayer(S source, P player, D dimensionArgument, WaypointPos pos, int yaw);
+
+    public void enable() {
+        this.enabled = true;
+    }
+
+    public void disable() {
+        this.enabled = false;
+    }
 
     @SuppressWarnings("unchecked")
     private <T> T getArgument(CommandContext<S> context, String name) {
@@ -153,6 +160,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
     @SuppressWarnings("unchecked")
     public @NotNull LiteralCommandNode<S> build() {
         return (LiteralCommandNode<S>) literal(WAYPOINT_COMMAND)
+                .requires(source -> this.enabled)
                 .then(literal(ADD_COMMAND)
                         .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.add(), CONFIG.CommandPermission().add()))
                         .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
@@ -401,18 +409,15 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
     }
 
     private void runWithSelectorTarget(S source, D dimensionArgument, String listName, String name, TriConsumer<@NotNull WaypointFileManager, @NotNull WaypointList, @NotNull SimpleWaypoint> action) {
-        runWithSelectorTarget(source, dimensionArgument, listName,
-                (fileManager, waypointList) -> {
-                    SimpleWaypoint waypoint = waypointList.getWaypointByName(name);
-                    if (waypoint == null) {
-                        this.sender.sendError(source, Component.translatable("waypoint.nonexist.waypoint", Component.text(name)));
-                    } else {
-                        action.accept(fileManager, waypointList, waypoint);
-                    }
-                },
-                (waypointList, waypoint) -> {
-                    this.sender.sendError(source, Component.translatable("waypoint.empty.list", Component.text(listName)));
-                });
+        runWithSelectorTarget(source, dimensionArgument, listName, (fileManager, waypointList) -> {
+            SimpleWaypoint waypoint = waypointList.getWaypointByName(name);
+            if (waypoint == null) {
+                this.sender.sendError(source, Component.translatable("waypoint.nonexist.waypoint", Component.text(name)));
+            } else {
+                action.accept(fileManager, waypointList, waypoint);
+            }
+        }, (waypointList, waypoint) ->
+                this.sender.sendError(source, Component.translatable("waypoint.empty.list", Component.text(listName))));
     }
 
     private void sendDimensionError(S source, String dimensionName) {
@@ -531,9 +536,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
 
     private void executeRemoveList(S source, D dimensionArgument, String listName) {
         runWithSelectorTarget(source, dimensionArgument, listName,
-                (fileManager, waypointList) -> {
-                    this.sender.sendError(source, Component.translatable("waypoint.remove.list.nonempty", Component.text(listName)));
-                },
+                (fileManager, waypointList) ->
+                        this.sender.sendError(source, Component.translatable("waypoint.remove.list.nonempty", Component.text(listName))),
                 (fileManager, waypointList) -> {
                     fileManager.removeWaypointListByName(listName);
                     this.sender.sendMessage(source, Component.translatable("waypoint.remove.list.success", Component.text(listName)));
@@ -553,12 +557,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
     }
 
     private void executeTp(S source, D dimensionArgument, String listName, String name) {
-        runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) -> {
-            runIfPlayerExists(source, player -> {
-                teleportPlayer(source, player, dimensionArgument, waypoint.pos(), waypoint.yaw());
-                this.sender.sendPlayerMessage(player, Component.translatable("waypoint.tp", Component.text(getPlayerName(player)), defaultWaypointText(waypoint, fileManager.getDimensionName(), listName)));
-            });
-        });
+        runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) ->
+                runIfPlayerExists(source, player -> {
+                    teleportPlayer(source, player, dimensionArgument, waypoint.pos(), waypoint.yaw());
+                    this.sender.sendPlayerMessage(player, Component.translatable("waypoint.tp", Component.text(getPlayerName(player)), defaultWaypointText(waypoint, fileManager.getDimensionName(), listName)));
+                }));
     }
 
     private void executeDownload(S source) {
@@ -588,9 +591,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
                 (fileManager, waypointList) -> {
                     this.sender.sendMessage(source, Component.translatable("waypoint.download.list", Component.text(listName)));
                     this.sender.sendPacket(source, new WaypointListBuffer(fileManager.getDimensionName(), waypointList));
-                }, (fileManager, waypointList) -> {
-                    this.sender.sendError(source, Component.translatable("waypoint.empty.list", Component.text(listName)));
-                });
+                }, (fileManager, waypointList) ->
+                        this.sender.sendError(source, Component.translatable("waypoint.empty.list", Component.text(listName)))
+        );
     }
 
     private void executeDownload(S source, D dimensionArgument, String listName, String name) {
