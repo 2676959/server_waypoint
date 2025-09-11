@@ -348,7 +348,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
                                 }
                         )
                 )
-                .then(literal(REMOVE_COMMAND)
+                .then(literal(RELOAD_COMMAND)
                         .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.reload(), CONFIG.CommandPermission().remove()))
                         .executes(
                                 context -> {
