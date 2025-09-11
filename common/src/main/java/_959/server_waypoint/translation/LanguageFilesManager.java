@@ -144,7 +144,7 @@ public class LanguageFilesManager {
         URI uri = URI.create("jar:file:" + jarPath);
         try (FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
             try (Stream<Path> paths = walk(fileSystem.getPath(ASSETS_PATH), 1)) {
-                return paths.filter((file) -> isRegularFile(file) && file.endsWith(".json"))
+                return paths.filter((file) -> isRegularFile(file) && file.getFileName().toString().endsWith(".json"))
                         .collect(Collectors.toList());
             }
         } catch (IOException e) {
@@ -155,7 +155,7 @@ public class LanguageFilesManager {
 
     private List<Path> getExternalLanguageFiles() {
         try (Stream<Path> paths = walk(EXTERNAL_LANG_PATH, 1)) {
-            return paths.filter((file) -> isRegularFile(file) && file.endsWith(".json"))
+            return paths.filter((file) -> isRegularFile(file) && file.getFileName().toString().endsWith(".json"))
                     .collect(Collectors.toList());
         } catch (IOException e) {
             LOGGER.error("External language files not found: {}", e.getMessage());
