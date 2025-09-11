@@ -5,17 +5,20 @@ public abstract class PermissionKeys<K> {
     protected final PermissionKey edit;
     protected final PermissionKey remove;
     protected final PermissionKey tp;
+    protected final PermissionKey reload;
 
     protected abstract PermissionKey createAddPermissionKey();
     protected abstract PermissionKey createEditPermissionKey();
     protected abstract PermissionKey createRemovePermissionKey();
     protected abstract PermissionKey createTpPermissionKey();
+    protected abstract PermissionKey createReloadPermissionKey();
 
     protected PermissionKeys() {
         this.add = createAddPermissionKey();
         this.edit = createEditPermissionKey();
         this.remove = createRemovePermissionKey();
         this.tp = createTpPermissionKey();
+        this.reload = createReloadPermissionKey();
     }
 
     public PermissionKey add() {
@@ -28,6 +31,10 @@ public abstract class PermissionKeys<K> {
 
     public PermissionKey remove() {
         return this.remove;
+    }
+
+    public PermissionKey reload() {
+        return this.reload;
     }
 
     public PermissionKey tp() {
