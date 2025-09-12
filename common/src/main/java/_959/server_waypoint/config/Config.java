@@ -2,21 +2,13 @@ package _959.server_waypoint.config;
 
 public class Config {
     CommandPermission CommandPermission = new CommandPermission();
-    AddWaypointFromChatSharing AddWaypointFromChatSharing = new AddWaypointFromChatSharing();
+    Features Features = new Features();
 
     public CommandPermission CommandPermission() {
         return this.CommandPermission;
     }
 
-    public AddWaypointFromChatSharing AddWaypointFromChatSharing() {
-        return this.AddWaypointFromChatSharing;
+    public Features Features() {
+        return this.Features;
     }
-
-   @Override
-   public String toString() {
-      return "Config{" +
-              "CommandPermission=" + CommandPermission +
-              ", AddWaypointFromChatSharing=" + AddWaypointFromChatSharing +
-              '}';
-   }
 }
