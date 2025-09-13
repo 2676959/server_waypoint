@@ -160,7 +160,8 @@ java {
 tasks.shadowJar {
     dependencies {
         include(project(":common"))
-        exclude("mappings/mappings.tiny")
+        include(dependency("net.kyori:.*"))
+        exclude("mappings/*")
     }
     archiveClassifier = "dev-shadow"
 }
