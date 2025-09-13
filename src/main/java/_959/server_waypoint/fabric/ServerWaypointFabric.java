@@ -70,7 +70,9 @@ public class ServerWaypointFabric implements DedicatedServerModInitializer, IPla
             if (enable) {
                 PayloadTypeRegistry.playS2C().register(XaerosWorldIdS2CPayload.ID, XaerosWorldIdS2CPayload.PACKET_CODEC);
                 S2CPlayChannelEvents.REGISTER.register((event, packetSender, server, identifiers) -> {
-                    ServerPlayNetworking.send(event.getPlayer(), new XaerosWorldIdS2CPayload(new XaerosWorldIdBuffer(getWorldId())));
+                    if (CONFIG.Features().sendXaerosWorldId()) {
+                        ServerPlayNetworking.send(event.getPlayer(), new XaerosWorldIdS2CPayload(new XaerosWorldIdBuffer(getWorldId())));
+                    }
                 });
             }
         }
@@ -82,7 +84,10 @@ public class ServerWaypointFabric implements DedicatedServerModInitializer, IPla
         // pass MinecraftServer to waypointServer
         ServerLifecycleEvents.SERVER_STARTING.register(waypointServer::setMinecraftServer);
         // save files on shutdown
-        ServerLifecycleEvents.SERVER_STOPPING.register(server -> waypointServer.saveAllFiles());
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            waypointServer.saveAllFiles();
+            waypointServer.setMinecraftServer(null);
+        });
         // register chatMessageHandler
         ServerMessageEvents.CHAT_MESSAGE.register(handler::onChatMessage);
         // register handshakeHandler

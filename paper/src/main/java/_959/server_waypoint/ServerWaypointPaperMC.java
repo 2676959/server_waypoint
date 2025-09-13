@@ -43,28 +43,29 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
     @SuppressWarnings("UnstableApiUsage")
     public void onEnable() {
         // Plugin startup logic
+        Server server = getServer();
         if (waypointServer == null) {
-            Server server = getServer();
             waypointServer = new WaypointServerPlugin(this.getAssignedConfigDirectory(), server.getWorldContainer().toPath());
-            try {
-                waypointServer.initServer();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
             PaperMessageSender sender = new PaperMessageSender(this);
             PaperPermissionManager permissionManager = new PaperPermissionManager();
             waypointCommand = new WaypointCommand(sender, permissionManager);
-            waypointCommand.enable();
             chatListener = new ChatMessageListenerPaperMC(new PaperChatMessageHandler(server, sender, permissionManager));
             channelRegisterListener = new PlayerRegisterChannelListener();
             this.handshakeHandler = new ClientHandshakeHandler<>(sender);
+            // register once
             this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
                 commands.registrar().register(waypointCommand.build());
             });
-            server.getPluginManager().registerEvents(chatListener, this);
-            server.getPluginManager().registerEvents(channelRegisterListener, this);
-            registerChannels();
         }
+        try {
+            waypointServer.initServer();
+            waypointCommand.enable();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        server.getPluginManager().registerEvents(chatListener, this);
+        server.getPluginManager().registerEvents(channelRegisterListener, this);
+        registerChannels();
     }
 
     private void registerChannels() {
@@ -98,7 +99,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         server.getMessenger().unregisterOutgoingPluginChannel(this);
         AsyncChatEvent.getHandlerList().unregister(chatListener);
         PlayerRegisterChannelEvent.getHandlerList().unregister(channelRegisterListener);
-        waypointServer.saveAllFiles();
+        waypointServer.freeAllLoadedFiles();
     }
 
     @Override
