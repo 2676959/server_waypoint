@@ -11,8 +11,11 @@ import static _959.server_waypoint.util.DimensionFileHelper.getNamespacedKey;
 public class WaypointServerPlugin extends WaypointServerCore {
     public static final Logger log = LoggerFactory.getLogger("server_waypoint_plugin");
 
-    public WaypointServerPlugin(Path configDir) {
+    public WaypointServerPlugin(Path configDir, Path saveDir) {
         super(configDir);
+        if (CONFIG.Features().sendXaerosWorldId()) {
+            this.initXearoWorldId(saveDir);
+        }
     }
 
     @Override

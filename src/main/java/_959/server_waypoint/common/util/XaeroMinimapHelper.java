@@ -57,7 +57,7 @@ public class XaeroMinimapHelper {
         for (SimpleWaypoint simpleWaypoint : waypointList.simpleWaypoints()) {
             if (simpleWaypoint != null) {
 //                ServerWaypointClientMod.LOGGER.info("waypoint {} added", simpleWaypoint.name());
-                waypointSet.add(SimpleWaypointHelper.simpleWaypointToWaypoint(simpleWaypoint));
+                waypointSet.add(XaerosWaypointHelper.simpleWaypointToXaerosWaypoint(simpleWaypoint));
             }
         }
         minimapWorld.addWaypointSet(waypointSet);

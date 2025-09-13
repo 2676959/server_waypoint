@@ -11,4 +11,9 @@ public class Config {
     public Features Features() {
         return this.Features;
     }
+
+    @Override
+    public String toString() {
+        return "{CommandPermission=" + CommandPermission + ", Features=" + Features + "}";
+    }
 }

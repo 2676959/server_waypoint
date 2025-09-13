@@ -482,7 +482,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
             } else {
                 this.sender.sendMessage(source,
                         Component.translatable("waypoint.add.exists",
-                                defaultWaypointText(waypointFound, dimensionName, listName),
+                                waypointTextWithTp(waypointFound, dimensionName, listName),
                                 TextButton.replaceButton(dimensionName, listName, newWaypoint)
                         )
                 );
@@ -499,7 +499,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
             this.sender.sendMessage(
                     source,
                     Component.translatable("waypoint.add.success",
-                            defaultWaypointText(newWaypoint, dimensionName, listName),
+                            waypointTextWithTp(newWaypoint, dimensionName, listName),
                             Component.text(listName)
                     )
             );
@@ -530,7 +530,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
             String dimensionName = fileManager.getDimensionName();
             WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.UPDATE, WaypointServerCore.EDITION);
             this.sender.broadcastWaypointModification(source, buffer);
-            this.sender.sendMessage(source, Component.translatable("waypoint.edit.success", defaultWaypointText(waypoint, dimensionName, listName)));
+            this.sender.sendMessage(source, Component.translatable("waypoint.edit.success", waypointTextWithTp(waypoint, dimensionName, listName)));
         });
     }
 
@@ -552,7 +552,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
            String dimensionName = fileManager.getDimensionName();
             WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.REMOVE, WaypointServerCore.EDITION);
             this.sender.broadcastWaypointModification(source, buffer);
-            this.sender.sendMessage(source, Component.translatable("waypoint.remove.success", defaultWaypointText(waypoint, dimensionName, listName), restoreButton(dimensionName, listName, waypoint)));
+            this.sender.sendMessage(source, Component.translatable("waypoint.remove.success", waypointTextNoTp(waypoint, dimensionName), restoreButton(dimensionName, listName, waypoint)));
         });
     }
 
@@ -560,7 +560,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
         runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) ->
                 runIfPlayerExists(source, player -> {
                     teleportPlayer(source, player, dimensionArgument, waypoint.pos(), waypoint.yaw());
-                    this.sender.sendPlayerMessage(player, Component.translatable("waypoint.tp", Component.text(getPlayerName(player)), defaultWaypointText(waypoint, fileManager.getDimensionName(), listName)));
+                    this.sender.sendPlayerMessage(player, Component.translatable("waypoint.tp", Component.text(getPlayerName(player)), waypointTextWithTp(waypoint, fileManager.getDimensionName(), listName)));
                 }));
     }
 
@@ -599,7 +599,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
     private void executeDownload(S source, D dimensionArgument, String listName, String name) {
         runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) -> {
             String dimensionName = fileManager.getDimensionName();
-            this.sender.sendMessage(source, Component.translatable("waypoint.download.waypoint", defaultWaypointText(waypoint, dimensionName, listName)));
+            this.sender.sendMessage(source, Component.translatable("waypoint.download.waypoint", waypointTextWithTp(waypoint, dimensionName, listName)));
             this.sender.sendPacket(source, new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.ADD, WaypointServerCore.EDITION));
         });
     }
@@ -632,7 +632,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
                             .append(Component.text(" "))
                             .append(removeButton(dimensionName, listName, waypoint))
                             .append(Component.text(" "))
-                            .append(defaultWaypointText(waypoint, dimensionName, listName));
+                            .append(waypointTextWithTp(waypoint, dimensionName, listName));
                     listMsg = listMsg.append(waypointText).appendNewline();
                 }
             }

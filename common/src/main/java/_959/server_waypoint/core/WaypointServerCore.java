@@ -30,6 +30,7 @@ public abstract class WaypointServerCore {
     public static Config CONFIG = new Config();
     public static final String GROUP_ID = "server_waypoint";
     public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_core");
+    private static final String CONFIG_FILE_NAME = "config.json";
     private static int worldId;
     private Path waypointsDir;
     private Path editionFile;
@@ -76,6 +77,7 @@ public abstract class WaypointServerCore {
 
     public void loadConfig(FileReader reader) {
         CONFIG = this.gson.fromJson(reader, Config.class);
+        LOGGER.info("Loaded config {}", CONFIG);
     }
 
     private void initEditionFile(Path configDir) throws IOException {
@@ -101,7 +103,7 @@ public abstract class WaypointServerCore {
     }
 
     private void initConfigFile(Path configDir) {
-        Path configFile = configDir.resolve("config.json");
+        Path configFile = configDir.resolve(CONFIG_FILE_NAME);
 
         try {
             if (Files.exists(configFile) && Files.isRegularFile(configFile)) {
@@ -113,6 +115,19 @@ public abstract class WaypointServerCore {
             }
         } catch (IOException e) {
             LOGGER.error("Failed to read config file, use default config instead", e);
+        }
+    }
+
+    private void saveConfigFile(Path configDir) {
+        Path configFile = configDir.resolve(CONFIG_FILE_NAME);
+        try {
+            if (!Files.exists(configFile) || !Files.isRegularFile(configFile)) {
+                Files.createFile(configFile);
+            }
+            Files.write(configFile, this.gson.toJson(CONFIG).getBytes());
+            LOGGER.info("Saved config file: {}", configFile);
+        } catch (IOException e) {
+            LOGGER.error("Failed to save config file", e);
         }
     }
 
@@ -241,6 +256,7 @@ public abstract class WaypointServerCore {
         } catch (IOException e) {
             return;
         }
+        saveConfigFile(this.configDir);
     }
 
     public Map<String, WaypointFileManager> getFileManagerMap() {
@@ -303,7 +319,10 @@ public abstract class WaypointServerCore {
     }
 
     public static int getWorldId() {
-        return worldId;
+        if (CONFIG.Features().sendXaerosWorldId()) {
+            return worldId;
+        } else {
+            throw new IllegalStateException("Should not call this when sendXaerosWorldId is disabled.");
+        }
     }
-
 }

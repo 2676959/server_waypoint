@@ -91,9 +91,9 @@ public class WaypointCommand extends CoreWaypointCommand<ServerCommandSource, St
     protected void teleportPlayer(ServerCommandSource source, ServerPlayerEntity player, Identifier dimensionArgument, WaypointPos pos, int yaw) {
         ServerWorld world = getWorldFromId(source, dimensionArgument);
         //? if >= 1.21.3 {
-        /*player.teleport(world, pos.X(), pos.y(), pos.Z(), Collections.emptySet(), yaw, 0, false);
-        *///?} else {
-        player.teleport(world, pos.X(), pos.y(), pos.Z(), yaw, 0);
-        //?}
+        player.teleport(world, pos.X(), pos.y(), pos.Z(), Collections.emptySet(), yaw, 0, false);
+        //?} else {
+        /*player.teleport(world, pos.X(), pos.y(), pos.Z(), yaw, 0);
+        *///?}
     }
 }

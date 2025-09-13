@@ -62,8 +62,12 @@ public class WaypointTextHelper {
         };
     }
 
-    public static Component defaultWaypointText(SimpleWaypoint waypoint, String dimensionName, String listName) {
-        return waypointTextWithTp(waypoint, tpCmd(dimensionName, listName, waypoint.name()), waypointHoverText(waypoint, dimensionName));
+    public static Component waypointTextWithTp(SimpleWaypoint waypoint, String dimensionName, String listName) {
+        return basicWaypointText(waypoint, tpCmd(dimensionName, listName, waypoint.name()), Component.translatable("button.initials.tp"), waypointHoverText(waypoint, dimensionName));
+    }
+
+    public static Component waypointTextNoTp(SimpleWaypoint waypoint, String dimensionName) {
+        return basicWaypointText(waypoint, null, null, waypointHoverText(waypoint, dimensionName));
     }
 
     public static Component basicWaypointText(SimpleWaypoint waypoint, @Nullable String command, Component commandInfo, Component waypointInfo) {
@@ -90,10 +94,6 @@ public class WaypointTextHelper {
                 .hoverEvent(HoverEvent.showText(waypointInfo))
                 .build();
         return waypointText.append(Component.text(waypoint.name()).style(nameStyle));
-    }
-
-    public static Component waypointTextWithTp(SimpleWaypoint waypoint, @NotNull String tpCommand, Component hoverText) {
-        return basicWaypointText(waypoint, tpCommand, Component.translatable("button.initials.tp"), hoverText);
     }
 
     public static Component waypointHoverText(SimpleWaypoint waypoint, String dimensionName) {

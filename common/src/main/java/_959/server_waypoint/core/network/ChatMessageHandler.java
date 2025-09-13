@@ -29,16 +29,14 @@ public abstract class ChatMessageHandler<S, K, P> {
     protected abstract boolean isDimensionValid(String dimensionName);
 
     public void onChatMessage(P player, String message) {
-        if (!this.permissionManager.checkPlayerPermission(player, this.permissionManager.keys.add(), CONFIG.CommandPermission().add())) {
-            return;
-        }
-        String[] args = message.split(XAEROS_SEPARATOR);
-        if (isValidXaerosSharingMessage(args)) {
-            LOGGER.info("Found chat shared waypoint");
-            Pair<SimpleWaypoint, String> waypointWithDim = toSimpleWaypoint(args);
-            SimpleWaypoint waypoint = waypointWithDim.left();
-            String dimensionName = waypointWithDim.right();
-            if (CONFIG.AddWaypointFromChatSharing().enable()) {
+        if (CONFIG.Features().addWaypointFromChatSharing() &&
+                this.permissionManager.checkPlayerPermission(player, this.permissionManager.keys.add(), CONFIG.CommandPermission().add())) {
+            String[] args = message.split(XAEROS_SEPARATOR);
+            if (isValidXaerosSharingMessage(args)) {
+                LOGGER.info("Found chat shared waypoint");
+                Pair<SimpleWaypoint, String> waypointWithDim = toSimpleWaypoint(args);
+                SimpleWaypoint waypoint = waypointWithDim.left();
+                String dimensionName = waypointWithDim.right();
                 WaypointFileManager waypointFileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(dimensionName);
                 if (waypointFileManager != null) {
                     Set<String> listNames = waypointFileManager.getWaypointListMap().keySet();
@@ -46,8 +44,8 @@ public abstract class ChatMessageHandler<S, K, P> {
                         promptNoWaypointList(player, dimensionName);
                     } else {
                         Component feedback = Component.translatable("waypoint.xaeros.sharing.found",
-                                basicWaypointText(waypoint, null, null, waypointHoverText(waypoint, dimensionName)),
-                                Component.text(dimensionName));
+                                waypointTextNoTp(waypoint, dimensionName),
+                                dimensionNameWithColor(dimensionName));
                         Component waypointLists = Component.text("");
                         for (Iterator<String> iterator = listNames.iterator(); iterator.hasNext();) {
                             String listName = iterator.next();
@@ -69,8 +67,8 @@ public abstract class ChatMessageHandler<S, K, P> {
                     promptNoWaypointList(player, dimensionName);
                 } else {
                     this.sender.sendPlayerMessage(player, Component.translatable("waypoint.xaeros.sharing.invalid.dimension",
-                            basicWaypointText(waypoint, null, null, waypointHoverText(waypoint, dimensionName)),
-                            Component.text(dimensionName)));
+                            waypointTextNoTp(waypoint, dimensionName),
+                            dimensionNameWithColor(dimensionName)));
                 }
             }
         }

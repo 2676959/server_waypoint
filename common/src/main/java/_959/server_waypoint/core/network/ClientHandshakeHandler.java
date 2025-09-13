@@ -2,6 +2,7 @@ package _959.server_waypoint.core.network;
 
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
+import net.kyori.adventure.text.Component;
 
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 
@@ -17,6 +18,7 @@ public class ClientHandshakeHandler<S, P> {
         if (edition != WaypointServerCore.EDITION) {
             WorldWaypointBuffer buffer = WaypointServerCore.INSTANCE.toWorldWaypointBuffer();
             if (buffer != null) {
+                this.sender.sendPlayerMessage(player, Component.translatable("waypoint.download.all"));
                 this.sender.sendPlayerPacket(player, buffer);
             }
         }
