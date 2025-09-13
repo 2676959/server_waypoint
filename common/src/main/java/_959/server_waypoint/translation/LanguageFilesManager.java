@@ -25,7 +25,7 @@ import static java.nio.file.Files.walk;
 public class LanguageFilesManager {
     private final Path EXTERNAL_LANG_PATH;
     private static final String FALL_BACK_LANGUAGE = "en_us";
-    private static final String ASSETS_PATH = "assets/server_waypoint/lang/";
+    private static final String ASSETS_PATH = "lang/";
     private static final Map<String, Map<String, String>> translations = new HashMap<>();
 
     public LanguageFilesManager(Path configDir) throws IOException {
