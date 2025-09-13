@@ -18,10 +18,10 @@ import net.minecraft.text.TextCodecs;
 import java.util.Locale;
 
 import static _959.server_waypoint.common.network.BufferPayloadMapping.getPayload;
-import static _959.server_waypoint.text.WaypointTextHelper.defaultWaypointText;
+import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
 
 //? if fabric {
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+
 //?} elif neoforge {
 /*import net.neoforged.neoforge.network.PacketDistributor;
 *///?}
@@ -74,7 +74,7 @@ public class ModMessageSender implements PlatformMessageSender<ServerCommandSour
     @Override
     public void broadcastWaypointModification(ServerCommandSource source, WaypointModificationBuffer modification) {
         ServerPlayerEntity executorPlayer = source.getPlayer();
-        Component waypointText = defaultWaypointText(modification.waypoint(), modification.dimensionName(), modification.listName());
+        Component waypointText = waypointTextWithTp(modification.waypoint(), modification.dimensionName(), modification.listName());
         Component info;
         if (executorPlayer != null) {
             info = Component.translatable("waypoint.modification.broadcast.player", Component.text(executorPlayer.getName().getString()), modification.type().toTranslatable(), waypointText);

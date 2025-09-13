@@ -11,4 +11,13 @@ public class Features {
     public boolean sendXaerosWorldId() {
         return this.sendXaerosWorldId;
     }
+
+    public void sendXaerosWorldId(boolean enable) {
+        this.sendXaerosWorldId = enable;
+    }
+
+    @Override
+    public String toString() {
+        return "{addWaypointFromChatSharing=" + addWaypointFromChatSharing  + ", sendXaerosWorldId=" + sendXaerosWorldId + "}";
+    }
 }

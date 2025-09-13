@@ -6,7 +6,7 @@ import io.netty.buffer.ByteBuf;
 
 public class WaypointListBufferCodec {
     public static void encode(ByteBuf buf, WaypointListBuffer waypointListBuffer) {
-        UtfStringCodec.encode(buf, waypointListBuffer.dimString());
+        UtfStringCodec.encode(buf, waypointListBuffer.dimensionName());
         WaypointListCodec.encode(buf, waypointListBuffer.waypointList());
     }
 

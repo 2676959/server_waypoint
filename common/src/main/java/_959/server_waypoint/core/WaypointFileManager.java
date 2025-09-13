@@ -5,6 +5,7 @@ import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -134,7 +135,7 @@ public class WaypointFileManager {
             waypointsNumber += waypointList.size();
         }
 
-        Files.write(filePath, lines);
+        Files.write(filePath, lines, StandardCharsets.UTF_8);
         WaypointServerCore.LOGGER.info("Saved {} lists and {} waypoints to file: {}", waypointListMap.size(), waypointsNumber, filePath);
     }
 }

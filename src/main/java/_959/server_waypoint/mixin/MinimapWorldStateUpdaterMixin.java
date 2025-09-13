@@ -1,7 +1,7 @@
 package _959.server_waypoint.mixin;
 
 import _959.server_waypoint.common.ServerWaypointClientMod;
-import _959.server_waypoint.common.util.HandshakePayloadGenerator;
+import _959.server_waypoint.common.util.ClientHandshakePayloadGenerator;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,7 +27,7 @@ public class MinimapWorldStateUpdaterMixin {
         }
         LOGGER.info("Send handshake payload to server");
         //? if fabric {
-        ClientPlayNetworking.send(HandshakePayloadGenerator.generate());
+        ClientPlayNetworking.send(ClientHandshakePayloadGenerator.generate());
         //?} elif neoforge {
         /*PacketDistributor.sendToServer(HandshakePayloadGenerator.generate());
         *///?}
