@@ -28,10 +28,14 @@ public class LanguageFilesManager {
     private static final String ASSETS_PATH = "lang/";
     private static final Map<String, Map<String, String>> translations = new HashMap<>();
 
-    public LanguageFilesManager(Path configDir) throws IOException {
+    public LanguageFilesManager(Path configDir) {
         EXTERNAL_LANG_PATH = configDir.resolve("lang");
+    }
+
+    public void initLanguageManager() throws IOException {
         initExternalLangDirectory();
         loadAllInternalLanguageFiles();
+        loadAllExternalLanguageFiles();
     }
 
     private Map<String, String> convertJsonToHashMap(JsonObject jsonObject) {
@@ -163,4 +167,7 @@ public class LanguageFilesManager {
         }
     }
 
+    public void unloadAllLanguages() {
+        translations.clear();
+    }
 }

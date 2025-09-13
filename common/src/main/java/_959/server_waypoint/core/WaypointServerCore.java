@@ -37,12 +37,15 @@ public abstract class WaypointServerCore {
     private final Path configDir;
     private final Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
     private final byte[] DEFAULT_CONFIG;
-    private LinkedHashMap<String, WaypointFileManager> fileManagerMap;
-    private LanguageFilesManager languageFilesManager;
+    private final LinkedHashMap<String, WaypointFileManager> fileManagerMap;
+    private final LanguageFilesManager languageFilesManager;
 
     public WaypointServerCore(Path configDir) {
-        this.DEFAULT_CONFIG = this.gson.toJson(CONFIG).getBytes();
         this.configDir = configDir;
+        this.fileManagerMap = new LinkedHashMap<>();
+        this.languageFilesManager = new LanguageFilesManager(configDir);
+        this.DEFAULT_CONFIG = this.gson.toJson(CONFIG).getBytes();
+        addAdventureTranslator();
         INSTANCE = this;
     }
 
@@ -80,7 +83,7 @@ public abstract class WaypointServerCore {
         LOGGER.info("Loaded config {}", CONFIG);
     }
 
-    private void initEditionFile(Path configDir) throws IOException {
+    private void initOrReadEditionFile(Path configDir) throws IOException {
         this.editionFile = configDir.resolve("EDITION");
 
         try {
@@ -102,7 +105,7 @@ public abstract class WaypointServerCore {
         }
     }
 
-    private void initConfigFile(Path configDir) {
+    private void initOrReadConfigFile(Path configDir) {
         Path configFile = configDir.resolve(CONFIG_FILE_NAME);
 
         try {
@@ -131,7 +134,7 @@ public abstract class WaypointServerCore {
         }
     }
 
-    private void initWaypointsFile(Path configDir) throws IOException {
+    private void initOrReadWaypointsFile(Path configDir) throws IOException {
         Path waypointsFolder = configDir.resolve("waypoints");
 
         try {
@@ -179,6 +182,7 @@ public abstract class WaypointServerCore {
         for  (Pair<String, WaypointFileManager> pair : fileManagers) {
             fileManagerMap.put(pair.left(), pair.right());
         }
+        fileManagers.clear();
     }
 
     private boolean isFileNameInvalid(String fileName) {
@@ -206,35 +210,47 @@ public abstract class WaypointServerCore {
         }
     }
 
-    private void initLanguageManager(Path configDir) throws IOException {
-        this.languageFilesManager = new LanguageFilesManager(configDir);
+    private void initLanguageManager() {
+        try {
+            this.languageFilesManager.initLanguageManager();
+        } catch (IOException e) {
+            LOGGER.error("Failed to initialize language manager");
+            throw new RuntimeException(e);
+        }
     }
 
-    private void initAdventureTranslator() {
+    private void addAdventureTranslator() {
         Translator translator = new AdventureTranslator();
         GlobalTranslator.translator().addSource(translator);
     }
 
     public void initServer() throws IOException {
         this.initConfigDir(this.configDir);
-        this.fileManagerMap = new LinkedHashMap<>();
         // maintain the list order for vanilla dimensions
         this.fileManagerMap.put(MINECRAFT_OVERWORLD, null);
         this.fileManagerMap.put(MINECRAFT_THE_NETHER, null);
         this.fileManagerMap.put(MINECRAFT_THE_END, null);
-        this.initConfigFile(this.configDir);
-        this.initEditionFile(this.configDir);
-        this.initWaypointsFile(this.configDir);
-        this.initLanguageManager(this.configDir);
-        this.languageFilesManager.loadAllExternalLanguageFiles();
+        this.initOrReadConfigFile(this.configDir);
+        this.initOrReadEditionFile(this.configDir);
+        this.initOrReadWaypointsFile(this.configDir);
+        this.initLanguageManager();
         Set<String> languages = getLoadedLanguages();
         String log = String.join(", ",  languages.toArray(new String[0]));
         LOGGER.info("Loaded {} languages: {}", languages.size(), log);
-        this.initAdventureTranslator();
+    }
+
+    /**
+     * called saveAllFiles first then free all loaded waypoint files and language files <br>
+     * must call initServer to load all resources back
+     * */
+    public void freeAllLoadedFiles() {
+        saveAllFiles();
+        this.fileManagerMap.clear();
+        this.languageFilesManager.unloadAllLanguages();
     }
 
     public void reload() {
-        initConfigFile(this.configDir);
+        initOrReadConfigFile(this.configDir);
         this.languageFilesManager.loadAllExternalLanguageFiles();
     }
 
@@ -293,28 +309,28 @@ public abstract class WaypointServerCore {
     }
 
     public void initXearoWorldId(Path saveDir) {
+        Path xaeromapFile = saveDir.resolve("xaeromap.txt");
         try {
-            Path xaeromapFile = saveDir.resolve("xaeromap.txt");
             if (Files.exists(xaeromapFile) && Files.isRegularFile(xaeromapFile)) {
                 //read xaeromap.txt and get the id
-                String id = Files.readString(xaeromapFile);
-                if (id.startsWith("id:")) {
-                    worldId = Integer.parseInt(id.split(":")[1]);
+                String idString = Files.readString(xaeromapFile);
+                if (idString.startsWith("id:")) {
+                    worldId = Integer.parseInt(idString.split(":")[1]);
                 } else {
-                    LOGGER.error("Invalid xaeromap.txt file, id not found");
-                }
-            } else {
-                try {
-                    int id = (new Random()).nextInt();
-                    String idString = "id:" + id;
-                    Files.writeString(xaeromapFile, idString);
-                    worldId = id;
-                } catch (Exception e) {
-                    LOGGER.error("Failed to create xaeromap.txt: ", e);
+                    LOGGER.error("Invalid xaeromap.txt file format, cannot read id, creating a new one");
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("Failed to get world ID: ", e);
+            LOGGER.error("Failed to read xaeromap file. creating a new one", e);
+            try {
+                int id = (new Random()).nextInt();
+                String idString = "id:" + id;
+                Files.writeString(xaeromapFile, idString);
+                worldId = id;
+            } catch (Exception ee) {
+                CONFIG.Features().sendXaerosWorldId(false);
+                LOGGER.error("Cannot enable sendXaerosWorldId: failed to create xaeromap.txt: ", ee);
+            }
         }
     }
 
