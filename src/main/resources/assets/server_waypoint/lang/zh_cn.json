@@ -1,0 +1,13 @@
+{
+  "waypoint.list.added": "路径点列表“%1$s”已成功添加至Xaero's minimap",
+  "waypoint.save.failed": "路径点保存失败",
+  "waypoint.save.dimension.failed": "维度“%1$s”的路径点保存失败",
+
+  "waypoint.dimension.waypoint.added": "维度“%1$s”中的路径点已成功添加至Xaero's minimap",
+  "waypoint.all.added": "已成功添加此服务器上全部路径点至Xaero's minimap",
+
+  "waypoint.modification.add": "路径点%1$s已添加至Xaero's minimap",
+  "waypoint.modification.remove": "路径点%1$s已从Xaero's minimap移除",
+  "waypoint.modification.update": "路径点%1$s已更新至Xaero's minimap",
+  "waypoint.dimension.decode.fail": "无法解码维度“%1$s”"
+}

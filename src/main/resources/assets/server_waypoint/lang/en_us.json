@@ -1,0 +1,13 @@
+{
+  "waypoint.list.added": "Waypoint list \"%1$s\" has been added to Xaero's minimap successfully",
+  "waypoint.save.failed": "Failed to save waypoints",
+  "waypoint.save.dimension.failed": "Failed to save waypoints in dimension %1$s",
+
+  "waypoint.dimension.waypoint.added": "Waypoints in dimension %1$s has been added to Xaero's minimap successfully",
+  "waypoint.all.added": "All waypoints on this server have been added to Xaero's minimap successfully",
+
+  "waypoint.modification.add": "Waypoint %1$s has been added to Xaero's minimap",
+  "waypoint.modification.remove": "Waypoint %1$s has been removed from Xaero's minimap",
+  "waypoint.modification.update": "Waypoint %1$s has been updated on Xaero's minimap",
+  "waypoint.dimension.decode.fail": "Failed to decode dimension %1$s"
+}
