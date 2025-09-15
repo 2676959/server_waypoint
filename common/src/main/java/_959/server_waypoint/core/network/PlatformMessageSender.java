@@ -2,8 +2,6 @@ package _959.server_waypoint.core.network;
 
 import _959.server_waypoint.core.network.buffer.MessageBuffer;
 import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
-import com.mojang.brigadier.Message;
-import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 
 public interface PlatformMessageSender<S, P> {

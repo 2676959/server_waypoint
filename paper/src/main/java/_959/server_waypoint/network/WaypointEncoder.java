@@ -1,11 +1,7 @@
 package _959.server_waypoint.network;
 
-import _959.server_waypoint.core.network.buffer.HandshakeBuffer;
-import _959.server_waypoint.core.network.buffer.WaypointListBuffer;
-import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
-import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
+import _959.server_waypoint.core.network.buffer.*;
 import _959.server_waypoint.core.network.codec.*;
-import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 

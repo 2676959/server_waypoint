@@ -3,6 +3,7 @@ package _959.server_waypoint.core;
 import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -12,8 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.jetbrains.annotations.Nullable;
 
 public class WaypointFileManager {
     private final String dimensionName;

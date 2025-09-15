@@ -11,31 +11,24 @@ import _959.server_waypoint.server.command.WaypointCommand;
 import _959.server_waypoint.server.command.permission.PaperPermissionManager;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
-import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerRegisterChannelEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.Path;
 
-import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 import static _959.server_waypoint.core.network.MessageChannelID.*;
-import static _959.server_waypoint.util.DimensionFileHelper.getFileName;
-import static net.kyori.adventure.text.Component.text;
 
 public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageListener, IPlatformConfigPath {
     public static final String XAEROWORLDMAP_CHANNEL = "xaeroworldmap:main";
     public static final String XAEROMINIMAP_CHANNEL = "xaerominimap:main";
     private WaypointServerPlugin waypointServer;
-    private ChatMessageListenerPaperMC chatListener;
-    private PlayerRegisterChannelListener channelRegisterListener;
     private WaypointCommand waypointCommand;
     private @SuppressWarnings("UnstableApiUsage") ClientHandshakeHandler<CommandSourceStack, Player> handshakeHandler;
 
@@ -44,28 +37,36 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
     public void onEnable() {
         // Plugin startup logic
         Server server = getServer();
-        if (waypointServer == null) {
-            waypointServer = new WaypointServerPlugin(this.getAssignedConfigDirectory(), server.getWorldContainer().toPath());
-            PaperMessageSender sender = new PaperMessageSender(this);
-            PaperPermissionManager permissionManager = new PaperPermissionManager();
-            waypointCommand = new WaypointCommand(sender, permissionManager);
-            chatListener = new ChatMessageListenerPaperMC(new PaperChatMessageHandler(server, sender, permissionManager));
-            channelRegisterListener = new PlayerRegisterChannelListener();
-            this.handshakeHandler = new ClientHandshakeHandler<>(sender);
-            // register once
-            this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
-                commands.registrar().register(waypointCommand.build());
-            });
-        }
+        waypointServer = new WaypointServerPlugin(this.getAssignedConfigDirectory(), server.getWorldContainer().toPath());
+        PaperMessageSender sender = new PaperMessageSender(this);
+        PaperPermissionManager permissionManager = new PaperPermissionManager();
+        waypointCommand = new WaypointCommand(sender, permissionManager);
+        ChatMessageListenerPaperMC chatListener = new ChatMessageListenerPaperMC(new PaperChatMessageHandler(server, sender, permissionManager));
+        PlayerRegisterChannelListener channelRegisterListener = new PlayerRegisterChannelListener();
+        this.handshakeHandler = new ClientHandshakeHandler<>(sender);
+        LiteralCommandNode<CommandSourceStack> command = waypointCommand.build();
+        // register
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands ->
+                commands.registrar().register(command)
+        );
+        registerChannels();
+        server.getPluginManager().registerEvents(chatListener, this);
+        server.getPluginManager().registerEvents(channelRegisterListener, this);
         try {
             waypointServer.initServer();
             waypointCommand.enable();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        server.getPluginManager().registerEvents(chatListener, this);
-        server.getPluginManager().registerEvents(channelRegisterListener, this);
-        registerChannels();
+    }
+
+    @Override
+    public void onDisable() {
+        // Plugin shutdown logic
+        waypointCommand.disable();
+        waypointServer.freeAllLoadedFiles();
+        waypointCommand = null;
+        waypointServer = null;
     }
 
     private void registerChannels() {
@@ -88,18 +89,6 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
             int clientEdition = input.readInt();
             this.handshakeHandler.onHandshake(player, clientEdition);
         }
-    }
-
-    @Override
-    public void onDisable() {
-        // Plugin shutdown logic
-        waypointCommand.disable();
-        Server server = getServer();
-        server.getMessenger().unregisterIncomingPluginChannel(this);
-        server.getMessenger().unregisterOutgoingPluginChannel(this);
-        AsyncChatEvent.getHandlerList().unregister(chatListener);
-        PlayerRegisterChannelEvent.getHandlerList().unregister(channelRegisterListener);
-        waypointServer.freeAllLoadedFiles();
     }
 
     @Override

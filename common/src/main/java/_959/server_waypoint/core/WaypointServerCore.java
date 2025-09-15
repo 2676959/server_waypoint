@@ -1,13 +1,18 @@
 package _959.server_waypoint.core;
 
 import _959.server_waypoint.config.Config;
-import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
 import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
+import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
 import _959.server_waypoint.translation.AdventureTranslator;
 import _959.server_waypoint.translation.LanguageFilesManager;
 import _959.server_waypoint.util.Pair;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.kyori.adventure.translation.GlobalTranslator;
+import net.kyori.adventure.translation.Translator;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.DirectoryStream;
@@ -15,13 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-import net.kyori.adventure.translation.GlobalTranslator;
-import net.kyori.adventure.translation.Translator;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static _959.server_waypoint.translation.LanguageFilesManager.getLoadedLanguages;
+import static _959.server_waypoint.translation.LanguageFilesManager.getExternalLoadedLanguages;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 
 public abstract class WaypointServerCore {
@@ -234,24 +233,24 @@ public abstract class WaypointServerCore {
         this.initOrReadEditionFile(this.configDir);
         this.initOrReadWaypointsFile(this.configDir);
         this.initLanguageManager();
-        Set<String> languages = getLoadedLanguages();
-        String log = String.join(", ",  languages.toArray(new String[0]));
+        List<String> languages = getExternalLoadedLanguages();
+        String log = String.join(", ", languages);
         LOGGER.info("Loaded {} languages: {}", languages.size(), log);
     }
 
     /**
-     * called saveAllFiles first then free all loaded waypoint files and language files <br>
+     * called saveAllFiles first then free all loaded waypoint files and external language files <br>
      * must call initServer to load all resources back
      * */
     public void freeAllLoadedFiles() {
         saveAllFiles();
         this.fileManagerMap.clear();
-        this.languageFilesManager.unloadAllLanguages();
+        this.languageFilesManager.unloadAllExternalLanguages();
     }
 
     public void reload() {
         initOrReadConfigFile(this.configDir);
-        this.languageFilesManager.loadAllExternalLanguageFiles();
+        this.languageFilesManager.reloadExternalLanguages();
     }
 
     /**

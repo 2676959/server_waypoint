@@ -24,17 +24,19 @@ import static java.nio.file.Files.walk;
 
 public class LanguageFilesManager {
     private final Path EXTERNAL_LANG_PATH;
+    private static final Set<String> externalLoadedLanguages = new HashSet<>();
+    private static final Set<String> internalLoadedLanguages = new HashSet<>();
     private static final String FALL_BACK_LANGUAGE = "en_us";
     private static final String ASSETS_PATH = "lang/";
     private static final Map<String, Map<String, String>> translations = new HashMap<>();
 
     public LanguageFilesManager(Path configDir) {
         EXTERNAL_LANG_PATH = configDir.resolve("lang");
+        loadAllInternalLanguageFiles();
     }
 
     public void initLanguageManager() throws IOException {
         initExternalLangDirectory();
-        loadAllInternalLanguageFiles();
         loadAllExternalLanguageFiles();
     }
 
@@ -74,7 +76,7 @@ public class LanguageFilesManager {
     }
 
     private void loadInternalLanguageFile(String fileName) {
-        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(ASSETS_PATH + fileName);
+        InputStream inputStream = LanguageFilesManager.class.getClassLoader().getResourceAsStream(ASSETS_PATH + fileName);
         if (inputStream == null) {
             LOGGER.error("internal language file not found: {}", fileName);
             return;
@@ -82,7 +84,9 @@ public class LanguageFilesManager {
         JsonObject jsonObject = JsonParser.parseReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
                 .getAsJsonObject();
         Map<String, String> languageMap = convertJsonToHashMap(jsonObject);
-        translations.put(fileName.split("\\.")[0], languageMap);
+        String key = fileName.split("\\.")[0];
+        translations.put(key, languageMap);
+        internalLoadedLanguages.add(key);
     }
 
     private void loadExternalLanguageFile(Path fullPath) {
@@ -91,17 +95,23 @@ public class LanguageFilesManager {
             return;
         }
         try {
+            String key = fullPath.getFileName().toString().split("\\.")[0];
+            if (internalLoadedLanguages.contains(key)) {
+                LOGGER.error("language file: {} already loaded internally", key);
+                return;
+            }
             JsonObject jsonObject = JsonParser.parseReader(Files.newBufferedReader(fullPath, StandardCharsets.UTF_8))
                     .getAsJsonObject();
             Map<String, String> languageMap = convertJsonToHashMap(jsonObject);
-            translations.put(fullPath.getFileName().toString().split("\\.")[0], languageMap);
+            translations.put(key, languageMap);
+            externalLoadedLanguages.add(key);
         } catch (Exception e) {
             LOGGER.error("Error parsing language file {}: {}", fullPath, e.getMessage());
         }
     }
 
-    public static Set<String> getLoadedLanguages() {
-        return translations.keySet();
+    public static List<String> getExternalLoadedLanguages() {
+        return externalLoadedLanguages.stream().toList();
     }
 
     @Nullable
@@ -167,7 +177,13 @@ public class LanguageFilesManager {
         }
     }
 
-    public void unloadAllLanguages() {
-        translations.clear();
+    public void unloadAllExternalLanguages() {
+        translations.keySet().removeIf(key -> !internalLoadedLanguages.contains(key));
+        externalLoadedLanguages.clear();
+    }
+
+    public void reloadExternalLanguages() {
+        unloadAllExternalLanguages();
+        loadAllExternalLanguageFiles();
     }
 }

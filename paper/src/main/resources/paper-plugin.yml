@@ -1,0 +1,8 @@
+name: ServerWaypoint
+version: '3.0'
+main: _959.server_waypoint.ServerWaypointPaperMC
+api-version: '1.21'
+author: 2676959
+description: Serverside waypoint manager
+website: https://modrinth.com/mod/server_waypoint
+prefix: server_waypoint_plugin
