@@ -1,7 +1,6 @@
 package _959.server_waypoint.util;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
-import _959.server_waypoint.core.waypoint.WaypointPos;
 
 public class CommandGenerator {
     public static final String WAYPOINT_COMMAND = "/wp";

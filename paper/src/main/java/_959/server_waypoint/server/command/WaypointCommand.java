@@ -20,7 +20,6 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.Nullable;
 
-
 import static _959.server_waypoint.text.WaypointTextHelper.colorToIndex;
 
 @SuppressWarnings("UnstableApiUsage")

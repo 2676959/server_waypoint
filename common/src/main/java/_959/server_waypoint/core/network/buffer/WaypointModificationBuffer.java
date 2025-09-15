@@ -7,7 +7,6 @@ import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import io.netty.buffer.ByteBuf;
 
 import static _959.server_waypoint.core.network.MessageChannelID.WAYPOINT_MODIFICATION_CHANNEL;
-import static _959.server_waypoint.core.network.MessageChannelID.WORLD_WAYPOINT_CHANNEL;
 
 public record WaypointModificationBuffer(
         String dimensionName,

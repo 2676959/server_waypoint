@@ -1,7 +1,5 @@
 package _959.server_waypoint.command.permission;
 
-import java.util.Objects;
-
 import static _959.server_waypoint.core.WaypointServerCore.GROUP_ID;
 
 public class PermissionStringKeys extends PermissionKeys<String> {

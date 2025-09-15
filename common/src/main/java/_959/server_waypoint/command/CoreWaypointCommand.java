@@ -28,6 +28,7 @@ import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -37,13 +38,13 @@ import java.util.function.Supplier;
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 import static _959.server_waypoint.text.TextButton.*;
 import static _959.server_waypoint.text.WaypointTextHelper.*;
-import static _959.server_waypoint.translation.LanguageFilesManager.getLoadedLanguages;
+import static _959.server_waypoint.translation.LanguageFilesManager.getExternalLoadedLanguages;
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
-import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
-import static com.mojang.brigadier.arguments.StringArgumentType.string;
+import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
+import static com.mojang.brigadier.arguments.StringArgumentType.string;
 import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
 import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
 
@@ -648,9 +649,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
     private void executeReload(S source) {
         executeByServer(source, () -> {
             WaypointServerCore.INSTANCE.reload();
-            String[] lang = getLoadedLanguages().toArray(new String[0]);
+            List<String> lang = getExternalLoadedLanguages();
             this.sender.sendMessage(source, Component.translatable("waypoint.loaded.languages",
-                    Component.text(lang.length), Component.text(String.join(" ", lang))));
+                    Component.text(lang.size()), Component.text(String.join(", ", lang))));
         });
         this.sender.sendMessage(source, Component.translatable("waypoint.reload"));
     }

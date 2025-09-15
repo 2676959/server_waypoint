@@ -1,10 +1,10 @@
 package _959.server_waypoint.core.waypoint;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.jetbrains.annotations.Nullable;
 
 public class WaypointList {
     private String name;
