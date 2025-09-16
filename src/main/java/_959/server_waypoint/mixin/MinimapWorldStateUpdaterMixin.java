@@ -1,6 +1,6 @@
 package _959.server_waypoint.mixin;
 
-import _959.server_waypoint.common.ServerWaypointClientMod;
+import _959.server_waypoint.common.client.ServerWaypointClientMod;
 import _959.server_waypoint.common.util.ClientHandshakePayloadGenerator;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xaero.hud.minimap.world.state.MinimapWorldStateUpdater;
 
-import static _959.server_waypoint.common.ServerWaypointClientMod.LOGGER;
+import static _959.server_waypoint.common.client.ServerWaypointClientMod.LOGGER;
 
 //? if fabric {
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;

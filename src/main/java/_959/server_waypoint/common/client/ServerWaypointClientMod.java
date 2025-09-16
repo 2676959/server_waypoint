@@ -1,4 +1,4 @@
-package _959.server_waypoint.common;
+package _959.server_waypoint.common.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

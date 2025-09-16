@@ -1,6 +1,6 @@
 package _959.server_waypoint.common.util;
 
-import _959.server_waypoint.common.ServerWaypointClientMod;
+import _959.server_waypoint.common.client.ServerWaypointClientMod;
 import net.minecraft.world.World;
 import xaero.hud.minimap.module.MinimapSession;
 

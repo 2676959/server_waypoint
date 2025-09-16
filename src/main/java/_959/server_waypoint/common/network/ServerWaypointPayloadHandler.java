@@ -5,7 +5,7 @@ import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
 import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
-import _959.server_waypoint.common.ServerWaypointClientMod;
+import _959.server_waypoint.common.client.ServerWaypointClientMod;
 import _959.server_waypoint.common.network.payload.s2c.DimensionWaypointS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WaypointListS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
