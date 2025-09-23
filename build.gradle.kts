@@ -70,6 +70,9 @@ dependencies {
     val yarn_build: String by project
     minecraft("com.mojang:minecraft:$minecraft")
     implementation(project(":common"))
+    compileOnly("io.github.llamalad7:mixinextras-common:0.5.0")
+    include("io.github.llamalad7:mixinextras-forge:0.5.0")
+    if (minecraft == "1.21") {
     if (minecraft == "1.20.1" || minecraft == "1.20.2") {
         implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
     } else if (minecraft == "1.20.4") {

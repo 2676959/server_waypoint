@@ -1,17 +1,18 @@
 {
-    "required": true,
-    "package": "_959.server_waypoint.mixin",
-    "compatibilityLevel": "JAVA_21",
-    "client": [
-        "ClientPlayNetworkHandlerMixin",
-        "MinimapWorldStateUpdaterMixin",
+	"required": true,
+	"package": "_959.server_waypoint.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"ClientPlayNetworkHandlerMixin",
+		"MinimapWorldStateUpdaterMixin",
+		"WorldRendererMixin",
         "ServerPlayerEntityMixin"
-    ],
-    "server": [
-        "PlayerManagerMixin",
+	],
+	"server": [
+		"PlayerManagerMixin",
         "ServerPlayerEntityMixin"
-    ],
-    "injectors": {
-        "defaultRequire": 1
-    }
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
 }
