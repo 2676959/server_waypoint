@@ -1,4 +1,6 @@
 {
+  "button.initials.tp": "点击传送",
+
   "waypoint.list.added": "路径点列表“%1$s”已成功添加至Xaero's minimap",
   "waypoint.save.failed": "路径点保存失败",
   "waypoint.save.dimension.failed": "维度“%1$s”的路径点保存失败",

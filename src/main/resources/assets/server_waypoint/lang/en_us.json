@@ -1,4 +1,6 @@
 {
+  "button.initials.tp": "click to tp",
+
   "waypoint.list.added": "Waypoint list \"%1$s\" has been added to Xaero's minimap successfully",
   "waypoint.save.failed": "Failed to save waypoints",
   "waypoint.save.dimension.failed": "Failed to save waypoints in dimension %1$s",
