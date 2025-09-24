@@ -8,20 +8,36 @@ import _959.server_waypoint.common.network.payload.s2c.DimensionWaypointS2CPaylo
 import _959.server_waypoint.common.network.payload.s2c.WaypointListS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WaypointModificationS2CPayload;
+import _959.server_waypoint.core.waypoint.WaypointPos;
+import com.google.common.util.concurrent.AtomicDouble;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.render.*;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.util.Window;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import org.joml.Matrix4f;
+import org.joml.Vector4d;
+import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
 
 
 public class ServerWaypointFabricClient implements ClientModInitializer {
     private static KeyBinding keyBinding;
+    public static AtomicDouble x = new AtomicDouble(0);
+    public static AtomicDouble y = new AtomicDouble(0);
 
     @Override
     public void onInitializeClient() {
@@ -40,6 +56,9 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
                 MinecraftClient.getInstance().setScreen(new WaypointManagerScreen(Text.of("test")));
             }
         });
+//        HudRenderCallback.EVENT.register((drawContext, tickCounter) -> {
+//
+//        });
     }
 
 }

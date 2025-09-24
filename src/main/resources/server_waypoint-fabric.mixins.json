@@ -6,6 +6,8 @@
 		"ClientPlayNetworkHandlerMixin",
 		"MinimapWorldStateUpdaterMixin",
 		"WorldRendererMixin",
+		"GameHudMixin",
+		"WorldRendererMixin",
         "ServerPlayerEntityMixin"
 	],
 	"server": [
