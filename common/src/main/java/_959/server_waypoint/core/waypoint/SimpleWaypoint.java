@@ -45,6 +45,14 @@ public class SimpleWaypoint {
         return r;
     }
 
+    public void copyFrom(SimpleWaypoint other) {
+        this.initials = other.initials;
+        this.pos = other.pos;
+        this.colorIdx = other.colorIdx;
+        this.yaw = other.yaw;
+        this.global = other.global;
+    }
+
     public String name() {
         return this.name;
     }

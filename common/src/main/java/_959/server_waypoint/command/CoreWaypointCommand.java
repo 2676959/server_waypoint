@@ -449,7 +449,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private void runWithSelectorTarget(S source, D dimensionArgument, Consumer<@NotNull WaypointFileManager> foundAction) {
         String dimensionName = toDimensionName(dimensionArgument);
         if  (isDimensionValid(source, dimensionArgument)) {
-            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(dimensionName);
+            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointListManager(dimensionName);
             if (fileManager == null) {
                 this.sender.sendError(source, translatable("waypoint.empty.dimension", dimensionNameWithColor(dimensionName)));
             } else {
@@ -500,9 +500,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private void executeAddWaypointList(S source, D dimensionArgument, String listName) {
         String dimensionName = toDimensionName(dimensionArgument);
         if (isDimensionValid(source, dimensionArgument)) {
-            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(dimensionName);
+            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointListManager(dimensionName);
             if (fileManager == null) {
-                fileManager = WaypointServerCore.INSTANCE.addWaypointFileManager(dimensionName);
+                fileManager = WaypointServerCore.INSTANCE.addWaypointListManager(dimensionName);
             }
             WaypointList foundList = fileManager.getWaypointListByName(listName);
             if (foundList == null) {
@@ -533,10 +533,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 sendHexColorCodeError(source, hexCode);
                 return;
             }
-            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(dimensionName);
+            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointListManager(dimensionName);
             WaypointList waypointList;
             if (fileManager == null) {
-                fileManager = WaypointServerCore.INSTANCE.addWaypointFileManager(dimensionName);
+                fileManager = WaypointServerCore.INSTANCE.addWaypointListManager(dimensionName);
                 waypointList = WaypointList.build(listName);
                 fileManager.addWaypointList(waypointList);
             } else {
@@ -803,7 +803,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
             D dimension = getDefaultDimension(context.getLastChild());
-            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(toDimensionName(dimension));
+            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointListManager(toDimensionName(dimension));
             if (fileManager == null) {
                 return Suggestions.empty();
             } else {
@@ -827,7 +827,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
             CommandContext<S> currentContext = context.getLastChild();
             D dimension = getDefaultDimension(currentContext);
-            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(toDimensionName(dimension));
+            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointListManager(toDimensionName(dimension));
             if (fileManager == null) {
                 return Suggestions.empty();
             }

@@ -23,7 +23,7 @@ import java.util.*;
 import static _959.server_waypoint.translation.LanguageFilesManager.getExternalLoadedLanguages;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 
-public abstract class WaypointServerCore {
+public abstract class WaypointServerCore extends WaypointsManagerCore<WaypointFileManager> {
     public static WaypointServerCore INSTANCE;
     public static int EDITION = 0;
     public static Config CONFIG = new Config();
@@ -384,6 +384,11 @@ public abstract class WaypointServerCore {
             this.fileManagerMap.put(dimensionName, fileManager);
             return fileManager;
         }
+    }
+
+    @Override
+    protected WaypointFileManager createWaypointListManager(String dimensionName) {
+        return new WaypointFileManager(null, dimensionName, this.waypointsDir);
     }
 
     public void saveEdition() throws IOException {

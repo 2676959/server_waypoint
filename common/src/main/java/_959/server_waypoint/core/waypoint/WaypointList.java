@@ -53,19 +53,9 @@ public class WaypointList {
         this.simpleWaypoints.remove(waypoint);
     }
 
-    public List<SimpleWaypoint> removeByName(String name) {
-        Iterator<SimpleWaypoint> iter = this.simpleWaypoints.iterator();
-        List<SimpleWaypoint> removedWaypoints = new ArrayList<>();
+    public void removeByName(String name) {
+        this.simpleWaypoints.removeIf(waypoint -> name.equals(waypoint.name()));
 
-        while (iter.hasNext()) {
-            SimpleWaypoint waypoint = iter.next();
-            if (name.equals(waypoint.name())) {
-                removedWaypoints.add(waypoint);
-                iter.remove();
-            }
-        }
-
-        return removedWaypoints;
     }
 
     public WaypointList clear() {

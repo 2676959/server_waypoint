@@ -14,21 +14,21 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.*;
 
-public class WaypointFileManager {
-    private final String dimensionName;
+public class WaypointFileManager extends WaypointListManager {
     private final Path dimensionFilePath;
-    private final Map<String, WaypointList> waypointListMap;
 
     public WaypointFileManager(String fileName, String dimensionName, Path waypointsDir) {
+        super();
         if (fileName == null && dimensionName != null) {
             fileName = dimensionName.replace("/", "%").replace(":", "$");
         } else if (fileName != null && dimensionName == null) {
             dimensionName = fileName.replace("%", "/").replace("$", ":");
         }
         this.dimensionName = dimensionName;
-        this.waypointListMap = new HashMap<>();
         this.dimensionFilePath = waypointsDir.resolve(fileName + ".json");
     }
 
@@ -46,45 +46,8 @@ public class WaypointFileManager {
         return new DimensionWaypointBuffer(this.dimensionName, waypointLists);
     }
 
-    public boolean hasNoWaypoints() {
-        for (WaypointList waypointList : this.waypointListMap.values()) {
-            if (!waypointList.isEmpty()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public boolean isEmpty() {
-        return this.waypointListMap.isEmpty();
-    }
-
-    public String getDimensionName() {
-        return this.dimensionName;
-    }
-
     public Path getDimensionFile() {
         return this.dimensionFilePath;
-    }
-
-    public List<WaypointList> getWaypointLists() {
-        return new ArrayList<>(this.waypointListMap.values());
-    }
-
-    public Map<String, WaypointList> getWaypointListMap() {
-        return this.waypointListMap;
-    }
-
-    public @Nullable WaypointList getWaypointListByName(String name) {
-        return this.waypointListMap.get(name);
-    }
-
-    public void addWaypointList(WaypointList waypointList) {
-        this.waypointListMap.put(waypointList.name(), waypointList);
-    }
-
-    public void removeWaypointListByName(String name) {
-        this.waypointListMap.remove(name);
     }
 
     public void readDimension() throws IOException {
