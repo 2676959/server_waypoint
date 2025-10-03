@@ -26,8 +26,6 @@ import java.nio.file.Path;
 import static _959.server_waypoint.core.network.MessageChannelID.*;
 
 public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageListener, IPlatformConfigPath {
-    public static final String XAEROWORLDMAP_CHANNEL = "xaeroworldmap:main";
-    public static final String XAEROMINIMAP_CHANNEL = "xaerominimap:main";
     private WaypointServerPlugin waypointServer;
     private WaypointCommand waypointCommand;
     private @SuppressWarnings("UnstableApiUsage") ClientHandshakeHandler<CommandSourceStack, Player> handshakeHandler;
@@ -77,9 +75,8 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         server.getMessenger().registerOutgoingPluginChannel(this, WORLD_WAYPOINT_CHANNEL.toString());
         server.getMessenger().registerOutgoingPluginChannel(this, WAYPOINT_MODIFICATION_CHANNEL.toString());
         server.getMessenger().registerIncomingPluginChannel(this, HANDSHAKE_CHANNEL.toString(), this);
-        // register for xaero's minimap and world map mod
-        server.getMessenger().registerOutgoingPluginChannel(this, XAEROWORLDMAP_CHANNEL);
-        server.getMessenger().registerOutgoingPluginChannel(this, XAEROMINIMAP_CHANNEL);
+        // register for xaero's minimap mod
+        server.getMessenger().registerOutgoingPluginChannel(this, XAEROS_WORLD_ID_CHANNEL.toString());
     }
 
     @Override

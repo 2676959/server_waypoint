@@ -8,12 +8,17 @@ public enum MessageChannelID {
     DIMENSION_WAYPOINT_CHANNEL(DIMENSION_WAYPOINT),
     WORLD_WAYPOINT_CHANNEL(WORLD_WAYPOINT),
     WAYPOINT_MODIFICATION_CHANNEL(WAYPOINT_MODIFICATION),
-    HANDSHAKE_CHANNEL(HANDSHAKE);
+    HANDSHAKE_CHANNEL(HANDSHAKE),
+    XAEROS_WORLD_ID_CHANNEL("xaerominimap", "main");
 
     private final String ID;
 
     MessageChannelID(String packetId) {
-        this.ID = GROUP_ID + ":" + packetId;
+        this(GROUP_ID, packetId);
+    }
+
+    MessageChannelID(String namespace, String packetId) {
+        this.ID = namespace + ":" + packetId;
     }
 
     @Override

@@ -6,6 +6,9 @@
 		"ClientPlayNetworkHandlerMixin",
 		"MinimapWorldStateUpdaterMixin"
 	],
+	"server": [
+		"PlayerManagerMixin"
+	],
 	"injectors": {
 		"defaultRequire": 1
 	}

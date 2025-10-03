@@ -27,6 +27,12 @@ import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
 *///?}
 
 public class ModMessageSender implements PlatformMessageSender<ServerCommandSource, ServerPlayerEntity> {
+    private static final ModMessageSender INSTANCE = new ModMessageSender();
+
+    public static ModMessageSender getInstance() {
+        return INSTANCE;
+    }
+
     public static Text toVanillaText(Component component) {
         return TextCodecs.CODEC.decode(
                 DynamicRegistryManager.EMPTY.getOps(JsonOps.INSTANCE),

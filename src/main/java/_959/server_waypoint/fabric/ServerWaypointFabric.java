@@ -8,12 +8,9 @@ import _959.server_waypoint.core.IPlatformConfigPath;
 import _959.server_waypoint.common.network.ModChatMessageHandler;
 import _959.server_waypoint.common.network.payload.c2s.HandshakeC2SPayload;
 import _959.server_waypoint.common.server.WaypointServerMod;
-import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.ClientHandshakeHandler;
-import _959.server_waypoint.core.network.buffer.XaerosWorldIdBuffer;
 import _959.server_waypoint.fabric.permission.FabricPermissionManager;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -32,12 +29,13 @@ import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
 import static _959.server_waypoint.core.WaypointServerCore.*;
 
 public class ServerWaypointFabric implements DedicatedServerModInitializer, IPlatformConfigPath {
+
     @Override
     public void onInitializeServer() {
         // This code runs as soon as Minecraft is in a mod-load-ready state.
         // However, some things (like resources) may still be uninitialized.
         // Proceed with mild caution.
-        ModMessageSender messageSender = new ModMessageSender();
+        ModMessageSender messageSender = ModMessageSender.getInstance();
         FabricPermissionManager permissionManager = new FabricPermissionManager();
         WaypointCommand waypointCommand = new WaypointCommand(messageSender, permissionManager);
         ModChatMessageHandler<String> handler = new ModChatMessageHandler<>(messageSender, permissionManager) {
@@ -65,22 +63,12 @@ public class ServerWaypointFabric implements DedicatedServerModInitializer, IPla
             CONFIG.Features().sendXaerosWorldId(false);
             LOGGER.info("found xaero's mod, force disabling sendXaerosWorldId");
         } else {
-            boolean enable = CONFIG.Features().sendXaerosWorldId();
-            LOGGER.info("xaero's mod is not loaded, set sendXaerosWorldId to {} by config.json", enable);
-            if (enable) {
-                PayloadTypeRegistry.playS2C().register(XaerosWorldIdS2CPayload.ID, XaerosWorldIdS2CPayload.PACKET_CODEC);
-                S2CPlayChannelEvents.REGISTER.register((event, packetSender, server, identifiers) -> {
-                    if (CONFIG.Features().sendXaerosWorldId()) {
-                        ServerPlayNetworking.send(event.getPlayer(), new XaerosWorldIdS2CPayload(new XaerosWorldIdBuffer(getWorldId())));
-                    }
-                });
-            }
+            LOGGER.info("xaero's mod is not loaded, set sendXaerosWorldId to {} by config.json", CONFIG.Features().sendXaerosWorldId());
+            PayloadTypeRegistry.playS2C().register(XaerosWorldIdS2CPayload.ID, XaerosWorldIdS2CPayload.PACKET_CODEC);
         }
 
         // register waypoint command
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, registrationEnvironment) -> {
-            waypointCommand.register(dispatcher);
-        });
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, registrationEnvironment) -> waypointCommand.register(dispatcher));
         // pass MinecraftServer to waypointServer
         ServerLifecycleEvents.SERVER_STARTING.register(waypointServer::setMinecraftServer);
         // save files on shutdown

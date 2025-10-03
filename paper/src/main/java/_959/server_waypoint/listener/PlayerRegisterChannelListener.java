@@ -15,8 +15,7 @@ public class PlayerRegisterChannelListener implements Listener {
         if (CONFIG.Features().sendXaerosWorldId()) {
             XaerosWorldIdBuffer buffer = new XaerosWorldIdBuffer(getWorldId());
             byte[] bytes = buffer.encode();
-            event.getPlayer().sendPluginMessage(ServerWaypointPaperMC.getSelf(), ServerWaypointPaperMC.XAEROMINIMAP_CHANNEL, bytes);
-            event.getPlayer().sendPluginMessage(ServerWaypointPaperMC.getSelf(), ServerWaypointPaperMC.XAEROWORLDMAP_CHANNEL, bytes);
+            event.getPlayer().sendPluginMessage(ServerWaypointPaperMC.getSelf(), buffer.getChannelId().toString(), bytes);
         }
     }
 }

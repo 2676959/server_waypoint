@@ -13,6 +13,7 @@ public class BufferPayloadMapping {
             case WORLD_WAYPOINT_CHANNEL -> new WorldWaypointS2CPayload((WorldWaypointBuffer) packet);
             case WAYPOINT_MODIFICATION_CHANNEL -> new WaypointModificationS2CPayload((WaypointModificationBuffer) packet);
             case HANDSHAKE_CHANNEL -> new HandshakeC2SPayload((HandshakeBuffer) packet);
+            case XAEROS_WORLD_ID_CHANNEL -> new XaerosWorldIdS2CPayload((XaerosWorldIdBuffer) packet);
         };
     }
 }
