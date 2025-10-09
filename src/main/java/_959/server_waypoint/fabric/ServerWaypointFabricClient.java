@@ -36,8 +36,6 @@ import org.lwjgl.glfw.GLFW;
 
 public class ServerWaypointFabricClient implements ClientModInitializer {
     private static KeyBinding keyBinding;
-    public static AtomicDouble x = new AtomicDouble(0);
-    public static AtomicDouble y = new AtomicDouble(0);
 
     @Override
     public void onInitializeClient() {

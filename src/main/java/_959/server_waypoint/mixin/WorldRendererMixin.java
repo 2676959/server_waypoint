@@ -67,18 +67,8 @@ public class WorldRendererMixin {
         BeaconBlockEntityRenderer.renderBeam(matrixStack, immediate, BEAM_TEXTURE, 0, 1.0F, 18000, 0, 2048, 0xFFFFFFFF, 0.2F, 0.25F);
         matrixStack.pop();
         RenderSystem.setShaderFog(fog);
-        WaypointPos waypointPos2 = new WaypointPos(5, 1, 5);
         ModelViewMatrix.set(new Matrix4f(RenderSystem.getModelViewMatrix()));
         ProjectionMatrix.set(RenderSystem.getProjectionMatrix());
-        Vector4f pos = new Vector4f((float) X, (float) Y, (float) Z, 1);
-        pos.mul(RenderSystem.getModelViewMatrix());
-        pos.mul(RenderSystem.getProjectionMatrix());
-        float depth = pos.w;
-        if (depth != 0) {
-            pos.div(depth);
-        }
-        x.set(pos.x);
-        y.set(pos.y);
     }
 
 //    @Inject(method = "render", at = @At(value = "HEAD"))
