@@ -17,7 +17,8 @@ public interface MessageBuffer {
     default byte[] encode() {
         ByteBuf buf =  Unpooled.buffer();
         encoderFunction(buf);
-        buf.capacity(buf.writerIndex());
+        int index = buf.writerIndex();
+        buf.capacity(index);
         return buf.array();
     }
 }

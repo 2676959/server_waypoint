@@ -1,17 +1,20 @@
 package _959.server_waypoint.core.network.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.util.CharsetUtil;
+import java.nio.charset.StandardCharsets;
 
 public class UtfStringCodec {
     public static void encode(ByteBuf byteBuf, String string) {
-        int length = Math.min(string.length(), 255);
+        byte[] raw = string.getBytes(StandardCharsets.UTF_8);
+        int length = Math.min(raw.length, 255);
         byteBuf.writeByte(length);
-        byteBuf.writeCharSequence(string, CharsetUtil.UTF_8);
+        byteBuf.writeBytes(raw);
     }
 
     public static String decode(ByteBuf byteBuf) {
         int length = byteBuf.readByte();
-        return byteBuf.readCharSequence(length, CharsetUtil.UTF_8).toString();
+        byte[] raw = new byte[length];
+        byteBuf.readBytes(raw);
+        return new String(raw, StandardCharsets.UTF_8);
     }
 }

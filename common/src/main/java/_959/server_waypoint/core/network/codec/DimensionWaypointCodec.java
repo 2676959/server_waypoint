@@ -13,8 +13,8 @@ public class DimensionWaypointCodec {
     }
 
     public static DimensionWaypointBuffer decode(ByteBuf buf) {
-        String dimString = UtfStringCodec.decode(buf);
+        String dimensionName = UtfStringCodec.decode(buf);
         List<WaypointList> waypointLists = ListCodec.decode(buf, WaypointListCodec::decode);
-        return new DimensionWaypointBuffer(dimString, waypointLists);
+        return new DimensionWaypointBuffer(dimensionName, waypointLists);
     }
 }
