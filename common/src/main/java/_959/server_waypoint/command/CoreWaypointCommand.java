@@ -60,6 +60,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
     private final SuggestionProvider<S> NAME_INITIALS_SUGGESTION = new NameInitialsSuggestion();
     private final SuggestionProvider<S> PLAYER_YAW_SUGGESTION = new PlayerYawSuggestion();
     private boolean enabled = true;
+    private static final String SINGLE_WORD_REGEX;
     private static final String WAYPOINT_COMMAND;
     private static final String ADD_COMMAND;
     private static final String EDIT_COMMAND;
@@ -695,7 +696,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
                 return Suggestions.empty();
             } else {
                 for (String listName : fileManager.getWaypointListMap().keySet()) {
-                    builder.suggest(listName);
+                    if (listName.matches(SINGLE_WORD_REGEX)) {
+                        builder.suggest(listName);
+                    } else {
+                        builder.suggest("\"%s\"".formatted(listName));
+                    }
                 }
             }
             return builder.buildFuture();
@@ -716,7 +721,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
                 return Suggestions.empty();
             } else {
                 for (SimpleWaypoint waypoint : waypointList.simpleWaypoints()) {
-                    builder.suggest(waypoint.name());
+                    String name = waypoint.name();
+                    if (name.matches(SINGLE_WORD_REGEX)) {
+                        builder.suggest(name);
+                    } else {
+                        builder.suggest("\"%s\"".formatted(name));
+                    }
                 }
                 return builder.buildFuture();
             }
@@ -730,9 +740,16 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
             if (name.isEmpty()) {
                 return Suggestions.empty();
             }
-            builder.suggest(name.toUpperCase().substring(0, 1));
-            if (name.length() > 1) {
-                builder.suggest(name.substring(0, 2).toUpperCase());
+            if (name.matches(SINGLE_WORD_REGEX)) {
+                builder.suggest(name.toUpperCase().substring(0, 1));
+                if (name.length() > 1) {
+                    builder.suggest(name.substring(0, 2).toUpperCase());
+                }
+            } else  {
+                builder.suggest("\"%s\"".formatted(name.substring(0, 1)));
+                if (name.length() > 1) {
+                    builder.suggest("\"%s\"".formatted(name.substring(0, 2)));
+                }
             }
             return builder.buildFuture();
         }
@@ -751,6 +768,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, C> {
     }
 
     static {
+        SINGLE_WORD_REGEX = "^[a-zA-Z0-9+._-]+$";
         WAYPOINT_COMMAND = "wp";
         ADD_COMMAND = "add";
         EDIT_COMMAND = "edit";
