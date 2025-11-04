@@ -5,7 +5,6 @@ import com.google.gson.annotations.SerializedName;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class WaypointList {
@@ -69,5 +68,22 @@ public class WaypointList {
 
     public static WaypointList build(String name) {
         return new WaypointList(name, new ArrayList<>());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        WaypointList other = (WaypointList) o;
+        return this.name.equals(other.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
     }
 }
