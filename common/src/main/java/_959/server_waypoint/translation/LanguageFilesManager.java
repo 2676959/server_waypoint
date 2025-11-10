@@ -155,7 +155,12 @@ public class LanguageFilesManager {
             return new ArrayList<>();
         }
         // file walks JAR
-        URI uri = URI.create("jar:file:" + jarPath);
+        URI uri;
+        try {
+            uri = new URI("jar:file", null, null, -1, jarPath, null, null);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
         try (FileSystem fileSystem = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
             try (Stream<Path> paths = walk(fileSystem.getPath(ASSETS_PATH), 1)) {
                 return paths.filter((file) -> isRegularFile(file) && file.getFileName().toString().endsWith(".json"))
