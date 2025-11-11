@@ -1,11 +1,18 @@
 # ServerWaypoint
 
+[![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg?style=flat-square)](http://creativecommons.org/publicdomain/zero/1.0/)
+![Modrinth Version](https://img.shields.io/modrinth/v/server_waypoint?style=flat-square)
+![both](https://img.shields.io/badge/environment-both-4caf50?style=flat-square)
+[![Modrinth Downloads](https://img.shields.io/modrinth/dt/server_waypoint?style=flat-square)](https://modrinth.com/plugin/server_waypoint)
+
+[![fabric](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/supported/fabric_vector.svg)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
+[![paper](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/supported/paper_vector.svg)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
+
 Manage waypoints and sync them to other player's client automatically. Compatible with Xaero's minimap.
 
 ## Features
 - Syncing waypoints from server automatically.
-- Support server proxies like Velocity.
-- Interactive waypoint list TUI allowing player click to teleport, or remove waypoint.
+- Interactive waypoint list TUI allowing player click to teleport and manage waypoint.
 - Commands auto-completion.
 - Custom permission for `/wp <options>` commands. Compatible with [LuckPerms](https://modrinth.com/plugin/luckperms).
 - Support adding waypoint conveniently from Xaero's minimap waypoint chat sharing message without requiring client side installation.
