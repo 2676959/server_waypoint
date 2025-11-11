@@ -2,6 +2,7 @@
 package _959.server_waypoint.fabric;
 
 import _959.server_waypoint.common.network.ModMessageSender;
+import _959.server_waypoint.common.network.ServerWaypointPayloadHandler;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.common.server.command.WaypointCommand;
 import _959.server_waypoint.core.IPlatformConfigPath;
@@ -10,6 +11,9 @@ import _959.server_waypoint.common.network.payload.c2s.HandshakeC2SPayload;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.network.ClientHandshakeHandler;
 import _959.server_waypoint.fabric.permission.FabricPermissionManager;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.api.DedicatedServerModInitializer;
@@ -21,6 +25,7 @@ import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.WorldSavePath;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -28,13 +33,10 @@ import java.nio.file.Path;
 import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
 import static _959.server_waypoint.core.WaypointServerCore.*;
 
-public class ServerWaypointFabric implements DedicatedServerModInitializer, IPlatformConfigPath {
+public class ServerWaypointFabricServer implements ModInitializer, IPlatformConfigPath {
 
     @Override
-    public void onInitializeServer() {
-        // This code runs as soon as Minecraft is in a mod-load-ready state.
-        // However, some things (like resources) may still be uninitialized.
-        // Proceed with mild caution.
+    public void onInitialize() {
         ModMessageSender messageSender = ModMessageSender.getInstance();
         FabricPermissionManager permissionManager = new FabricPermissionManager();
         WaypointCommand waypointCommand = new WaypointCommand(messageSender, permissionManager);
@@ -46,11 +48,6 @@ public class ServerWaypointFabric implements DedicatedServerModInitializer, IPla
         };
         ClientHandshakeHandler<ServerCommandSource, ServerPlayerEntity> handshakeHandler = new ClientHandshakeHandler<>(messageSender);
         WaypointServerMod waypointServer = new WaypointServerMod(this.getAssignedConfigDirectory(), handler);
-        try {
-            waypointServer.initServer();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
         if (FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0")) {
             FabricPermissionManager.setFabricPermissionAPILoaded(true);
@@ -70,7 +67,27 @@ public class ServerWaypointFabric implements DedicatedServerModInitializer, IPla
         // register waypoint command
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, registrationEnvironment) -> waypointCommand.register(dispatcher));
         // pass MinecraftServer to waypointServer
-        ServerLifecycleEvents.SERVER_STARTING.register(waypointServer::setMinecraftServer);
+        ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer -> {
+            waypointServer.setMinecraftServer(minecraftServer);
+            if (minecraftServer.isDedicated()) {
+                try {
+                    waypointServer.initServer();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                if (waypointServer.isDataRootPathSet()) {
+                    waypointServer.changeDataRootPath(minecraftServer.getSavePath(WorldSavePath.ROOT));
+                } else {
+                    waypointServer.setDataRootPath(minecraftServer.getSavePath(WorldSavePath.ROOT));
+                    try {
+                        waypointServer.initServer();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        });
         // save files on shutdown
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             waypointServer.saveAllFiles();
@@ -83,6 +100,10 @@ public class ServerWaypointFabric implements DedicatedServerModInitializer, IPla
         ServerPlayNetworking.registerGlobalReceiver(HandshakeC2SPayload.ID, ((handshakeC2SPayload, context) ->
                 handshakeHandler.onHandshake(context.player(), handshakeC2SPayload.handshakeBuffer().edition())
         ));
+
+        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+            registerClientHandlers();
+        }
     }
 
     public static void registerPayloads() {
@@ -91,6 +112,13 @@ public class ServerWaypointFabric implements DedicatedServerModInitializer, IPla
         PayloadTypeRegistry.playS2C().register(WorldWaypointS2CPayload.ID, WorldWaypointS2CPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(HandshakeC2SPayload.ID, HandshakeC2SPayload.PACKET_CODEC);
+    }
+
+    private void registerClientHandlers() {
+        ClientPlayNetworking.registerGlobalReceiver(WaypointListS2CPayload.ID, (ServerWaypointPayloadHandler::onWaypointListPayload));
+        ClientPlayNetworking.registerGlobalReceiver(DimensionWaypointS2CPayload.ID, (ServerWaypointPayloadHandler::onDimensionWaypointPayload));
+        ClientPlayNetworking.registerGlobalReceiver(WorldWaypointS2CPayload.ID, (ServerWaypointPayloadHandler::onWorldWaypointPayload));
+        ClientPlayNetworking.registerGlobalReceiver(WaypointModificationS2CPayload.ID, (ServerWaypointPayloadHandler::onWaypointModificationPayload));
     }
 
     @Override

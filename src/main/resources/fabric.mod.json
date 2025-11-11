@@ -15,11 +15,8 @@
 	"icon": "assets/server_waypoint/icon.png",
 	"environment": "*",
 	"entrypoints": {
-		"server": [
-			"_959.server_waypoint.fabric.ServerWaypointFabric"
-		],
-		"client": [
-			"_959.server_waypoint.fabric.ServerWaypointFabricClient"
+		"main": [
+          "_959.server_waypoint.fabric.ServerWaypointFabricServer"
 		]
 	},
 	"mixins": [
