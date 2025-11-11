@@ -10,6 +10,8 @@ import java.util.List;
 public class WaypointList {
     @Expose @SerializedName("list_name")
     private String name;
+    private boolean show = true;
+    private boolean expand = true;
     @Expose @SerializedName("waypoints")
     private final List<SimpleWaypoint> simpleWaypoints;
 
@@ -20,6 +22,22 @@ public class WaypointList {
 
     public @Nullable SimpleWaypoint getWaypointByName(String name) {
         return this.simpleWaypoints.stream().filter((waypoint) -> waypoint.name().equals(name)).findFirst().orElse(null);
+    }
+
+    public boolean isShow() {
+        return this.show;
+    }
+
+    public void setShow(boolean show) {
+        this.show = show;
+    }
+
+    public boolean isExpand() {
+        return this.expand;
+    }
+
+    public void setExpand(boolean expand) {
+        this.expand = expand;
     }
 
     public String name() {

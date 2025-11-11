@@ -10,6 +10,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.Window;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -20,7 +21,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class WaypointRenderer {
-    public static final List<WaypointRenderData> WaypointOnHud = new CopyOnWriteArrayList<>();
+    public static final List<WaypointRenderData> WaypointsOnHud = new CopyOnWriteArrayList<>();
     public static final AtomicReference<Matrix4f> ModelViewMatrix = new AtomicReference<>();
     public static final AtomicReference<Matrix4f> ProjectionMatrix = new AtomicReference<>();
     private static final MinecraftClient mc = MinecraftClient.getInstance();
@@ -30,8 +31,8 @@ public class WaypointRenderer {
     private static final Matrix4f Identity = new Matrix4f();
 
     static {
-        WaypointOnHud.add(new WaypointRenderData(new Vector3f(1.5F, 3F, 5.5F), 0x33BBAD, "全物品", "全"));
-        WaypointOnHud.add(new WaypointRenderData(new Vector3f(1.5F, 0F, 5.5F), 0xAACCFF, "Spawn", "SP"));
+        WaypointsOnHud.add(new WaypointRenderData(new Vector3f(1.5F, 3F, 5.5F), 0x33BBAD, "储", "全物品", "全"));
+        WaypointsOnHud.add(new WaypointRenderData(new Vector3f(1.5F, 0F, 5.5F), 0xAACCFF, "World", "Spawn", "SP"));
     }
 
     public static void addWaypointLists(List<WaypointList> waypointLists) {
@@ -72,8 +73,9 @@ public class WaypointRenderer {
         float minBaseScale = baseScale / 5F;
         context.drawText(textRenderer, "ProjectionScale: %.2f".formatted(projectionScale), 10, 50, 0xFFFFFFFF, true);
         context.draw((immediate -> {
-            for (WaypointRenderData waypointPos : WaypointOnHud) {
+            for (WaypointRenderData waypointPos : WaypointsOnHud) {
                 Vector4f pos = new Vector4f(waypointPos.pos(), 1F);
+                pos.y += 0.5F;
                 pos.add(camX, camY, camZ, 0F);
                 double distance = Math.sqrt(pos.x * pos.x + pos.y * pos.y + pos.z * pos.z);
                 pos.mul(modelMatrix);
@@ -87,6 +89,7 @@ public class WaypointRenderer {
                 // ndc space
                 float x = pos.x();
                 float y = pos.y();
+                float z = -pos.z();
 
                 // window space
                 float wx = (x + 1) * windowCenterX;
@@ -122,6 +125,8 @@ public class WaypointRenderer {
 
                 // change to name when hovering on initials
                 if (isIn2DBox(windowCenterX, windowCenterY, upperCornerX, upperCornerY, lowerCornerX, lowerCornerY)) {
+                    // set on top
+                    z = 0F;
                     alpha = 0xBB000000;
                     displayText = waypointPos.name();
                     // only update width, assuming height does not change
@@ -135,11 +140,13 @@ public class WaypointRenderer {
                         distanceText = String.format("%.1fm", distance);
                     }
                     float distanceTextScale = scale / 1.25F;
-                    Matrix4f matrix = new Matrix4f().translation(tx - 0.2F * scale, wy + distanceTextScale, 0F).scale(distanceTextScale);
+                    Matrix4f matrix = new Matrix4f().translation(tx - 0.2F * scale, wy + distanceTextScale, z).scale(distanceTextScale);
+                    // draw distance
                     drawWaypointOnHud(matrix, 0, 0, distanceText, 0x80000000, immediate, TextRenderer.TextLayerType.NORMAL);
                     // text y position for waypoint name text
                 }
-                Matrix4f matrix = new Matrix4f().translation(tx, ty, 0F).scale(scale);
+                Matrix4f matrix = new Matrix4f().translation(tx, ty, z).scale(scale);
+                // draw waypoint
                 drawWaypointOnHud(matrix, 0, 0, displayText, alpha + rgb, immediate, TextRenderer.TextLayerType.NORMAL);
             }
         }));

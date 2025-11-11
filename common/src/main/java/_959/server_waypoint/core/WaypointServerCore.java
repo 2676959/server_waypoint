@@ -36,15 +36,14 @@ public abstract class WaypointServerCore extends WaypointsManagerCore<WaypointFi
     private Path editionFile;
     private final Path configDir;
     private final byte[] DEFAULT_CONFIG;
-    private final LinkedHashMap<String, WaypointFileManager> fileManagerMap;
     private final LanguageFilesManager languageFilesManager;
 
     /**
      * constructor for dedicated server
      */
     public WaypointServerCore(Path configDir) {
+        super();
         this.configDir = configDir;
-        this.fileManagerMap = new LinkedHashMap<>();
         this.languageFilesManager = new LanguageFilesManager(configDir);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         this.DEFAULT_CONFIG = gson.toJson(CONFIG).getBytes();

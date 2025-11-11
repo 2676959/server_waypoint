@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client;
 
+import _959.server_waypoint.common.client.render.WaypointRenderData;
 import _959.server_waypoint.common.network.payload.s2c.WaypointModificationS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
 import _959.server_waypoint.core.WaypointListManager;
@@ -9,9 +10,24 @@ import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
 import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import net.minecraft.client.MinecraftClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+
+import static _959.server_waypoint.common.client.render.WaypointRenderer.WaypointsOnHud;
 
 public class WaypointClient extends WaypointsManagerCore<WaypointListManager> {
+    public static final Logger LOGGER = LoggerFactory.getLogger("waypoint_client");
     public static WaypointClient INSTANCE;
+    private static String currentDimensionName;
+    private MinecraftClient mc;
+    private Runnable screenUpdater;
+
+    public void setMinecraftClient(MinecraftClient client) {
+        this.mc = client;
+    }
     
     public WaypointClient() {
         super();
@@ -25,13 +41,27 @@ public class WaypointClient extends WaypointsManagerCore<WaypointListManager> {
         return INSTANCE;
     }
 
+    public void setScreenUpdater(Runnable updater) {
+        this.screenUpdater = updater;
+    }
+
     public static void onDimensionChange(String dimensionName) {
-        WaypointListManager listManager = INSTANCE.getWaypointListManager(dimensionName);
-        if (listManager != null) {
-            for (WaypointList waypointList : listManager.getWaypointLists()) {
-                waypointList.simpleWaypoints();
+        WaypointListManager waypointListManager = INSTANCE.fileManagerMap.get(dimensionName);
+        currentDimensionName = dimensionName;
+        if (waypointListManager == null) {
+            WaypointsOnHud.clear();
+            return;
+        }
+        final List<WaypointList> waypointLists = waypointListManager.getWaypointLists();
+        WaypointsOnHud.clear();
+        for (WaypointList waypointList : waypointLists) {
+            String listName = waypointList.name();
+            for (SimpleWaypoint waypoint : waypointList.simpleWaypoints()) {
+                WaypointRenderData renderData = WaypointRenderData.from(listName, waypoint);
+                WaypointsOnHud.add(renderData);
             }
         }
+
     }
 
     @Override
@@ -41,10 +71,29 @@ public class WaypointClient extends WaypointsManagerCore<WaypointListManager> {
 
     public void onWorldWaypointPayload(WorldWaypointS2CPayload payload) {
         WorldWaypointBuffer buffer = payload.worldWaypointBuffer();
+        this.fileManagerMap.clear();
+        WaypointsOnHud.clear();
+        currentDimensionName = this.mc.world.getRegistryKey().getValue().toString();
+        LOGGER.info("this dimension: {}", currentDimensionName);
+        boolean found = false;
         for (DimensionWaypointBuffer dimensionWaypoint : buffer.dimensionWaypointBuffers()) {
-            WaypointListManager waypointListManager = this.addWaypointListManager(dimensionWaypoint.dimensionName());
-            for (WaypointList list : dimensionWaypoint.waypointLists()) {
-                waypointListManager.addWaypointList(list);
+            String dimensionName = dimensionWaypoint.dimensionName();
+            LOGGER.info("dimension name: {}", dimensionName);
+            WaypointListManager waypointListManager = this.addWaypointListManager(dimensionName);
+            if (!found && currentDimensionName.equals(dimensionName)) {
+                found = true;
+                for (WaypointList list : dimensionWaypoint.waypointLists()) {
+                    String listName = list.name();
+                    waypointListManager.addWaypointList(list);
+                    for (SimpleWaypoint simpleWaypoint : list.simpleWaypoints()) {
+                        WaypointRenderData renderData = WaypointRenderData.from(listName, simpleWaypoint);
+                        WaypointsOnHud.add(renderData);
+                    }
+                }
+            } else {
+                for (WaypointList list : dimensionWaypoint.waypointLists()) {
+                    waypointListManager.addWaypointList(list);
+                }
             }
         }
     }
@@ -90,6 +139,17 @@ public class WaypointClient extends WaypointsManagerCore<WaypointListManager> {
                     return;
                 }
                 waypointFound.copyFrom(waypoint);
+            }
+        }
+        // update render data
+        if (currentDimensionName.equals(dimensionName)) {
+            WaypointsOnHud.clear();
+            for (WaypointList waypointList : waypointListManager.getWaypointLists()) {
+                String list = waypointList.name();
+                for (SimpleWaypoint simpleWaypoint : waypointList.simpleWaypoints()) {
+                    WaypointRenderData renderData = WaypointRenderData.from(list, simpleWaypoint);
+                    WaypointsOnHud.add(renderData);
+                }
             }
         }
     }

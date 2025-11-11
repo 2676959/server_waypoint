@@ -9,6 +9,8 @@
 		"GameHudMixin",
 		"BeaconBeamRendererMixin",
 		"MinecraftClientMixin",
+		"BoundKeyAccessor",
+		"MinecraftClientMixin",
 		"GameHudMixin",
 		"WorldRendererMixin",
         "ServerPlayerEntityMixin"
