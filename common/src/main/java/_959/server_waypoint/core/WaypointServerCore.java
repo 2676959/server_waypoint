@@ -369,22 +369,6 @@ public abstract class WaypointServerCore extends WaypointsManagerCore<WaypointFi
         return this.fileManagerMap;
     }
 
-    public @Nullable WaypointFileManager getWaypointFileManager(String dimensionName) {
-        return this.fileManagerMap.get(dimensionName);
-    }
-
-    public WaypointFileManager addWaypointFileManager(String dimensionName) {
-        WaypointFileManager waypointFileManager = this.fileManagerMap.get(dimensionName);
-        if (waypointFileManager != null) {
-            LOGGER.warn("Duplicate dimension key: {}", dimensionName);
-            return waypointFileManager;
-        } else {
-            WaypointFileManager fileManager = new WaypointFileManager(null, dimensionName, this.waypointsDir);
-            this.fileManagerMap.put(dimensionName, fileManager);
-            return fileManager;
-        }
-    }
-
     @Override
     protected WaypointFileManager createWaypointListManager(String dimensionName) {
         return new WaypointFileManager(null, dimensionName, this.waypointsDir);
