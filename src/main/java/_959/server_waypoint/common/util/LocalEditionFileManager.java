@@ -1,6 +1,6 @@
 package _959.server_waypoint.common.util;
 
-import _959.server_waypoint.common.client.ServerWaypointClientMod;
+import _959.server_waypoint.common.client.WaypointClient;
 import net.minecraft.world.World;
 import xaero.hud.minimap.module.MinimapSession;
 
@@ -29,7 +29,7 @@ public class LocalEditionFileManager {
             try (DataInputStream in = new DataInputStream(new FileInputStream(editionFile.toFile()))) {
                 return in.readInt();
             } catch (IOException e) {
-                ServerWaypointClientMod.LOGGER.error("Failed to read edition from file, sync may not work properly.", e);
+                WaypointClient.LOGGER.error("Failed to read edition from file, sync may not work properly.", e);
                 return -1;
             }
         }
@@ -40,7 +40,7 @@ public class LocalEditionFileManager {
         try (DataOutputStream out = new DataOutputStream(new FileOutputStream(editionFile.toFile()))) {
             out.writeInt(edition);
         } catch (IOException e) {
-            ServerWaypointClientMod.LOGGER.error("Failed to write edition to file, sync may not work properly.", e);
+            WaypointClient.LOGGER.error("Failed to write edition to file, sync may not work properly.", e);
         }
     }
 }

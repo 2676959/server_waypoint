@@ -1,6 +1,6 @@
 package _959.server_waypoint.mixin;
 
-import _959.server_waypoint.common.client.ServerWaypointClientMod;
+import _959.server_waypoint.common.client.WaypointClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,6 +13,6 @@ public class ClientPlayNetworkHandlerMixin {
 
     @Inject(method = "onGameJoin", at = @At(value = "HEAD"))
     private void setHandshakeStatus(GameJoinS2CPacket packet, CallbackInfo ci) {
-        ServerWaypointClientMod.setHandshakeFinished(false);
+        WaypointClient.setHandshakeFinished(false);
     }
 }
