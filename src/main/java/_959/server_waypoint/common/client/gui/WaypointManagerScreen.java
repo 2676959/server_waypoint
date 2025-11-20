@@ -3,16 +3,23 @@ package _959.server_waypoint.common.client.gui;
 import _959.server_waypoint.common.client.WaypointClient;
 import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
 import _959.server_waypoint.common.client.gui.widgets.NewWaypointListWidget;
-import _959.server_waypoint.common.client.gui.widgets.WaypointListWidget;
+import _959.server_waypoint.core.WaypointListManager;
+import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.mixin.BoundKeyAccessor;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
+import net.minecraft.world.World;
+
+import java.util.*;
+
+import static _959.server_waypoint.common.client.WaypointClient.LOGGER;
 
 public class WaypointManagerScreen extends Screen {
+    private static ScreenState STATE = ScreenState.DEFAULT;
     private final WaypointClient waypointClient;
     private NewWaypointListWidget waypointListWidget;
 //    private WaypointListWidget waypointListWidget;
@@ -42,15 +49,42 @@ public class WaypointManagerScreen extends Screen {
     public WaypointManagerScreen(Text title, WaypointClient waypointClient) {
         super(title);
         this.waypointClient = waypointClient;
+        STATE = ScreenState.DEFAULT;
     }
+
+//    public static boolean needUpdate() {
+//        return NEED_UPDATE;
+//    }
+
+    public static void requestUpdate() {
+        STATE = ScreenState.NEED_UPDATE;
+    }
+
 
     @Override
     protected void init() {
+        LOGGER.info("gui init");
         int WIDTH = 240;
         int centerX = this.width / 2 - 125;
-        this.dimensionListWidget = new DimensionListWidget(centerX, 8, WIDTH, 40, this.textRenderer);
-//        this.waypointListWidget = new WaypointListWidget(this.client, waypointClient, this, WIDTH, 300, 48, 20);
-        this.waypointListWidget = new NewWaypointListWidget(centerX, 48, WIDTH, 200, this.textRenderer);
+
+        Set<String> dimensionNames;
+        List<WaypointList> defaultWaypointLists;
+
+        if (this.waypointClient.hasNoWaypoints()) {
+            STATE = ScreenState.NO_WAYPOINTS;
+            dimensionNames = new TreeSet<>();
+            dimensionNames.add("empty");
+            this.dimensionListWidget = new DimensionListWidget(centerX, 8, WIDTH, 40, this.textRenderer, dimensionNames, (index) -> {});
+            this.waypointListWidget = new NewWaypointListWidget(centerX, 48, WIDTH, 200, this.textRenderer, new ArrayList<>());
+            this.waypointListWidget.setEmpty();
+        } else {
+            dimensionNames = this.waypointClient.getDimensionNames();
+            defaultWaypointLists = this.waypointClient.getDefaultWaypointLists();
+            this.dimensionListWidget = new DimensionListWidget(centerX, 8, WIDTH, 40, this.textRenderer, dimensionNames, this::onSelectDimension);
+            this.waypointListWidget = new NewWaypointListWidget(centerX, 48, WIDTH, 200, this.textRenderer, defaultWaypointLists);
+            this.dimensionListWidget.setDimensionName(WaypointClient.getCurrentDimensionName());
+        }
+
         this.addDrawableChild(waypointListWidget);
         this.addDrawableChild(dimensionListWidget);
 
@@ -84,23 +118,81 @@ public class WaypointManagerScreen extends Screen {
         this.dimensionListWidget.setX(this.width / 2 - 125);
     }
 
+    private void onSelectDimension(int index) {
+        List<String> dimensionNames = this.dimensionListWidget.dimensionNames;
+        if (index < dimensionNames.size()) {
+            String selectedDimension = dimensionNames.get(index);
+            WaypointListManager waypointListManager = this.waypointClient.getWaypointListManager(selectedDimension);
+            if (waypointListManager != null) {
+                this.waypointListWidget.updateWaypointLists(waypointListManager.getWaypointLists());
+            } else {
+                this.waypointListWidget.setEmpty();
+            }
+        }
+    }
+
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.centerWidgets();
-        this.waypointListWidget.render(context, mouseX, mouseY, delta);
-        this.dimensionListWidget.render(context, mouseX, mouseY, delta);
+        switch (STATE) {
+            case DEFAULT: {
+                this.centerWidgets();
+                this.waypointListWidget.render(context, mouseX, mouseY, delta);
+                this.dimensionListWidget.render(context, mouseX, mouseY, delta);
+                break;
+            }
+            case NEED_UPDATE: {
+                this.centerWidgets();
+                this.waypointListWidget.render(context, mouseX, mouseY, delta);
+                this.dimensionListWidget.render(context, mouseX, mouseY, delta);
+                context.fill(0, 0, width, height, 0xAA000000);
+                context.drawText(textRenderer, "Click to update", this.width/2, this.height/2, 0xFFFFFFFF, true);
+                break;
+            }
+            case NO_WAYPOINTS: {
+                context.fill(0, 0, width, height, 0xAA000000);
+                context.drawText(textRenderer, "No waypoints on this server", this.width/2, this.height/2, 0xFFFFFFFF, true);
+                break;
+            }
+            case NO_SERVER: {
+                context.fill(0, 0, width, height, 0xAA000000);
+                context.drawText(textRenderer, "Unsupported server", this.width/2, this.height/2, 0xFFFFFFFF, true);
+                break;
+            }
+        }
     }
 
-    public void updateWaypoints() {
-
+    public void updateContent() {
+        this.dimensionListWidget.updateDimensionNames(this.waypointClient.getDimensionNames());
+        RegistryKey<World> dimensionKey = this.client.world.getRegistryKey();
+        WaypointListManager waypointListManager;
+        if (dimensionKey == null) {
+            waypointListManager = this.waypointClient.getFileManagerMap().values().iterator().next();
+        } else {
+            String currentDimension = dimensionKey.toString();
+            waypointListManager = this.waypointClient.getWaypointListManager(currentDimension);
+            if  (waypointListManager == null) {
+                waypointListManager = this.waypointClient.getFileManagerMap().values().iterator().next();
+            }
+        }
+        this.waypointListWidget.updateWaypointLists(waypointListManager.getWaypointLists());
+        this.dimensionListWidget.setDimensionName(WaypointClient.getCurrentDimensionName());
     }
 
-    public void updateWaypoint() {
-
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (STATE == ScreenState.NEED_UPDATE) {
+            this.updateContent();
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    public void removeWaypoint() {
-
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (STATE == ScreenState.NEED_UPDATE) {
+            return false;
+        }
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
     @Override
@@ -147,6 +239,12 @@ public class WaypointManagerScreen extends Screen {
     @Override
     public void close() {
         super.close();
-        this.waypointClient.setScreenUpdater(() -> {});
+    }
+
+    public enum ScreenState {
+        DEFAULT,
+        NEED_UPDATE,
+        NO_WAYPOINTS,
+        NO_SERVER
     }
 }

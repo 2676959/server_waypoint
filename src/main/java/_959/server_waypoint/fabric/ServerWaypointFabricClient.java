@@ -1,6 +1,7 @@
 //? if fabric {
 package _959.server_waypoint.fabric;
 
+import _959.server_waypoint.common.client.WaypointClient;
 import _959.server_waypoint.common.client.render.WaypointRenderer;
 import _959.server_waypoint.common.client.gui.WaypointManagerScreen;
 import _959.server_waypoint.common.network.ServerWaypointPayloadHandler;
@@ -13,6 +14,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -39,9 +41,7 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        // This entrypoint is suitable for setting up client-specific logic, such as rendering.
-//        this.registerPayloadHandlers();
-
+        new WaypointClient();
         keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.examplemod.spook", // The translation key of the keybinding's name
                 InputUtil.Type.KEYSYM, // The type of the keybinding, KEYSYM for keyboard, MOUSE for mouse.
@@ -51,12 +51,12 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (keyBinding.wasPressed()) {
                 client.player.sendMessage(Text.literal("Key 1 was pressed!"), false);
-                MinecraftClient.getInstance().setScreen(new WaypointManagerScreen(Text.of("test")));
+                MinecraftClient.getInstance().setScreen(new WaypointManagerScreen(Text.of("test"), WaypointClient.getInstance()));
             }
         });
-//        HudRenderCallback.EVENT.register((drawContext, tickCounter) -> {
-//
-//        });
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+            WaypointClient.getInstance().setMinecraftClient(client);
+        });
     }
 
 }

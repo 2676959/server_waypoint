@@ -17,6 +17,9 @@
 	"entrypoints": {
 		"main": [
           "_959.server_waypoint.fabric.ServerWaypointFabricServer"
+		],
+		"client": [
+			"_959.server_waypoint.fabric.ServerWaypointFabricClient"
 		]
 	},
 	"mixins": [

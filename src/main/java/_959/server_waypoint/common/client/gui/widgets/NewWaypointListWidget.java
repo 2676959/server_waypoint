@@ -1,8 +1,8 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
-import _959.server_waypoint.core.waypoint.WaypointPos;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
@@ -11,6 +11,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static java.util.Collections.binarySearch;
@@ -18,60 +19,62 @@ import static java.util.Collections.binarySearch;
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 
 public class NewWaypointListWidget extends ScrollableWidget {
-    public static final List<WaypointList> WAYPOINT_LISTS = new ArrayList<>();
-    private static final List<Integer> LIST_POSITIONS = new ArrayList<>();
     private static double SCROLLED_POSITION = 0.0D;
-    private final TextRenderer textRenderer;
     private final int itemHeight = 20;
+    private final TextRenderer textRenderer;
+    private final List<WaypointList> waypointLists;
+    private final List<Integer> listPositions = new ArrayList<>();
+    private boolean empty = false;
 
-    static {
-        WaypointList list1 = WaypointList.build("test1");
-        list1.add(new SimpleWaypoint("a", "a", new WaypointPos(0, 0, 0), 0 ,0, true));
-        list1.add(new SimpleWaypoint("ab", "a", new WaypointPos(0, 0, 0), 1 ,0, true));
-        list1.add(new SimpleWaypoint("abc", "a", new WaypointPos(0, 0, 0), 2 ,0, true));
-        list1.add(new SimpleWaypoint("da", "d", new WaypointPos(0, 0, 0), 3 ,0, true));
-        list1.add(new SimpleWaypoint("dab", "d", new WaypointPos(0, 0, 0), 4 ,0, true));
-        list1.add(new SimpleWaypoint("dabc", "d", new WaypointPos(0, 0, 0), 5 ,0, true));
-        list1.add(new SimpleWaypoint("da", "d", new WaypointPos(0, 0, 0), 3 ,0, true));
-        list1.add(new SimpleWaypoint("dab", "d", new WaypointPos(0, 0, 0), 4 ,0, true));
-        list1.add(new SimpleWaypoint("dabc", "d", new WaypointPos(0, 0, 0), 5 ,0, true));
-        list1.add(new SimpleWaypoint("a", "a", new WaypointPos(0, 0, 0), 0 ,0, true));
-        list1.add(new SimpleWaypoint("ab", "a", new WaypointPos(0, 0, 0), 1 ,0, true));
-        list1.add(new SimpleWaypoint("abc", "a", new WaypointPos(0, 0, 0), 2 ,0, true));
-        WaypointList list2 = WaypointList.build("test2");
-        list2.add(new SimpleWaypoint("da", "d", new WaypointPos(0, 0, 0), 3 ,0, true));
-        list2.add(new SimpleWaypoint("dab", "d", new WaypointPos(0, 0, 0), 4 ,0, true));
-        list2.add(new SimpleWaypoint("dabc", "d", new WaypointPos(0, 0, 0), 5 ,0, true));
-        list2.add(new SimpleWaypoint("a", "a", new WaypointPos(0, 0, 0), 0 ,0, true));
-        list2.add(new SimpleWaypoint("ab", "a", new WaypointPos(0, 0, 0), 1 ,0, true));
-        list2.add(new SimpleWaypoint("abc", "a", new WaypointPos(0, 0, 0), 2 ,0, true));
-        list2.add(new SimpleWaypoint("a", "a", new WaypointPos(0, 0, 0), 0 ,0, true));
-        list2.add(new SimpleWaypoint("ab", "a", new WaypointPos(0, 0, 0), 1 ,0, true));
-        list2.add(new SimpleWaypoint("abc", "a", new WaypointPos(0, 0, 0), 2 ,0, true));
-        list2.add(new SimpleWaypoint("da", "d", new WaypointPos(0, 0, 0), 3 ,0, true));
-        list2.add(new SimpleWaypoint("dab", "d", new WaypointPos(0, 0, 0), 4 ,0, true));
-        list2.add(new SimpleWaypoint("dabc", "d", new WaypointPos(0, 0, 0), 5 ,0, true));
-        WAYPOINT_LISTS.add(list1);
-        WAYPOINT_LISTS.add(list2);
-        LIST_POSITIONS.add(0);
-        LIST_POSITIONS.add(list1.size() + 1);
-    }
-
-    public NewWaypointListWidget(int x, int y, int width, int height, TextRenderer textRenderer) {
+    public NewWaypointListWidget(int x, int y, int width, int height, TextRenderer textRenderer, Collection<WaypointList> waypointLists) {
         super(x, y, width, height, Text.literal("Waypoints"));
         this.textRenderer = textRenderer;
         setScrollY(SCROLLED_POSITION);
+        this.waypointLists = new ArrayList<>(waypointLists);
+        this.listPositions.add(0);
+        for (int i = 1; i < this.waypointLists.size(); i++) {
+            this.listPositions.add(this.waypointLists.get(i).size() + 1);
+        }
+    }
+
+    public void updateWaypointLists(Collection<WaypointList> newWaypointLists) {
+        if (newWaypointLists.isEmpty()) {
+            this.empty = true;
+            this.waypointLists.clear();
+            this.listPositions.clear();
+            return;
+        }
+        this.waypointLists.clear();
+        this.waypointLists.addAll(newWaypointLists);
+        this.listPositions.clear();
+        this.listPositions.add(0);
+        for (int i = 1; i < this.waypointLists.size(); i++) {
+            WaypointList waypointList = this.waypointLists.get(i);
+            if (waypointList.isExpand()) {
+                this.listPositions.add(waypointList.size() + 1);
+            } else  {
+                this.listPositions.add(listPositions.get(i - 1) + 1);
+            }
+        }
+    }
+
+    public void setEmpty() {
+        this.empty = true;
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         boolean bl = super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
         SCROLLED_POSITION = getScrollY();
+        WaypointServerMod.LOGGER.info("scrolled: {}", SCROLLED_POSITION);
         return bl;
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (empty) {
+            return false;
+        }
         if (this.checkScrollbarDragged(mouseX, mouseY, button)) {
             return true;
         };
@@ -82,19 +85,26 @@ public class NewWaypointListWidget extends ScrollableWidget {
         if (mouseX < x1 && mouseX > x && mouseY < y1 && mouseY > y) {
             double scrollDistance = mouseY - y + getScrollY();
             int pos = (int) scrollDistance / itemHeight;
+            WaypointList lastWaypointList = this.waypointLists.getLast();
+            int lastSize = lastWaypointList.isExpand() ? lastWaypointList.size() : 0;
+            int lastPos = listPositions.getLast() + lastSize;
+            if (pos > lastPos) {
+                return false;
+            }
             LOGGER.info("pos: {}", pos);
-            int index = binarySearch(LIST_POSITIONS, pos);
+
+            int index = binarySearch(listPositions, pos);
             if (index >= 0) {
-                WaypointList waypointList = WAYPOINT_LISTS.get(index);
+                WaypointList waypointList = waypointLists.get(index);
                 int size = waypointList.size();
                 if (waypointList.isExpand()) {
-                    for (int i = index + 1; i < LIST_POSITIONS.size(); i++) {
-                        LIST_POSITIONS.set(i, LIST_POSITIONS.get(i) - size);
+                    for (int i = index + 1; i < listPositions.size(); i++) {
+                        listPositions.set(i, listPositions.get(i) - size);
                     }
                     waypointList.setExpand(false);
                 } else {
-                    for (int i = index + 1; i < LIST_POSITIONS.size(); i++) {
-                        LIST_POSITIONS.set(i, LIST_POSITIONS.get(i) + size);
+                    for (int i = index + 1; i < listPositions.size(); i++) {
+                        listPositions.set(i, listPositions.get(i) + size);
                     }
                     waypointList.setExpand(true);
                 }
@@ -104,8 +114,12 @@ public class NewWaypointListWidget extends ScrollableWidget {
             } else {
                 // listIndex = insertIndex - 1; insertIndex = -index - 1
                 int listIndex = -index - 2;
-                int waypointIndex = pos - LIST_POSITIONS.get(listIndex) - 1;
-                SimpleWaypoint waypoint = WAYPOINT_LISTS.get(listIndex).simpleWaypoints().get(waypointIndex);
+                int waypointIndex = pos - listPositions.get(listIndex) - 1;
+                List<SimpleWaypoint> simpleWaypoints = waypointLists.get(listIndex).simpleWaypoints();
+                if (waypointIndex >= simpleWaypoints.size()) {
+                    return false;
+                }
+                SimpleWaypoint waypoint = simpleWaypoints.get(waypointIndex);
                 LOGGER.info("waypoint: {}", waypoint);
             }
         }
@@ -120,9 +134,12 @@ public class NewWaypointListWidget extends ScrollableWidget {
 
     @Override
     protected int getContentsHeightWithPadding() {
-        WaypointList waypointList = WAYPOINT_LISTS.getLast();
+        if (this.waypointLists == null || empty) {
+            return 0;
+        }
+        WaypointList waypointList = this.waypointLists.getLast();
         int lastSize = waypointList.isExpand() ? waypointList.size() + 1 : 1;
-        return (LIST_POSITIONS.getLast() + lastSize) * itemHeight;
+        return (listPositions.getLast() + lastSize) * itemHeight;
     }
 
     @Override
@@ -146,6 +163,11 @@ public class NewWaypointListWidget extends ScrollableWidget {
 
         context.getMatrices().translate(0.0D, -scrollY, 0.0D);
 
+        if (empty) {
+            context.drawText(textRenderer, "<Empty>", width / 2, 0, 0xFFFFFFFF, true);
+            return;
+        }
+
         if (mouseX < x2 && mouseX > x && mouseY < y + getContentsHeightWithPadding() && mouseY > y) {
             double scrollDistance = mouseY - y + getScrollY();
             int pos = (int) scrollDistance / itemHeight;
@@ -154,7 +176,7 @@ public class NewWaypointListWidget extends ScrollableWidget {
         }
 
         int listY = 0;
-        for (WaypointList waypointList : WAYPOINT_LISTS) {
+        for (WaypointList waypointList : waypointLists) {
             boolean isExpand = waypointList.isExpand();
             String prefix = isExpand ? "▼" : "▶";
             String listName = prefix + waypointList.name();

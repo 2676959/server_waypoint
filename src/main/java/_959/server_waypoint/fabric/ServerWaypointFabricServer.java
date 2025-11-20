@@ -28,6 +28,7 @@ import net.minecraft.util.WorldSavePath;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 //? if >= 1.20.5
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
