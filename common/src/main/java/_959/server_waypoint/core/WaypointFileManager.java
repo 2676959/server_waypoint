@@ -3,16 +3,18 @@ package _959.server_waypoint.core;
 import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.core.waypoint.WaypointPos;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
+import java.io.*;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class WaypointFileManager {
     private final String dimensionName;
@@ -27,7 +29,7 @@ public class WaypointFileManager {
         }
         this.dimensionName = dimensionName;
         this.waypointListMap = new HashMap<>();
-        this.dimensionFilePath = waypointsDir.resolve(fileName + ".txt");
+        this.dimensionFilePath = waypointsDir.resolve(fileName + ".json");
     }
 
     @Nullable
@@ -89,11 +91,15 @@ public class WaypointFileManager {
         this.readFromFile(this.dimensionFilePath);
     }
 
+    public void readDimensionFromTxt() throws IOException {
+        this.readFromTxtFile(this.dimensionFilePath);
+    }
+
     public void saveDimension() throws IOException {
         this.writeToFile(this.dimensionFilePath);
     }
 
-    private void readFromFile(Path filePath) throws IOException {
+    private void readFromTxtFile(Path filePath) throws IOException {
         WaypointList currentList = null;
 
         int waypointsNumber = 0;
@@ -115,26 +121,38 @@ public class WaypointFileManager {
                 }
             }
         }
+        WaypointServerCore.LOGGER.info("Loaded {} lists and {} waypoints from old txt file: {}", this.waypointListMap.size(), waypointsNumber, filePath);
+    }
+
+    private void readFromFile(Path filePath) throws IOException {
+        ArrayList<WaypointList> waypointLists;
+        try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath.toFile()), StandardCharsets.UTF_8))) {
+            Type listType = new TypeToken<ArrayList<WaypointList>>() {}.getType();
+            Gson gson = new GsonBuilder()
+                    .setPrettyPrinting()
+                    .registerTypeAdapter(WaypointPos.class, new WaypointPos.WaypointPosAdapter())
+                    .excludeFieldsWithoutExposeAnnotation()
+                    .create();
+            waypointLists = gson.fromJson(reader, listType);
+        }
+        int waypointsNumber = 0;
+        for (WaypointList waypointList : waypointLists) {
+            this.addWaypointList(waypointList);
+            waypointsNumber += waypointList.size();
+        }
         WaypointServerCore.LOGGER.info("Loaded {} lists and {} waypoints from file: {}", this.waypointListMap.size(), waypointsNumber, filePath);
     }
 
     private void writeToFile(Path filePath) throws IOException {
-        List<String> lines = new ArrayList<>();
-
-        int waypointsNumber = 0;
-        for (Map.Entry<String, WaypointList> entry : this.waypointListMap.entrySet()) {
-            String name = entry.getKey();
-            WaypointList list = entry.getValue();
-            lines.add("#" + name);
-
-            List<SimpleWaypoint> waypointList = list.simpleWaypoints();
-            for (SimpleWaypoint waypoint : waypointList) {
-                lines.add(waypoint.toSaveString());
-            }
-            waypointsNumber += waypointList.size();
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath.toFile()), StandardCharsets.UTF_8))) {
+            Collection<WaypointList> waypointLists = this.waypointListMap.values();
+            Gson gson = new GsonBuilder()
+                    .setPrettyPrinting()
+                    .registerTypeAdapter(WaypointPos.class, new WaypointPos.WaypointPosAdapter())
+                    .excludeFieldsWithoutExposeAnnotation()
+                    .create();
+            gson.toJson(waypointLists, writer);
+            WaypointServerCore.LOGGER.info("Saved {} waypoint lists to file: {}", this.waypointListMap.size(), filePath);
         }
-
-        Files.write(filePath, lines, StandardCharsets.UTF_8);
-        WaypointServerCore.LOGGER.info("Saved {} lists and {} waypoints to file: {}", waypointListMap.size(), waypointsNumber, filePath);
     }
 }

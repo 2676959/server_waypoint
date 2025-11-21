@@ -1,12 +1,15 @@
 package _959.server_waypoint.core.waypoint;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 public class SimpleWaypoint {
-    private String name;
-    private String initials;
-    private WaypointPos pos;
-    private int colorIdx;
-    private int yaw;
-    private boolean global;
+    @Expose private String name;
+    @Expose private String initials;
+    @Expose private WaypointPos pos;
+    @Expose @SerializedName("color") private int colorIdx;
+    @Expose private int yaw;
+    @Expose private boolean global;
     private static final String SEPARATOR = ":";
 
     public SimpleWaypoint(String name, String initials, WaypointPos pos, int colorIdx, int yaw, boolean global) {
@@ -86,10 +89,6 @@ public class SimpleWaypoint {
 
     public String toString() {
         return "SimpleWaypoint{name='" + this.name + "', initials='" + this.initials + "', pos=" + this.pos + ", colorIdx=" + this.colorIdx + ", yaw=" + this.yaw + ", global=" + this.global + "}";
-    }
-
-    public String toSaveString() {
-        return this.name() + SEPARATOR + this.initials() + SEPARATOR + this.pos().x() + SEPARATOR + this.pos().y() + SEPARATOR + this.pos().z() + SEPARATOR + this.colorIdx() + SEPARATOR + this.yaw() + SEPARATOR + this.global();
     }
 
     public static SimpleWaypoint fromString(String waypointString) throws NumberFormatException {

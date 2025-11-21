@@ -1,5 +1,7 @@
 package _959.server_waypoint.core.waypoint;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -7,7 +9,9 @@ import java.util.Iterator;
 import java.util.List;
 
 public class WaypointList {
+    @Expose @SerializedName("list_name")
     private String name;
+    @Expose @SerializedName("waypoints")
     private final List<SimpleWaypoint> simpleWaypoints;
 
     public WaypointList(String name, List<SimpleWaypoint> simpleWaypoints) {
@@ -21,6 +25,10 @@ public class WaypointList {
 
     public String name() {
         return this.name;
+    }
+
+    public int size() {
+        return this.simpleWaypoints.size();
     }
 
     public boolean isEmpty() {

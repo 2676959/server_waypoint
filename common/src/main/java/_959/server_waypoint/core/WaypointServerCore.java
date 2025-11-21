@@ -167,24 +167,39 @@ public abstract class WaypointServerCore {
             for (Path path : entries) {
                 if (path.toFile().isDirectory()) {
                     continue;
+
                 }
                 String fileName = path.getFileName().toString();
-                if (fileName.endsWith(".txt")) {
-                    fileName = fileName.substring(0, fileName.length() - 4);
-                } else {
-                    continue;
-                }
+                // test for old version file name
                 if (fileName.startsWith("dim%")) {
                     fileName = convertToNewFileName(fileName);
-                    Files.move(path, path.resolveSibling(fileName + ".txt"));
+                    Files.move(path, path.resolveSibling(fileName));
                     LOGGER.info("Old file moved to {}", fileName);
                 } else if (isFileNameInvalid(fileName)) {
                     LOGGER.error("Invalid dimension file name {}, skip", fileName);
                     continue;
                 }
+                // test for txt format file
+                boolean isTxt = false;
+                if (fileName.endsWith(".txt")) {
+                    fileName = fileName.substring(0, fileName.length() - 4);
+                    Files.move(path, path.resolveSibling(fileName + ".json"));
+                    isTxt = true;
+                } else if (fileName.endsWith(".json")) {
+                    // using json from 2.8.3
+                    fileName = fileName.substring(0, fileName.length() - 5);
+                } else {
+                    continue;
+                }
                 WaypointFileManager fileManager = new WaypointFileManager(fileName, null, this.waypointsDir);
                 try {
-                    fileManager.readDimension();
+                    if (isTxt) {
+                        // convert to json format
+                        fileManager.readDimensionFromTxt();
+                        fileManager.saveDimension();
+                    } else {
+                        fileManager.readDimension();
+                    }
                     fileManagers.add(new Pair<>(fileManager.getDimensionName(), fileManager));
                 } catch (IOException e) {
                     LOGGER.error("Failed to load dimension file", e);
@@ -192,6 +207,7 @@ public abstract class WaypointServerCore {
                 }
             }
         }
+        // sort by dimension names to get rid of random file reading order
         fileManagers.sort(Comparator.comparing(Pair::left));
         for  (Pair<String, WaypointFileManager> pair : fileManagers) {
             fileManagerMap.put(pair.left(), pair.right());
@@ -206,10 +222,10 @@ public abstract class WaypointServerCore {
     private String convertToNewFileName(String fileName) {
         fileName = fileName.substring(4);
         return switch (fileName) {
-            case "0" -> "minecraft$overworld";
-            case "1" -> "minecraft$the_end";
-            case "-1" -> "minecraft$the_nether";
-            default -> fileName;
+            case "0" -> "minecraft$overworld.json";
+            case "1" -> "minecraft$the_end.json";
+            case "-1" -> "minecraft$the_nether.json";
+            default -> fileName + ".json";
         };
     }
 
