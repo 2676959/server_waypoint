@@ -1,6 +1,7 @@
 package _959.server_waypoint.config;
 
 public class Features {
+    public static boolean noXaerosMod = true;
     boolean addWaypointFromChatSharing = true;
     boolean sendXaerosWorldId = true;
 
@@ -9,7 +10,7 @@ public class Features {
     }
 
     public boolean sendXaerosWorldId() {
-        return this.sendXaerosWorldId;
+        return noXaerosMod && this.sendXaerosWorldId;
     }
 
     public void sendXaerosWorldId(boolean enable) {
