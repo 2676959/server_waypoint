@@ -5,6 +5,7 @@ import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.network.ServerWaypointPayloadHandler;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.common.server.command.WaypointCommand;
+import _959.server_waypoint.config.Features;
 import _959.server_waypoint.core.IPlatformConfigPath;
 import _959.server_waypoint.common.network.ModChatMessageHandler;
 import _959.server_waypoint.common.network.payload.c2s.HandshakeC2SPayload;
@@ -16,7 +17,6 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -57,7 +57,7 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         }
 
         if (FabricLoader.getInstance().isModLoaded("xaerominimap") || FabricLoader.getInstance().isModLoaded("xaeroworldmap")) {
-            CONFIG.Features().sendXaerosWorldId(false);
+            Features.noXaerosMod = false;
             LOGGER.info("found xaero's mod, force disabling sendXaerosWorldId");
         } else {
             LOGGER.info("xaero's mod is not loaded, set sendXaerosWorldId to {} by config.json", CONFIG.Features().sendXaerosWorldId());

@@ -35,7 +35,6 @@ public abstract class WaypointServerCore {
     private Path waypointsDir;
     private Path editionFile;
     private final Path configDir;
-    private final Gson gson = (new GsonBuilder()).setPrettyPrinting().create();
     private final byte[] DEFAULT_CONFIG;
     private final LinkedHashMap<String, WaypointFileManager> fileManagerMap;
     private final LanguageFilesManager languageFilesManager;
@@ -47,7 +46,8 @@ public abstract class WaypointServerCore {
         this.configDir = configDir;
         this.fileManagerMap = new LinkedHashMap<>();
         this.languageFilesManager = new LanguageFilesManager(configDir);
-        this.DEFAULT_CONFIG = this.gson.toJson(CONFIG).getBytes();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        this.DEFAULT_CONFIG = gson.toJson(CONFIG).getBytes();
         addAdventureTranslator();
         INSTANCE = this;
     }
@@ -57,6 +57,7 @@ public abstract class WaypointServerCore {
     /**
      * Can only be called after Minecraft server initialized.
      */
+    @SuppressWarnings("unused")
     public void removeInvalidDimensions() {
         for (String fileName : this.fileManagerMap.keySet()) {
             if (this.isDimensionKeyValid(fileName)) {
@@ -83,7 +84,8 @@ public abstract class WaypointServerCore {
     }
 
     public void loadConfig(FileReader reader) {
-        CONFIG = this.gson.fromJson(reader, Config.class);
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        CONFIG = gson.fromJson(reader, Config.class);
         LOGGER.info("Loaded config {}", CONFIG);
     }
 
@@ -136,7 +138,8 @@ public abstract class WaypointServerCore {
             if (!Files.exists(configFile) || !Files.isRegularFile(configFile)) {
                 Files.createFile(configFile);
             }
-            Files.write(configFile, this.gson.toJson(CONFIG).getBytes());
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            Files.write(configFile, gson.toJson(CONFIG).getBytes());
             LOGGER.info("Saved config file: {}", configFile);
         } catch (IOException e) {
             LOGGER.error("Failed to save config file", e);
@@ -327,6 +330,7 @@ public abstract class WaypointServerCore {
         }
     }
 
+    @SuppressWarnings("unused")
     public void reloadWaypointsFile() {
         saveAllFiles();
         this.fileManagerMap.clear();
