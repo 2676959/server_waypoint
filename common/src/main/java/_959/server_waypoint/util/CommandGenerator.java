@@ -2,34 +2,14 @@ package _959.server_waypoint.util;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 
+import static _959.server_waypoint.util.ColorUtils.rgbToNameOrHexCode;
+
 public class CommandGenerator {
     public static final String WAYPOINT_COMMAND = "/wp";
     public static final String ADD_ARGUMENT = "add";
     public static final String EDIT_ARGUMENT = "edit";
     public static final String REMOVE_ARGUMENT = "remove";
     public static final String TP_ARGUMENT = "tp";
-    public static final String[] COLOR_NAMES = {
-            "black",
-            "dark_blue",
-            "dark_green",
-            "dark_aqua",
-            "dark_red",
-            "dark_purple",
-            "gold",
-            "gray",
-            "dark_gray",
-            "blue",
-            "green",
-            "aqua",
-            "red",
-            "light_purple",
-            "yellow",
-            "white"
-    };
-
-    public static String colorIndexToName(int colorIdx) {
-        return COLOR_NAMES[colorIdx];
-    }
 
     public static String tpCmd(String dimensionName, String waypointList, String waypointName) {
         return WAYPOINT_COMMAND + " " + TP_ARGUMENT + " " +
@@ -47,7 +27,7 @@ public class CommandGenerator {
                                 waypoint.pos().z(),
                                 waypoint.name(),
                                 waypoint.initials(),
-                                colorIndexToName(waypoint.colorIdx()),
+                                rgbToNameOrHexCode(waypoint.rgb(), false),
                                 waypoint.yaw(),
                                 waypoint.global()
                 );
@@ -64,7 +44,7 @@ public class CommandGenerator {
                                 waypoint.pos().x(),
                                 waypoint.pos().y(),
                                 waypoint.pos().z(),
-                                colorIndexToName(waypoint.colorIdx()),
+                                rgbToNameOrHexCode(waypoint.rgb(), false),
                                 waypoint.yaw(),
                                 waypoint.global()
                         );

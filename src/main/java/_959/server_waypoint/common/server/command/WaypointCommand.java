@@ -2,32 +2,31 @@ package _959.server_waypoint.common.server.command;
 
 import _959.server_waypoint.command.CoreWaypointCommand;
 import _959.server_waypoint.command.permission.PermissionManager;
+import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 
-import net.minecraft.command.argument.ColorArgumentType;
+import com.mojang.brigadier.Message;
+import net.kyori.adventure.text.Component;
 import net.minecraft.command.argument.DimensionArgumentType;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.PosArgument;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
-import java.util.function.Function;
 
-public class WaypointCommand extends CoreWaypointCommand<ServerCommandSource, String, ServerPlayerEntity, Identifier, PosArgument, Formatting> {
+public class WaypointCommand extends CoreWaypointCommand<ServerCommandSource, String, ServerPlayerEntity, Identifier, PosArgument> {
     public WaypointCommand(PlatformMessageSender<ServerCommandSource, ServerPlayerEntity> networkAdapter, PermissionManager<ServerCommandSource, String, ServerPlayerEntity> permissionManager) {
-        super(networkAdapter, permissionManager, DimensionArgumentType::dimension, BlockPosArgumentType::blockPos, ColorArgumentType::color);
+        super(networkAdapter, permissionManager, DimensionArgumentType::dimension, BlockPosArgumentType::blockPos);
     }
 
     @Nullable
@@ -45,11 +44,6 @@ public class WaypointCommand extends CoreWaypointCommand<ServerCommandSource, St
     protected WaypointPos toWaypointPos(ServerCommandSource source, PosArgument blockPositionArgument) {
         BlockPos blockPos = blockPositionArgument.toAbsoluteBlockPos(source);
         return new WaypointPos(blockPos.getX(), blockPos.getY(), blockPos.getZ());
-    }
-
-    @Override
-    protected int toColorIdx(Formatting colorArgument) {
-        return colorArgument.ordinal();
     }
 
     @Override
@@ -95,5 +89,10 @@ public class WaypointCommand extends CoreWaypointCommand<ServerCommandSource, St
         //?} else {
         /*player.teleport(world, pos.X(), pos.y(), pos.Z(), yaw, 0);
         *///?}
+    }
+
+    @Override
+    protected Message getMessageFromComponent(Component component) {
+        return ModMessageSender.toVanillaText(component);
     }
 }

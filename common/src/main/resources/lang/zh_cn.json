@@ -49,5 +49,7 @@
   "button.remove": "点击删除路径点",
   "button.edit": "编辑路径点",
   "button.add.waypoint": "点击添加路径点",
-  "button.add.list": "点击创建路径点列表"
+  "button.add.list": "点击创建路径点列表",
+
+  "hex_color_code.invalid": "无效的十六进制颜色码：{0}"
 }
