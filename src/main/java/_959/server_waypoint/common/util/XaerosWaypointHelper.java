@@ -4,12 +4,14 @@ import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import xaero.common.minimap.waypoints.Waypoint;
 import xaero.hud.minimap.waypoint.WaypointColor;
 import xaero.hud.minimap.waypoint.WaypointPurpose;
+
+import static _959.server_waypoint.util.ColorUtils.rgbToClosestColorIndex;
+
 //? if >= 1.21.5 {
 import xaero.hud.minimap.waypoint.WaypointVisibilityType;
 //?} else {
 /*import xaero.common.minimap.waypoints.WaypointVisibilityType;
 *///?}
-
 
 public class XaerosWaypointHelper {
     public static Waypoint simpleWaypointToXaerosWaypoint(SimpleWaypoint simpleWaypoint) {
@@ -19,7 +21,7 @@ public class XaerosWaypointHelper {
                 simpleWaypoint.pos().z(),
                 simpleWaypoint.name(),
                 simpleWaypoint.initials(),
-                WaypointColor.fromIndex(simpleWaypoint.colorIdx()),
+                WaypointColor.fromIndex(rgbToClosestColorIndex(simpleWaypoint.rgb())),
                 WaypointPurpose.NORMAL,
                 false,
                 true

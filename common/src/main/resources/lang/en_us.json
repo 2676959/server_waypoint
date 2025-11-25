@@ -49,5 +49,7 @@
   "button.remove": "click to remove",
   "button.edit": "edit",
   "button.add.waypoint": "click to add waypoint",
-  "button.add.list": "click to add waypoint list"
+  "button.add.list": "click to add waypoint list",
+
+  "hex_color_code.invalid": "Invalid hex color code: {0}"
 }

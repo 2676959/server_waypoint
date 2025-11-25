@@ -1,31 +1,38 @@
 package _959.server_waypoint.core.waypoint;
 
+import com.google.gson.*;
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+
+import java.lang.reflect.Type;
+
+import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
+import static _959.server_waypoint.util.ColorUtils.*;
 
 public class SimpleWaypoint {
     @Expose private String name;
     @Expose private String initials;
     @Expose private WaypointPos pos;
-    @Expose @SerializedName("color") private int colorIdx;
+    @Expose @SerializedName("color") @JsonAdapter(ColorToHexCodeSerializer.class) private int rgb;
     @Expose private int yaw;
     @Expose private boolean global;
     private static final String SEPARATOR = ":";
 
-    public SimpleWaypoint(String name, String initials, WaypointPos pos, int colorIdx, int yaw, boolean global) {
+    public SimpleWaypoint(String name, String initials, WaypointPos pos, int rgb, int yaw, boolean global) {
         this.name = name;
         this.initials = initials;
         this.pos = pos;
-        this.colorIdx = colorIdx;
+        this.rgb = rgb;
         this.yaw = convertYaw(yaw);
         this.global = global;
     }
 
-    public SimpleWaypoint(String name, String initials, int x, int y, int z, int colorIdx, int yaw, boolean global) {
+    public SimpleWaypoint(String name, String initials, int x, int y, int z, int rgb, int yaw, boolean global) {
         this.name = name;
         this.initials = initials;
         this.pos = new WaypointPos(x, y, z);
-        this.colorIdx = colorIdx;
+        this.rgb = rgb;
         this.yaw = convertYaw(yaw);
         this.global = global;
     }
@@ -50,8 +57,8 @@ public class SimpleWaypoint {
         return this.pos;
     }
 
-    public int colorIdx() {
-        return this.colorIdx;
+    public int rgb() {
+        return this.rgb;
     }
 
     public int yaw() {
@@ -75,8 +82,8 @@ public class SimpleWaypoint {
         this.pos = pos;
     }
 
-    public void setColorIdx(int colorIdx) {
-        this.colorIdx = colorIdx;
+    public void setRgb(int rgb) {
+        this.rgb = rgb;
     }
 
     public void setYaw(int yaw) {
@@ -88,16 +95,42 @@ public class SimpleWaypoint {
     }
 
     public String toString() {
-        return "SimpleWaypoint{name='" + this.name + "', initials='" + this.initials + "', pos=" + this.pos + ", colorIdx=" + this.colorIdx + ", yaw=" + this.yaw + ", global=" + this.global + "}";
+        return "SimpleWaypoint{name='" + this.name + "', initials='" + this.initials + "', pos=" + this.pos + ", rgb=" + this.rgb + ", yaw=" + this.yaw + ", global=" + this.global + "}";
     }
 
     public static SimpleWaypoint fromString(String waypointString) throws NumberFormatException {
         String[] args = waypointString.split(SEPARATOR);
         int colorIdx = Integer.parseInt(args[5]);
-        return new SimpleWaypoint(args[0], args[1], new WaypointPos(Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4])), colorIdx >= 0 && colorIdx <= 15 ? colorIdx : 15, Integer.parseInt(args[6]), Boolean.parseBoolean(args[7]));
+        int rgb = colorIndexToRgb(colorIdx);
+        return new SimpleWaypoint(args[0], args[1], new WaypointPos(Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4])), rgb, Integer.parseInt(args[6]), Boolean.parseBoolean(args[7]));
     }
 
     public boolean compareProperties(String initials, WaypointPos pos, int colorIdx, int yaw, boolean global) {
-        return this.initials.equals(initials) && this.pos.equals(pos) && this.colorIdx == colorIdx && this.yaw == convertYaw(yaw) && this.global == global;
+        return this.initials.equals(initials) && this.pos.equals(pos) && this.rgb == colorIdx && this.yaw == convertYaw(yaw) && this.global == global;
+    }
+
+    public static class ColorToHexCodeSerializer implements JsonSerializer<Integer>, JsonDeserializer<Integer> {
+        @Override
+        public JsonElement serialize(Integer integer, Type type, JsonSerializationContext jsonSerializationContext) {
+            if (integer == null) {
+                return null;
+            }
+            return new JsonPrimitive(rgbToHexCode(integer, true));
+        }
+
+        @Override
+        public Integer deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            if (jsonElement == null || jsonElement.isJsonNull()) {
+                return null;
+            }
+            String hexCode = jsonElement.getAsString();
+            int color = hexCodeToRgb(hexCode);
+            if (color > 0) {
+                return color;
+            } else {
+                LOGGER.warn("found invalid hex code: {}, replaced with #39C5BB", hexCode);
+                return 0x39C5BB;
+            }
+        }
     }
 }

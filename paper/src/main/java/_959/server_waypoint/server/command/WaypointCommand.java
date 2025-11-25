@@ -5,12 +5,14 @@ import _959.server_waypoint.command.CoreWaypointCommand;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import com.mojang.brigadier.Message;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.BlockPositionResolver;
 import io.papermc.paper.math.BlockPosition;
-import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -20,13 +22,11 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.Nullable;
 
-import static _959.server_waypoint.text.WaypointTextHelper.colorToIndex;
-
 @SuppressWarnings("UnstableApiUsage")
-public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, Player, World, BlockPositionResolver, NamedTextColor> {
+public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, Player, World, BlockPositionResolver> {
 
     public WaypointCommand(PlatformMessageSender<CommandSourceStack, Player> sender, PermissionManager<CommandSourceStack, String, Player> permissionManager) {
-        super(sender, permissionManager, ArgumentTypes::world, ArgumentTypes::blockPosition, ArgumentTypes::namedColor);
+        super(sender, permissionManager, ArgumentTypes::world, ArgumentTypes::blockPosition);
     }
 
     @Override
@@ -44,11 +44,6 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
             return null;
         }
         return new WaypointPos(blockPosition.blockX(),  blockPosition.blockY(), blockPosition.blockZ());
-    }
-
-    @Override
-    protected int toColorIdx(NamedTextColor colorArgument) {
-        return colorToIndex(colorArgument);
     }
 
     @Override
@@ -91,5 +86,10 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     protected void teleportPlayer(CommandSourceStack source, Player player, World dimensionArgument, WaypointPos pos, int yaw) {
         Location location = new Location(dimensionArgument, pos.X(), pos.y(), pos.Z(), yaw, 0);
         player.teleport(location, PlayerTeleportEvent.TeleportCause.COMMAND);
+    }
+
+    @Override
+    protected Message getMessageFromComponent(Component component) {
+        return MessageComponentSerializer.message().serialize(component);
     }
 }

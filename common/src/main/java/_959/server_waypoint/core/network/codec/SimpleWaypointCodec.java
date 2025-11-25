@@ -13,9 +13,7 @@ public class SimpleWaypointCodec {
         buf.writeInt(pos.x());
         buf.writeInt(pos.y());
         buf.writeInt(pos.z());
-
-        buf.writeByte(waypoint.colorIdx());
-
+        buf.writeInt(waypoint.rgb());
         int yaw = waypoint.yaw();
         buf.writeBoolean(yaw < 0);
         buf.writeByte(Math.abs(yaw));
@@ -29,8 +27,8 @@ public class SimpleWaypointCodec {
         int x = byteBuf.readInt();
         int y = byteBuf.readInt();
         int z = byteBuf.readInt();
-        // colorIdx
-        int colorIdx = byteBuf.readByte();
+        // rgb
+        int rgb = byteBuf.readInt();
         // yaw
         boolean isNegative = byteBuf.readBoolean();
         byte b = byteBuf.readByte();
@@ -38,6 +36,6 @@ public class SimpleWaypointCodec {
         yaw = isNegative ? -yaw : yaw;
         // global
         boolean global = byteBuf.readBoolean();
-        return new SimpleWaypoint(name, initials, new WaypointPos(x, y, z), colorIdx, yaw, global);
+        return new SimpleWaypoint(name, initials, new WaypointPos(x, y, z), rgb, yaw, global);
     }
 }
