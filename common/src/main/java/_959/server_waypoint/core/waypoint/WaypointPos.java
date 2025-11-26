@@ -19,7 +19,6 @@ public record WaypointPos(@Expose int x, @Expose int y, @Expose int z) {
    }
 
    public static class WaypointPosAdapter extends TypeAdapter<WaypointPos> {
-
        @Override
        public void write(JsonWriter jsonWriter, WaypointPos waypointPos) throws IOException {
            if (waypointPos == null) {

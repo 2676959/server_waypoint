@@ -8,12 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WaypointList {
-    @Expose @SerializedName("list_name")
-    private String name;
+    @Expose @SerializedName("list_name") private String name;
+    @Expose @SerializedName("waypoints") private final List<SimpleWaypoint> simpleWaypoints;
     private boolean show = true;
     private boolean expand = true;
-    @Expose @SerializedName("waypoints")
-    private final List<SimpleWaypoint> simpleWaypoints;
 
     public WaypointList(String name, List<SimpleWaypoint> simpleWaypoints) {
         this.name = name;

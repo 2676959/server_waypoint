@@ -48,7 +48,7 @@ public class SimpleWaypoint {
     public void copyFrom(SimpleWaypoint other) {
         this.initials = other.initials;
         this.pos = other.pos;
-        this.colorIdx = other.colorIdx;
+        this.rgb = other.rgb;
         this.yaw = other.yaw;
         this.global = other.global;
     }
