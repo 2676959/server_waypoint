@@ -21,6 +21,7 @@ import static _959.server_waypoint.util.BlockPosConverter.netherToOverWorld;
 import static _959.server_waypoint.util.BlockPosConverter.overWorldToNether;
 import static _959.server_waypoint.util.CommandGenerator.tpCmd;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
+import static net.kyori.adventure.text.Component.text;
 
 public class WaypointTextHelper {
     public static final Style DEFAULT_STYLE = Style.style().color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD, false).build();
@@ -48,30 +49,30 @@ public class WaypointTextHelper {
                     .hoverEvent(HoverEvent.showText(commandInfo))
                     .build();
         }
-        Component waypointText = Component.text(
+        Component waypointText = text(
                 "[" + waypoint.initials() + "]"
-        ).style(initialsStyle).append(Component.text(" ").style(DEFAULT_STYLE));
+        ).style(initialsStyle).append(text(" ").style(DEFAULT_STYLE));
         Style nameStyle = Style.style()
                 .color(NamedTextColor.WHITE)
                 .decoration(TextDecoration.BOLD, false)
                 .hoverEvent(HoverEvent.showText(waypointInfo))
                 .build();
-        return waypointText.append(Component.text(waypoint.name()).style(nameStyle));
+        return waypointText.append(text(waypoint.name()).style(nameStyle));
     }
 
     public static Component waypointHoverText(SimpleWaypoint waypoint, String dimensionName) {
         WaypointPos pos = waypoint.pos();
-        Component hover = Component.text(pos.toShortString());
+        Component hover = text(pos.toShortString());
         if (MINECRAFT_OVERWORLD.equals(dimensionName)) {
-            return hover.appendNewline().append(Component.text(overWorldToNether(pos).toShortString()).color(NamedTextColor.RED));
+            return hover.appendNewline().append(text(overWorldToNether(pos).toShortString()).color(NamedTextColor.RED));
         } else if (MINECRAFT_THE_NETHER.equals(dimensionName)) {
-            return hover.appendNewline().append(Component.text(netherToOverWorld(pos).toShortString()).color(NamedTextColor.GREEN));
+            return hover.appendNewline().append(text(netherToOverWorld(pos).toShortString()).color(NamedTextColor.GREEN));
         }
         return hover;
     }
 
     public static Component dimensionNameWithColor(String dimensionName) {
-        return Component.text(dimensionName).color(getDimensionColor(dimensionName));
+        return text(dimensionName).color(getDimensionColor(dimensionName));
     }
 
     public static NamedTextColor getDimensionColor(String dimensionName) {
@@ -96,16 +97,16 @@ public class WaypointTextHelper {
     
     public static Component getWaypointListText(WaypointList waypointList, String dimensionName, int indentLevel, boolean withEdit, boolean withRemove, boolean withTp) {
         String listName = waypointList.name();
-        Component listText = Component.text("  ".repeat(indentLevel) + listName, NamedTextColor.WHITE);
+        Component listText = text("  ".repeat(indentLevel) + listName, NamedTextColor.WHITE);
         listText = listText.appendNewline();
         int secondLevel = indentLevel + 1;
         for (SimpleWaypoint waypoint : waypointList.simpleWaypoints()) {
-            Component waypointText = Component.text("  ".repeat(secondLevel));
+            Component waypointText = text("  ".repeat(secondLevel));
             if (withEdit) {
-                waypointText = waypointText.append(editButton(dimensionName, listName, waypoint)).append(Component.text(" "));
+                waypointText = waypointText.append(editButton(dimensionName, listName, waypoint)).append(text(" "));
             }
             if (withRemove) {
-                waypointText = waypointText.append(removeButton(dimensionName, listName, waypoint)).append(Component.text(" "));
+                waypointText = waypointText.append(removeButton(dimensionName, listName, waypoint)).append(text(" "));
             }
             if (withTp) {
                 waypointText = waypointText.append(waypointTextWithTp(waypoint, dimensionName, listName));

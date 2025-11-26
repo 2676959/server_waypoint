@@ -9,6 +9,7 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import static _959.server_waypoint.util.CommandGenerator.*;
+import static net.kyori.adventure.text.Component.text;
 
 public class TextButton {
     private static final String REPLACE_SYMBOL = "⇄";
@@ -24,7 +25,7 @@ public class TextButton {
                 .clickEvent(ClickEvent.suggestCommand(command))
                 .hoverEvent(HoverEvent.showText(hoverText))
                 .build();
-        return Component.text("["+symbol+"]").style(btnStyle);
+        return text("["+symbol+"]").style(btnStyle);
     }
 
     public static Component replaceButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
