@@ -9,7 +9,6 @@ public record WaypointRenderData(Vector3f pos, int rgb, String listName, String 
     public static WaypointRenderData from(String listName, SimpleWaypoint waypoint) {
         WaypointPos waypointPos = waypoint.pos();
         Vector3f pos = new Vector3f(waypointPos.X(), waypointPos.y(), waypointPos.Z());
-        int color = Formatting.byColorIndex(waypoint.colorIdx()).getColorValue();
-        return new WaypointRenderData(pos, color, listName, waypoint.name(), waypoint.initials());
+        return new WaypointRenderData(pos, waypoint.rgb(), listName, waypoint.name(), waypoint.initials());
     }
 }

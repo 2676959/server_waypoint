@@ -194,7 +194,7 @@ public class NewWaypointListWidget extends ScrollableWidget {
                     String name = simpleWaypoint.name();
                     String initials = simpleWaypoint.initials();
                     int y1 = i * itemHeight;
-                    Integer rgb = Formatting.byColorIndex(simpleWaypoint.colorIdx()).getColorValue();
+                    int rgb = simpleWaypoint.rgb();
                     context.fill(0, y1, width, y1 + itemHeight, 0x10000000 + rgb);
                     context.draw(drawer -> {
                        textRenderer.draw(initials, 10, y1, 0xFFFFFFFF, true, context.getMatrices().peek().getPositionMatrix(), drawer, TextRenderer.TextLayerType.SEE_THROUGH, 0xFF000000 + rgb, 0xFF);
