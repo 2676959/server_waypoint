@@ -1,6 +1,8 @@
 package _959.server_waypoint.text;
 
+import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -11,6 +13,10 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+
+import static _959.server_waypoint.text.TextButton.editButton;
+import static _959.server_waypoint.text.TextButton.removeButton;
 import static _959.server_waypoint.util.BlockPosConverter.netherToOverWorld;
 import static _959.server_waypoint.util.BlockPosConverter.overWorldToNether;
 import static _959.server_waypoint.util.CommandGenerator.tpCmd;
@@ -75,5 +81,39 @@ public class WaypointTextHelper {
             case MINECRAFT_THE_END ->  NamedTextColor.LIGHT_PURPLE;
             default -> NamedTextColor.YELLOW;
         };
+    }
+    
+    public static Component getDimensionListText(WaypointFileManager fileManager, boolean withEdit, boolean withRemove, boolean withTp) {
+        String dimensionName = fileManager.getDimensionName();
+        Component dimensionListText = dimensionNameWithColor(dimensionName);
+        dimensionListText = dimensionListText.appendNewline();
+        Map<String, WaypointList> lists = fileManager.getWaypointListMap();
+        for (WaypointList waypointList : lists.values()) {
+            dimensionListText = dimensionListText.append(getWaypointListText(waypointList, dimensionName, 1, withEdit, withRemove, withTp));
+        }
+        return dimensionListText;
+    }
+    
+    public static Component getWaypointListText(WaypointList waypointList, String dimensionName, int indentLevel, boolean withEdit, boolean withRemove, boolean withTp) {
+        String listName = waypointList.name();
+        Component listText = Component.text("  ".repeat(indentLevel) + listName, NamedTextColor.WHITE);
+        listText = listText.appendNewline();
+        int secondLevel = indentLevel + 1;
+        for (SimpleWaypoint waypoint : waypointList.simpleWaypoints()) {
+            Component waypointText = Component.text("  ".repeat(secondLevel));
+            if (withEdit) {
+                waypointText = waypointText.append(editButton(dimensionName, listName, waypoint)).append(Component.text(" "));
+            }
+            if (withRemove) {
+                waypointText = waypointText.append(removeButton(dimensionName, listName, waypoint)).append(Component.text(" "));
+            }
+            if (withTp) {
+                waypointText = waypointText.append(waypointTextWithTp(waypoint, dimensionName, listName));
+            } else {
+                waypointText = waypointText.append(waypointTextNoTp(waypoint, dimensionName));
+            }
+            listText = listText.append(waypointText).appendNewline();
+        }
+        return listText;
     }
 }

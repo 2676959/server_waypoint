@@ -54,8 +54,8 @@ import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
 
 public abstract class CoreWaypointCommand<S, K, P, D, B> {
     protected final PlatformMessageSender<S, P> sender;
-    private final PermissionManager<S, K, P> permissionManager;
     private final PermissionKeys<K> permissionKeys;
+    private final PermissionManager<S, K, P> permissionManager;
     private final Supplier<ArgumentType<D>> dimensionArgumentProvider;
     private final Supplier<ArgumentType<B>> blockPosArgumentProvider;
     private final SuggestionProvider<S> WAYPOINT_NAME_SUGGESTION = new WaypointNameSuggestion();
@@ -64,23 +64,23 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private final SuggestionProvider<S> PLAYER_YAW_SUGGESTION = new PlayerYawSuggestion();
     private final SuggestionProvider<S> HEX_COLOR_CODE_SUGGESTION = new HexColorCodeSuggestion();
     private boolean enabled = true;
-    private static final String SINGLE_WORD_REGEX;
-    private static final String WAYPOINT_COMMAND;
-    private static final String ADD_COMMAND;
-    private static final String EDIT_COMMAND;
-    private static final String REMOVE_COMMAND;
-    private static final String LIST_COMMAND;
-    private static final String DOWNLOAD_COMMAND;
-    private static final String TP_COMMAND;
-    private static final String RELOAD_COMMAND;
-    private static final String DIMENSION_ARG;
-    private static final String LIST_NAME_ARG;
-    private static final String WAYPOINT_NAME_ARG;
-    private static final String INITIALS_ARG;
-    private static final String POS_ARG;
-    private static final String YAW_ARG;
-    private static final String COLOR_ARG;
-    private static final String VISIBILITY_ARG;
+    public static final String SINGLE_WORD_REGEX = "^[a-zA-Z0-9+._-]+$";
+    public static final String WAYPOINT_COMMAND = "wp";
+    public static final String ADD_COMMAND = "add";
+    public static final String EDIT_COMMAND = "edit";
+    public static final String REMOVE_COMMAND = "remove";
+    public static final String LIST_COMMAND = "list";
+    public static final String DOWNLOAD_COMMAND = "download";
+    public static final String TP_COMMAND = "tp";
+    public static final String RELOAD_COMMAND = "reload";
+    public static final String DIMENSION_ARG = "dimension";
+    public static final String LIST_NAME_ARG = "list name";
+    public static final String WAYPOINT_NAME_ARG = "waypoint name";
+    public static final String INITIALS_ARG = "initials";
+    public static final String POS_ARG = "position";
+    public static final String YAW_ARG = "yaw";
+    public static final String COLOR_ARG = "color";
+    public static final String VISIBILITY_ARG = "global";
 
     public CoreWaypointCommand(PlatformMessageSender<S, P> sender, PermissionManager<S, K, P> permissionManager, Supplier<ArgumentType<D>> dimensionArgument, Supplier<ArgumentType<B>> blockPositionArgument) {
         this.dimensionArgumentProvider = dimensionArgument;
@@ -107,6 +107,26 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     public void disable() {
         this.enabled = false;
+    }
+
+    private boolean hasAddPermission(S source) {
+        return this.permissionManager.hasPermission(source, this.permissionKeys.add(), CONFIG.CommandPermission().add());
+    }
+
+    private boolean hasEditPermission(S source) {
+        return this.permissionManager.hasPermission(source, this.permissionKeys.edit(), CONFIG.CommandPermission().edit());
+    }
+
+    private boolean hasRemovePermission(S source) {
+        return this.permissionManager.hasPermission(source, this.permissionKeys.remove(), CONFIG.CommandPermission().remove());
+    }
+
+    private boolean hasTpPermission(S source) {
+        return this.permissionManager.hasPermission(source, this.permissionKeys.tp(), CONFIG.CommandPermission().tp());
+    }
+
+    private boolean hasReloadPermission(S source) {
+        return this.permissionManager.hasPermission(source, this.permissionKeys.reload(), CONFIG.CommandPermission().reload());
     }
 
     @SuppressWarnings("unchecked")
@@ -168,7 +188,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         return (LiteralCommandNode<S>) literal(WAYPOINT_COMMAND)
                 .requires(source -> this.enabled)
                 .then(literal(ADD_COMMAND)
-                        .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.add(), CONFIG.CommandPermission().add()))
+                        .requires(source -> hasAddPermission((S) source))
                         .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
                                 .then(argument(LIST_NAME_ARG, string())
                                         .suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)
@@ -252,7 +272,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                         )
                 )
                 .then(literal(EDIT_COMMAND)
-                        .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.edit(), CONFIG.CommandPermission().edit()))
+                        .requires(source -> hasEditPermission((S) source))
                         .then((CommandNode<Object>)
                                 selectorArguments(
                                         propertiesArguments(
@@ -275,7 +295,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                         )
                 )
                 .then(literal(REMOVE_COMMAND)
-                        .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.remove(), CONFIG.CommandPermission().remove()))
+                        .requires(source -> hasRemovePermission((S) source))
                         .then((ArgumentBuilder<Object, ?>) dimensionNode()
                                 .then(listNameNode()
                                         .executes(
@@ -305,7 +325,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                         )
                 )
                 .then(literal(TP_COMMAND)
-                        .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.tp(), CONFIG.CommandPermission().tp()))
+                        .requires(source -> hasTpPermission((S) source))
                         .then((CommandNode<Object>)
                                 selectorArguments(
                                         context -> {
@@ -362,15 +382,47 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                         )
                 )
                 .then(literal(LIST_COMMAND)
+                        .then(literal("all")
+                                .executes(
+                                        context -> {
+                                            executeListAll((S) context.getSource());
+                                            return Command.SINGLE_SUCCESS;
+                                        }
+                                )
+                        )
+                        .then((ArgumentBuilder<Object, ?>) dimensionNode(
+                                )
+                                .then(listNameNode()
+                                        .executes(
+                                                context -> {
+                                                    executeListWaypointList(
+                                                            context.getSource(),
+                                                            getArgument(context, DIMENSION_ARG),
+                                                            getString(context, LIST_NAME_ARG)
+                                                    );
+                                                    return Command.SINGLE_SUCCESS;
+                                                }
+                                        )
+                                )
+                                .executes(
+                                        context -> {
+                                            executeListDimension(
+                                                    context.getSource(),
+                                                    getArgument(context, DIMENSION_ARG)
+                                            );
+                                            return Command.SINGLE_SUCCESS;
+                                        }
+                                )
+                        )
                         .executes(
                                 context -> {
-                                    executeList((S) context.getSource());
+                                    executeListCurrentDimension((S) context.getSource());
                                     return Command.SINGLE_SUCCESS;
                                 }
                         )
                 )
                 .then(literal(RELOAD_COMMAND)
-                        .requires(source -> this.permissionManager.hasPermission((S) source, permissionKeys.reload(), CONFIG.CommandPermission().reload()))
+                        .requires(source -> hasReloadPermission((S) source))
                         .executes(
                                 context -> {
                                     executeReload((S) context.getSource());
@@ -625,11 +677,14 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         });
     }
 
-    private void executeList(S source) {
+    private void executeListAll(S source) {
         Map<String, WaypointFileManager> fileManagerMap = WaypointServerCore.INSTANCE.getFileManagerMap();
         Component listMsg = Component.text("");
         listMsg = listMsg.appendNewline();
         boolean empty = true;
+        boolean withEdit = hasEditPermission(source);
+        boolean withRemove = hasRemovePermission(source);
+        boolean withTp = hasTpPermission(source);
         for (String dimensionName : fileManagerMap.keySet()) {
             // Dimension header
             WaypointFileManager waypointFileManager = fileManagerMap.get(dimensionName);
@@ -639,24 +694,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             if (waypointFileManager.isEmpty()) {
                 continue;
             }
-            listMsg = listMsg.append(dimensionNameWithColor(dimensionName)).appendNewline();
-            Map<String, WaypointList> lists = waypointFileManager.getWaypointListMap();
-            for (Map.Entry<String, WaypointList> listEntry : lists.entrySet()) {
-                String listName = listEntry.getKey();
-                Component listNameText = Component.text("  " + listName);
-                listMsg = listMsg.append(listNameText).appendNewline();
-                // Waypoints
-                WaypointList list = listEntry.getValue();
-                for (SimpleWaypoint waypoint : list.simpleWaypoints()) {
-                    Component waypointText = Component.text("    ")
-                            .append(editButton(dimensionName, listName, waypoint))
-                            .append(Component.text(" "))
-                            .append(removeButton(dimensionName, listName, waypoint))
-                            .append(Component.text(" "))
-                            .append(waypointTextWithTp(waypoint, dimensionName, listName));
-                    listMsg = listMsg.append(waypointText).appendNewline();
-                }
-            }
+            listMsg = listMsg.append(getDimensionListText(waypointFileManager, withEdit, withRemove, withTp));
             empty = false;
         }
         if (empty) {
@@ -664,6 +702,38 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         } else {
             this.sender.sendMessage(source, listMsg);
         }
+    }
+
+    private void executeListCurrentDimension(S source) {
+         executeListDimension(source, getSourceDimension(source));
+    }
+
+    private void executeListDimension(S source, D dimensionArgument) {
+        runWithSelectorTarget(source, dimensionArgument, (fileManager) -> {
+            String dimensionName = fileManager.getDimensionName();
+            if (fileManager.hasNoWaypoints()) {
+                this.sender.sendMessage(source, Component.translatable("waypoint.empty.dimension", dimensionNameWithColor(dimensionName)));
+            } else {
+                this.sender.sendMessage(source,
+                        getDimensionListText(fileManager,
+                                hasEditPermission(source), hasRemovePermission(source), hasTpPermission(source)));
+            }
+        });
+    }
+
+    private void executeListWaypointList(S source, D dimensionArgument, String listName) {
+        runWithSelectorTarget(source, dimensionArgument, listName,
+                (fileManager, waypointList) -> {
+                    String dimensionName = fileManager.getDimensionName();
+                    this.sender.sendMessage(source,
+                            getWaypointListText(waypointList, dimensionName, 0,
+                                    hasEditPermission(source),
+                                    hasRemovePermission(source),
+                                    hasTpPermission(source)));
+                },
+                (fileManager, waypointList) -> {
+                    this.sender.sendMessage(source, Component.translatable("waypoint.empty.list", Component.text(listName)));
+                });
     }
 
     private void executeReload(S source) {
@@ -842,25 +912,5 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 builder.suggest(VANILLA_COLOR_NAMES[i], getHexColorCodeTooltip(VANILLA_COLOR_CODES[i], VANILLA_COLORS[i]));
             }
         }
-    }
-
-    static {
-        SINGLE_WORD_REGEX = "^[a-zA-Z0-9+._-]+$";
-        WAYPOINT_COMMAND = "wp";
-        ADD_COMMAND = "add";
-        EDIT_COMMAND = "edit";
-        REMOVE_COMMAND = "remove";
-        LIST_COMMAND = "list";
-        DOWNLOAD_COMMAND = "download";
-        TP_COMMAND = "tp";
-        RELOAD_COMMAND = "reload";
-        DIMENSION_ARG = "dimension";
-        LIST_NAME_ARG = "list name";
-        WAYPOINT_NAME_ARG = "waypoint name";
-        INITIALS_ARG = "initials";
-        POS_ARG = "position";
-        YAW_ARG = "yaw";
-        COLOR_ARG = "color";
-        VISIBILITY_ARG = "global";
     }
 }

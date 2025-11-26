@@ -2,22 +2,19 @@ package _959.server_waypoint.util;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 
+import static _959.server_waypoint.command.CoreWaypointCommand.*;
 import static _959.server_waypoint.util.ColorUtils.rgbToNameOrHexCode;
 
 public class CommandGenerator {
-    public static final String WAYPOINT_COMMAND = "/wp";
-    public static final String ADD_ARGUMENT = "add";
-    public static final String EDIT_ARGUMENT = "edit";
-    public static final String REMOVE_ARGUMENT = "remove";
-    public static final String TP_ARGUMENT = "tp";
+    public static final String ROOT_WAYPOINT_COMMAND = "/" + WAYPOINT_COMMAND;
 
     public static String tpCmd(String dimensionName, String waypointList, String waypointName) {
-        return WAYPOINT_COMMAND + " " + TP_ARGUMENT + " " +
+        return ROOT_WAYPOINT_COMMAND + " " + TP_COMMAND + " " +
         "%s \"%s\" \"%s\"".formatted(dimensionName, waypointList, waypointName);
     }
 
     public static String addCmd(String dimString, String listName, SimpleWaypoint waypoint) {
-        return WAYPOINT_COMMAND + " " + ADD_ARGUMENT + " " +
+        return ROOT_WAYPOINT_COMMAND + " " + ADD_COMMAND + " " +
                 "%s \"%s\" %d %d %d \"%s\" \"%s\" %s %d %b"
                         .formatted(
                                 dimString,
@@ -34,7 +31,7 @@ public class CommandGenerator {
     }
 
     public static String editCmd(String dimString, String listName, SimpleWaypoint waypoint) {
-        return WAYPOINT_COMMAND + " " + EDIT_ARGUMENT + " " +
+        return ROOT_WAYPOINT_COMMAND + " " + EDIT_COMMAND + " " +
                 "%s \"%s\" \"%s\" \"%s\" %d %d %d %s %d %b"
                         .formatted(
                                 dimString,
@@ -51,7 +48,7 @@ public class CommandGenerator {
     }
 
     public static String removeCmd(String dimString, String listName, SimpleWaypoint waypoint) {
-        return WAYPOINT_COMMAND + " " + REMOVE_ARGUMENT + " " +
+        return ROOT_WAYPOINT_COMMAND + " " + REMOVE_COMMAND + " " +
                 "%s \"%s\" \"%s\"".formatted(
                         dimString,
                         listName,
@@ -60,7 +57,7 @@ public class CommandGenerator {
     }
 
     public static String addListCmd(String dimString, String listName) {
-        return WAYPOINT_COMMAND + " " + ADD_ARGUMENT + " " +
+        return ROOT_WAYPOINT_COMMAND + " " + ADD_COMMAND + " " +
                 "%s \"%s\"".formatted(
                         dimString,
                         listName
