@@ -468,7 +468,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 sendPosArgumentError(source);
                 return;
             }
-            int rgb = colorNameOrHexCodeToRgb("#" + hexCode);
+            int rgb = colorNameOrHexCodeToRgb(hexCode, false);
             if (rgb < 0) {
                 sendHexColorCodeError(source, hexCode);
                 return;
@@ -531,8 +531,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         if (waypointPos == null) {
             sendPosArgumentError(source);
         }
-        int rgb = colorNameOrHexCodeToRgb("#" + hexCode);
-        if (rgb > 0) {
+        int rgb = colorNameOrHexCodeToRgb(hexCode, false);
+        if (rgb < 0) {
+            sendHexColorCodeError(source, hexCode);
+        } else {
             runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) -> {
                 if (waypoint.compareProperties(initials, waypointPos, rgb, yaw, global)) {
                     this.sender.sendMessage(source, Component.translatable("waypoint.edit.identical", Component.text(name)));
@@ -550,9 +552,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 this.sender.broadcastWaypointModification(source, buffer);
                 this.sender.sendMessage(source, Component.translatable("waypoint.edit.success", waypointTextWithTp(waypoint, dimensionName, listName)));
             });
-            return;
         }
-        sendHexColorCodeError(source, hexCode);
     }
 
     private void executeRemoveList(S source, D dimensionArgument, String listName) {
@@ -816,7 +816,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                         String hexCode = currentInput.toUpperCase() + "0".repeat(lengthRemain);
                         builder.suggest("%s".formatted(hexCode), getHexColorCodeTooltip("#" + hexCode, rgb));
                     } catch (NumberFormatException e) {
-                        return Suggestions.empty();
+                        return builder.buildFuture();
                     }
                 } else if (length == 6) {
                     try {
@@ -824,7 +824,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                         String hexCode = currentInput.toUpperCase();
                         builder.suggest("%s ".formatted(hexCode), getHexColorCodeTooltip("#" + hexCode, rgb));
                     } catch (NumberFormatException e) {
-                        return Suggestions.empty();
+                        return builder.buildFuture();
                     }
                 }
             }

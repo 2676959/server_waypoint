@@ -175,19 +175,19 @@ public class ColorUtils {
         return Math.sqrt(dr * dr + dg * dg + db * db);
     }
 
-    public static int hexCodeToRgb(String hexCode) {
-        if (hexCode.matches("^#[0-9a-fA-F]{6}")) {
-            return Integer.parseInt(hexCode.substring(1), 16);
-        } else {
+    public static int hexCodeToRgb(String hexCode, boolean withHash) {
+        if (withHash) {
+            hexCode = hexCode.substring(1);
+        }
+        try {
+            return Integer.parseInt(hexCode, 16);
+        } catch (NumberFormatException e) {
             return -1;
         }
     }
 
     public static String rgbToHexCode(int rgb, boolean withHash) {
-        if (withHash) {
-            return String.format("#%06X", rgb);
-        }
-        return String.format("%06X", rgb);
+        return withHash ? String.format("#%06X", rgb) : String.format("%06X", rgb);
     }
 
     public static String rgbToNameOrHexCode(int rgb, boolean withHash) {
@@ -195,8 +195,8 @@ public class ColorUtils {
         return Objects.requireNonNullElseGet(colorName, () -> rgbToHexCode(rgb, withHash));
     }
 
-    public static int colorNameOrHexCodeToRgb(String colorName) {
+    public static int colorNameOrHexCodeToRgb(String colorName, boolean withHash) {
         int rgb = colorNameToRgb(colorName);
-        return rgb > 0 ? rgb : hexCodeToRgb(colorName);
+        return rgb < 0 ? hexCodeToRgb(colorName, withHash) : rgb;
     }
 }

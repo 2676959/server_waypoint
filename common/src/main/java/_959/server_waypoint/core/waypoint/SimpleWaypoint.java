@@ -124,12 +124,12 @@ public class SimpleWaypoint {
                 return null;
             }
             String hexCode = jsonElement.getAsString();
-            int color = hexCodeToRgb(hexCode);
-            if (color > 0) {
-                return color;
-            } else {
+            int color = hexCodeToRgb(hexCode, true);
+            if (color < 0) {
                 LOGGER.warn("found invalid hex code: {}, replaced with #39C5BB", hexCode);
                 return 0x39C5BB;
+            } else {
+                return color;
             }
         }
     }
