@@ -696,7 +696,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             if (waypointFileManager.isEmpty()) {
                 continue;
             }
-            listMsg = listMsg.append(getDimensionListText(waypointFileManager, withEdit, withRemove, withTp));
+            listMsg = listMsg.append(getDimensionListText(waypointFileManager, true, withEdit, withRemove, withTp));
             empty = false;
         }
         if (empty) {
@@ -718,7 +718,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             } else {
                 this.sender.sendMessage(source,
                         getDimensionListText(fileManager,
-                                hasEditPermission(source), hasRemovePermission(source), hasTpPermission(source)));
+                                false, hasEditPermission(source), hasRemovePermission(source), hasTpPermission(source)));
             }
         });
     }
@@ -728,7 +728,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 (fileManager, waypointList) -> {
                     String dimensionName = fileManager.getDimensionName();
                     this.sender.sendMessage(source,
-                            getWaypointListText(waypointList, dimensionName, 0,
+                            getWaypointListText(waypointList, dimensionName, 0, false,
                                     hasEditPermission(source),
                                     hasRemovePermission(source),
                                     hasTpPermission(source)));
