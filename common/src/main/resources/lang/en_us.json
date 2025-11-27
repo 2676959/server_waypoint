@@ -10,6 +10,7 @@
 
   "waypoint.empty.dimension": "Dimension {0} has no waypoints",
   "waypoint.empty.list": "Waypoint list \"{0}\" is empty",
+  "waypoint.empty.list.placeholder": "<Empty>",
   "waypoint.nonexist.list": "Waypoint list \"{0}\" does not exist",
   "waypoint.nonexist.waypoint": "Waypoint \"{0}\" does not exist",
 

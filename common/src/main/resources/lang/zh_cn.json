@@ -10,6 +10,7 @@
 
   "waypoint.empty.dimension": "维度“{0}”没有任何路径点",
   "waypoint.empty.list": "路径点列表“{0}”为空",
+  "waypoint.empty.list.placeholder": "<空>",
   "waypoint.nonexist.list": "路径点列表“{0}”不存在",
   "waypoint.nonexist.waypoint": "路径点“{0}”不存在",
 

@@ -22,6 +22,7 @@ import static _959.server_waypoint.util.BlockPosConverter.overWorldToNether;
 import static _959.server_waypoint.util.CommandGenerator.tpCmd;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
 
 public class WaypointTextHelper {
     public static final Style DEFAULT_STYLE = Style.style().color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD, false).build();
@@ -104,10 +105,17 @@ public class WaypointTextHelper {
                         .appendNewline()
                         .append(text("  ".repeat(indentLevel) + listName, NamedTextColor.WHITE))
                         .appendSpace().append(text("⬅")).appendSpace().append(dimensionNameWithColor(dimensionName));
+        listText = listText.decoration(TextDecoration.BOLD, true);
         listText = listText.appendNewline();
         int secondLevel = indentLevel + 1;
+        if (waypointList.isEmpty()) {
+            listText = listText.append(text("  ".repeat(secondLevel)))
+                    .append(translatable("waypoint.empty.list.placeholder", NamedTextColor.GRAY)
+                            .decoration(TextDecoration.BOLD, false).decoration(TextDecoration.ITALIC, true).appendNewline());
+            return listText;
+        }
         for (SimpleWaypoint waypoint : waypointList.simpleWaypoints()) {
-            Component waypointText = text("  ".repeat(secondLevel));
+            Component waypointText = text("  ".repeat(secondLevel)).decoration(TextDecoration.BOLD, false);
             if (withEdit) {
                 waypointText = waypointText.append(editButton(dimensionName, listName, waypoint)).appendSpace();
             }
