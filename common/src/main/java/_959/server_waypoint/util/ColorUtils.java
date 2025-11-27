@@ -3,6 +3,7 @@ package _959.server_waypoint.util;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class ColorUtils {
     public static final int[] VANILLA_COLORS = new int[] {
@@ -198,5 +199,9 @@ public class ColorUtils {
     public static int colorNameOrHexCodeToRgb(String colorName, boolean withHash) {
         int rgb = colorNameToRgb(colorName);
         return rgb < 0 ? hexCodeToRgb(colorName, withHash) : rgb;
+    }
+
+    public static int randomColor() {
+        return ThreadLocalRandom.current().nextInt(0x1000000);
     }
 }

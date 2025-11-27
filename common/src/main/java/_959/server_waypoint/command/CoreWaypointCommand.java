@@ -83,6 +83,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String YAW_ARG = "yaw";
     public static final String COLOR_ARG = "color";
     public static final String VISIBILITY_ARG = "global";
+    public static final String RANDOM_COLOR = "random";
 
     public CoreWaypointCommand(PlatformMessageSender<S, P> sender, PermissionManager<S, K, P> permissionManager, Supplier<ArgumentType<D>> dimensionArgument, Supplier<ArgumentType<B>> blockPositionArgument) {
         this.dimensionArgumentProvider = dimensionArgument;
@@ -522,7 +523,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 sendPosArgumentError(source);
                 return;
             }
-            int rgb = colorNameOrHexCodeToRgb(hexCode, false);
+            int rgb;
+            if (RANDOM_COLOR.equals(hexCode)) {
+                rgb = randomColor();
+            } else {
+                rgb = colorNameOrHexCodeToRgb(hexCode, false);
+            }
             if (rgb < 0) {
                 sendHexColorCodeError(source, hexCode);
                 return;
@@ -585,7 +591,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         if (waypointPos == null) {
             sendPosArgumentError(source);
         }
-        int rgb = colorNameOrHexCodeToRgb(hexCode, false);
+        int rgb;
+        if (RANDOM_COLOR.equals(hexCode)) {
+            rgb = randomColor();
+        } else {
+            rgb = colorNameOrHexCodeToRgb(hexCode, false);
+        }
         if (rgb < 0) {
             sendHexColorCodeError(source, hexCode);
         } else {
@@ -778,6 +789,16 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         }
     }
 
+    private String stripOuterQuotes(String string) {
+        if (string.startsWith("\"") || string.startsWith("'")) {
+            string = string.substring(1);
+        }
+        if (string.endsWith("\"") || string.endsWith("'")) {
+            string = string.substring(0, string.length() - 1);
+        }
+        return string;
+    }
+
     private class WaypointListSuggestion implements SuggestionProvider<S> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
@@ -786,11 +807,14 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             if (fileManager == null) {
                 return Suggestions.empty();
             } else {
+                String currentInput = stripOuterQuotes(builder.getRemaining());
                 for (String listName : fileManager.getWaypointListMap().keySet()) {
-                    if (listName.matches(SINGLE_WORD_REGEX)) {
-                        builder.suggest(listName);
-                    } else {
-                        builder.suggest("\"%s\"".formatted(listName));
+                    if (listName.startsWith(currentInput)) {
+                        if (listName.matches(SINGLE_WORD_REGEX)) {
+                            builder.suggest(listName);
+                        } else {
+                            builder.suggest("\"%s\"".formatted(listName));
+                        }
                     }
                 }
             }
@@ -811,12 +835,15 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             if (waypointList == null) {
                 return Suggestions.empty();
             } else {
+                String currentInput = stripOuterQuotes(builder.getRemaining());
                 for (SimpleWaypoint waypoint : waypointList.simpleWaypoints()) {
                     String name = waypoint.name();
-                    if (name.matches(SINGLE_WORD_REGEX)) {
-                        builder.suggest(name);
-                    } else {
-                        builder.suggest("\"%s\"".formatted(name));
+                    if (name.startsWith(currentInput)) {
+                        if (name.matches(SINGLE_WORD_REGEX)) {
+                            builder.suggest(name);
+                        } else {
+                            builder.suggest("\"%s\"".formatted(name));
+                        }
                     }
                 }
                 return builder.buildFuture();
@@ -861,17 +888,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public class HexColorCodeSuggestion implements SuggestionProvider<S> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-            String currentInput = builder.getRemaining();
-            boolean startWithSingleQuote = currentInput.startsWith("'");
-            boolean startWithDoubleQuote = currentInput.startsWith("\"");
-            if (startWithSingleQuote || startWithDoubleQuote) {
-                currentInput = currentInput.substring(1);
-                if (currentInput.endsWith("'") || currentInput.endsWith("\"")) {
-                    currentInput = currentInput.substring(0, currentInput.length() - 1);
-                }
-            }
+            String currentInput = stripOuterQuotes(builder.getRemaining());
             if (currentInput.isEmpty()) {
                 vanillaColorSuggestions(builder);
+                builder.suggest(RANDOM_COLOR, getMessageFromComponent(text("🎲")));
                 builder.suggest("39C5BB", getMessageFromComponent(text("miku", TextColor.color(0x39C5BB))));
             } else {
                 for (int i = 0; i < VANILLA_COLOR_NAMES.length; i++) {
@@ -879,6 +899,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                     if (colorName.startsWith(currentInput)) {
                         builder.suggest(colorName, getHexColorCodeTooltip(VANILLA_COLOR_CODES[i], VANILLA_COLORS[i]));
                     }
+                }
+                if (RANDOM_COLOR.startsWith(currentInput)) {
+                    builder.suggest(RANDOM_COLOR, getMessageFromComponent(text("🎲")));
+                }
+                if ("39C5BB".startsWith(currentInput)) {
+                    builder.suggest("39C5BB", getMessageFromComponent(text("miku", TextColor.color(0x39C5BB))));
                 }
                 int length = currentInput.length();
                 if (length < 6) {
