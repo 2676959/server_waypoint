@@ -6,7 +6,14 @@ plugins {
 }
 
 group = "_959.server_waypoint"
-version = "1.0-SNAPSHOT"
+val mod_version: String by project
+val mod_id: String by project
+val mcVersion : String by project
+val mcVersionRange : String by project
+
+base {
+    archivesName.set("$mod_id-$mod_version-paper-mc$mcVersionRange")
+}
 
 repositories {
     mavenCentral()
@@ -26,19 +33,22 @@ tasks {
         // Configure the Minecraft version for our task.
         // This is the only required configuration besides applying the plugin.
         // Your plugin's jar (or shadowJar if present) will be used automatically.
-        val mcVersion : String by project
         minecraftVersion(mcVersion)
     }
+}
+
+tasks.jar {
+    enabled = false
 }
 
 tasks.shadowJar {
     dependencies {
         include(project(":common"))
     }
+    archiveClassifier.set("")
 }
 
 java {
-    withSourcesJar()
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
 }
