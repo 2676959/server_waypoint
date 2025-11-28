@@ -12,7 +12,7 @@ Manage waypoints and sync them to other player's client automatically. Compatibl
 
 ## Features
 - Syncing waypoints from server automatically.
-- Interactive waypoint list TUI allowing player click to teleport and manage waypoint.
+- Interactive waypoint list TUI allowing player click to teleport to a waypoint or edit it.
 - Commands auto-completion.
 - Custom permission for `/wp <options>` commands. Compatible with [LuckPerms](https://modrinth.com/plugin/luckperms).
 - Support adding waypoint conveniently from Xaero's minimap waypoint chat sharing message without requiring client side installation.
@@ -46,8 +46,19 @@ This mod currently has built-in translations for English and Simplified Chinese.
   Follow the format used in [`en_us.json`](./common/src/main/resources/lang/en_us.json), [`zh_cn.json`](./common/src/main/resources/lang/zh_cn.json).
 
   Name the lang file with a [valid language code](https://minecraft.wiki/w/Language#Languages).
+
+## Waypoints
+- #### Save Path
+  For a dedicated server:
   
-  
+  `<minecraft_root>\config\server_waypoint\waypoints\`
+
+  For a single player world:
+
+  `<minecraft_root>\saves\<world_name>\server_waypoint\waypoints\`
+- #### File Format
+  All waypoints are saved in json files. Each json file contains all waypoints in one dimension and the filename is the converted full registry name of that dimension.
+  For example, all waypoints in the overworld is stored in `minecraft$overworld.json`.
 
 ## Configurations
 The configuration file is stored at `<minecraft_root>\config\server_waypoint\config.json`.
