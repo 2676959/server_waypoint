@@ -12,7 +12,7 @@ import _959.server_waypoint.core.IPlatformConfigPath;
 import _959.server_waypoint.common.network.ModChatMessageHandler;
 import _959.server_waypoint.common.network.payload.c2s.UpdateRequestC2SPayload;
 import _959.server_waypoint.common.server.WaypointServerMod;
-import _959.server_waypoint.core.network.ClientCommunicationHandler;
+import _959.server_waypoint.core.network.C2SPacketHandler;
 import _959.server_waypoint.fabric.permission.FabricPermissionManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
@@ -49,7 +49,7 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
             }
         };
         WaypointServerMod waypointServer = new WaypointServerMod(this.getAssignedConfigDirectory(), handler);
-        ClientCommunicationHandler<ServerCommandSource, ServerPlayerEntity> clientPayloadHandler = new ClientCommunicationHandler<>(messageSender, waypointServer);
+        C2SPacketHandler<ServerCommandSource, ServerPlayerEntity> c2sPacketHandler = new C2SPacketHandler<>(messageSender, waypointServer);
         WaypointCommand waypointCommand = new WaypointCommand(waypointServer, messageSender, permissionManager);
 
         FabricLoader fabricLoader = FabricLoader.getInstance();
@@ -75,13 +75,13 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> waypointServer.unload());
         // register chatMessageHandler
         ServerMessageEvents.CHAT_MESSAGE.register(handler::onChatMessage);
-        // register clientPayloadHandler
+        // register c2sPacketHandler
         registerPayloads();
         ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (handshakeC2SPayload, context) ->
-                clientPayloadHandler.onClientUpdateRequest(context.player(), handshakeC2SPayload.clientUpdateRequestBuffer())
+                c2sPacketHandler.onClientUpdateRequest(context.player(), handshakeC2SPayload.clientUpdateRequestBuffer())
         );
         ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (clientHandshakeC2SPayload, context) ->
-           clientPayloadHandler.onClientHandshake(context.player(), clientHandshakeC2SPayload.clientHandshakeBuffer())
+           c2sPacketHandler.onClientHandshake(context.player(), clientHandshakeC2SPayload.clientHandshakeBuffer())
         );
 
         //? if >= 1.20.5 {

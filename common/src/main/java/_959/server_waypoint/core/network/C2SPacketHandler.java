@@ -12,11 +12,11 @@ import java.util.*;
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 
-public class ClientCommunicationHandler<S, P> {
+public class C2SPacketHandler<S, P> {
     private final PlatformMessageSender<S, P> sender;
     private final WaypointServerCore waypointServer;
 
-    public ClientCommunicationHandler(PlatformMessageSender<S, P> messageSender, WaypointServerCore waypointServerCore) {
+    public C2SPacketHandler(PlatformMessageSender<S, P> messageSender, WaypointServerCore waypointServerCore) {
         this.sender = messageSender;
         this.waypointServer = waypointServerCore;
     }
@@ -90,5 +90,5 @@ public class ClientCommunicationHandler<S, P> {
         } else {
             this.sender.sendPlayerMessage(player, Component.text("no updates needed"));
         }
-    };
+    }
 }
