@@ -1,9 +1,9 @@
 package _959.server_waypoint.common.client.gui;
 
-import _959.server_waypoint.common.client.WaypointClient;
+import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
 import _959.server_waypoint.common.client.gui.widgets.NewWaypointListWidget;
-import _959.server_waypoint.core.WaypointListManager;
+import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.mixin.BoundKeyAccessor;
 import net.minecraft.client.option.KeyBinding;
@@ -16,11 +16,11 @@ import net.minecraft.world.World;
 
 import java.util.*;
 
-import static _959.server_waypoint.common.client.WaypointClient.LOGGER;
+import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 
 public class WaypointManagerScreen extends Screen {
     private static ScreenState STATE = ScreenState.DEFAULT;
-    private final WaypointClient waypointClient;
+    private final WaypointClientMod waypointClientMod;
     private NewWaypointListWidget waypointListWidget;
 //    private WaypointListWidget waypointListWidget;
     private DimensionListWidget dimensionListWidget;
@@ -46,9 +46,9 @@ public class WaypointManagerScreen extends Screen {
     private int sneakKeyCode;
     private int sprintKeyCode;
 
-    public WaypointManagerScreen(Text title, WaypointClient waypointClient) {
+    public WaypointManagerScreen(Text title, WaypointClientMod waypointClientMod) {
         super(title);
-        this.waypointClient = waypointClient;
+        this.waypointClientMod = waypointClientMod;
         STATE = ScreenState.DEFAULT;
     }
 
@@ -70,7 +70,7 @@ public class WaypointManagerScreen extends Screen {
         Set<String> dimensionNames;
         List<WaypointList> defaultWaypointLists;
 
-        if (this.waypointClient.hasNoWaypoints()) {
+        if (this.waypointClientMod.hasNoWaypoints()) {
             STATE = ScreenState.NO_WAYPOINTS;
             dimensionNames = new TreeSet<>();
             dimensionNames.add("empty");
@@ -78,11 +78,11 @@ public class WaypointManagerScreen extends Screen {
             this.waypointListWidget = new NewWaypointListWidget(centerX, 48, WIDTH, 200, this.textRenderer, new ArrayList<>());
             this.waypointListWidget.setEmpty();
         } else {
-            dimensionNames = this.waypointClient.getDimensionNames();
-            defaultWaypointLists = this.waypointClient.getDefaultWaypointLists();
+            dimensionNames = this.waypointClientMod.getDimensionNames();
+            defaultWaypointLists = this.waypointClientMod.getDefaultWaypointLists();
             this.dimensionListWidget = new DimensionListWidget(centerX, 8, WIDTH, 40, this.textRenderer, dimensionNames, this::onSelectDimension);
             this.waypointListWidget = new NewWaypointListWidget(centerX, 48, WIDTH, 200, this.textRenderer, defaultWaypointLists);
-            this.dimensionListWidget.setDimensionName(WaypointClient.getCurrentDimensionName());
+            this.dimensionListWidget.setDimensionName(WaypointClientMod.getCurrentDimensionName());
         }
 
         this.addDrawableChild(waypointListWidget);
@@ -122,7 +122,7 @@ public class WaypointManagerScreen extends Screen {
         List<String> dimensionNames = this.dimensionListWidget.dimensionNames;
         if (index < dimensionNames.size()) {
             String selectedDimension = dimensionNames.get(index);
-            WaypointListManager waypointListManager = this.waypointClient.getWaypointListManager(selectedDimension);
+            WaypointFileManager waypointListManager = this.waypointClientMod.getWaypointFileManager(selectedDimension);
             if (waypointListManager != null) {
                 this.waypointListWidget.updateWaypointLists(waypointListManager.getWaypointLists());
             } else {
@@ -162,26 +162,29 @@ public class WaypointManagerScreen extends Screen {
     }
 
     public void updateContent() {
-        this.dimensionListWidget.updateDimensionNames(this.waypointClient.getDimensionNames());
+        LOGGER.info("updateContent");
+        this.dimensionListWidget.updateDimensionNames(this.waypointClientMod.getDimensionNames());
         RegistryKey<World> dimensionKey = this.client.world.getRegistryKey();
-        WaypointListManager waypointListManager;
+        WaypointFileManager waypointListManager;
         if (dimensionKey == null) {
-            waypointListManager = this.waypointClient.getFileManagerMap().values().iterator().next();
+            waypointListManager = this.waypointClientMod.getFileManagerMap().values().iterator().next();
         } else {
             String currentDimension = dimensionKey.toString();
-            waypointListManager = this.waypointClient.getWaypointListManager(currentDimension);
+            waypointListManager = this.waypointClientMod.getWaypointFileManager(currentDimension);
             if  (waypointListManager == null) {
-                waypointListManager = this.waypointClient.getFileManagerMap().values().iterator().next();
+                waypointListManager = this.waypointClientMod.getFileManagerMap().values().iterator().next();
             }
         }
         this.waypointListWidget.updateWaypointLists(waypointListManager.getWaypointLists());
-        this.dimensionListWidget.setDimensionName(WaypointClient.getCurrentDimensionName());
+        this.dimensionListWidget.setDimensionName(WaypointClientMod.getCurrentDimensionName());
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        LOGGER.info("mouseClicked: {}", button);
         if (STATE == ScreenState.NEED_UPDATE) {
             this.updateContent();
+            STATE = ScreenState.DEFAULT;
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);

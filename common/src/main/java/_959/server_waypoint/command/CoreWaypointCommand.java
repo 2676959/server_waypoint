@@ -56,6 +56,7 @@ import static net.kyori.adventure.text.Component.translatable;
 
 public abstract class CoreWaypointCommand<S, K, P, D, B> {
     protected final PlatformMessageSender<S, P> sender;
+    private final WaypointServerCore waypointServer;
     private final PermissionKeys<K> permissionKeys;
     private final PermissionManager<S, K, P> permissionManager;
     private final Supplier<ArgumentType<D>> dimensionArgumentProvider;
@@ -85,11 +86,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String VISIBILITY_ARG = "global";
     public static final String RANDOM_COLOR = "random";
 
-    public CoreWaypointCommand(PlatformMessageSender<S, P> sender, PermissionManager<S, K, P> permissionManager, Supplier<ArgumentType<D>> dimensionArgument, Supplier<ArgumentType<B>> blockPositionArgument) {
-        this.dimensionArgumentProvider = dimensionArgument;
-        this.blockPosArgumentProvider = blockPositionArgument;
+    public CoreWaypointCommand(WaypointServerCore waypointServer, PlatformMessageSender<S, P> sender, PermissionManager<S, K, P> permissionManager, Supplier<ArgumentType<D>> dimensionArgument, Supplier<ArgumentType<B>> blockPositionArgument) {
+        this.waypointServer = waypointServer;
         this.sender = sender;
         this.permissionManager = permissionManager;
+        this.dimensionArgumentProvider = dimensionArgument;
+        this.blockPosArgumentProvider = blockPositionArgument;
         this.permissionKeys = permissionManager.keys;
     }
 
@@ -449,7 +451,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private void runWithSelectorTarget(S source, D dimensionArgument, Consumer<@NotNull WaypointFileManager> foundAction) {
         String dimensionName = toDimensionName(dimensionArgument);
         if  (isDimensionValid(source, dimensionArgument)) {
-            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointListManager(dimensionName);
+            WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(dimensionName);
             if (fileManager == null) {
                 this.sender.sendError(source, translatable("waypoint.empty.dimension", dimensionNameWithColor(dimensionName)));
             } else {
@@ -500,18 +502,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private void executeAddWaypointList(S source, D dimensionArgument, String listName) {
         String dimensionName = toDimensionName(dimensionArgument);
         if (isDimensionValid(source, dimensionArgument)) {
-            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointListManager(dimensionName);
-            if (fileManager == null) {
-                fileManager = WaypointServerCore.INSTANCE.addWaypointListManager(dimensionName);
-            }
-            WaypointList foundList = fileManager.getWaypointListByName(listName);
-            if (foundList == null) {
-                fileManager.addWaypointList(WaypointList.build(listName));
+            this.waypointServer.addWaypointList(dimensionName, listName,
+                    (fileManager) -> {
                 this.sender.sendMessage(source, translatable("waypoint.add.list.success", text(listName), dimensionNameWithColor(dimensionName)));
-                saveChanges(source, fileManager);
-                return;
-            }
-            this.sender.sendError(source, translatable("waypoint.add.list.exists", text(listName)));
+                saveChanges(source, fileManager);},
+                    () -> this.sender.sendError(source, translatable("waypoint.add.list.exists", text(listName))));
         }
     }
 
@@ -533,53 +528,35 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 sendHexColorCodeError(source, hexCode);
                 return;
             }
-            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointListManager(dimensionName);
-            WaypointList waypointList;
-            if (fileManager == null) {
-                fileManager = WaypointServerCore.INSTANCE.addWaypointListManager(dimensionName);
-                waypointList = WaypointList.build(listName);
-                fileManager.addWaypointList(waypointList);
-            } else {
-                waypointList = fileManager.getWaypointListByName(listName);
-                if (waypointList == null) {
-                    waypointList = WaypointList.build(listName);
-                    fileManager.addWaypointList(waypointList);
-                }
-            }
-            SimpleWaypoint newWaypoint = new SimpleWaypoint(
-                    name,
-                    initials,
-                    waypointPos,
-                    rgb,
-                    yaw,
-                    global
-            );
-            SimpleWaypoint waypointFound = waypointList.getWaypointByName(name);
-            if (waypointFound == null) {
-                waypointList.add(newWaypoint);
-            } else {
-                this.sender.sendMessage(source,
-                        translatable("waypoint.add.exists",
-                                waypointTextWithTp(waypointFound, dimensionName, listName),
-                                TextButton.replaceButton(dimensionName, listName, newWaypoint)
-                        )
-                );
-                return;
-            }
-            saveChanges(source, fileManager);
-            this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(
-                    dimensionName,
-                    listName,
-                    newWaypoint,
-                    WaypointModificationType.ADD,
-                    WaypointServerCore.EDITION
-            ));
-            this.sender.sendMessage(
-                    source,
-                    translatable("waypoint.add.success",
-                            waypointTextWithTp(newWaypoint, dimensionName, listName),
-                            text(listName)
-                    )
+            SimpleWaypoint newWaypoint = new SimpleWaypoint(name, initials, waypointPos, rgb, yaw, global);
+            this.waypointServer.addWaypoint(dimensionName, listName, newWaypoint,
+                    // success
+                    (fileManager) -> {
+                        saveChanges(source, fileManager);
+                        this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(
+                                dimensionName,
+                                listName,
+                                newWaypoint,
+                                WaypointModificationType.ADD,
+                                1
+                        ));
+                        this.sender.sendMessage(
+                                source,
+                                translatable("waypoint.add.success",
+                                        waypointTextWithTp(newWaypoint, dimensionName, listName),
+                                        text(listName)
+                                )
+                        );
+                    },
+                    // found duplicate
+                    (waypointFound) -> {
+                        this.sender.sendMessage(source,
+                                translatable("waypoint.add.exists",
+                                        waypointTextWithTp(waypointFound, dimensionName, listName),
+                                        TextButton.replaceButton(dimensionName, listName, newWaypoint)
+                                )
+                        );
+                    }
             );
         } else {
             sendDimensionError(source, dimensionName);
@@ -601,21 +578,16 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             sendHexColorCodeError(source, hexCode);
         } else {
             runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) -> {
-                if (waypoint.compareProperties(initials, waypointPos, rgb, yaw, global)) {
-                    this.sender.sendMessage(source, translatable("waypoint.edit.identical", text(name)));
-                    return;
-                } else {
-                    waypoint.setInitials(initials);
-                    waypoint.setPos(waypointPos);
-                    waypoint.setRgb(rgb);
-                    waypoint.setYaw(yaw);
-                    waypoint.setGlobal(global);
-                }
-                saveChanges(source, fileManager);
-                String dimensionName = fileManager.getDimensionName();
-                WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.UPDATE, WaypointServerCore.EDITION);
-                this.sender.broadcastWaypointModification(source, buffer);
-                this.sender.sendMessage(source, translatable("waypoint.edit.success", waypointTextWithTp(waypoint, dimensionName, listName)));
+                this.waypointServer.updateWaypointProperties(waypoint, initials, waypointPos, rgb, yaw, global,
+                        () -> {
+                            waypointList.incSyncNum();
+                            saveChanges(source, fileManager);
+                            String dimensionName = fileManager.getDimensionName();
+                            WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.UPDATE, 1);
+                            this.sender.broadcastWaypointModification(source, buffer);
+                            this.sender.sendMessage(source, translatable("waypoint.edit.success", waypointTextWithTp(waypoint, dimensionName, listName)));
+                        },
+                        () -> this.sender.sendMessage(source, translatable("waypoint.edit.identical", text(name))));
             });
         }
     }
@@ -633,10 +605,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     private void executeRemoveWaypoint(S source, D dimensionArgument, String listName, String name) {
         runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) -> {
-           waypointList.remove(waypoint);
-           saveChanges(source, fileManager);
-           String dimensionName = fileManager.getDimensionName();
-            WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.REMOVE, WaypointServerCore.EDITION);
+            this.waypointServer.removeWaypoint(waypointList, waypoint);
+            saveChanges(source, fileManager);
+            String dimensionName = fileManager.getDimensionName();
+            WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.REMOVE, 1);
             this.sender.broadcastWaypointModification(source, buffer);
             this.sender.sendMessage(source, translatable("waypoint.remove.success", waypointTextNoTp(waypoint, dimensionName), restoreButton(dimensionName, listName, waypoint)));
         });
@@ -651,7 +623,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     }
 
     private void executeDownload(S source) {
-        WorldWaypointBuffer buffer = WaypointServerCore.INSTANCE.toWorldWaypointBuffer();
+        WorldWaypointBuffer buffer = this.waypointServer.toWorldWaypointBuffer();
         if (buffer == null) {
             this.sender.sendMessage(source, translatable("waypoint.no.waypoints"));
             return;
@@ -686,12 +658,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) -> {
             String dimensionName = fileManager.getDimensionName();
             this.sender.sendMessage(source, translatable("waypoint.download.waypoint", waypointTextWithTp(waypoint, dimensionName, listName)));
-            this.sender.sendPacket(source, new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.ADD, WaypointServerCore.EDITION));
+            this.sender.sendPacket(source, new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.ADD, 1));
         });
     }
 
     private void executeListAll(S source) {
-        Map<String, WaypointFileManager> fileManagerMap = WaypointServerCore.INSTANCE.getFileManagerMap();
+        Map<String, WaypointFileManager> fileManagerMap = this.waypointServer.getFileManagerMap();
         Component listMsg = text("");
         listMsg = listMsg.appendNewline();
         boolean empty = true;
@@ -751,7 +723,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     private void executeReload(S source) {
         executeByServer(source, () -> {
-            WaypointServerCore.INSTANCE.reload();
+            this.waypointServer.reload();
             List<String> lang = getExternalLoadedLanguages();
             this.sender.sendMessage(source, translatable("waypoint.loaded.languages",
                     text(lang.size()), text(String.join(", ", lang))));
@@ -760,18 +732,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     }
 
     private void saveChanges(S source, WaypointFileManager fileManager) {
-        WaypointServerCore.EDITION++;
         executeByServer(source, () -> {
             try {
                 fileManager.saveDimension();
             } catch (IOException e) {
                 this.sender.sendError(source, translatable("waypoint.save.failed", text(fileManager.getDimensionFile().toString())));
-                throw new RuntimeException(e);
-            }
-            try {
-                WaypointServerCore.INSTANCE.saveEdition();
-            } catch (IOException e) {
-                this.sender.sendError(source, translatable("edition.save.failed"));
                 throw new RuntimeException(e);
             }
         });
@@ -803,7 +768,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
             D dimension = getDefaultDimension(context.getLastChild());
-            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointListManager(toDimensionName(dimension));
+            WaypointFileManager fileManager = CoreWaypointCommand.this.waypointServer.getWaypointFileManager(toDimensionName(dimension));
             if (fileManager == null) {
                 return Suggestions.empty();
             } else {
@@ -827,7 +792,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
             CommandContext<S> currentContext = context.getLastChild();
             D dimension = getDefaultDimension(currentContext);
-            WaypointFileManager fileManager = WaypointServerCore.INSTANCE.getWaypointListManager(toDimensionName(dimension));
+            WaypointFileManager fileManager = CoreWaypointCommand.this.waypointServer.getWaypointFileManager(toDimensionName(dimension));
             if (fileManager == null) {
                 return Suggestions.empty();
             }

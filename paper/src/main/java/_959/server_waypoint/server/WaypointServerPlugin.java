@@ -4,6 +4,7 @@ import _959.server_waypoint.core.WaypointServerCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 import static _959.server_waypoint.util.DimensionFileHelper.getNamespacedKey;
@@ -16,6 +17,11 @@ public class WaypointServerPlugin extends WaypointServerCore {
         if (CONFIG.Features().sendXaerosWorldId()) {
             this.initXearoWorldId(saveDir);
         }
+    }
+
+    public void load() throws IOException {
+        initConfigAndLanguageResource();
+        initOrReadWaypointFiles();
     }
 
     @Override

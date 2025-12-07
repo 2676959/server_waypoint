@@ -14,35 +14,30 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
-public class WaypointFileManager extends WaypointListManager {
+public class WaypointFileManager {
+    private final Map<String, WaypointList> waypointListMap;
     private final Path dimensionFilePath;
+    private final String dimensionName;
 
     public WaypointFileManager(String fileName, String dimensionName, Path waypointsDir) {
-        super();
         if (fileName == null && dimensionName != null) {
             fileName = dimensionName.replace("/", "%").replace(":", "$");
         } else if (fileName != null && dimensionName == null) {
             dimensionName = fileName.replace("%", "/").replace("$", ":");
         }
         this.dimensionName = dimensionName;
+        this.waypointListMap = new HashMap<>();
+        if (waypointsDir == null) {
+            this.dimensionFilePath = null;
+            return;
+        }
         this.dimensionFilePath = waypointsDir.resolve(fileName + ".json");
     }
 
-    @Nullable
     public DimensionWaypointBuffer toDimensionWaypoint() {
-        List<WaypointList> waypointLists = new ArrayList<>();
-        for (WaypointList waypointList : this.waypointListMap.values()) {
-            if (!waypointList.isEmpty()) {
-                waypointLists.add(waypointList);
-            }
-        }
-        if (waypointLists.isEmpty()) {
-            return null;
-        }
+        List<WaypointList> waypointLists = new ArrayList<>(this.waypointListMap.values());
         return new DimensionWaypointBuffer(this.dimensionName, waypointLists);
     }
 
@@ -71,12 +66,12 @@ public class WaypointFileManager extends WaypointListManager {
             if (!line.isEmpty()) {
                 if (line.startsWith("#")) {
                     String name = line.substring(1).trim();
-                    currentList = WaypointList.build(name);
+                    currentList = WaypointList.buildByServer(name);
                     this.addWaypointList(currentList);
                 } else if (currentList != null) {
                     try {
                         SimpleWaypoint waypoint = SimpleWaypoint.fromString(line);
-                        currentList.add(waypoint);
+                        currentList.addByClient(waypoint);
                         waypointsNumber++;
                     } catch (Exception e) {
                         WaypointServerCore.LOGGER.error("Failed to parse waypoint line: {}", line, e);
@@ -101,7 +96,9 @@ public class WaypointFileManager extends WaypointListManager {
         int waypointsNumber = 0;
         for (WaypointList waypointList : waypointLists) {
             this.addWaypointList(waypointList);
+            WaypointServerCore.LOGGER.info("WaypointList expand: {}, show: {}", waypointList.isExpand(), waypointList.isShow());
             waypointsNumber += waypointList.size();
+            WaypointServerCore.LOGGER.info("syncNum:{}", waypointList.getSyncNum());
         }
         WaypointServerCore.LOGGER.info("Loaded {} lists and {} waypoints from file: {}", this.waypointListMap.size(), waypointsNumber, filePath);
     }
@@ -117,5 +114,48 @@ public class WaypointFileManager extends WaypointListManager {
             gson.toJson(waypointLists, writer);
             WaypointServerCore.LOGGER.info("Saved {} waypoint lists to file: {}", this.waypointListMap.size(), filePath);
         }
+    }
+
+    public boolean hasNoWaypoints() {
+        for (WaypointList waypointList : this.waypointListMap.values()) {
+            if (!waypointList.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isEmpty() {
+        return this.waypointListMap.isEmpty();
+    }
+
+    public String getDimensionName() {
+        return this.dimensionName;
+    }
+
+    public List<WaypointList> getWaypointLists() {
+        return new ArrayList<>(this.waypointListMap.values());
+    }
+
+    public Map<String, WaypointList> getWaypointListMap() {
+        return this.waypointListMap;
+    }
+
+    public @Nullable WaypointList getWaypointListByName(String name) {
+        return this.waypointListMap.get(name);
+    }
+
+    public void addWaypointList(WaypointList waypointList) {
+        this.waypointListMap.put(waypointList.name(), waypointList);
+    }
+
+    public void addWaypointLists(Collection<WaypointList> waypointLists) {
+        for (WaypointList waypointList : waypointLists) {
+            this.waypointListMap.put(waypointList.name(), waypointList);
+        }
+    }
+
+    public void removeWaypointListByName(String name) {
+        this.waypointListMap.remove(name);
     }
 }

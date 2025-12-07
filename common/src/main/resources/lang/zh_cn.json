@@ -1,6 +1,4 @@
 {
-  "edition.save.failed": "EDITION文件保存失败，同步功能可能受到影响",
-
   "waypoint.save.failed": "写入文件失败：{0}",
 
   "waypoint.add.success": "路径点{0}已添加至列表：{1}",

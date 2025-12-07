@@ -2,6 +2,8 @@ package _959.server_waypoint.common.network.payload.s2c;
 
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
+import _959.server_waypoint.core.network.codec.DimensionWaypointsListCodec;
+import io.netty.buffer.ByteBuf;
 import _959.server_waypoint.core.network.codec.WorldWaypointBufferCodec;
 import net.minecraft.util.Identifier;
 
@@ -24,12 +26,12 @@ public record WorldWaypointS2CPayload(WorldWaypointBuffer worldWaypointBuffer) i
     public static final PacketCodec<ByteBuf, WorldWaypointS2CPayload> PACKET_CODEC = new PacketCodec<>() {
         @Override
         public void encode(ByteBuf buf, WorldWaypointS2CPayload value) {
-            WorldWaypointBufferCodec.encode(buf, value.worldWaypointBuffer());
+            DimensionWaypointsListCodec.encode(buf, value.worldWaypointBuffer());
         }
 
         @Override
         public WorldWaypointS2CPayload decode(ByteBuf buf) {
-            return new WorldWaypointS2CPayload(WorldWaypointBufferCodec.decode(buf));
+            return new WorldWaypointS2CPayload(DimensionWaypointsListCodec.decode(buf, WorldWaypointBuffer::new));
         }
     };
 

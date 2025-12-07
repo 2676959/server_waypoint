@@ -1,7 +1,8 @@
 package _959.server_waypoint;
 
 import _959.server_waypoint.core.IPlatformConfigPath;
-import _959.server_waypoint.core.network.ClientHandshakeHandler;
+import _959.server_waypoint.core.network.ClientCommunicationHandler;
+import _959.server_waypoint.core.network.codec.ClientUpdateRequestBufferCodec;
 import _959.server_waypoint.listener.ChatMessageListenerPaperMC;
 import _959.server_waypoint.listener.PlayerRegisterChannelListener;
 import _959.server_waypoint.network.PaperChatMessageHandler;
@@ -9,9 +10,9 @@ import _959.server_waypoint.network.PaperMessageSender;
 import _959.server_waypoint.server.WaypointServerPlugin;
 import _959.server_waypoint.server.command.WaypointCommand;
 import _959.server_waypoint.server.command.permission.PaperPermissionManager;
-import com.google.common.io.ByteArrayDataInput;
-import com.google.common.io.ByteStreams;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.Server;
@@ -28,7 +29,7 @@ import static _959.server_waypoint.core.network.MessageChannelID.*;
 public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageListener, IPlatformConfigPath {
     private WaypointServerPlugin waypointServer;
     private WaypointCommand waypointCommand;
-    private @SuppressWarnings("UnstableApiUsage") ClientHandshakeHandler<CommandSourceStack, Player> handshakeHandler;
+    private @SuppressWarnings("UnstableApiUsage") ClientCommunicationHandler<CommandSourceStack, Player> handshakeHandler;
 
     @Override
     @SuppressWarnings("UnstableApiUsage")
@@ -41,7 +42,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         waypointCommand = new WaypointCommand(sender, permissionManager);
         ChatMessageListenerPaperMC chatListener = new ChatMessageListenerPaperMC(new PaperChatMessageHandler(server, sender, permissionManager));
         PlayerRegisterChannelListener channelRegisterListener = new PlayerRegisterChannelListener();
-        this.handshakeHandler = new ClientHandshakeHandler<>(sender);
+        this.handshakeHandler = new ClientCommunicationHandler<>(sender, waypointServer);
         LiteralCommandNode<CommandSourceStack> command = waypointCommand.build();
         // register
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands ->
@@ -51,7 +52,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         server.getPluginManager().registerEvents(chatListener, this);
         server.getPluginManager().registerEvents(channelRegisterListener, this);
         try {
-            waypointServer.initServer();
+            waypointServer.load();
             waypointCommand.enable();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -82,9 +83,8 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
         if (this.isEnabled() && channel.equals("server_waypoint:handshake")) {
-            ByteArrayDataInput input = ByteStreams.newDataInput(message);
-            int clientEdition = input.readInt();
-            this.handshakeHandler.onHandshake(player, clientEdition);
+            ByteBuf buffer = Unpooled.copiedBuffer(message);
+            this.handshakeHandler.onClientUpdateRequest(player, ClientUpdateRequestBufferCodec.decode(buffer));
         }
     }
 

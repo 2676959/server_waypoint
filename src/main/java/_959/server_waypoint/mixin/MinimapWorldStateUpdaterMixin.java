@@ -1,7 +1,6 @@
 package _959.server_waypoint.mixin;
 
-import _959.server_waypoint.common.client.WaypointClient;
-import _959.server_waypoint.common.util.ClientHandshakePayloadGenerator;
+import _959.server_waypoint.common.client.WaypointClientMod;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -9,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import xaero.hud.minimap.world.state.MinimapWorldStateUpdater;
 
-import static _959.server_waypoint.common.client.WaypointClient.LOGGER;
+import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 
 //? if fabric {
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -22,15 +21,11 @@ public class MinimapWorldStateUpdaterMixin {
 
     @Inject(method = "onServerLevelId", at = @At(value = "TAIL"), remap = false)
     private void injectOnServerLevelId(int id, CallbackInfo ci) {
-        if (WaypointClient.isHandshakeFinished()) {
-            return;
-        }
-        LOGGER.info("Send handshake payload to server");
+
         //? if fabric {
-        ClientPlayNetworking.send(ClientHandshakePayloadGenerator.generate());
+//        ClientPlayNetworking.send(WaypointClientMod.getInstance().getClientHandShakePayload());
         //?} elif neoforge {
         /*PacketDistributor.sendToServer(HandshakePayloadGenerator.generate());
         *///?}
-        WaypointClient.setHandshakeFinished(true);
     }
 }

@@ -37,6 +37,10 @@ public class SimpleWaypoint {
         this.global = global;
     }
 
+    public SimpleWaypoint(SimpleWaypoint other) {
+        this(other.name, other.initials, other.pos, other.rgb, other.yaw, other.global);
+    }
+
     private int convertYaw(int yaw) {
         boolean isNegative = yaw < 0;
         int r = Math.abs(yaw) % 360;

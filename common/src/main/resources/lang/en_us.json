@@ -1,6 +1,4 @@
 {
-  "edition.save.failed": "Failed to save EDITION file, syncing may not work properly",
-
   "waypoint.save.failed": "Failed to write to {0}",
 
   "waypoint.add.success": "Waypoint {0} has been added to list: \"{1}\"",

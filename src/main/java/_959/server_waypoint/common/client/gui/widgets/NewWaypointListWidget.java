@@ -31,10 +31,7 @@ public class NewWaypointListWidget extends ScrollableWidget {
         this.textRenderer = textRenderer;
         setScrollY(SCROLLED_POSITION);
         this.waypointLists = new ArrayList<>(waypointLists);
-        this.listPositions.add(0);
-        for (int i = 1; i < this.waypointLists.size(); i++) {
-            this.listPositions.add(this.waypointLists.get(i).size() + 1);
-        }
+        recalculateListPositions();
     }
 
     public void updateWaypointLists(Collection<WaypointList> newWaypointLists) {
@@ -44,16 +41,27 @@ public class NewWaypointListWidget extends ScrollableWidget {
             this.listPositions.clear();
             return;
         }
+        this.empty = false;
         this.waypointLists.clear();
         this.waypointLists.addAll(newWaypointLists);
+        recalculateListPositions();
+        LOGGER.info("list positions: {}", this.listPositions);
+    }
+
+    private void recalculateListPositions() {
         this.listPositions.clear();
+        if (this.waypointLists.isEmpty()) {
+            return;
+        }
         this.listPositions.add(0);
         for (int i = 1; i < this.waypointLists.size(); i++) {
-            WaypointList waypointList = this.waypointLists.get(i);
+            int prev = i - 1;
+            WaypointList waypointList = this.waypointLists.get(prev);
+            int prevPosition = this.listPositions.get(prev);
             if (waypointList.isExpand()) {
-                this.listPositions.add(waypointList.size() + 1);
-            } else  {
-                this.listPositions.add(listPositions.get(i - 1) + 1);
+                this.listPositions.add(prevPosition + waypointList.size() + 1);
+            } else {
+                this.listPositions.add(prevPosition + 1);
             }
         }
     }
@@ -91,9 +99,9 @@ public class NewWaypointListWidget extends ScrollableWidget {
             if (pos > lastPos) {
                 return false;
             }
-            LOGGER.info("pos: {}", pos);
 
             int index = binarySearch(listPositions, pos);
+            LOGGER.info("pos: {}, index: {}", pos, index);
             if (index >= 0) {
                 WaypointList waypointList = waypointLists.get(index);
                 int size = waypointList.size();
@@ -154,20 +162,25 @@ public class NewWaypointListWidget extends ScrollableWidget {
         int x = getX();
         int y = getY();
         int x2 = x + width;
-//        int y2 = y + height;
 
+        // offset
         context.getMatrices().translate(x, y, 0.0D);
 
         context.enableScissor(0, 0, width, height);
         context.fill(0, 0, width, height, 0x88000000);
 
-        context.getMatrices().translate(0.0D, -scrollY, 0.0D);
-
         if (empty) {
-            context.drawText(textRenderer, "<Empty>", width / 2, 0, 0xFFFFFFFF, true);
+            context.drawText(textRenderer, Text.literal("<Empty>").formatted(Formatting.ITALIC), 0, 0, 0xFFFFFFFF, true);
+            context.getMatrices().translate(0.0D, scrollY, 0.0D);
+            context.getMatrices().translate(-x, -y, 0.0D);
+            context.disableScissor();
+            this.drawScrollbar(context);
             return;
         }
 
+        context.getMatrices().translate(0.0D, -scrollY, 0.0D);
+
+        // highlight
         if (mouseX < x2 && mouseX > x && mouseY < y + getContentsHeightWithPadding() && mouseY > y) {
             double scrollDistance = mouseY - y + getScrollY();
             int pos = (int) scrollDistance / itemHeight;
@@ -175,13 +188,12 @@ public class NewWaypointListWidget extends ScrollableWidget {
             context.drawBorder(0, borderY1, width, itemHeight, 0xFFFFFFFF);
         }
 
-        int listY = 0;
-        for (WaypointList waypointList : waypointLists) {
+        for (int n = 0; n < this.waypointLists.size(); n++) {
+            WaypointList waypointList = this.waypointLists.get(n);
             boolean isExpand = waypointList.isExpand();
             String prefix = isExpand ? "▼" : "▶";
             String listName = prefix + waypointList.name();
             context.drawText(textRenderer, listName, 0, i * itemHeight, 0xFFFFFFFF, true);
-            listY += i * itemHeight;
             i++;
             if (isExpand) {
                 List<SimpleWaypoint> simpleWaypoints = waypointList.simpleWaypoints();
@@ -203,8 +215,9 @@ public class NewWaypointListWidget extends ScrollableWidget {
                     context.drawCenteredTextWithShadow(textRenderer, name, 30, y1, 0xFFFFFFFF);
                     i++;
                 }
-                int listLen = simpleWaypoints.size() + 1;
-                context.fill(0, listY, 2, listY + listLen * itemHeight, 0xFFFFFFFF);
+                int listLen = simpleWaypoints.size();
+                int listY = this.listPositions.get(n) * itemHeight;
+                context.fill(0, listY, 2, listY + (listLen + 1) * itemHeight, 0xFFFFFFFF);
             }
         }
         context.getMatrices().translate(0.0D, scrollY, 0.0D);

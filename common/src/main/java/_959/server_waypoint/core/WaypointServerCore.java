@@ -5,7 +5,6 @@ import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
 import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
 import _959.server_waypoint.translation.AdventureTranslator;
 import _959.server_waypoint.translation.LanguageFilesManager;
-import _959.server_waypoint.util.Pair;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.kyori.adventure.translation.GlobalTranslator;
@@ -15,34 +14,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
 import static _959.server_waypoint.translation.LanguageFilesManager.getExternalLoadedLanguages;
-import static _959.server_waypoint.util.VanillaDimensionNames.*;
+import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asDedicatedServer;
 
-public abstract class WaypointServerCore extends WaypointsManagerCore<WaypointFileManager> {
+/**
+ * Serverside waypoint manager used by dedicated or integrated server
+ * */
+public abstract class WaypointServerCore extends WaypointFilesManagerCore {
     public static WaypointServerCore INSTANCE;
-    public static int EDITION = 0;
+    private static int worldId;
     public static Config CONFIG = new Config();
     public static final String GROUP_ID = "server_waypoint";
     public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_core");
     private static final String CONFIG_FILE_NAME = "config.json";
-    private static int worldId;
-    private Path dataRootPath;
-    private Path waypointsDir;
-    private Path editionFile;
     private final Path configDir;
     private final byte[] DEFAULT_CONFIG;
     private final LanguageFilesManager languageFilesManager;
 
     /**
-     * constructor for dedicated server
+     * constructor for dedicated server </br>
+     * integrated server can also this but must call {@link _959.server_waypoint.core.WaypointFilesManagerCore#changeWaypointFilesDir(Path) changeWaypointFilesDir}
+     * before loading waypoint files
      */
     public WaypointServerCore(Path configDir) {
-        super();
+        super(asDedicatedServer(configDir));
         this.configDir = configDir;
         this.languageFilesManager = new LanguageFilesManager(configDir);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -78,7 +77,7 @@ public abstract class WaypointServerCore extends WaypointsManagerCore<WaypointFi
         if (dimensionWaypointBuffers.isEmpty()) {
             return null;
         } else {
-            return new WorldWaypointBuffer(dimensionWaypointBuffers, EDITION);
+            return new WorldWaypointBuffer(dimensionWaypointBuffers);
         }
     }
 
@@ -86,33 +85,6 @@ public abstract class WaypointServerCore extends WaypointsManagerCore<WaypointFi
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         CONFIG = gson.fromJson(reader, Config.class);
         LOGGER.info("Loaded config {}", CONFIG);
-    }
-
-    private void initOrReadEditionFile(Path configDir) throws IOException {
-        if (this.dataRootPath == null) {
-            this.editionFile = configDir.resolve("EDITION");
-        } else {
-            this.editionFile = this.dataRootPath.resolve("EDITION");
-        }
-
-        try {
-            if (Files.exists(this.editionFile) && Files.isRegularFile(this.editionFile)) {
-                try (DataInputStream in = new DataInputStream(new FileInputStream(this.editionFile.toFile()))) {
-                    EDITION = in.readInt();
-                    LOGGER.info("Read EDITION from file: {}", EDITION);
-                }
-            } else {
-                try (DataOutputStream out = new DataOutputStream(new FileOutputStream(this.editionFile.toFile()))) {
-                    EDITION = 0;
-                    out.writeInt(EDITION);
-                    LOGGER.info("Created EDITION file with edition: {}", EDITION);
-                }
-            }
-
-        } catch (IOException e) {
-            LOGGER.error("Failed to initialize server_waypoints directory or EDITION file", e);
-            throw e;
-        }
     }
 
     private void initOrReadConfigFile(Path configDir) {
@@ -145,92 +117,6 @@ public abstract class WaypointServerCore extends WaypointsManagerCore<WaypointFi
         }
     }
 
-    private void initOrReadWaypointsFile(Path configDir) throws IOException {
-        Path waypointsFolder;
-        if (this.dataRootPath == null) {
-            waypointsFolder = configDir.resolve("waypoints");
-        } else {
-            waypointsFolder = this.dataRootPath.resolve("waypoints");
-        }
-
-        try {
-            if (!Files.exists(waypointsFolder) || !Files.isDirectory(waypointsFolder)) {
-                Files.createDirectories(waypointsFolder);
-                LOGGER.info("Created waypoints directory at: {}", waypointsFolder);
-            }
-        } catch (IOException e) {
-            LOGGER.error("Failed to initialize waypoints directory");
-            throw e;
-        }
-
-        this.waypointsDir = waypointsFolder;
-        List<Pair<String, WaypointFileManager>> fileManagers = new ArrayList<>();
-        try (DirectoryStream<Path> entries = Files.newDirectoryStream(waypointsFolder)) {
-            for (Path path : entries) {
-                if (path.toFile().isDirectory()) {
-                    continue;
-
-                }
-                String fileName = path.getFileName().toString();
-                // test for old version file name
-                if (fileName.startsWith("dim%")) {
-                    fileName = convertToNewFileName(fileName);
-                    Files.move(path, path.resolveSibling(fileName));
-                    LOGGER.info("Old file moved to {}", fileName);
-                } else if (isFileNameInvalid(fileName)) {
-                    LOGGER.error("Invalid dimension file name {}, skip", fileName);
-                    continue;
-                }
-                // test for txt format file
-                boolean isTxt = false;
-                if (fileName.endsWith(".txt")) {
-                    fileName = fileName.substring(0, fileName.length() - 4);
-                    Files.move(path, path.resolveSibling(fileName + ".json"));
-                    isTxt = true;
-                } else if (fileName.endsWith(".json")) {
-                    // using json from 2.8.3
-                    fileName = fileName.substring(0, fileName.length() - 5);
-                } else {
-                    continue;
-                }
-                WaypointFileManager fileManager = new WaypointFileManager(fileName, null, this.waypointsDir);
-                try {
-                    if (isTxt) {
-                        // convert to json format
-                        fileManager.readDimensionFromTxt();
-                        fileManager.saveDimension();
-                    } else {
-                        fileManager.readDimension();
-                    }
-                    fileManagers.add(new Pair<>(fileManager.getDimensionName(), fileManager));
-                } catch (IOException e) {
-                    LOGGER.error("Failed to load dimension file", e);
-                    throw e;
-                }
-            }
-        }
-        // sort by dimension names to get rid of random file reading order
-        fileManagers.sort(Comparator.comparing(Pair::left));
-        for  (Pair<String, WaypointFileManager> pair : fileManagers) {
-            fileManagerMap.put(pair.left(), pair.right());
-        }
-        fileManagers.clear();
-    }
-
-    private boolean isFileNameInvalid(String fileName) {
-        return fileName.split("\\$").length != 2;
-    }
-
-    private String convertToNewFileName(String fileName) {
-        fileName = fileName.substring(4);
-        return switch (fileName) {
-            case "0" -> "minecraft$overworld.json";
-            case "1" -> "minecraft$the_end.json";
-            case "-1" -> "minecraft$the_nether.json";
-            default -> fileName + ".json";
-        };
-    }
-
     private void initConfigDir(Path configDir) throws IOException {
         if (!Files.isDirectory(configDir)) {
             try {
@@ -256,15 +142,12 @@ public abstract class WaypointServerCore extends WaypointsManagerCore<WaypointFi
         GlobalTranslator.translator().addSource(translator);
     }
 
-    public void initServer() throws IOException {
+    /**
+     * only initialize config file and language files, should only call once
+     * */
+    public void initConfigAndLanguageResource() throws IOException {
         this.initConfigDir(this.configDir);
-        // maintain the list order for vanilla dimensions
-        this.fileManagerMap.put(MINECRAFT_OVERWORLD, null);
-        this.fileManagerMap.put(MINECRAFT_THE_NETHER, null);
-        this.fileManagerMap.put(MINECRAFT_THE_END, null);
-        this.initOrReadConfigFile(this.configDir);
-        this.initOrReadEditionFile(this.configDir);
-        this.initOrReadWaypointsFile(this.configDir);
+        this.initOrReadConfigFile(this.configDir);;
         this.initLanguageManager();
         List<String> languages = getExternalLoadedLanguages();
         String log = String.join(", ", languages);
@@ -272,8 +155,7 @@ public abstract class WaypointServerCore extends WaypointsManagerCore<WaypointFi
     }
 
     /**
-     * called saveAllFiles first then free all loaded waypoint files and external language files <br>
-     * must call initServer to load all resources back
+     * calls saveAllFiles first then free all loaded waypoint files and external language files <br>
      * */
     public void freeAllLoadedFiles() {
         saveAllFiles();
@@ -286,58 +168,11 @@ public abstract class WaypointServerCore extends WaypointsManagerCore<WaypointFi
         this.languageFilesManager.reloadExternalLanguages();
     }
 
-    public void setDataRootPath(Path dataRootPath) {
-        Path newPath = dataRootPath.resolve(GROUP_ID);
-        if (!newPath.toFile().isDirectory()) {
-            try {
-                Files.createDirectories(newPath);
-            } catch (IOException e) {
-                LOGGER.error("Failed to initialize data root directory {} : {}", newPath, e);
-            }
-        }
-        this.dataRootPath = newPath;
-    }
-
-    public boolean isDataRootPathSet() {
-        return dataRootPath != null;
-    }
-
-    /**
-    * for switching between different saves
-    * */
-    public void changeDataRootPath(Path dataRootPath) {
-        Path newPath = this.dataRootPath.resolve(GROUP_ID);
-        if (newPath == this.dataRootPath) {
-            return;
-        }
-        setDataRootPath(dataRootPath);
-        this.fileManagerMap.clear();
-        this.fileManagerMap.put(MINECRAFT_OVERWORLD, null);
-        this.fileManagerMap.put(MINECRAFT_THE_NETHER, null);
-        this.fileManagerMap.put(MINECRAFT_THE_END, null);
-        try {
-            initOrReadWaypointsFile(this.configDir);
-        } catch (IOException e) {
-            LOGGER.error("Failed to load waypoints file from {}: {}", dataRootPath, e);
-            throw new RuntimeException(e);
-        }
-        try {
-            initOrReadEditionFile(this.configDir);
-        } catch (IOException e) {
-            LOGGER.error("Failed to load EDITION file from {}: {}", dataRootPath, e);
-            throw new RuntimeException(e);
-        }
-    }
-
     @SuppressWarnings("unused")
-    public void reloadWaypointsFile() {
+    public void reloadWaypointFiles() {
         saveAllFiles();
-        this.fileManagerMap.clear();
-        this.fileManagerMap.put(MINECRAFT_OVERWORLD, null);
-        this.fileManagerMap.put(MINECRAFT_THE_NETHER, null);
-        this.fileManagerMap.put(MINECRAFT_THE_END, null);
         try {
-            initOrReadWaypointsFile(this.configDir);
+            initOrReadWaypointFiles();
         } catch (IOException e) {
             LOGGER.error("Failed to load waypoints file", e);
             throw new RuntimeException(e);
@@ -345,46 +180,11 @@ public abstract class WaypointServerCore extends WaypointsManagerCore<WaypointFi
     }
 
     /**
-     * save all waypoint files and EDITION file
+     * save all config file and waypoint files
      */
     public void saveAllFiles() {
-        for (WaypointFileManager fileManager : this.fileManagerMap.values()) {
-            try {
-                if (fileManager != null) {
-                    fileManager.saveDimension();
-                }
-            } catch (IOException e) {
-                LOGGER.error("Failed to save dimension file {}", fileManager.getDimensionFile());
-            }
-        }
-        try {
-            saveEdition();
-        } catch (IOException e) {
-            return;
-        }
+        saveAllWaypointFiles();
         saveConfigFile(this.configDir);
-    }
-
-    public Map<String, WaypointFileManager> getFileManagerMap() {
-        return this.fileManagerMap;
-    }
-
-    @Override
-    protected WaypointFileManager createWaypointListManager(String dimensionName) {
-        return new WaypointFileManager(null, dimensionName, this.waypointsDir);
-    }
-
-    public void saveEdition() throws IOException {
-        try {
-            try (DataOutputStream out = new DataOutputStream(new FileOutputStream(this.editionFile.toFile()))) {
-                out.writeInt(EDITION);
-                LOGGER.info("Saved edition: {}", EDITION);
-            }
-
-        } catch (IOException e) {
-            LOGGER.error("Failed to save edition to file, sync may not work properly.", e);
-            throw e;
-        }
     }
 
     public void initXearoWorldId(Path saveDir) {

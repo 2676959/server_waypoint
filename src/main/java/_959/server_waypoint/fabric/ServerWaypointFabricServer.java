@@ -3,14 +3,15 @@ package _959.server_waypoint.fabric;
 
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.network.ServerWaypointPayloadHandler;
+import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.common.server.command.WaypointCommand;
 import _959.server_waypoint.config.Features;
 import _959.server_waypoint.core.IPlatformConfigPath;
 import _959.server_waypoint.common.network.ModChatMessageHandler;
-import _959.server_waypoint.common.network.payload.c2s.HandshakeC2SPayload;
+import _959.server_waypoint.common.network.payload.c2s.UpdateRequestC2SPayload;
 import _959.server_waypoint.common.server.WaypointServerMod;
-import _959.server_waypoint.core.network.ClientHandshakeHandler;
+import _959.server_waypoint.core.network.ClientCommunicationHandler;
 import _959.server_waypoint.fabric.permission.FabricPermissionManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
@@ -24,11 +25,8 @@ import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.WorldSavePath;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Optional;
 
 //? if >= 1.20.5
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -43,24 +41,25 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
     public void onInitialize() {
         ModMessageSender messageSender = ModMessageSender.getInstance();
         FabricPermissionManager permissionManager = new FabricPermissionManager();
-        WaypointCommand waypointCommand = new WaypointCommand(messageSender, permissionManager);
         ModChatMessageHandler<String> handler = new ModChatMessageHandler<>(messageSender, permissionManager) {
             @Override
             public void onChatMessage(SignedMessage message, ServerPlayerEntity player, MessageType.Parameters parameters) {
                 super.onChatMessage(message, player, parameters);
             }
         };
-        ClientHandshakeHandler<ServerCommandSource, ServerPlayerEntity> handshakeHandler = new ClientHandshakeHandler<>(messageSender);
         WaypointServerMod waypointServer = new WaypointServerMod(this.getAssignedConfigDirectory(), handler);
+        ClientCommunicationHandler<ServerCommandSource, ServerPlayerEntity> clientPayloadHandler = new ClientCommunicationHandler<>(messageSender, waypointServer);
+        WaypointCommand waypointCommand = new WaypointCommand(waypointServer, messageSender, permissionManager);
 
-        if (FabricLoader.getInstance().isModLoaded("fabric-permissions-api-v0")) {
+        FabricLoader fabricLoader = FabricLoader.getInstance();
+        if (fabricLoader.isModLoaded("fabric-permissions-api-v0")) {
             FabricPermissionManager.setFabricPermissionAPILoaded(true);
             LOGGER.info("found fabric-permissions-api, disable vanilla permission system");
         } else {
             LOGGER.info("fabric-permissions-api is not loaded, use vanilla permission system");
         }
 
-        if (FabricLoader.getInstance().isModLoaded("xaerominimap") || FabricLoader.getInstance().isModLoaded("xaeroworldmap")) {
+        if (fabricLoader.isModLoaded("xaerominimap") || fabricLoader.isModLoaded("xaeroworldmap")) {
             Features.noXaerosMod = false;
             LOGGER.info("found xaero's mod, force disabling sendXaerosWorldId");
         } else {
@@ -71,37 +70,18 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
 
         // register waypoint command
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, registrationEnvironment) -> waypointCommand.register(dispatcher));
-        // pass MinecraftServer to waypointServer
-        ServerLifecycleEvents.SERVER_STARTING.register(minecraftServer -> {
-            waypointServer.setMinecraftServer(minecraftServer);
-            if (minecraftServer.isDedicated()) {
-                try {
-                    waypointServer.initServer();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            } else {
-                if (waypointServer.isDataRootPathSet()) {
-                    waypointServer.changeDataRootPath(minecraftServer.getSavePath(WorldSavePath.ROOT));
-                } else {
-                    waypointServer.setDataRootPath(minecraftServer.getSavePath(WorldSavePath.ROOT));
-                    try {
-                        waypointServer.initServer();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-        });
-        // save files on shutdown
-        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-            waypointServer.saveAllFiles();
-            waypointServer.setMinecraftServer(null);
-        });
+        ServerLifecycleEvents.SERVER_STARTING.register(waypointServer::load);
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> waypointServer.unload());
         // register chatMessageHandler
         ServerMessageEvents.CHAT_MESSAGE.register(handler::onChatMessage);
-        // register handshakeHandler
+        // register clientPayloadHandler
         registerPayloads();
+        ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (handshakeC2SPayload, context) ->
+                clientPayloadHandler.onClientUpdateRequest(context.player(), handshakeC2SPayload.clientUpdateRequestBuffer())
+        );
+        ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (clientHandshakeC2SPayload, context) -> {
+           clientPayloadHandler.onClientHandshake(context.player(), clientHandshakeC2SPayload.clientHandshakeBuffer());
+        });
 
         //? if >= 1.20.5 {
         ServerPlayNetworking.registerGlobalReceiver(HandshakeC2SPayload.ID, ((handshakeC2SPayload, context) ->
@@ -113,7 +93,7 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
                 ));
         *///?}
 
-        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+        if (fabricLoader.getEnvironmentType() == EnvType.CLIENT) {
             registerClientHandlers();
         }
     }
@@ -124,6 +104,10 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         PayloadTypeRegistry.playS2C().register(DimensionWaypointS2CPayload.ID, DimensionWaypointS2CPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(WorldWaypointS2CPayload.ID, WorldWaypointS2CPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(UpdatesBundleS2CPayload.ID, UpdatesBundleS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(ServerHandshakeS2CPayload.ID, ServerHandshakeS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(ClientHandshakeC2SPayload.ID, ClientHandshakeC2SPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(UpdateRequestC2SPayload.ID, UpdateRequestC2SPayload.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(HandshakeC2SPayload.ID, HandshakeC2SPayload.PACKET_CODEC);
         //?}
     }
@@ -134,6 +118,8 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         ClientPlayNetworking.registerGlobalReceiver(DimensionWaypointS2CPayload.ID, (ServerWaypointPayloadHandler::onDimensionWaypointPayload));
         ClientPlayNetworking.registerGlobalReceiver(WorldWaypointS2CPayload.ID, (ServerWaypointPayloadHandler::onWorldWaypointPayload));
         ClientPlayNetworking.registerGlobalReceiver(WaypointModificationS2CPayload.ID, (ServerWaypointPayloadHandler::onWaypointModificationPayload));
+        ClientPlayNetworking.registerGlobalReceiver(ServerHandshakeS2CPayload.ID, (ServerWaypointPayloadHandler::onServerHandshake));
+        ClientPlayNetworking.registerGlobalReceiver(UpdatesBundleS2CPayload.ID, (ServerWaypointPayloadHandler::onUpdatesBundle));
         //?} else if fabric {
         /*ClientPlayNetworking.registerGlobalReceiver(WaypointListS2CPayload.TYPE, (packet, player, responseSender) ->
                 ServerWaypointPayloadHandler.onWaypointListPayload(packet, player));

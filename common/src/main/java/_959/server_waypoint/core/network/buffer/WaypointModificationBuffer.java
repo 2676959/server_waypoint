@@ -13,7 +13,7 @@ public record WaypointModificationBuffer(
         String listName,
         SimpleWaypoint waypoint,
         WaypointModificationType type,
-        int edition) implements MessageBuffer {
+        int syncId) implements MessageBuffer {
 
     @Override
     public MessageChannelID getChannelId() {

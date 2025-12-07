@@ -37,7 +37,7 @@ public abstract class ChatMessageHandler<S, K, P> {
                 Pair<SimpleWaypoint, String> waypointWithDim = toSimpleWaypoint(args);
                 SimpleWaypoint waypoint = waypointWithDim.left();
                 String dimensionName = waypointWithDim.right();
-                WaypointFileManager waypointFileManager = WaypointServerCore.INSTANCE.getWaypointListManager(dimensionName);
+                WaypointFileManager waypointFileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(dimensionName);
                 if (waypointFileManager != null) {
                     Set<String> listNames = waypointFileManager.getWaypointListMap().keySet();
                     if (listNames.isEmpty()) {

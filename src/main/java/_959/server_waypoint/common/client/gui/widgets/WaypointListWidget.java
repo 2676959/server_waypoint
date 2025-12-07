@@ -1,6 +1,6 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
-import _959.server_waypoint.common.client.WaypointClient;
+import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.render.WaypointRenderData;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -14,7 +14,6 @@ import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.text.Text;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Vector3ic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,12 +21,12 @@ import java.util.List;
 public class WaypointListWidget extends ElementListWidget<WaypointListWidget.WaypointEntry> {
     private final static int BASE_WIDTH = 210;
     private final static int HALF_WIDTH = BASE_WIDTH / 2;
-    private final WaypointClient waypointClient;
+    private final WaypointClientMod waypointClientMod;
 //    private final MinecraftClient client;
 
-    public WaypointListWidget(MinecraftClient minecraftClient, WaypointClient waypointClient, Screen screen, int width, int height, int y, int itemHeight) {
+    public WaypointListWidget(MinecraftClient minecraftClient, WaypointClientMod waypointClientMod, Screen screen, int width, int height, int y, int itemHeight) {
         super(minecraftClient, width, height, y, itemHeight);
-        this.waypointClient = waypointClient;
+        this.waypointClientMod = waypointClientMod;
         this.addEntry(new WaypointEntry(screen, new WaypointRenderData(new Vector3f(1.5F, 3F, 5.5F), 0x33BBAD, "储", "全物品", "全")));
         this.addEntry(new WaypointEntry(screen, new WaypointRenderData(new Vector3f(1.5F, 0F, 5.5F), 0xAACCFF, "World", "Spawn", "SP")));
         this.addEntry(new WaypointEntry(screen, new WaypointRenderData(new Vector3f(1.5F, 3F, 5.5F), 0x33BBAD, "储", "全物品", "全")));

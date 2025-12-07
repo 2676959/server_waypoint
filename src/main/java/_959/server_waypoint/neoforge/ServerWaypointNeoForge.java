@@ -32,7 +32,7 @@ public class ServerWaypointNeoForge extends ServerWaypointMod {
     }
 
     private void initWaypointServer(FMLDedicatedServerSetupEvent event) {
-        initServer();
+        startServer();
 
     }
 

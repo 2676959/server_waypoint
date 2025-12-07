@@ -5,6 +5,9 @@ public class Features {
     boolean addWaypointFromChatSharing = true;
     boolean sendXaerosWorldId = true;
 
+    public Features() {
+    }
+
     public boolean addWaypointFromChatSharing() {
         return this.addWaypointFromChatSharing;
     }

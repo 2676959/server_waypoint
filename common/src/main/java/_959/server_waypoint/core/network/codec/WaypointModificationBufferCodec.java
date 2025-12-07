@@ -11,7 +11,7 @@ public class WaypointModificationBufferCodec {
         UtfStringCodec.encode(buf, modification.listName());
         SimpleWaypointCodec.encode(buf, modification.waypoint());
         buf.writeByte(modification.type().ordinal());
-        buf.writeInt(modification.edition());
+        buf.writeInt(modification.syncId());
     }
 
     public static WaypointModificationBuffer decode(ByteBuf buf) {
