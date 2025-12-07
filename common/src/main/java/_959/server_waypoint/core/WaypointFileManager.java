@@ -96,9 +96,7 @@ public class WaypointFileManager {
         int waypointsNumber = 0;
         for (WaypointList waypointList : waypointLists) {
             this.addWaypointList(waypointList);
-            WaypointServerCore.LOGGER.info("WaypointList expand: {}, show: {}", waypointList.isExpand(), waypointList.isShow());
             waypointsNumber += waypointList.size();
-            WaypointServerCore.LOGGER.info("syncNum:{}", waypointList.getSyncNum());
         }
         WaypointServerCore.LOGGER.info("Loaded {} lists and {} waypoints from file: {}", this.waypointListMap.size(), waypointsNumber, filePath);
     }
