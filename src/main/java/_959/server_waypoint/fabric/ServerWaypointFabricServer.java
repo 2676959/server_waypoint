@@ -1,6 +1,7 @@
 //? if fabric {
 package _959.server_waypoint.fabric;
 
+import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.network.ServerWaypointPayloadHandler;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
@@ -79,9 +80,9 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (handshakeC2SPayload, context) ->
                 clientPayloadHandler.onClientUpdateRequest(context.player(), handshakeC2SPayload.clientUpdateRequestBuffer())
         );
-        ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (clientHandshakeC2SPayload, context) -> {
-           clientPayloadHandler.onClientHandshake(context.player(), clientHandshakeC2SPayload.clientHandshakeBuffer());
-        });
+        ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (clientHandshakeC2SPayload, context) ->
+           clientPayloadHandler.onClientHandshake(context.player(), clientHandshakeC2SPayload.clientHandshakeBuffer())
+        );
 
         //? if >= 1.20.5 {
         ServerPlayNetworking.registerGlobalReceiver(HandshakeC2SPayload.ID, ((handshakeC2SPayload, context) ->
@@ -134,7 +135,7 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
 
     @Override
     public Path getAssignedConfigDirectory() {
-        return FabricLoader.getInstance().getConfigDir().resolve(GROUP_ID);
+        return FabricLoader.getInstance().getConfigDir().resolve(ModInfo.MOD_ID);
     }
 }
 //?}

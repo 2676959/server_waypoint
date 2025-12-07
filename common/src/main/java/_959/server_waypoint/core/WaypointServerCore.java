@@ -28,7 +28,6 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
     public static WaypointServerCore INSTANCE;
     private static int worldId;
     public static Config CONFIG = new Config();
-    public static final String GROUP_ID = "server_waypoint";
     public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_core");
     private static final String CONFIG_FILE_NAME = "config.json";
     private final Path configDir;
@@ -147,7 +146,7 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
      * */
     public void initConfigAndLanguageResource() throws IOException {
         this.initConfigDir(this.configDir);
-        this.initOrReadConfigFile(this.configDir);;
+        this.initOrReadConfigFile(this.configDir);
         this.initLanguageManager();
         List<String> languages = getExternalLoadedLanguages();
         String log = String.join(", ", languages);

@@ -58,6 +58,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore {
         INSTANCE = this;
     }
 
+    @SuppressWarnings("unused")
     public boolean isHandshakeFinished() {
         return handshakeFinished;
     }
@@ -153,8 +154,6 @@ public class WaypointClientMod extends WaypointFilesManagerCore {
         if (this.mc.isConnectedToLocalServer()) {
             changeFileManagerMap(WaypointServerMod.getInstance().getFileManagerMap());
         } else {
-//            changeWaypointFilesDir(asClientFromRemoteServer(this.gameRoot, this.mc.getCurrentServerEntry().address));
-//            ClientPlayNetworking.send(getClientUpdateRequestPayload());
             ClientPlayNetworking.send(clientHandshake);
         }
     }

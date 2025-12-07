@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.network.payload.s2c;
 
+import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
 import _959.server_waypoint.core.network.codec.WaypointModificationBufferCodec;
@@ -14,11 +15,10 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.PacketByteBuf;
 *///?}
 
-import static _959.server_waypoint.common.server.WaypointServerMod.GROUP_ID;
 import static _959.server_waypoint.core.network.PayloadID.WAYPOINT_MODIFICATION;
 
 public record WaypointModificationS2CPayload(WaypointModificationBuffer waypointModification) implements ModPayload {
-    public static final Identifier WAYPOINT_MODIFICATION_PAYLOAD_ID = Identifier.of(GROUP_ID, WAYPOINT_MODIFICATION);
+    public static final Identifier WAYPOINT_MODIFICATION_PAYLOAD_ID = Identifier.of(ModInfo.MOD_ID, WAYPOINT_MODIFICATION);
 //? if >= 1.20.5 {
     public static final CustomPayload.Id<WaypointModificationS2CPayload> ID = new CustomPayload.Id<>(WAYPOINT_MODIFICATION_PAYLOAD_ID);
     public static final PacketCodec<ByteBuf, WaypointModificationS2CPayload> PACKET_CODEC = new PacketCodec<>() {

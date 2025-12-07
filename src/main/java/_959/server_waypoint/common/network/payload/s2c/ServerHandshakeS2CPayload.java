@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.network.payload.s2c;
 
+import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.core.network.buffer.ServerHandshakeBuffer;
 import _959.server_waypoint.core.network.codec.ServerHandshakeCodec;
 import net.minecraft.network.PacketByteBuf;
@@ -9,11 +10,10 @@ import net.minecraft.util.Identifier;
 
 import io.netty.buffer.ByteBuf;
 
-import static _959.server_waypoint.common.server.WaypointServerMod.GROUP_ID;
 import static _959.server_waypoint.core.network.PayloadID.SERVER_HANDSHAKE;
 
 public record ServerHandshakeS2CPayload(ServerHandshakeBuffer serverHandshakeBuffer) implements CustomPayload {
-    public static final Identifier SERVER_HANDSHAKE_PAYLOAD = Identifier.of(GROUP_ID, SERVER_HANDSHAKE);
+    public static final Identifier SERVER_HANDSHAKE_PAYLOAD = Identifier.of(ModInfo.MOD_ID, SERVER_HANDSHAKE);
     public static final CustomPayload.Id<ServerHandshakeS2CPayload> ID = new CustomPayload.Id<>(SERVER_HANDSHAKE_PAYLOAD);
     private static final PacketCodec<ByteBuf, ServerHandshakeBuffer> CODEC = new PacketCodec<>() {
         @Override

@@ -1,6 +1,7 @@
 package _959.server_waypoint.core.network;
 
-import static _959.server_waypoint.core.WaypointServerCore.GROUP_ID;
+import _959.server_waypoint.ModInfo;
+
 import static _959.server_waypoint.core.network.PayloadID.*;
 
 public enum MessageChannelID {
@@ -17,7 +18,7 @@ public enum MessageChannelID {
     private final String ID;
 
     MessageChannelID(String packetId) {
-        this(GROUP_ID, packetId);
+        this(ModInfo.MOD_ID, packetId);
     }
 
     MessageChannelID(String namespace, String packetId) {
