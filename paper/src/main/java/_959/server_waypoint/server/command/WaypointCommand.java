@@ -3,6 +3,7 @@ package _959.server_waypoint.server.command;
 import _959.server_waypoint.ServerWaypointPaperMC;
 import _959.server_waypoint.command.CoreWaypointCommand;
 import _959.server_waypoint.command.permission.PermissionManager;
+import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import com.mojang.brigadier.Message;
@@ -25,8 +26,8 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("UnstableApiUsage")
 public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, Player, World, BlockPositionResolver> {
 
-    public WaypointCommand(PlatformMessageSender<CommandSourceStack, Player> sender, PermissionManager<CommandSourceStack, String, Player> permissionManager) {
-        super(sender, permissionManager, ArgumentTypes::world, ArgumentTypes::blockPosition);
+    public WaypointCommand(WaypointServerCore waypointServer, PlatformMessageSender<CommandSourceStack, Player> sender, PermissionManager<CommandSourceStack, String, Player> permissionManager) {
+        super(waypointServer, sender, permissionManager, ArgumentTypes::world, ArgumentTypes::blockPosition);
     }
 
     @Override

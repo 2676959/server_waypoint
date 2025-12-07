@@ -1,7 +1,10 @@
 package _959.server_waypoint;
 
 import _959.server_waypoint.core.IPlatformConfigPath;
-import _959.server_waypoint.core.network.ClientCommunicationHandler;
+import _959.server_waypoint.core.network.C2SPacketHandler;
+import _959.server_waypoint.core.network.PayloadID;
+import _959.server_waypoint.core.network.buffer.ClientHandshakeBuffer;
+import _959.server_waypoint.core.network.codec.ClientHandshakeCodec;
 import _959.server_waypoint.core.network.codec.ClientUpdateRequestBufferCodec;
 import _959.server_waypoint.listener.ChatMessageListenerPaperMC;
 import _959.server_waypoint.listener.PlayerRegisterChannelListener;
@@ -18,18 +21,20 @@ import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.messaging.Messenger;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.Path;
 
+import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 import static _959.server_waypoint.core.network.MessageChannelID.*;
 
 public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageListener, IPlatformConfigPath {
     private WaypointServerPlugin waypointServer;
     private WaypointCommand waypointCommand;
-    private @SuppressWarnings("UnstableApiUsage") ClientCommunicationHandler<CommandSourceStack, Player> handshakeHandler;
+    private @SuppressWarnings("UnstableApiUsage") C2SPacketHandler<CommandSourceStack, Player> c2sPacketHandler;
 
     @Override
     @SuppressWarnings("UnstableApiUsage")
@@ -39,10 +44,10 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         waypointServer = new WaypointServerPlugin(this.getAssignedConfigDirectory(), server.getWorldContainer().toPath());
         PaperMessageSender sender = new PaperMessageSender(this);
         PaperPermissionManager permissionManager = new PaperPermissionManager();
-        waypointCommand = new WaypointCommand(sender, permissionManager);
+        waypointCommand = new WaypointCommand(waypointServer, sender, permissionManager);
         ChatMessageListenerPaperMC chatListener = new ChatMessageListenerPaperMC(new PaperChatMessageHandler(server, sender, permissionManager));
         PlayerRegisterChannelListener channelRegisterListener = new PlayerRegisterChannelListener();
-        this.handshakeHandler = new ClientCommunicationHandler<>(sender, waypointServer);
+        this.c2sPacketHandler = new C2SPacketHandler<>(sender, waypointServer);
         LiteralCommandNode<CommandSourceStack> command = waypointCommand.build();
         // register
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands ->
@@ -71,20 +76,34 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
     private void registerChannels() {
         // register for server_waypoint mod
         Server server = getServer();
-        server.getMessenger().registerOutgoingPluginChannel(this, WAYPOINT_LIST_CHANNEL.toString());
-        server.getMessenger().registerOutgoingPluginChannel(this, DIMENSION_WAYPOINT_CHANNEL.toString());
-        server.getMessenger().registerOutgoingPluginChannel(this, WORLD_WAYPOINT_CHANNEL.toString());
-        server.getMessenger().registerOutgoingPluginChannel(this, WAYPOINT_MODIFICATION_CHANNEL.toString());
-        server.getMessenger().registerIncomingPluginChannel(this, HANDSHAKE_CHANNEL.toString(), this);
+        Messenger messenger = server.getMessenger();
+        messenger.registerOutgoingPluginChannel(this, WAYPOINT_LIST_CHANNEL.ID);
+        messenger.registerOutgoingPluginChannel(this, DIMENSION_WAYPOINT_CHANNEL.ID);
+        messenger.registerOutgoingPluginChannel(this, WORLD_WAYPOINT_CHANNEL.ID);
+        messenger.registerOutgoingPluginChannel(this, WAYPOINT_MODIFICATION_CHANNEL.ID);
+        messenger.registerOutgoingPluginChannel(this, UPDATES_BUNDLE_CHANNEL.ID);
+        messenger.registerOutgoingPluginChannel(this, SERVER_HANDSHAKE_CHANNEL.ID);
+        // register for incoming
+        messenger.registerIncomingPluginChannel(this, CLIENT_HANDSHAKE_CHANNEL.ID, this);
+        messenger.registerIncomingPluginChannel(this, CLIENT_UPDATE_REQUEST_CHANNEL.ID, this);
+
         // register for xaero's minimap mod
-        server.getMessenger().registerOutgoingPluginChannel(this, XAEROS_WORLD_ID_CHANNEL.toString());
+        messenger.registerOutgoingPluginChannel(this, XAEROS_WORLD_ID_CHANNEL.ID);
     }
 
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
-        if (this.isEnabled() && channel.equals("server_waypoint:handshake")) {
-            ByteBuf buffer = Unpooled.copiedBuffer(message);
-            this.handshakeHandler.onClientUpdateRequest(player, ClientUpdateRequestBufferCodec.decode(buffer));
+        if (this.isEnabled()) {
+            switch (channel) {
+                case ModInfo.MOD_ID + ":" + PayloadID.CLIENT_HANDSHAKE -> {
+                    ByteBuf buf = Unpooled.copiedBuffer(message);
+                    this.c2sPacketHandler.onClientHandshake(player, ClientHandshakeCodec.decode(buf));
+                }
+                case ModInfo.MOD_ID + ":" + PayloadID.CLIENT_UPDATE_REQUEST -> {
+                    ByteBuf buf = Unpooled.copiedBuffer(message);
+                    this.c2sPacketHandler.onClientUpdateRequest(player, ClientUpdateRequestBufferCodec.decode(buf));
+                }
+            }
         }
     }
 

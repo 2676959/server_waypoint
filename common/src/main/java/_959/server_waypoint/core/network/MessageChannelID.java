@@ -15,7 +15,7 @@ public enum MessageChannelID {
     UPDATES_BUNDLE_CHANNEL(UPDATES_BUNDLE),
     XAEROS_WORLD_ID_CHANNEL("xaerominimap", "main");
 
-    private final String ID;
+    public final String ID;
 
     MessageChannelID(String packetId) {
         this(ModInfo.MOD_ID, packetId);

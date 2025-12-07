@@ -22,8 +22,8 @@ public class C2SPacketHandler<S, P> {
     }
 
     public void onClientHandshake(P player, ClientHandshakeBuffer buffer) {
-        LOGGER.info("received handshake packet: {}", buffer);
         String clientVersion = buffer.version();
+        LOGGER.info("client join with version: {}", clientVersion);
 
         if (clientVersion.equals(ModInfo.MOD_VERSION)) {
             this.sender.sendPlayerPacket(player, new ServerHandshakeBuffer(CONFIG.getServerId()));
