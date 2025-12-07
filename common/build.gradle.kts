@@ -1,5 +1,44 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("java-library")
+}
+
+tasks.register("updateModInfo") {
+    group = "build"
+    description = "Updates ModInfo.java from gradle.properties"
+    val outputFile = file("src/main/java/_959/server_waypoint/ModInfo.java")
+
+    inputs.file(rootProject.file("gradle.properties"))
+    outputs.file(outputFile)
+
+    doLast {
+        val props = Properties()
+        FileInputStream(rootProject.file("gradle.properties")).use { props.load(it) }
+        val modIdValue = props.getProperty("mod_id")
+        val modNameValue = props.getProperty("mod_name")
+        val modVersionValue = props.getProperty("mod_version")
+
+        var content = outputFile.readText()
+        content = content.replaceFirst(
+            Regex("(MOD_ID = \")[^\"]*(\")"),
+            "$1$modIdValue$2"
+        )
+        content = content.replaceFirst(
+            Regex("(MOD_NAME = \")[^\"]*(\")"),
+            "$1$modNameValue$2"
+        )
+        content = content.replaceFirst(
+            Regex("(MOD_VERSION = \")[^\"]*(\")"),
+            "$1$modVersionValue$2"
+        )
+        outputFile.writeText(content)
+    }
+}
+
+tasks.named("compileJava") {
+    dependsOn(tasks.named("updateModInfo"))
 }
 
 repositories {
