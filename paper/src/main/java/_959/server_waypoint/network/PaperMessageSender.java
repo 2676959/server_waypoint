@@ -31,11 +31,6 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
     }
 
     @Override
-    public void sendFeedback(CommandSourceStack source, Component component, boolean broadcastToOps) {
-        source.getSender().sendMessage(component);
-    }
-
-    @Override
     public void sendError(CommandSourceStack source, Component component) {
         source.getSender().sendMessage(component);
     }

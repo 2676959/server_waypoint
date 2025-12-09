@@ -22,6 +22,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+//? if >= 1.21.3
 import java.util.Collections;
 
 public class WaypointCommand extends CoreWaypointCommand<ServerCommandSource, String, ServerPlayerEntity, Identifier, PosArgument> {

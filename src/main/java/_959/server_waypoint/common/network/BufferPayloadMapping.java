@@ -1,12 +1,12 @@
 package _959.server_waypoint.common.network;
 
+import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.common.network.payload.c2s.HandshakeC2SPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.core.network.buffer.*;
-import net.minecraft.network.packet.CustomPayload;
 
 public class BufferPayloadMapping {
-    public static CustomPayload getPayload(MessageBuffer packet) {
+    public static ModPayload getPayload(MessageBuffer packet) {
         return switch (packet.getChannelId()) {
             case WAYPOINT_LIST_CHANNEL -> new WaypointListS2CPayload((WaypointListBuffer) packet);
             case DIMENSION_WAYPOINT_CHANNEL -> new DimensionWaypointS2CPayload((DimensionWaypointBuffer) packet);

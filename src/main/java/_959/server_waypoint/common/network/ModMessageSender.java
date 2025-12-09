@@ -1,27 +1,31 @@
 package _959.server_waypoint.common.network;
 
+//? if <= 1.20.1
+/*import _959.server_waypoint.access.PlayerLocaleAccessor;*/
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.buffer.MessageBuffer;
 import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
-import com.mojang.serialization.JsonOps;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.Translator;
-import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.text.TextCodecs;
 
 import java.util.Locale;
 
 import static _959.server_waypoint.common.network.BufferPayloadMapping.getPayload;
 import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
 
-//? if fabric {
+//? if >= 1.20.3 {
+import com.mojang.serialization.JsonOps;
+import net.minecraft.text.TextCodecs;
+//?}
 
+//? if fabric {
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 //?} elif neoforge {
 /*import net.neoforged.neoforge.network.PacketDistributor;
 *///?}
@@ -34,9 +38,13 @@ public class ModMessageSender implements PlatformMessageSender<ServerCommandSour
     }
 
     public static Text toVanillaText(Component component) {
+        //? if >= 1.20.3 {
         return TextCodecs.CODEC.decode(
-                DynamicRegistryManager.EMPTY.getOps(JsonOps.INSTANCE),
-                GsonComponentSerializer.gson().serializeToTree(component)).getOrThrow().getFirst();
+                JsonOps.INSTANCE,
+                GsonComponentSerializer.gson().serializeToTree(component)).result().get().getFirst();
+        //?} else {
+        /*return Text.Serializer.fromJson(GsonComponentSerializer.gson().serializeToTree(component));
+        *///?}
     }
 
     private Text getTranslatedText(ServerCommandSource source, Component component) {
@@ -49,7 +57,11 @@ public class ModMessageSender implements PlatformMessageSender<ServerCommandSour
     }
 
     private Text getTranslatedText(ServerPlayerEntity player, Component component) {
+        //? if <= 1.20.1 {
+        /*String language = ((PlayerLocaleAccessor) player).sw$getLocale();
+        *///?} else {
         String language = player.getClientOptions().language();
+        //?}
         Locale locale = Translator.parseLocale(language);
         if (locale == null) {
             locale = Locale.getDefault();
@@ -68,13 +80,8 @@ public class ModMessageSender implements PlatformMessageSender<ServerCommandSour
     }
 
     @Override
-    public void sendFeedback(ServerCommandSource source, Component component, boolean broadcastToOps) {
-        source.sendFeedback(() -> getTranslatedText(source, component), broadcastToOps);
-    }
-
-    @Override
     public void sendError(ServerCommandSource source, Component component) {
-        source.sendError(getTranslatedText(source, component));
+        source.sendMessage(getTranslatedText(source, component.color(NamedTextColor.RED)));
     }
 
     @Override

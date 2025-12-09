@@ -70,7 +70,11 @@ dependencies {
     val yarn_build: String by project
     minecraft("com.mojang:minecraft:$minecraft")
     implementation(project(":common"))
-    if (minecraft == "1.21") {
+    if (minecraft == "1.20.1" || minecraft == "1.20.2") {
+        implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
+    } else if (minecraft == "1.20.4") {
+        implementation("net.kyori:adventure-text-serializer-gson:4.16.0")
+    } else if (minecraft == "1.20.6" || minecraft == "1.21") {
         implementation("net.kyori:adventure-text-serializer-gson:4.17.0")
     } else if (minecraft == "1.21.3") {
         implementation("net.kyori:adventure-text-serializer-gson:4.20.0")
