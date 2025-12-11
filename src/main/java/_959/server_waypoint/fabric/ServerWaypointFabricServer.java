@@ -77,20 +77,20 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         ServerMessageEvents.CHAT_MESSAGE.register(handler::onChatMessage);
         // register c2sPacketHandler
         registerPayloads();
+
+        //? if >= 1.20.5 {
         ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (handshakeC2SPayload, context) ->
                 c2sPacketHandler.onClientUpdateRequest(context.player(), handshakeC2SPayload.clientUpdateRequestBuffer())
         );
         ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (clientHandshakeC2SPayload, context) ->
-           c2sPacketHandler.onClientHandshake(context.player(), clientHandshakeC2SPayload.clientHandshakeBuffer())
+                c2sPacketHandler.onClientHandshake(context.player(), clientHandshakeC2SPayload.clientHandshakeBuffer())
         );
-
-        //? if >= 1.20.5 {
-        ServerPlayNetworking.registerGlobalReceiver(HandshakeC2SPayload.ID, ((handshakeC2SPayload, context) ->
-                handshakeHandler.onHandshake(context.player(), handshakeC2SPayload.handshakeBuffer().edition())
-        ));
         //?} else if fabric {
-        /*ServerPlayNetworking.registerGlobalReceiver(HandshakeC2SPayload.TYPE, (packet, player, responseSender) ->
-                handshakeHandler.onHandshake(player, packet.handshakeBuffer().edition()
+        /*ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.TYPE, (packet, player, responseSender) ->
+                c2sPacketHandler.onClientUpdateRequest(player, packet.clientUpdateRequestBuffer()
+                ));
+        ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.TYPE, (packet, player, responseSender) ->
+                c2sPacketHandler.onClientHandshake(player, packet.clientHandshakeBuffer()
                 ));
         *///?}
 
@@ -107,9 +107,9 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         PayloadTypeRegistry.playS2C().register(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(UpdatesBundleS2CPayload.ID, UpdatesBundleS2CPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(ServerHandshakeS2CPayload.ID, ServerHandshakeS2CPayload.PACKET_CODEC);
+
         PayloadTypeRegistry.playC2S().register(ClientHandshakeC2SPayload.ID, ClientHandshakeC2SPayload.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(UpdateRequestC2SPayload.ID, UpdateRequestC2SPayload.PACKET_CODEC);
-        PayloadTypeRegistry.playC2S().register(HandshakeC2SPayload.ID, HandshakeC2SPayload.PACKET_CODEC);
         //?}
     }
 

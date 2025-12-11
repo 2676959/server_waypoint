@@ -1,9 +1,7 @@
 package _959.server_waypoint.common.network;
 
 import _959.server_waypoint.common.network.payload.ModPayload;
-import _959.server_waypoint.common.network.payload.c2s.HandshakeC2SPayload;
-import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
-import _959.server_waypoint.common.network.payload.c2s.UpdateRequestC2SPayload;
+import _959.server_waypoint.common.network.payload.c2s.*;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.core.network.buffer.*;
 

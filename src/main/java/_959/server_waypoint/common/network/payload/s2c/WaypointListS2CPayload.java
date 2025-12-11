@@ -17,9 +17,10 @@ import net.minecraft.network.PacketByteBuf;
 
 import static _959.server_waypoint.core.network.PayloadID.WAYPOINT_LIST;
 
-//? if >= 1.20.5 {
 public record WaypointListS2CPayload(WaypointListBuffer waypointListBuffer) implements ModPayload {
     public static final Identifier WAYPOINT_LIST_PAYLOAD_ID = Identifier.of(ModInfo.MOD_ID, WAYPOINT_LIST);
+//? if >= 1.20.5 {
+
     public static final CustomPayload.Id<WaypointListS2CPayload> ID = new CustomPayload.Id<>(WAYPOINT_LIST_PAYLOAD_ID);
     public static final PacketCodec<ByteBuf, WaypointListS2CPayload> PACKET_CODEC = new PacketCodec<>() {
         @Override

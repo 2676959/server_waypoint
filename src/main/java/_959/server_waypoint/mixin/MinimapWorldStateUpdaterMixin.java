@@ -23,7 +23,7 @@ public class MinimapWorldStateUpdaterMixin {
     private void injectOnServerLevelId(int id, CallbackInfo ci) {
 
         //? if fabric {
-//        ClientPlayNetworking.send(WaypointClientMod.getInstance().getClientHandShakePayload());
+        ClientPlayNetworking.send(WaypointClientMod.getInstance().getClientHandShakePayload());
         //?} elif neoforge {
         /*PacketDistributor.sendToServer(HandshakePayloadGenerator.generate());
         *///?}

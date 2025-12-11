@@ -4,8 +4,6 @@ import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
 import _959.server_waypoint.core.network.codec.DimensionWaypointsListCodec;
-import io.netty.buffer.ByteBuf;
-import _959.server_waypoint.core.network.codec.WorldWaypointBufferCodec;
 import net.minecraft.util.Identifier;
 
 //? if >= 1.20.5 {
