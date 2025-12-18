@@ -17,11 +17,9 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
-import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.Component.translatable;
 
 /**
-* Load and save all waypoint fils in the specified directory
+* Load and save all waypoint files in the specified directory
 **/
 public class WaypointFilesManagerCore {
     public static final Logger LOGGER = LoggerFactory.getLogger("waypoint_files_manager");
@@ -46,6 +44,11 @@ public class WaypointFilesManagerCore {
 
     public @Nullable WaypointFileManager getWaypointFileManager(String dimensionName) {
         return this.fileManagerMap.get(dimensionName);
+    }
+
+    public @NotNull WaypointFileManager getOrCreateWaypointFileManager(String dimensionName) {
+        WaypointFileManager fileManager = this.fileManagerMap.get(dimensionName);
+        return fileManager == null ? addWaypointListManager(dimensionName) : fileManager;
     }
 
     public void addWaypoint(String dimensionName, String listName, SimpleWaypoint waypoint, Consumer<@NotNull WaypointFileManager> successAction, Consumer<@NotNull SimpleWaypoint> duplicateAction) {

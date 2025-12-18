@@ -10,8 +10,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
-
 @SuppressWarnings("UnstableApiUsage")
 public class PaperMessageSender implements PlatformMessageSender<CommandSourceStack, Player> {
     private final JavaPlugin plugin;
@@ -37,9 +35,8 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
 
     @Override
     public void broadcastWaypointModification(CommandSourceStack source, WaypointModificationBuffer modification) {
-        Component waypointText = waypointTextWithTp(modification.waypoint(), modification.dimensionName(), modification.listName());
         Server server = source.getSender().getServer();
-        server.sendMessage(Component.translatable("waypoint.modification.broadcast.player", source.getSender().name(), modification.type().toTranslatable(), waypointText));
+        server.sendMessage(this.getModificationMessage(source.getSender().name(), modification));
         server.sendPluginMessage(this.plugin, modification.getChannelId().toString(), modification.encode());
     }
 

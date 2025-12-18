@@ -10,6 +10,7 @@ import java.util.List;
 
 public class WaypointList {
     public static final int REMOVE_LIST = -2;
+    public static final int SERVER_N = 1;
     @Expose @SerializedName("list_name") private String name;
     @Expose @SerializedName("n") private int syncNum;
     @Expose @SerializedName("waypoints") private List<SimpleWaypoint> simpleWaypoints;
@@ -131,7 +132,7 @@ public class WaypointList {
     }
 
     public static WaypointList buildByServer(String name) {
-        return new WaypointList(name, 1, new ArrayList<>());
+        return new WaypointList(name, SERVER_N, new ArrayList<>());
     }
 
     public static WaypointList buildByClient(String name) {
