@@ -143,6 +143,9 @@ public class WaypointFileManager {
         return this.waypointListMap.get(name);
     }
 
+    /**
+     * will replace the existing list
+     * */
     public void addWaypointList(WaypointList waypointList) {
         this.waypointListMap.put(waypointList.name(), waypointList);
     }
