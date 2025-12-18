@@ -5,12 +5,16 @@ import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.buffer.*;
 import _959.server_waypoint.core.waypoint.WaypointList;
-import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import java.util.*;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
 
 public class C2SPacketHandler<S, P> {
     private final PlatformMessageSender<S, P> sender;
@@ -28,6 +32,9 @@ public class C2SPacketHandler<S, P> {
         if (clientVersion.equals(ModInfo.MOD_VERSION)) {
             this.sender.sendPlayerPacket(player, new ServerHandshakeBuffer(CONFIG.getServerId()));
         } else {
+            this.sender.sendPlayerMessage(player, translatable("waypoint.incompatible.client",
+                    text(clientVersion).color(NamedTextColor.RED),
+                    text(ModInfo.MOD_VERSION).color(NamedTextColor.GREEN).decorate(TextDecoration.UNDERLINED).clickEvent(ClickEvent.openUrl(ModInfo.DOWNLOAD_URL))));
             LOGGER.warn("client version mismatch: {}", clientVersion);
         }
     }
@@ -35,8 +42,7 @@ public class C2SPacketHandler<S, P> {
     public void onClientUpdateRequest(P player, ClientUpdateRequestBuffer buffer) {
         LOGGER.info("received update request packet: {}", buffer.toString());
         UpdatesBundleBuffer updatesBundle = new UpdatesBundleBuffer(CONFIG.getServerId());
-        boolean needUpdate = false;
-        Set<String> allDimensionsOnServer = this.waypointServer.getFileManagerMap().keySet();
+        List<String> allDimensionsOnServer = new ArrayList<>(this.waypointServer.getFileManagerMap().keySet());
         // iterating all dimensions from client and compare with server
         for (DimensionSyncIdentifier dimensionSyncId : buffer.dimensionSyncIds()) {
             String dimensionOnClient = dimensionSyncId.dimensionName();
@@ -46,7 +52,7 @@ public class C2SPacketHandler<S, P> {
                 updatesBundle.add(new DimensionWaypointBuffer(dimensionOnClient, new ArrayList<>()));
             } else {
                 // prepare updates in that dimension for client
-                Set<String> allListsOnServer = fileManager.getWaypointListMap().keySet();
+                List<String> allListsOnServer = new ArrayList<>(fileManager.getWaypointListMap().keySet());
                 List<WaypointList> listUpdates = new ArrayList<>();
                 // iterating all lists from client and compare
                 for (WaypointListSyncIdentifier listSyncId : dimensionSyncId.listSyncIds()) {
@@ -60,7 +66,6 @@ public class C2SPacketHandler<S, P> {
                         int serverSyncNum = waypointList.getSyncNum();
                         if (serverSyncNum != listSyncId.syncNum()) {
                             listUpdates.add(waypointList);
-                            needUpdate = true;
                         }
                         allListsOnServer.remove(listOnClient);
                     }
@@ -69,7 +74,9 @@ public class C2SPacketHandler<S, P> {
                 for (String listName : allListsOnServer) {
                     listUpdates.add(fileManager.getWaypointListByName(listName));
                 }
-                updatesBundle.add(new DimensionWaypointBuffer(dimensionOnClient, listUpdates));
+                if (!listUpdates.isEmpty()) {
+                    updatesBundle.add(new DimensionWaypointBuffer(dimensionOnClient, listUpdates));
+                }
                 allDimensionsOnServer.remove(dimensionOnClient);
             }
         }
@@ -79,16 +86,13 @@ public class C2SPacketHandler<S, P> {
             // should always be true, but check just in case
             if (waypointFileManager != null) {
                 updatesBundle.add(waypointFileManager.toDimensionWaypoint());
-                needUpdate = true;
             }
         }
 
-        LOGGER.info("update: {}, updates bundle: {}", needUpdate, updatesBundle);
-        if (needUpdate) {
-            this.sender.sendPlayerMessage(player, Component.text("sent updates bundle"));
+        LOGGER.info("updates bundle: {}", updatesBundle);
+        if (!updatesBundle.isEmpty()) {
             this.sender.sendPlayerPacket(player, updatesBundle);
-        } else {
-            this.sender.sendPlayerMessage(player, Component.text("no updates needed"));
+            this.sender.sendPlayerMessage(player, translatable("waypoint.updates.sent"));
         }
     }
 }
