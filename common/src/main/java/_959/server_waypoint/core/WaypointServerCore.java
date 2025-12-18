@@ -22,7 +22,7 @@ import static _959.server_waypoint.translation.LanguageFilesManager.getExternalL
 import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asDedicatedServer;
 
 /**
- * Serverside waypoint manager used by dedicated or integrated server
+ * Serverside waypoint manager used by a dedicated or integrated server
  * */
 public abstract class WaypointServerCore extends WaypointFilesManagerCore {
     public static WaypointServerCore INSTANCE;
@@ -35,7 +35,7 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
     private final LanguageFilesManager languageFilesManager;
 
     /**
-     * constructor for dedicated server </br>
+     * constructor for a dedicated server </br>
      * integrated server can also this but must call {@link _959.server_waypoint.core.WaypointFilesManagerCore#changeWaypointFilesDir(Path) changeWaypointFilesDir}
      * before loading waypoint files
      */
