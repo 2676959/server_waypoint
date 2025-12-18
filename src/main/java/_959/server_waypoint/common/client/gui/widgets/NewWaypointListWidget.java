@@ -194,14 +194,18 @@ public class NewWaypointListWidget extends ScrollableWidget {
             String prefix = isExpand ? "▼" : "▶";
             String listName = prefix + waypointList.name();
             context.drawText(textRenderer, listName, 0, i * itemHeight, 0xFFFFFFFF, true);
+            if (waypointList.isEmpty()) {
+                int textWidth = textRenderer.getWidth("空");
+                context.drawText(textRenderer, "空", width - textWidth, i * itemHeight, 0x55FFFFFF, true);
+            }
             i++;
             if (isExpand) {
                 List<SimpleWaypoint> simpleWaypoints = waypointList.simpleWaypoints();
-                if (simpleWaypoints.isEmpty()) {
-                    context.drawText(textRenderer, "empty", 0, i * itemHeight, 0x99FFFFFF, true);
-                    i++;
-                    continue;
-                }
+//                if (simpleWaypoints.isEmpty()) {
+//                    context.drawText(textRenderer, "empty", 0, i * itemHeight, 0x99FFFFFF, true);
+//                    i++;
+//                    continue;
+//                }
                 for (SimpleWaypoint simpleWaypoint : simpleWaypoints) {
                     String name = simpleWaypoint.name();
                     String initials = simpleWaypoint.initials();
