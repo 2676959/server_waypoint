@@ -19,20 +19,21 @@ tasks.register("updateModInfo") {
         val modIdValue = props.getProperty("mod_id")
         val modNameValue = props.getProperty("mod_name")
         val modVersionValue = props.getProperty("mod_version")
+        val downloadUrl = props.getProperty("download_url")
 
-        var content = outputFile.readText()
-        content = content.replaceFirst(
-            Regex("(MOD_ID = \")[^\"]*(\")"),
-            "$1$modIdValue$2"
-        )
-        content = content.replaceFirst(
-            Regex("(MOD_NAME = \")[^\"]*(\")"),
-            "$1$modNameValue$2"
-        )
-        content = content.replaceFirst(
-            Regex("(MOD_VERSION = \")[^\"]*(\")"),
-            "$1$modVersionValue$2"
-        )
+        val content = """
+            package _959.server_waypoint;
+
+            /**
+             * properties from gradle.properties, values are placeholders
+             * */
+            public final class ModInfo {
+                public static final String MOD_ID = "$modIdValue";
+                public static final String MOD_NAME = "$modNameValue";
+                public static final String MOD_VERSION = "$modVersionValue";
+                public static final String DOWNLOAD_URL = "$downloadUrl";
+            }
+        """.trimIndent()
         outputFile.writeText(content)
     }
 }
