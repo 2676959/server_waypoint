@@ -107,7 +107,7 @@ public class DimensionListWidget extends ClickableWidget {
         context.getMatrices().translate(0, textHeight, 0);
         int y1 = y + textHeight;
         // render hover highlight background
-        if ((mouseY <= y1 + this.iconSize) && (mouseY >= y1) && (mouseX <= x + size * iconSize) && (mouseX >= x)) {
+        if ((mouseY < y1 + this.iconSize) && (mouseY > y1) && (mouseX < x + size * iconSize) && (mouseX > x)) {
             float relativePos = mouseX - scrolledPosition;
             int index =  (int) relativePos / iconSize;
             float highlightPos = scrolledPosition + index * iconSize;
@@ -139,7 +139,6 @@ public class DimensionListWidget extends ClickableWidget {
         }
         context.getMatrices().pop();
         context.disableScissor();
-
     }
 
     @Override
