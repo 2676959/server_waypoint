@@ -6,6 +6,13 @@ import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class ColorUtils {
+    public static final int RED     = 0xFFFF0000; // Hue = 0
+    public static final int YELLOW  = 0xFFFFFF00; // Hue = 60
+    public static final int GREEN   = 0xFF00FF00; // Hue = 120
+    public static final int CYAN    = 0xFF00FFFF; // Hue = 180
+    public static final int BLUE    = 0xFF0000FF; // Hue = 240
+    public static final int MAGENTA = 0xFFFF00FF; // Hue = 300
+
     public static final int[] VANILLA_COLORS = new int[] {
             0,
             170,
