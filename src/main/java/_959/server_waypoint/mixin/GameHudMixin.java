@@ -3,7 +3,6 @@ package _959.server_waypoint.mixin;
 import _959.server_waypoint.common.client.render.WaypointRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.client.util.math.MatrixStack;
 import org.spongepowered.asm.mixin.Mixin;
 
 import net.minecraft.client.gui.hud.InGameHud;

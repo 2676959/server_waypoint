@@ -67,7 +67,7 @@ public class WorldRendererMixin {
         BeaconBlockEntityRenderer.renderBeam(matrixStack, immediate, BEAM_TEXTURE, 0, 1.0F, 18000, 0, 2048, 0xFFFFFFFF, 0.2F, 0.25F);
         matrixStack.pop();
         RenderSystem.setShaderFog(fog);
-        ModelViewMatrix.set(new Matrix4f(RenderSystem.getModelViewMatrix()));
+        ModelViewMatrix.set(RenderSystem.getModelViewMatrix());
         ProjectionMatrix.set(RenderSystem.getProjectionMatrix());
     }
 
