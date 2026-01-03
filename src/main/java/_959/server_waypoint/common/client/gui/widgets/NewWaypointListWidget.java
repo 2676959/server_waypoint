@@ -1,12 +1,17 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
+import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ScrollableWidget;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -19,19 +24,30 @@ import static java.util.Collections.binarySearch;
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 
 public class NewWaypointListWidget extends ScrollableWidget {
+    private final WaypointManagerScreen parentScreen;
     private static double SCROLLED_POSITION = 0.0D;
     private final int itemHeight = 20;
     private final TextRenderer textRenderer;
     private final List<WaypointList> waypointLists;
     private final List<Integer> listPositions = new ArrayList<>();
     private boolean empty = false;
+    private int contentHeight = 0;
+    private final int btnWidth = itemHeight - 1;
+    private int removeBtnXPos = width - btnWidth;
+    private int editBtnXPos = removeBtnXPos - btnWidth;
 
-    public NewWaypointListWidget(int x, int y, int width, int height, TextRenderer textRenderer, Collection<WaypointList> waypointLists) {
-        super(x, y, width, height, Text.literal("Waypoints"));
+    public NewWaypointListWidget(WaypointManagerScreen parent, int x, int y, int width, int height, TextRenderer textRenderer, Collection<WaypointList> waypointLists) {
+        super(x, y, width, height, Text.literal("Waypoint lists"));
+        this.parentScreen = parent;
         this.textRenderer = textRenderer;
-        setScrollY(SCROLLED_POSITION);
         this.waypointLists = new ArrayList<>(waypointLists);
         recalculateListPositions();
+        recalculateContentHeight();
+        setScrollY(SCROLLED_POSITION);
+    }
+
+    public static void resetScroll() {
+        SCROLLED_POSITION = 0.0D;
     }
 
     public void updateWaypointLists(Collection<WaypointList> newWaypointLists) {
@@ -39,20 +55,20 @@ public class NewWaypointListWidget extends ScrollableWidget {
             this.empty = true;
             this.waypointLists.clear();
             this.listPositions.clear();
-            return;
+        } else {
+            this.empty = false;
+            this.waypointLists.clear();
+            this.waypointLists.addAll(newWaypointLists);
         }
-        this.empty = false;
-        this.waypointLists.clear();
-        this.waypointLists.addAll(newWaypointLists);
         recalculateListPositions();
+        recalculateContentHeight();
+        setScrollY(0);
         LOGGER.info("list positions: {}", this.listPositions);
     }
 
     private void recalculateListPositions() {
         this.listPositions.clear();
-        if (this.waypointLists.isEmpty()) {
-            return;
-        }
+        if (this.waypointLists.isEmpty()) return;
         this.listPositions.add(0);
         for (int i = 1; i < this.waypointLists.size(); i++) {
             int prev = i - 1;
@@ -66,8 +82,21 @@ public class NewWaypointListWidget extends ScrollableWidget {
         }
     }
 
+    private void recalculateContentHeight() {
+        if (this.waypointLists == null || empty) {
+            this.contentHeight = 0;
+        } else {
+            WaypointList waypointList = this.waypointLists.getLast();
+            int lastSize = waypointList.isExpand() ? waypointList.size() + 1 : 1;
+            this.contentHeight = (listPositions.getLast() + lastSize) * itemHeight;
+        }
+    }
+
     public void setEmpty() {
         this.empty = true;
+        this.listPositions.clear();
+        this.contentHeight = 0;
+        SCROLLED_POSITION = 0.0D;
     }
 
     @Override
@@ -103,7 +132,11 @@ public class NewWaypointListWidget extends ScrollableWidget {
             int index = binarySearch(listPositions, pos);
             LOGGER.info("pos: {}, index: {}", pos, index);
             if (index >= 0) {
+                // clicked on list
                 WaypointList waypointList = waypointLists.get(index);
+                if (waypointList.isEmpty()) {
+                    return false;
+                }
                 int size = waypointList.size();
                 if (waypointList.isExpand()) {
                     for (int i = index + 1; i < listPositions.size(); i++) {
@@ -116,22 +149,44 @@ public class NewWaypointListWidget extends ScrollableWidget {
                     }
                     waypointList.setExpand(true);
                 }
+                recalculateContentHeight();
                 SCROLLED_POSITION = getScrollY();
                 refreshScroll();
                 return true;
             } else {
+                // clicked on waypoint
                 // listIndex = insertIndex - 1; insertIndex = -index - 1
                 int listIndex = -index - 2;
                 int waypointIndex = pos - listPositions.get(listIndex) - 1;
-                List<SimpleWaypoint> simpleWaypoints = waypointLists.get(listIndex).simpleWaypoints();
+                WaypointList waypointList = waypointLists.get(listIndex);
+                List<SimpleWaypoint> simpleWaypoints = waypointList.simpleWaypoints();
                 if (waypointIndex >= simpleWaypoints.size()) {
                     return false;
                 }
                 SimpleWaypoint waypoint = simpleWaypoints.get(waypointIndex);
+                int removeBtnPos = removeBtnXPos + x;
+                if (mouseX > x + editBtnXPos && mouseX < removeBtnPos) {
+                    // clicked on edit button
+                    MinecraftClient.getInstance().setScreen(new WaypointEditScreen(this.parentScreen, this.parentScreen.getSelectedDimension(), waypointList.name(), waypoint));
+                    LOGGER.info("edit");
+                } else if (mouseX > removeBtnPos) {
+                    // clicked on remove button
+                    LOGGER.info("remove");
+                }
                 LOGGER.info("waypoint: {}", waypoint);
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        boolean ret = false;
+        if (keyCode == 84) {
+//            MinecraftClient.getInstance().getNetworkHandler().sendCommand(tpCmd(this.parentScreen.getSelectedDimension(), waypointList.name(), waypoint.name()).substring(1));
+        }
+        boolean ret2 = super.keyPressed(keyCode, scanCode, modifiers);
+        return ret || ret2;
     }
 
     @Override
@@ -142,12 +197,7 @@ public class NewWaypointListWidget extends ScrollableWidget {
 
     @Override
     protected int getContentsHeightWithPadding() {
-        if (this.waypointLists == null || empty) {
-            return 0;
-        }
-        WaypointList waypointList = this.waypointLists.getLast();
-        int lastSize = waypointList.isExpand() ? waypointList.size() + 1 : 1;
-        return (listPositions.getLast() + lastSize) * itemHeight;
+        return this.contentHeight;
     }
 
     @Override
@@ -161,42 +211,53 @@ public class NewWaypointListWidget extends ScrollableWidget {
         int i = 0;
         int x = getX();
         int y = getY();
-        int x2 = x + width;
-
+        
         // offset
-        context.getMatrices().translate(x, y, 0.0D);
+        MatrixStack matrixStack = context.getMatrices();
+        matrixStack.translate(x, y, 0.0D);
 
         context.enableScissor(0, 0, width, height);
         context.fill(0, 0, width, height, 0x88000000);
 
+        int listWidth = overflows() ?  width - SCROLLBAR_WIDTH : width;
+        
         if (empty) {
             context.drawText(textRenderer, Text.literal("<Empty>").formatted(Formatting.ITALIC), 0, 0, 0xFFFFFFFF, true);
-            context.getMatrices().translate(0.0D, scrollY, 0.0D);
-            context.getMatrices().translate(-x, -y, 0.0D);
+            matrixStack.translate(0.0D, scrollY, 0.0D);
+            matrixStack.translate(-x, -y, 0.0D);
             context.disableScissor();
             this.drawScrollbar(context);
             return;
         }
 
-        context.getMatrices().translate(0.0D, -scrollY, 0.0D);
+        matrixStack.translate(0.0D, -scrollY, 0.0D);
 
         // highlight
-        if (mouseX < x2 && mouseX > x && mouseY < y + getContentsHeightWithPadding() && mouseY > y) {
+        int pos = -1;
+        if (mouseX < x + listWidth && mouseX > x && mouseY < y + this.contentHeight && mouseY > y) {
             double scrollDistance = mouseY - y + getScrollY();
-            int pos = (int) scrollDistance / itemHeight;
-            int borderY1 = pos * itemHeight;
-            context.drawBorder(0, borderY1, width, itemHeight, 0xFFFFFFFF);
+            pos = (int) scrollDistance / itemHeight;
         }
+
+        // x for edit
+        removeBtnXPos = listWidth - btnWidth;
+        // x for width
+        editBtnXPos = removeBtnXPos - btnWidth;
 
         for (int n = 0; n < this.waypointLists.size(); n++) {
             WaypointList waypointList = this.waypointLists.get(n);
             boolean isExpand = waypointList.isExpand();
             String prefix = isExpand ? "▼" : "▶";
             String listName = prefix + waypointList.name();
-            context.drawText(textRenderer, listName, 0, i * itemHeight, 0xFFFFFFFF, true);
+            int y1 = i * itemHeight;
+            context.drawText(textRenderer, listName, 0, y1, 0xFFFFFFFF, true);
             if (waypointList.isEmpty()) {
                 int textWidth = textRenderer.getWidth("空");
-                context.drawText(textRenderer, "空", width - textWidth, i * itemHeight, 0x55FFFFFF, true);
+                context.drawText(textRenderer, "空", listWidth - textWidth, y1, 0x55FFFFFF, true);
+            }
+            if (pos == i) {
+                context.fill(0, y1, listWidth, y1 + itemHeight, 0x30FFFFFF);
+                context.drawBorder(0, y1, listWidth, itemHeight, 0xFFFFFFFF);
             }
             i++;
             if (isExpand) {
@@ -206,14 +267,28 @@ public class NewWaypointListWidget extends ScrollableWidget {
 //                    i++;
 //                    continue;
 //                }
+
                 for (SimpleWaypoint simpleWaypoint : simpleWaypoints) {
                     String name = simpleWaypoint.name();
                     String initials = simpleWaypoint.initials();
-                    int y1 = i * itemHeight;
                     int rgb = simpleWaypoint.rgb();
-                    context.fill(0, y1, width, y1 + itemHeight, 0x10000000 + rgb);
+                    y1 = i * itemHeight;
+                    int y2 = y1 + itemHeight;
+                    if (pos == i) {
+                        // highlight
+                        context.fill(0, y1, editBtnXPos, y2, 0x60000000 + rgb);
+                        // edit button
+                        context.fill(editBtnXPos, y1, removeBtnXPos, y2, 0x55FFFF00);
+                        // remove button
+                        context.fill(removeBtnXPos, y1, listWidth, y2, 0x55FF0000);
+                        // border
+                        context.drawBorder(2, y1, listWidth - 2, itemHeight, 0xFF000000 + rgb);
+                    } else {
+                        context.fill(0, y1, listWidth, y2, 0x10000000 + rgb);
+                    }
+                    int finalY = y1;
                     context.draw(drawer -> {
-                       textRenderer.draw(initials, 10, y1, 0xFFFFFFFF, true, context.getMatrices().peek().getPositionMatrix(), drawer, TextRenderer.TextLayerType.SEE_THROUGH, 0xFF000000 + rgb, 0xFF);
+                       textRenderer.draw(initials, 10, finalY, 0xFFFFFFFF, true, matrixStack.peek().getPositionMatrix(), drawer, TextRenderer.TextLayerType.SEE_THROUGH, 0xFF000000 + rgb, 0xFF);
                     });
 //                    context.drawText(textRenderer, name, x + 30, y1, 0xFFFFFFFF, true);
                     context.drawCenteredTextWithShadow(textRenderer, name, 30, y1, 0xFFFFFFFF);
@@ -224,8 +299,8 @@ public class NewWaypointListWidget extends ScrollableWidget {
                 context.fill(0, listY, 2, listY + (listLen + 1) * itemHeight, 0xFFFFFFFF);
             }
         }
-        context.getMatrices().translate(0.0D, scrollY, 0.0D);
-        context.getMatrices().translate(-x, -y, 0.0D);
+        matrixStack.translate(0.0D, scrollY, 0.0D);
+        matrixStack.translate(-x, -y, 0.0D);
         context.disableScissor();
         this.drawScrollbar(context);
     }

@@ -1,5 +1,6 @@
 package _959.server_waypoint.mixin;
 
+import _959.server_waypoint.common.client.gui.widgets.NewWaypointListWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,6 +21,7 @@ public class MinecraftClientMixin {
         }
         String worldName = world.getRegistryKey().getValue().toString();
         onDimensionChange(worldName);
+        NewWaypointListWidget.resetScroll();
         LOGGER.info("setWorld to: {}", worldName);
     }
 }

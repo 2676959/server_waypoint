@@ -51,6 +51,10 @@ public class DimensionListWidget extends ClickableWidget {
         }
     }
 
+    public String getSelectedDimensionName() {
+        return dimensionNames.get(index);
+    }
+
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         int size = dimensionNames.size();
