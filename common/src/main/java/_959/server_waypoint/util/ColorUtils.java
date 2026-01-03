@@ -411,7 +411,7 @@ public class ColorUtils {
         int r, g, b;
 
         switch (region) {
-            case 0  -> {r = max;     g = rising;  b = min;    } // Red -> Yellow
+            case 0,6-> {r = max;     g = rising;  b = min;    } // Red -> Yellow
             case 1  -> {r = falling; g = max;     b = min;    } // Yellow -> Green
             case 2  -> {r = min;     g = max;     b = rising; } // Green -> Cyan
             case 3  -> {r = min;     g = falling; b = max;    } // Cyan -> Blue
@@ -432,12 +432,12 @@ public class ColorUtils {
         int r, g, b;
 
         switch (region) {
-            case 0: r = 255;     g = rising;  b = 0;       break; // Red -> Yellow
-            case 1: r = falling; g = 255;     b = 0;       break; // Yellow -> Green
-            case 2: r = 0;       g = 255;     b = rising;  break; // Green -> Cyan
-            case 3: r = 0;       g = falling; b = 255;     break; // Cyan -> Blue
-            case 4: r = rising;  g = 0;       b = 255;     break; // Blue -> Magenta
-            default:r = 255;     g = 0;       b = falling; break; // Magenta -> Red
+            case 0,6 -> {r = 255;     g = rising;  b = 0;      }
+            case 1   -> {r = falling; g = 255;     b = 0;      }
+            case 2   -> {r = 0;       g = 255;     b = rising; }
+            case 3   -> {r = 0;       g = falling; b = 255;    }
+            case 4   -> {r = rising;  g = 0;       b = 255;    }
+            default  -> {r = 255;     g = 0;       b = falling;}
         }
 
         return 0xFF000000 | (r << 16) | (g << 8) | b;
