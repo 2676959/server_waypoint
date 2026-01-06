@@ -1,9 +1,14 @@
-# ServerWaypoint
+# Server Waypoint
 
 [![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg?style=flat-square)](http://creativecommons.org/publicdomain/zero/1.0/)
-![Modrinth Version](https://img.shields.io/modrinth/v/server_waypoint?style=flat-square)
-![both](https://img.shields.io/badge/environment-both-4caf50?style=flat-square)
-[![Modrinth Downloads](https://img.shields.io/modrinth/dt/server_waypoint?style=flat-square)](https://modrinth.com/plugin/server_waypoint)
+![Modrinth Version](https://img.shields.io/modrinth/v/server_waypoint?style=flat-square&label=Version)
+![both](https://img.shields.io/badge/Environment-Server%26Client-4caf50?style=flat-square)
+[![Modrinth Downloads](https://img.shields.io/modrinth/dt/server_waypoint?style=flat-square&logo=modrinth&logoColor=%2300AF5C&label=Modrinth%20Downloads&color=%2300AF5C)](https://modrinth.com/plugin/server_waypoint)
+[![CurseForge Downloads](https://img.shields.io/curseforge/dt/1416929?style=flat-square&logo=curseforge&logoColor=%23F16436&label=CurseForge%20Downloads&color=%23F16436)](https://www.curseforge.com/minecraft/mc-mods/server-waypoint)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/2676959/server_waypoint/total?style=flat-square&logo=github&logoColor=%23181717&label=GitHub%20Downloads&color=%23181717)
+
+![Static Badge](https://img.shields.io/badge/1.20.x-5395FD?style=flat-square)
+![Static Badge](https://img.shields.io/badge/1.21--1.21.10-5395FD?style=flat-square)
 
 [![fabric](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/supported/fabric_vector.svg)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
 [![paper](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/supported/paper_vector.svg)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
