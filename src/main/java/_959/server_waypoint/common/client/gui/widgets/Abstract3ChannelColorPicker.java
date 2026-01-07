@@ -2,11 +2,10 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
-public abstract class Abstract3ChannelColorPicker<T extends AbstractGradientSlider> extends ClickableWidget implements IColorPicker {
+public abstract class Abstract3ChannelColorPicker<T extends AbstractGradientSlider> extends ShiftableClickableWidget implements IColorPicker, Shiftable {
     protected final ColorPickerCallBack callback;
     private final int slotHeight;
     private final int slotWidth;
@@ -60,7 +59,6 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractGradientSlid
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         double x = mouseX - getX();
-        boolean isOut = (x < 0 || x > slotWidth);
 //        float y = (float) mouseY - getY();
 //        int index = (int) (y / slotHeight);
         switch (focusedIndex) {
