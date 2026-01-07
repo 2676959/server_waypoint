@@ -11,13 +11,11 @@ import org.joml.Matrix4f;
 
 import java.util.function.Consumer;
 
-import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
-
 /**
  * A discrete slider with a color gradient background.
  * */
 public abstract class AbstractGradientSlider implements Widget, Drawable {
-    private final int sliderWidth;
+    private final float sliderHalfWidth;
     private final float unitLength;
     private final int maxLevel;
     protected final int slotWidth;
@@ -40,9 +38,9 @@ public abstract class AbstractGradientSlider implements Widget, Drawable {
         this.slotHeight = slotHeight;
         this.endX = x + slotWidth;
         this.endY = y + slotHeight;
-        this.sliderWidth = sliderWidth;
-        this.sliderRight = sliderWidth / 2F;
-        this.sliderLeft = -sliderWidth / 2F;
+        this.sliderHalfWidth = sliderWidth / 2F;
+        this.sliderRight = sliderHalfWidth;
+        this.sliderLeft = -sliderHalfWidth;
         this.maxLevel = maxLevel;
         this.unitLength = (float) slotWidth / maxLevel;
     }
@@ -82,13 +80,13 @@ public abstract class AbstractGradientSlider implements Widget, Drawable {
     @Override
     public void setX(int x) {
         this.x = x;
-        this.endX = x + this.slotWidth;
+        this.endX = this.slotWidth;
     }
 
     @Override
     public void setY(int y) {
         this.y = y;
-        this.endY = y + this.slotHeight;
+        this.endY = this.slotHeight;
     }
 
     public void mouseClickedOrDragged(double x) {
@@ -117,8 +115,8 @@ public abstract class AbstractGradientSlider implements Widget, Drawable {
 
     private void setSliderCenter(float sliderCenter) {
         this.sliderCenter = sliderCenter;
-        this.sliderLeft = sliderCenter - this.sliderWidth / 2F;
-        this.sliderRight = sliderCenter + this.sliderWidth / 2F;
+        this.sliderLeft = sliderCenter - this.sliderHalfWidth;
+        this.sliderRight = sliderCenter + this.sliderHalfWidth;
     }
 
     /**

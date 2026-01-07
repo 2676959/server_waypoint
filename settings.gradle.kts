@@ -28,10 +28,10 @@ stonecutter {
 //		mc("neoforge", "1.21", "1.21.3", "1.21.5")
 	}
 
-	create("paper") {
-		vers("1.21-paper", "1.21")
+//	create("paper") {
+//		vers("1.21-paper", "1.21")
 //		vers("1.20-paper", "1.20")
-	}
+//	}
 }
 
 rootProject.name = "server_waypoint"
