@@ -1,4 +1,4 @@
-package _959.server_waypoint.common.client.gui;
+package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
@@ -18,7 +18,7 @@ import java.util.*;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 
-public class WaypointManagerScreen extends Screen {
+public class WaypointManagerScreen extends MovementAllowedScreen {
     private static ScreenState STATE = ScreenState.DEFAULT;
     private final WaypointClientMod waypointClientMod;
     private NewWaypointListWidget waypointListWidget;
@@ -46,8 +46,8 @@ public class WaypointManagerScreen extends Screen {
     private int sneakKeyCode;
     private int sprintKeyCode;
 
-    public WaypointManagerScreen(Text title, WaypointClientMod waypointClientMod) {
-        super(title);
+    public WaypointManagerScreen(WaypointClientMod waypointClientMod) {
+        super(Text.of("Server Waypoints"));
         this.waypointClientMod = waypointClientMod;
         STATE = ScreenState.DEFAULT;
     }
@@ -56,16 +56,29 @@ public class WaypointManagerScreen extends Screen {
 //        return NEED_UPDATE;
 //    }
 
-    public static void requestUpdate() {
+    public static void needUpdate() {
         STATE = ScreenState.NEED_UPDATE;
     }
 
+    public String getSelectedDimension() {
+        return this.dimensionListWidget.getSelectedDimensionName();
+    }
+
+    @Override
+    int getContentWidth() {
+        return CONTENT_WIDTH;
+    }
+
+    @Override
+    int getContentHeight() {
+        return 0;
+    }
 
     @Override
     protected void init() {
+        super.init();
         LOGGER.info("gui init");
-        int WIDTH = 240;
-        int centerX = this.width / 2 - 125;
+        int centerX = getCenteredX();
 
         Set<String> dimensionNames;
         List<WaypointList> defaultWaypointLists;
@@ -74,14 +87,14 @@ public class WaypointManagerScreen extends Screen {
             STATE = ScreenState.NO_WAYPOINTS;
             dimensionNames = new TreeSet<>();
             dimensionNames.add("empty");
-            this.dimensionListWidget = new DimensionListWidget(centerX, 8, WIDTH, 40, this.textRenderer, dimensionNames, (index) -> {});
-            this.waypointListWidget = new NewWaypointListWidget(centerX, 48, WIDTH, 200, this.textRenderer, new ArrayList<>());
+            this.dimensionListWidget = new DimensionListWidget(centerX, 8, CONTENT_WIDTH, 40, this.textRenderer, dimensionNames, (index) -> {});
+            this.waypointListWidget = new NewWaypointListWidget(this, centerX, 48, CONTENT_WIDTH, 200, this.textRenderer, new ArrayList<>());
             this.waypointListWidget.setEmpty();
         } else {
             dimensionNames = this.waypointClientMod.getDimensionNames();
             defaultWaypointLists = this.waypointClientMod.getDefaultWaypointLists();
-            this.dimensionListWidget = new DimensionListWidget(centerX, 8, WIDTH, 40, this.textRenderer, dimensionNames, this::onSelectDimension);
-            this.waypointListWidget = new NewWaypointListWidget(centerX, 48, WIDTH, 200, this.textRenderer, defaultWaypointLists);
+            this.dimensionListWidget = new DimensionListWidget(centerX, 8, CONTENT_WIDTH, 40, this.textRenderer, dimensionNames, this::onSelectDimension);
+            this.waypointListWidget = new NewWaypointListWidget(this, centerX, 48, CONTENT_WIDTH, 200, this.textRenderer, defaultWaypointLists);
             this.dimensionListWidget.setDimensionName(WaypointClientMod.getCurrentDimensionName());
         }
 
@@ -114,8 +127,9 @@ public class WaypointManagerScreen extends Screen {
     }
 
     private void centerWidgets() {
-        this.waypointListWidget.setX(this.width / 2 - 125);
-        this.dimensionListWidget.setX(this.width / 2 - 125);
+        int centeredX = getCenteredX();
+        this.waypointListWidget.setX(centeredX);
+        this.dimensionListWidget.setX(centeredX);
     }
 
     private void onSelectDimension(int index) {
