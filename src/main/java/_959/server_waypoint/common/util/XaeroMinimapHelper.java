@@ -25,7 +25,7 @@ public class XaeroMinimapHelper {
     }
     
     public static String getMinimapWorldNode(MinimapSession session, RegistryKey<World> dimKey) {
-        return session.getWorldStateUpdater().getPotentialWorldNode(dimKey, session.getModMain().getSupportMods().worldmap());
+        return session.getWorldStateUpdater().getPotentialWorldNode(dimKey, false);
     }
 
     public static MinimapWorld getMinimapWorld(MinimapSession session, RegistryKey<World> dimKey) {
