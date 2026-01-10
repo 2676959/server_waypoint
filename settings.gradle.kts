@@ -30,7 +30,7 @@ stonecutter {
 
 	create("paper") {
 		vers("1.21-paper", "1.21")
-		vers("1.20-paper", "1.20")
+//		vers("1.20-paper", "1.20")
 	}
 }
 
