@@ -1,5 +1,7 @@
 # Server Waypoint
 
+[English](README.md) [中文](README_zh.md)
+
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](https://opensource.org/licenses/MIT)
 ![Modrinth Version](https://img.shields.io/modrinth/v/server_waypoint?style=flat-square&label=Version)
 ![both](https://img.shields.io/badge/Environment-Server%26Client-4caf50?style=flat-square)
@@ -68,7 +70,7 @@ This mod currently has built-in translations for English and Simplified Chinese.
 ## Configurations
 The configuration file is stored at `<minecraft_root>\config\server_waypoint\config.json`.
 
-Changes made in `config.json` will take effects after server restarts.
+Some changes made in `config.json` may take effects after server restarts.
 
 - ### Command Permission
   Changes the vanilla [permission level](https://minecraft.wiki/w/Permission_level) required to execute the command.
