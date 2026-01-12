@@ -5,28 +5,41 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
 
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.BUTTON_BG_COLOR;
+import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
 
 public class TranslucentTextField extends TextFieldWidget implements Shiftable {
     private int shiftedX;
     private int shiftedY;
     private int xOffset;
     private int yOffset;
+    protected final int backgroundHeight;
 
-    public TranslucentTextField(TextRenderer textRenderer, int x, int y, int width, Text text) {
-        super(textRenderer, x, y, width, 11, null, text);
+    public TranslucentTextField(int x, int y, int width, Text text, TextRenderer textRenderer) {
+        super(textRenderer, x, y, width, textRenderer.fontHeight, null, text);
         this.setEditableColor(0xFFFFFFFF);
         this.setDrawsBackground(false);
+        this.backgroundHeight = this.height + 2;
     }
 
     @Override
     public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         int x = getShiftedX() - 2;
         int y = getShiftedY() - 2;
-        context.fill(x, y, x + this.width, y + this.height, BUTTON_BG_COLOR);
-        int bdColor = isFocused() | isHovered() ? 0xFFFFFFFF : 0x55FFFFFF;
-        context.drawBorder(x, y, this.width, this.height, bdColor);
+        int right = x + this.width;
+        int bottom = y + this.backgroundHeight;
+        context.fill(x, y, right, bottom, BUTTON_BG_COLOR);
+        this.hovered = mouseX >= x && mouseY >= y && mouseX <= right && mouseY <= bottom;
+        int bdColor = isFocused() | isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
+        context.drawBorder(x, y, this.width, this.backgroundHeight, bdColor);
         super.renderWidget(context, mouseX, mouseY, deltaTicks);
+    }
+
+    public void renderTextField(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+        super.renderWidget(context, mouseX, mouseY, deltaTicks);
+    }
+
+    public int getVisualHeight() {
+        return this.backgroundHeight;
     }
 
     @Override

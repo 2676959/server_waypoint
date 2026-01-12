@@ -5,7 +5,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
-public abstract class Abstract3ChannelColorPicker<T extends AbstractGradientSlider> extends ShiftableClickableWidget implements IColorPicker, Shiftable {
+public abstract class Abstract3ChannelColorPicker<T extends AbstractGradientSlider> extends ShiftableClickableWidget implements Colorable, Shiftable {
     protected final ColorPickerCallBack callback;
     private final int slotHeight;
     private final int slotWidth;
@@ -24,32 +24,61 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractGradientSlid
         this.callback = callback;
     }
 
-    abstract void onChannel0Update();
-    abstract void onChannel1Update();
-    abstract void onChannel2Update();
+    public abstract void onChannel0Update();
+    public abstract void onChannel1Update();
+    public abstract void onChannel2Update();
+
+    public void updateSlider0(int level) {
+        this.slider0.setSliderLevel(level);
+        this.onChannel0Update();
+    }
+
+    public void updateSlider1(int level) {
+        this.slider1.setSliderLevel(level);
+        this.onChannel1Update();
+    }
+
+    public void updateSlider2(int level) {
+        this.slider2.setSliderLevel(level);
+        this.onChannel2Update();
+    }
+
+    public final int getSlider0Level() {
+        return this.slider0.getSliderLevel();
+    }
+
+    public final int getSlider1Level() {
+        return this.slider1.getSliderLevel();
+    }
+
+    public final int getSlider2Level() {
+        return this.slider2.getSliderLevel();
+    }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         float x = (float) mouseX - getX();
-        float y = (float) mouseY - getY();
-        int index = (int) (y / slotHeight);
+        int index = (int) Math.floor((mouseY - getY()) / slotHeight);
         switch (index) {
             case 0 -> {
                 this.slider0.mouseClickedOrDragged(x);
                 focusedIndex = 0;
                 onChannel0Update();
+                this.callback.onColorUpdate(getColor());
                 return true;
             }
             case 1 -> {
                 this.slider1.mouseClickedOrDragged(x);
                 focusedIndex = 1;
                 onChannel1Update();
+                this.callback.onColorUpdate(getColor());
                 return true;
             }
             case 2 -> {
                 this.slider2.mouseClickedOrDragged(x);
                 focusedIndex = 2;
                 onChannel2Update();
+                this.callback.onColorUpdate(getColor());
                 return true;
             }
         }
@@ -65,16 +94,19 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractGradientSlid
             case 0 -> {
                 this.slider0.mouseClickedOrDragged(x);
                 onChannel0Update();
+                this.callback.onColorUpdate(getColor());
                 return true;
             }
             case 1 -> {
                 this.slider1.mouseClickedOrDragged(x);
                 onChannel1Update();
+                this.callback.onColorUpdate(getColor());
                 return true;
             }
             case 2 -> {
                 this.slider2.mouseClickedOrDragged(x);
                 onChannel2Update();
+                this.callback.onColorUpdate(getColor());
                 return true;
             }
         }
@@ -85,22 +117,24 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractGradientSlid
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         float x = (float) mouseX - getX();
         if (x < 0 || x > slotWidth) return false;
-        float y = (float) mouseY - getY();
-        int index = (int) (y / slotHeight);
+        int index = (int) Math.floor((mouseY - getY()) / slotHeight);
         switch (index) {
             case 0 -> {
                 this.slider0.mouseScrolled(verticalAmount);
                 onChannel0Update();
+                this.callback.onColorUpdate(getColor());
                 return true;
             }
             case 1 -> {
                 this.slider1.mouseScrolled(verticalAmount);
                 onChannel1Update();
+                this.callback.onColorUpdate(getColor());
                 return true;
             }
             case 2 -> {
                 this.slider2.mouseScrolled(verticalAmount);
                 onChannel2Update();
+                this.callback.onColorUpdate(getColor());
                 return true;
             }
         }
@@ -113,16 +147,19 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractGradientSlid
             case 0 -> {
                 boolean bl = this.slider0.keyPressed(keyCode);
                 onChannel0Update();
+                this.callback.onColorUpdate(getColor());
                 return bl;
             }
             case 1 -> {
                 boolean bl = this.slider1.keyPressed(keyCode);
                 onChannel1Update();
+                this.callback.onColorUpdate(getColor());
                 return bl;
             }
             case 2 -> {
                 boolean bl = this.slider2.keyPressed(keyCode);
                 onChannel2Update();
+                this.callback.onColorUpdate(getColor());
                 return bl;
             }
         }
