@@ -4,6 +4,7 @@ import _959.server_waypoint.common.client.gui.widgets.ShiftableWidget;
 import _959.server_waypoint.util.Pair;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.Widget;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ public class WidgetStack extends ShiftableWidget {
     private final int defaultPdx;
     private final boolean toPositive;
     private final boolean isHorizontal;
+    private final List<ClickableWidget> clickables = new ArrayList<>();
     private final List<Pair<Widget, Integer>> children = new ArrayList<>();
     private final List<Drawable> drawables = new ArrayList<>();
     private int mainAxisSize = 0;
@@ -34,6 +36,16 @@ public class WidgetStack extends ShiftableWidget {
         this.defaultPdx = defaultPdx;
         this.toPositive = toPositive;
         this.isHorizontal = isHorizontal;
+    }
+
+    public <W extends ClickableWidget> void addClickable(W child) {
+        this.addChild(child, this.defaultPdx);
+        this.clickables.add(child);
+    }
+
+    public <W extends ClickableWidget> void addClickable(W child, int pdx) {
+        this.addChild(child, pdx);
+        this.clickables.add(child);
     }
 
     public <W extends Widget & Drawable> void addChild(W child) {
@@ -59,6 +71,15 @@ public class WidgetStack extends ShiftableWidget {
         this.drawables.add(child);
         this.children.add(new Pair<>(child, relativePos));
         this.mainAxisSize += widgetSpan + pdx;
+    }
+
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        for (ClickableWidget child : clickables) {
+            if (child.mouseClicked(mouseX, mouseY, button)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -120,7 +141,8 @@ public class WidgetStack extends ShiftableWidget {
 
     @Override
     public void setPosition(int x, int y) {
-        super.setPosition(x, y);
+        super.setX(x);
+        super.setY(y);
         int shiftedX = this.getShiftedX();
         int shiftedY = this.getShiftedY();
         if (isHorizontal) {
