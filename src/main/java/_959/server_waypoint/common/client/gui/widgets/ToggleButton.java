@@ -11,12 +11,12 @@ import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScre
 
 public class ToggleButton extends ShiftableClickableWidget {
     protected final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+    private final ToggleButtonCallback callback;
     private boolean state;
     private final Text state0Text;
     private final Text state1Text;
     private final int state0color;
     private final int state1color;
-    private ToggleButtonCallback callback;
 
 
     public ToggleButton(int x, int y, int width, int height, Text state0Text, Text state1Text, int state0color, int state1color, ToggleButtonCallback callback) {
@@ -34,13 +34,12 @@ public class ToggleButton extends ShiftableClickableWidget {
         this.state = !this.state;
         this.callback.onToggle(this.state);
     }
-
     @Override
     public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
         if (isFocused() || isHovered()) {
-            context.drawBorder(x - 1, y - 1, width + 2, height + 2, BORDER_COLOR);
+            context.drawBorder(x - 1, y - 1, width + 2, height + 2, BORDER_FOCUS_COLOR);
         }
         int bgColor = isHovered() ? BUTTON_BG_HOVER_COLOR : BUTTON_BG_COLOR;
         context.fill(x, y, x + width, y + height, bgColor);
