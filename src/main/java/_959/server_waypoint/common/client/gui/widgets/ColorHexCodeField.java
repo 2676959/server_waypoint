@@ -20,6 +20,16 @@ public class ColorHexCodeField extends TranslucentTextField implements Colorable
     }
 
     @Override
+    public void setFocused(boolean focused) {
+        super.setFocused(focused);
+        String text = this.getText();
+        if (!focused && text.length() < 6) {
+            // complete hex code to length 6
+            setColor(getColor());
+        }
+    }
+
+    @Override
     public void write(String text) {
         if (text.isEmpty()) super.write(text);
         else if (text.matches("[0-9a-fA-F]+")) super.write(text);
@@ -46,9 +56,9 @@ public class ColorHexCodeField extends TranslucentTextField implements Colorable
         int x = getShiftedX() - 2;
         int y = getShiftedY() - 2;
         int x1 = x - 6;
-        int right = x + this.width;
-        int bottom = y + this.backgroundHeight;
-        context.fill(x1, y, right, bottom, BUTTON_BG_COLOR);
+        int right = x - 1 + this.width;
+        int bottom = y - 1 + this.backgroundHeight;
+        context.fill(x1 + 1, y + 1, right, bottom, BUTTON_BG_COLOR);
         context.drawText(textRenderer, "#", x - 4, y + 2, 0xFFFFFFFF, true);
         this.hovered = mouseX >= x1 && mouseY >= y && mouseX <= right && mouseY <= bottom;
         int bdColor = isFocused() | isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;

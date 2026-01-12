@@ -25,9 +25,9 @@ public class TranslucentTextField extends TextFieldWidget implements Shiftable {
     public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         int x = getShiftedX() - 2;
         int y = getShiftedY() - 2;
-        int right = x + this.width;
-        int bottom = y + this.backgroundHeight;
-        context.fill(x, y, right, bottom, BUTTON_BG_COLOR);
+        int right = x - 1 + this.width;
+        int bottom = y - 1 + this.backgroundHeight;
+        context.fill(x + 1, y + 1, right, bottom, BUTTON_BG_COLOR);
         this.hovered = mouseX >= x && mouseY >= y && mouseX <= right && mouseY <= bottom;
         int bdColor = isFocused() | isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
         context.drawBorder(x, y, this.width, this.backgroundHeight, bdColor);
