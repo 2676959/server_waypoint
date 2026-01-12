@@ -30,38 +30,35 @@ public class WaypointEditScreen extends MovementAllowedScreen {
     private static final int BG_PADDING_Y = 15;
     // main layout
     private final WidgetStack mainLayout = new WidgetStack(0, 0, 10, true, false);
-    private final TranslucentTextField nameEditBox = new TranslucentTextField(textRenderer, 0, 0, 60, Text.of("name"));
-    private final TranslucentTextField initialsEditBox = new TranslucentTextField(textRenderer, 0, 0, 30, Text.of("initials"));
-    private final ColorHexCodeField colorEditBox = new ColorHexCodeField(textRenderer, 0, 0, Text.of("color"));
-    private final ColorPickerButton colorPickerButton = new ColorPickerButton(0, 0, 10);
+    private final TranslucentTextField nameEditBox = new TranslucentTextField(0, 0, 60, Text.of("name"), textRenderer);
+    private final TranslucentTextField initialsEditBox = new TranslucentTextField(0, 0, 30, Text.of("initials"), textRenderer);
+    private final ColorHexCodeField colorEditBox = new ColorHexCodeField(0, 0, Text.of("color"), textRenderer);
+    private final ColorSquareButton colorPickerButton = new ColorSquareButton(0, 0, 9, this::openSwatch);
     // coords label
     ScalableText coordsLabel = new ScalableText(0, 0, Text.translatable("waypoint.edit.screen.coords_yaw"), 0xFFFFFFFF, textRenderer);
-    private final IntegerField xEditBox = new IntegerField(textRenderer, 0, 0, 44, Text.of("X"));
-    private final IntegerField yEditBox = new IntegerField(textRenderer, 0, 0, 44, Text.of("Y"));
-    private final IntegerField zEditBox = new IntegerField(textRenderer, 0, 0, 44, Text.of("Z"));
-    private final IntegerField yawEditBox = new IntegerField(textRenderer, 0, 0, 27, Text.of("Yaw"));
-    private final ToggleButton globalToggle = new ToggleButton(0, 0, 40, 10, Text.translatable("waypoint.local"), Text.translatable("waypoint.global"), 0x04E500,0x005AE5, (state) -> {});
+    private final IntegerField xEditBox = new IntegerField(0, 0, 44, Text.of("X"), textRenderer);
+    private final IntegerField yEditBox = new IntegerField(0, 0, 44, Text.of("Y"), textRenderer);
+    private final IntegerField zEditBox = new IntegerField(0, 0, 44, Text.of("Z"), textRenderer);
+    private final IntegerField yawEditBox = new IntegerField(0, 0, 27, Text.of("Yaw"), textRenderer);
+    private final ToggleButton globalToggle = new ToggleButton(0, 0, 40, 11, Text.translatable("waypoint.local"), Text.translatable("waypoint.global"), 0x04E500,0x005AE5, (state) -> {});
     private final TranslucentButton updateButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.update.button"), ()->{});
-    private final TranslucentButton resetButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.reset.button"), ()->{});
+    private final TranslucentButton resetButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.reset.button"), this::resetProperties);
     private final TranslucentButton cancelButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.cancel.button"), this::close);
-    private final HSVColorPicker hsvPicker = new HSVColorPicker(10, 40, 150, 10, this::updateRGBPicker);
-    private final RGBColorPicker rgbPicker = new RGBColorPicker(10, 70, 150, 10, this::updateHSVPicker);
-    private final SimpleWaypoint waypoint;
+    private final SwatchWidget swatchWidget = new SwatchWidget(0, 0, textRenderer, (color) -> {this.closeSwatch(); this.colorEditBox.setColor(color); this.colorPickerButton.setColor(color);});
     private final String dimensionName;
     private final String listName;
     private final String waypointName;
-    private String initials;
-    private int x;
-    private int y;
-    private int z;
-    private int rgb;
-    private int yaw;
-    private boolean global;
+    private final String initials;
+    private final int x;
+    private final int y;
+    private final int z;
+    private final int rgb;
+    private final int yaw;
+    private final boolean global;
 
     public WaypointEditScreen(Screen previousScreen, String dimensionName, String listName, SimpleWaypoint waypoint) {
         super(Text.translatable("waypoint.edit.screen.title", waypoint.name()));
         this.previousScreen = previousScreen;
-        this.waypoint = waypoint;
         this.dimensionName = dimensionName;
         this.listName = listName;
         this.waypointName = waypoint.name();
@@ -70,18 +67,18 @@ public class WaypointEditScreen extends MovementAllowedScreen {
         this.x = pos.x();
         this.y = pos.y();
         this.z = pos.z();
-        this.rgb = waypoint.rgb();
+        this.rgb = 0xFF000000 | waypoint.rgb();
         this.yaw = waypoint.yaw();
         this.global = waypoint.global();
         this.nameEditBox.setText(this.waypointName);
         this.initialsEditBox.setText(this.initials);
-        this.initialsEditBox.setChangedListener(this::updateInitials);
         int color = 0xFF000000 | this.rgb;
-        this.colorEditBox.setColor(this.rgb);
+        this.colorEditBox.setColor(color);
         this.colorEditBox.setChangedListener(text -> this.colorPickerButton.setColor(this.colorEditBox.getColor()));
         this.colorPickerButton.setColor(color);
-        this.rgbPicker.setColor(color);
-        this.hsvPicker.setColor(color);
+        this.swatchWidget.setColor(color);
+        this.swatchWidget.setPreviousColor(color);
+        this.swatchWidget.visible = false;
         this.xEditBox.setText(Integer.toString(this.x));
         this.yEditBox.setText(Integer.toString(this.y));
         this.zEditBox.setText(Integer.toString(this.z));
@@ -161,36 +158,64 @@ public class WaypointEditScreen extends MovementAllowedScreen {
         buttonRow.setXOffset(CONTENT_WIDTH);
     }
 
-    public void resetSettings() {
-
-    }
-
-    public void updateInitials(String initials) {
-        this.initials = initials;
-    }
-
-    public void updateRGBPicker(int rgb) {
-        this.rgb = rgb;
-        this.rgbPicker.setColor(rgb);
-    }
-
-    public void updateHSVPicker(int rgb) {
-        this.rgb = rgb;
-        this.hsvPicker.setColor(rgb);
+    public void resetProperties() {
+        this.nameEditBox.setText(this.waypointName);
+        this.initialsEditBox.setText(this.initials);
+        int color = 0xFF000000 | this.rgb;
+        this.colorEditBox.setColor(color);
+        this.colorPickerButton.setColor(color);
+        this.swatchWidget.setColor(color);
+        this.swatchWidget.setPreviousColor(color);
+        this.swatchWidget.visible = false;
+        this.xEditBox.setText(Integer.toString(this.x));
+        this.yEditBox.setText(Integer.toString(this.y));
+        this.zEditBox.setText(Integer.toString(this.z));
+        this.yawEditBox.setText(Integer.toString(this.yaw));
+        this.globalToggle.setState(this.global);
     }
 
     public void setOffsets(int x, int y) {
         this.mainLayout.setOffsets(x, y);
-//        this.titleRow.setOffsets(x, y);
-//        this.nameInitialsRow.setOffsets(x, y);
-//        this.colorRow.setOffsets(x, y);
-//        this.coordsLabel.setOffsets(x, y);
-//        this.coordsRow.setOffsets(x, y);
-//        this.visibilityRow.setOffsets(x, y);
-//        this.buttonRow.setOffsets(x, y);
 
-        this.rgbPicker.setOffsets(x, y);
-        this.hsvPicker.setOffsets(x, y);
+        int xOffset = centered(this.CONTENT_WIDTH, this.swatchWidget.getWidth());
+        int yOffset = centered(this.CONTENT_HEIGHT, this.swatchWidget.getHeight());
+        this.swatchWidget.setPosition(x, y);
+        this.swatchWidget.setOffsets(xOffset, yOffset);
+    }
+
+    private void openSwatch() {
+        this.swatchWidget.visible = true;
+        this.setFocused(this.swatchWidget);
+        this.swatchWidget.setColor(this.colorPickerButton.getColor());
+        this.nameEditBox.active = false;
+        this.initialsEditBox.active = false;
+        this.colorEditBox.active = false;
+        this.colorPickerButton.active = false;
+        this.xEditBox.active = false;
+        this.yEditBox.active = false;
+        this.zEditBox.active = false;
+        this.yawEditBox.active = false;
+        this.globalToggle.active = false;
+        this.updateButton.active = false;
+        this.resetButton.active = false;
+        this.cancelButton.active = false;
+    }
+
+    private void closeSwatch() {
+        this.swatchWidget.visible = false;
+        this.setFocused(this.nameEditBox);
+        this.nameEditBox.active = true;
+        this.initialsEditBox.active = true;
+        this.colorEditBox.active = true;
+        this.colorPickerButton.active = true;
+        this.xEditBox.active = true;
+        this.yEditBox.active = true;
+        this.zEditBox.active = true;
+        this.yawEditBox.active = true;
+        this.globalToggle.active = true;
+        this.updateButton.active = true;
+        this.resetButton.active = true;
+        this.cancelButton.active = true;
     }
 
     @Override
@@ -209,6 +234,7 @@ public class WaypointEditScreen extends MovementAllowedScreen {
         this.addDrawableChild(this.nameEditBox);
         this.addDrawableChild(this.initialsEditBox);
         this.addDrawableChild(this.colorEditBox);
+        this.addDrawableChild(this.colorPickerButton);
         this.addDrawableChild(this.xEditBox);
         this.addDrawableChild(this.yEditBox);
         this.addDrawableChild(this.zEditBox);
@@ -217,14 +243,17 @@ public class WaypointEditScreen extends MovementAllowedScreen {
         this.addDrawableChild(this.updateButton);
         this.addDrawableChild(this.resetButton);
         this.addDrawableChild(this.cancelButton);
-//        this.addDrawableChild(this.rgbPicker);
-//        this.addDrawableChild(this.hsvPicker);
+        this.addDrawableChild(this.swatchWidget);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         Element focused = this.getFocused();
         this.acceptMovementKeys(!(focused instanceof TextFieldWidget));
+        if (keyCode == 256 && this.swatchWidget.visible) {
+            this.closeSwatch();
+            return true;
+        }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -236,18 +265,9 @@ public class WaypointEditScreen extends MovementAllowedScreen {
 
         this.drawBackground(context);
         this.mainLayout.render(context, mouseX, mouseY, delta);
-//        this.titleRow.render(context, mouseX, mouseY, delta);
-//        this.nameInitialsRow.render(context, mouseX, mouseY, delta);
-//        this.colorRow.render(context, mouseX, mouseY, delta);
-//        this.coordsLabel.render(context, mouseX, mouseY, delta);
-//        this.coordsRow.render(context, mouseX, mouseY, delta);
-//        this.visibilityRow.render(context, mouseX, mouseY, delta);
-//        this.buttonRow.render(context, mouseX, mouseY, delta);
-//        MatrixStack matrixStack = context.getMatrices();
-//        this.rgbPicker.renderWidget(context, mouseX, mouseY, delta);
-//        this.hsvPicker.renderWidget(context, mouseX, mouseY, delta);
-        context.drawText(this.textRenderer, this.initials, 0, 0, this.rgb, true);
-
+        context.getMatrices().translate(0, 0, 1);
+        this.swatchWidget.renderWidget(context, mouseX, mouseY, delta);
+        context.getMatrices().translate(0, 0, -1);
     }
 
     private void drawBackground(DrawContext context) {
