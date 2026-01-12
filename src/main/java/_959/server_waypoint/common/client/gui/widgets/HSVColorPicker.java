@@ -7,7 +7,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.joml.Matrix4f;
 
-import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 import static _959.server_waypoint.util.ColorUtils.*;
 
 public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.HSVSlider> {
@@ -51,30 +50,27 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
     }
 
     @Override
-    void onChannel0Update() {
+    public void onChannel0Update() {
         // Hue component
         int hueColor = getPureHue(this.slider0.getSliderLevel());
         this.slider1.setBaseColor(hueColor);
         this.slider2.setBaseColor(hueColor);
-        this.callback.onColorUpdate(getColor());
     }
 
     @Override
-    void onChannel1Update() {
+    public void onChannel1Update() {
         // Saturation component
         int saturation = this.slider1.getSliderLevel();
         this.slider0.setVisualSaturation(saturation);
         this.slider2.setVisualSaturation(saturation);
-        this.callback.onColorUpdate(getColor());
     }
 
     @Override
-    void onChannel2Update() {
+    public void onChannel2Update() {
         // Brightness component
         int brightness = this.slider2.getSliderLevel();
         this.slider0.setVisualBrightness(brightness);
         this.slider1.setVisualBrightness(brightness);
-        this.callback.onColorUpdate(getColor());
     }
 
     public static abstract class HSVSlider extends AbstractGradientSlider {

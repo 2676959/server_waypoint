@@ -13,33 +13,30 @@ public class RGBColorPicker extends Abstract3ChannelColorPicker<RGBColorPicker.R
     }
 
     @Override
-    void onChannel0Update() {
+    public void onChannel0Update() {
         int color = getColor();
         this.slider1.setStartColor(color & 0xFFFF00FF);
         this.slider1.setEndColor(color | 0xFF00FF00);
         this.slider2.setStartColor(color & 0xFFFFFF00);
         this.slider2.setEndColor(color | 0xFF0000FF);
-        this.callback.onColorUpdate(color);
     }
 
     @Override
-    void onChannel1Update() {
+    public void onChannel1Update() {
         int color = getColor();
         this.slider0.setStartColor(color & 0xFF00FFFF);
         this.slider0.setEndColor(color | 0xFFFF0000);
         this.slider2.setStartColor(color & 0xFFFFFF00);
         this.slider2.setEndColor(color | 0xFF0000FF);
-        this.callback.onColorUpdate(color);
     }
 
     @Override
-    void onChannel2Update() {
+    public void onChannel2Update() {
         int color = getColor();
         this.slider0.setStartColor(color & 0xFF00FFFF);
         this.slider0.setEndColor(color | 0xFFFF0000);
         this.slider1.setStartColor(color & 0xFFFF00FF);
         this.slider1.setEndColor(color | 0xFF00FF00);
-        this.callback.onColorUpdate(color);
     }
 
     @Override
