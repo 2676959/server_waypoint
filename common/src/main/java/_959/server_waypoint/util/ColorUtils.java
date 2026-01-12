@@ -194,6 +194,9 @@ public class ColorUtils {
         }
     }
 
+    /**
+     * Hex code format: RRGGBB no alpha channel
+     * */
     public static String rgbToHexCode(int rgb, boolean withHash) {
         return withHash ? String.format("#%06X", rgb) : String.format("%06X", rgb);
     }
@@ -208,6 +211,9 @@ public class ColorUtils {
         return rgb < 0 ? hexCodeToRgb(colorName, withHash) : rgb;
     }
 
+    /**
+     * Color format: RGB no alpha channel
+     * */
     public static int randomColor() {
         return ThreadLocalRandom.current().nextInt(0x1000000);
     }
