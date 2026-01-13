@@ -11,7 +11,7 @@
 		"homepage": "https://github.com/2676959/server_waypoint",
 		"sources": "https://github.com/2676959/server_waypoint"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/server_waypoint/icon.png",
 	"environment": "*",
 	"entrypoints": {
