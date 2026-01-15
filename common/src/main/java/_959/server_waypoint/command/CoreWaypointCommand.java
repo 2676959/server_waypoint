@@ -536,14 +536,14 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             SimpleWaypoint newWaypoint = new SimpleWaypoint(name, initials, waypointPos, rgb, yaw, global);
             this.waypointServer.addWaypoint(dimensionName, listName, newWaypoint,
                     // success
-                    (fileManager) -> {
+                    (fileManager, waypointList) -> {
                         saveChanges(source, fileManager);
                         this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(
                                 dimensionName,
                                 listName,
                                 newWaypoint,
                                 WaypointModificationType.ADD,
-                                1
+                                waypointList.getSyncNum()
                         ));
                         this.sender.sendMessage(
                                 source,
@@ -581,7 +581,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                             waypointList.incSyncNum();
                             saveChanges(source, fileManager);
                             String dimensionName = fileManager.getDimensionName();
-                            WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.UPDATE, 1);
+                            WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.UPDATE, waypointList.getSyncNum());
                             this.sender.broadcastWaypointModification(source, buffer);
                             this.sender.sendMessage(source, translatable("waypoint.edit.success", waypointTextWithTp(waypoint, dimensionName, listName)));
                         },
@@ -608,7 +608,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             this.waypointServer.removeWaypoint(waypointList, waypoint);
             saveChanges(source, fileManager);
             String dimensionName = fileManager.getDimensionName();
-            WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.REMOVE, 1);
+            WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.REMOVE, waypointList.getSyncNum());
             this.sender.broadcastWaypointModification(source, buffer);
             this.sender.sendMessage(source, translatable("waypoint.remove.success", waypointTextNoTp(waypoint, dimensionName), restoreButton(dimensionName, listName, waypoint)));
         });
@@ -663,16 +663,16 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     }
 
     private void executeListAll(S source) {
-        Map<String, WaypointFileManager> fileManagerMap = this.waypointServer.getFileManagerMap();
+        List<Map.Entry<String, WaypointFileManager>> fileManagerMap = this.waypointServer.getSortedMap();
         Component listMsg = text("");
         listMsg = listMsg.appendNewline();
         boolean empty = true;
         boolean withEdit = hasEditPermission(source);
         boolean withRemove = hasRemovePermission(source);
         boolean withTp = hasTpPermission(source);
-        for (String dimensionName : fileManagerMap.keySet()) {
+        for (Map.Entry<String, WaypointFileManager> entry : fileManagerMap) {
             // Dimension header
-            WaypointFileManager waypointFileManager = fileManagerMap.get(dimensionName);
+            WaypointFileManager waypointFileManager = entry.getValue();
             if (waypointFileManager == null) {
                 continue;
             }

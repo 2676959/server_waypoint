@@ -14,22 +14,10 @@ public class WaypointList {
     @Expose @SerializedName("list_name") private String name;
     @Expose @SerializedName("n") private int syncNum;
     @Expose @SerializedName("waypoints") private List<SimpleWaypoint> simpleWaypoints;
+    // client only uses these
+    //? if !paper {
     private boolean show = true;
     private boolean expand = true;
-
-    public WaypointList() {
-        this.simpleWaypoints = new ArrayList<>();
-    }
-
-    public WaypointList(String name, int syncNum, List<SimpleWaypoint> simpleWaypoints) {
-        this.name = name;
-        this.syncNum = syncNum;
-        this.simpleWaypoints = simpleWaypoints;
-    }
-
-    public @Nullable SimpleWaypoint getWaypointByName(String name) {
-        return this.simpleWaypoints.stream().filter((waypoint) -> waypoint.name().equals(name)).findFirst().orElse(null);
-    }
 
     public boolean isShow() {
         return this.show;
@@ -45,6 +33,21 @@ public class WaypointList {
 
     public void setExpand(boolean expand) {
         this.expand = expand;
+    }
+    //?}
+
+    public WaypointList() {
+        this.simpleWaypoints = new ArrayList<>();
+    }
+
+    public WaypointList(String name, int syncNum, List<SimpleWaypoint> simpleWaypoints) {
+        this.name = name;
+        this.syncNum = syncNum;
+        this.simpleWaypoints = simpleWaypoints;
+    }
+
+    public @Nullable SimpleWaypoint getWaypointByName(String name) {
+        return this.simpleWaypoints.stream().filter((waypoint) -> waypoint.name().equals(name)).findFirst().orElse(null);
     }
 
     public String name() {
@@ -77,14 +80,14 @@ public class WaypointList {
     }
 
     /**
-     * does not increment syncNum
+     * does not increment syncNum, only for parsing from old format waypoint files
      * */
-    public void addByClient(SimpleWaypoint waypoint) {
+    public void addWithoutIncrement(SimpleWaypoint waypoint) {
         this.simpleWaypoints.add(waypoint);
     }
 
     /**
-     * increment syncNum
+     * increment syncNum, only used as server
      * */
     public void addByServer(SimpleWaypoint waypoint) {
         this.simpleWaypoints.add(waypoint);
@@ -92,7 +95,7 @@ public class WaypointList {
     }
 
     /**
-     * increment syncNum
+     * increment syncNum, only used as server
      * */
     public void remove(SimpleWaypoint waypoint) {
         this.simpleWaypoints.remove(waypoint);
@@ -100,10 +103,26 @@ public class WaypointList {
     }
 
     /**
-     * does not increment syncNum, only used by client
+     * should only use as client when syncing from server
      * */
-    public void removeByName(String name) {
+    public void addFromRemoteServer(SimpleWaypoint waypoint, int syncId) {
+        this.simpleWaypoints.add(waypoint);
+        this.syncNum = syncId;
+    }
+
+    /**
+     * should only use as client when syncing from server
+     * */
+    public void removeByName(String name, int syncId) {
         this.simpleWaypoints.removeIf(waypoint -> name.equals(waypoint.name()));
+        this.syncNum = syncId;
+    }
+
+    /**
+     * should only use as client when syncing from server
+     * */
+    public void setSyncNum(int syncId) {
+        this.syncNum = syncId;
     }
 
     public void incSyncNum() {
@@ -118,7 +137,7 @@ public class WaypointList {
     public WaypointList deepCopy() {
         WaypointList newList = build(this.name, this.syncNum);
         for (SimpleWaypoint waypoint : this.simpleWaypoints) {
-            newList.addByClient(new SimpleWaypoint(waypoint));
+            newList.addWithoutIncrement(new SimpleWaypoint(waypoint));
         }
         return newList;
     }

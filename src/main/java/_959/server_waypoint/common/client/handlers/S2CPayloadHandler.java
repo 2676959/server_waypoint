@@ -2,7 +2,6 @@ package _959.server_waypoint.common.client.handlers;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.network.payload.s2c.*;
-import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.network.buffer.*;
 import net.minecraft.network.packet.CustomPayload;
 
@@ -12,8 +11,11 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 /*import net.neoforged.neoforge.network.handling.IPayloadContext;
  *///?}
 
-public class WaypointS2CPacketHandler {
-    private static final BufferHandler xaeroMinimapPacketHandler = new BufferHandlerForXaerosMinimap();
+/**
+ * handle mod custom payloads for fabric and neoforge
+ * */
+public class S2CPayloadHandler {
+    private static final BufferHandler xaeroMinimapPacketHandler = new HandlerForXaerosMinimap();
 
     public interface CustomPayloadHandler<B extends MessageBuffer, P extends CustomPayload> {
         void bufferHandler(B buffer);
@@ -86,9 +88,7 @@ public class WaypointS2CPacketHandler {
 
         @Override
         public void bufferHandler(WorldWaypointBuffer buffer) {
-            if (WaypointServerMod.isDedicated) {
-                WaypointClientMod.getInstance().onWorldWaypoint(buffer);
-            }
+            WaypointClientMod.getInstance().onWorldWaypoint(buffer);
             xaeroMinimapPacketHandler.onWorldWaypoint(buffer);
         }
     }
@@ -101,9 +101,7 @@ public class WaypointS2CPacketHandler {
 
         @Override
         public void bufferHandler(WaypointModificationBuffer buffer) {
-            if (WaypointServerMod.isDedicated) {
-                WaypointClientMod.getInstance().onWaypointModification(buffer);
-            }
+            WaypointClientMod.getInstance().onWaypointModification(buffer);
             xaeroMinimapPacketHandler.onWaypointModification(buffer);
         }
     }

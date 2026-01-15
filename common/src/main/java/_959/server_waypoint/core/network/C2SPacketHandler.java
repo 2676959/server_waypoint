@@ -41,7 +41,7 @@ public class C2SPacketHandler<S, P> {
 
     public void onClientUpdateRequest(P player, ClientUpdateRequestBuffer buffer) {
         LOGGER.info("received update request packet: {}", buffer.toString());
-        UpdatesBundleBuffer updatesBundle = new UpdatesBundleBuffer(CONFIG.getServerId());
+        UpdatesBundleBuffer updatesBundle = new UpdatesBundleBuffer();
         List<String> allDimensionsOnServer = new ArrayList<>(this.waypointServer.getFileManagerMap().keySet());
         // iterating all dimensions from client and compare with server
         for (DimensionSyncIdentifier dimensionSyncId : buffer.dimensionSyncIds()) {
@@ -80,11 +80,11 @@ public class C2SPacketHandler<S, P> {
                 allDimensionsOnServer.remove(dimensionOnClient);
             }
         }
-        // add the rest of dimensions
+        // add the rest of dimensions on server that client does not have
         for (String dimensionName : allDimensionsOnServer) {
             WaypointFileManager waypointFileManager = this.waypointServer.getWaypointFileManager(dimensionName);
-            // should always be true, but check just in case
-            if (waypointFileManager != null) {
+            // should always be nonnull, but check just in case; the empty ones on server should not be sent to client
+            if (waypointFileManager != null && !waypointFileManager.isEmpty()) {
                 updatesBundle.add(waypointFileManager.toDimensionWaypoint());
             }
         }

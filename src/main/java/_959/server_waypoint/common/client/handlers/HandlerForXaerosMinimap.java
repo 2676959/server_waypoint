@@ -21,10 +21,12 @@ import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionK
 import static _959.server_waypoint.common.util.TextHelper.getDimensionColor;
 import static _959.server_waypoint.common.util.XaeroMinimapHelper.*;
 import static _959.server_waypoint.common.util.XaerosWaypointHelper.simpleWaypointToXaerosWaypoint;
-import static _959.server_waypoint.text.WaypointTextHelper.waypointTextNoTp;
 import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
 
-public class BufferHandlerForXaerosMinimap implements BufferHandler {
+/**
+ * only runs XaerosMinimap related logic when receiving buffers
+ * */
+public class HandlerForXaerosMinimap implements BufferHandler {
 
     @Override
     public void onServerHandshake(ServerHandshakeBuffer buffer) {

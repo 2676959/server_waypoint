@@ -14,8 +14,10 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static _959.server_waypoint.util.MapUtils.getEntriesSortedByKey;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 
 /**
@@ -42,6 +44,11 @@ public class WaypointFilesManagerCore {
         return this.fileManagerMap;
     }
 
+    public List<Map.Entry<String, WaypointFileManager>> getSortedMap() {
+        // maintain the list order for vanilla dimensions
+        return getEntriesSortedByKey(this.fileManagerMap, 3);
+    }
+
     public @Nullable WaypointFileManager getWaypointFileManager(String dimensionName) {
         return this.fileManagerMap.get(dimensionName);
     }
@@ -51,7 +58,7 @@ public class WaypointFilesManagerCore {
         return fileManager == null ? addWaypointListManager(dimensionName) : fileManager;
     }
 
-    public void addWaypoint(String dimensionName, String listName, SimpleWaypoint waypoint, Consumer<@NotNull WaypointFileManager> successAction, Consumer<@NotNull SimpleWaypoint> duplicateAction) {
+    public void addWaypoint(String dimensionName, String listName, SimpleWaypoint waypoint, BiConsumer<@NotNull WaypointFileManager, @NotNull WaypointList> successAction, Consumer<@NotNull SimpleWaypoint> duplicateAction) {
         WaypointFileManager fileManager = this.getWaypointFileManager(dimensionName);
         WaypointList waypointList;
         if (fileManager == null) {
@@ -68,7 +75,7 @@ public class WaypointFilesManagerCore {
         SimpleWaypoint waypointFound = waypointList.getWaypointByName(waypoint.name());
         if (waypointFound == null) {
             waypointList.addByServer(waypoint);
-            successAction.accept(fileManager);
+            successAction.accept(fileManager, waypointList);
         } else {
             duplicateAction.accept(waypointFound);
         }

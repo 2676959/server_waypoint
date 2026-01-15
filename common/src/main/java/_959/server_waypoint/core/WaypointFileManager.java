@@ -71,7 +71,7 @@ public class WaypointFileManager {
                 } else if (currentList != null) {
                     try {
                         SimpleWaypoint waypoint = SimpleWaypoint.fromString(line);
-                        currentList.addByClient(waypoint);
+                        currentList.addWithoutIncrement(waypoint);
                         waypointsNumber++;
                     } catch (Exception e) {
                         WaypointServerCore.LOGGER.error("Failed to parse waypoint line: {}", line, e);
@@ -131,6 +131,9 @@ public class WaypointFileManager {
         return this.dimensionName;
     }
 
+    /**
+     * returns a shallow copy of the list
+     * */
     public List<WaypointList> getWaypointLists() {
         return new ArrayList<>(this.waypointListMap.values());
     }
@@ -158,5 +161,16 @@ public class WaypointFileManager {
 
     public void removeWaypointListByName(String name) {
         this.waypointListMap.remove(name);
+    }
+
+    public void deleteDimensionFile() {
+        if (this.dimensionFilePath != null) {
+            try {
+                Files.deleteIfExists(this.dimensionFilePath);
+                WaypointServerCore.LOGGER.info("Deleted dimension file: {}", this.dimensionFilePath);
+            } catch (IOException e) {
+                WaypointServerCore.LOGGER.error("Failed to delete dimension file: {}", this.dimensionFilePath, e);
+            }
+        }
     }
 }
