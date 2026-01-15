@@ -12,20 +12,12 @@ import static _959.server_waypoint.core.network.MessageChannelID.UPDATES_BUNDLE_
  * Fourth packet in the communication between client and server
  * */
 public class UpdatesBundleBuffer extends DimensionWaypointsList {
-    private final int serverId;
-
-    public UpdatesBundleBuffer(int serverId) {
+    public UpdatesBundleBuffer() {
         super();
-        this.serverId = serverId;
     }
 
-    public UpdatesBundleBuffer(Collection<DimensionWaypointBuffer> collection, int serverId) {
+    public UpdatesBundleBuffer(Collection<DimensionWaypointBuffer> collection) {
         super(collection);
-        this.serverId = serverId;
-    }
-
-    public int getServerId() {
-        return serverId;
     }
 
     @Override

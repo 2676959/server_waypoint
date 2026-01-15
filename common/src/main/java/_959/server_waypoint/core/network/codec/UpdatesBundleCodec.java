@@ -5,12 +5,10 @@ import io.netty.buffer.ByteBuf;
 
 public class UpdatesBundleCodec {
     public static void encode(ByteBuf buf, UpdatesBundleBuffer updatesBundleBuffer) {
-        buf.writeInt(updatesBundleBuffer.getServerId());
         DimensionWaypointsListCodec.encode(buf, updatesBundleBuffer);
     }
 
     public static UpdatesBundleBuffer decode(ByteBuf buf) {
-        int serverId = buf.readInt();
-        return DimensionWaypointsListCodec.decode(buf, bufferList -> new UpdatesBundleBuffer(bufferList, serverId));
+        return DimensionWaypointsListCodec.decode(buf, UpdatesBundleBuffer::new);
     }
 }
