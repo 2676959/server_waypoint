@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.gui.layout;
 
+import _959.server_waypoint.common.client.gui.Padding;
 import _959.server_waypoint.common.client.gui.widgets.ShiftableWidget;
 import _959.server_waypoint.util.Pair;
 import net.minecraft.client.gui.DrawContext;
@@ -17,7 +18,7 @@ public class WidgetStack extends ShiftableWidget {
     private final int defaultPdx;
     private final boolean toPositive;
     private final boolean isHorizontal;
-    private final List<ClickableWidget> clickables = new ArrayList<>();
+    private final List<ClickableWidget> clickable = new ArrayList<>();
     private final List<Pair<Widget, Integer>> children = new ArrayList<>();
     private final List<Drawable> drawables = new ArrayList<>();
     private int mainAxisSize = 0;
@@ -38,14 +39,40 @@ public class WidgetStack extends ShiftableWidget {
         this.isHorizontal = isHorizontal;
     }
 
+    public <W extends ClickableWidget & Padding> void addPaddedClickable(W child, int pdx) {
+        this.addPadded(child, pdx);
+        this.clickable.add(child);
+    }
+
+    public <W extends Widget & Padding & Drawable> void addPadded(W child, int pdx) {
+        int widgetSpan, relativePos, widgetPerpSpan;
+        if (isHorizontal) {
+            widgetSpan = child.getVisualWidth();
+            widgetPerpSpan = child.getVisualHeight();
+            relativePos = this.toPositive ? this.mainAxisSize + pdx : -(this.mainAxisSize + pdx + widgetSpan);
+            child.setPaddedPosition(this.getShiftedX() + relativePos, this.getShiftedY());
+        } else {
+            widgetSpan = child.getVisualHeight();
+            widgetPerpSpan = child.getVisualWidth();
+            relativePos = this.toPositive ? this.mainAxisSize + pdx : -(this.mainAxisSize + pdx + widgetSpan);
+            child.setPaddedPosition(this.getShiftedX(), this.getShiftedY() + relativePos);
+        }
+        if (widgetPerpSpan > offAxisSize) {
+            this.offAxisSize = widgetPerpSpan;
+        }
+        this.drawables.add(child);
+        this.children.add(new Pair<>(child, relativePos));
+        this.mainAxisSize += widgetSpan + pdx;
+    }
+
     public <W extends ClickableWidget> void addClickable(W child) {
         this.addChild(child, this.defaultPdx);
-        this.clickables.add(child);
+        this.clickable.add(child);
     }
 
     public <W extends ClickableWidget> void addClickable(W child, int pdx) {
         this.addChild(child, pdx);
-        this.clickables.add(child);
+        this.clickable.add(child);
     }
 
     public <W extends Widget & Drawable> void addChild(W child) {
@@ -74,7 +101,7 @@ public class WidgetStack extends ShiftableWidget {
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        for (ClickableWidget child : clickables) {
+        for (ClickableWidget child : clickable) {
             if (child.mouseClicked(mouseX, mouseY, button)) {
                 return true;
             }
@@ -93,11 +120,22 @@ public class WidgetStack extends ShiftableWidget {
         int shiftedX = this.getShiftedX();
         if (isHorizontal) {
             for (Pair<? extends Widget, Integer> child : children) {
-                child.left().setX(shiftedX + child.right());
+                Widget widget = child.left();
+                Integer relativePos = child.right();
+                if (widget instanceof Padding) {
+                    ((Padding) widget).setPaddedX(shiftedX + relativePos);
+                } else {
+                    widget.setX(shiftedX + relativePos);
+                }
             }
         } else {
             for (Pair<? extends Widget, Integer> child : children) {
-                child.left().setX(shiftedX);
+                Widget widget = child.left();
+                if (widget instanceof Padding) {
+                    ((Padding) widget).setPaddedX(shiftedX);
+                } else {
+                    widget.setX(shiftedX);
+                }
             }
         }
     }
@@ -106,11 +144,22 @@ public class WidgetStack extends ShiftableWidget {
         int shiftedY = this.getShiftedY();
         if (isHorizontal) {
             for (Pair<? extends Widget, Integer> child : children) {
-                child.left().setY(shiftedY);
+                Widget widget = child.left();
+                if (widget instanceof Padding) {
+                    ((Padding) widget).setPaddedY(shiftedY);
+                } else {
+                    widget.setY(shiftedY);
+                }
             }
         } else {
             for (Pair<? extends Widget, Integer> child : children) {
-                child.left().setY(shiftedY + child.right());
+                Integer relativePos = child.right();
+                Widget widget = child.left();
+                if (widget instanceof Padding) {
+                    ((Padding) widget).setPaddedY(shiftedY + relativePos);
+                } else {
+                    widget.setY(shiftedY + relativePos);
+                }
             }
         }
     }
@@ -147,11 +196,21 @@ public class WidgetStack extends ShiftableWidget {
         int shiftedY = this.getShiftedY();
         if (isHorizontal) {
             for (Pair<? extends Widget, Integer> child : children) {
-                child.left().setPosition(shiftedX + child.right(), shiftedY);
+                Widget widget = child.left();
+                if (widget instanceof Padding) {
+                    ((Padding) widget).setPaddedPosition(shiftedX + child.right(), shiftedY);
+                } else {
+                    widget.setPosition(shiftedX + child.right(), shiftedY);
+                }
             }
         } else {
             for (Pair<? extends Widget, Integer> child : children) {
-                child.left().setPosition(shiftedX, shiftedY + child.right());
+                Widget widget = child.left();
+                if (widget instanceof Padding) {
+                    ((Padding) widget).setPaddedPosition(shiftedX, shiftedY + child.right());
+                } else {
+                    widget.setPosition(shiftedX, shiftedY + child.right());
+                }
             }
         }
     }
