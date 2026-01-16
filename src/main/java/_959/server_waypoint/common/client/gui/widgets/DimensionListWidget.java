@@ -1,47 +1,86 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.Expandable;
+import _959.server_waypoint.common.client.gui.Padding;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
+import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 
-public class DimensionListWidget extends ClickableWidget {
+public class DimensionListWidget extends ShiftableClickableWidget implements Padding, Expandable {
     public static final ItemStack OVERWORLD_ICON = new ItemStack(Blocks.GRASS_BLOCK);
     public static final ItemStack THE_NETHER_ICON = new ItemStack(Blocks.RED_NETHER_BRICKS);
     public static final ItemStack THE_END_ICON = new ItemStack(Blocks.END_STONE);
     public static final ItemStack CUSTOM_DIMENSION_ICON = new ItemStack(Blocks.STRUCTURE_BLOCK);
-    public final List<String> dimensionNames;
     private static float scrolledPosition;
     private static int index;
     private final DimensionListCallback callback;
+    private volatile List<String> dimensionNames = new ArrayList<>();
     private final TextRenderer textRenderer;
-    private final int textHeight = 10;
-    private final int iconSize = 20;
+    private final PaddingBackground paddingBackground = new PaddingBackground(this, 5, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
+    private final float itemIconScale;
+    private final int textHeight;
+    private final int iconSize;
+    private boolean empty = true;
 
-    public DimensionListWidget(int x, int y, int width, int height, TextRenderer textRenderer, Collection<String> dimensionNames, DimensionListCallback callback) {
-        super(x, y, width, height, Text.literal("Dimensions list"));
+    public DimensionListWidget(int x, int y, int width, int iconSize, TextRenderer textRenderer, DimensionListCallback callback) {
+        super(x, y, width, textRenderer.fontHeight + 2 + iconSize, Text.literal("Dimensions list"));
         this.textRenderer = textRenderer;
-        scrolledPosition = x;
-        this.dimensionNames = new ArrayList<>(dimensionNames);
+        this.textHeight = textRenderer.fontHeight;
         this.callback = callback;
+        this.iconSize = iconSize;
+        this.itemIconScale = iconSize / 16F;
+        scrolledPosition = 0;
+        index = 0;
     }
 
-    public void updateDimensionNames(Collection<String> dimensionNames) {
-        this.dimensionNames.clear();
-        this.dimensionNames.addAll(dimensionNames);
+    public DimensionListWidget(int x, int y, int width, TextRenderer textRenderer, DimensionListCallback callback) {
+        this(x, y, width, 20, textRenderer, callback);
+    }
+
+    /**
+     * reset all static states: scrolledPosition, index
+     * */
+    public static void resetStates() {
+        scrolledPosition = 0;
         index = 0;
-        scrolledPosition = getX();
+    }
+
+    public static void setStates(float scrolledPosition, int index) {
+        DimensionListWidget.scrolledPosition = scrolledPosition;
+        DimensionListWidget.index = index;
+    }
+
+    @Override
+    public void setHeight(int height) {}
+
+    /**
+     * updates the reference of {@link #dimensionNames}, if newDimensionNames is empty only clears the current list
+     */
+    public void updateDimensionNames(List<String> newDimensionNames) {
+        if (newDimensionNames.isEmpty()) {
+            this.empty = true;
+            this.dimensionNames.clear();
+            index = 0;
+            scrolledPosition = 0;
+        } else {
+            this.empty = false;
+            if (index >= newDimensionNames.size()) {
+                index = 0;
+            }
+            this.dimensionNames.clear();
+            this.dimensionNames = newDimensionNames;
+        }
     }
 
     public void setDimensionName(String dimensionName) {
@@ -58,30 +97,30 @@ public class DimensionListWidget extends ClickableWidget {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         int size = dimensionNames.size();
-        int x = getX();
         // max 12 icons in the row
         if (size > 12) {
             float nextPosition = (float) (scrolledPosition + verticalAmount * 5);
-            int lowerbound = x - (size - 12) * iconSize;
-            scrolledPosition = Math.clamp(nextPosition, lowerbound, x);
+            int minScroll = -(size - 12) * iconSize;
+            scrolledPosition = Math.clamp(nextPosition, minScroll, 0);
         }
-        LOGGER.info("scrolled: {}", x);
+        LOGGER.info("scrolled: {}", scrolledPosition);
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (empty) return false;
         int x = getX();
         int y = getY();
         int x2 = x + this.width;
         int y1 = y + textHeight;
         int y2 = y1 + this.iconSize;
         if (mouseX > x && mouseX < x2 && mouseY > y1 && mouseY < y2) {
-            float relativePos = (float) (mouseX - scrolledPosition);
-            int clickedIndex =  (int) relativePos / iconSize;
-            if (clickedIndex < dimensionNames.size()) {
+            float relativePos = (float) (mouseX - (x + scrolledPosition));
+            int clickedIndex = (int) Math.floor(relativePos / iconSize);
+            if (clickedIndex >= 0 && clickedIndex < dimensionNames.size()) {
                 index = clickedIndex;
-                callback.onSelected(index);
+                callback.onSelected(dimensionNames.get(index));
                 LOGGER.info("onClick: {}", index);
                 this.playDownSound(MinecraftClient.getInstance().getSoundManager());
                 return true;
@@ -91,54 +130,57 @@ public class DimensionListWidget extends ClickableWidget {
     }
 
     @Override
-    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
         int x2 = x + width;
         int y2 = y + height;
+        // render background
+        paddingBackground.render(context, mouseX, mouseY, deltaTicks);
 
         context.enableScissor(x, y, x2, y2);
-        context.fill(x, y, x2, y2, 0x88000000);
         context.getMatrices().push();
-        context.getMatrices().translate(0, y, 0);
+        context.getMatrices().translate(x, y, 0);
 
         // render dimension name
-        if (!dimensionNames.isEmpty()) {
-            context.drawText(textRenderer, dimensionNames.get(index), x, 0, 0xFFFFFFFF, true);
-        }
-
-        int size = dimensionNames.size();
-        context.getMatrices().translate(0, textHeight, 0);
-        int y1 = y + textHeight;
-        // render hover highlight background
-        if ((mouseY < y1 + this.iconSize) && (mouseY > y1) && (mouseX < x + size * iconSize) && (mouseX > x)) {
-            float relativePos = mouseX - scrolledPosition;
-            int index =  (int) relativePos / iconSize;
-            float highlightPos = scrolledPosition + index * iconSize;
-            context.getMatrices().translate(highlightPos, 0, 0);
-            context.fill(0, 0, iconSize, iconSize, 0x99FFFFFF);
-            context.getMatrices().translate(-highlightPos, 0, 0);
-        }
-        context.getMatrices().translate(scrolledPosition, 0, 0);
-
-        // render selected border
-        context.drawBorder(index * iconSize, 0, iconSize, iconSize, 0xFFFFFFFF);
-        // render dimension icons
-        context.getMatrices().scale(1.25F, 1.25F, 1.0F);
-        for (int i = 0; i < size; i++) {
-            String dimensionName = dimensionNames.get(i);
-            switch (dimensionName) {
-                case MINECRAFT_OVERWORLD:
-                    context.drawItem(OVERWORLD_ICON, i * 16, 0);
-                    break;
-                case MINECRAFT_THE_NETHER:
-                    context.drawItem(THE_NETHER_ICON, i * 16, 0);
-                    break;
-                case MINECRAFT_THE_END:
-                    context.drawItem(THE_END_ICON, i * 16, 0);
-                    break;
-                default:
-                    context.drawItem(CUSTOM_DIMENSION_ICON, i * 16, 0);
+        if (this.empty) {
+            context.drawText(textRenderer, NewWaypointListWidget.EMPTY_MARK, 0, 0, 0xFFFFFFFF, true);
+        } else {
+            context.drawText(textRenderer, dimensionNames.get(index), 0, 0, 0xFFFFFFFF, true);
+            context.getMatrices().translate(0, textHeight + 2, 0);
+            int size = dimensionNames.size();
+            int y1 = y + textHeight;
+            // render hover highlight background
+            if ((mouseY < y1 + this.iconSize) && (mouseY > y1) && (mouseX < x + width) && (mouseX > x)) {
+                float relativePos = mouseX - x - scrolledPosition;
+                int hoverIndex = (int) (relativePos / iconSize);
+                if (hoverIndex >= 0 && hoverIndex < size) {
+                    float highlightPos = scrolledPosition + hoverIndex * iconSize;
+                    context.getMatrices().translate(highlightPos, 0, 0);
+                    context.fill(0, 0, iconSize, iconSize, 0x99FFFFFF);
+                    context.getMatrices().translate(-highlightPos, 0, 0);
+                }
+            }
+            // render selected border
+            context.getMatrices().translate(scrolledPosition, 0, 0);
+            context.drawBorder(index * iconSize, 0, iconSize, iconSize, 0xFFFFFFFF);
+            // render dimension icons
+            context.getMatrices().scale(itemIconScale, itemIconScale, 1.0F);
+            for (int i = 0; i < size; i++) {
+                String dimensionName = dimensionNames.get(i);
+                switch (dimensionName) {
+                    case MINECRAFT_OVERWORLD:
+                        context.drawItem(OVERWORLD_ICON, i * 16, 0);
+                        break;
+                    case MINECRAFT_THE_NETHER:
+                        context.drawItem(THE_NETHER_ICON, i * 16, 0);
+                        break;
+                    case MINECRAFT_THE_END:
+                        context.drawItem(THE_END_ICON, i * 16, 0);
+                        break;
+                    default:
+                        context.drawItem(CUSTOM_DIMENSION_ICON, i * 16, 0);
+                }
             }
         }
         context.getMatrices().pop();
@@ -148,5 +190,45 @@ public class DimensionListWidget extends ClickableWidget {
     @Override
     protected void appendClickableNarrations(NarrationMessageBuilder builder) {
 
+    }
+
+    @Override
+    public void setVisualHeight(int height) {
+        setHeight(height - (this.paddingBackground.getVisualHeight() - getHeight()));
+    }
+
+    @Override
+    public void setVisualWidth(int width) {
+        setWidth(width - (this.paddingBackground.getVisualWidth() - getWidth()));
+    }
+
+    @Override
+    public int getVisualHeight() {
+        return this.paddingBackground.getVisualHeight();
+    }
+
+    @Override
+    public int getVisualWidth() {
+        return this.paddingBackground.getVisualWidth();
+    }
+
+    @Override
+    public int getVisualX() {
+        return this.paddingBackground.getVisualX();
+    }
+
+    @Override
+    public int getVisualY() {
+        return this.paddingBackground.getVisualY();
+    }
+
+    @Override
+    public void setPaddedX(int x) {
+        this.paddingBackground.setPaddedX(x);
+    }
+
+    @Override
+    public void setPaddedY(int y) {
+        this.paddingBackground.setPaddedY(y);
     }
 }
