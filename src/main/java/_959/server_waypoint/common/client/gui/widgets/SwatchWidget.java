@@ -8,7 +8,6 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.text.Text;
 
-import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.util.ColorUtils.VANILLA_COLORS;
 
@@ -175,10 +174,6 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
 
         this.width = this.mainLayout.getWidth();
         this.height = this.mainLayout.getHeight() - 11; // minus the extra height introduced by the current color button
-
-        // TODO: find the visual height
-        LOGGER.info("width: {}, height: {}", this.width, this.height);
-        LOGGER.info("color0 h: {}, color1 h: {}, h:{}", this.colorRow0.getHeight(), this.colorRow1.getHeight(), this.height);
     }
 
     public void setPreviousColor(int rgb) {
@@ -213,7 +208,6 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
 
     private void hueEntryListener(int hue) {
         if (this.hEntry.isFocused()) {
-            LOGGER.info("hue: {}", hue);
             this.hsvColorPicker.updateSlider0(hue);
             int color = this.hsvColorPicker.getColor();
             this.rgbColorPicker.setColor(color);
@@ -343,10 +337,8 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
                 }
                 int entryL = this.hEntry.getX();
                 int entryR = entryL + this.hEntry.getWidth();
-                LOGGER.info("entryL: {}, entryR: {}, mouseX: {}", entryL, entryR, mouseX);
                 if (mouseX >= entryL && mouseX <= entryR) {
                     int index = (int) Math.floor(y / this.hEntry.getVisualHeight());
-                    LOGGER.info("clicked entry {}, y: {}", index, y);
                     switch (index) {
                         case 0 -> {
                             updateFocused(this.hEntry);
@@ -397,7 +389,6 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        LOGGER.info("key pressed: {}", keyCode);
         return this.focused.keyPressed(keyCode, scanCode, modifiers);
     }
 
