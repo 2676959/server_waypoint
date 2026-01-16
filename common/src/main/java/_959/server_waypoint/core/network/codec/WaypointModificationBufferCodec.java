@@ -12,17 +12,19 @@ public class WaypointModificationBufferCodec {
         UtfStringCodec.encode(buf, modification.dimensionName());
         UtfStringCodec.encode(buf, modification.listName());
         switch (type) {
-            case ADD, UPDATE -> {
-                SimpleWaypoint waypoint = modification.waypoint();
-                // this should never be null, check just in case
-                if (waypoint == null) {
-                    waypoint = new SimpleWaypoint("NPE fallback", "NPE", 0, 0, 0, 0, 0, false);
-                }
-                SimpleWaypointCodec.encode(buf, waypoint);
+            case ADD -> {
+                // only needs a waypoint object
+                SimpleWaypointCodec.encode(buf, modification.waypoint());
+                buf.writeInt(modification.syncId());
+            }
+            case UPDATE -> {
+                // needs a waypoint name and a waypoint object
+                UtfStringCodec.encode(buf, modification.waypointName());
+                SimpleWaypointCodec.encode(buf, modification.waypoint());
                 buf.writeInt(modification.syncId());
             }
             case REMOVE -> {
-                // removing a waypoint only needs its name
+                // only needs a waypoint name
                 UtfStringCodec.encode(buf, modification.waypointName());
                 buf.writeInt(modification.syncId());
             }
@@ -35,19 +37,29 @@ public class WaypointModificationBufferCodec {
         WaypointModificationType type = WaypointModificationType.values()[buf.readByte()];
         String dimensionName = UtfStringCodec.decode(buf);
         String listName = UtfStringCodec.decode(buf);
-        Object waypointOrName = null;
+        // already has enough information for actions on a waypoint list
+        if (type == WaypointModificationType.ADD_LIST || type == WaypointModificationType.REMOVE_LIST) return new WaypointModificationBuffer(dimensionName, listName, null, null, type, 0);
+        String waypointName = null;
+        SimpleWaypoint waypoint = null;
         int syncId = 0;
         switch (type) {
-            case ADD, UPDATE -> {
-                waypointOrName = SimpleWaypointCodec.decode(buf);
+            case ADD -> {
+                // only needs a waypoint object
+                waypoint = SimpleWaypointCodec.decode(buf);
+                syncId = buf.readInt();
+            }
+            case UPDATE -> {
+                // needs a waypoint name and a waypoint object
+                waypointName = UtfStringCodec.decode(buf);
+                waypoint = SimpleWaypointCodec.decode(buf);
                 syncId = buf.readInt();
             }
             case REMOVE -> {
-                waypointOrName = UtfStringCodec.decode(buf);
+                // only needs a waypoint name
+                waypointName = UtfStringCodec.decode(buf);
                 syncId = buf.readInt();
             }
-            case ADD_LIST, REMOVE_LIST -> waypointOrName = "";
         }
-        return new WaypointModificationBuffer(dimensionName, listName, waypointOrName, type, syncId);
+        return new WaypointModificationBuffer(dimensionName, listName, waypointName, waypoint, type, syncId);
     }
 }
