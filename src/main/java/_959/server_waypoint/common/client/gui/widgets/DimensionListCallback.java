@@ -2,5 +2,5 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 @FunctionalInterface
 public interface DimensionListCallback {
-    void onSelected(int index);
+    void onSelected(String dimensionName);
 }
