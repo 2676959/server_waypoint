@@ -39,6 +39,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
+import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 import static _959.server_waypoint.core.waypoint.WaypointList.SERVER_N;
 import static _959.server_waypoint.core.waypoint.WaypointModificationType.ADD_LIST;
 import static _959.server_waypoint.core.waypoint.WaypointModificationType.REMOVE_LIST;
@@ -67,6 +68,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private final SuggestionProvider<S> WAYPOINT_NAME_SUGGESTION = new WaypointNameSuggestion();
     private final SuggestionProvider<S> WAYPOINT_LIST_SUGGESTION = new WaypointListSuggestion();
     private final SuggestionProvider<S> NAME_INITIALS_SUGGESTION = new NameInitialsSuggestion();
+    private final SuggestionProvider<S> NEW_NAME_INITIALS_SUGGESTION = new NewNameInitialsSuggestion();
     private final SuggestionProvider<S> PLAYER_YAW_SUGGESTION = new PlayerYawSuggestion();
     private final SuggestionProvider<S> HEX_COLOR_CODE_SUGGESTION = new HexColorCodeSuggestion();
     private boolean enabled = true;
@@ -82,6 +84,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String DIMENSION_ARG = "dimension";
     public static final String LIST_NAME_ARG = "list name";
     public static final String WAYPOINT_NAME_ARG = "waypoint name";
+    public static final String NEW_WAYPOINT_NAME_ARG = "new waypoint name";
     public static final String INITIALS_ARG = "initials";
     public static final String POS_ARG = "position";
     public static final String YAW_ARG = "yaw";
@@ -162,15 +165,18 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     @SuppressWarnings("unchecked")
     private CommandNode<S> propertiesArguments(Command<S> command) {
-        return (CommandNode<S>) argument(INITIALS_ARG, string())
-                .suggests((SuggestionProvider<Object>) NAME_INITIALS_SUGGESTION)
-                .then(argument(POS_ARG, blockPosArgumentProvider.get())
-                        .then(argument(COLOR_ARG, string())
-                                .suggests((SuggestionProvider<Object>) HEX_COLOR_CODE_SUGGESTION)
-                                .then(argument(YAW_ARG, integer())
-                                        .suggests((SuggestionProvider<Object>) PLAYER_YAW_SUGGESTION)
-                                        .then(argument(VISIBILITY_ARG, bool())
-                                                .executes((Command<Object>) command)
+        return (CommandNode<S>) argument(NEW_WAYPOINT_NAME_ARG, string())
+                .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
+                .then(argument(INITIALS_ARG, string())
+                        .suggests((SuggestionProvider<Object>) NEW_NAME_INITIALS_SUGGESTION)
+                        .then(argument(POS_ARG, blockPosArgumentProvider.get())
+                                .then(argument(COLOR_ARG, string())
+                                        .suggests((SuggestionProvider<Object>) HEX_COLOR_CODE_SUGGESTION)
+                                        .then(argument(YAW_ARG, integer())
+                                                .suggests((SuggestionProvider<Object>) PLAYER_YAW_SUGGESTION)
+                                                .then(argument(VISIBILITY_ARG, bool())
+                                                        .executes((Command<Object>) command)
+                                                )
                                         )
                                 )
                         )
@@ -290,6 +296,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                                             getArgument(context, DIMENSION_ARG),
                                                             getString(context, LIST_NAME_ARG),
                                                             getString(context, WAYPOINT_NAME_ARG),
+                                                            getString(context, NEW_WAYPOINT_NAME_ARG),
                                                             getString(context, INITIALS_ARG),
                                                             getArgument(context, POS_ARG),
                                                             getInteger(context, YAW_ARG),
@@ -507,7 +514,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         if (isDimensionValid(source, dimensionArgument)) {
             this.waypointServer.addWaypointList(dimensionName, listName,
                     (fileManager) -> {
-                this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(dimensionName, listName, "", ADD_LIST, SERVER_N));
+                this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(dimensionName, listName, null, null, ADD_LIST, SERVER_N));
                 this.sender.sendMessage(source, translatable("waypoint.add.list.success", text(listName), dimensionNameWithColor(dimensionName)));
                 saveChanges(source, fileManager);
                 },
@@ -541,6 +548,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                         this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(
                                 dimensionName,
                                 listName,
+                                name,
                                 newWaypoint,
                                 WaypointModificationType.ADD,
                                 waypointList.getSyncNum()
@@ -561,7 +569,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         }
     }
 
-    private void executeEdit(S source, D dimensionArgument, String listName, String name, String initials, B blockPosArgument, int yaw, String hexCode, boolean global) {
+    private void executeEdit(S source, D dimensionArgument, String listName, String oldName, String newName, String initials, B blockPosArgument, int yaw, String hexCode, boolean global) {
         WaypointPos waypointPos = toWaypointPos(source, blockPosArgument);
         if (waypointPos == null) {
             sendPosArgumentError(source);
@@ -575,17 +583,18 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         if (rgb < 0) {
             sendHexColorCodeError(source, hexCode);
         } else {
-            runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) ->
-                this.waypointServer.updateWaypointProperties(waypoint, initials, waypointPos, rgb, yaw, global,
+            runWithSelectorTarget(source, dimensionArgument, listName, oldName, (fileManager, waypointList, waypoint) ->
+                this.waypointServer.updateWaypointProperties(waypoint, newName, initials, waypointPos, rgb, yaw, global,
                         () -> {
                             waypointList.incSyncNum();
                             saveChanges(source, fileManager);
                             String dimensionName = fileManager.getDimensionName();
-                            WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.UPDATE, waypointList.getSyncNum());
+                            WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, oldName, waypoint, WaypointModificationType.UPDATE, waypointList.getSyncNum());
+                            LOGGER.info("syncNum: {}", waypointList.getSyncNum());
                             this.sender.broadcastWaypointModification(source, buffer);
                             this.sender.sendMessage(source, translatable("waypoint.edit.success", waypointTextWithTp(waypoint, dimensionName, listName)));
                         },
-                        () -> this.sender.sendMessage(source, translatable("waypoint.edit.identical", text(name))))
+                        () -> this.sender.sendMessage(source, translatable("waypoint.edit.identical", text(oldName))))
             );
         }
     }
@@ -597,7 +606,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 (fileManager, waypointList) -> {
                     fileManager.removeWaypointListByName(listName);
                     String dimensionName = fileManager.getDimensionName();
-                    this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(dimensionName, listName, "", REMOVE_LIST, WaypointList.REMOVE_LIST));
+                    this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(dimensionName, listName, null, null, REMOVE_LIST, WaypointList.REMOVE_LIST));
                     this.sender.sendMessage(source, translatable("waypoint.remove.list.success", text(listName)));
                     saveChanges(source, fileManager);
                 });
@@ -608,7 +617,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             this.waypointServer.removeWaypoint(waypointList, waypoint);
             saveChanges(source, fileManager);
             String dimensionName = fileManager.getDimensionName();
-            WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.REMOVE, waypointList.getSyncNum());
+            WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, name, waypoint, WaypointModificationType.REMOVE, waypointList.getSyncNum());
             this.sender.broadcastWaypointModification(source, buffer);
             this.sender.sendMessage(source, translatable("waypoint.remove.success", waypointTextNoTp(waypoint, dimensionName), restoreButton(dimensionName, listName, waypoint)));
         });
@@ -658,7 +667,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) -> {
             String dimensionName = fileManager.getDimensionName();
             this.sender.sendMessage(source, translatable("waypoint.download.waypoint", waypointTextWithTp(waypoint, dimensionName, listName)));
-            this.sender.sendPacket(source, new WaypointModificationBuffer(dimensionName, listName, waypoint, WaypointModificationType.ADD, 1));
+            this.sender.sendPacket(source, new WaypointModificationBuffer(dimensionName, listName, name, waypoint, WaypointModificationType.ADD, 1));
         });
     }
 
@@ -838,6 +847,28 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         }
     }
 
+    private class NewNameInitialsSuggestion implements SuggestionProvider<S> {
+        @Override
+        public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
+            String name = getString(context.getLastChild(), NEW_WAYPOINT_NAME_ARG);
+            if (name.isEmpty()) {
+                return Suggestions.empty();
+            }
+            if (name.matches(SINGLE_WORD_REGEX)) {
+                builder.suggest(name.toUpperCase().substring(0, 1));
+                if (name.length() > 1) {
+                    builder.suggest(name.substring(0, 2).toUpperCase());
+                }
+            } else  {
+                builder.suggest("\"%s\"".formatted(name.substring(0, 1)));
+                if (name.length() > 1) {
+                    builder.suggest("\"%s\"".formatted(name.substring(0, 2)));
+                }
+            }
+            return builder.buildFuture();
+        }
+    }
+
     public class PlayerYawSuggestion implements SuggestionProvider<S> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
@@ -857,7 +888,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             if (currentInput.isEmpty()) {
                 vanillaColorSuggestions(builder);
                 builder.suggest(RANDOM_COLOR, getMessageFromComponent(text("🎲")));
-                builder.suggest("39C5BB", getMessageFromComponent(text("miku", TextColor.color(0x39C5BB))));
+                builder.suggest("39C5BB", getMessageFromComponent(text("Miku♪", TextColor.color(0x39C5BB))));
             } else {
                 for (int i = 0; i < VANILLA_COLOR_NAMES.length; i++) {
                     String colorName = VANILLA_COLOR_NAMES[i];
