@@ -50,6 +50,7 @@ public class SimpleWaypoint {
     }
 
     public void copyFrom(SimpleWaypoint other) {
+        this.name = other.name;
         this.initials = other.initials;
         this.pos = other.pos;
         this.rgb = other.rgb;
@@ -81,9 +82,8 @@ public class SimpleWaypoint {
         return this.global;
     }
 
-    public SimpleWaypoint setName(String name) {
+    public void setName(String name) {
         this.name = name;
-        return this;
     }
 
     public void setInitials(String initials) {
@@ -117,8 +117,8 @@ public class SimpleWaypoint {
         return new SimpleWaypoint(args[0], args[1], new WaypointPos(Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4])), rgb, Integer.parseInt(args[6]), Boolean.parseBoolean(args[7]));
     }
 
-    public boolean compareProperties(String initials, WaypointPos pos, int colorIdx, int yaw, boolean global) {
-        return this.initials.equals(initials) && this.pos.equals(pos) && this.rgb == colorIdx && this.yaw == convertYaw(yaw) && this.global == global;
+    public boolean compareProperties(String name, String initials, WaypointPos pos, int colorIdx, int yaw, boolean global) {
+        return this.name.equals(name) && this.initials.equals(initials) && this.pos.equals(pos) && this.rgb == colorIdx && this.yaw == convertYaw(yaw) && this.global == global;
     }
 
     public static class ColorToHexCodeSerializer implements JsonSerializer<Integer>, JsonDeserializer<Integer> {

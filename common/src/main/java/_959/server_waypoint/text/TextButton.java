@@ -31,7 +31,7 @@ public class TextButton {
     public static Component replaceButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
         return buildButton(
                 NamedTextColor.AQUA,
-                editCmd(dimensionName, listName, waypoint),
+                editCmd(dimensionName, listName, waypoint.name(), waypoint),
                 REPLACE_SYMBOL,
                 Component.translatable("button.replace")
         );
@@ -58,7 +58,7 @@ public class TextButton {
     public static Component editButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
         return buildButton(
                 NamedTextColor.YELLOW,
-                editCmd(dimensionName, listName, waypoint),
+                editCmd(dimensionName, listName, waypoint.name(), waypoint),
                 EDIT_SYMBOL,
                 Component.translatable("button.edit")
         );

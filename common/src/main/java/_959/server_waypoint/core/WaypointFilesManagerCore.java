@@ -29,7 +29,7 @@ public class WaypointFilesManagerCore {
     protected Path waypointFilesDir;
 
     /**
-     * initialize without
+     * initialize without waypointFilesDir set
      * */
     public WaypointFilesManagerCore() {
         this.fileManagerMap = new LinkedHashMap<>();
@@ -95,11 +95,12 @@ public class WaypointFilesManagerCore {
         }
     }
 
-    public void updateWaypointProperties(@NotNull SimpleWaypoint waypoint, String initials, WaypointPos waypointPos, int rgb, int yaw, boolean global, Runnable successAction, Runnable identicalAction) {
-        if (waypoint.compareProperties(initials, waypointPos, rgb, yaw, global)) {
+    public void updateWaypointProperties(@NotNull SimpleWaypoint waypoint, String name, String initials, WaypointPos waypointPos, int rgb, int yaw, boolean global, Runnable successAction, Runnable identicalAction) {
+        if (waypoint.compareProperties(name, initials, waypointPos, rgb, yaw, global)) {
             identicalAction.run();
             return;
         }
+        waypoint.setName(name);
         waypoint.setInitials(initials);
         waypoint.setPos(waypointPos);
         waypoint.setRgb(rgb);

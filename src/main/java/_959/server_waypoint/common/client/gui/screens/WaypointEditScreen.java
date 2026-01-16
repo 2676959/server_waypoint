@@ -4,8 +4,6 @@ import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
@@ -14,15 +12,15 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import static _959.server_waypoint.util.ColorUtils.*;
+import static _959.server_waypoint.util.CommandGenerator.editCmd;
 import static net.minecraft.util.Colors.LIGHT_GRAY;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 
 public class WaypointEditScreen extends MovementAllowedScreen {
-    private static final MinecraftClient MC = MinecraftClient.getInstance();
-    private final TextRenderer textRenderer = MC.textRenderer;
     private final Screen previousScreen;
     private final int CONTENT_WIDTH;
     private final int CONTENT_HEIGHT;
@@ -41,7 +39,7 @@ public class WaypointEditScreen extends MovementAllowedScreen {
     private final IntegerField zEditBox = new IntegerField(0, 0, 44, Text.of("Z"), textRenderer);
     private final IntegerField yawEditBox = new IntegerField(0, 0, 27, Text.of("Yaw"), textRenderer);
     private final ToggleButton globalToggle = new ToggleButton(0, 0, 40, 11, Text.translatable("waypoint.local"), Text.translatable("waypoint.global"), 0x04E500,0x005AE5, (state) -> {});
-    private final TranslucentButton updateButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.update.button"), ()->{});
+    private final TranslucentButton updateButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.update.button"), this::sendUpdateCommand);
     private final TranslucentButton resetButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.reset.button"), this::resetProperties);
     private final TranslucentButton cancelButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.cancel.button"), this::close);
     private final SwatchWidget swatchWidget = new SwatchWidget(0, 0, textRenderer, (color) -> {this.closeSwatch(); this.colorEditBox.setColor(color); this.colorPickerButton.setColor(color);});
@@ -156,6 +154,20 @@ public class WaypointEditScreen extends MovementAllowedScreen {
         CONTENT_HEIGHT = this.mainLayout.getHeight();
         LOGGER.info("width: {}, height: {}", CONTENT_WIDTH, CONTENT_HEIGHT);
         buttonRow.setXOffset(CONTENT_WIDTH);
+    }
+
+    public void sendUpdateCommand() {
+        sendCommand(editCmd(this.dimensionName, this.listName, this.waypointName,
+                new SimpleWaypoint(
+                        this.nameEditBox.getText(),
+                        this.initialsEditBox.getText(),
+                        this.xEditBox.getValue(),
+                        this.yEditBox.getValue(),
+                        this.zEditBox.getValue(),
+                        this.colorPickerButton.getColor() & 0xFFFFFF,
+                        this.yawEditBox.getValue(),
+                        this.globalToggle.getState()
+                ), false));
     }
 
     public void resetProperties() {
