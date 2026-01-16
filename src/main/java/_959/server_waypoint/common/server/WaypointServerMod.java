@@ -1,12 +1,12 @@
 package _959.server_waypoint.common.server;
 
-import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.network.ModChatMessageHandler;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
@@ -43,9 +43,9 @@ public class WaypointServerMod extends WaypointServerCore {
     }
 
     @Override
-    public void addWaypoint(String dimensionName, String listName, SimpleWaypoint waypoint, Consumer<@NotNull WaypointFileManager> successAction, Consumer<@NotNull SimpleWaypoint> duplicateAction) {
-        super.addWaypoint(dimensionName, listName, waypoint, (fileManager) -> {
-            successAction.accept(fileManager);
+    public void addWaypoint(String dimensionName, String listName, SimpleWaypoint waypoint, BiConsumer<@NotNull WaypointFileManager, @NotNull WaypointList> successAction, Consumer<@NotNull SimpleWaypoint> duplicateAction) {
+        super.addWaypoint(dimensionName, listName, waypoint, (fileManager, waypointList) -> {
+            successAction.accept(fileManager, waypointList);
             if (!isDedicated) {
                 LOGGER.info("do some updates in rendering");
             }
@@ -63,8 +63,8 @@ public class WaypointServerMod extends WaypointServerCore {
     }
 
     @Override
-    public void updateWaypointProperties(@NotNull SimpleWaypoint waypoint, String initials, WaypointPos waypointPos, int rgb, int yaw, boolean global, Runnable successAction, Runnable identicalAction) {
-        super.updateWaypointProperties(waypoint, initials, waypointPos, rgb, yaw, global, () -> {
+    public void updateWaypointProperties(@NotNull SimpleWaypoint waypoint, String name, String initials, WaypointPos waypointPos, int rgb, int yaw, boolean global, Runnable successAction, Runnable identicalAction) {
+        super.updateWaypointProperties(waypoint, name, initials, waypointPos, rgb, yaw, global, () -> {
             successAction.run();
             if (!isDedicated) {
                 LOGGER.info("do some updates in rendering");
