@@ -11,7 +11,9 @@ public final class MapUtils {
      */
     public static <K extends Comparable<? super K>, V> List<Map.Entry<K, V>> getEntriesSortedByKey(Map<K, V> map, int offset) {
         List<Map.Entry<K, V>> sortedList = new ArrayList<>(map.entrySet());
-        sortedList.subList(offset, sortedList.size()).sort(Map.Entry.comparingByKey());
+        int size = sortedList.size();
+        if (size <= offset) return sortedList;
+        sortedList.subList(offset, size).sort(Map.Entry.comparingByKey());
         return sortedList;
     }
 }
