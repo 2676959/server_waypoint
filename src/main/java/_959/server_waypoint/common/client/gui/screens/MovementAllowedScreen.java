@@ -1,6 +1,8 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.mixin.BoundKeyAccessor;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
@@ -9,6 +11,7 @@ import net.minecraft.text.Text;
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 
 public abstract class MovementAllowedScreen extends Screen {
+    protected final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
     private KeyBinding forwardKeyBinding;
     private KeyBinding leftKeyBinding;
     private KeyBinding backKeyBinding;
