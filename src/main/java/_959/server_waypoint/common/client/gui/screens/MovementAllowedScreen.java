@@ -51,7 +51,7 @@ public abstract class MovementAllowedScreen extends Screen {
     }
 
     public static int centered(int containerSize, int contentSize) {
-        return (containerSize >> 1) - (contentSize >> 1);
+        return (containerSize - contentSize) >> 1;
     }
 
     public void acceptMovementKeys(boolean bool) {
