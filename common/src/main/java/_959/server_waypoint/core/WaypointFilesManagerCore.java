@@ -6,6 +6,7 @@ import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,7 @@ public class WaypointFilesManagerCore {
         return this.fileManagerMap;
     }
 
-    public List<Map.Entry<String, WaypointFileManager>> getSortedMap() {
+    public @Unmodifiable List<Map.Entry<String, WaypointFileManager>> getSortedMap() {
         // maintain the list order for vanilla dimensions
         return getEntriesSortedByKey(this.fileManagerMap, 3);
     }

@@ -9,6 +9,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     private static float scrolledPosition;
     private static int index;
     private final DimensionListCallback callback;
-    private volatile List<String> dimensionNames = new ArrayList<>();
+    private volatile @Unmodifiable List<String> dimensionNames = new ArrayList<>();
     private final TextRenderer textRenderer;
     private final PaddingBackground paddingBackground = new PaddingBackground(this, 5, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
     private final float itemIconScale;
@@ -67,10 +68,9 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     /**
      * updates the reference of {@link #dimensionNames}, if newDimensionNames is empty only clears the current list
      */
-    public void updateDimensionNames(List<String> newDimensionNames) {
+    public void updateDimensionNames(@Unmodifiable List<String> newDimensionNames) {
         if (newDimensionNames.isEmpty()) {
             this.empty = true;
-            this.dimensionNames.clear();
             index = 0;
             scrolledPosition = 0;
         } else {
@@ -78,9 +78,8 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
             if (index >= newDimensionNames.size()) {
                 index = 0;
             }
-            this.dimensionNames.clear();
-            this.dimensionNames = newDimensionNames;
         }
+        this.dimensionNames = newDimensionNames;
     }
 
     public void setDimensionName(String dimensionName) {
@@ -144,7 +143,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
 
         // render dimension name
         if (this.empty) {
-            context.drawText(textRenderer, NewWaypointListWidget.EMPTY_MARK, 0, 0, 0xFFFFFFFF, true);
+            context.drawText(textRenderer, NewWaypointListWidget.EMPTY_INFO_TEXT, 0, 0, 0xFFFFFFFF, true);
         } else {
             context.drawText(textRenderer, dimensionNames.get(index), 0, 0, 0xFFFFFFFF, true);
             context.getMatrices().translate(0, textHeight + 2, 0);

@@ -17,8 +17,10 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import oshi.annotation.concurrent.Immutable;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -118,30 +120,30 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     }
 
     /**
-     * get a sorted list of dimension names
+     * get an immutable sorted list of dimension names
      * */
     @NotNull
-    public List<String> getDimensionNames() {
-        List<String> dimensionNames = new ArrayList<>(this.fileManagerMap.keySet());
+    public @Unmodifiable List<String> getDimensionNames() {
         // keep the order of vanilla dimensions and sort the rest alphabetically
-        int size = dimensionNames.size();
+        int size = this.fileManagerMap.size();
         if (size <= 3) {
-            return dimensionNames;
+            return this.fileManagerMap.keySet().stream().toList();
+        } else {
+            List<String> dimensionNames = new ArrayList<>(this.fileManagerMap.keySet());
+            return dimensionNames.subList(3, size).stream().sorted().toList();
         }
-        dimensionNames.subList(3, size).sort(String::compareTo);
-        return dimensionNames;
     }
 
     @NotNull
-    public List<WaypointList> getDefaultWaypointLists() {
+    public @Unmodifiable List<WaypointList> getDefaultWaypointLists() {
         List<WaypointList> defaultWaypointLists = getCurrentWaypointLists();
         if (defaultWaypointLists.isEmpty()) {
             if (this.fileManagerMap.isEmpty()) {
-                return new ArrayList<>();
+                return List.of();
             } else {
                 WaypointFileManager fileManager = this.fileManagerMap.values().iterator().next();
                 if (fileManager == null) {
-                    return new ArrayList<>();
+                    return List.of();
                 } else {
                     return fileManager.getWaypointLists();
                 }
@@ -151,10 +153,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     }
 
     @NotNull
-    public List<WaypointList> getCurrentWaypointLists() {
+    public @Unmodifiable List<WaypointList> getCurrentWaypointLists() {
         WaypointFileManager WaypointFileManager = this.fileManagerMap.get(currentDimensionName);
         if (WaypointFileManager == null) {
-            return new ArrayList<>();
+            return List.of();
         }
         return WaypointFileManager.getWaypointLists();
     }

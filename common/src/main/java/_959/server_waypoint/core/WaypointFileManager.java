@@ -4,10 +4,12 @@ import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import com.google.errorprone.annotations.Immutable;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -132,10 +134,10 @@ public class WaypointFileManager {
     }
 
     /**
-     * returns a shallow copy of the list
+     * returns a immutable shallow copy of the list
      * */
-    public List<WaypointList> getWaypointLists() {
-        return new ArrayList<>(this.waypointListMap.values());
+    public @Unmodifiable List<WaypointList> getWaypointLists() {
+        return this.waypointListMap.values().stream().toList();
     }
 
     public Map<String, WaypointList> getWaypointListMap() {
