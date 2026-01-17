@@ -6,30 +6,36 @@ import net.minecraft.text.Text;
 import java.util.function.Consumer;
 
 public class IntegerField extends TranslucentTextField {
-    protected int minValue = Integer.MIN_VALUE;
-    protected int maxValue = Integer.MAX_VALUE;
+    protected int defaultValue;
+    protected final int minValue;
+    protected final int maxValue;
     protected Consumer<Integer> valueEnteredCallback;
 
-    public IntegerField(int x, int y, int width, int minValue, int maxValue, Text text, TextRenderer textRenderer) {
-        this(x, y, width, text, textRenderer);
+    public IntegerField(int x, int y, int width, int minValue, int maxValue, int defaultValue, Text text, TextRenderer textRenderer) {
+        super(x, y, width, text, textRenderer);
         this.maxValue = maxValue;
         this.minValue = minValue;
+        this.defaultValue = defaultValue;
+        this.setTextPredicate(this::testInRange);
     }
 
     public IntegerField(int x, int y, int width, Text text, TextRenderer textRenderer) {
-        super(x, y, width, text, textRenderer);
-        this.setTextPredicate(this::testInRange);
+        this(x, y, width, Integer.MIN_VALUE, Integer.MAX_VALUE, 0, text, textRenderer);
     }
 
     public void setValueEnteredCallback(Consumer<Integer> callback) {
         this.valueEnteredCallback = callback;
     }
 
+    public void setDefaultValue(int defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
     @Override
     public void setFocused(boolean focused) {
         super.setFocused(focused);
         if (!focused && this.getText().isEmpty()) {
-            this.setText(Integer.toString(this.minValue));
+            this.setText(Integer.toString(this.defaultValue));
         }
     }
 
@@ -62,14 +68,11 @@ public class IntegerField extends TranslucentTextField {
                     return false;
                 }
                 if (currentValue.charAt(0) != '-') {
-//                    int n = -getValue();
-//                    if (minValue <= n && n <= maxValue) {
                         this.setText("-" + currentValue);
                         if (this.valueEnteredCallback != null) {
                             this.valueEnteredCallback.accept(this.getValue());
                         }
                         return true;
-//                    }
                 }
                 return false;
             }
@@ -79,14 +82,11 @@ public class IntegerField extends TranslucentTextField {
                     return false;
                 }
                 if (currentValue.charAt(0) == '-') {
-//                    int n = -getValue();
-//                    if (minValue <= n && n <= maxValue) {
                         this.setText(currentValue.substring(1));
                         if (this.valueEnteredCallback != null) {
                             this.valueEnteredCallback.accept(this.getValue());
                         }
                         return true;
-//                    }
                 }
                 return false;
             }
@@ -101,27 +101,21 @@ public class IntegerField extends TranslucentTextField {
         }
     }
 
-    @SuppressWarnings("unused")
-    public void setMinValue(int value) {
-        this.minValue = value;
-    }
-
-    @SuppressWarnings("unused")
-    public void setMaxValue(int value) {
-        this.maxValue = value;
-    }
-
     public int getValue() {
         try {
             return Integer.parseInt(this.getText());
         } catch (NumberFormatException e) {
-            return this.minValue;
+            return this.defaultValue;
         }
     }
 
     private boolean testInRange(String text) {
         if (text.isEmpty()) {
             return true;
+        }
+        if (text.equals("-")) {
+            setText("");
+            return false;
         }
         int n;
         try {

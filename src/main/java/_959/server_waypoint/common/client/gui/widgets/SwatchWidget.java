@@ -46,12 +46,12 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
         ScalableText gLabel = new ScalableText(0, 0, Text.of("G"), 0xFF00FF00, textRenderer);
         ScalableText bLabel = new ScalableText(0, 0, Text.of("B"), 0xFF0000FF, textRenderer);
 
-        this.hEntry = new IntegerField(0, 0, 21, 0, 360, Text.of("H"), textRenderer);
-        this.sEntry = new IntegerField(0, 0, 21, 0, 100, Text.of("S"), textRenderer);
-        this.vEntry = new IntegerField(0, 0, 21, 0, 100, Text.of("V"), textRenderer);
-        this.rEntry = new IntegerField(0, 0, 21, 0, 255, Text.of("R"), textRenderer);
-        this.gEntry = new IntegerField(0, 0, 21, 0, 255, Text.of("G"), textRenderer);
-        this.bEntry = new IntegerField(0, 0, 21, 0, 255, Text.of("B"), textRenderer);
+        this.hEntry = new IntegerField(0, 0, 21, 0, 360, 0, Text.of("H"), textRenderer);
+        this.sEntry = new IntegerField(0, 0, 21, 0, 100, 0, Text.of("S"), textRenderer);
+        this.vEntry = new IntegerField(0, 0, 21, 0, 100, 0, Text.of("V"), textRenderer);
+        this.rEntry = new IntegerField(0, 0, 21, 0, 255, 0, Text.of("R"), textRenderer);
+        this.gEntry = new IntegerField(0, 0, 21, 0, 255, 0, Text.of("G"), textRenderer);
+        this.bEntry = new IntegerField(0, 0, 21, 0, 255, 0, Text.of("B"), textRenderer);
 
         this.hEntry.setMaxLength(3);
         this.sEntry.setMaxLength(3);

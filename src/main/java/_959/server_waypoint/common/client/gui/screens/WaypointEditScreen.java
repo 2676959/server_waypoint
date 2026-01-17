@@ -78,9 +78,13 @@ public class WaypointEditScreen extends MovementAllowedScreen {
         this.swatchWidget.setPreviousColor(color);
         this.swatchWidget.visible = false;
         this.xEditBox.setText(Integer.toString(this.x));
+        this.xEditBox.setDefaultValue(this.x);
         this.yEditBox.setText(Integer.toString(this.y));
+        this.yEditBox.setDefaultValue(this.y);
         this.zEditBox.setText(Integer.toString(this.z));
+        this.zEditBox.setDefaultValue(this.z);
         this.yawEditBox.setText(Integer.toString(this.yaw));
+        this.yawEditBox.setDefaultValue(this.yaw);
         this.globalToggle.setState(this.global);
 
         ScalableText titleLabel = new ScalableText(0, 0, this.getTitle(), 0xFFFFFFFF, textRenderer);
