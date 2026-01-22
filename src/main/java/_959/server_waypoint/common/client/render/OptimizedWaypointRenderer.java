@@ -24,9 +24,9 @@ public class OptimizedWaypointRenderer {
     // =========================================================
     // CONFIGURATION
     // =========================================================
+    private static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_renderer");
     private static final int MAX_WAYPOINTS = 10000;
     private static final int MAX_RENDER_ID = 20000;
-    private static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_renderer");
 
     // =========================================================
     // STATE (RENDER THREAD ONLY)
@@ -60,6 +60,7 @@ public class OptimizedWaypointRenderer {
     public static final Matrix4f ProjectionMatrix = new Matrix4f();
     private static final MinecraftClient mc = MinecraftClient.getInstance();
     private static final TextRenderer textRenderer = mc.textRenderer;
+    private static final int textHeight = textRenderer.fontHeight;
     private static final Window window = mc.getWindow();
     private static final Camera camera = mc.gameRenderer.getCamera();
     private static final Matrix4f identity = new Matrix4f();
@@ -147,7 +148,6 @@ public class OptimizedWaypointRenderer {
                 }
                 batch.add(wp);
             }
-            LOGGER.info("current renderId: {}", nextRenderId);
         }
 
         if (batch.isEmpty()) return;
@@ -304,20 +304,26 @@ public class OptimizedWaypointRenderer {
         float projectionScale = baseScale * projectionConstant;
         float minBaseScale = baseScale / 5F;
 
+
         context.draw(immediate -> {
+            // --- New variables for detailed rendering ---
+            int closestHoveredIndex = -1;
+            float minDepth = Float.MAX_VALUE;
+            float detail_winX = 0, detail_winY = 0, detail_scale = 0;
+            double detail_distance = 0;
+            // Pass 1: Render basic info and find the closest hovered waypoint
             for (int i = 0; i < count; i++) {
                 // Retrieve raw data from SoA
                 float wx = xPos[i];
                 float wy = yPos[i];
                 float wz = zPos[i];
                 int color = colors[i];
-                String name = names[i];
                 String initial = initials[i];
 
                 Vector4f pos = posVec.set(wx, wy, wz, 1F);
+                pos.y += 0.5F;
                 pos.add(camX, camY, camZ, 0F);
-                
-                // Store camera-relative position for potential distance calculation later
+
                 float relativeX = pos.x();
                 float relativeY = pos.y();
                 float relativeZ = pos.z();
@@ -325,9 +331,9 @@ public class OptimizedWaypointRenderer {
                 pos.mul(ModelViewMatrix);
                 pos.mul(ProjectionMatrix);
                 float depth = pos.w();
-                if (depth > 0) {
-                    pos.div(depth);
-                } else continue;
+                if (depth <= 0) continue;
+
+                pos.div(depth);
 
                 // ndc space
                 float x = pos.x();
@@ -343,12 +349,12 @@ public class OptimizedWaypointRenderer {
                     scale = minBaseScale;
                 }
 
-                // show initials
-                String displayText = initial;
+                // center text
                 int textWidth = initialsTextWidth[i];
-                int textHeight = textRenderer.getWrappedLinesHeight(displayText, Integer.MAX_VALUE);
+                float tx = winX - ((textWidth - 1) * scale / 2F);
+                float ty = winY - textHeight * scale;
 
-                // text background
+                // text hover area
                 float scaledRealTextWidth = (textWidth + 1) * scale;
                 float scaledRealTextHeight = (textHeight + 1) * scale;
                 float upperCornerX = winX - (scaledRealTextWidth / 2F);
@@ -356,48 +362,44 @@ public class OptimizedWaypointRenderer {
                 float lowerCornerX = upperCornerX + scaledRealTextWidth;
                 float lowerCornerY = upperCornerY + scaledRealTextHeight;
 
-                // centering text
-                float tx = winX - ((textWidth - 1) * scale / 2F);
-                float ty = winY - textHeight * scale;
-
-                // color and transparency
-                int alpha = 0x80000000;
-
-                // use depth as the z order
-                depth = -depth;
-
-                // change to name when hovering on initials
                 if (isIn2DBox(windowCenterX, windowCenterY, upperCornerX, upperCornerY, lowerCornerX, lowerCornerY)) {
-                    // Defer sqrt calculation until it's needed for the hover-text.
-                    double distance = Math.sqrt(relativeX * relativeX + relativeY * relativeY + relativeZ * relativeZ);
-
-                    // set on top
-                    depth = 0;
-                    alpha = 0xBB000000;
-                    displayText = name;
-                    // only update width, assuming height does not change
-                    textWidth = nameTextWidth[i];
-                    tx = winX - ((textWidth - 1) * scale / 2F);
-                    // distance text
-                    String distanceText;
-                    if (distance >= 1000) {
-                        distanceText = (Math.round(distance / 100.0) / 10.0) + "km";
-                    } else {
-                        distanceText = (Math.round(distance * 10.0) / 10.0) + "m";
+                    if (depth < minDepth) {
+                        minDepth = depth;
+                        closestHoveredIndex = i;
+                        detail_winX = winX;
+                        detail_winY = winY;
+                        detail_scale = scale;
+                        detail_distance = Math.sqrt(relativeX * relativeX + relativeY * relativeY + relativeZ * relativeZ);
                     }
-                    float distanceTextScale = scale / 1.25F;
-                    Matrix4f matrix = identity.translation(tx - 0.2F * scale, winY + distanceTextScale, depth).scale(distanceTextScale);
-                    // draw distance
-                    drawWaypointOnHud(matrix, 0, 0, distanceText, 0x80000000, immediate, TextRenderer.TextLayerType.NORMAL);
-                    // text y position for waypoint name text
-                    identity.identity();
                 }
-                Matrix4f matrix = identity.translation(tx, ty, depth).scale(scale);
-                // draw waypoint
-                drawWaypointOnHud(matrix, 0, 0, displayText, alpha | color, immediate, TextRenderer.TextLayerType.NORMAL);
+                Matrix4f matrix = identity.translation(tx, ty, -depth).scale(scale);
+                drawWaypointOnHud(matrix, 0, 0, initial, 0x80000000 | color, immediate, TextRenderer.TextLayerType.NORMAL);
                 identity.identity();
             }
 
+            if (closestHoveredIndex != -1) {
+                String name = names[closestHoveredIndex];
+                int textWidth = nameTextWidth[closestHoveredIndex];
+                int color = colors[closestHoveredIndex];
+
+                float tx = detail_winX - ((textWidth - 1) * detail_scale / 2F);
+                float ty = detail_winY - textHeight * detail_scale;
+
+                Matrix4f matrix = identity.translation(tx, ty, 0F).scale(detail_scale);
+                drawWaypointOnHud(matrix, 0, 0, name, 0xFF000000 | color, immediate, TextRenderer.TextLayerType.NORMAL);
+                identity.identity();
+
+                String distanceText;
+                if (detail_distance >= 1000) {
+                    distanceText = (Math.round(detail_distance / 100.0) / 10.0) + "km";
+                } else {
+                    distanceText = (Math.round(detail_distance * 10.0) / 10.0) + "m";
+                }
+                float distanceTextScale = detail_scale / 1.25F;
+                Matrix4f distMatrix = identity.translation(tx -0.2F * detail_scale, detail_winY + distanceTextScale, 0F).scale(distanceTextScale);
+                drawWaypointOnHud(distMatrix, 0, 0, distanceText, 0x80000000, immediate, TextRenderer.TextLayerType.NORMAL);
+                identity.identity();
+            }
         });
     }
 

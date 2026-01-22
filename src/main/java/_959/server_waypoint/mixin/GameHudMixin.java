@@ -1,6 +1,6 @@
 package _959.server_waypoint.mixin;
 
-import _959.server_waypoint.common.client.render.WaypointRenderer;
+import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class GameHudMixin {
     @Inject(method = "render", at = @At(value = "HEAD"))
     public void render(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        WaypointRenderer.render(context, tickCounter);
+//        WaypointRenderer.renderOnHud(context);
+        OptimizedWaypointRenderer.render(context);
     }
 }
