@@ -17,7 +17,8 @@ public final class MapUtils {
             return map.entrySet().stream().toList();
         } else {
             List<Map.Entry<K, V>> sortedList = new ArrayList<>(map.entrySet());
-            return sortedList.subList(offset, size).stream().sorted().toList();
+            sortedList.subList(offset, size).sort(Map.Entry.comparingByKey());
+            return sortedList.stream().toList();
         }
     }
 }
