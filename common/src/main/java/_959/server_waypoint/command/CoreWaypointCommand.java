@@ -71,7 +71,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private final SuggestionProvider<S> NEW_NAME_INITIALS_SUGGESTION = new NewNameInitialsSuggestion();
     private final SuggestionProvider<S> PLAYER_YAW_SUGGESTION = new PlayerYawSuggestion();
     private final SuggestionProvider<S> HEX_COLOR_CODE_SUGGESTION = new HexColorCodeSuggestion();
-    private boolean enabled = true;
     public static final String SINGLE_WORD_REGEX = "^[a-zA-Z0-9+._-]+$";
     public static final String WAYPOINT_COMMAND = "wp";
     public static final String ADD_COMMAND = "add";
@@ -111,14 +110,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     protected abstract String getPlayerName(P player);
     protected abstract void teleportPlayer(S source, P player, D dimensionArgument, WaypointPos pos, int yaw);
     protected abstract Message getMessageFromComponent(Component component);
-
-    public void enable() {
-        this.enabled = true;
-    }
-
-    public void disable() {
-        this.enabled = false;
-    }
 
     private boolean hasAddPermission(S source) {
         return this.permissionManager.hasPermission(source, this.permissionKeys.add(), CONFIG.CommandPermission().add());
@@ -200,7 +191,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     @SuppressWarnings("unchecked")
     public @NotNull LiteralCommandNode<S> build() {
         return (LiteralCommandNode<S>) literal(WAYPOINT_COMMAND)
-                .requires(source -> this.enabled)
                 .then(literal(ADD_COMMAND)
                         .requires(source -> hasAddPermission((S) source))
                         .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
@@ -610,7 +600,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 //                    this.sender.sendMessage(source, translatable("waypoint.remove.list.success", text(listName)));
 //                    saveChanges(source, fileManager);
 //                });
-        runWithSelectorTarget(source, dimensionArgument, fileManager -> {
+        runWithSelectorTarget(source, dimensionArgument, fileManager ->
             this.waypointServer.removeWaypointList(fileManager, listName, fileManager1 -> {
                         fileManager.removeWaypointListByName(listName);
                         String dimensionName = fileManager.getDimensionName();
@@ -618,13 +608,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                         this.sender.sendMessage(source, translatable("waypoint.remove.list.success", text(listName)));
                         saveChanges(source, fileManager);
                     },
-                    () -> {
-                        this.sender.sendError(source, translatable("waypoint.nonexist.list", text(listName)));
-                    },
-                    () -> {
-                        this.sender.sendError(source, translatable("waypoint.remove.list.nonempty", text(listName)));
-                    });
-        });
+                    () -> this.sender.sendError(source, translatable("waypoint.nonexist.list", text(listName))),
+                    () -> this.sender.sendError(source, translatable("waypoint.remove.list.nonempty", text(listName))))
+        );
     }
 
     private void executeRemoveWaypoint(S source, D dimensionArgument, String listName, String name) {
