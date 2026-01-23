@@ -11,5 +11,24 @@
   "waypoint.modification.add": "路径点%1$s已添加至Xaero's minimap",
   "waypoint.modification.remove": "路径点%1$s已从Xaero's minimap移除",
   "waypoint.modification.update": "路径点%1$s已更新至Xaero's minimap",
-  "waypoint.dimension.decode.fail": "无法解码维度“%1$s”"
+  "waypoint.dimension.decode.fail": "无法解码维度“%1$s”",
+
+  "waypoint.empty_mark": "<空>",
+  "waypoint.add.button": "添加",
+  "waypoint.update.button": "更新",
+  "waypoint.reset.button": "重置",
+  "waypoint.cancel.button": "取消",
+  "waypoint.global": "全局",
+  "waypoint.local": "本地",
+  "waypoint.dimension.info": "维度：%1$s",
+  "waypoint.list_name.info": "列表：%1$s",
+  "waypoint.add.screen.title": "添加新路径点",
+  "waypoint.edit.screen.title": "编辑路径点：%1$s",
+  "waypoint.edit.screen.name.entry": "名称：",
+  "waypoint.edit.screen.initials.entry": "缩写：",
+  "waypoint.edit.screen.color": "颜色：",
+  "waypoint.edit.screen.coords_yaw": "坐标与偏航角：",
+  "waypoint.edit.screen.visibility": "可见范围：",
+  "waypoint.edit.screen.previous_color.hover": "点击恢复上一个颜色",
+  "waypoint.edit.screen.current_color.hover": "点击选择此颜色，再次点击确认"
 }
