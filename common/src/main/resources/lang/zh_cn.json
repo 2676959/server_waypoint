@@ -1,6 +1,9 @@
 {
   "waypoint.save.failed": "写入文件失败：{0}",
 
+  "waypoint.updates.sent": "已发送路径点更新至客户端",
+  "waypoint.incompatible.client": "不兼容的客户端版本：{0}，请安装版本：{1}",
+
   "waypoint.add.success": "路径点{0}已添加至列表：{1}",
   "waypoint.add.exists": "路径点{0}已存在，替换该路径点？{1}",
   "waypoint.add.list.success": "已在维度“{1}”新建路径点列表“{0}”",
@@ -28,16 +31,16 @@
 
   "waypoint.tp": "已将{0}传送至路径点{1}",
 
+  "waypoint.modification.broadcast.player": "{0}{1}路径点{2}",
+  "waypoint_list.modification.broadcast.player": "{0}{1}路径点列表“{2}”",
+  "waypoint.modification.type.add": "添加了",
+  "waypoint.modification.type.remove": "删除了",
+  "waypoint.modification.type.update": "更新了",
+
   "waypoint.xaeros.sharing.no.list": "没有可用的路径点列表，添加路径点列表{0}",
   "waypoint.xaeros.sharing.invalid.dimension": "发现Xaero模组分享的路径点：{0}，位于无效的维度“{1}”",
   "waypoint.xaeros.sharing.found": "发现Xaero模组分享的路径点：{0}，位于维度“{1}”",
   "waypoint.sharing.add.to.list": "选择添加至路径点列表：\n{0}",
-
-  "waypoint.modification.broadcast.player": "{0}{1}路径点{2}",
-  "waypoint.modification.broadcast.server": "服务器{0}路径点{1}",
-  "waypoint.modification.type.add": "添加了",
-  "waypoint.modification.type.remove": "删除了",
-  "waypoint.modification.type.update": "更新了",
 
   "waypoint.reload": "正在重新加载配置文件和语言文件",
   "waypoint.loaded.languages": "已加载{0}种语言: {1}",
