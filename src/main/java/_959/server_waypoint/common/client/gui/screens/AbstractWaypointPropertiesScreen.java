@@ -11,14 +11,13 @@ import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.util.ColorUtils.*;
-import static _959.server_waypoint.util.CommandGenerator.editCmd;
-
-import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 
 public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedScreen {
     protected final Screen previousScreen;
@@ -30,9 +29,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected final WidgetStack buttonRow;
     // main layout
     protected final WidgetStack mainLayout = new WidgetStack(0, 0, 10, true, false);
-    protected final TranslucentTextField nameEditBox = new TranslucentTextField(0, 0, 60, Text.of("name"), textRenderer);
-    protected final TranslucentTextField initialsEditBox = new TranslucentTextField(0, 0, 30, Text.of("initials"), textRenderer);
-    protected final ColorHexCodeField colorEditBox = new ColorHexCodeField(0, 0, Text.of("color"), textRenderer);
+    protected final TranslucentTextField nameEditBox = new TranslucentTextField(0, 0, 60, Text.translatable("waypoint.edit.screen.name.entry"), textRenderer);
+    protected final TranslucentTextField initialsEditBox = new TranslucentTextField(0, 0, 30, Text.translatable("waypoint.edit.screen.initials.entry"), textRenderer);
+    protected final ColorHexCodeField colorEditBox = new ColorHexCodeField(0, 0, Text.translatable("waypoint.edit.screen.color"), textRenderer);
     protected final ColorSquareButton colorPickerButton = new ColorSquareButton(0, 0, 9, this::openSwatch);
     // coords label
     ScalableText coordsLabel = new ScalableText(0, 0, Text.translatable("waypoint.edit.screen.coords_yaw"), 0xFFFFFFFF, textRenderer);
@@ -42,6 +41,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected final IntegerField yawEditBox = new IntegerField(0, 0, 27, Text.of("Yaw"), textRenderer);
     protected final ToggleButton globalToggle = new ToggleButton(0, 0, 40, 11, Text.translatable("waypoint.local"), Text.translatable("waypoint.global"), 0x04E500,0x005AE5, (state) -> {});
     protected final SwatchWidget swatchWidget = new SwatchWidget(0, 0, textRenderer, (color) -> {this.closeSwatch(); this.colorEditBox.setColor(color); this.colorPickerButton.setColor(color);});
+    protected final TranslucentButton cancelButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.cancel.button"), this::close);
     protected final String dimensionName;
     protected final String listName;
     protected final String waypointName;
@@ -53,49 +53,63 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected final int yaw;
     protected final boolean global;
 
-    protected abstract WidgetStack createTitleRow();
-    protected abstract WidgetStack createButtonRow();
+    protected abstract @NonNull WidgetStack createTitleRow();
+    protected abstract @NonNull WidgetStack createButtonRow();
     protected abstract @Unmodifiable List<ClickableWidget> getTitleRowClickableWidgets();
     protected abstract @Unmodifiable List<ClickableWidget> getButtonRowClickableWidgets();
 
-    public AbstractWaypointPropertiesScreen(Screen previousScreen, String dimensionName, String listName, SimpleWaypoint waypoint) {
-        super(Text.translatable("waypoint.edit.screen.title", waypoint.name()));
+    public AbstractWaypointPropertiesScreen(Screen previousScreen, Text title, String dimensionName, String listName, @Nullable SimpleWaypoint waypoint) {
+        super(title);
         this.previousScreen = previousScreen;
         this.dimensionName = dimensionName;
         this.listName = listName;
-        this.waypointName = waypoint.name();
-        this.initials = waypoint.initials();
-        WaypointPos pos = waypoint.pos();
-        this.x = pos.x();
-        this.y = pos.y();
-        this.z = pos.z();
-        this.rgb = 0xFF000000 | waypoint.rgb();
-        this.yaw = waypoint.yaw();
-        this.global = waypoint.global();
-        this.nameEditBox.setText(this.waypointName);
-        this.initialsEditBox.setText(this.initials);
-        int color = 0xFF000000 | this.rgb;
-        this.colorEditBox.setColor(color);
-        this.colorEditBox.setChangedListener(text -> this.colorPickerButton.setColor(this.colorEditBox.getColor()));
-        this.colorPickerButton.setColor(color);
-        this.swatchWidget.setColor(color);
-        this.swatchWidget.setPreviousColor(color);
+        if (waypoint == null) {
+            this.waypointName = "";
+            this.initials = "";
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+            this.rgb = 0xFF000000 | randomColor();
+            this.yaw = 0;
+            this.global = true;
+            this.colorEditBox.setColor(rgb);
+            this.colorPickerButton.setColor(rgb);
+            this.swatchWidget.setColor(rgb);
+            this.swatchWidget.setPreviousColor(rgb);
+        } else {
+            this.waypointName = waypoint.name();
+            this.initials = waypoint.initials();
+            WaypointPos pos = waypoint.pos();
+            this.x = pos.x();
+            this.y = pos.y();
+            this.z = pos.z();
+            this.rgb = 0xFF000000 | waypoint.rgb();
+            this.yaw = waypoint.yaw();
+            this.global = waypoint.global();
+            this.nameEditBox.setText(this.waypointName);
+            this.initialsEditBox.setText(this.initials);
+            int color = 0xFF000000 | this.rgb;
+            this.colorEditBox.setColor(color);
+            this.colorEditBox.setChangedListener(text -> this.colorPickerButton.setColor(this.colorEditBox.getColor()));
+            this.colorPickerButton.setColor(color);
+            this.swatchWidget.setColor(color);
+            this.swatchWidget.setPreviousColor(color);
+            this.xEditBox.setText(Integer.toString(this.x));
+            this.xEditBox.setDefaultValue(this.x);
+            this.yEditBox.setText(Integer.toString(this.y));
+            this.yEditBox.setDefaultValue(this.y);
+            this.zEditBox.setText(Integer.toString(this.z));
+            this.zEditBox.setDefaultValue(this.z);
+            this.yawEditBox.setText(Integer.toString(this.yaw));
+            this.yawEditBox.setDefaultValue(this.yaw);
+            this.globalToggle.setState(this.global);
+        }
         this.swatchWidget.visible = false;
-        this.xEditBox.setText(Integer.toString(this.x));
-        this.xEditBox.setDefaultValue(this.x);
-        this.yEditBox.setText(Integer.toString(this.y));
-        this.yEditBox.setDefaultValue(this.y);
-        this.zEditBox.setText(Integer.toString(this.z));
-        this.zEditBox.setDefaultValue(this.z);
-        this.yawEditBox.setText(Integer.toString(this.yaw));
-        this.yawEditBox.setDefaultValue(this.yaw);
-        this.globalToggle.setState(this.global);
 
         // title row
         this.titleRow = createTitleRow();
-
         // name & initials row
-        WidgetStack nameInitialsRow = new WidgetStack(0, 0, 5);
+        WidgetStack nameInitialsRow = new WidgetStack(0, 0, 0);
         ScalableText wpNameLabel = new ScalableText(0, 0, Text.translatable("waypoint.edit.screen.name.entry"), 0xFFFFFFFF, textRenderer);
         ScalableText initialsLabel = new ScalableText(0, 0, Text.translatable("waypoint.edit.screen.initials.entry"), 0xFFFFFFFF, textRenderer);
         nameInitialsRow.addChild(wpNameLabel, 0);
@@ -104,10 +118,10 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         nameInitialsRow.addChild(this.initialsEditBox);
 
         // color row
-        WidgetStack colorRow = new WidgetStack(0, 0, 5);
+        WidgetStack colorRow = new WidgetStack(0, 0, 0);
         ScalableText colorLabel = new ScalableText(0, 0, Text.translatable("waypoint.edit.screen.color"), 0xFFFFFFFF, textRenderer);
         colorRow.addChild(colorLabel, 0);
-        colorRow.addChild(this.colorEditBox, 10);
+        colorRow.addChild(this.colorEditBox, 6);
         colorRow.addChild(this.colorPickerButton);
 
         // coords row
@@ -127,7 +141,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         coordsRow.addChild(this.yawEditBox, 4);
 
         // visibility row
-        WidgetStack visibilityRow = new WidgetStack(0, 0, 5);
+        WidgetStack visibilityRow = new WidgetStack(0, 0, 0);
         ScalableText visibilityLabel = new ScalableText(0, 0, Text.translatable("waypoint.edit.screen.visibility"), 0xFFFFFFFF, textRenderer);
         visibilityRow.addChild(visibilityLabel, 0);
         visibilityRow.addChild(this.globalToggle);
@@ -145,7 +159,6 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
 
         CONTENT_WIDTH = this.mainLayout.getWidth();
         CONTENT_HEIGHT = this.mainLayout.getHeight();
-        LOGGER.info("width: {}, height: {}", CONTENT_WIDTH, CONTENT_HEIGHT);
     }
 
     public void setOffsets(int x, int y) {

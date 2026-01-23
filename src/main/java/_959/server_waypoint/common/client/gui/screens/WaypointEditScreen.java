@@ -7,6 +7,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
@@ -20,10 +21,9 @@ import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     private TranslucentButton updateButton;
     private TranslucentButton resetButton;
-    private TranslucentButton cancelButton;
 
     @Override
-    protected WidgetStack createTitleRow() {
+    protected @NonNull WidgetStack createTitleRow() {
         ScalableText titleLabel = new ScalableText(0, 0, this.getTitle(), 0xFFFFFFFF, textRenderer);
         WidgetStack infoRow = new WidgetStack(0, 0, 5);
         ScalableText dimensionLabel = new ScalableText(0, 0, Text.translatable("waypoint.dimension.info", ""), 0.8F, LIGHT_GRAY, textRenderer);
@@ -42,12 +42,12 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     }
 
     @Override
-    protected WidgetStack createButtonRow() {
+    protected @NonNull WidgetStack createButtonRow() {
         // buttons row
         WidgetStack buttonRow = new WidgetStack(0, 0, 10, false);
-        this.updateButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.update.button"), this::sendUpdateCommand);
+        this.updateButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.update.button"), this::sendEditCommand);
         this.resetButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.reset.button"), this::resetProperties);
-        this.cancelButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.cancel.button"), this::close);
+
         buttonRow.addChild(this.cancelButton, 2);
         buttonRow.addChild(this.resetButton);
         buttonRow.addChild(this.updateButton);
@@ -65,11 +65,11 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     }
 
     public WaypointEditScreen(Screen previousScreen, String dimensionName, String listName, SimpleWaypoint waypoint) {
-        super(previousScreen, dimensionName, listName, waypoint);
+        super(previousScreen, Text.translatable("waypoint.edit.screen.title", waypoint.name()), dimensionName, listName, waypoint);
         this.buttonRow.setXOffset(CONTENT_WIDTH);
     }
 
-    public void sendUpdateCommand() {
+    public void sendEditCommand() {
         sendCommand(editCmd(this.dimensionName, this.listName, this.waypointName,
                 new SimpleWaypoint(
                         this.nameEditBox.getText(),

@@ -1,7 +1,6 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
-import _959.server_waypoint.common.client.gui.layout.ExpandableManager;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
 import _959.server_waypoint.common.client.gui.widgets.NewWaypointListWidget;
@@ -11,7 +10,6 @@ import net.minecraft.text.Text;
 
 import java.util.*;
 
-import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 import static _959.server_waypoint.common.client.WaypointClientMod.getCurrentDimensionName;
 
 public class WaypointManagerScreen extends MovementAllowedScreen {
@@ -23,18 +21,15 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private final int widgetWidth = 240;
     private boolean hasInitialized = false;
     private final WidgetStack mainLayout = new WidgetStack(0, 0, 0, true, false);
-//    private final ExpandableManager sizeManager = new ExpandableManager(widgetWidth, 200);
 
     public WaypointManagerScreen(WaypointClientMod waypointClientMod) {
         super(Text.of("Server Waypoints"));
         this.waypointClientMod = waypointClientMod;
         STATE = ScreenState.OPENED;
-        dimensionListWidget = new DimensionListWidget(0, 0, widgetWidth, this.textRenderer, this::onSelectDimension);
+        dimensionListWidget = new DimensionListWidget(0, 0, widgetWidth, this, this.textRenderer, this::onSelectDimension);
         waypointListWidget = new NewWaypointListWidget(0, 0, widgetWidth, 200, this, this.textRenderer);
         mainLayout.addPaddedClickable(dimensionListWidget, 0);
         mainLayout.addPaddedClickable(waypointListWidget, 0);
-//        sizeManager.addChild(dimensionListWidget, 0, 0);
-//        sizeManager.addChild(waypointListWidget, 0, 1);
     }
 
     public static void resetWidgetStates() {
@@ -46,7 +41,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         if (STATE != ScreenState.CLOSED) {
             WaypointClientMod waypointClientMod = WaypointClientMod.getInstance();
             dimensionListWidget.updateDimensionNames(waypointClientMod.getDimensionNames());
-            waypointListWidget.updateWaypointLists(waypointClientMod.getDefaultWaypointLists());
+            waypointListWidget.updateWaypointLists(waypointClientMod.getCurrentWaypointLists());
         }
     }
 
@@ -62,6 +57,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         }
     }
 
+    public static void refreshWaypointLists() {
+        if (STATE != ScreenState.CLOSED) {
+            waypointListWidget.reCalculateRenderData();
+        }
+    }
+
     public String getSelectedDimension() {
         return dimensionListWidget.getSelectedDimensionName();
     }
@@ -69,7 +70,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     public void updateWidgetDimension() {
         int contentHeight = (int) (this.height * relativeHeight);
         waypointListWidget.setVisualHeight(contentHeight - dimensionListWidget.getVisualHeight());
-//        this.sizeManager.setHeight();
     }
 
     @Override
@@ -85,10 +85,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     @Override
     protected void init() {
         super.init();
-        LOGGER.info("gui init");
-        LOGGER.info("height: {}, window height: {}", getContentHeight(), this.height);
         updateWidgetDimension();
-        LOGGER.info("height: {}", getContentHeight());
         int centeredX = getCenteredX();
         int centeredY = getCenteredY();
         mainLayout.setOffsets(centeredX, centeredY);
@@ -98,7 +95,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         if (hasInitialized) {
             defaultWaypointLists = this.waypointClientMod.getWaypointListsByDimensionName(getSelectedDimension());
         } else {
-            defaultWaypointLists = this.waypointClientMod.getDefaultWaypointLists();
+            defaultWaypointLists = this.waypointClientMod.getCurrentWaypointLists();
             dimensionListWidget.setDimensionName(getCurrentDimensionName());
             hasInitialized = true;
         }
@@ -114,6 +111,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     private void onSelectDimension(String dimensionName) {
+        waypointListWidget.setHideButtonEnabled(dimensionName.equals(getCurrentDimensionName()));
         waypointListWidget.updateWaypointLists(this.waypointClientMod.getWaypointListsByDimensionName(dimensionName));
     }
 

@@ -2,8 +2,10 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.Expandable;
 import _959.server_waypoint.common.client.gui.Padding;
+import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
+import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
@@ -18,10 +20,12 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static _959.server_waypoint.ModInfo.MOD_ID;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
@@ -31,20 +35,23 @@ import static java.util.Collections.binarySearch;
 
 public class NewWaypointListWidget extends ShiftableScrollableWidget implements Padding, Expandable {
     public static int TELEPORT_KEY = 84;
-    public static final Text EMPTY_MARK = Text.translatable("waypoint.empty_mark");
-    public static final Identifier EDIT_ICON = Identifier.of("server_waypoint", "textures/gui/edit.png");
-    public static final Identifier REMOVE_ICON = Identifier.of("server_waypoint", "textures/gui/delete.png");
-    public static final Identifier CONFIRM_REMOVE_ICON = Identifier.of("server_waypoint", "textures/gui/confirm_delete.png");
-    public static final Identifier LIST_EMPTY = Identifier.of("server_waypoint", "textures/gui/list_empty.png");
-    public static final Identifier LIST_EXPAND_ICON = Identifier.of("server_waypoint", "textures/gui/list_expand.png");
-    public static final Identifier LIST_COLLAPSE_ICON = Identifier.of("server_waypoint", "textures/gui/list_collapse.png");
+    public static final Text EMPTY_INFO_TEXT = Text.translatable("waypoint.empty_mark");
+    public static final Identifier SHOW_ICON = Identifier.of(MOD_ID, "textures/gui/show.png");
+    public static final Identifier HIDE_ICON = Identifier.of(MOD_ID, "textures/gui/hide.png");
+    public static final Identifier ADD_ICON = Identifier.of(MOD_ID, "textures/gui/add.png");
+    public static final Identifier EDIT_ICON = Identifier.of(MOD_ID, "textures/gui/edit.png");
+    public static final Identifier REMOVE_ICON = Identifier.of(MOD_ID, "textures/gui/delete.png");
+    public static final Identifier CONFIRM_REMOVE_ICON = Identifier.of(MOD_ID, "textures/gui/confirm_delete.png");
+    public static final Identifier LIST_EMPTY = Identifier.of(MOD_ID, "textures/gui/list_empty.png");
+    public static final Identifier LIST_EXPAND_ICON = Identifier.of(MOD_ID, "textures/gui/list_expand.png");
+    public static final Identifier LIST_COLLAPSE_ICON = Identifier.of(MOD_ID, "textures/gui/list_collapse.png");
     private static final int listIconSize = 16;
-    private static final int buttonIconSize = 11;
+    private static final int buttonIconSize = 12;
     private static double SCROLLED_POSITION = 0.0D;
     private final WaypointManagerScreen parentScreen;
     private final TextRenderer textRenderer;
-    private final PaddingBackground paddingBackground = new PaddingBackground(this, 5, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
-    private volatile List<WaypointList> waypointLists = new ArrayList<>();
+    private final PaddingBackground paddingBackground = new PaddingBackground(this, 5, 7, 10, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
+    private volatile @Unmodifiable List<WaypointList> waypointLists = new ArrayList<>();
     private final List<Integer> listPositions = new ArrayList<>();
     private final int itemHeight = 20;
     private final int textVertOffset;
@@ -52,12 +59,14 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
     private final int buttonIconVertOffset;
     private final int buttonIconHrzOffset;
     private final int btnWidth = 19;
-    private int removeBtnXPos = width - btnWidth;
-    private int editBtnXPos = removeBtnXPos - btnWidth;
+    private int thirdBtnXPos = width - btnWidth;
+    private int secondBtnXPos = thirdBtnXPos - btnWidth;
+    private int firstBtnXPos = secondBtnXPos - btnWidth;
     private boolean empty = true;
     private int contentHeight = 0;
     private int removeClickedPos = -1;
     private int hoverPos = -2;
+    private boolean hideButtonEnabled = true;
 
     public NewWaypointListWidget(int x, int y, int width, int height, WaypointManagerScreen parent, TextRenderer textRenderer) {
         super(x, y, width, height, Text.literal("Waypoint lists"));
@@ -66,7 +75,7 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
         recalculateListPositions();
         recalculateContentHeight();
         setScrollY(SCROLLED_POSITION);
-        textVertOffset = centered(itemHeight, textRenderer.fontHeight);
+        textVertOffset = centered(itemHeight, textRenderer.fontHeight) + 1;
         listIconVertOffset = centered(itemHeight, listIconSize);
         buttonIconVertOffset = centered(itemHeight, buttonIconSize);
         buttonIconHrzOffset = centered(btnWidth, buttonIconSize);
@@ -76,20 +85,22 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
         SCROLLED_POSITION = 0.0D;
     }
 
+    public void setHideButtonEnabled(boolean hideButtonEnabled) {
+        this.hideButtonEnabled = hideButtonEnabled;
+    }
+
     /**
      * updates the reference of {@link #waypointLists}, if newWaypointLists is empty only clears the current list
      * */
-    public void updateWaypointLists(List<WaypointList> newWaypointLists) {
+    public void updateWaypointLists(@Unmodifiable List<WaypointList> newWaypointLists) {
         if (newWaypointLists.isEmpty()) {
             this.empty = true;
-            this.waypointLists.clear();
             this.listPositions.clear();
         } else {
             this.empty = false;
-            this.waypointLists.clear();
             LOGGER.info("new waypoint Lists :{}", newWaypointLists);
-            this.waypointLists = newWaypointLists;
         }
+        this.waypointLists = newWaypointLists;
         recalculateListPositions();
         recalculateContentHeight();
         setScrollY(Math.clamp(SCROLLED_POSITION, 0, getContentsHeightWithPadding()));
@@ -172,7 +183,7 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
         }
         if (this.checkScrollbarDragged(mouseX, mouseY, button)) {
             return true;
-        };
+        }
         int x = getX();
         int y = getY();
         int x1 = x + this.width;
@@ -189,12 +200,15 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
 
             int index = binarySearch(listPositions, pos);
             LOGGER.info("pos: {}, index: {}", pos, index);
+            int firstBtn = x + firstBtnXPos;
+            int secondBtn = x + secondBtnXPos;
+            int thirdBtn = x + thirdBtnXPos;
             if (index >= 0) {
                 // clicked on list
                 WaypointList waypointList = waypointLists.get(index);
                 if (waypointList.isEmpty()) {
-                    int removeBtnPos = removeBtnXPos + x;
-                    if (mouseX > removeBtnPos) {
+                    if (mouseX > thirdBtn) {
+                        // clicked on remove button
                         if (removeClickedPos == pos) {
                             ClientPlayNetworkHandler networkHandler = MinecraftClient.getInstance().getNetworkHandler();
                             if (networkHandler != null) {
@@ -204,6 +218,30 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
                             }
                         }
                         removeClickedPos = pos;
+                        return true;
+                    } else if (mouseX > secondBtn) {
+                        // clicked on add button
+                        MinecraftClient.getInstance().setScreen(new WaypointAddScreen(this.parentScreen, this.parentScreen.getSelectedDimension(), waypointList.name()));
+                        this.removeClickedPos = -1;
+                        return true;
+                    }
+                } else {
+                    if (mouseX > thirdBtn) {
+                        // clicked on add button
+                        MinecraftClient.getInstance().setScreen(new WaypointAddScreen(this.parentScreen, this.parentScreen.getSelectedDimension(), waypointList.name()));
+                        this.removeClickedPos = -1;
+                        return true;
+                    } else if (mouseX > secondBtn) {
+                        // clicked on hide button
+                        if (hideButtonEnabled) {
+                            waypointList.setShow(!waypointList.isShow());
+                            List<SimpleWaypoint> list = waypointList.simpleWaypoints();
+                            if (waypointList.isShow()) {
+                                OptimizedWaypointRenderer.addList(list);
+                            } else {
+                                OptimizedWaypointRenderer.removeList(list);
+                            }
+                        }
                         return true;
                     }
                 }
@@ -230,12 +268,7 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
                 }
                 WaypointList waypointList = result.left();
                 SimpleWaypoint waypoint = result.right();
-                int removeBtnPos = removeBtnXPos + x;
-                if (mouseX > x + editBtnXPos && mouseX < removeBtnPos) {
-                    // clicked on edit button
-                    MinecraftClient.getInstance().setScreen(new WaypointEditScreen(this.parentScreen, this.parentScreen.getSelectedDimension(), waypointList.name(), waypoint));
-
-                } else if (mouseX > removeBtnPos) {
+                if (mouseX > thirdBtn) {
                     // clicked on remove button
                     if (removeClickedPos == pos) {
                         ClientPlayNetworkHandler networkHandler = MinecraftClient.getInstance().getNetworkHandler();
@@ -246,8 +279,21 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
                         }
                     }
                     this.removeClickedPos = pos;
+                } else if (mouseX > secondBtn) {
+                    // clicked on edit button
+                    MinecraftClient.getInstance().setScreen(new WaypointEditScreen(this.parentScreen, this.parentScreen.getSelectedDimension(), waypointList.name(), waypoint));
+                    return true;
+                } else if (mouseX > firstBtn) {
+                    // clicked on show button
+                    if (hideButtonEnabled) {
+                        if (waypoint.isRendered()) {
+                            OptimizedWaypointRenderer.remove(waypoint);
+                        } else {
+                            OptimizedWaypointRenderer.add(waypoint);
+                        }
+                    }
+                    return true;
                 }
-                LOGGER.info("waypoint: {}", waypoint);
             }
         }
         return false;
@@ -305,7 +351,7 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
         int listWidth = overflows() ?  width - SCROLLBAR_WIDTH : width;
         
         if (empty) {
-            context.drawText(textRenderer, EMPTY_MARK, 5, textVertOffset, 0x55FFFFFF, true);
+            context.drawText(textRenderer, EMPTY_INFO_TEXT, 5, textVertOffset, 0x55FFFFFF, true);
             matrixStack.translate(0.0D, scrollY, 0.0D);
             matrixStack.translate(-x, -y, 0.0D);
             context.disableScissor();
@@ -325,12 +371,21 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
         }
 
         // x for edit
-        removeBtnXPos = listWidth - btnWidth;
+        thirdBtnXPos = listWidth - btnWidth;
         // x for width
-        editBtnXPos = removeBtnXPos - btnWidth;
+        secondBtnXPos = thirdBtnXPos - btnWidth;
+        // x for show
+        firstBtnXPos = secondBtnXPos - btnWidth;
+        // waypoint text background alpha
+        int bgAlpha;
 
         for (WaypointList waypointList : this.waypointLists) {
             int y1 = i * itemHeight;
+            boolean isListShow = waypointList.isShow();
+            int textColor = 0x80FFFFFF;
+            if (isListShow) {
+                textColor = 0xFFFFFFFF;
+            }
             // list highlight
             boolean hoverOnList = hoverPos == i;
             if (hoverOnList) {
@@ -339,49 +394,71 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
             }
             // plus one for list name row
             i++;
-            // waypoint list name
-            context.drawText(textRenderer, waypointList.name(), 18, y1 + textVertOffset, 0xFFFFFFFF, true);
-            // render empty mark
-            if (waypointList.isEmpty()) {
-                int textWidth = textRenderer.getWidth(EMPTY_MARK);
-                context.drawTextWithShadow(textRenderer, EMPTY_MARK, listWidth - textWidth - buttonIconSize - 8, y1 + textVertOffset, 0x55FFFFFF);
-                context.drawTexture(RenderLayer::getGuiTextured, LIST_EMPTY, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
-                int y3 = y1 + buttonIconVertOffset;
-                if (hoverOnList) {
+            int centeredBtnY = y1 + buttonIconVertOffset;
+            boolean isListEmpty = waypointList.isEmpty();
+            // render hover buttons on list
+            if (hoverOnList) {
+                if (isListEmpty) {
+                    context.drawTexture(RenderLayer::getGuiTextured, ADD_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                     if (removeClickedPos == hoverPos) {
-                        context.drawTexture(RenderLayer::getGuiTextured, CONFIRM_REMOVE_ICON, removeBtnXPos + buttonIconHrzOffset, y3, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                        context.drawTexture(RenderLayer::getGuiTextured, CONFIRM_REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                     } else {
-                        context.drawTexture(RenderLayer::getGuiTextured, REMOVE_ICON, removeBtnXPos + buttonIconHrzOffset, y3, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                        context.drawTexture(RenderLayer::getGuiTextured, REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                         removeClickedPos = -1;
                     }
+                } else {
+                    if (isListShow) {
+                        context.drawTexture(RenderLayer::getGuiTextured, SHOW_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    } else {
+                        context.drawTexture(RenderLayer::getGuiTextured, HIDE_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    }
+                    context.drawTexture(RenderLayer::getGuiTextured, ADD_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                 }
+            }
+            // waypoint list name
+            context.drawText(textRenderer, waypointList.name(), 18, y1 + textVertOffset, textColor, true);
+            // render list expand icon
+            if (isListEmpty) {
+                context.drawTexture(RenderLayer::getGuiTextured, LIST_EMPTY, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
                 continue;
             }
-            // render list expand icon
             if (waypointList.isExpand()) {
                 context.drawTexture(RenderLayer::getGuiTextured, LIST_EXPAND_ICON, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
             } else {
                 context.drawTexture(RenderLayer::getGuiTextured, LIST_COLLAPSE_ICON, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
                 continue;
             }
-            List<SimpleWaypoint> simpleWaypoints = waypointList.simpleWaypoints();
-            for (SimpleWaypoint simpleWaypoint : simpleWaypoints) {
-                String name = simpleWaypoint.name();
-                String initials = simpleWaypoint.initials();
-                int rgb = simpleWaypoint.rgb();
+            List<SimpleWaypoint> waypoints = waypointList.simpleWaypoints();
+            for (SimpleWaypoint waypoint : waypoints) {
+                String name = waypoint.name();
+                String initials = waypoint.initials();
+                boolean wpRendered = waypoint.isRendered();
+                bgAlpha = 0x80000000;
+                textColor = 0x80FFFFFF;
+                if (wpRendered) {
+                    bgAlpha = 0xFF000000;
+                    textColor = 0xFFFFFFFF;
+                }
+                int rgb = waypoint.rgb();
                 y1 = i * itemHeight;
                 int y2 = y1 + itemHeight;
                 if (hoverPos == i) {
                     // highlight
                     context.fill(0, y1, listWidth, y2, 0x60000000 + rgb);
+                    int wpCenteredBtnY = y1 + buttonIconVertOffset;
+                    // show button
+                    if (wpRendered) {
+                        context.drawTexture(RenderLayer::getGuiTextured, SHOW_ICON, firstBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    } else {
+                        context.drawTexture(RenderLayer::getGuiTextured, HIDE_ICON, firstBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    }
                     // edit button
-                    int y3 = y1 + buttonIconVertOffset;
-                    context.drawTexture(RenderLayer::getGuiTextured, EDIT_ICON, editBtnXPos + buttonIconHrzOffset, y3, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    context.drawTexture(RenderLayer::getGuiTextured, EDIT_ICON, secondBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                     // remove button
                     if (removeClickedPos == hoverPos) {
-                        context.drawTexture(RenderLayer::getGuiTextured, CONFIRM_REMOVE_ICON, removeBtnXPos + buttonIconHrzOffset, y3, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                        context.drawTexture(RenderLayer::getGuiTextured, CONFIRM_REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                     } else {
-                        context.drawTexture(RenderLayer::getGuiTextured, REMOVE_ICON, removeBtnXPos + buttonIconHrzOffset, y3, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                        context.drawTexture(RenderLayer::getGuiTextured, REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                         removeClickedPos = -1;
                     }
                     // border
@@ -390,10 +467,12 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
                     context.fill(0, y1, listWidth, y2, 0x10000000 + rgb);
                 }
                 final int finalY = y1 + textVertOffset;
-                context.draw(drawer -> {
-                    textRenderer.draw(initials, 10, finalY, 0xFFFFFFFF, true, matrixStack.peek().getPositionMatrix(), drawer, TextRenderer.TextLayerType.SEE_THROUGH, 0xFF000000 + rgb, 0xFF);
-                });
-                context.drawTextWithShadow(textRenderer, name, 30, finalY, 0xFFFFFFFF);
+                final int finalTextColor = textColor;
+                final int backgroundColor = bgAlpha | rgb;
+                context.draw(drawer ->
+                    textRenderer.draw(initials, 10, finalY, finalTextColor, true, matrixStack.peek().getPositionMatrix(), drawer, TextRenderer.TextLayerType.SEE_THROUGH, backgroundColor, 0xFF)
+                );
+                context.drawTextWithShadow(textRenderer, name, 30, finalY, textColor);
                 i++;
             }
 //                int listLen = simpleWaypoints.size();

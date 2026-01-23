@@ -13,17 +13,13 @@ public class TranslucentButton extends ShiftableClickableWidget {
     private final ButtonClickCallback callback;
     protected final Text text;
     protected final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-
-    public TranslucentButton(int x, int y, int width, int height, Text text) {
-        super(x, y, width, height, text);
-        this.text = text;
-        this.callback = () -> {};
-    }
+    protected final int textWidth;
 
     public TranslucentButton(int x, int y, int width, int height, Text text, ButtonClickCallback callback) {
         super(x, y, width, height, text);
         this.text = text;
         this.callback = callback;
+        this.textWidth = textRenderer.getWidth(text);
         this.setYOffset(-1);
     }
 
@@ -42,7 +38,6 @@ public class TranslucentButton extends ShiftableClickableWidget {
         int bgColor = isHovered() ? BUTTON_BG_HOVER_COLOR : BUTTON_BG_COLOR;
         int fixedY = y - 1;
         context.fill(x, fixedY, x + width, fixedY + height, bgColor);
-        int textWidth = textRenderer.getWidth(text);
         int centerX = centered(this.width, textWidth);
         int centerY = centered(this.height, textRenderer.fontHeight);
         context.drawText(textRenderer, this.text, x + centerX, y + centerY, 0xFFFFFFFF, true);

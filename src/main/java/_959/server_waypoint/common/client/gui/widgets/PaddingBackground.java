@@ -44,6 +44,22 @@ public class PaddingBackground implements Drawable, Padding {
         }
     }
 
+    public int getTopPadding() {
+        return topPadding;
+    }
+
+    public int getBottomPadding() {
+        return bottomPadding;
+    }
+
+    public int getLeftPadding() {
+        return leftPadding;
+    }
+
+    public int getRightPadding() {
+        return rightPadding;
+    }
+
     @Override
     public int getVisualHeight() {
         return this.widget.getHeight() + this.topPadding + this.bottomPadding;
