@@ -26,6 +26,8 @@ public class SimpleWaypoint {
         return this.renderId != -1;
     }
 
+    // this is used for prevent incorrect deserialization by gson
+    @SuppressWarnings("unused")
     private SimpleWaypoint() {
         this.renderId = -1;
     }
@@ -49,6 +51,7 @@ public class SimpleWaypoint {
         this.global = global;
     }
 
+    // do not need to copy renderId as renderId should be unique for each instance
     public SimpleWaypoint(SimpleWaypoint other) {
         this(other.name, other.initials, other.pos, other.rgb, other.yaw, other.global);
     }

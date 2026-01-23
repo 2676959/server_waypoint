@@ -50,14 +50,6 @@ public class WaypointList {
     /**
      * should only use as client when syncing from server
      * */
-    public void removeByName(String name, int syncId) {
-        this.simpleWaypoints.removeIf(waypoint -> name.equals(waypoint.name()));
-        this.syncNum = syncId;
-    }
-
-    /**
-     * should only use as client when syncing from server
-     * */
     public void remove(SimpleWaypoint waypoint, int syncId) {
         this.simpleWaypoints.remove(waypoint);
         this.syncNum = syncId;
@@ -146,6 +138,7 @@ public class WaypointList {
         return this;
     }
 
+    @SuppressWarnings("unused")
     public WaypointList deepCopy() {
         WaypointList newList = build(this.name, this.syncNum);
         for (SimpleWaypoint waypoint : this.simpleWaypoints) {
@@ -164,10 +157,6 @@ public class WaypointList {
 
     public static WaypointList buildByServer(String name) {
         return new WaypointList(name, SERVER_N, new ArrayList<>());
-    }
-
-    public static WaypointList buildByClient(String name) {
-        return new WaypointList(name, 0, new ArrayList<>());
     }
 
     @Override
