@@ -600,16 +600,31 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     }
 
     private void executeRemoveList(S source, D dimensionArgument, String listName) {
-        runWithSelectorTarget(source, dimensionArgument, listName,
-                (fileManager, waypointList) ->
-                        this.sender.sendError(source, translatable("waypoint.remove.list.nonempty", text(listName))),
-                (fileManager, waypointList) -> {
-                    fileManager.removeWaypointListByName(listName);
-                    String dimensionName = fileManager.getDimensionName();
-                    this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(dimensionName, listName, null, null, REMOVE_LIST, WaypointList.REMOVE_LIST));
-                    this.sender.sendMessage(source, translatable("waypoint.remove.list.success", text(listName)));
-                    saveChanges(source, fileManager);
-                });
+//        runWithSelectorTarget(source, dimensionArgument, listName,
+//                (fileManager, waypointList) ->
+//                        this.sender.sendError(source, translatable("waypoint.remove.list.nonempty", text(listName))),
+//                (fileManager, waypointList) -> {
+//                    fileManager.removeWaypointListByName(listName);
+//                    String dimensionName = fileManager.getDimensionName();
+//                    this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(dimensionName, listName, null, null, REMOVE_LIST, WaypointList.REMOVE_LIST));
+//                    this.sender.sendMessage(source, translatable("waypoint.remove.list.success", text(listName)));
+//                    saveChanges(source, fileManager);
+//                });
+        runWithSelectorTarget(source, dimensionArgument, fileManager -> {
+            this.waypointServer.removeWaypointList(fileManager, listName, fileManager1 -> {
+                        fileManager.removeWaypointListByName(listName);
+                        String dimensionName = fileManager.getDimensionName();
+                        this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(dimensionName, listName, null, null, REMOVE_LIST, WaypointList.REMOVE_LIST));
+                        this.sender.sendMessage(source, translatable("waypoint.remove.list.success", text(listName)));
+                        saveChanges(source, fileManager);
+                    },
+                    () -> {
+                        this.sender.sendError(source, translatable("waypoint.nonexist.list", text(listName)));
+                    },
+                    () -> {
+                        this.sender.sendError(source, translatable("waypoint.remove.list.nonempty", text(listName)));
+                    });
+        });
     }
 
     private void executeRemoveWaypoint(S source, D dimensionArgument, String listName, String name) {

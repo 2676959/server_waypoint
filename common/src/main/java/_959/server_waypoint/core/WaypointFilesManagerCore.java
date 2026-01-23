@@ -96,6 +96,18 @@ public class WaypointFilesManagerCore {
         }
     }
 
+    public void removeWaypointList(WaypointFileManager fileManager, String listName, Consumer<WaypointFileManager> successAction, Runnable listNotFoundAction, Runnable nonEmptyListAction) {
+        WaypointList list = fileManager.getWaypointListByName(listName);
+        if (list == null) {
+            listNotFoundAction.run();
+        } else if (list.isEmpty()) {
+            fileManager.removeWaypointListByName(listName);
+            successAction.accept(fileManager);
+        } else {
+            nonEmptyListAction.run();
+        }
+    }
+
     public void updateWaypointProperties(@NotNull SimpleWaypoint waypoint, String name, String initials, WaypointPos waypointPos, int rgb, int yaw, boolean global, Runnable successAction, Runnable identicalAction) {
         if (waypoint.compareProperties(name, initials, waypointPos, rgb, yaw, global)) {
             identicalAction.run();

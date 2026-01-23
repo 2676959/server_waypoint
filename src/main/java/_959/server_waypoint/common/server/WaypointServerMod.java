@@ -1,5 +1,7 @@
 package _959.server_waypoint.common.server;
 
+import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
+import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import _959.server_waypoint.common.network.ModChatMessageHandler;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
@@ -25,7 +27,7 @@ import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asIntegrate
 
 public class WaypointServerMod extends WaypointServerCore {
     // the default value is true because this is used by WaypointClient to identify the server
-    public static boolean isDedicated = true;
+    private static boolean hasClient = false;
     public static MinecraftServer MINECRAFT_SERVER;
     public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_mod");
     public static WaypointServerMod INSTANCE;
@@ -38,6 +40,10 @@ public class WaypointServerMod extends WaypointServerCore {
         INSTANCE = this;
     }
 
+    public static boolean hasClient() {
+        return hasClient;
+    }
+
     public static WaypointServerMod getInstance() {
         return INSTANCE;
     }
@@ -46,54 +52,69 @@ public class WaypointServerMod extends WaypointServerCore {
     public void addWaypoint(String dimensionName, String listName, SimpleWaypoint waypoint, BiConsumer<@NotNull WaypointFileManager, @NotNull WaypointList> successAction, Consumer<@NotNull SimpleWaypoint> duplicateAction) {
         super.addWaypoint(dimensionName, listName, waypoint, (fileManager, waypointList) -> {
             successAction.accept(fileManager, waypointList);
-            if (!isDedicated) {
-                LOGGER.info("do some updates in rendering");
+            if (hasClient) {
+                OptimizedWaypointRenderer.add(waypoint);
+                WaypointManagerScreen.refreshWaypointLists(dimensionName);
             }
         }, duplicateAction);
     }
 
     @Override
-    public void addWaypointList(String dimensionName, String listName, Consumer<WaypointFileManager> successAction, Runnable listExistsAction) {
-        super.addWaypointList(dimensionName, listName, (fileManager) -> {
-            successAction.accept(fileManager);
-            if (!isDedicated) {
-                LOGGER.info("do some updates in rendering");
-            }
-        }, listExistsAction);
+    public void removeWaypoint(WaypointList waypointList, SimpleWaypoint waypoint) {
+        if (hasClient) {
+            OptimizedWaypointRenderer.remove(waypoint);
+            WaypointManagerScreen.refreshWaypointLists();
+        }
+        super.removeWaypoint(waypointList, waypoint);
     }
 
     @Override
     public void updateWaypointProperties(@NotNull SimpleWaypoint waypoint, String name, String initials, WaypointPos waypointPos, int rgb, int yaw, boolean global, Runnable successAction, Runnable identicalAction) {
         super.updateWaypointProperties(waypoint, name, initials, waypointPos, rgb, yaw, global, () -> {
             successAction.run();
-            if (!isDedicated) {
-                LOGGER.info("do some updates in rendering");
+            if (hasClient) {
+                OptimizedWaypointRenderer.updateWaypoint(waypoint);
             }
         }, identicalAction);
     }
 
     @Override
-    public void removeWaypoint(WaypointList waypointList, SimpleWaypoint waypoint) {
-        if (!isDedicated) {
-            LOGGER.info("do some updates in rendering");
-        }
-        super.removeWaypoint(waypointList, waypoint);
+    public void addWaypointList(String dimensionName, String listName, Consumer<WaypointFileManager> successAction, Runnable listExistsAction) {
+        super.addWaypointList(dimensionName, listName, (fileManager) -> {
+            successAction.accept(fileManager);
+            if (hasClient) {
+                WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
+            }
+        }, listExistsAction);
+    }
+
+    @Override
+    public void removeWaypointList(WaypointFileManager fileManager, String listName, Consumer<WaypointFileManager> successAction, Runnable listNotFoundAction, Runnable nonEmptyListAction) {
+        super.removeWaypointList(fileManager, listName, (fileManager1) -> {
+            successAction.accept(fileManager1);
+            if (hasClient) {
+                WaypointManagerScreen.updateWaypointLists(fileManager1.getDimensionName(), fileManager1.getWaypointLists());
+            }
+        }, listNotFoundAction, nonEmptyListAction);
+
     }
 
     public void load(MinecraftServer minecraftServer) {
         setMinecraftServer(minecraftServer);
-        isDedicated = minecraftServer.isDedicated();
+        hasClient = !minecraftServer.isDedicated();
         if (CONFIG.Features().sendXaerosWorldId()) {
             this.initXearoWorldId(minecraftServer.getSavePath(WorldSavePath.LEVEL_DAT).getParent());
         }
         try {
-            if (isDedicated) {
+            if (!hasClient) {
+                WaypointList.excludeClientOnlyFields = true;
                 if (this.loaded) {
                     return;
                 }
                 initConfigAndLanguageResource();
                 initOrReadWaypointFiles();
             } else {
+                WaypointList.excludeClientOnlyFields = false;
                 if (loaded) {
                     changeWaypointFilesDir(asIntegratedServer(minecraftServer.getSavePath(WorldSavePath.ROOT)));
                 } else {
@@ -112,7 +133,7 @@ public class WaypointServerMod extends WaypointServerCore {
         freeAllLoadedFiles();
         setMinecraftServer(null);
         this.loaded = false;
-        isDedicated = true;
+        hasClient = false;
     }
 
     @Override
