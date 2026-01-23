@@ -40,7 +40,6 @@ public class C2SPacketHandler<S, P> {
     }
 
     public void onClientUpdateRequest(P player, ClientUpdateRequestBuffer buffer) {
-        LOGGER.info("received update request packet: {}", buffer.toString());
         UpdatesBundleBuffer updatesBundle = new UpdatesBundleBuffer();
         List<String> allDimensionsOnServer = new ArrayList<>(this.waypointServer.getFileManagerMap().keySet());
         // iterating all dimensions from client and compare with server
@@ -89,9 +88,8 @@ public class C2SPacketHandler<S, P> {
             }
         }
 
-        LOGGER.info("updates bundle: {}", updatesBundle);
+        this.sender.sendPlayerPacket(player, updatesBundle);
         if (!updatesBundle.isEmpty()) {
-            this.sender.sendPlayerPacket(player, updatesBundle);
             this.sender.sendPlayerMessage(player, translatable("waypoint.updates.sent"));
         }
     }
