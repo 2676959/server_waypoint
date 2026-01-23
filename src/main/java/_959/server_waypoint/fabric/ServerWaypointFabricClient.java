@@ -2,7 +2,8 @@
 package _959.server_waypoint.fabric;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
-import _959.server_waypoint.common.client.gui.WaypointManagerScreen;
+import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
+import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -14,8 +15,6 @@ import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
-
-import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 
 public class ServerWaypointFabricClient implements ClientModInitializer {
     private static KeyBinding keyBinding;
@@ -31,7 +30,7 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (keyBinding.wasPressed()) {
                 client.player.sendMessage(Text.literal("Key 1 was pressed!"), false);
-                MinecraftClient.getInstance().setScreen(new WaypointManagerScreen(Text.of("test"), WaypointClientMod.getInstance()));
+                MinecraftClient.getInstance().setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance()));
             }
         });
         ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((clientWorld, world) -> {
@@ -39,6 +38,7 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
         });
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
             WaypointClientMod.createInstance(client, FabricLoader.getInstance().getGameDir());
+            OptimizedWaypointRenderer.init();
         });
     }
 }
