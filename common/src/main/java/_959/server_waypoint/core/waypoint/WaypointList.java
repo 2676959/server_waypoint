@@ -1,23 +1,27 @@
 package _959.server_waypoint.core.waypoint;
 
 import _959.server_waypoint.core.network.WaypointListSyncIdentifier;
+import _959.server_waypoint.util.GsonUtils;
+import com.google.gson.ExclusionStrategy;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class WaypointList {
+    public static boolean excludeClientOnlyFields = true;
+    public static final ExclusionStrategy WAYPOINT_LIST_EXCLUSION_STRATEGY = new GsonUtils.DynamicExclusionStrategy(() -> excludeClientOnlyFields, "show", "expand");
     public static final int REMOVE_LIST = -2;
     public static final int SERVER_N = 1;
     @Expose @SerializedName("list_name") private String name;
     @Expose @SerializedName("n") private int syncNum;
     @Expose @SerializedName("waypoints") private List<SimpleWaypoint> simpleWaypoints;
-    // client only uses these
+    // client only fields and methods
     //? if !paper {
-    private boolean show = true;
-    private boolean expand = true;
+    @Expose private boolean show = true;
+    @Expose private boolean expand = true;
 
     public boolean isShow() {
         return this.show;
@@ -33,6 +37,37 @@ public class WaypointList {
 
     public void setExpand(boolean expand) {
         this.expand = expand;
+    }
+
+    /**
+     * should only use as client when syncing from server
+     * */
+    public void addFromRemoteServer(SimpleWaypoint waypoint, int syncId) {
+        this.simpleWaypoints.add(waypoint);
+        this.syncNum = syncId;
+    }
+
+    /**
+     * should only use as client when syncing from server
+     * */
+    public void removeByName(String name, int syncId) {
+        this.simpleWaypoints.removeIf(waypoint -> name.equals(waypoint.name()));
+        this.syncNum = syncId;
+    }
+
+    /**
+     * should only use as client when syncing from server
+     * */
+    public void remove(SimpleWaypoint waypoint, int syncId) {
+        this.simpleWaypoints.remove(waypoint);
+        this.syncNum = syncId;
+    }
+
+    /**
+     * should only use as client when syncing from server
+     * */
+    public void setSyncNum(int syncId) {
+        this.syncNum = syncId;
     }
     //?}
 
@@ -66,8 +101,8 @@ public class WaypointList {
         return this.simpleWaypoints.isEmpty();
     }
 
-    public List<SimpleWaypoint> simpleWaypoints() {
-        return this.simpleWaypoints;
+    public @Unmodifiable List<SimpleWaypoint> simpleWaypoints() {
+        return this.simpleWaypoints.stream().toList();
     }
 
     public WaypointList setName(String name) {
@@ -100,29 +135,6 @@ public class WaypointList {
     public void remove(SimpleWaypoint waypoint) {
         this.simpleWaypoints.remove(waypoint);
         this.syncNum++;
-    }
-
-    /**
-     * should only use as client when syncing from server
-     * */
-    public void addFromRemoteServer(SimpleWaypoint waypoint, int syncId) {
-        this.simpleWaypoints.add(waypoint);
-        this.syncNum = syncId;
-    }
-
-    /**
-     * should only use as client when syncing from server
-     * */
-    public void removeByName(String name, int syncId) {
-        this.simpleWaypoints.removeIf(waypoint -> name.equals(waypoint.name()));
-        this.syncNum = syncId;
-    }
-
-    /**
-     * should only use as client when syncing from server
-     * */
-    public void setSyncNum(int syncId) {
-        this.syncNum = syncId;
     }
 
     public void incSyncNum() {

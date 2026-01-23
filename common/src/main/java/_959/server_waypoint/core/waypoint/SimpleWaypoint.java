@@ -18,6 +18,18 @@ public class SimpleWaypoint {
     @Expose private int yaw;
     @Expose private boolean global;
     private static final String SEPARATOR = ":";
+    // not on paper
+    //? if !paper {
+    public int renderId = -1; // -1 means not in waypoint render
+
+    public boolean isRendered() {
+        return this.renderId != -1;
+    }
+
+    private SimpleWaypoint() {
+        this.renderId = -1;
+    }
+    //?}
 
     public SimpleWaypoint(String name, String initials, WaypointPos pos, int rgb, int yaw, boolean global) {
         this.name = name;
@@ -68,6 +80,30 @@ public class SimpleWaypoint {
 
     public WaypointPos pos() {
         return this.pos;
+    }
+
+    public int x() {
+        return this.pos.x();
+    }
+
+    public int y() {
+        return this.pos.y();
+    }
+
+    public int z() {
+        return this.pos.z();
+    }
+
+    public float X() {
+        return this.pos.X();
+    }
+
+    public float Y() {
+        return this.pos.Y();
+    }
+
+    public float Z() {
+        return this.pos.Z();
     }
 
     public int rgb() {
