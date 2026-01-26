@@ -94,7 +94,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     }
 
     private void sendAddCommand() {
-        sendCommand(addCmd(this.dimensionName, this.listName,
+        sendCommand(addCmd(this.dimensionName, this.listNameField.getText(),
                 new SimpleWaypoint(
                         this.nameEditBox.getText(),
                         this.initialsEditBox.getText(),
