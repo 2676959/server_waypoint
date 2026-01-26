@@ -158,6 +158,13 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         }
     }
 
+    public void onLeaveServer() {
+        OptimizedWaypointRenderer.clearScene();
+        if (!this.mc.isConnectedToLocalServer()) {
+            this.saveAllWaypointFiles();
+        }
+    }
+
     public void onJoinServer() {
         OptimizedWaypointRenderer.clearScene();
         if (this.mc.isConnectedToLocalServer()) {
@@ -298,9 +305,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                         fileManager.addWaypointList(waypointList);
                     }
                     waypointList.addFromRemoteServer(waypoint, syncId);
-                    WaypointManagerScreen.refreshWaypointLists(dimensionName);
                     fileManager.saveDimension();
-                    OptimizedWaypointRenderer.add(waypoint);
+                    if (dimensionName.equals(currentDimensionName)) {
+                        OptimizedWaypointRenderer.add(waypoint);
+                        WaypointManagerScreen.refreshWaypointLists();
+                    }
                 }
                 case REMOVE -> {
                     if (fileManager == null) {
@@ -313,10 +322,12 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                     String waypointName = buffer.waypointName();
                     SimpleWaypoint wpToRemove = waypointList.getWaypointByName(waypointName);
                     if (wpToRemove != null) {
-                        OptimizedWaypointRenderer.remove(wpToRemove);
                         waypointList.remove(wpToRemove, buffer.syncId());
                         fileManager.saveDimension();
-                        WaypointManagerScreen.refreshWaypointLists(dimensionName);
+                        if (dimensionName.equals(currentDimensionName)) {
+                            WaypointManagerScreen.refreshWaypointLists();
+                            OptimizedWaypointRenderer.remove(wpToRemove);
+                        }
                     }
                 }
                 case UPDATE -> {
@@ -332,7 +343,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                         return;
                     }
                     waypointFound.copyFrom(waypoint);
-                    OptimizedWaypointRenderer.updateWaypoint(waypointFound);
+                    if (dimensionName.equals(currentDimensionName)) {
+                        OptimizedWaypointRenderer.updateWaypoint(waypointFound);
+                    }
                     waypointList.setSyncNum(buffer.syncId());
                     fileManager.saveDimension();
                 }

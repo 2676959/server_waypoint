@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.server;
 
+import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import _959.server_waypoint.common.network.ModChatMessageHandler;
@@ -53,27 +54,33 @@ public class WaypointServerMod extends WaypointServerCore {
         super.addWaypoint(dimensionName, listName, waypoint, (fileManager, waypointList) -> {
             successAction.accept(fileManager, waypointList);
             if (hasClient) {
-                OptimizedWaypointRenderer.add(waypoint);
-                WaypointManagerScreen.refreshWaypointLists(dimensionName);
+                if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
+                    OptimizedWaypointRenderer.add(waypoint);
+                    WaypointManagerScreen.refreshWaypointLists();
+                }
             }
         }, duplicateAction);
     }
 
     @Override
-    public void removeWaypoint(WaypointList waypointList, SimpleWaypoint waypoint) {
+    public void removeWaypoint(@NotNull WaypointFileManager fileManager, WaypointList waypointList, SimpleWaypoint waypoint) {
         if (hasClient) {
-            OptimizedWaypointRenderer.remove(waypoint);
-            WaypointManagerScreen.refreshWaypointLists();
+            if (fileManager.getDimensionName().equals(WaypointClientMod.getCurrentDimensionName())) {
+                OptimizedWaypointRenderer.remove(waypoint);
+                WaypointManagerScreen.refreshWaypointLists();
+            }
         }
-        super.removeWaypoint(waypointList, waypoint);
+        super.removeWaypoint(fileManager, waypointList, waypoint);
     }
 
     @Override
-    public void updateWaypointProperties(@NotNull SimpleWaypoint waypoint, String name, String initials, WaypointPos waypointPos, int rgb, int yaw, boolean global, Runnable successAction, Runnable identicalAction) {
-        super.updateWaypointProperties(waypoint, name, initials, waypointPos, rgb, yaw, global, () -> {
+    public void updateWaypointProperties(@NotNull WaypointFileManager fileManager, @NotNull SimpleWaypoint waypoint, String name, String initials, WaypointPos waypointPos, int rgb, int yaw, boolean global, Runnable successAction, Runnable identicalAction) {
+        super.updateWaypointProperties(fileManager, waypoint, name, initials, waypointPos, rgb, yaw, global, () -> {
             successAction.run();
             if (hasClient) {
-                OptimizedWaypointRenderer.updateWaypoint(waypoint);
+                if (fileManager.getDimensionName().equals(WaypointClientMod.getCurrentDimensionName())) {
+                    OptimizedWaypointRenderer.updateWaypoint(waypoint);
+                }
             }
         }, identicalAction);
     }
@@ -89,7 +96,7 @@ public class WaypointServerMod extends WaypointServerCore {
     }
 
     @Override
-    public void removeWaypointList(WaypointFileManager fileManager, String listName, Consumer<WaypointFileManager> successAction, Runnable listNotFoundAction, Runnable nonEmptyListAction) {
+    public void removeWaypointList(@NotNull WaypointFileManager fileManager, String listName, Consumer<WaypointFileManager> successAction, Runnable listNotFoundAction, Runnable nonEmptyListAction) {
         super.removeWaypointList(fileManager, listName, (fileManager1) -> {
             successAction.accept(fileManager1);
             if (hasClient) {
