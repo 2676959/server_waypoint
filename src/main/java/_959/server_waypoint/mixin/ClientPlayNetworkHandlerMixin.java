@@ -16,4 +16,10 @@ public class ClientPlayNetworkHandlerMixin {
         WaypointClientMod.setHandshakeFinished(false);
         WaypointClientMod.getInstance().onJoinServer();
     }
+
+    @Inject(method = "unloadWorld", at = @At(value = "TAIL"))
+    private void saveAndCleanStates(CallbackInfo ci) {
+        WaypointClientMod.getInstance().onLeaveServer();
+    }
+
 }
