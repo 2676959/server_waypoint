@@ -574,7 +574,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             sendHexColorCodeError(source, hexCode);
         } else {
             runWithSelectorTarget(source, dimensionArgument, listName, oldName, (fileManager, waypointList, waypoint) ->
-                this.waypointServer.updateWaypointProperties(waypoint, newName, initials, waypointPos, rgb, yaw, global,
+                this.waypointServer.updateWaypointProperties(fileManager, waypoint, newName, initials, waypointPos, rgb, yaw, global,
                         () -> {
                             waypointList.incSyncNum();
                             saveChanges(source, fileManager);
@@ -615,7 +615,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     private void executeRemoveWaypoint(S source, D dimensionArgument, String listName, String name) {
         runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) -> {
-            this.waypointServer.removeWaypoint(waypointList, waypoint);
+            this.waypointServer.removeWaypoint(fileManager, waypointList, waypoint);
             saveChanges(source, fileManager);
             String dimensionName = fileManager.getDimensionName();
             WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, name, waypoint, WaypointModificationType.REMOVE, waypointList.getSyncNum());
