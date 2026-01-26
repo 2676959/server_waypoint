@@ -448,4 +448,41 @@ public class ColorUtils {
 
         return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
+
+    /**
+     * get black or white text color based on background color
+     * */
+    public static int getSafeTextColor(int rgb) {
+        // Extract RGB components using bitwise shifting
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = rgb & 0xFF;
+
+        double bgLuminance = calculateRelativeLuminance(r >> 1, g >> 1, b >> 1);
+
+        // WCAG contrast formula ratios
+        double contrastWhite = 1.05 / (bgLuminance + 0.05);
+        double contrastBlack = (bgLuminance + 0.05) / 0.05;
+
+        return (contrastWhite > contrastBlack) ? 0xFFFFFFFF : 0xFF000000;
+    }
+
+    private static double calculateRelativeLuminance(int r, int g, int b) {
+        // Normalize 0-255 integer to 0.0-1.0 double
+        double red = linearize(r / 255.0);
+        double green = linearize(g / 255.0);
+        double blue = linearize(b / 255.0);
+
+        // Standard coefficients for human color perception
+        return (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
+    }
+
+    private static double linearize(double c) {
+        // sRGB gamma correction
+        if (c <= 0.03928) {
+            return c / 12.92;
+        } else {
+            return Math.pow((c + 0.055) / 1.055, 2.4);
+        }
+    }
 }
