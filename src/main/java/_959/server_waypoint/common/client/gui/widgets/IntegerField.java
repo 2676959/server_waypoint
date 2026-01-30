@@ -36,6 +36,7 @@ public class IntegerField extends TranslucentTextField {
         super.setFocused(focused);
         if (!focused && this.getText().isEmpty()) {
             this.setText(Integer.toString(this.defaultValue));
+            if (this.valueEnteredCallback != null) this.valueEnteredCallback.accept(this.defaultValue);
         }
     }
 
