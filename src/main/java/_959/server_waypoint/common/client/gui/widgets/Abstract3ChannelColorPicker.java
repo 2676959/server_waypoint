@@ -28,17 +28,20 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlide
     @Override
     public void setXOffset(int xOffset) {
         super.setXOffset(xOffset);
-        this.slider0.setX(this.getShiftedX());
-        this.slider1.setX(this.getShiftedX());
-        this.slider2.setX(this.getShiftedX());
+        int shiftedX = this.getShiftedX();
+        this.slider0.setX(shiftedX);
+        this.slider1.setX(shiftedX);
+        this.slider2.setX(shiftedX);
     }
 
     @Override
     public void setYOffset(int yOffset) {
         super.setYOffset(yOffset);
-        this.slider0.setY(this.getShiftedY());
-        this.slider1.setY(this.getShiftedY() + slotHeight);
-        this.slider2.setY(this.getShiftedY() + slotHeight + slotHeight);
+        int shiftedY = this.getShiftedY();
+        int i = shiftedY + slotHeight;
+        this.slider0.setY(shiftedY);
+        this.slider1.setY(i);
+        this.slider2.setY(i + slotHeight);
     }
 
     @Override
@@ -52,9 +55,10 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlide
     @Override
     public void setY(int y) {
         super.setY(y);
+        int i = y + slotHeight;
         this.slider0.setY(y);
-        this.slider1.setY(y + slotHeight);
-        this.slider2.setY(y + slotHeight + slotHeight);
+        this.slider1.setY(i);
+        this.slider2.setY(i + slotHeight);
     }
 
     public abstract void onChannel0Update();
@@ -90,7 +94,6 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlide
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        float x = (float) mouseX - getX();
         int index = (int) Math.floor((mouseY - getY()) / slotHeight);
         switch (index) {
             case 0 -> {
@@ -120,9 +123,6 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlide
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        double x = mouseX - getX();
-//        float y = (float) mouseY - getY();
-//        int index = (int) (y / slotHeight);
         switch (focusedIndex) {
             case 0 -> {
                 this.slider0.mouseClickedOrDragged(mouseX);

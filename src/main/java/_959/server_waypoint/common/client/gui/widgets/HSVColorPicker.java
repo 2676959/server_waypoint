@@ -84,11 +84,11 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
 
         void setVisualSaturation(int saturation) {
             this.whiteOverlay = ((100 - saturation) * 255 / 100) << 24 | 0x00FFFFFF;
-        };
+        }
 
         void setVisualBrightness(int brightness) {
             this.blackOverlay = ((100 - brightness) * 255 / 100) << 24 & 0xFF000000;
-        };
+        }
 
         public void drawWhiteOverlay(VertexConsumer vertexConsumer, Matrix4f matrix) {
             drawGradient(vertexConsumer, matrix, this.whiteOverlay, this.whiteOverlay);
@@ -100,7 +100,6 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
     }
 
     public static class HueSlider extends HSVSlider {
-        private final float quadWidth;
         private final float secondQuad;
         private final float thirdQuad;
         private final float fourthQuad;
@@ -109,7 +108,7 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
 
         public HueSlider(int x, int y, int width, int height) {
             super(x, y, width, height, 360);
-            this.quadWidth = width / 6F;
+            float quadWidth = width / 6F;
             this.secondQuad = quadWidth;
             this.thirdQuad = secondQuad + quadWidth;
             this.fourthQuad = thirdQuad + quadWidth;
