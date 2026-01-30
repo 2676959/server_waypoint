@@ -1,14 +1,16 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import net.minecraft.client.gui.Drawable;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.text.Text;
+import org.joml.Matrix4f;
 
 public class RGBColorPicker extends Abstract3ChannelColorPicker<RGBColorPicker.RGBChannelSlider> {
     public RGBColorPicker(int x, int y, int slotWidth, int slotHeight, ColorPickerCallBack callback) {
         super(x, y, slotWidth, slotHeight, Text.of("RGB Color"),
                 new RGBChannelSlider(0, 0, slotWidth, slotHeight, 0xFF000000, 0xFFFF0000),
-                new RGBChannelSlider(0, slotHeight, slotWidth, slotHeight, 0xFF000000, 0xFF00FF00),
-                new RGBChannelSlider(0, 2* slotHeight, slotWidth, slotHeight, 0xFF000000, 0xFF0000FF),
+                new RGBChannelSlider(0, 0, slotWidth, slotHeight, 0xFF000000, 0xFF00FF00),
+                new RGBChannelSlider(0, 0, slotWidth, slotHeight, 0xFF000000, 0xFF0000FF),
                 callback);
     }
 
@@ -60,11 +62,16 @@ public class RGBColorPicker extends Abstract3ChannelColorPicker<RGBColorPicker.R
         this.slider2.setSliderLevel((rgb & 0x000000FF));
     }
 
-    public static class RGBChannelSlider extends AbstractGradientSlider implements Drawable {
+    public static class RGBChannelSlider extends AbstractColorBgSlider implements Drawable {
         public RGBChannelSlider(int x, int y, int width, int height, int startColor, int endColor) {
             super(x, y, width, height, 255);
             this.setStartColor(startColor);
             this.setEndColor(endColor);
+        }
+
+        @Override
+        public void drawSlotBackground(VertexConsumer vertexConsumer, Matrix4f matrix) {
+            drawGradient(vertexConsumer, matrix, this.startColor, this.endColor);
         }
     }
 }

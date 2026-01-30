@@ -1,9 +1,6 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.joml.Matrix4f;
 
@@ -13,8 +10,8 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
     public HSVColorPicker(int x, int y, int slotWidth, int slotHeight, ColorPickerCallBack callback) {
         super(x, y, slotWidth, slotHeight, Text.of("HSV Color"),
                 new HueSlider(0, 0, slotWidth, slotHeight),
-                new SaturationSlider(0, slotHeight, slotWidth, slotHeight, 0xFFFFFFFF),
-                new BrightnessSlider(0, 2* slotHeight, slotWidth, slotHeight, 0xFFFFFFFF),
+                new SaturationSlider(0, 0, slotWidth, slotHeight, 0xFFFFFFFF),
+                new BrightnessSlider(0, 0, slotWidth, slotHeight, 0xFFFFFFFF),
                 callback);
     }
 
@@ -73,13 +70,9 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
         this.slider1.setVisualBrightness(brightness);
     }
 
-    public static abstract class HSVSlider extends AbstractGradientSlider {
+    public static abstract class HSVSlider extends AbstractColorBgSlider {
         private int whiteOverlay = 0x00FFFFFF;
         private int blackOverlay = 0x00000000;
-
-        public HSVSlider(int x, int y, int slotWidth, int slotHeight, int sliderWidth, int maxLevel) {
-            super(x, y, slotWidth, slotHeight, sliderWidth, maxLevel);
-        }
 
         public HSVSlider(int x, int y, int slotWidth, int slotHeight, int maxLevel) {
             super(x, y, slotWidth, slotHeight, maxLevel);
@@ -98,11 +91,11 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
         };
 
         public void drawWhiteOverlay(VertexConsumer vertexConsumer, Matrix4f matrix) {
-            drawGradient(vertexConsumer, matrix, this.x, this.endX, this.whiteOverlay, this.whiteOverlay);
+            drawGradient(vertexConsumer, matrix, this.whiteOverlay, this.whiteOverlay);
         }
 
         public void drawBlackOverlay(VertexConsumer vertexConsumer, Matrix4f matrix) {
-            drawGradient(vertexConsumer, matrix, this.x, this.endX, this.blackOverlay, this.blackOverlay);
+            drawGradient(vertexConsumer, matrix, this.blackOverlay, this.blackOverlay);
         }
     }
 
@@ -117,7 +110,7 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
         public HueSlider(int x, int y, int width, int height) {
             super(x, y, width, height, 360);
             this.quadWidth = width / 6F;
-            this.secondQuad = x + quadWidth;
+            this.secondQuad = quadWidth;
             this.thirdQuad = secondQuad + quadWidth;
             this.fourthQuad = thirdQuad + quadWidth;
             this.fifthQuad = fourthQuad + quadWidth;
@@ -125,21 +118,16 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
         }
 
         @Override
-        public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-            MatrixStack matrixStack = context.getMatrices();
-            Matrix4f matrix =  matrixStack.peek().getPositionMatrix();
-            context.draw(vertexConsumerProvider -> {
-                VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getGui());
-                drawGradient(vertexConsumer, matrix, this.x, this.secondQuad, RED, YELLOW);
-                drawGradient(vertexConsumer, matrix, this.secondQuad, this.thirdQuad, YELLOW, GREEN);
-                drawGradient(vertexConsumer, matrix, this.thirdQuad, this.fourthQuad, GREEN, CYAN);
-                drawGradient(vertexConsumer, matrix, this.fourthQuad, this.fifthQuad, CYAN, BLUE);
-                drawGradient(vertexConsumer, matrix, this.fifthQuad, this.sixthQuad, BLUE, MAGENTA);
-                drawGradient(vertexConsumer, matrix, this.sixthQuad, this.endX, MAGENTA, RED);
-                drawWhiteOverlay(vertexConsumer, matrix);
-                drawBlackOverlay(vertexConsumer, matrix);
-                drawSlider(vertexConsumer, matrix);
-            });
+        public void drawSlotBackground(VertexConsumer vertexConsumer, Matrix4f matrix) {
+            drawGradient(vertexConsumer, matrix, 0F, this.secondQuad, RED, YELLOW);
+            drawGradient(vertexConsumer, matrix, this.secondQuad, this.thirdQuad, YELLOW, GREEN);
+            drawGradient(vertexConsumer, matrix, this.thirdQuad, this.fourthQuad, GREEN, CYAN);
+            drawGradient(vertexConsumer, matrix, this.fourthQuad, this.fifthQuad, CYAN, BLUE);
+            drawGradient(vertexConsumer, matrix, this.fifthQuad, this.sixthQuad, BLUE, MAGENTA);
+            drawGradient(vertexConsumer, matrix, this.sixthQuad, this.slotWidth, MAGENTA, RED);
+            drawWhiteOverlay(vertexConsumer, matrix);
+            drawBlackOverlay(vertexConsumer, matrix);
+            drawSlider(vertexConsumer, matrix);
         }
     }
 
@@ -151,17 +139,9 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
         }
 
         @Override
-        public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-            MatrixStack matrixStack = context.getMatrices();
-            Matrix4f matrix =  matrixStack.peek().getPositionMatrix();
-            context.draw(vertexConsumerProvider -> {
-                VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getGui());
-                // draw the gradient slot
-                drawGradient(vertexConsumer, matrix, this.x, this.endX, 0xFFFFFFFF, endColor);
-                drawBlackOverlay(vertexConsumer, matrix);
-                // draw the slider
-                drawSlider(vertexConsumer, matrix);
-            });
+        public void drawSlotBackground(VertexConsumer vertexConsumer, Matrix4f matrix) {
+            drawGradient(vertexConsumer, matrix, 0xFFFFFFFF, endColor);
+            drawBlackOverlay(vertexConsumer, matrix);
         }
     }
 
@@ -172,18 +152,10 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
         }
 
         @Override
-        public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-            MatrixStack matrixStack = context.getMatrices();
-            Matrix4f matrix =  matrixStack.peek().getPositionMatrix();
-            context.draw(vertexConsumerProvider -> {
-                VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getGui());
-                // draw the gradient slot
-                drawGradient(vertexConsumer, matrix, this.x, this.endX, endColor, endColor);
-                drawWhiteOverlay(vertexConsumer, matrix);
-                drawGradient(vertexConsumer, matrix, this.x, this.endX, 0xFF000000, 0);
-                // draw the slider
-                drawSlider(vertexConsumer, matrix);
-            });
+        public void drawSlotBackground(VertexConsumer vertexConsumer, Matrix4f matrix) {
+            drawGradient(vertexConsumer, matrix, endColor, endColor);
+            drawWhiteOverlay(vertexConsumer, matrix);
+            drawGradient(vertexConsumer, matrix, 0xFF000000, 0);
         }
     }
 }

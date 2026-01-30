@@ -11,10 +11,12 @@ import org.joml.Matrix4f;
 
 import java.util.function.Consumer;
 
+import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
+
 /**
  * A discrete slider with a color gradient background.
  * */
-public abstract class AbstractGradientSlider implements Widget, Drawable {
+public abstract class AbstractColorBgSlider implements Widget, Drawable {
     private final float sliderHalfWidth;
     private final float unitLength;
     private final int maxLevel;
@@ -31,7 +33,7 @@ public abstract class AbstractGradientSlider implements Widget, Drawable {
     protected int startColor;
     protected int endColor;
 
-    public AbstractGradientSlider(int x, int y, int slotWidth, int slotHeight, int sliderWidth, int maxLevel) {
+    public AbstractColorBgSlider(int x, int y, int slotWidth, int slotHeight, int sliderWidth, int maxLevel) {
         this.x = x;
         this.y = y;
         this.slotWidth = slotWidth;
@@ -53,7 +55,7 @@ public abstract class AbstractGradientSlider implements Widget, Drawable {
         this.endColor = endColor;
     }
 
-    public AbstractGradientSlider(int x, int y, int slotWidth, int slotHeight, int maxLevel) {
+    public AbstractColorBgSlider(int x, int y, int slotWidth, int slotHeight, int maxLevel) {
         this(x, y, slotWidth, slotHeight, 1, maxLevel);
     }
 
@@ -80,17 +82,18 @@ public abstract class AbstractGradientSlider implements Widget, Drawable {
     @Override
     public void setX(int x) {
         this.x = x;
-        this.endX = this.slotWidth;
+        this.endX = this.x + this.slotWidth;
     }
 
     @Override
     public void setY(int y) {
         this.y = y;
-        this.endY = this.slotHeight;
+        this.endY = this.y + this.slotHeight;
     }
 
-    public void mouseClickedOrDragged(double x) {
-        updateSliderCenter(Math.clamp((float) x, this.x, this.endX));
+    public void mouseClickedOrDragged(double mouseX) {
+        LOGGER.info("current x: {}, x: {}, endX: {}", mouseX, this.x, this.endX);
+        updateSliderCenter(Math.clamp((float) mouseX, this.x, this.endX) - this.x);
     }
 
     public void mouseScrolled(double verticalAmount) {
@@ -137,30 +140,49 @@ public abstract class AbstractGradientSlider implements Widget, Drawable {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+    public final void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+        context.getMatrices().push();
         MatrixStack matrixStack = context.getMatrices();
+        matrixStack.translate(this.x, this.y, 0);
         Matrix4f matrix =  matrixStack.peek().getPositionMatrix();
         context.draw(vertexConsumerProvider -> {
             VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getGui());
-            // draw the gradient slot
-            drawGradient(vertexConsumer, matrix, this.x, this.endX, startColor, endColor);
+            // draw the slot background
+            drawSlotBackground(vertexConsumer, matrix);
             // draw the slider
             drawSlider(vertexConsumer, matrix);
         });
+        context.getMatrices().pop();
     }
 
-    public void drawGradient(VertexConsumer vertexConsumer, Matrix4f matrix, float startX, float endX, int startColor, int endColor) {
-        vertexConsumer.vertex(matrix, startX, this.y, 0).color(startColor);
-        vertexConsumer.vertex(matrix, startX, this.endY, 0).color(startColor);
-        vertexConsumer.vertex(matrix, endX, this.endY, 0).color(endColor);
-        vertexConsumer.vertex(matrix, endX, this.y, 0).color(endColor);
+    public abstract void drawSlotBackground(VertexConsumer vertexConsumer, Matrix4f matrix);
+
+    protected void drawSolidColor(VertexConsumer vertexConsumer, Matrix4f matrix, int color) {
+        vertexConsumer.vertex(matrix, 0, 0, 0).color(color);
+        vertexConsumer.vertex(matrix, 0, slotHeight, 0).color(color);
+        vertexConsumer.vertex(matrix, slotWidth, slotHeight, 0).color(color);
+        vertexConsumer.vertex(matrix, slotWidth, 0, 0).color(color);
     }
 
-    public void drawSlider(VertexConsumer vertexConsumer, Matrix4f matrix) {
-        vertexConsumer.vertex(matrix, this.sliderLeft, this.y, 0).color(0xFFFFFFFF);
-        vertexConsumer.vertex(matrix, this.sliderLeft, this.endY, 0).color(0xFFFFFFFF);
-        vertexConsumer.vertex(matrix, this.sliderRight, this.endY, 0).color(0xFFFFFFFF);
-        vertexConsumer.vertex(matrix, this.sliderRight, this.y, 0).color(0xFFFFFFFF);
+    protected void drawGradient(VertexConsumer vertexConsumer, Matrix4f matrix, int startColor, int endColor) {
+        vertexConsumer.vertex(matrix, 0, 0, 0).color(startColor);
+        vertexConsumer.vertex(matrix, 0, slotHeight, 0).color(startColor);
+        vertexConsumer.vertex(matrix, slotWidth, slotHeight, 0).color(endColor);
+        vertexConsumer.vertex(matrix, slotWidth, 0, 0).color(endColor);
+    }
+
+    protected void drawGradient(VertexConsumer vertexConsumer, Matrix4f matrix, float startX, float endX, int startColor, int endColor) {
+        vertexConsumer.vertex(matrix, startX, 0, 0).color(startColor);
+        vertexConsumer.vertex(matrix, startX, slotHeight, 0).color(startColor);
+        vertexConsumer.vertex(matrix, endX, slotHeight, 0).color(endColor);
+        vertexConsumer.vertex(matrix, endX, 0, 0).color(endColor);
+    }
+
+    protected void drawSlider(VertexConsumer vertexConsumer, Matrix4f matrix) {
+        vertexConsumer.vertex(matrix, this.sliderLeft, 0, 0).color(0xFFFFFFFF);
+        vertexConsumer.vertex(matrix, this.sliderLeft, slotHeight, 0).color(0xFFFFFFFF);
+        vertexConsumer.vertex(matrix, this.sliderRight, slotHeight, 0).color(0xFFFFFFFF);
+        vertexConsumer.vertex(matrix, this.sliderRight, 0, 0).color(0xFFFFFFFF);
     }
 
     @Override

@@ -2,10 +2,9 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
-public abstract class Abstract3ChannelColorPicker<T extends AbstractGradientSlider> extends ShiftableClickableWidget implements Colorable, Shiftable {
+public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlider> extends ShiftableClickableWidget implements Colorable, Shiftable {
     protected final ColorPickerCallBack callback;
     private final int slotHeight;
     private final int slotWidth;
@@ -22,6 +21,40 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractGradientSlid
         this.slider1 = slider1;
         this.slider2 = slider2;
         this.callback = callback;
+        this.setX(x);
+        this.setY(y);
+    }
+
+    @Override
+    public void setXOffset(int xOffset) {
+        super.setXOffset(xOffset);
+        this.slider0.setX(this.getShiftedX());
+        this.slider1.setX(this.getShiftedX());
+        this.slider2.setX(this.getShiftedX());
+    }
+
+    @Override
+    public void setYOffset(int yOffset) {
+        super.setYOffset(yOffset);
+        this.slider0.setY(this.getShiftedY());
+        this.slider1.setY(this.getShiftedY() + slotHeight);
+        this.slider2.setY(this.getShiftedY() + slotHeight + slotHeight);
+    }
+
+    @Override
+    public void setX(int x) {
+        super.setX(x);
+        this.slider0.setX(x);
+        this.slider1.setX(x);
+        this.slider2.setX(x);
+    }
+
+    @Override
+    public void setY(int y) {
+        super.setY(y);
+        this.slider0.setY(y);
+        this.slider1.setY(y + slotHeight);
+        this.slider2.setY(y + slotHeight + slotHeight);
     }
 
     public abstract void onChannel0Update();
@@ -61,21 +94,21 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractGradientSlid
         int index = (int) Math.floor((mouseY - getY()) / slotHeight);
         switch (index) {
             case 0 -> {
-                this.slider0.mouseClickedOrDragged(x);
+                this.slider0.mouseClickedOrDragged(mouseX);
                 focusedIndex = 0;
                 onChannel0Update();
                 this.callback.onColorUpdate(getColor());
                 return true;
             }
             case 1 -> {
-                this.slider1.mouseClickedOrDragged(x);
+                this.slider1.mouseClickedOrDragged(mouseX);
                 focusedIndex = 1;
                 onChannel1Update();
                 this.callback.onColorUpdate(getColor());
                 return true;
             }
             case 2 -> {
-                this.slider2.mouseClickedOrDragged(x);
+                this.slider2.mouseClickedOrDragged(mouseX);
                 focusedIndex = 2;
                 onChannel2Update();
                 this.callback.onColorUpdate(getColor());
@@ -92,19 +125,19 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractGradientSlid
 //        int index = (int) (y / slotHeight);
         switch (focusedIndex) {
             case 0 -> {
-                this.slider0.mouseClickedOrDragged(x);
+                this.slider0.mouseClickedOrDragged(mouseX);
                 onChannel0Update();
                 this.callback.onColorUpdate(getColor());
                 return true;
             }
             case 1 -> {
-                this.slider1.mouseClickedOrDragged(x);
+                this.slider1.mouseClickedOrDragged(mouseX);
                 onChannel1Update();
                 this.callback.onColorUpdate(getColor());
                 return true;
             }
             case 2 -> {
-                this.slider2.mouseClickedOrDragged(x);
+                this.slider2.mouseClickedOrDragged(mouseX);
                 onChannel2Update();
                 this.callback.onColorUpdate(getColor());
                 return true;
@@ -168,14 +201,9 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractGradientSlid
 
     @Override
     public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        MatrixStack matrixStack = context.getMatrices();
-        int y = getY();
-        int x = getX();
-        matrixStack.translate(x, y, 0);
         this.slider0.render(context, mouseX, mouseY, deltaTicks);
         this.slider1.render(context, mouseX, mouseY, deltaTicks);
         this.slider2.render(context, mouseX, mouseY, deltaTicks);
-        matrixStack.translate(-x, -y, 0);
     }
 
     @Override
