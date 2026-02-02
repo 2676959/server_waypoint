@@ -2,6 +2,8 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
+import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.ScreenRect;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.render.RenderLayer;
@@ -10,13 +12,10 @@ import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
 
 import java.util.function.Consumer;
-
-import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
-
 /**
  * A discrete slider with a color gradient background.
  * */
-public abstract class AbstractColorBgSlider implements Widget, Drawable {
+public abstract class AbstractColorBgSlider implements Widget, Drawable, Element {
     private final float sliderHalfWidth;
     private final float unitLength;
     private final int maxLevel;
@@ -24,6 +23,7 @@ public abstract class AbstractColorBgSlider implements Widget, Drawable {
     protected final int slotHeight;
     protected int x;
     protected int y;
+    protected boolean focused = false;
     protected float sliderCenter = 0F;
     private float sliderLeft;
     private float sliderRight;
@@ -92,12 +92,11 @@ public abstract class AbstractColorBgSlider implements Widget, Drawable {
     }
 
     public void mouseClickedOrDragged(double mouseX) {
-        LOGGER.info("current x: {}, x: {}, endX: {}", mouseX, this.x, this.endX);
         updateSliderCenter(Math.clamp((float) mouseX, this.x, this.endX) - this.x);
     }
 
     public void mouseScrolled(double verticalAmount) {
-        updateSliderCenter(Math.clamp((float) verticalAmount + this.sliderCenter, this.x, this.endX));
+        updateSliderCenter(Math.clamp((float) verticalAmount + this.sliderCenter, 0, slotWidth));
     }
 
     public boolean keyPressed(int keyCode) {
@@ -186,5 +185,20 @@ public abstract class AbstractColorBgSlider implements Widget, Drawable {
     }
 
     @Override
+    public ScreenRect getNavigationFocus() {
+        return Element.super.getNavigationFocus();
+    }
+
+    @Override
     public void forEachChild(Consumer<ClickableWidget> consumer) {}
+
+    @Override
+    public void setFocused(boolean focused) {
+        this.focused = focused;
+    }
+
+    @Override
+    public boolean isFocused() {
+        return this.focused;
+    }
 }
