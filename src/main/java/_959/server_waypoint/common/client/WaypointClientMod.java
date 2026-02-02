@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client;
 
+import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.handlers.BufferHandler;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
@@ -14,6 +15,8 @@ import _959.server_waypoint.core.network.buffer.*;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
@@ -23,27 +26,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import static _959.server_waypoint.ModInfo.MOD_ID;
 import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asClientFromRemoteServer;
 
 public class WaypointClientMod extends WaypointFilesManagerCore implements BufferHandler {
     public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_client");
     public static WaypointClientMod INSTANCE;
+    private static ClientNetworkState networkState = ClientNetworkState.NOT_READY;
     private static String currentDimensionName;
-    private static boolean handshakeFinished = false;
-    private int remoteServerId;
+    private static ClientConfig clientConfig;
     private final ClientHandshakeC2SPayload clientHandshake = new ClientHandshakeC2SPayload(new ClientHandshakeBuffer());
-    private final WaypointFilesManagerCore localManager;
+    // TODO: add a local waypoint manager for using waypoints on an unsupported server
+//    private final WaypointFilesManagerCore localManager;
     private final Path gameRoot;
+    private final Path configPath;
     private final MinecraftClient mc;
 
-    public static void createInstance(MinecraftClient mc, Path gameRoot) {
+    public static void createInstance(MinecraftClient mc, Path gameRoot, Path configDir) {
         if (INSTANCE == null) {
-            INSTANCE = new WaypointClientMod(mc, gameRoot);
+            INSTANCE = new WaypointClientMod(mc, gameRoot, configDir);
+            INSTANCE.loadConfig();
             LOGGER.info("server_waypoint client initialized");
         }
     }
@@ -53,21 +63,57 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         return INSTANCE;
     }
 
-    private WaypointClientMod(MinecraftClient mc, Path gameRoot) {
+    private WaypointClientMod(MinecraftClient mc, Path gameRoot, Path configDir) {
         super();
         this.mc = mc;
         this.gameRoot = gameRoot;
-        this.localManager = new WaypointFilesManagerCore();
+        this.configPath = configDir.resolve(MOD_ID).resolve("client-config.json");
         INSTANCE = this;
     }
 
-    @SuppressWarnings("unused")
-    public boolean isHandshakeFinished() {
-        return handshakeFinished;
+    public static ClientNetworkState getNetworkState() {
+        return networkState;
     }
 
-    public static void setHandshakeFinished(boolean isFinished) {
-        handshakeFinished = isFinished;
+    private void resetNetworkState() {
+        networkState = ClientNetworkState.NOT_READY;
+    }
+
+    private Gson getGson() {
+        return new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().create();
+    }
+
+    public void loadConfig() {
+        final Gson GSON = getGson();
+        if (Files.exists(configPath)) {
+            try (Reader reader = Files.newBufferedReader(configPath)) {
+                clientConfig = GSON.fromJson(reader, ClientConfig.class);
+                // calculate the squared view distance
+                clientConfig.setViewDistance(clientConfig.getViewDistance());
+            } catch (IOException e) {
+                LOGGER.error("Failed to load client config", e);
+                clientConfig = GSON.fromJson("{}", ClientConfig.class);
+            }
+        } else {
+            clientConfig = GSON.fromJson("{}", ClientConfig.class);
+            saveConfig();
+        }
+    }
+
+    public void saveConfig() {
+        try {
+            Files.createDirectories(configPath.getParent());
+            try (Writer writer = Files.newBufferedWriter(configPath)) {
+                final Gson GSON = getGson();
+                GSON.toJson(clientConfig, writer);
+            }
+        } catch (IOException e) {
+            LOGGER.error("Failed to save client config", e);
+        }
+    }
+
+    public static ClientConfig getClientConfig() {
+        return clientConfig;
     }
 
     public static String getCurrentDimensionName() {
@@ -146,7 +192,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
 
     public static void onDimensionChange(String dimensionName) {
         currentDimensionName = dimensionName;
-        if (handshakeFinished) {
+        if (networkState != ClientNetworkState.NOT_READY) {
             OptimizedWaypointRenderer.clearScene();
             WaypointFileManager WaypointFileManager = INSTANCE.fileManagerMap.get(dimensionName);
             if (WaypointFileManager == null || WaypointFileManager.hasNoWaypoints()) {
@@ -163,39 +209,55 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         if (!this.mc.isConnectedToLocalServer()) {
             this.saveAllWaypointFiles();
         }
+        this.resetNetworkState();
     }
 
-    public void onJoinServer() {
-        OptimizedWaypointRenderer.clearScene();
-        if (this.mc.isConnectedToLocalServer()) {
-            changeFileManagerMap(WaypointServerMod.getInstance().getFileManagerMap());
-            OptimizedWaypointRenderer.loadScene(getCurrentWaypointLists());
-            this.waypointFilesDir = null;
-            handshakeFinished = true;
-        } else {
-            // send handshake to server
-            ClientPlayNetworking.send(clientHandshake);
+    public boolean loadCachedWaypointFiles(int serverId) {
+        ServerInfo currentServerEntry = this.mc.getCurrentServerEntry();
+        if (currentServerEntry == null) {
+            LOGGER.warn("current server entry is null");
+            return false;
         }
+        changeWaypointFilesDir(asClientFromRemoteServer(this.gameRoot, currentServerEntry.address, serverId));
+        return true;
     }
 
     /**
      * can only be called when connected to a server
      * */
-    public void requestUpdates(int serverId) {
-        this.remoteServerId = serverId;
-        ServerInfo currentServerEntry = this.mc.getCurrentServerEntry();
-        if (currentServerEntry == null) {
-            LOGGER.warn("current server entry is null");
-            return;
-        }
-        changeWaypointFilesDir(asClientFromRemoteServer(this.gameRoot, currentServerEntry.address, serverId));
+    public void requestUpdates() {
         ClientPlayNetworking.send(getClientUpdateRequestPayload());
+    }
+
+    public void onJoinServer() {
+        networkState = ClientNetworkState.NOT_READY;
+        OptimizedWaypointRenderer.clearScene();
+        if (this.mc.isConnectedToLocalServer()) {
+            changeFileManagerMap(WaypointServerMod.getInstance().getFileManagerMap());
+            OptimizedWaypointRenderer.loadScene(getCurrentWaypointLists());
+            this.waypointFilesDir = null;
+            networkState = ClientNetworkState.SYNC_FINISHED;
+        } else {
+            // send handshake to server -> onServerHandShake
+            networkState = ClientNetworkState.NO_SERVERSIDE_SUPPORT;
+            ClientPlayNetworking.send(clientHandshake);
+        }
     }
 
     @Override
     public void onServerHandshake(ServerHandshakeBuffer buffer) {
         LOGGER.info("received server handshake packet: {}", buffer.toString());
-        this.requestUpdates(buffer.serverId());
+        networkState = ClientNetworkState.HANDSHAKE_FINISHED;
+        int serverId = buffer.serverId();
+        int serverVersion = buffer.version();
+        if (serverVersion != ProtocolVersion.PROTOCOL_VERSION) {
+            this.loadCachedWaypointFiles(serverId);
+            networkState = ClientNetworkState.INCOMPATIBLE_PROTOCOL;
+            return;
+        } else if (this.loadCachedWaypointFiles(serverId)) {
+            // send update requests to server -> onUpdatesBundle
+            this.requestUpdates();
+        }
     }
 
     @Override
@@ -235,12 +297,13 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                 }
             }
         }
-        handshakeFinished = true;
+        networkState = ClientNetworkState.SYNC_FINISHED;
         OptimizedWaypointRenderer.loadScene(getCurrentWaypointLists());
     }
 
     @Override
     public void onWaypointList(WaypointListBuffer buffer) {
+        if (WaypointServerMod.hasClient()) return;
         String dimensionName = buffer.dimensionName();
         WaypointFileManager fileManager = this.getOrCreateWaypointFileManager(dimensionName);
         fileManager.addWaypointList(buffer.waypointList());
@@ -248,11 +311,12 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
 
     @Override
     public void onDimensionWaypoint(DimensionWaypointBuffer buffer) {
-
+        if (WaypointServerMod.hasClient()) return;
     }
 
     @Override
     public void onWorldWaypoint(WorldWaypointBuffer buffer) {
+        if (WaypointServerMod.hasClient()) return;
         this.fileManagerMap.clear();
         OptimizedWaypointRenderer.clearScene();
         currentDimensionName = this.mc.world.getRegistryKey().getValue().toString();
@@ -280,12 +344,14 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                 LOGGER.error("failed to save waypoints for dimension: {}", dimensionName, e);
             }
         }
+        networkState = ClientNetworkState.SYNC_FINISHED;
         WaypointManagerScreen.updateAll();
     }
 
     @Override
     public void onWaypointModification(WaypointModificationBuffer buffer) {
         if (WaypointServerMod.hasClient()) return;
+        if (networkState != ClientNetworkState.SYNC_FINISHED) return;
         String dimensionName = buffer.dimensionName();
         String listName = buffer.listName();
         WaypointFileManager fileManager = this.getWaypointFileManager(dimensionName);
@@ -378,5 +444,13 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         } catch (IOException e) {
             LOGGER.error("failed to save waypoints for dimension: {}", dimensionName, e);
         }
+    }
+
+    public enum ClientNetworkState {
+        NOT_READY, // have not finished joining the server
+        HANDSHAKE_FINISHED, // handshake finished, can start syncing waypoints
+        SYNC_FINISHED, // syncing finished, allows all functionalities
+        NO_SERVERSIDE_SUPPORT, // only loads local stored waypoint
+        INCOMPATIBLE_PROTOCOL // can view previously cached waypoints but cannot handle packets from server
     }
 }
