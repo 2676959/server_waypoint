@@ -2,7 +2,7 @@
   "waypoint.save.failed": "Failed to write to {0}",
 
   "waypoint.updates.sent": "Waypoint updates have been sent",
-  "waypoint.incompatible.client": "Incompatible client version: {0}, please install version: {1}",
+  "waypoint.incompatible.client": "Incompatible Server Waypoint mod version, please install version: {0}",
 
   "waypoint.add.success": "Waypoint {0} has been added to list: \"{1}\"",
   "waypoint.add.exists": "Waypoint {0} already exists. Replace it? {1}",

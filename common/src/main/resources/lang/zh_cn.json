@@ -2,7 +2,7 @@
   "waypoint.save.failed": "写入文件失败：{0}",
 
   "waypoint.updates.sent": "已发送路径点更新至客户端",
-  "waypoint.incompatible.client": "不兼容的客户端版本：{0}，请安装版本：{1}",
+  "waypoint.incompatible.client": "不兼容的Server Waypoint模组版本，请安装版本：{0}",
 
   "waypoint.add.success": "路径点{0}已添加至列表：{1}",
   "waypoint.add.exists": "路径点{0}已存在，替换该路径点？{1}",
