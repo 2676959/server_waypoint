@@ -13,7 +13,6 @@ public class ClientPlayNetworkHandlerMixin {
 
     @Inject(method = "onGameJoin", at = @At(value = "TAIL"))
     private void setHandshakeStatus(GameJoinS2CPacket packet, CallbackInfo ci) {
-        WaypointClientMod.setHandshakeFinished(false);
         WaypointClientMod.getInstance().onJoinServer();
     }
 
