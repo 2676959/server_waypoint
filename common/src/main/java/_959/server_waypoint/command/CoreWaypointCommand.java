@@ -668,7 +668,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) -> {
             String dimensionName = fileManager.getDimensionName();
             this.sender.sendMessage(source, translatable("waypoint.download.waypoint", waypointTextWithTp(waypoint, dimensionName, listName)));
-            this.sender.sendPacket(source, new WaypointModificationBuffer(dimensionName, listName, name, waypoint, WaypointModificationType.ADD, 1));
+            this.sender.sendPacket(source, new WaypointModificationBuffer(dimensionName, listName, name, waypoint, WaypointModificationType.ADD, waypointList.getSyncNum()));
         });
     }
 
