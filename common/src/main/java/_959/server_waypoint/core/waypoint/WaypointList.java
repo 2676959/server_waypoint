@@ -43,7 +43,12 @@ public class WaypointList {
      * should only use as client when syncing from server
      * */
     public void addFromRemoteServer(SimpleWaypoint waypoint, int syncId) {
-        this.simpleWaypoints.add(waypoint);
+        SimpleWaypoint waypointFound = this.getWaypointByName(waypoint.name());
+        if (waypointFound != null) {
+            waypointFound.copyFrom(waypoint);
+        } else {
+            this.simpleWaypoints.add(waypoint);
+        }
         this.syncNum = syncId;
     }
 
