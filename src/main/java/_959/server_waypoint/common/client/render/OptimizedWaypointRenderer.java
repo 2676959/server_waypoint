@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.render;
 
+import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import net.minecraft.client.MinecraftClient;
@@ -38,6 +39,7 @@ public class OptimizedWaypointRenderer {
     // STATE (RENDER THREAD ONLY)
     // =========================================================
     private static boolean initialized = false;
+    private static boolean DISABLED = false;
     private static int count = 0;
     private static boolean IS_HOVERED = false;
     private static int HOVERED_ID = -1;
@@ -64,6 +66,7 @@ public class OptimizedWaypointRenderer {
     private static float[] nameTextBgWidth;
     private static float[] initialsTextWidth;
     private static float[] initialsTextBgWidth;
+    private static boolean[] local;
 
     // =========================================================
     // MINECRAFT RENDERING CONTEXT
@@ -82,7 +85,7 @@ public class OptimizedWaypointRenderer {
     // DATA TRANSFER OBJECTS
     // =========================================================
     private static class WaypointRendererCommand {
-        enum Type { ADD, REMOVE, UPDATE, CLEAR_ALL, BULK_ADD, BULK_REMOVE }
+        enum Type {ADD, REMOVE, UPDATE, CLEAR_ALL, BULK_ADD, BULK_REMOVE, ENABLE_RENDERING, DISABLE_RENDERING}
 
         Type type;
         int renderId;
@@ -95,6 +98,7 @@ public class OptimizedWaypointRenderer {
         float nameWidth;
         float initialsBgWidth;
         float nameBgWidth;
+        boolean local;
 
         SimpleWaypoint[] bulkWaypoints;
         int[] bulkIds;
@@ -104,6 +108,7 @@ public class OptimizedWaypointRenderer {
         float[] bulkNameBgWidth;
         float[] bulkInitialsWidth;
         float[] bulkInitialsBgWidth;
+        boolean[] bulkLocal;
     }
 
     // =========================================================
@@ -127,6 +132,7 @@ public class OptimizedWaypointRenderer {
         nameTextBgWidth = new float[MAX_WAYPOINTS];
         initialsTextWidth = new float[MAX_WAYPOINTS];
         initialsTextBgWidth = new float[MAX_WAYPOINTS];
+        local = new boolean[MAX_WAYPOINTS];
         initialized = true;
         LOGGER.info("waypoint renderer initialized");
     }
@@ -134,6 +140,12 @@ public class OptimizedWaypointRenderer {
     // =========================================================
     // 2. PUBLIC API (LOGIC THREAD)
     // =========================================================
+    public static void enableRendering(boolean enable) {
+        if (enable) sendEnableCommand();
+        else sendDisableCommand();
+    }
+
+
     public static void clearScene() {
         // CHECK: Was the very last command also a CLEAR_ALL?
         if (lastSentType.get() == WaypointRendererCommand.Type.CLEAR_ALL) {
@@ -174,6 +186,7 @@ public class OptimizedWaypointRenderer {
         float[] initialsWidth = new float[estimatedSize];
         float[] nameBgWidth = new float[estimatedSize];
         float[] initialsBgWidth = new float[estimatedSize];
+        boolean[] locals = new boolean[estimatedSize];
 
         int index = 0;
         for (WaypointList list : lists) {
@@ -182,7 +195,7 @@ public class OptimizedWaypointRenderer {
 
             for (SimpleWaypoint wp : list.simpleWaypoints()) {
                 // Assign ID if needed (Logic Side)
-                generateBulkData(wps, fgColors, nameWidth, initialsWidth, nameBgWidth, initialsBgWidth, index, wp);
+                generateBulkData(wps, fgColors, nameWidth, initialsWidth, nameBgWidth, initialsBgWidth, locals, index, wp);
                 index++;
             }
         }
@@ -190,7 +203,7 @@ public class OptimizedWaypointRenderer {
         if (index == 0) return;
 
         // 3. Send Single Command
-        sendBulkData(wps, fgColors, nameWidth, initialsWidth, nameBgWidth, initialsBgWidth);
+        sendBulkData(wps, fgColors, nameWidth, initialsWidth, nameBgWidth, initialsBgWidth, locals);
     }
 
     /**
@@ -212,7 +225,7 @@ public class OptimizedWaypointRenderer {
         wp.renderId = assignedId;
 
         // 2. Send Command (Asynchronous)
-        sendCommand(WaypointRendererCommand.Type.ADD, assignedId, wp.X(), wp.y(), wp.Z(), wp.rgb(), wp.name(), wp.initials());
+        sendCommand(WaypointRendererCommand.Type.ADD, assignedId, wp.X(), wp.Y(), wp.Z(), wp.rgb(), wp.name(), wp.initials(), !wp.global());
     }
 
     public static void addList(@Unmodifiable List<SimpleWaypoint> newWaypoints) {
@@ -225,15 +238,16 @@ public class OptimizedWaypointRenderer {
         float[] initialsWidth = new float[size];
         float[] nameBgWith = new float[size];
         float[] initialsBgWidth = new float[size];
+        boolean[] locals = new boolean[size];
 
         for (int i = 0; i < size ; i++) {
             SimpleWaypoint wp = newWaypoints.get(i);
-            generateBulkData(bulkData, fgColor, nameWidth, initialsWidth, nameBgWith, initialsBgWidth, i, wp);
+            generateBulkData(bulkData, fgColor, nameWidth, initialsWidth, nameBgWith, initialsBgWidth, locals, i, wp);
         }
-        sendBulkData(bulkData, fgColor, nameWidth, initialsWidth, nameBgWith, initialsBgWidth);
+        sendBulkData(bulkData, fgColor, nameWidth, initialsWidth, nameBgWith, initialsBgWidth, locals);
     }
 
-    private static void generateBulkData(SimpleWaypoint[] bulkData, int[] fgColor, float[] nameWidth, float[] initialsWidth, float[] nameBgWith, float[] initialsBgWidth, int i, SimpleWaypoint wp) {
+    private static void generateBulkData(SimpleWaypoint[] bulkData, int[] fgColor, float[] nameWidth, float[] initialsWidth, float[] nameBgWith, float[] initialsBgWidth, boolean[] locals, int i, SimpleWaypoint wp) {
         if (wp.renderId == -1) {
             wp.renderId = nextRenderId++;
         }
@@ -245,9 +259,10 @@ public class OptimizedWaypointRenderer {
         initialsWidth[i] = getTextWidth(initials1);
         nameBgWith[i] = getTextBgWidth(name);
         initialsBgWidth[i] = getTextBgWidth(initials1);
+        locals[i] = !wp.global();
     }
 
-    private static void sendBulkData(SimpleWaypoint[] bulkData,  int[] fgColor, float[] nameWidth, float[] initialsWidth, float[] nameBgWith, float[] initialsBgWidth) {
+    private static void sendBulkData(SimpleWaypoint[] bulkData,  int[] fgColor, float[] nameWidth, float[] initialsWidth, float[] nameBgWith, float[] initialsBgWidth, boolean[] locals) {
         WaypointRendererCommand cmd = obtainCommand();
         cmd.type = WaypointRendererCommand.Type.BULK_ADD;
         cmd.bulkWaypoints = bulkData;
@@ -256,6 +271,7 @@ public class OptimizedWaypointRenderer {
         cmd.bulkInitialsWidth = initialsWidth;
         cmd.bulkNameBgWidth = nameBgWith;
         cmd.bulkInitialsBgWidth = initialsBgWidth;
+        cmd.bulkLocal = locals;
         offerCommand(cmd);
     }
 
@@ -266,7 +282,7 @@ public class OptimizedWaypointRenderer {
         if (wp.renderId == -1) return; // Not in renderer
 
         // 1. Send Command using the stored ID
-        sendCommand(WaypointRendererCommand.Type.REMOVE, wp.renderId, 0, 0, 0, 0, null, null);
+        sendCommand(WaypointRendererCommand.Type.REMOVE, wp.renderId, 0, 0, 0, 0, null, null, false);
 
         // 2. Reset ID immediately so Logic knows it's gone
         wp.renderId = -1;
@@ -295,7 +311,7 @@ public class OptimizedWaypointRenderer {
 
     public static void updateWaypoint(SimpleWaypoint wp) {
         if (wp.renderId != -1) {
-            sendCommand(WaypointRendererCommand.Type.UPDATE, wp.renderId, wp.X(), wp.y(), wp.Z(), wp.rgb(), wp.name(), wp.initials());
+            sendCommand(WaypointRendererCommand.Type.UPDATE, wp.renderId, wp.X(), wp.Y(), wp.Z(), wp.rgb(), wp.name(), wp.initials(), !wp.global());
         }
     }
 
@@ -325,13 +341,39 @@ public class OptimizedWaypointRenderer {
         // Clear references to help GC (in case the pool grows too large)
         cmd.bulkWaypoints = null;
         cmd.name = null;
+        cmd.bulkLocal = null;
         commandPool.offer(cmd);
     }
 
     // =========================================================
     // UPDATED SENDER (LOGIC THREAD)
     // =========================================================
-    private static void sendCommand(WaypointRendererCommand.Type type, int id, float x, float y, float z, int color, String name, String initials) {
+    private static void sendDisableCommand() {
+        WaypointRendererCommand cmd = obtainCommand();
+        cmd.type = WaypointRendererCommand.Type.DISABLE_RENDERING;
+        cleanCommandBulkData(cmd);
+        offerCommand(cmd);
+    }
+
+    private static void sendEnableCommand() {
+        WaypointRendererCommand cmd = obtainCommand();
+        cmd.type = WaypointRendererCommand.Type.ENABLE_RENDERING;
+        cleanCommandBulkData(cmd);
+        offerCommand(cmd);
+    }
+
+    private static void cleanCommandBulkData(WaypointRendererCommand cmd) {
+        cmd.bulkWaypoints = null;
+        cmd.bulkFgColor = null;
+        cmd.bulkNameWidth = null;
+        cmd.bulkInitialsWidth = null;
+        cmd.bulkIds = null;
+        cmd.bulkInitialsBgWidth = null;
+        cmd.bulkNameBgWidth = null;
+        cmd.bulkLocal = null;
+    }
+
+    private static void sendCommand(WaypointRendererCommand.Type type, int id, float x, float y, float z, int color, String name, String initials, boolean isLocal) {
         // 1. REUSE instead of NEW
         WaypointRendererCommand cmd = obtainCommand();
 
@@ -353,16 +395,9 @@ public class OptimizedWaypointRenderer {
         cmd.nameWidth = getTextWidth(name);
         cmd.initialsBgWidth = getTextBgWidth(initials);
         cmd.nameBgWidth = getTextBgWidth(name);
+        cmd.local = isLocal;
         // Ensure clean state
-        cmd.bulkWaypoints = null;
-        cmd.bulkFgColor = null;
-        cmd.bulkNameWidth = null;
-        cmd.bulkInitialsWidth = null;
-        cmd.bulkIds = null;
-        cmd.bulkInitialsBgWidth = null;
-        cmd.bulkNameBgWidth = null;
-
-        // 3. Send
+        cleanCommandBulkData(cmd);
         offerCommand(cmd);
     }
 
@@ -379,6 +414,8 @@ public class OptimizedWaypointRenderer {
             freeCommand(cmd);
         }
 
+        if (DISABLED) return;
+
         // B. Render
         int scaledWidth = window.getScaledWidth();
         float windowCenterX = scaledWidth / 2F;
@@ -394,6 +431,7 @@ public class OptimizedWaypointRenderer {
         float baseScale = 0.01F * framebufferHeight / guiScaleFactor;
         float projectionScale = baseScale * projectionConstant;
         float minBaseScale = baseScale / 5F;
+        int squaredViewDistance = WaypointClientMod.getClientConfig().getSquaredViewDistanceInBlocks();
 
         context.draw(immediate -> {
             // hovered rendering
@@ -406,14 +444,18 @@ public class OptimizedWaypointRenderer {
                 float wx = xPos[i];
                 float wy = yPos[i];
                 float wz = zPos[i];
+                boolean isLocal = local[i];
 
                 Vector4f pos = posVec.set(wx, wy, wz, 1F);
-                pos.y += 0.5F;
+//                pos.y += 0.5F;
                 pos.add(camX, camY, camZ, 0F);
+                // only include horizontal distance
+                float horizontalDistanceSquared = pos.x * pos.x + pos.z * pos.z;
+                if (isLocal && horizontalDistanceSquared > squaredViewDistance) {
+                    continue;
+                }
 
-                float relativeX = pos.x();
-                float relativeY = pos.y();
-                float relativeZ = pos.z();
+                float relativeY = pos.y;
 
                 pos.mul(ModelViewMatrix);
                 pos.mul(ProjectionMatrix);
@@ -458,7 +500,7 @@ public class OptimizedWaypointRenderer {
                         detail_winX = winX;
                         detail_winY = winY;
                         detail_scale = scale;
-                        detail_distance = Math.sqrt(relativeX * relativeX + relativeY * relativeY + relativeZ * relativeZ);
+                        detail_distance = Math.sqrt(horizontalDistanceSquared + relativeY * relativeY);
                     }
                 } else {
                     float scaledRealBgWidth = bgWidth * scale;
@@ -474,7 +516,7 @@ public class OptimizedWaypointRenderer {
                             detail_winX = winX;
                             detail_winY = winY;
                             detail_scale = scale;
-                            detail_distance = Math.sqrt(relativeX * relativeX + relativeY * relativeY + relativeZ * relativeZ);
+                            detail_distance = Math.sqrt(horizontalDistanceSquared + relativeY * relativeY);
                         }
                     }
                 }
@@ -559,8 +601,16 @@ public class OptimizedWaypointRenderer {
 
     private static void processCommand(WaypointRendererCommand cmd) {
         switch (cmd.type) {
+            case ENABLE_RENDERING: {
+                DISABLED = false;
+                break;
+            }
+            case DISABLE_RENDERING: {
+                DISABLED = true;
+                break;
+            }
             case ADD:
-                addInternal(cmd.renderId, cmd.x, cmd.y, cmd.z, cmd.bgColor, cmd.fgColor, cmd.name, cmd.initials, cmd.nameWidth, cmd.initialsWidth, cmd.nameBgWidth, cmd.initialsBgWidth);
+                addInternal(cmd.renderId, cmd.x, cmd.y, cmd.z, cmd.bgColor, cmd.fgColor, cmd.name, cmd.initials, cmd.nameWidth, cmd.initialsWidth, cmd.nameBgWidth, cmd.initialsBgWidth, cmd.local);
                 break;
             case REMOVE:
                 removeInternal(cmd.renderId);
@@ -581,6 +631,7 @@ public class OptimizedWaypointRenderer {
                     initialsTextWidth[idx] = cmd.initialsWidth;
                     nameTextBgWidth[idx] = cmd.nameBgWidth;
                     initialsTextBgWidth[idx] = cmd.initialsBgWidth;
+                    local[idx] = cmd.local;
                 }
                 break;
             case CLEAR_ALL:
@@ -590,7 +641,7 @@ public class OptimizedWaypointRenderer {
                 if (cmd.bulkWaypoints != null) {
                     for (int i = 0; i < cmd.bulkWaypoints.length; i++) {
                         SimpleWaypoint wp = cmd.bulkWaypoints[i];
-                        addInternal(wp.renderId, wp.X(), wp.y(), wp.Z(), wp.rgb(), cmd.bulkFgColor[i], wp.name(), wp.initials(), cmd.bulkNameWidth[i], cmd.bulkInitialsWidth[i], cmd.bulkNameBgWidth[i], cmd.bulkInitialsBgWidth[i]);
+                        addInternal(wp.renderId, wp.X(), wp.Y(), wp.Z(), wp.rgb(), cmd.bulkFgColor[i], wp.name(), wp.initials(), cmd.bulkNameWidth[i], cmd.bulkInitialsWidth[i], cmd.bulkNameBgWidth[i], cmd.bulkInitialsBgWidth[i], cmd.bulkLocal[i]);
                     }
                 }
                 break;
@@ -606,7 +657,7 @@ public class OptimizedWaypointRenderer {
         }
     }
 
-    private static void addInternal(int id, float x, float y, float z, int bg_color, int fg_color, String name, String initial, float nameWidth, float initialsWidth, float nameBgWidth, float initialsBgWidth) {
+    private static void addInternal(int id, float x, float y, float z, int bg_color, int fg_color, String name, String initial, float nameWidth, float initialsWidth, float nameBgWidth, float initialsBgWidth, boolean isLocal) {
         if (id >= MAX_RENDER_ID || idMap[id] != -1) return;
         if (count >= MAX_WAYPOINTS) return;
 
@@ -623,6 +674,7 @@ public class OptimizedWaypointRenderer {
         nameTextWidth[i] = nameWidth;
         initialsTextBgWidth[i] = initialsBgWidth;
         nameTextBgWidth[i] = nameBgWidth;
+        local[i] = isLocal;
         idMap[id] = i;
         count++;
     }
@@ -649,6 +701,7 @@ public class OptimizedWaypointRenderer {
             nameTextWidth[indexToRemove] = nameTextWidth[lastIndex];
             initialsTextBgWidth[indexToRemove] = initialsTextBgWidth[lastIndex];
             nameTextBgWidth[indexToRemove] = nameTextBgWidth[lastIndex];
+            local[indexToRemove] = local[lastIndex];
             idMap[lastEntityId] = indexToRemove;
         }
 
