@@ -253,7 +253,6 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         if (serverVersion != ProtocolVersion.PROTOCOL_VERSION) {
             this.loadCachedWaypointFiles(serverId);
             networkState = ClientNetworkState.INCOMPATIBLE_PROTOCOL;
-            return;
         } else if (this.loadCachedWaypointFiles(serverId)) {
             // send update requests to server -> onUpdatesBundle
             this.requestUpdates();
@@ -293,7 +292,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                 try {
                     fileManager.saveDimension();
                 } catch (IOException e) {
-                    LOGGER.info("Failed to save dimension: {} at {}", dimensionName, fileManager.getDimensionFile());
+                    LOGGER.error("Failed to save dimension: {} at {}", dimensionName, fileManager.getDimensionFile());
                 }
             }
         }
@@ -305,13 +304,44 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     public void onWaypointList(WaypointListBuffer buffer) {
         if (WaypointServerMod.hasClient()) return;
         String dimensionName = buffer.dimensionName();
+        boolean inCurrentDimension = currentDimensionName.equals(dimensionName);
         WaypointFileManager fileManager = this.getOrCreateWaypointFileManager(dimensionName);
-        fileManager.addWaypointList(buffer.waypointList());
+        WaypointList newList = buffer.waypointList();
+        WaypointList oldList = fileManager.getWaypointListByName(newList.name());
+        fileManager.addWaypointList(newList);
+        try {
+            fileManager.saveDimension();
+        } catch (IOException e) {
+            LOGGER.error("Failed to save dimension: {} at {}", dimensionName, fileManager.getDimensionFile());
+            throw new RuntimeException(e);
+        }
+        if (inCurrentDimension) {
+            if (oldList != null) OptimizedWaypointRenderer.removeList(oldList.simpleWaypoints());
+            OptimizedWaypointRenderer.addList(newList.simpleWaypoints());
+            WaypointManagerScreen.updateCurrentWaypointLists(fileManager.getWaypointLists());
+        }
     }
 
     @Override
     public void onDimensionWaypoint(DimensionWaypointBuffer buffer) {
         if (WaypointServerMod.hasClient()) return;
+        WaypointFileManager fileManager = this.fileManagerMap.get(buffer.dimensionName());
+        if (fileManager == null) {
+            fileManager = this.addWaypointListManager(buffer.dimensionName());
+        }
+        fileManager.addWaypointLists(buffer.waypointLists());
+        try {
+            fileManager.saveDimension();
+        } catch (IOException e) {
+            LOGGER.error("Failed to save dimension: {} at {}", buffer.dimensionName(), fileManager.getDimensionFile());
+            throw new RuntimeException(e);
+        }
+        if (currentDimensionName.equals(buffer.dimensionName())) {
+            OptimizedWaypointRenderer.clearScene();
+            List<WaypointList> waypointLists = fileManager.getWaypointLists();
+            OptimizedWaypointRenderer.loadScene(waypointLists);
+            WaypointManagerScreen.updateCurrentWaypointLists(waypointLists);
+        }
     }
 
     @Override
