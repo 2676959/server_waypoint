@@ -30,5 +30,13 @@
   "waypoint.edit.screen.coords_yaw": "Coords & Yaw: ",
   "waypoint.edit.screen.visibility": "Visibility: ",
   "waypoint.edit.screen.previous_color.hover": "Click to restore previous color",
-  "waypoint.edit.screen.current_color.hover": "Click to select this color, click again to confirm"
+  "waypoint.edit.screen.current_color.hover": "Click to select this color, click again to confirm",
+
+  "waypoint.config.screen.title": "Server Waypoint Client Configurations",
+  "waypoint.config.local_waypoint_view_distance": "Local Waypoint View Distance (Chunks)",
+  "waypoint.config.enable_waypoint_render": "Enable Waypoint Rendering",
+  "waypoint.config.auto_sync_to_xaeros": "Auto Sync to Xaero's Minimap",
+
+  "server_waypoint.mod_name": "Server Waypoint",
+  "server_waypoint.waypoint_manager_gui.keybind": "Open waypoint manager"
 }

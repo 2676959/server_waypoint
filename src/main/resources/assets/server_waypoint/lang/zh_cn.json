@@ -30,5 +30,13 @@
   "waypoint.edit.screen.coords_yaw": "坐标与偏航角：",
   "waypoint.edit.screen.visibility": "可见范围：",
   "waypoint.edit.screen.previous_color.hover": "点击恢复上一个颜色",
-  "waypoint.edit.screen.current_color.hover": "点击选择此颜色，再次点击确认"
+  "waypoint.edit.screen.current_color.hover": "点击选择此颜色，再次点击确认",
+
+  "waypoint.config.screen.title": "客户端配置",
+  "waypoint.config.local_waypoint_view_distance": "局部路径点渲染视距（区块）",
+  "waypoint.config.enable_waypoint_render": "启用路径点渲染",
+  "waypoint.config.auto_sync_to_xaeros": "自动同步至Xaero的小地图模组",
+
+  "server_waypoint.mod_name": "服务器路径点",
+  "server_waypoint.waypoint_manager_gui.keybind": "打开路径点管理器"
 }
