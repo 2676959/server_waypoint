@@ -1,6 +1,7 @@
 package _959.server_waypoint.core.network;
 
 import _959.server_waypoint.ModInfo;
+import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.buffer.*;
@@ -26,15 +27,15 @@ public class C2SPacketHandler<S, P> {
     }
 
     public void onClientHandshake(P player, ClientHandshakeBuffer buffer) {
-        String clientVersion = buffer.version();
-        LOGGER.info("client join with version: {}", clientVersion);
+        int clientVersion = buffer.version();
+        LOGGER.info("client join with protocol version: {}", clientVersion);
 
-        if (clientVersion.equals(ModInfo.MOD_VERSION)) {
+        if (clientVersion == ProtocolVersion.PROTOCOL_VERSION) {
             this.sender.sendPlayerPacket(player, new ServerHandshakeBuffer(CONFIG.getServerId()));
         } else {
             this.sender.sendPlayerMessage(player, translatable("waypoint.incompatible.client",
-                    text(clientVersion).color(NamedTextColor.RED),
-                    text(ModInfo.MOD_VERSION).color(NamedTextColor.GREEN).decorate(TextDecoration.UNDERLINED).clickEvent(ClickEvent.openUrl(ModInfo.DOWNLOAD_URL))));
+                    text(ProtocolVersion.COMPATIBLE_VERSION).color(NamedTextColor.GREEN).decorate(TextDecoration.UNDERLINED).clickEvent(ClickEvent.openUrl(ModInfo.DOWNLOAD_URL))));
+            this.sender.sendPlayerPacket(player, new ServerHandshakeBuffer(CONFIG.getServerId()));
             LOGGER.warn("client version mismatch: {}", clientVersion);
         }
     }

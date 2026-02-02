@@ -1,6 +1,6 @@
 package _959.server_waypoint.core.network.buffer;
 
-import _959.server_waypoint.ModInfo;
+import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.core.network.MessageChannelID;
 import _959.server_waypoint.core.network.codec.ClientHandshakeCodec;
 import io.netty.buffer.ByteBuf;
@@ -8,9 +8,9 @@ import io.netty.buffer.ByteBuf;
 /**
  * First packet in the communication between client and server
  * */
-public record ClientHandshakeBuffer(String version) implements MessageBuffer {
+public record ClientHandshakeBuffer(int version) implements MessageBuffer {
     public ClientHandshakeBuffer() {
-        this(ModInfo.MOD_VERSION);
+        this(ProtocolVersion.PROTOCOL_VERSION);
     }
 
     @Override
