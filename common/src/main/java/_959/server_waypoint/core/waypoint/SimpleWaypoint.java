@@ -57,11 +57,8 @@ public class SimpleWaypoint {
     }
 
     private int convertYaw(int yaw) {
-        boolean isNegative = yaw < 0;
-        int r = Math.abs(yaw) % 360;
-        r = (r <= 180) ? r : r - 360;
-        r = isNegative ? -r : r;
-        return r;
+        yaw %= 360;
+        return (yaw > 180) ? (yaw - 360) : (yaw < -180 ? yaw + 360 : yaw);
     }
 
     public void copyFrom(SimpleWaypoint other) {
