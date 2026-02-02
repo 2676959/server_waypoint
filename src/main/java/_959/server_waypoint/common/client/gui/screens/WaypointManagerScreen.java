@@ -7,13 +7,14 @@ import _959.server_waypoint.common.client.gui.widgets.NewWaypointListWidget;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.getCurrentDimensionName;
 
 public class WaypointManagerScreen extends MovementAllowedScreen {
-    private static ScreenState STATE = ScreenState.CLOSED;
+    private static boolean isRendering = false;
     private static NewWaypointListWidget waypointListWidget;
     private static DimensionListWidget dimensionListWidget;
     private final WaypointClientMod waypointClientMod;
@@ -25,7 +26,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     public WaypointManagerScreen(WaypointClientMod waypointClientMod) {
         super(Text.of("Server Waypoints"));
         this.waypointClientMod = waypointClientMod;
-        STATE = ScreenState.OPENED;
         dimensionListWidget = new DimensionListWidget(0, 0, widgetWidth, this, this.textRenderer, this::onSelectDimension);
         waypointListWidget = new NewWaypointListWidget(0, 0, widgetWidth, 200, this, this.textRenderer);
         mainLayout.addPaddedClickable(dimensionListWidget, 0);
@@ -38,7 +38,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     public static void updateAll() {
-        if (STATE != ScreenState.CLOSED) {
+        if (isRendering) {
             WaypointClientMod waypointClientMod = WaypointClientMod.getInstance();
             dimensionListWidget.updateDimensionNames(waypointClientMod.getDimensionNames());
             waypointListWidget.updateWaypointLists(waypointClientMod.getCurrentWaypointLists());
@@ -46,19 +46,20 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     public static void updateWaypointLists(String dimensionName, List<WaypointList> waypointLists) {
-        if (STATE != ScreenState.CLOSED && dimensionName.equals(dimensionListWidget.getSelectedDimensionName())) {
+        if (isRendering && dimensionName.equals(dimensionListWidget.getSelectedDimensionName())) {
             waypointListWidget.updateWaypointLists(waypointLists);
         }
     }
 
+    @SuppressWarnings("unused")
     public static void refreshWaypointLists(String dimensionName) {
-        if (STATE != ScreenState.CLOSED && dimensionName.equals(dimensionListWidget.getSelectedDimensionName())) {
+        if (isRendering && dimensionName.equals(dimensionListWidget.getSelectedDimensionName())) {
             waypointListWidget.reCalculateRenderData();
         }
     }
 
     public static void refreshWaypointLists() {
-        if (STATE != ScreenState.CLOSED) {
+        if (isRendering) {
             waypointListWidget.reCalculateRenderData();
         }
     }
@@ -84,6 +85,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
     @Override
     protected void init() {
+        isRendering = true;
         super.init();
         updateWidgetDimension();
         int centeredX = getCenteredX();
@@ -107,6 +109,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_C) {
+            this.client.setScreen(new ClientConfigScreen(this));
+            return true;
+        }
         return waypointListWidget.keyPressed(keyCode, scanCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -117,30 +123,15 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        switch (STATE) {
-            case OPENED: {
-                waypointListWidget.renderWidget(context, mouseX, mouseY, delta);
-                dimensionListWidget.renderWidget(context, mouseX, mouseY, delta);
-                break;
-            }
-            case NO_SERVER: {
-                context.fill(0, 0, width, height, 0xAA000000);
-                context.drawText(textRenderer, "Unsupported server", this.width/2, this.height/2, 0xFFFFFFFF, true);
-                break;
-            }
-        }
+        waypointListWidget.renderWidget(context, mouseX, mouseY, delta);
+        dimensionListWidget.renderWidget(context, mouseX, mouseY, delta);
     }
 
     @Override
     public void close() {
-        STATE = ScreenState.CLOSED;
+        isRendering = false;
         waypointListWidget = null;
         dimensionListWidget = null;
         super.close();
-    }
-    public enum ScreenState {
-        CLOSED,
-        OPENED,
-        NO_SERVER
     }
 }
