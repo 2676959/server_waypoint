@@ -251,9 +251,6 @@ public class WaypointFilesManagerCore {
     * Change the directory of waypoint files and load all waypoint files
     * */
     public void changeWaypointFilesDir(Path newPath) {
-        if (Objects.equals(this.waypointFilesDir, newPath)) {
-            return;
-        }
         this.waypointFilesDir = newPath;
         try {
             initOrReadWaypointFiles();
