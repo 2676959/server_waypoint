@@ -45,6 +45,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         }
     }
 
+    public static void updateCurrentWaypointLists(List<WaypointList> waypointLists) {
+        if (isRendering) {
+            waypointListWidget.updateWaypointLists(waypointLists);
+        }
+    }
+
     public static void updateWaypointLists(String dimensionName, List<WaypointList> waypointLists) {
         if (isRendering && dimensionName.equals(dimensionListWidget.getSelectedDimensionName())) {
             waypointListWidget.updateWaypointLists(waypointLists);
