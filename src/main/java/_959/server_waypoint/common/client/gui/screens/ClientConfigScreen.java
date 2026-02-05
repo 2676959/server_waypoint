@@ -3,10 +3,8 @@ package _959.server_waypoint.common.client.gui.screens;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.WidgetThemeColors;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
-import _959.server_waypoint.common.client.gui.widgets.IntegerSlider;
-import _959.server_waypoint.common.client.gui.widgets.ScalableText;
-import _959.server_waypoint.common.client.gui.widgets.ToggleButton;
-import _959.server_waypoint.common.client.gui.widgets.TrueFalseToggleButton;
+import _959.server_waypoint.common.client.gui.widgets.*;
+import _959.server_waypoint.common.client.handlers.HandlerForXaerosMinimap;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
@@ -17,6 +15,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     private final ToggleButton renderEnableToggle = new TrueFalseToggleButton(0, 0, WaypointClientMod.getClientConfig()::setEnableWaypointRender);
     private final ToggleButton xaerosAutoSyncToggle = new TrueFalseToggleButton(0, 0, WaypointClientMod.getClientConfig()::setAutoSyncToXaerosMinimap);
     private final IntegerSlider waypointRenderDistanceSlider = new IntegerSlider(0, 0, 0, 1024, WaypointClientMod.getClientConfig().getViewDistance(), WaypointClientMod.getClientConfig()::setViewDistance, textRenderer);
+    private final TranslucentButton addToXaerosButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("server_waypoint.config.confirm"), HandlerForXaerosMinimap::syncFromServerWaypointMod);
 
     public ClientConfigScreen(Screen parentScreen) {
         super(Text.empty());
@@ -32,7 +31,9 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         WidgetStack row3 = new WidgetStack(0, 0, 8);
         row3.addChild(new ScalableText(0, 0, Text.translatable("waypoint.config.local_waypoint_view_distance"), 0xFFFFFFFF, textRenderer));
         row3.addChild(waypointRenderDistanceSlider);
-
+        WidgetStack row4 = new WidgetStack(0, 0, 8);
+        row4.addChild(new ScalableText(0, 0, Text.translatable("server_waypoint.config.sync_to_xaeros"), 0xFFFFFFFF, textRenderer));
+        row4.addChild(addToXaerosButton);
         renderEnableToggle.setState(WaypointClientMod.getClientConfig().isEnableWaypointRender());
         xaerosAutoSyncToggle.setState(WaypointClientMod.getClientConfig().isAutoSyncToXaerosMinimap());
 
@@ -40,6 +41,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         mainLayout.addChild(row1);
         mainLayout.addChild(row2);
         mainLayout.addChild(row3);
+        mainLayout.addChild(row4);
         waypointRenderDistanceSlider.setYOffset(-2);
         this.width = mainLayout.getWidth();
         this.height = mainLayout.getHeight();
@@ -51,6 +53,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         this.addDrawableChild(renderEnableToggle);
         this.addDrawableChild(xaerosAutoSyncToggle);
         this.addDrawableChild(waypointRenderDistanceSlider);
+        this.addDrawableChild(addToXaerosButton);
     }
 
     @Override
