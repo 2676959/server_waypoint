@@ -13,7 +13,7 @@
 		"MinecraftClientMixin",
 		"GameHudMixin",
 		"WorldRendererMixin",
-        "ServerPlayerEntityMixin"
+		"ServerPlayerEntityMixin"
 	],
 	"server": [
 		"PlayerManagerMixin",
