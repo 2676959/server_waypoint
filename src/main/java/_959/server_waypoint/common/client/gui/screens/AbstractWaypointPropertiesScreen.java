@@ -10,9 +10,9 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -53,8 +53,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected final int yaw;
     protected final boolean global;
 
-    protected abstract @NonNull WidgetStack createTitleRow();
-    protected abstract @NonNull WidgetStack createButtonRow();
+    protected abstract @NotNull WidgetStack createTitleRow();
+    protected abstract @NotNull WidgetStack createButtonRow();
     protected abstract @Unmodifiable List<ClickableWidget> getTitleRowClickableWidgets();
     protected abstract @Unmodifiable List<ClickableWidget> getButtonRowClickableWidgets();
 

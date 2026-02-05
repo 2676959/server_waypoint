@@ -7,8 +7,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
-import org.jspecify.annotations.NonNull;
-
+import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
@@ -21,7 +20,7 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     private TranslucentButton resetButton;
 
     @Override
-    protected @NonNull WidgetStack createTitleRow() {
+    protected @NotNull WidgetStack createTitleRow() {
         ScalableText titleLabel = new ScalableText(0, 0, this.getTitle(), 0xFFFFFFFF, textRenderer);
         WidgetStack infoRow = new WidgetStack(0, 0, 5);
         ScalableText dimensionLabel = new ScalableText(0, 0, Text.translatable("waypoint.dimension.info", ""), 0.8F, LIGHT_GRAY, textRenderer);
@@ -39,7 +38,7 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     }
 
     @Override
-    protected @NonNull WidgetStack createButtonRow() {
+    protected @NotNull WidgetStack createButtonRow() {
         // buttons row
         WidgetStack buttonRow = new WidgetStack(0, 0, 10, false);
         this.updateButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.update.button"), this::sendEditCommand);

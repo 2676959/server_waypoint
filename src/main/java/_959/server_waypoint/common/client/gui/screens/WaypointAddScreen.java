@@ -11,8 +11,8 @@ import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
@@ -46,7 +46,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     }
 
     @Override
-    protected @NonNull WidgetStack createTitleRow() {
+    protected @NotNull WidgetStack createTitleRow() {
         MutableText dimensionLabelText = Text.translatable("waypoint.dimension.info", "");
         MutableText listNameLabelText = Text.translatable("waypoint.list_name.info", "");
         // title row
@@ -71,7 +71,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     }
 
     @Override
-    protected @NonNull WidgetStack createButtonRow() {
+    protected @NotNull WidgetStack createButtonRow() {
         // buttons row
         WidgetStack buttonRow = new WidgetStack(0, 0, 10, false);
         this.addButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.add.button"), this::sendAddCommand);

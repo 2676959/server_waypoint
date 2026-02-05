@@ -21,8 +21,8 @@ import com.google.gson.GsonBuilder;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ServerInfo;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,7 +136,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         return true;
     }
 
-    public void forEachWaypointFileManager(@NonNull Consumer<@NonNull WaypointFileManager> consumer) {
+    public void forEachWaypointFileManager(@NotNull Consumer<@NotNull WaypointFileManager> consumer) {
         for (WaypointFileManager fileManager : this.fileManagerMap.values()) {
             if (fileManager != null) consumer.accept(fileManager);
         }
@@ -168,7 +168,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         this.fileManagerMap = fileManagerMap;
     }
 
-    @NonNull
+    @NotNull
     public List<WaypointList> getWaypointListsByDimensionName(String dimensionName) {
         WaypointFileManager fileManager = this.fileManagerMap.get(dimensionName);
         return fileManager == null ? new ArrayList<>() : fileManager.getWaypointLists();
@@ -177,7 +177,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     /**
      * get an immutable sorted list of dimension names
      * */
-    @NonNull
+    @NotNull
     public @Unmodifiable List<String> getDimensionNames() {
         // keep the order of vanilla dimensions and sort the rest alphabetically
         int size = this.fileManagerMap.size();
@@ -190,7 +190,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         }
     }
 
-    @NonNull
+    @NotNull
     public @Unmodifiable List<WaypointList> getCurrentWaypointLists() {
         WaypointFileManager WaypointFileManager = this.fileManagerMap.get(currentDimensionName);
         if (WaypointFileManager == null) {
