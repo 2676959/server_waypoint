@@ -1,17 +1,17 @@
 {
   "button.initials.tp": "点击传送",
 
-  "waypoint.list.added": "路径点列表“%1$s”已成功添加至Xaero's minimap",
-  "waypoint.save.failed": "路径点保存失败",
-  "waypoint.save.dimension.failed": "维度“%1$s”的路径点保存失败",
+  "server_waypoint.list.added.xaeros": "路径点列表“%1$s”已成功添加至Xaero's minimap",
+  "server_waypoint.save.failed.xaeros": "路径点保存失败",
+  "server_waypoint.save.dimension.failed.xaeros": "维度“%1$s”的路径点保存失败",
 
-  "waypoint.dimension.waypoint.added": "维度“%1$s”中的路径点已成功添加至Xaero's minimap",
-  "waypoint.all.added": "已成功添加此服务器上全部路径点至Xaero's minimap",
+  "server_waypoint.dimension.waypoint.added.xaeros": "维度“%1$s”中的路径点已成功添加至Xaero's minimap",
+  "server_waypoint.all.added.xaeros": "已成功添加此服务器上全部路径点至Xaero's minimap",
 
-  "waypoint.modification.add": "路径点%1$s已添加至Xaero's minimap",
-  "waypoint.modification.remove": "路径点%1$s已从Xaero's minimap移除",
-  "waypoint.modification.update": "路径点%1$s已更新至Xaero's minimap",
-  "waypoint.dimension.decode.fail": "无法解码维度“%1$s”",
+  "server_waypoint.modification.add.xaeros": "路径点%1$s已添加至Xaero's minimap",
+  "server_waypoint.modification.remove.xaeros": "路径点%1$s已从Xaero's minimap移除",
+  "server_waypoint.modification.update.xaeros": "路径点%1$s已更新至Xaero's minimap",
+  "server_waypoint.dimension.decode.fail": "无法解码维度“%1$s”",
 
   "waypoint.empty_mark": "<空>",
   "waypoint.add.button": "添加",
@@ -36,7 +36,12 @@
   "waypoint.config.local_waypoint_view_distance": "局部路径点渲染视距（区块）",
   "waypoint.config.enable_waypoint_render": "启用路径点渲染",
   "waypoint.config.auto_sync_to_xaeros": "自动同步至Xaero的小地图模组",
+  "server_waypoint.config.sync_to_xaeros": "同步路径点至Xaero的小地图模组",
+  "server_waypoint.config.sync_to_xaeros.warn": "Syncing will remove waypoints waypoint",
 
   "server_waypoint.mod_name": "服务器路径点",
-  "server_waypoint.waypoint_manager_gui.keybind": "打开路径点管理器"
+  "server_waypoint.waypoint_manager_gui.keybind": "打开路径点管理器图形界面",
+  "server_waypoint.config.confirm": "确定",
+  "server_waypoint.config.true": "是",
+  "server_waypoint.config.false": "否"
 }
