@@ -3,6 +3,7 @@ package _959.server_waypoint.common.client;
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.handlers.BufferHandler;
+import _959.server_waypoint.common.client.handlers.HandlerForXaerosMinimap;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
 import _959.server_waypoint.common.network.payload.c2s.UpdateRequestC2SPayload;
@@ -33,13 +34,15 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static _959.server_waypoint.ModInfo.MOD_ID;
 import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asClientFromRemoteServer;
 
 public class WaypointClientMod extends WaypointFilesManagerCore implements BufferHandler {
     public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_client");
-    public static WaypointClientMod INSTANCE;
+    public static boolean isXaerosMinimapReady = false;
+    private static WaypointClientMod INSTANCE;
     private static ClientNetworkState networkState = ClientNetworkState.NOT_READY;
     private static String currentDimensionName;
     private static ClientConfig clientConfig;
@@ -63,16 +66,16 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         return INSTANCE;
     }
 
+    public static ClientNetworkState getNetworkState() {
+        return networkState;
+    }
+
     private WaypointClientMod(MinecraftClient mc, Path gameRoot, Path configDir) {
         super();
         this.mc = mc;
         this.gameRoot = gameRoot;
         this.configPath = configDir.resolve(MOD_ID).resolve("client-config.json");
         INSTANCE = this;
-    }
-
-    public static ClientNetworkState getNetworkState() {
-        return networkState;
     }
 
     private void resetNetworkState() {
@@ -120,6 +123,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         return currentDimensionName;
     }
 
+    @SuppressWarnings("unused")
     public boolean hasNoWaypoints() {
         if (this.fileManagerMap.isEmpty()) {
             return true;
@@ -130,6 +134,12 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             }
         }
         return true;
+    }
+
+    public void forEachWaypointFileManager(@NonNull Consumer<@NonNull WaypointFileManager> consumer) {
+        for (WaypointFileManager fileManager : this.fileManagerMap.values()) {
+            if (fileManager != null) consumer.accept(fileManager);
+        }
     }
 
     public void removeDimension(String dimensionName) {
@@ -295,6 +305,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                     LOGGER.error("Failed to save dimension: {} at {}", dimensionName, fileManager.getDimensionFile());
                 }
             }
+        }
+        if (clientConfig.isAutoSyncToXaerosMinimap() && isXaerosMinimapReady) {
+            HandlerForXaerosMinimap.syncFromServerWaypointMod();
         }
         networkState = ClientNetworkState.SYNC_FINISHED;
         OptimizedWaypointRenderer.loadScene(getCurrentWaypointLists());
