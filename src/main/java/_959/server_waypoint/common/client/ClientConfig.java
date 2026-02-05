@@ -8,6 +8,7 @@ public class ClientConfig {
     @Expose private boolean enableWaypointRender = true;
     @Expose private boolean autoSyncToXaerosMinimap = true;
     private int squaredViewDistanceInBlocks = 12 * 16 * 12 * 16;
+    public static boolean isXaerosMinimapLoaded;
 
     private ClientConfig() {}
 
@@ -21,7 +22,7 @@ public class ClientConfig {
     }
 
     public boolean isAutoSyncToXaerosMinimap() {
-        return autoSyncToXaerosMinimap;
+        return isXaerosMinimapLoaded && autoSyncToXaerosMinimap;
     }
 
     public void setAutoSyncToXaerosMinimap(boolean autoSyncToXaerosMinimap) {

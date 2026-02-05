@@ -1,6 +1,7 @@
 //? if fabric {
 package _959.server_waypoint.fabric;
 
+import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.command.ClientWaypointCommand;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
@@ -24,6 +25,7 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        ClientConfig.isXaerosMinimapLoaded = FabricLoader.getInstance().isModLoaded("xaerominimap");
         keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "server_waypoint.waypoint_manager_gui.keybind",
                 InputUtil.Type.KEYSYM,
