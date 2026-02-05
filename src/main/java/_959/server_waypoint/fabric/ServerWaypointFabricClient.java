@@ -6,7 +6,6 @@ import _959.server_waypoint.common.client.command.ClientWaypointCommand;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.handlers.S2CPayloadHandler;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
-import _959.server_waypoint.common.client.util.ClientCommandUtils;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
