@@ -63,11 +63,6 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
         index = 0;
     }
 
-    public static void setStates(float scrolledPosition, int index) {
-        DimensionListWidget.scrolledPosition = scrolledPosition;
-        DimensionListWidget.index = index;
-    }
-
     private void openAddScreen() {
         MinecraftClient.getInstance().setScreen(new WaypointAddScreen(parentScreen, getSelectedDimensionName(), ""));
     }

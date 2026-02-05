@@ -6,7 +6,6 @@ import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
-import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.util.Pair;
@@ -139,13 +138,6 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
             int lastSize = waypointList.isExpand() ? waypointList.size() + 1 : 1;
             this.contentHeight = (listPositions.getLast() + lastSize) * itemHeight;
         }
-    }
-
-    public void setEmpty() {
-        this.empty = true;
-        this.listPositions.clear();
-        this.contentHeight = 0;
-        SCROLLED_POSITION = 0.0D;
     }
 
     /**
