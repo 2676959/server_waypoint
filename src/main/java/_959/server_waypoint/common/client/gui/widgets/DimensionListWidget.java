@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
-import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 
 public class DimensionListWidget extends ShiftableClickableWidget implements Padding, Expandable {
@@ -113,7 +112,6 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
             int minScroll = -(size - 12) * iconSize;
             scrolledPosition = Math.clamp(nextPosition, minScroll, 0);
         }
-        LOGGER.info("scrolled: {}", scrolledPosition);
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
@@ -131,7 +129,6 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
             if (clickedIndex >= 0 && clickedIndex < dimensionNames.size()) {
                 index = clickedIndex;
                 callback.onSelected(dimensionNames.get(index));
-                LOGGER.info("onClick: {}", index);
                 this.playDownSound(MinecraftClient.getInstance().getSoundManager());
                 return true;
             }

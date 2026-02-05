@@ -16,7 +16,6 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
-import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.util.CommandGenerator.addCmd;
 
@@ -68,7 +67,6 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         titleRow.addChild(dimensionRow);
         titleRow.addChild(listNameRow);
 
-        LOGGER.info("row height: {}", titleRow.getHeight());
         return titleRow;
     }
 

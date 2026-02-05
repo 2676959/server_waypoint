@@ -158,7 +158,6 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             }
             dimensionSyncIds.add(new DimensionSyncIdentifier(dimensionName, listSyncIds));
         }
-        LOGGER.info("ids: {}", dimensionSyncIds);
         return new UpdateRequestC2SPayload(new ClientUpdateRequestBuffer(dimensionSyncIds));
     }
 
@@ -256,7 +255,6 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
 
     @Override
     public void onServerHandshake(ServerHandshakeBuffer buffer) {
-        LOGGER.info("received server handshake packet: {}", buffer.toString());
         networkState = ClientNetworkState.HANDSHAKE_FINISHED;
         int serverId = buffer.serverId();
         int serverVersion = buffer.version();
@@ -271,7 +269,6 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
 
     @Override
     public void onUpdatesBundle(UpdatesBundleBuffer buffer) {
-        LOGGER.info("received updates bundle: {}", buffer.toString());
         for (DimensionWaypointBuffer dimensionBuffer : buffer) {
             String dimensionName = dimensionBuffer.dimensionName();
             WaypointFileManager fileManager = this.getWaypointFileManager(dimensionName);
@@ -363,11 +360,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         this.fileManagerMap.clear();
         OptimizedWaypointRenderer.clearScene();
         currentDimensionName = this.mc.world.getRegistryKey().getValue().toString();
-        LOGGER.info("this dimension: {}", currentDimensionName);
         boolean found = false;
         for (DimensionWaypointBuffer dimensionWaypoint : buffer) {
             String dimensionName = dimensionWaypoint.dimensionName();
-            LOGGER.info("dimension name: {}", dimensionName);
             WaypointFileManager fileManager = this.addWaypointListManager(dimensionName);
             List<WaypointList> waypointLists = dimensionWaypoint.waypointLists();
             if (!found && currentDimensionName.equals(dimensionName)) {

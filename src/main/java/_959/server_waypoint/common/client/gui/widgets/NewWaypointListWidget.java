@@ -29,7 +29,6 @@ import static _959.server_waypoint.ModInfo.MOD_ID;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
-import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 import static _959.server_waypoint.util.CommandGenerator.*;
 import static java.util.Collections.binarySearch;
 
@@ -98,13 +97,11 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
             this.listPositions.clear();
         } else {
             this.empty = false;
-            LOGGER.info("new waypoint Lists :{}", newWaypointLists);
         }
         this.waypointLists = newWaypointLists;
         recalculateListPositions();
         recalculateContentHeight();
         setScrollY(Math.clamp(SCROLLED_POSITION, 0, getContentsHeightWithPadding()));
-        LOGGER.info("list positions: {}", this.listPositions);
     }
 
     /**
@@ -172,7 +169,6 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         boolean bl = super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
         SCROLLED_POSITION = getScrollY();
-        WaypointServerMod.LOGGER.info("scrolled: {}", SCROLLED_POSITION);
         return bl;
     }
 
@@ -199,7 +195,6 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
             }
 
             int index = binarySearch(listPositions, pos);
-            LOGGER.info("pos: {}, index: {}", pos, index);
             int firstBtn = x + firstBtnXPos;
             int secondBtn = x + secondBtnXPos;
             int thirdBtn = x + thirdBtnXPos;

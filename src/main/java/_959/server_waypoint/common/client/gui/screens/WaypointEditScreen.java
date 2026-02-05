@@ -16,8 +16,6 @@ import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import static _959.server_waypoint.util.CommandGenerator.editCmd;
 import static net.minecraft.util.Colors.LIGHT_GRAY;
 
-import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
-
 public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     private TranslucentButton updateButton;
     private TranslucentButton resetButton;
@@ -37,7 +35,6 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
         WidgetStack titleRow = new WidgetStack(0, 0, 2, true, false);
         titleRow.addChild(titleLabel, 0);
         titleRow.addChild(infoRow);
-        LOGGER.info("row height: {}", titleRow.getHeight());
         return titleRow;
     }
 

@@ -8,7 +8,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 import static _959.server_waypoint.common.client.WaypointClientMod.onDimensionChange;
 
 @Mixin(MinecraftClient.class)
@@ -22,6 +21,5 @@ public class MinecraftClientMixin {
         String worldName = world.getRegistryKey().getValue().toString();
         WaypointManagerScreen.resetWidgetStates();
         onDimensionChange(worldName);
-        LOGGER.info("setWorld to: {}", worldName);
     }
 }
