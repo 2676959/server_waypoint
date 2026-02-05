@@ -1,9 +1,9 @@
 package _959.server_waypoint.common.client.handlers;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.core.network.buffer.*;
-import net.minecraft.network.packet.CustomPayload;
 
 //? if fabric {
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -17,7 +17,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 public class S2CPayloadHandler {
     private static final BufferHandler xaeroMinimapPacketHandler = new HandlerForXaerosMinimap();
 
-    public interface CustomPayloadHandler<B extends MessageBuffer, P extends CustomPayload> {
+    public interface CustomPayloadHandler<B extends MessageBuffer, P extends ModPayload> {
         void bufferHandler(B buffer);
         B payloadToBuffer(P payload);
         default void handle(
@@ -34,25 +34,25 @@ public class S2CPayloadHandler {
 
     public static class ServerHandshakeHandler implements CustomPayloadHandler<ServerHandshakeBuffer, ServerHandshakeS2CPayload> {
         @Override
-        public void bufferHandler(ServerHandshakeBuffer buffer) {
-            WaypointClientMod.getInstance().onServerHandshake(buffer);
+        public ServerHandshakeBuffer payloadToBuffer(ServerHandshakeS2CPayload payload) {
+            return payload.serverHandshakeBuffer();
         }
 
         @Override
-        public ServerHandshakeBuffer payloadToBuffer(ServerHandshakeS2CPayload payload) {
-            return payload.serverHandshakeBuffer();
+        public void bufferHandler(ServerHandshakeBuffer buffer) {
+            WaypointClientMod.getInstance().onServerHandshake(buffer);
         }
     }
 
     public static class UpdatesBundleHandler implements CustomPayloadHandler<UpdatesBundleBuffer, UpdatesBundleS2CPayload> {
         @Override
-        public void bufferHandler(UpdatesBundleBuffer buffer) {
-            WaypointClientMod.getInstance().onUpdatesBundle(buffer);
+        public UpdatesBundleBuffer payloadToBuffer(UpdatesBundleS2CPayload payload) {
+            return payload.updatesBundleBuffer();
         }
 
         @Override
-        public UpdatesBundleBuffer payloadToBuffer(UpdatesBundleS2CPayload payload) {
-            return payload.updatesBundleBuffer();
+        public void bufferHandler(UpdatesBundleBuffer buffer) {
+            WaypointClientMod.getInstance().onUpdatesBundle(buffer);
         }
     }
 
@@ -64,7 +64,8 @@ public class S2CPayloadHandler {
 
         @Override
         public void bufferHandler(WaypointListBuffer buffer) {
-            xaeroMinimapPacketHandler.onWaypointList(buffer);
+            WaypointClientMod.getInstance().onWaypointList(buffer);
+            if (WaypointClientMod.getClientConfig().isAutoSyncToXaerosMinimap()) xaeroMinimapPacketHandler.onWaypointList(buffer);
         }
     }
 
@@ -76,7 +77,8 @@ public class S2CPayloadHandler {
 
         @Override
         public void bufferHandler(DimensionWaypointBuffer buffer) {
-            xaeroMinimapPacketHandler.onDimensionWaypoint(buffer);
+            WaypointClientMod.getInstance().onDimensionWaypoint(buffer);
+            if (WaypointClientMod.getClientConfig().isAutoSyncToXaerosMinimap()) xaeroMinimapPacketHandler.onDimensionWaypoint(buffer);
         }
     }
 
@@ -89,7 +91,7 @@ public class S2CPayloadHandler {
         @Override
         public void bufferHandler(WorldWaypointBuffer buffer) {
             WaypointClientMod.getInstance().onWorldWaypoint(buffer);
-            xaeroMinimapPacketHandler.onWorldWaypoint(buffer);
+            if (WaypointClientMod.getClientConfig().isAutoSyncToXaerosMinimap()) xaeroMinimapPacketHandler.onWorldWaypoint(buffer);
         }
     }
 
@@ -102,7 +104,7 @@ public class S2CPayloadHandler {
         @Override
         public void bufferHandler(WaypointModificationBuffer buffer) {
             WaypointClientMod.getInstance().onWaypointModification(buffer);
-            xaeroMinimapPacketHandler.onWaypointModification(buffer);
+            if (WaypointClientMod.getClientConfig().isAutoSyncToXaerosMinimap()) xaeroMinimapPacketHandler.onWaypointModification(buffer);
         }
     }
 }
