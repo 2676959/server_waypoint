@@ -2,18 +2,18 @@ package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.*;
+import _959.server_waypoint.common.client.util.ColorHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.ColorHelper;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
+import static _959.server_waypoint.common.client.gui.WidgetThemeColors.MUTED_FONT_COLOR;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import static _959.server_waypoint.util.CommandGenerator.editCmd;
-import static net.minecraft.util.Colors.LIGHT_GRAY;
 
 public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     private TranslucentButton updateButton;
@@ -23,10 +23,10 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     protected @NotNull WidgetStack createTitleRow() {
         ScalableText titleLabel = new ScalableText(0, 0, this.getTitle(), 0xFFFFFFFF, textRenderer);
         WidgetStack infoRow = new WidgetStack(0, 0, 5);
-        ScalableText dimensionLabel = new ScalableText(0, 0, Text.translatable("waypoint.dimension.info", ""), 0.8F, LIGHT_GRAY, textRenderer);
+        ScalableText dimensionLabel = new ScalableText(0, 0, Text.translatable("waypoint.dimension.info", ""), 0.8F, MUTED_FONT_COLOR, textRenderer);
         int dimensionColor = ColorHelper.scaleRgb(getDimensionColor(this.dimensionName).value(), 0.8F);
         ScalableText dimensionNameLabel = new ScalableText(0, 0, Text.of(this.dimensionName), 0.8F, dimensionColor, textRenderer);
-        ScalableText listNameLabel = new ScalableText(0, 0, Text.translatable("waypoint.list_name.info", this.listName), 0.8F, LIGHT_GRAY, textRenderer);
+        ScalableText listNameLabel = new ScalableText(0, 0, Text.translatable("waypoint.list_name.info", this.listName), 0.8F, MUTED_FONT_COLOR, textRenderer);
         infoRow.addChild(dimensionLabel, 0);
         infoRow.addChild(dimensionNameLabel, 0);
         infoRow.addChild(listNameLabel);

@@ -1,11 +1,13 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
+import static _959.server_waypoint.common.network.ModMessageSender.toVanillaText;
 import static _959.server_waypoint.util.ColorUtils.hexCodeToRgb;
 import static _959.server_waypoint.util.ColorUtils.rgbToHexCode;
 
@@ -16,7 +18,7 @@ public class ColorHexCodeField extends TranslucentTextField implements Colorable
         super(x, y, 39, text, textRenderer);
         this.textRenderer = textRenderer;
         this.setMaxLength(6);
-        this.setPlaceholder(Text.literal("RRGGBB").withColor(Colors.LIGHT_GRAY));
+        this.setPlaceholder(toVanillaText(Component.text("RRGGBB").color(TextColor.color(MUTED_FONT_COLOR))));
     }
 
     @Override
