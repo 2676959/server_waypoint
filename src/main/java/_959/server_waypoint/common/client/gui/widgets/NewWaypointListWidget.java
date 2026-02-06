@@ -100,7 +100,7 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
         this.waypointLists = newWaypointLists;
         recalculateListPositions();
         recalculateContentHeight();
-        setScrollY(Math.clamp(SCROLLED_POSITION, 0, getContentsHeightWithPadding()));
+        setScrollY(Math.clamp(SCROLLED_POSITION, 0, getContentHeight()));
     }
 
     /**
@@ -170,7 +170,7 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
             return false;
         }
         if (this.checkScrollbarDragged(mouseX, mouseY, button)) {
-            return true;
+            return super.mouseClicked(mouseX, mouseY, button);
         }
         int x = getX();
         int y = getY();
@@ -312,17 +312,20 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
     }
 
     @Override
-    protected int getContentsHeightWithPadding() {
+    public int getContentHeight() {
         return this.contentHeight;
     }
 
     @Override
-    protected double getDeltaYPerScroll() {
+    public double getDeltaYPerScroll() {
         return 5;
     }
 
     @Override
-    public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+    public void
+    //$ renderWidget_swap
+    renderWidget
+    (DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         double scrollY = getScrollY();
         int i = 0;
         int x = getX();
@@ -462,9 +465,6 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
                 context.drawTextWithShadow(textRenderer, name, 30, finalY, textColor);
                 i++;
             }
-//                int listLen = simpleWaypoints.size();
-//                int listY = this.listPositions.get(n) * itemHeight;
-//                context.fill(0, listY, 2, listY + (listLen + 1) * itemHeight, 0xFFFFFFFF);
         }
         matrixStack.translate(0.0D, scrollY, 0.0D);
         matrixStack.translate(-x, -y, 0.0D);

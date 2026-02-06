@@ -54,7 +54,10 @@ public class ColorHexCodeField extends TranslucentTextField implements Colorable
     }
 
     @Override
-    public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+    public void
+    //$ renderWidget_swap
+    renderWidget
+            (DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         int x = getShiftedX() - 2;
         int y = getShiftedY() - 2;
         int x1 = x - 6;

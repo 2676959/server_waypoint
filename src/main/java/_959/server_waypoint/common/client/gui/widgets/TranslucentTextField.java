@@ -22,7 +22,10 @@ public class TranslucentTextField extends TextFieldWidget implements Shiftable {
     }
 
     @Override
-    public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+    public void
+    //$ renderWidget_swap
+    renderWidget
+            (DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         int x = getShiftedX() - 2;
         int y = getShiftedY() - 2;
         int right = x - 1 + this.width;
@@ -31,11 +34,17 @@ public class TranslucentTextField extends TextFieldWidget implements Shiftable {
         this.hovered = mouseX >= x && mouseY >= y && mouseX <= right && mouseY <= bottom;
         int bdColor = isFocused() | isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
         context.drawBorder(x, y, this.width, this.backgroundHeight, bdColor);
-        super.renderWidget(context, mouseX, mouseY, deltaTicks);
+        super.
+        //$ renderWidget_swap
+        renderWidget
+        (context, mouseX, mouseY, deltaTicks);
     }
 
     public void renderTextField(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        super.renderWidget(context, mouseX, mouseY, deltaTicks);
+        super.
+        //$ renderWidget_swap
+        renderWidget
+        (context, mouseX, mouseY, deltaTicks);
     }
 
     public int getVisualHeight() {

@@ -1,17 +1,32 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+//? if <= 1.20.1
+/*import net.minecraft.client.gui.DrawContext;*/
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
 
 public abstract class ShiftableClickableWidget extends ClickableWidget implements Shiftable {
-    private int shiftedX;
-    private int shiftedY;
-    private int xOffset;
-    private int yOffset;
+    protected int shiftedX;
+    protected int shiftedY;
+    protected int xOffset;
+    protected int yOffset;
 
     public ShiftableClickableWidget(int x, int y, int width, int height, Text message) {
         super(x, y, width, height, message);
     }
+
+    //? if <= 1.20.1 {
+    /*public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {}
+
+    @Override
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+        this.renderWidget(context, mouseX, mouseY, deltaTicks);
+    }
+
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        return this.mouseScrolled(mouseX, mouseY, verticalAmount);
+    }
+    *///?}
 
     @Override
     public int getX() {
