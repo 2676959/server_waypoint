@@ -38,7 +38,7 @@ public record ServerHandshakeS2CPayload(ServerHandshakeBuffer serverHandshakeBuf
         return ID;
     }
 //?} else if fabric {
-    /*public static final PacketType<ServerHandshakeS2CPayload> TYPE = PacketType.create(SERVER_HANDSHAKE_PAYLOAD, ServerHandshakeS2CPayload::new);
+    /*public static final PacketType<ServerHandshakeS2CPayload> ID = PacketType.create(SERVER_HANDSHAKE_PAYLOAD, ServerHandshakeS2CPayload::new);
 
     public ServerHandshakeS2CPayload(PacketByteBuf buf) {
         this(ServerHandshakeCodec.decode(buf));
@@ -51,7 +51,7 @@ public record ServerHandshakeS2CPayload(ServerHandshakeBuffer serverHandshakeBuf
 
     @Override
     public PacketType<?> getType() {
-        return TYPE;
+        return ID;
     }
 *///?}
 }

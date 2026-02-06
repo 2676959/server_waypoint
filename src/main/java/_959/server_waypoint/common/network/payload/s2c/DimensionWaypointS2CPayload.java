@@ -38,7 +38,7 @@ public record DimensionWaypointS2CPayload(DimensionWaypointBuffer dimensionWaypo
         return ID;
     }
 //?} else if fabric {
-    /*public static final PacketType<DimensionWaypointS2CPayload> TYPE = PacketType.create(DIM_WAYPOINT_PAYLOAD_ID, DimensionWaypointS2CPayload::new);
+    /*public static final PacketType<DimensionWaypointS2CPayload> ID = PacketType.create(DIM_WAYPOINT_PAYLOAD_ID, DimensionWaypointS2CPayload::new);
 
     public DimensionWaypointS2CPayload(PacketByteBuf buf) {
         this(DimensionWaypointCodec.decode(buf));
@@ -51,7 +51,7 @@ public record DimensionWaypointS2CPayload(DimensionWaypointBuffer dimensionWaypo
 
     @Override
     public PacketType<?> getType() {
-        return TYPE;
+        return ID;
     }
 *///?}
 }

@@ -35,7 +35,7 @@ public record XaerosWorldIdS2CPayload(XaerosWorldIdBuffer worldIdBuffer) impleme
         return ID;
     }
 //?} else if fabric {
-    /*public static final PacketType<XaerosWorldIdS2CPayload> TYPE = PacketType.create(XAEROS_WORLD_ID_PAYLOAD_ID, XaerosWorldIdS2CPayload::new);
+    /*public static final PacketType<XaerosWorldIdS2CPayload> ID = PacketType.create(XAEROS_WORLD_ID_PAYLOAD_ID, XaerosWorldIdS2CPayload::new);
 
     public XaerosWorldIdS2CPayload(PacketByteBuf buf) {
         this(XaerosWorldIdBufferCodec.decode(buf));
@@ -48,7 +48,7 @@ public record XaerosWorldIdS2CPayload(XaerosWorldIdBuffer worldIdBuffer) impleme
 
     @Override
     public PacketType<?> getType() {
-        return TYPE;
+        return ID;
     }
 *///?}
 }

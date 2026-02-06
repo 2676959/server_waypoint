@@ -38,7 +38,7 @@ public record WaypointModificationS2CPayload(WaypointModificationBuffer waypoint
         return ID;
     }
 //?} else if fabric {
-    /*public static final PacketType<WaypointModificationS2CPayload> TYPE = PacketType.create(WAYPOINT_MODIFICATION_PAYLOAD_ID, WaypointModificationS2CPayload::new);
+    /*public static final PacketType<WaypointModificationS2CPayload> ID = PacketType.create(WAYPOINT_MODIFICATION_PAYLOAD_ID, WaypointModificationS2CPayload::new);
 
     public WaypointModificationS2CPayload(PacketByteBuf buf) {
         this(WaypointModificationBufferCodec.decode(buf));
@@ -51,7 +51,7 @@ public record WaypointModificationS2CPayload(WaypointModificationBuffer waypoint
 
     @Override
     public PacketType<?> getType() {
-        return TYPE;
+        return ID;
     }
 *///?}
 }

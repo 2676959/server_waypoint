@@ -38,20 +38,20 @@ public record WorldWaypointS2CPayload(WorldWaypointBuffer worldWaypointBuffer) i
         return ID;
     }
 //?} else if fabric {
-    /*public static final PacketType<WorldWaypointS2CPayload> TYPE = PacketType.create(WORLD_WAYPOINT_PAYLOAD_ID, WorldWaypointS2CPayload::new);
+    /*public static final PacketType<WorldWaypointS2CPayload> ID = PacketType.create(WORLD_WAYPOINT_PAYLOAD_ID, WorldWaypointS2CPayload::new);
 
     public WorldWaypointS2CPayload(PacketByteBuf buf) {
-        this(WorldWaypointBufferCodec.decode(buf));
+        this(DimensionWaypointsListCodec.decode(buf, WorldWaypointBuffer::new));
     }
 
     @Override
     public void write(PacketByteBuf buf) {
-        WorldWaypointBufferCodec.encode(buf, worldWaypointBuffer);
+        DimensionWaypointsListCodec.encode(buf, worldWaypointBuffer);
     }
 
     @Override
     public PacketType<?> getType() {
-        return TYPE;
+        return ID;
     }
 *///?}
 }

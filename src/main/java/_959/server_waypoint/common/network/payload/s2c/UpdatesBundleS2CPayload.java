@@ -38,7 +38,7 @@ public record UpdatesBundleS2CPayload(UpdatesBundleBuffer updatesBundleBuffer) i
         return ID;
     }
 //?} else if fabric {
-    /*public static final PacketType<UpdatesBundleS2CPayload> TYPE = PacketType.create(UPDATES_BUNDLE_PAYLOAD_ID, UpdatesBundleS2CPayload::new);
+    /*public static final PacketType<UpdatesBundleS2CPayload> ID = PacketType.create(UPDATES_BUNDLE_PAYLOAD_ID, UpdatesBundleS2CPayload::new);
 
     public UpdatesBundleS2CPayload(PacketByteBuf buf) {
         this(UpdatesBundleCodec.decode(buf));
@@ -51,7 +51,7 @@ public record UpdatesBundleS2CPayload(UpdatesBundleBuffer updatesBundleBuffer) i
 
     @Override
     public PacketType<?> getType() {
-        return TYPE;
+        return ID;
     }
 *///?}
 }

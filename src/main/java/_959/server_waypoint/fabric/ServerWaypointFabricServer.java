@@ -72,7 +72,6 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> waypointServer.unload());
         // register chatMessageHandler
         ServerMessageEvents.CHAT_MESSAGE.register(handler::onChatMessage);
-        // register c2sPacketHandler
         registerPayloads();
 
         //? if >= 1.20.5 {
@@ -83,10 +82,10 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
                 c2sPacketHandler.onClientHandshake(context.player(), clientHandshakeC2SPayload.clientHandshakeBuffer())
         );
         //?} else if fabric {
-        /*ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.TYPE, (packet, player, responseSender) ->
+        /*ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (packet, player, responseSender) ->
                 c2sPacketHandler.onClientUpdateRequest(player, packet.clientUpdateRequestBuffer()
                 ));
-        ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.TYPE, (packet, player, responseSender) ->
+        ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (packet, player, responseSender) ->
                 c2sPacketHandler.onClientHandshake(player, packet.clientHandshakeBuffer()
                 ));
         *///?}

@@ -38,7 +38,7 @@ public record UpdateRequestC2SPayload(ClientUpdateRequestBuffer clientUpdateRequ
         return ID;
     }
 //?} else if fabric {
-    /*public static final PacketType<UpdateRequestC2SPayload> TYPE = PacketType.create(CLIENT_UPDATE_REQUEST_PAYLOAD, UpdateRequestC2SPayload::new);
+    /*public static final PacketType<UpdateRequestC2SPayload> ID = PacketType.create(CLIENT_UPDATE_REQUEST_PAYLOAD, UpdateRequestC2SPayload::new);
 
     public UpdateRequestC2SPayload(PacketByteBuf buf) {
         this(ClientUpdateRequestBufferCodec.decode(buf));
@@ -51,7 +51,7 @@ public record UpdateRequestC2SPayload(ClientUpdateRequestBuffer clientUpdateRequ
 
     @Override
     public PacketType<?> getType() {
-        return TYPE;
+        return ID;
     }
 *///?}
 }

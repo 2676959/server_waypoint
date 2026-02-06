@@ -47,30 +47,18 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
     }
 
     private void registerClientHandlers() {
-        //? if >= 1.20.5 {
         S2CPayloadHandler.WaypointListHandler waypointListHandler = new S2CPayloadHandler.WaypointListHandler();
         S2CPayloadHandler.DimensionWaypointHandler dimensionWaypointHandler = new S2CPayloadHandler.DimensionWaypointHandler();
         S2CPayloadHandler.WorldWaypointHandler worldWaypointHandler = new S2CPayloadHandler.WorldWaypointHandler();
         S2CPayloadHandler.WaypointModificationHandler waypointModificationHandler = new S2CPayloadHandler.WaypointModificationHandler();
         S2CPayloadHandler.ServerHandshakeHandler serverHandshakeHandler = new S2CPayloadHandler.ServerHandshakeHandler();
         S2CPayloadHandler.UpdatesBundleHandler updatesBundleHandler = new S2CPayloadHandler.UpdatesBundleHandler();
-
         ClientPlayNetworking.registerGlobalReceiver(WaypointListS2CPayload.ID, waypointListHandler::handle);
         ClientPlayNetworking.registerGlobalReceiver(DimensionWaypointS2CPayload.ID, dimensionWaypointHandler::handle);
         ClientPlayNetworking.registerGlobalReceiver(WorldWaypointS2CPayload.ID, worldWaypointHandler::handle);
         ClientPlayNetworking.registerGlobalReceiver(WaypointModificationS2CPayload.ID, waypointModificationHandler::handle);
         ClientPlayNetworking.registerGlobalReceiver(ServerHandshakeS2CPayload.ID, serverHandshakeHandler::handle);
         ClientPlayNetworking.registerGlobalReceiver(UpdatesBundleS2CPayload.ID, updatesBundleHandler::handle);
-        //?} else if fabric {
-        /*ClientPlayNetworking.registerGlobalReceiver(WaypointListS2CPayload.TYPE, (packet, player, responseSender) ->
-                ServerWaypointPayloadHandler.onWaypointListPayload(packet, player));
-        ClientPlayNetworking.registerGlobalReceiver(DimensionWaypointS2CPayload.TYPE, (packet, player, responseSender) ->
-                ServerWaypointPayloadHandler.onDimensionWaypointPayload(packet, player));
-        ClientPlayNetworking.registerGlobalReceiver(WorldWaypointS2CPayload.TYPE, (packet, player, responseSender) ->
-                ServerWaypointPayloadHandler.onWorldWaypointPayload(packet, player));
-        ClientPlayNetworking.registerGlobalReceiver(WaypointModificationS2CPayload.TYPE, (packet, player, responseSender) ->
-                ServerWaypointPayloadHandler.onWaypointModificationPayload(packet, player));
-        *///?}
     }
 }
 //?}

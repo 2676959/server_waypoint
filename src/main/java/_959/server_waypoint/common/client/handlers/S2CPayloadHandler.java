@@ -5,9 +5,12 @@ import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.core.network.buffer.*;
 
-//? if fabric {
+//? if fabric && >= 1.20.5 {
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-//?} elif neoforge {
+//?} elif fabric {
+/*import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.network.ClientPlayerEntity;
+*///?} elif neoforge {
 /*import net.neoforged.neoforge.network.handling.IPayloadContext;
  *///?}
 
@@ -22,9 +25,12 @@ public class S2CPayloadHandler {
         B payloadToBuffer(P payload);
         default void handle(
                 P payload,
-                //? if fabric {
+                //? if fabric && >= 1.20.5 {
                 ClientPlayNetworking.Context context
-                //?} elif neoforge {
+                //?} elif fabric {
+                /*ClientPlayerEntity player, PacketSender responseSender
+                // }
+                *///?} elif neoforge {
                 /*IPayloadContext context
                  *///?}
         ) {
