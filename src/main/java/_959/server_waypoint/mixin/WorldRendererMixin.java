@@ -12,12 +12,13 @@ import static _959.server_waypoint.common.client.render.OptimizedWaypointRendere
 
 @Mixin(WorldRenderer.class)
 public class WorldRendererMixin {
-
     @Inject(
-            method = "method_62214",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/render/debug/DebugRenderer;render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/Frustum;Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;DDD)V")
+            //? if > 1.20.1 {
+            method = "renderMain",
+            //?} else {
+            /*method = "render",
+            *///?}
+            at = @At(value = "TAIL")
     )
     private void renderWaypoint(CallbackInfo ci) {
         ModelViewMatrix.set(RenderSystem.getModelViewMatrix());

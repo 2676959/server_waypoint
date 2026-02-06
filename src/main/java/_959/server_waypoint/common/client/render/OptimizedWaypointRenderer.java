@@ -383,7 +383,7 @@ public class OptimizedWaypointRenderer {
         if (type == WaypointRendererCommand.Type.REMOVE) {
             offerCommand(cmd);
             return;
-        };
+        }
         cmd.x = x;
         cmd.y = y;
         cmd.z = z;
@@ -433,7 +433,15 @@ public class OptimizedWaypointRenderer {
         float minBaseScale = baseScale / 5F;
         int squaredViewDistance = WaypointClientMod.getClientConfig().getSquaredViewDistanceInBlocks();
 
-        context.draw(immediate -> {
+        //? if <= 1.20.1
+        /*VertexConsumerProvider.Immediate immediate = context.getVertexConsumers();*/
+
+        context.draw(
+                (
+                        //? if > 1.20.1
+                        immediate
+                )
+                        -> {
             // hovered rendering
             float minDepth = Float.MAX_VALUE;
             float detail_winX = 0, detail_winY = 0, detail_scale = 0;
