@@ -31,7 +31,7 @@ import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCom
 import static _959.server_waypoint.util.CommandGenerator.*;
 import static java.util.Collections.binarySearch;
 
-public class NewWaypointListWidget extends ShiftableScrollableWidget implements Padding, Expandable {
+public class WaypointListWidget extends ShiftableScrollableWidget implements Padding, Expandable {
     public static int TELEPORT_KEY = 84;
     public static final Text EMPTY_INFO_TEXT = Text.translatable("waypoint.empty_mark");
     public static final Identifier SHOW_ICON = Identifier.of(MOD_ID, "textures/gui/show.png");
@@ -66,7 +66,7 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
     private int hoverPos = -2;
     private boolean hideButtonEnabled = true;
 
-    public NewWaypointListWidget(int x, int y, int width, int height, WaypointManagerScreen parent, TextRenderer textRenderer) {
+    public WaypointListWidget(int x, int y, int width, int height, WaypointManagerScreen parent, TextRenderer textRenderer) {
         super(x, y, width, height, Text.literal("Waypoint lists"));
         this.parentScreen = parent;
         this.textRenderer = textRenderer;
@@ -475,6 +475,16 @@ public class NewWaypointListWidget extends ShiftableScrollableWidget implements 
     @Override
     protected void appendClickableNarrations(NarrationMessageBuilder builder) {
 
+    }
+
+    @Override
+    public int getHeight() {
+        return getVisualHeight();
+    }
+
+    @Override
+    public int getWidth() {
+        return getVisualWidth();
     }
 
     @Override

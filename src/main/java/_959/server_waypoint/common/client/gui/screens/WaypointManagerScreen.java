@@ -3,7 +3,7 @@ package _959.server_waypoint.common.client.gui.screens;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
-import _959.server_waypoint.common.client.gui.widgets.NewWaypointListWidget;
+import _959.server_waypoint.common.client.gui.widgets.WaypointListWidget;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
@@ -15,25 +15,25 @@ import static _959.server_waypoint.common.client.WaypointClientMod.getCurrentDim
 
 public class WaypointManagerScreen extends MovementAllowedScreen {
     private static boolean isRendering = false;
-    private static NewWaypointListWidget waypointListWidget;
+    private static WaypointListWidget waypointListWidget;
     private static DimensionListWidget dimensionListWidget;
     private final WaypointClientMod waypointClientMod;
     private final float relativeHeight = 0.9F;
-    private final int widgetWidth = 240;
     private boolean hasInitialized = false;
     private final WidgetStack mainLayout = new WidgetStack(0, 0, 0, true, false);
 
     public WaypointManagerScreen(WaypointClientMod waypointClientMod) {
         super(Text.of("Server Waypoints"));
         this.waypointClientMod = waypointClientMod;
+        int widgetWidth = 240;
         dimensionListWidget = new DimensionListWidget(0, 0, widgetWidth, this, this.textRenderer, this::onSelectDimension);
-        waypointListWidget = new NewWaypointListWidget(0, 0, widgetWidth, 200, this, this.textRenderer);
+        waypointListWidget = new WaypointListWidget(0, 0, widgetWidth, 200, this, this.textRenderer);
         mainLayout.addPaddedClickable(dimensionListWidget, 0);
         mainLayout.addPaddedClickable(waypointListWidget, 0);
     }
 
     public static void resetWidgetStates() {
-        NewWaypointListWidget.resetScroll();
+        WaypointListWidget.resetScroll();
         DimensionListWidget.resetStates();
     }
 

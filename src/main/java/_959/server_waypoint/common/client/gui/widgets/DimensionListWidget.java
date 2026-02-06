@@ -31,7 +31,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     private volatile @Unmodifiable List<String> dimensionNames = new ArrayList<>();
     private final TextRenderer textRenderer;
     private final PaddingBackground paddingBackground = new PaddingBackground(this, 7, 0, 10, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
-    private final IconButton addBtn = new IconButton(0, 0, 10, 10, Text.translatable("waypoint.add.button"), NewWaypointListWidget.ADD_ICON, this::openAddScreen);
+    private final IconButton addBtn = new IconButton(0, 0, 10, 10, Text.translatable("waypoint.add.button"), WaypointListWidget.ADD_ICON, this::openAddScreen);
     private final float itemIconScale;
     private final int textHeight;
     private final int iconSize;
@@ -149,7 +149,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
 
         // render dimension name
         if (this.empty) {
-            context.drawText(textRenderer, NewWaypointListWidget.EMPTY_INFO_TEXT, 0, 0, 0xFFFFFFFF, true);
+            context.drawText(textRenderer, WaypointListWidget.EMPTY_INFO_TEXT, 0, 0, 0xFFFFFFFF, true);
         } else {
             context.drawText(textRenderer, dimensionNames.get(index), 0, 0, 0xFFFFFFFF, true);
             context.getMatrices().translate(0, textHeight + 2, 0);
