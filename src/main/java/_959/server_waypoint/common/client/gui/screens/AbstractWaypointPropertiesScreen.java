@@ -276,7 +276,6 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
 
     @Override
     public void close() {
-        super.close();
         this.client.setScreen(this.previousScreen);
     }
 }

@@ -74,7 +74,6 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
     @Override
     public void close() {
-        super.close();
         WaypointClientMod.getInstance().saveConfig();
         this.client.setScreen(parentScreen);
     }
