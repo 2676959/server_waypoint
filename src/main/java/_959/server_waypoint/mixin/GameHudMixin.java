@@ -1,6 +1,6 @@
 package _959.server_waypoint.mixin;
 
-//? if > 1.20.1
+//? if > 1.20.6
 import net.minecraft.client.render.RenderTickCounter;
 
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
@@ -20,7 +20,7 @@ public class GameHudMixin {
     )
     public void sw$renderWaypoints(
             DrawContext context,
-            //? if > 1.20.1 {
+            //? if > 1.20.6 {
             RenderTickCounter tickCounter,
             //?} else {
             /*float tickDelta,

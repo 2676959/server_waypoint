@@ -12,7 +12,7 @@ import static _959.server_waypoint.common.client.render.OptimizedWaypointRendere
 
 @Mixin(WorldRenderer.class)
 public class WorldRendererMixin {
-    //? if > 1.20.1 {
+    //? if > 1.21 {
     @Inject(
             method = "renderMain",
             at = @At(value = "HEAD")
@@ -23,7 +23,11 @@ public class WorldRendererMixin {
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/mojang/blaze3d/systems/RenderSystem;applyModelViewMatrix()V",
-                    ordinal = 1,
+                    //? if >= 1.20.6 {
+                    ordinal = 0,
+                    //?} else {
+                    //ordinal = 1,
+                    //?}
                     shift = At.Shift.AFTER
             )
     )

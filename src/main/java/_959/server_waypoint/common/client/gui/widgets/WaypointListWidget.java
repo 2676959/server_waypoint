@@ -463,7 +463,7 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                 matrixStack.translate(0, 0, 0.1);
                 withVertexConsumers(context, drawer -> {
                     textRenderer.draw(initials, 10, finalY, finalTextColor, true, matrixStack.peek().getPositionMatrix(), drawer, TextRenderer.TextLayerType.NORMAL, backgroundColor, MAX_LIGHT_COORDINATE);
-                    //? if <= 1.20.1 {
+                    //? if <= 1.21 {
                     /*matrixStack.translate(0, 0, 0.1);
                     textRenderer.draw(initials, 10, finalY, finalTextColor, true, matrixStack.peek().getPositionMatrix(), drawer, TextRenderer.TextLayerType.NORMAL, 0, MAX_LIGHT_COORDINATE);
                     *///?}

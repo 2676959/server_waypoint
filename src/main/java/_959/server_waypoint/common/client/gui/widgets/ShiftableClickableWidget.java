@@ -1,6 +1,6 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
-//? if <= 1.20.1
+//? if <= 1.20.2
 /*import net.minecraft.client.gui.DrawContext;*/
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
@@ -15,15 +15,17 @@ public abstract class ShiftableClickableWidget extends ClickableWidget implement
         super(x, y, width, height, message);
     }
 
-    //? if <= 1.20.1 {
+    //? if <= 1.20.2 {
     /*abstract public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks);
 
     @Override
     public void renderButton(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         this.renderWidget(context, mouseX, mouseY, deltaTicks);
     }
+    *///?}
 
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+    //? if <= 1.20.1 {
+    /*public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         return super.mouseScrolled(mouseX, mouseY, verticalAmount);
     }
 

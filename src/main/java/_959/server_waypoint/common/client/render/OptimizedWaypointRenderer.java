@@ -433,14 +433,14 @@ public class OptimizedWaypointRenderer {
         float baseScale = 0.01F * framebufferHeight / guiScaleFactor;
         float projectionScale = baseScale * projectionConstant;
         float minBaseScale = baseScale / 5F;
-        int squaredViewDistance = WaypointClientMod.getClientConfig().getSquaredViewDistanceInBlocks();
+        long squaredViewDistance = WaypointClientMod.getClientConfig().getSquaredViewDistanceInBlocks();
 
-        //? if <= 1.20.1
+        //? if <= 1.21
         /*VertexConsumerProvider.Immediate immediate = context.getVertexConsumers();*/
 
         context.draw(
                 (
-                        //? if > 1.20.1
+                        //? if > 1.21
                         immediate
                 )
                         -> {
@@ -499,7 +499,7 @@ public class OptimizedWaypointRenderer {
                 float bgWidth = initialsTextBgWidth[i];
                 float bgXOffset = (textWidth - bgWidth) / 2F;
                 VertexConsumer consumer = immediate.getBuffer(RenderLayer.getDebugQuads());
-                Matrix4f matrix = identity.translation(tx, ty, -(90 + depth)).scale(scale);
+                Matrix4f matrix = identity.translation(tx, ty, -(91F + depth)).scale(scale);
                 drawQuad(consumer, bgXOffset, 0, bgWidth, textHeight, matrix, 0x80000000 | textBgColor);
                 drawTextWithoutBg(0, 1, matrix, initial, textColor, immediate);
                 identity.identity();
@@ -544,7 +544,7 @@ public class OptimizedWaypointRenderer {
                 float ty = detail_winY - halfHeight;
                 float bgXOffest = (textWidth - bgWidth) / 2F;
 
-                Matrix4f matrix = identity.translation(tx, ty, -91F).scale(detail_scale);
+                Matrix4f matrix = identity.translation(tx, ty, -90.1F).scale(detail_scale);
                 drawQuad(immediate.getBuffer(RenderLayer.getDebugQuads()), bgXOffest, 0, bgWidth, textHeight, matrix, 0xFF000000 | textBgColor);
                 drawTextWithoutBg(0, 1, matrix, name, textColor, immediate);
                 identity.identity();
@@ -557,7 +557,7 @@ public class OptimizedWaypointRenderer {
                 }
                 float distanceTextScale = detail_scale * 0.8F;
                 Matrix4f distMatrix = identity.translation(tx + (bgXOffest + 1F - 0.2F) * detail_scale, detail_winY + halfHeight + distanceTextScale, -91F).scale(distanceTextScale);
-                //? if > 1.20.1 {
+                //? if > 1.21 {
                 drawDefaultText(0, 0, distMatrix, distanceText, immediate);
                 //?} else {
                 /*// z flip
