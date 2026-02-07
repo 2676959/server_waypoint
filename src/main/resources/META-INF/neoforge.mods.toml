@@ -1,6 +1,6 @@
 modLoader = "javafml"
 loaderVersion = "*"
-license = "LGPLv3"
+license = "MIT"
 
 [[mods]]
 modId = "server_waypoint"

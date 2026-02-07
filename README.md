@@ -1,6 +1,8 @@
 # Server Waypoint
 
-[![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg?style=flat-square)](http://creativecommons.org/publicdomain/zero/1.0/)
+[English](README.md) [中文](README_zh.md)
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](https://opensource.org/licenses/MIT)
 ![Modrinth Version](https://img.shields.io/modrinth/v/server_waypoint?style=flat-square&label=Version)
 ![both](https://img.shields.io/badge/Environment-Server%26Client-4caf50?style=flat-square)
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/server_waypoint?style=flat-square&logo=modrinth&logoColor=%2300AF5C&label=Modrinth%20Downloads&color=%2300AF5C)](https://modrinth.com/plugin/server_waypoint)
@@ -68,7 +70,7 @@ This mod currently has built-in translations for English and Simplified Chinese.
 ## Configurations
 The configuration file is stored at `<minecraft_root>\config\server_waypoint\config.json`.
 
-Changes made in `config.json` will take effects after server restarts.
+Some changes made in `config.json` may take effects after server restarts.
 
 - ### Command Permission
   Changes the vanilla [permission level](https://minecraft.wiki/w/Permission_level) required to execute the command.
@@ -121,6 +123,3 @@ Changes made in `config.json` will take effects after server restarts.
        }
      }
      ```
-
-## License
-This mod is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.

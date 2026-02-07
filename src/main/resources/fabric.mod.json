@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "server_waypoint",
 	"version": "${version}",
-	"name": "ServerWaypoint",
+	"name": "Server Waypoint",
 	"description": "",
 	"authors": [
 		"2676959"
@@ -11,7 +11,7 @@
 		"homepage": "https://github.com/2676959/server_waypoint",
 		"sources": "https://github.com/2676959/server_waypoint"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/server_waypoint/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -28,7 +28,7 @@
 	"depends": {
 		"fabricloader": ">=0.16.10",
 		"minecraft": "${minecraft_dependency}",
-		"java": ">=21",
+		"java": ">=${java_version}",
 		"fabric-api": "*"
 	},
 	"suggests": {
