@@ -1,17 +1,25 @@
 {
-    "required": true,
-    "package": "_959.server_waypoint.mixin",
-    "compatibilityLevel": "JAVA_${java_version}",
-    "client": [
-        "ClientPlayNetworkHandlerMixin",
-        "MinimapWorldStateUpdaterMixin",
-        "ServerPlayerEntityMixin"
-    ],
-    "server": [
-        "PlayerManagerMixin",
-        "ServerPlayerEntityMixin"
-    ],
-    "injectors": {
-        "defaultRequire": 1
-    }
+	"required": true,
+	"package": "_959.server_waypoint.mixin",
+	"compatibilityLevel": "JAVA_${java_version}",
+	"client": [
+		"ClientPlayNetworkHandlerMixin",
+		"MinimapWorldStateUpdaterMixin",
+		"WorldRendererMixin",
+		"GameHudMixin",
+		"MinecraftClientMixin",
+		"BoundKeyAccessor",
+		"GameHudMixin",
+		"WorldRendererMixin",
+		"PlayerManagerMixin",
+		"ServerPlayerEntityMixin",
+		"WorldSessionMixin"
+	],
+	"server": [
+		"PlayerManagerMixin",
+		"ServerPlayerEntityMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
 }

@@ -1,25 +1,64 @@
 //? if fabric {
 package _959.server_waypoint.fabric;
 
-import _959.server_waypoint.common.network.ServerWaypointPayloadHandler;
-import _959.server_waypoint.common.network.payload.s2c.DimensionWaypointS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.WaypointListS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.WaypointModificationS2CPayload;
+import _959.server_waypoint.common.client.ClientConfig;
+import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.command.ClientWaypointCommand;
+import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
+import _959.server_waypoint.common.client.handlers.S2CPayloadHandler;
+import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
+import _959.server_waypoint.common.network.payload.s2c.*;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-
-import static _959.server_waypoint.fabric.ServerWaypointFabricServer.registerPayloads;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
+import org.lwjgl.glfw.GLFW;
 
 public class ServerWaypointFabricClient implements ClientModInitializer {
+    private static KeyBinding keyBinding;
+
     @Override
     public void onInitializeClient() {
-        // This entrypoint is suitable for setting up client-specific logic, such as rendering.
-//        this.registerPayloadHandlers();
-
-
+        ClientConfig.isXaerosMinimapLoaded = FabricLoader.getInstance().isModLoaded("xaerominimap");
+        keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "server_waypoint.waypoint_manager_gui.keybind",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_RIGHT_SHIFT,
+                "server_waypoint.mod_name"
+        ));
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
+                ClientWaypointCommand.register(dispatcher));
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            while (keyBinding.wasPressed()) {
+                MinecraftClient.getInstance().setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance()));
+            }
+        });
+        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+            WaypointClientMod.createInstance(client, FabricLoader.getInstance().getGameDir(), FabricLoader.getInstance().getConfigDir());
+            OptimizedWaypointRenderer.init();
+        });
+        registerClientHandlers();
     }
 
-
+    private void registerClientHandlers() {
+        S2CPayloadHandler.WaypointListHandler waypointListHandler = new S2CPayloadHandler.WaypointListHandler();
+        S2CPayloadHandler.DimensionWaypointHandler dimensionWaypointHandler = new S2CPayloadHandler.DimensionWaypointHandler();
+        S2CPayloadHandler.WorldWaypointHandler worldWaypointHandler = new S2CPayloadHandler.WorldWaypointHandler();
+        S2CPayloadHandler.WaypointModificationHandler waypointModificationHandler = new S2CPayloadHandler.WaypointModificationHandler();
+        S2CPayloadHandler.ServerHandshakeHandler serverHandshakeHandler = new S2CPayloadHandler.ServerHandshakeHandler();
+        S2CPayloadHandler.UpdatesBundleHandler updatesBundleHandler = new S2CPayloadHandler.UpdatesBundleHandler();
+        ClientPlayNetworking.registerGlobalReceiver(WaypointListS2CPayload.ID, waypointListHandler::handle);
+        ClientPlayNetworking.registerGlobalReceiver(DimensionWaypointS2CPayload.ID, dimensionWaypointHandler::handle);
+        ClientPlayNetworking.registerGlobalReceiver(WorldWaypointS2CPayload.ID, worldWaypointHandler::handle);
+        ClientPlayNetworking.registerGlobalReceiver(WaypointModificationS2CPayload.ID, waypointModificationHandler::handle);
+        ClientPlayNetworking.registerGlobalReceiver(ServerHandshakeS2CPayload.ID, serverHandshakeHandler::handle);
+        ClientPlayNetworking.registerGlobalReceiver(UpdatesBundleS2CPayload.ID, updatesBundleHandler::handle);
+    }
 }
 //?}

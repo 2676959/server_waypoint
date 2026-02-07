@@ -24,6 +24,14 @@ base {
 
 stonecutter {
     constants.match(loader, "fabric", "neoforge")
+    swaps["renderWidget_swap"] = when {
+        eval(current.version, "<=1.20.2") -> "renderButton"
+        else -> "renderWidget"
+    }
+    swaps["mouseScrolled_swap"] = when {
+        eval(current.version, "<=1.20.1") -> "mouseScrolled($1, $2, $3)"
+        else -> "mouseScrolled($1, $2, $3, $4)"
+    }
 }
 
 architectury.common(stonecutter.tree.branches.mapNotNull {

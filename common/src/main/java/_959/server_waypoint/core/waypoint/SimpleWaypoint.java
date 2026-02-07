@@ -18,6 +18,20 @@ public class SimpleWaypoint {
     @Expose private int yaw;
     @Expose private boolean global;
     private static final String SEPARATOR = ":";
+    // not on paper
+    //? if !paper {
+    public int renderId = -1; // -1 means not in waypoint render
+
+    public boolean isRendered() {
+        return this.renderId != -1;
+    }
+
+    // this is used for prevent incorrect deserialization by gson
+    @SuppressWarnings("unused")
+    private SimpleWaypoint() {
+        this.renderId = -1;
+    }
+    //?}
 
     public SimpleWaypoint(String name, String initials, WaypointPos pos, int rgb, int yaw, boolean global) {
         this.name = name;
@@ -37,12 +51,23 @@ public class SimpleWaypoint {
         this.global = global;
     }
 
+    // do not need to copy renderId as renderId should be unique for each instance
+    public SimpleWaypoint(SimpleWaypoint other) {
+        this(other.name, other.initials, other.pos, other.rgb, other.yaw, other.global);
+    }
+
     private int convertYaw(int yaw) {
-        boolean isNegative = yaw < 0;
-        int r = Math.abs(yaw) % 360;
-        r = (r <= 180) ? r : r - 360;
-        r = isNegative ? -r : r;
-        return r;
+        yaw %= 360;
+        return (yaw > 180) ? (yaw - 360) : (yaw < -180 ? yaw + 360 : yaw);
+    }
+
+    public void copyFrom(SimpleWaypoint other) {
+        this.name = other.name;
+        this.initials = other.initials;
+        this.pos = other.pos;
+        this.rgb = other.rgb;
+        this.yaw = other.yaw;
+        this.global = other.global;
     }
 
     public String name() {
@@ -57,6 +82,30 @@ public class SimpleWaypoint {
         return this.pos;
     }
 
+    public int x() {
+        return this.pos.x();
+    }
+
+    public int y() {
+        return this.pos.y();
+    }
+
+    public int z() {
+        return this.pos.z();
+    }
+
+    public float X() {
+        return this.pos.X();
+    }
+
+    public float Y() {
+        return this.pos.Y();
+    }
+
+    public float Z() {
+        return this.pos.Z();
+    }
+
     public int rgb() {
         return this.rgb;
     }
@@ -69,9 +118,8 @@ public class SimpleWaypoint {
         return this.global;
     }
 
-    public SimpleWaypoint setName(String name) {
+    public void setName(String name) {
         this.name = name;
-        return this;
     }
 
     public void setInitials(String initials) {
@@ -105,8 +153,8 @@ public class SimpleWaypoint {
         return new SimpleWaypoint(args[0], args[1], new WaypointPos(Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4])), rgb, Integer.parseInt(args[6]), Boolean.parseBoolean(args[7]));
     }
 
-    public boolean compareProperties(String initials, WaypointPos pos, int colorIdx, int yaw, boolean global) {
-        return this.initials.equals(initials) && this.pos.equals(pos) && this.rgb == colorIdx && this.yaw == convertYaw(yaw) && this.global == global;
+    public boolean compareProperties(String name, String initials, WaypointPos pos, int colorIdx, int yaw, boolean global) {
+        return this.name.equals(name) && this.initials.equals(initials) && this.pos.equals(pos) && this.rgb == colorIdx && this.yaw == convertYaw(yaw) && this.global == global;
     }
 
     public static class ColorToHexCodeSerializer implements JsonSerializer<Integer>, JsonDeserializer<Integer> {

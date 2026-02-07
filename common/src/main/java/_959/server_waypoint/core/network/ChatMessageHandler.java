@@ -63,7 +63,7 @@ public abstract class ChatMessageHandler<S, K, P> {
                     }
                 } else if (isDimensionValid(dimensionName)) {
                     LOGGER.info("dimension {} not found, add new dimension", dimensionName);
-                    WaypointServerCore.INSTANCE.addWaypointFileManager(dimensionName);
+                    WaypointServerCore.INSTANCE.addWaypointListManager(dimensionName);
                     promptNoWaypointList(player, dimensionName);
                 } else {
                     this.sender.sendPlayerMessage(player, Component.translatable("waypoint.xaeros.sharing.invalid.dimension",

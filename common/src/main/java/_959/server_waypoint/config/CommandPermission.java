@@ -7,6 +7,9 @@ public class CommandPermission {
     int tp = 2;
     int reload = 2;
 
+    public CommandPermission() {
+    }
+
     public int add() {
         return this.add;
     }

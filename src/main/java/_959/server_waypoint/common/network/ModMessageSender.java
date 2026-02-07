@@ -17,7 +17,7 @@ import net.minecraft.text.Text;
 import java.util.Locale;
 
 import static _959.server_waypoint.common.network.BufferPayloadMapping.getPayload;
-import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
+import static net.kyori.adventure.text.Component.text;
 
 //? if >= 1.20.3 {
 import com.mojang.serialization.JsonOps;
@@ -39,9 +39,12 @@ public class ModMessageSender implements PlatformMessageSender<ServerCommandSour
 
     public static Text toVanillaText(Component component) {
         //? if >= 1.20.3 {
-        return TextCodecs.CODEC.decode(
-                JsonOps.INSTANCE,
-                GsonComponentSerializer.gson().serializeToTree(component)).result().get().getFirst();
+        var result = TextCodecs.CODEC.decode(JsonOps.INSTANCE, GsonComponentSerializer.gson().serializeToTree(component)).result();
+        if (result.isPresent()) {
+            return result.get().getFirst();
+        } else {
+            return Text.literal("failed to decode message component");
+        }
         //?} else {
         /*return Text.Serializer.fromJson(GsonComponentSerializer.gson().serializeToTree(component));
         *///?}
@@ -86,14 +89,12 @@ public class ModMessageSender implements PlatformMessageSender<ServerCommandSour
 
     @Override
     public void broadcastWaypointModification(ServerCommandSource source, WaypointModificationBuffer modification) {
-        ServerPlayerEntity executorPlayer = source.getPlayer();
-        Component waypointText = waypointTextWithTp(modification.waypoint(), modification.dimensionName(), modification.listName());
-        Component info;
-        if (executorPlayer != null) {
-            info = Component.translatable("waypoint.modification.broadcast.player", Component.text(executorPlayer.getName().getString()), modification.type().toTranslatable(), waypointText);
-        } else {
-            info = Component.translatable("waypoint.modification.broadcast.server", modification.type().toTranslatable(), waypointText);
-        }
+        Component info = this.getModificationMessage(text(source.getName()), modification);
+//        if (executorPlayer != null) {
+//            info = Component.translatable("waypoint.modification.broadcast.player", Component.text(executorPlayer.getName().getString()), modification.type().toTranslatable(), waypointText);
+//        } else {
+//            info = Component.translatable("waypoint.modification.broadcast.server", modification.type().toTranslatable(), waypointText);
+//        }
         source.getServer().getPlayerManager().getPlayerList().forEach(
                 player -> {
                     sendPlayerMessage(player, info);

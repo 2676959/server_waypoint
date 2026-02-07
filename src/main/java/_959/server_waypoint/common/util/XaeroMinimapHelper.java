@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.util;
 
+import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
@@ -37,6 +38,15 @@ public class XaeroMinimapHelper {
         return manager.getWorld(fullPath);
     }
 
+    public static void saveAllWorlds(MinimapSession session) {
+        try {
+            session.getWorldManagerIO().saveAllWorlds(session);
+        } catch (IOException e) {
+            WaypointClientMod.LOGGER.error("Xaero's Minimap mod failed to save all worlds", e);
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void saveMinimapWorld(MinimapSession session, MinimapWorld minimapWorld) throws IOException {
         session.getWorldManagerIO().saveWorld(minimapWorld);
     }
@@ -68,6 +78,11 @@ public class XaeroMinimapHelper {
             replaceWaypointList(minimapWorld, waypointList);
 //            ServerWaypointClientMod.LOGGER.info("waypoint set {} added", waypointList.name());
         }
+    }
+
+    public static void addOrReplaceWaypointLists(MinimapSession session, RegistryKey<World> dimKey, List<WaypointList> waypointLists) {
+        MinimapWorld minimapWorld = getMinimapWorld(session, dimKey);
+        replaceWaypointLists(minimapWorld, waypointLists);
     }
 
     public static void addDimensionWaypoint(MinimapSession session, DimensionWaypointBuffer dimensionWaypointBuffer) {

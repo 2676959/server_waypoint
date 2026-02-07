@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.network.payload.s2c;
 
+import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.core.network.buffer.WaypointListBuffer;
 import _959.server_waypoint.core.network.codec.WaypointListBufferCodec;
@@ -14,12 +15,12 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.PacketByteBuf;
 *///?}
 
-import static _959.server_waypoint.common.server.WaypointServerMod.GROUP_ID;
 import static _959.server_waypoint.core.network.PayloadID.WAYPOINT_LIST;
 
 public record WaypointListS2CPayload(WaypointListBuffer waypointListBuffer) implements ModPayload {
-    public static final Identifier WAYPOINT_LIST_PAYLOAD_ID = Identifier.of(GROUP_ID, WAYPOINT_LIST);
+    public static final Identifier WAYPOINT_LIST_PAYLOAD_ID = Identifier.of(ModInfo.MOD_ID, WAYPOINT_LIST);
 //? if >= 1.20.5 {
+
     public static final CustomPayload.Id<WaypointListS2CPayload> ID = new CustomPayload.Id<>(WAYPOINT_LIST_PAYLOAD_ID);
     public static final PacketCodec<ByteBuf, WaypointListS2CPayload> PACKET_CODEC = new PacketCodec<>() {
         @Override
@@ -38,7 +39,7 @@ public record WaypointListS2CPayload(WaypointListBuffer waypointListBuffer) impl
         return ID;
     }
 //?} else if fabric {
-    /*public static final PacketType<WaypointListS2CPayload> TYPE = PacketType.create(WAYPOINT_LIST_PAYLOAD_ID, WaypointListS2CPayload::new);
+    /*public static final PacketType<WaypointListS2CPayload> ID = PacketType.create(WAYPOINT_LIST_PAYLOAD_ID, WaypointListS2CPayload::new);
 
     public WaypointListS2CPayload(PacketByteBuf buf) {
         this(WaypointListBufferCodec.decode(buf));
@@ -51,7 +52,7 @@ public record WaypointListS2CPayload(WaypointListBuffer waypointListBuffer) impl
 
     @Override
     public PacketType<?> getType() {
-        return TYPE;
+        return ID;
     }
 *///?}
 }

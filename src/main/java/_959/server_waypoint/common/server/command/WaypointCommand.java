@@ -3,6 +3,7 @@ package _959.server_waypoint.common.server.command;
 import _959.server_waypoint.command.CoreWaypointCommand;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.common.network.ModMessageSender;
+import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 
@@ -26,8 +27,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 
 public class WaypointCommand extends CoreWaypointCommand<ServerCommandSource, String, ServerPlayerEntity, Identifier, PosArgument> {
-    public WaypointCommand(PlatformMessageSender<ServerCommandSource, ServerPlayerEntity> networkAdapter, PermissionManager<ServerCommandSource, String, ServerPlayerEntity> permissionManager) {
-        super(networkAdapter, permissionManager, DimensionArgumentType::dimension, BlockPosArgumentType::blockPos);
+    public WaypointCommand(WaypointServerMod waypointServer, PlatformMessageSender<ServerCommandSource, ServerPlayerEntity> networkAdapter, PermissionManager<ServerCommandSource, String, ServerPlayerEntity> permissionManager) {
+        super(waypointServer, networkAdapter, permissionManager, DimensionArgumentType::dimension, BlockPosArgumentType::blockPos);
     }
 
     @Nullable

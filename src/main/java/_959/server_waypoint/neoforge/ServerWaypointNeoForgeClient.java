@@ -1,7 +1,7 @@
 //? if neoforge {
 //package _959.server_waypoint.neoforge;
 //
-//import _959.server_waypoint.common.ServerWaypointClientMod;
+//import _959.server_waypoint.common.client.ServerWaypointClientMod;
 //import _959.server_waypoint.common.network.ServerWaypointPayloadHandler;
 //import _959.server_waypoint.common.network.payload.c2s.HandshakeC2SPayload;
 //import _959.server_waypoint.common.network.payload.s2c.*;

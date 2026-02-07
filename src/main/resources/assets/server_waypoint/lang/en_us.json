@@ -1,15 +1,48 @@
 {
   "button.initials.tp": "click to tp",
 
-  "waypoint.list.added": "Waypoint list \"%1$s\" has been added to Xaero's minimap successfully",
-  "waypoint.save.failed": "Failed to save waypoints",
-  "waypoint.save.dimension.failed": "Failed to save waypoints in dimension %1$s",
+  "server_waypoint.list.added.xaeros": "Waypoint list \"%1$s\" has been added to Xaero's minimap successfully",
+  "server_waypoint.save.failed.xaeros": "Xaero's minimap failed to save waypoints",
+  "server_waypoint.save.dimension.failed.xaeros": "Xaero's minimap failed to save waypoints in dimension %1$s",
 
-  "waypoint.dimension.waypoint.added": "Waypoints in dimension %1$s has been added to Xaero's minimap successfully",
-  "waypoint.all.added": "All waypoints on this server have been added to Xaero's minimap successfully",
+  "server_waypoint.dimension.waypoint.added.xaeros": "Waypoints in dimension %1$s has been added to Xaero's minimap successfully",
+  "server_waypoint.all.added.xaeros": "All waypoints on this server have been added to Xaero's minimap successfully",
 
-  "waypoint.modification.add": "Waypoint %1$s has been added to Xaero's minimap",
-  "waypoint.modification.remove": "Waypoint %1$s has been removed from Xaero's minimap",
-  "waypoint.modification.update": "Waypoint %1$s has been updated on Xaero's minimap",
-  "waypoint.dimension.decode.fail": "Failed to decode dimension %1$s"
+  "server_waypoint.modification.add.xaeros": "Waypoint %1$s has been added to Xaero's minimap",
+  "server_waypoint.modification.remove.xaeros": "Waypoint %1$s has been removed from Xaero's minimap",
+  "server_waypoint.modification.update.xaeros": "Waypoint %1$s has been updated on Xaero's minimap",
+  "server_waypoint.dimension.decode.fail": "Failed to decode dimension %1$s",
+
+  "waypoint.empty_mark": "<Empty>",
+  "waypoint.update.button": "Update",
+  "waypoint.add.button": "Add",
+  "waypoint.reset.button": "Reset",
+  "waypoint.cancel.button": "Cancel",
+  "waypoint.global": "Global",
+  "waypoint.local": "Local",
+  "waypoint.dimension.info": "Dimension: %1$s",
+  "waypoint.list_name.info": "List: %1$s",
+  "waypoint.add.screen.title": "Add a new waypoint",
+  "waypoint.edit.screen.title": "Edit waypoint: %1$s",
+  "waypoint.edit.screen.name.entry": "Name: ",
+  "waypoint.edit.screen.initials.entry": "Initials: ",
+  "waypoint.edit.screen.color": "Color: ",
+  "waypoint.edit.screen.coords_yaw": "Coords & Yaw: ",
+  "waypoint.edit.screen.visibility": "Visibility: ",
+  "waypoint.edit.screen.previous_color.hover": "Click to restore previous color",
+  "waypoint.edit.screen.current_color.hover": "Click to select this color, click again to confirm",
+
+  "waypoint.config.screen.title": "Server Waypoint Client Configurations",
+  "waypoint.config.local_waypoint_view_distance": "Local Waypoint View Distance (Chunks)",
+  "waypoint.config.enable_waypoint_render": "Enable Waypoint Rendering",
+  "waypoint.config.auto_sync_to_xaeros": "Auto Sync to Xaero's Minimap",
+  "server_waypoint.config.sync_to_xaeros": "Sync All Waypoints to Xaero's Minimap",
+  "server_waypoint.config.sync_to_xaeros.warn"
+  : "If you created some waypoints in the same list on the server, they might be removed after syncing.",
+
+  "server_waypoint.mod_name": "Server Waypoint",
+  "server_waypoint.waypoint_manager_gui.keybind": "Open waypoint manager screen",
+  "server_waypoint.config.confirm": "Confirm",
+  "server_waypoint.config.true": "True",
+  "server_waypoint.config.false": "False"
 }

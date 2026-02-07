@@ -11,9 +11,10 @@ import static _959.server_waypoint.core.network.MessageChannelID.WAYPOINT_MODIFI
 public record WaypointModificationBuffer(
         String dimensionName,
         String listName,
+        String waypointName,
         SimpleWaypoint waypoint,
         WaypointModificationType type,
-        int edition) implements MessageBuffer {
+        int syncId) implements MessageBuffer {
 
     @Override
     public MessageChannelID getChannelId() {

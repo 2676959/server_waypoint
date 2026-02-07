@@ -1,7 +1,8 @@
 {
-  "edition.save.failed": "Failed to save EDITION file, syncing may not work properly",
-
   "waypoint.save.failed": "Failed to write to {0}",
+
+  "waypoint.updates.sent": "Waypoint updates have been sent",
+  "waypoint.incompatible.client": "Incompatible Server Waypoint mod version, please install version: {0}",
 
   "waypoint.add.success": "Waypoint {0} has been added to list: \"{1}\"",
   "waypoint.add.exists": "Waypoint {0} already exists. Replace it? {1}",
@@ -30,8 +31,8 @@
 
   "waypoint.tp": "Teleported {0} to waypoint {1}",
 
-  "waypoint.modification.broadcast.player": "{0} {1} waypoint {2} on server",
-  "waypoint.modification.broadcast.server": "Server {0} waypoint {1}",
+  "waypoint.modification.broadcast.player": "{0} {1} waypoint {2}",
+  "waypoint_list.modification.broadcast.player": "{0} {1} waypoint list {2}",
   "waypoint.modification.type.add": "added",
   "waypoint.modification.type.remove": "removed",
   "waypoint.modification.type.update": "updated",

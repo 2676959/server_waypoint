@@ -1,6 +1,6 @@
 package _959.server_waypoint.command.permission;
 
-import static _959.server_waypoint.core.WaypointServerCore.GROUP_ID;
+import _959.server_waypoint.ModInfo;
 
 public class PermissionStringKeys extends PermissionKeys<String> {
     public PermissionStringKeys() {
@@ -8,7 +8,7 @@ public class PermissionStringKeys extends PermissionKeys<String> {
     }
 
     private PermissionKeys<String>.PermissionKey build(String permission) {
-        return new PermissionKey(GROUP_ID + "." + permission);
+        return new PermissionKey(ModInfo.MOD_ID + "." + permission);
     }
 
     @Override
