@@ -89,9 +89,22 @@ public abstract class MovementAllowedScreen extends Screen {
         sprintKeyCode = sprintKey.getCode();
     }
 
+    private void unpressAllMovementKeys() {
+        forwardKeyBinding.setPressed(false);
+        leftKeyBinding.setPressed(false);
+        backKeyBinding.setPressed(false);
+        rightKeyBinding.setPressed(false);
+        jumpKeyBinding.setPressed(false);
+        sneakKeyBinding.setPressed(false);
+        sprintKeyBinding.setPressed(false);
+    }
+
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (!movementAllowed) return super.keyPressed(keyCode, scanCode, modifiers);
+        if (!movementAllowed) {
+            unpressAllMovementKeys();
+            return super.keyPressed(keyCode, scanCode, modifiers);
+        }
         boolean ret = false;
         if (keyCode == forwardKeyCode || scanCode == forwardKeyCode) {
             forwardKeyBinding.setPressed(true);
@@ -123,6 +136,39 @@ public abstract class MovementAllowedScreen extends Screen {
             ret = true;
         }
         boolean ret2 = super.keyPressed(keyCode, scanCode, modifiers);
+        return ret || ret2;
+    }
+
+    @Override
+    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        if (!movementAllowed) {
+            unpressAllMovementKeys();
+            return super.keyReleased(keyCode, scanCode, modifiers);
+        }
+        boolean ret = false;
+        if (keyCode == forwardKeyCode || scanCode == forwardKeyCode) {
+            forwardKeyBinding.setPressed(false);
+            ret = true;
+        } else if (keyCode == leftKeyCode || scanCode == leftKeyCode) {
+            leftKeyBinding.setPressed(false);
+            ret = true;
+        } else if (keyCode == backKeyCode || scanCode == backKeyCode) {
+            backKeyBinding.setPressed(false);
+            ret = true;
+        } else if (keyCode == rightKeyCode || scanCode == rightKeyCode) {
+            rightKeyBinding.setPressed(false);
+            ret = true;
+        } else if (keyCode == jumpKeyCode || scanCode == jumpKeyCode) {
+            jumpKeyBinding.setPressed(false);
+            ret = true;
+        } else if (keyCode == sneakKeyCode || scanCode == sneakKeyCode) {
+            sneakKeyBinding.setPressed(false);
+            ret = true;
+        } else if (keyCode == sprintKeyCode || scanCode == sprintKeyCode) {
+            sprintKeyBinding.setPressed(false);
+            ret = true;
+        }
+        boolean ret2 = super.keyReleased(keyCode, scanCode, modifiers);
         return ret || ret2;
     }
 
