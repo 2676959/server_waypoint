@@ -7,18 +7,17 @@
 		"MinimapWorldStateUpdaterMixin",
 		"WorldRendererMixin",
 		"GameHudMixin",
-		"BeaconBeamRendererMixin",
 		"MinecraftClientMixin",
 		"BoundKeyAccessor",
-		"MinecraftClientMixin",
 		"GameHudMixin",
 		"WorldRendererMixin",
+		"PlayerManagerMixin",
 		"ServerPlayerEntityMixin",
 		"WorldSessionMixin"
 	],
 	"server": [
 		"PlayerManagerMixin",
-        "ServerPlayerEntityMixin"
+		"ServerPlayerEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
