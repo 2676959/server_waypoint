@@ -29,7 +29,7 @@ jobs:
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
       - name: build
-        run: ./gradlew build
+        run: ./gradlew build -Dorg.gradle.java.home=$JAVA_HOME
       - name: Collect mod jars
         run: |
           shopt -s extglob
