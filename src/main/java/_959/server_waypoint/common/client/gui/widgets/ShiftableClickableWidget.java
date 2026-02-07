@@ -16,7 +16,7 @@ public abstract class ShiftableClickableWidget extends ClickableWidget implement
     }
 
     //? if <= 1.20.1 {
-    /*public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {}
+    /*abstract public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks);
 
     @Override
     public void renderButton(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
@@ -24,7 +24,12 @@ public abstract class ShiftableClickableWidget extends ClickableWidget implement
     }
 
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        return this.mouseScrolled(mouseX, mouseY, verticalAmount);
+        return super.mouseScrolled(mouseX, mouseY, verticalAmount);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double verticalAmount) {
+        return this.mouseScrolled(mouseX, mouseY, 0, verticalAmount);
     }
     *///?}
 

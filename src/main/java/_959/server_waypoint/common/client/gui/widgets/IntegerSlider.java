@@ -140,7 +140,7 @@ public class IntegerSlider extends ShiftableClickableWidget {
     }
 
     @Override
-    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         this.slider.render(context, mouseX, mouseY, deltaTicks);
         this.integerField.render(context, mouseX, mouseY, deltaTicks);
     }

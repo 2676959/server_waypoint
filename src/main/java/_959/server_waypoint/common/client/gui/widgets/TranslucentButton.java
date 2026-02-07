@@ -29,7 +29,7 @@ public class TranslucentButton extends ShiftableClickableWidget {
     }
 
     @Override
-    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
         if (isFocused() || isHovered()) {

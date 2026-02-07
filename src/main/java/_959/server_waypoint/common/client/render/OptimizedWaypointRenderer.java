@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.vertex;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
 import static net.minecraft.client.render.LightmapTextureManager.MAX_LIGHT_COORDINATE;
 
@@ -404,6 +405,7 @@ public class OptimizedWaypointRenderer {
     // =========================================================
     // 3. RENDER LOOP (RENDER THREAD)
     // =========================================================
+    @SuppressWarnings("deprecation")
     public static void render(DrawContext context) {
         if (!initialized) return;
 
@@ -497,7 +499,7 @@ public class OptimizedWaypointRenderer {
                 float bgWidth = initialsTextBgWidth[i];
                 float bgXOffset = (textWidth - bgWidth) / 2F;
                 VertexConsumer consumer = immediate.getBuffer(RenderLayer.getDebugQuads());
-                Matrix4f matrix = identity.translation(tx, ty, -depth).scale(scale);
+                Matrix4f matrix = identity.translation(tx, ty, -(90 + depth)).scale(scale);
                 drawQuad(consumer, bgXOffset, 0, bgWidth, textHeight, matrix, 0x80000000 | textBgColor);
                 drawTextWithoutBg(0, 1, matrix, initial, textColor, immediate);
                 identity.identity();
@@ -542,9 +544,8 @@ public class OptimizedWaypointRenderer {
                 float ty = detail_winY - halfHeight;
                 float bgXOffest = (textWidth - bgWidth) / 2F;
 
-                Matrix4f matrix = identity.translation(tx, ty, 0F).scale(detail_scale);
-                VertexConsumer consumer = immediate.getBuffer(RenderLayer.getDebugQuads());
-                drawQuad(consumer, bgXOffest, 0, bgWidth, textHeight, matrix, 0xFF000000 | textBgColor);
+                Matrix4f matrix = identity.translation(tx, ty, -91F).scale(detail_scale);
+                drawQuad(immediate.getBuffer(RenderLayer.getDebugQuads()), bgXOffest, 0, bgWidth, textHeight, matrix, 0xFF000000 | textBgColor);
                 drawTextWithoutBg(0, 1, matrix, name, textColor, immediate);
                 identity.identity();
 
@@ -555,8 +556,13 @@ public class OptimizedWaypointRenderer {
                     distanceText = (Math.round(detail_distance * 10.0) / 10.0) + "m";
                 }
                 float distanceTextScale = detail_scale * 0.8F;
-                Matrix4f distMatrix = identity.translation(tx + (bgXOffest + 1F - 0.2F) * detail_scale, detail_winY + halfHeight + distanceTextScale, 0F).scale(distanceTextScale);
+                Matrix4f distMatrix = identity.translation(tx + (bgXOffest + 1F - 0.2F) * detail_scale, detail_winY + halfHeight + distanceTextScale, -91F).scale(distanceTextScale);
+                //? if > 1.20.1 {
                 drawDefaultText(0, 0, distMatrix, distanceText, immediate);
+                //?} else {
+                /*// z flip
+                drawDefaultText(0, 0, distMatrix.scale(1, 1, -1), distanceText, immediate);
+                *///?}
                 identity.identity();
 
                 float scaledRealBgWidth = bgWidth * detail_scale;
@@ -578,10 +584,10 @@ public class OptimizedWaypointRenderer {
     private static void drawQuad(VertexConsumer consumer, float x0, float y0, float width, float height, Matrix4f matrix, int color) {
         float x1 = x0 + width;
         float y1 = y0 + height;
-        consumer.vertex(matrix, x0, y0, 0).color(color);
-        consumer.vertex(matrix, x0, y1, 0).color(color);
-        consumer.vertex(matrix, x1, y1, 0).color(color);
-        consumer.vertex(matrix, x1, y0, 0).color(color);
+        vertex(consumer, matrix, x0, y0, 0, color);
+        vertex(consumer, matrix, x0, y1, 0, color);
+        vertex(consumer, matrix, x1, y1, 0, color);
+        vertex(consumer, matrix, x1, y0, 0, color);
     }
 
     private static void drawTextWithoutBg(float x, float y, Matrix4f matrix, String text, int fgColor, VertexConsumerProvider vertexConsumers) {

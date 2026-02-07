@@ -12,14 +12,22 @@ import static _959.server_waypoint.common.client.render.OptimizedWaypointRendere
 
 @Mixin(WorldRenderer.class)
 public class WorldRendererMixin {
+    //? if > 1.20.1 {
     @Inject(
-            //? if > 1.20.1 {
             method = "renderMain",
-            //?} else {
-            /*method = "render",
-            *///?}
-            at = @At(value = "TAIL")
+            at = @At(value = "HEAD")
     )
+    //?} else {
+    /*@Inject(
+            method = "render",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lcom/mojang/blaze3d/systems/RenderSystem;applyModelViewMatrix()V",
+                    ordinal = 1,
+                    shift = At.Shift.AFTER
+            )
+    )
+    *///?}
     private void renderWaypoint(CallbackInfo ci) {
         ModelViewMatrix.set(RenderSystem.getModelViewMatrix());
         ProjectionMatrix.set(RenderSystem.getProjectionMatrix());

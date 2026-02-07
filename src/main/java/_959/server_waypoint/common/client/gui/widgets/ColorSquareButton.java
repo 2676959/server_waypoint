@@ -20,10 +20,6 @@ public class ColorSquareButton extends ShiftableClickableWidget implements Color
         this.setYOffset(-1);
     }
 
-    public ColorSquareButton(int x, int y, int size, int rgb, Runnable callback) {
-        this(x, y, size, rgb, true, callback);
-    }
-
     public ColorSquareButton(int x, int y, int size, Runnable callback) {
         this(x, y, size, 0, true, callback);
     }
@@ -38,7 +34,7 @@ public class ColorSquareButton extends ShiftableClickableWidget implements Color
     }
 
     @Override
-    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
         int bdColor = isFocused() || isHovered() ? BORDER_FOCUS_COLOR : renderBorder ? BORDER_COLOR : 0;

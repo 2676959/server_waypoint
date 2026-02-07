@@ -2,10 +2,10 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.texture;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
 
 public class IconButton extends ShiftableClickableWidget {
@@ -32,7 +32,7 @@ public class IconButton extends ShiftableClickableWidget {
         }
         int bgColor = isHovered() ? BUTTON_BG_HOVER_COLOR : 0;
         context.fill(x, y, x + width, y + height, bgColor);
-        context.drawTexture(RenderLayer::getGuiTextured, icon, x, y, 0, 0, width, height,  width, height);
+        texture(context, icon, x, y, 0, 0, width, height, width, height);
     }
 
     @Override
