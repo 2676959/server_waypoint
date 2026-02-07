@@ -7,7 +7,7 @@ public class ClientConfig {
     @Expose private int viewDistance = 12;
     @Expose private boolean enableWaypointRender = true;
     @Expose private boolean autoSyncToXaerosMinimap = true;
-    private int squaredViewDistanceInBlocks = 12 * 16 * 12 * 16;
+    private long squaredViewDistanceInBlocks = 12 * 16 * 12 * 16;
     public static boolean isXaerosMinimapLoaded;
 
     private ClientConfig() {}
@@ -35,10 +35,10 @@ public class ClientConfig {
 
     public void setViewDistance(int viewDistance) {
         this.viewDistance = viewDistance;
-        this.squaredViewDistanceInBlocks = viewDistance * viewDistance * 16 * 16;
+        this.squaredViewDistanceInBlocks = viewDistance * viewDistance * 16L * 16L;
     }
 
-    public int getSquaredViewDistanceInBlocks() {
+    public long getSquaredViewDistanceInBlocks() {
         return this.squaredViewDistanceInBlocks;
     }
 }
