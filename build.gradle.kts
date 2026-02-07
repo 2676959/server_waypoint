@@ -1,10 +1,14 @@
+import org.gradle.util.internal.VersionNumber
 plugins {
     id("dev.architectury.loom")
     id("architectury-plugin")
     id("com.github.johnrengelman.shadow")
 }
 
+val java21MinVersion = VersionNumber.parse("1.20.5")
+
 val minecraft = stonecutter.current.version
+val mcVersion: VersionNumber = VersionNumber.parse(minecraft)
 val loader = loom.platform.get().name.lowercase()
 val mcVersionRange: String by project
 val mod_id: String by project
@@ -129,6 +133,11 @@ tasks.processResources {
     inputs.property("id", mod_id)
     inputs.property("name", mod_name)
     inputs.property("version", mod_version)
+    inputs.property("java_version", targetJavaVersion)
+
+    filesMatching(listOf("*.mixins.json")) {
+        expand("java_version" to targetJavaVersion)
+    }
 
     if (loader == "fabric") {
         val mcVersionFabric: String by project
@@ -138,7 +147,8 @@ tasks.processResources {
                 "id" to mod_id,
                 "name" to mod_name,
                 "version" to mod_version,
-                "minecraft_dependency" to mcVersionFabric
+                "minecraft_dependency" to mcVersionFabric,
+                "java_version" to targetJavaVersion,
             ))
         }
     }
@@ -157,15 +167,30 @@ tasks.processResources {
     }
 }
 
-tasks.withType<JavaCompile>().configureEach {
-    options.release.set(21)
-    options.encoding = "UTF-8"
-    options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
-}
+val targetJavaVersion = if (mcVersion < java21MinVersion) 17 else 21
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    extensions.configure<JavaPluginExtension> {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
+        }
+    }
+
+    tasks.withType<JavaCompile>().configureEach {
+        options.encoding = "UTF-8"
+        options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
+    }
+}
+
+project(":common") {
+    plugins.withType<JavaPlugin> {
+        extensions.configure<JavaPluginExtension> {
+            toolchain {
+                // Always use 17 for common, so it works for BOTH 1.20.1 (Java 17) and 1.20.6 (Java 21)
+                languageVersion.set(JavaLanguageVersion.of(17))
+            }
+        }
+    }
 }
 
 tasks.shadowJar {
