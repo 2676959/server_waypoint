@@ -6,6 +6,7 @@ import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
+import _959.server_waypoint.common.util.MathHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.util.Pair;
@@ -30,6 +31,7 @@ import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARE
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.util.CommandGenerator.*;
+import static _959.server_waypoint.util.ListMapUtils.getLastElement;
 import static java.util.Collections.binarySearch;
 import static net.minecraft.client.render.LightmapTextureManager.MAX_LIGHT_COORDINATE;
 
@@ -102,7 +104,7 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
         this.waypointLists = newWaypointLists;
         recalculateListPositions();
         recalculateContentHeight();
-        setScrollY(Math.clamp(SCROLLED_POSITION, 0, getContentHeight()));
+        setScrollY(MathHelper.clamp(SCROLLED_POSITION, 0, getContentHeight()));
     }
 
     /**
@@ -136,9 +138,9 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
         if (this.empty) {
             this.contentHeight = 0;
         } else {
-            WaypointList waypointList = this.waypointLists.getLast();
+            WaypointList waypointList = getLastElement(this.waypointLists);
             int lastSize = waypointList.isExpand() ? waypointList.size() + 1 : 1;
-            this.contentHeight = (listPositions.getLast() + lastSize) * itemHeight;
+            this.contentHeight = (getLastElement(listPositions) + lastSize) * itemHeight;
         }
     }
 
@@ -150,7 +152,7 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
         // listIndex = insertIndex - 1; insertIndex = -index - 1
         if (index == -1) return null;
         int listIndex = -index - 2;
-        int waypointIndex = pos - listPositions.get(listIndex) - 1;
+        int waypointIndex = pos - getLastElement(listPositions) - 1;
         WaypointList waypointList = waypointLists.get(listIndex);
         List<SimpleWaypoint> simpleWaypoints = waypointList.simpleWaypoints();
         if (waypointIndex >= simpleWaypoints.size()) {
@@ -181,9 +183,9 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
         if (mouseX < x1 && mouseX > x && mouseY < y1 && mouseY > y) {
             double scrollDistance = mouseY - y + getScrollY();
             int pos = (int) Math.floor(scrollDistance / itemHeight);
-            WaypointList lastWaypointList = this.waypointLists.getLast();
+            WaypointList lastWaypointList = getLastElement(this.waypointLists);
             int lastSize = lastWaypointList.isExpand() ? lastWaypointList.size() : 0;
-            int lastPos = listPositions.getLast() + lastSize;
+            int lastPos = getLastElement(listPositions) + lastSize;
             if (pos > lastPos) {
                 return false;
             }

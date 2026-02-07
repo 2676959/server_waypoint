@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import static _959.server_waypoint.util.MapUtils.getEntriesSortedByKey;
+import static _959.server_waypoint.util.ListMapUtils.getEntriesSortedByKey;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 
 /**

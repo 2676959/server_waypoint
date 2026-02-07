@@ -1,11 +1,12 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.WidgetThemeColors;
+import _959.server_waypoint.common.util.MathHelper;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 
 public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget {
-    public final int SCROLLBAR_WIDTH = 5;
+    public final int SCROLLBAR_WIDTH = 6;
     private double scrollY;
     private boolean scrolling;
 
@@ -18,7 +19,7 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
     public abstract int getContentHeight();
 
     public void setScrollY(double scrollY) {
-        this.scrollY = Math.clamp(scrollY, 0.0, this.getMaxScroll());
+        this.scrollY = MathHelper.clamp(scrollY, 0.0, this.getMaxScroll());
     }
 
     public double getScrollY() {
@@ -54,7 +55,7 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
         int bottom = y + this.height;
         int contentHeight = this.getContentHeight();
         int handleHeight = (int)((float)(this.height * this.height) / (float)contentHeight);
-        handleHeight = Math.clamp(handleHeight, 32, this.height - 8);
+        handleHeight = MathHelper.clamp(handleHeight, 32, this.height - 8);
         int handleY = (int)this.getScrollY() * (this.height - handleHeight) / this.getMaxScroll() + y;
         if (handleY < y) {
             handleY = y;
@@ -105,7 +106,7 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
                 int contentHeight = this.getContentHeight();
                 
                 int handleHeight = (int)((float)(this.height * this.height) / (float)contentHeight);
-                handleHeight = Math.clamp(handleHeight, 32, this.height - 8);
+                handleHeight = MathHelper.clamp(handleHeight, 32, this.height - 8);
                 double scrollFactor = maxScroll / (double)(this.height - handleHeight);
                 
                 this.setScrollY(this.scrollY + deltaY * scrollFactor);

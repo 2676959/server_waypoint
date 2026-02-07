@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.util.MathHelper;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
@@ -96,11 +97,11 @@ public abstract class AbstractColorBgSlider implements Widget, Drawable, Element
     }
 
     public void mouseClickedOrDragged(double mouseX) {
-        updateSliderCenter(Math.clamp((float) mouseX, this.x, this.endX) - this.x);
+        updateSliderCenter(MathHelper.clamp((float) mouseX, this.x, this.endX) - this.x);
     }
 
     public void mouseScrolled(double verticalAmount) {
-        updateSliderCenter(Math.clamp((float) verticalAmount + this.sliderCenter, 0, slotWidth));
+        updateSliderCenter(MathHelper.clamp((float) verticalAmount + this.sliderCenter, 0, slotWidth));
     }
 
     public boolean keyPressed(int keyCode) {

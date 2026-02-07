@@ -3,6 +3,7 @@ package _959.server_waypoint.common.client.gui.widgets;
 import _959.server_waypoint.common.client.gui.Expandable;
 import _959.server_waypoint.common.client.gui.Padding;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
+import _959.server_waypoint.common.util.MathHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -105,7 +106,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
         if (size > 12) {
             float nextPosition = (float) (scrolledPosition + verticalAmount * 5);
             int minScroll = -(size - 12) * iconSize;
-            scrolledPosition = Math.clamp(nextPosition, minScroll, 0);
+            scrolledPosition = MathHelper.clamp(nextPosition, minScroll, 0);
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }

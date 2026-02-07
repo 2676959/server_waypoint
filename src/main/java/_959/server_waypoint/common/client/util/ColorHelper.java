@@ -1,5 +1,7 @@
 package _959.server_waypoint.common.client.util;
 
+import _959.server_waypoint.common.util.MathHelper;
+
 public final class ColorHelper {
     public static int scaleRgb(int argb, float scale) {
         int a = (argb >> 24) & 0xFF;
@@ -11,9 +13,9 @@ public final class ColorHelper {
         g = (int) (g * scale);
         b = (int) (b * scale);
 
-        r = Math.clamp(r, 0, 255);
-        g = Math.clamp(g, 0, 255);
-        b = Math.clamp(b, 0, 255);
+        r = MathHelper.clamp(r, 0, 255);
+        g = MathHelper.clamp(g, 0, 255);
+        b = MathHelper.clamp(b, 0, 255);
 
         return (a << 24) | (r << 16) | (g << 8) | b;
     }

@@ -5,8 +5,9 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
-public final class MapUtils {
+public final class ListMapUtils {
     /**
      * Returns an immutable sorted List of entries sorted by the Key.
      * Requires Keys to implement Comparable (e.g., String, Integer).
@@ -20,5 +21,13 @@ public final class MapUtils {
             sortedList.subList(offset, size).sort(Map.Entry.comparingByKey());
             return sortedList.stream().toList();
         }
+    }
+
+
+    public static <E> E getLastElement(List<E> list) throws NoSuchElementException {
+        if (list.isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        return list.get(list.size() - 1);
     }
 }
