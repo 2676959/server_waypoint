@@ -3,7 +3,6 @@ package _959.server_waypoint;
 import _959.server_waypoint.core.IPlatformConfigPath;
 import _959.server_waypoint.core.network.C2SPacketHandler;
 import _959.server_waypoint.core.network.PayloadID;
-import _959.server_waypoint.core.network.buffer.ClientHandshakeBuffer;
 import _959.server_waypoint.core.network.codec.ClientHandshakeCodec;
 import _959.server_waypoint.core.network.codec.ClientUpdateRequestBufferCodec;
 import _959.server_waypoint.listener.ChatMessageListenerPaperMC;
@@ -28,7 +27,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 import static _959.server_waypoint.core.network.MessageChannelID.*;
 
 public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageListener, IPlatformConfigPath {
@@ -58,7 +56,6 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         server.getPluginManager().registerEvents(channelRegisterListener, this);
         try {
             waypointServer.load();
-            waypointCommand.enable();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -67,7 +64,6 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        waypointCommand.disable();
         waypointServer.freeAllLoadedFiles();
         waypointCommand = null;
         waypointServer = null;
