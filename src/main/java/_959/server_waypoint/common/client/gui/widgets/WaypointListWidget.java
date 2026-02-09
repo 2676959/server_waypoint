@@ -152,7 +152,7 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
         // listIndex = insertIndex - 1; insertIndex = -index - 1
         if (index == -1) return null;
         int listIndex = -index - 2;
-        int waypointIndex = pos - getLastElement(listPositions) - 1;
+        int waypointIndex = pos - listPositions.get(listIndex) - 1;
         WaypointList waypointList = waypointLists.get(listIndex);
         List<SimpleWaypoint> simpleWaypoints = waypointList.simpleWaypoints();
         if (waypointIndex >= simpleWaypoints.size()) {
@@ -461,17 +461,20 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                 final int finalY = y1 + textVertOffset;
                 final int finalTextColor = textColor;
                 final int backgroundColor = bgAlpha | rgb;
+                if (waypoint.global()) {
+                    context.drawTextWithShadow(textRenderer, "*", 6, finalY, textColor);
+                }
                 matrixStack.push();
                 matrixStack.translate(0, 0, 0.1);
                 withVertexConsumers(context, drawer -> {
-                    textRenderer.draw(initials, 10, finalY, finalTextColor, true, matrixStack.peek().getPositionMatrix(), drawer, TextRenderer.TextLayerType.NORMAL, backgroundColor, MAX_LIGHT_COORDINATE);
+                    textRenderer.draw(initials, 15, finalY, finalTextColor, true, matrixStack.peek().getPositionMatrix(), drawer, TextRenderer.TextLayerType.NORMAL, backgroundColor, MAX_LIGHT_COORDINATE);
                     //? if <= 1.21 {
                     /*matrixStack.translate(0, 0, 0.1);
-                    textRenderer.draw(initials, 10, finalY, finalTextColor, true, matrixStack.peek().getPositionMatrix(), drawer, TextRenderer.TextLayerType.NORMAL, 0, MAX_LIGHT_COORDINATE);
+                    textRenderer.draw(initials, 15, finalY, finalTextColor, true, matrixStack.peek().getPositionMatrix(), drawer, TextRenderer.TextLayerType.NORMAL, 0, MAX_LIGHT_COORDINATE);
                     *///?}
                 });
                 matrixStack.pop();
-                context.drawTextWithShadow(textRenderer, name, 30, finalY, textColor);
+                context.drawTextWithShadow(textRenderer, name, 55, finalY, textColor);
                 i++;
             }
         }
