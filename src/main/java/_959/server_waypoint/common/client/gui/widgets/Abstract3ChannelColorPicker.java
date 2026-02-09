@@ -4,7 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.text.Text;
 
-public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlider> extends ShiftableClickableWidget implements Colorable, Shiftable {
+public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlider> extends ShiftableClickableWidget implements Colorable {
     protected final ColorPickerCallBack callback;
     private final int slotHeight;
     private final int slotWidth;
