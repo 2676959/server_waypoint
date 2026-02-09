@@ -10,6 +10,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 
+import static _959.server_waypoint.common.client.ClientConfig.isXaerosMinimapLoaded;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.FONT_COLOR;
 import static _959.server_waypoint.util.ColorUtils.GREEN;
 import static _959.server_waypoint.util.ColorUtils.RED;
@@ -87,7 +88,9 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     }
 
     private void runXaerosSync() {
-        HandlerForXaerosMinimap.syncFromServerWaypointMod();
+        if (isXaerosMinimapLoaded) {
+            HandlerForXaerosMinimap.syncFromServerWaypointMod();
+        }
         this.closeXaerosSyncConfirmationDialog();
     }
 
