@@ -33,7 +33,7 @@
   "waypoint.edit.screen.previous_color.hover": "点击恢复上一个颜色",
   "waypoint.edit.screen.current_color.hover": "点击选择此颜色，再次点击确认",
 
-  "server_waypoint.config.screen.title": "服务器路径点客户端配置",
+  "server_waypoint.config.screen.title": "服务器路径点（3.0.0）客户端配置",
   "server_waypoint.config.enable_waypoint_render": "启用路径点渲染",
   "server_waypoint.config.waypoint_scale_factor": "路径点缩放比例（百分比）",
   "server_waypoint.config.waypoint_vertical_offset": "路径点垂直偏移（百分比）",
