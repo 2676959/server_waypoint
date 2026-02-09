@@ -15,11 +15,12 @@
 [![fabric](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/supported/fabric_vector.svg)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
 [![paper](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/supported/paper_vector.svg)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
 
-Manage waypoints and sync them to other player's client automatically. Compatible with Xaero's minimap.
+Manage waypoints and sync them to other players' clients automatically. Compatible with Xaero's minimap.
 
 ## Features
-- Syncing waypoints from server automatically.
-- Interactive waypoint list TUI allowing player click to teleport to a waypoint or edit it.
+- Syncing waypoints from the server automatically.
+- Customizable waypoints rendering. 
+- Allow players to manage waypoints by both GUI (need client installation) and commands (only need server installation).
 - Commands auto-completion.
 - Custom permission for `/wp <options>` commands. Compatible with [LuckPerms](https://modrinth.com/plugin/luckperms).
 - Support adding waypoint conveniently from Xaero's minimap waypoint chat sharing message without requiring client side installation.
@@ -30,7 +31,12 @@ Required:
   
 Optional:
   - [LuckPerms](https://modrinth.com/plugin/luckperms)
-  - [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap) Not required for serverside installation.
+  - [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap)
+
+## Keybinds
+- Press `Right Shift` (default keybind) or use `/wp_gui` to open the waypoint manager screen in game.
+- In the waypoint manager screen, hover over a waypoint and press `T` to teleport (requires `/wp tp` command permission). 
+- In the waypoint manager screen, press `C` to open client configuration screen.
 
 ## Commands
 - `/wp add` add a new waypoint. Cannot add waypoint with duplicate name. Prompts user to use `/wp edit` to replace the existing one.
@@ -67,7 +73,7 @@ This mod currently has built-in translations for English and Simplified Chinese.
   All waypoints are saved in json files. Each json file contains all waypoints in one dimension and the filename is the converted full registry name of that dimension.
   For example, all waypoints in the overworld is stored in `minecraft$overworld.json`.
 
-## Configurations
+## Server Configurations
 The configuration file is stored at `<minecraft_root>\config\server_waypoint\config.json`.
 
 Some changes made in `config.json` may take effects after server restarts.
@@ -123,3 +129,29 @@ Some changes made in `config.json` may take effects after server restarts.
        }
      }
      ```
+
+## Client Configurations
+- #### Enable Waypoint Rendering
+  Default value: `true`
+- #### Waypoint Rendering Scaling Factor (Percentage)
+  Default value: `100`
+- #### Waypoint Background Transparence
+  Default value: `128`
+- #### Waypoint Vertical Offset (Percentage)
+  Default value: `0`
+- #### Local Waypoint View Distance (Chunks)
+  Default value: `12`
+- #### Auto Sync to Xaero's Minimap
+  Default value: `true`
+
+  Requires Xaero's Minimap mod installed.
+- #### Manually Sync to Xaero's Minimap
+  Default value: `None`
+  
+  Triggered manually, requires Xaero's Minimap mod installed.
+  
+  This will replace any waypoint sets on Xaeros' Minimap that has the same name as a list on the server.
+  - What stays:
+  Waypoint sets with unique names that do not exist on the server.
+  - What is lost:
+  Any waypoints you added to these shared lists. Any list you created that happens to share a name with a server list.
