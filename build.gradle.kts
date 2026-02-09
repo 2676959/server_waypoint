@@ -100,7 +100,11 @@ dependencies {
         val xaeros_minimap_fabric: String by project
         val fabric_permissions_api: String by project
         modImplementation("net.fabricmc:fabric-loader:$fabric_loader")
-        modImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_fabric")
+        if (minecraft == "1.21.2") { // Xaero's minimap does not have 1.21.2 support
+            modCompileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_fabric")
+        } else {
+            modImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_fabric")
+        }
         mappings("net.fabricmc:yarn:$minecraft+build.$yarn_build:v2")
         modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_api")
         modImplementation("me.lucko:fabric-permissions-api:$fabric_permissions_api") {
@@ -114,7 +118,11 @@ dependencies {
         val xaeros_minimap_neoforge: String by project
 //        val parchment_version: String by project
         "neoForge"("net.neoforged:neoforge:$neoforge_loader")
-        modImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
+        if (minecraft == "1.21.2") { // Xaero's minimap does not have 1.21.2 support
+            modCompileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
+        } else {
+            modImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
+        }
 //        mappings(loom.layered {
 //            officialMojangMappings()
 //            parchment("org.parchmentmc.data:parchment-$parchment_version@zip")
