@@ -32,9 +32,8 @@ public class TranslucentButton extends ShiftableClickableWidget {
     public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
-        if (isFocused() || isHovered()) {
-            context.drawBorder(x - 1, y - 2, width + 2, height + 2, BORDER_FOCUS_COLOR);
-        }
+        int bdColor = isFocused() || isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
+        context.drawBorder(x - 1, y - 2, width + 2, height + 2, bdColor);
         int bgColor = isHovered() ? BUTTON_BG_HOVER_COLOR : BUTTON_BG_COLOR;
         int fixedY = y - 1;
         context.fill(x, fixedY, x + width, fixedY + height, bgColor);
