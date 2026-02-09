@@ -1,6 +1,6 @@
 package _959.server_waypoint.common.client.render;
 
-import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.util.MathHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import net.minecraft.client.MinecraftClient;
@@ -35,12 +35,16 @@ public class OptimizedWaypointRenderer {
     private static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_renderer");
     private static final int MAX_WAYPOINTS = 10000;
     private static final int MAX_RENDER_ID = 20000;
+    private static boolean DISABLED = false;
+    private static float WAYPOINT_BASE_SCALE = 1.0F;
+    private static int WAYPOINT_BG_ALPHA_MASK = 0x80000000;
+    private static float WAYPOINT_VERTICAL_OFFSET = 0;
+    private static long SQUARED_VIEW_DISTANCE = 12 * 16 * 12 * 16;
 
     // =========================================================
     // STATE (RENDER THREAD ONLY)
     // =========================================================
     private static boolean initialized = false;
-    private static boolean DISABLED = false;
     private static int count = 0;
     private static boolean IS_HOVERED = false;
     private static int HOVERED_ID = -1;
@@ -86,7 +90,7 @@ public class OptimizedWaypointRenderer {
     // DATA TRANSFER OBJECTS
     // =========================================================
     private static class WaypointRendererCommand {
-        enum Type {ADD, REMOVE, UPDATE, CLEAR_ALL, BULK_ADD, BULK_REMOVE, ENABLE_RENDERING, DISABLE_RENDERING}
+        enum Type {ADD, REMOVE, UPDATE, CLEAR_ALL, BULK_ADD, BULK_REMOVE}
 
         Type type;
         int renderId;
@@ -142,10 +146,36 @@ public class OptimizedWaypointRenderer {
     // 2. PUBLIC API (LOGIC THREAD)
     // =========================================================
     public static void enableRendering(boolean enable) {
-        if (enable) sendEnableCommand();
-        else sendDisableCommand();
+        DISABLED = !enable;
     }
 
+    /**
+     * set waypoint scale in percentage >=0%
+     * */
+    public static void setWaypointScalingFactor(int scale) {
+        WAYPOINT_BASE_SCALE = scale / 100F;
+    }
+
+    /**
+     * set view distance in chunks
+     * */
+    public static void setViewDistance(int chunks) {
+        SQUARED_VIEW_DISTANCE = chunks * chunks * 256L;
+    }
+
+    /**
+     * set waypoint rendering alpha in 0~255
+     * */
+    public static void setWaypointBgAlpha(int alpha) {
+        WAYPOINT_BG_ALPHA_MASK = 0xFF000000 & (alpha << 24);
+    }
+
+    /**
+     * set waypoint vertical offset in percentage -100~100%
+     * */
+    public static void setWaypointVerticalOffset(float offset) {
+        WAYPOINT_VERTICAL_OFFSET = MathHelper.clamp(offset / 200F, -0.5F, 0.5F);
+    }
 
     public static void clearScene() {
         // CHECK: Was the very last command also a CLEAR_ALL?
@@ -349,19 +379,6 @@ public class OptimizedWaypointRenderer {
     // =========================================================
     // UPDATED SENDER (LOGIC THREAD)
     // =========================================================
-    private static void sendDisableCommand() {
-        WaypointRendererCommand cmd = obtainCommand();
-        cmd.type = WaypointRendererCommand.Type.DISABLE_RENDERING;
-        cleanCommandBulkData(cmd);
-        offerCommand(cmd);
-    }
-
-    private static void sendEnableCommand() {
-        WaypointRendererCommand cmd = obtainCommand();
-        cmd.type = WaypointRendererCommand.Type.ENABLE_RENDERING;
-        cleanCommandBulkData(cmd);
-        offerCommand(cmd);
-    }
 
     private static void cleanCommandBulkData(WaypointRendererCommand cmd) {
         cmd.bulkWaypoints = null;
@@ -430,11 +447,9 @@ public class OptimizedWaypointRenderer {
         float camY = (float) cameraPos.y;
         float camZ = (float) cameraPos.z;
         float projectionConstant = ProjectionMatrix.m11();
-        float baseScale = 0.01F * framebufferHeight / guiScaleFactor;
+        float baseScale = WAYPOINT_BASE_SCALE * 0.01F * framebufferHeight / guiScaleFactor;
         float projectionScale = baseScale * projectionConstant;
         float minBaseScale = baseScale / 5F;
-        long squaredViewDistance = WaypointClientMod.getClientConfig().getSquaredViewDistanceInBlocks();
-
         //? if <= 1.21
         /*VertexConsumerProvider.Immediate immediate = context.getVertexConsumers();*/
 
@@ -452,7 +467,7 @@ public class OptimizedWaypointRenderer {
             for (int i = 0; i < count; i++) {
                 // Retrieve raw data from SoA
                 float wx = xPos[i];
-                float wy = yPos[i];
+                float wy = yPos[i] + WAYPOINT_VERTICAL_OFFSET;
                 float wz = zPos[i];
                 boolean isLocal = local[i];
 
@@ -461,7 +476,7 @@ public class OptimizedWaypointRenderer {
                 pos.add(camX, camY, camZ, 0F);
                 // only include horizontal distance
                 float horizontalDistanceSquared = pos.x * pos.x + pos.z * pos.z;
-                if (isLocal && horizontalDistanceSquared > squaredViewDistance) {
+                if (isLocal && horizontalDistanceSquared > SQUARED_VIEW_DISTANCE) {
                     continue;
                 }
 
@@ -483,7 +498,7 @@ public class OptimizedWaypointRenderer {
                 float winY = (1F - y) * windowCenterY;
 
                 // scale with perspective
-                float scale = projectionScale / depth;
+                float scale = WAYPOINT_BASE_SCALE * projectionScale / depth;
                 if (scale < minBaseScale) {
                     scale = minBaseScale;
                 }
@@ -500,7 +515,7 @@ public class OptimizedWaypointRenderer {
                 float bgXOffset = (textWidth - bgWidth) / 2F;
                 VertexConsumer consumer = immediate.getBuffer(RenderLayer.getDebugQuads());
                 Matrix4f matrix = identity.translation(tx, ty, -(91F + depth)).scale(scale);
-                drawQuad(consumer, bgXOffset, 0, bgWidth, textHeight, matrix, 0x80000000 | textBgColor);
+                drawQuad(consumer, bgXOffset, 0, bgWidth, textHeight, matrix, WAYPOINT_BG_ALPHA_MASK | textBgColor);
                 drawTextWithoutBg(0, 1, matrix, initial, textColor, immediate);
                 identity.identity();
 
@@ -615,14 +630,6 @@ public class OptimizedWaypointRenderer {
 
     private static void processCommand(WaypointRendererCommand cmd) {
         switch (cmd.type) {
-            case ENABLE_RENDERING: {
-                DISABLED = false;
-                break;
-            }
-            case DISABLE_RENDERING: {
-                DISABLED = true;
-                break;
-            }
             case ADD:
                 addInternal(cmd.renderId, cmd.x, cmd.y, cmd.z, cmd.bgColor, cmd.fgColor, cmd.name, cmd.initials, cmd.nameWidth, cmd.initialsWidth, cmd.nameBgWidth, cmd.initialsBgWidth, cmd.local);
                 break;

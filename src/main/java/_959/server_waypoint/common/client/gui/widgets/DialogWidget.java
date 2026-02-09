@@ -22,8 +22,8 @@ public abstract class DialogWidget extends ShiftableClickableWidget {
     protected final PaddingBackground paddingBackground = new PaddingBackground(this.mainLayout, 6, 8, TRANSPARENT_BG_COLOR, FONT_COLOR, true);
     protected final WidgetStack buttonRow = new WidgetStack(0, 0, 10, false);
 
-    public DialogWidget(int x, int y, int width, int height, Text title, WidgetStack content, TextRenderer textRenderer) {
-        super(x, y, width, height, title);
+    public DialogWidget(int x, int y, Text title, WidgetStack content, TextRenderer textRenderer) {
+        super(x, y, textRenderer.getWidth(title), 0, title);
         this.textRenderer = textRenderer;
         this.title = title;
         this.content = content;
@@ -36,6 +36,8 @@ public abstract class DialogWidget extends ShiftableClickableWidget {
         }
         this.mainLayout.addChild(buttonRow);
         this.buttonRow.setXOffset(this.mainLayout.getWidth());
+        this.width = this.mainLayout.getWidth();
+        this.height = this.mainLayout.getHeight();
     }
 
     abstract protected @Unmodifiable List<ClickableWidget> createButtons();
