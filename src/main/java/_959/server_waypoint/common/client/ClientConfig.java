@@ -4,10 +4,12 @@ import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import com.google.gson.annotations.Expose;
 
 public class ClientConfig {
-    @Expose private int viewDistance = 12;
     @Expose private boolean enableWaypointRender = true;
+    @Expose private int waypointScalingFactor = 100; // in percent
+    @Expose private int waypointVerticalOffset = 0; // [-100, 100] in percent
+    @Expose private int waypointBackgroundAlpha = 0x80; // [0, 255]
+    @Expose private int viewDistance = 12;
     @Expose private boolean autoSyncToXaerosMinimap = true;
-    private long squaredViewDistanceInBlocks = 12 * 16 * 12 * 16;
     public static boolean isXaerosMinimapLoaded;
 
     private ClientConfig() {}
@@ -35,10 +37,33 @@ public class ClientConfig {
 
     public void setViewDistance(int viewDistance) {
         this.viewDistance = viewDistance;
-        this.squaredViewDistanceInBlocks = viewDistance * viewDistance * 16L * 16L;
+        OptimizedWaypointRenderer.setViewDistance(viewDistance);
     }
 
-    public long getSquaredViewDistanceInBlocks() {
-        return this.squaredViewDistanceInBlocks;
+    public int getWaypointScalingFactor() {
+        return waypointScalingFactor;
+    }
+
+    public void setWaypointScalingFactor(int waypointScalingFactor) {
+        this.waypointScalingFactor = waypointScalingFactor;
+        OptimizedWaypointRenderer.setWaypointScalingFactor(waypointScalingFactor);
+    }
+
+    public int getWaypointVerticalOffset() {
+        return waypointVerticalOffset;
+    }
+
+    public void setWaypointVerticalOffset(int waypointVerticalOffset) {
+        this.waypointVerticalOffset = waypointVerticalOffset;
+        OptimizedWaypointRenderer.setWaypointVerticalOffset(waypointVerticalOffset);
+    }
+
+    public int getWaypointBackgroundAlpha() {
+        return waypointBackgroundAlpha;
+    }
+
+    public void setWaypointBackgroundAlpha(int waypointBackgroundAlpha) {
+        this.waypointBackgroundAlpha = waypointBackgroundAlpha;
+        OptimizedWaypointRenderer.setWaypointBgAlpha(waypointBackgroundAlpha);
     }
 }

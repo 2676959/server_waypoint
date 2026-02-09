@@ -91,8 +91,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         if (Files.exists(configPath)) {
             try (Reader reader = Files.newBufferedReader(configPath)) {
                 clientConfig = GSON.fromJson(reader, ClientConfig.class);
-                // calculate the squared view distance
-                clientConfig.setViewDistance(clientConfig.getViewDistance());
+                OptimizedWaypointRenderer.enableRendering(clientConfig.isEnableWaypointRender());
+                OptimizedWaypointRenderer.setWaypointScalingFactor(clientConfig.getWaypointScalingFactor());
+                OptimizedWaypointRenderer.setWaypointVerticalOffset(clientConfig.getWaypointVerticalOffset());
+                OptimizedWaypointRenderer.setWaypointBgAlpha(clientConfig.getWaypointBackgroundAlpha());
+                OptimizedWaypointRenderer.setViewDistance(clientConfig.getViewDistance());
             } catch (IOException e) {
                 LOGGER.error("Failed to load client config", e);
                 clientConfig = GSON.fromJson("{}", ClientConfig.class);

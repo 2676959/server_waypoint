@@ -54,7 +54,7 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     public void setValue(int value) {
         this.integerField.setText(String.valueOf(value));
-        this.slider.setSliderLevel(value);
+        this.slider.setSliderLevel(value - this.integerField.minValue);
     }
 
     @Override

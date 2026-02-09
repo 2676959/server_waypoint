@@ -13,8 +13,8 @@ public class ConfirmationDialog extends DialogWidget {
     private final Runnable confirm;
     private final Runnable cancel;
 
-    public ConfirmationDialog(int x, int y, int width, int height, Text title, WidgetStack content, @NotNull Runnable confirm, @NotNull Runnable cancel, TextRenderer textRenderer) {
-        super(x, y, width, height, title, content, textRenderer);
+    public ConfirmationDialog(int x, int y, Text title, WidgetStack content, @NotNull Runnable confirm, @NotNull Runnable cancel, TextRenderer textRenderer) {
+        super(x, y, title, content, textRenderer);
         this.confirm = confirm;
         this.cancel = cancel;
     }
