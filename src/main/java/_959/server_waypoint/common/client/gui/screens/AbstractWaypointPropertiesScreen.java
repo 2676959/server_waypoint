@@ -41,7 +41,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected final IntegerField yawEditBox = new IntegerField(0, 0, 27, Text.of("Yaw"), textRenderer);
     protected final ToggleButton globalToggle = new ToggleButton(0, 0, 40, 11, Text.translatable("waypoint.local"), Text.translatable("waypoint.global"), 0x04E500,0x005AE5, (state) -> {});
     protected final SwatchWidget swatchWidget = new SwatchWidget(0, 0, textRenderer, (color) -> {this.closeSwatch(); this.colorEditBox.setColor(color); this.colorPickerButton.setColor(color);});
-    protected final TranslucentButton cancelButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("waypoint.cancel.button"), this::close);
+    protected final TranslucentButton cancelButton = new TranslucentButton(0, 0, 50, 11, Text.translatable("server_waypoint.cancel.button"), this::close);
     protected final String dimensionName;
     protected final String listName;
     protected final String waypointName;
@@ -193,7 +193,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
 
     private void closeSwatch() {
         this.swatchWidget.visible = false;
-        this.setFocused(this.nameEditBox);
+        this.setFocused(this.colorPickerButton);
         this.nameEditBox.active = true;
         this.initialsEditBox.active = true;
         this.colorEditBox.active = true;
