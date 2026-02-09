@@ -10,6 +10,7 @@ import net.minecraft.client.gui.widget.Widget;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Stack widgets horizontally or vertically within one specific direction
@@ -223,5 +224,10 @@ public class WidgetStack extends ShiftableWidget {
     @Override
     public int getHeight() {
         return isHorizontal ? offAxisSize : mainAxisSize;
+    }
+
+    @Override
+    public void forEachChild(Consumer<ClickableWidget> consumer) {
+        this.clickable.forEach(consumer);
     }
 }
