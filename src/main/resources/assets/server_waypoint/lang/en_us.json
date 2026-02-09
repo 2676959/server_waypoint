@@ -33,7 +33,7 @@
   "waypoint.edit.screen.previous_color.hover": "Click to restore previous color",
   "waypoint.edit.screen.current_color.hover": "Click to select this color, click again to confirm",
 
-  "server_waypoint.config.screen.title": "Server Waypoint Client Configurations",
+  "server_waypoint.config.screen.title": "Server Waypoint 3.0.0 Client Configurations",
   "server_waypoint.config.enable_waypoint_render": "Enable Waypoint Rendering",
   "server_waypoint.config.waypoint_scale_factor": "Waypoint Rendering Scaling Factor (Percentage)",
   "server_waypoint.config.waypoint_bg_alpha": "Waypoint Background Transparence",
