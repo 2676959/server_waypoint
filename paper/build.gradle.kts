@@ -25,6 +25,7 @@ dependencies {
     val paperApiVersion : String by project
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     paperweight.paperDevBundle(paperApiVersion)
+    implementation("org.bstats:bstats-bukkit:3.1.0")
     implementation(project(":common"))
 }
 
@@ -42,9 +43,11 @@ tasks.jar {
 }
 
 tasks.shadowJar {
+    configurations = listOf(project.configurations.runtimeClasspath.get())
     dependencies {
-        include(project(":common"))
+        exclude { it.moduleGroup != "org.bstats" && it.moduleName != "common" }
     }
+    relocate("org.bstats", project.group.toString())
     archiveClassifier.set("")
 }
 

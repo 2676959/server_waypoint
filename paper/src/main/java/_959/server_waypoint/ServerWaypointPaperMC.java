@@ -17,6 +17,9 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SingleLineChart;
+import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -38,6 +41,13 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
     @SuppressWarnings("UnstableApiUsage")
     public void onEnable() {
         // Plugin startup logic
+        // You can find the plugin id of your plugins on
+        // the page https://bstats.org/what-is-my-plugin-id
+        int pluginId = 29431;
+        Metrics metrics = new Metrics(this, pluginId);
+        // Add custom charts
+        metrics.addCustomChart(new SingleLineChart("players", () -> Bukkit.getOnlinePlayers().size()));
+
         Server server = getServer();
         waypointServer = new WaypointServerPlugin(this.getAssignedConfigDirectory(), server.getWorldContainer().toPath());
         PaperMessageSender sender = new PaperMessageSender(this);
