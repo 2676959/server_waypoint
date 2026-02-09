@@ -10,7 +10,7 @@ public class ClientConfig {
     @Expose private int waypointBackgroundAlpha = 0x80; // [0, 255]
     @Expose private int viewDistance = 12;
     @Expose private boolean autoSyncToXaerosMinimap = true;
-    public static boolean isXaerosMinimapLoaded;
+    public static boolean isXaerosMinimapLoaded = false;
 
     private ClientConfig() {}
 
