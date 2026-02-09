@@ -39,3 +39,8 @@ jobs:
               cp -p "$jar" mod-jars/
           done
           ls -l mod-jars
+      - name: capture build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Artifacts
+          path: mod-jars/
