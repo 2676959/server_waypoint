@@ -4,24 +4,24 @@ import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.core.network.buffer.ClientUpdateRequestBuffer;
 import _959.server_waypoint.core.network.codec.ClientUpdateRequestBufferCodec;
-import net.minecraft.util.Identifier;
-
-//? if >= 1.20.5 {
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.resources.ResourceLocation;
+//? if >= 1.20.5 {
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?} else if fabric {
 /*import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.PacketByteBuf;
 *///?}
 
+
 import static _959.server_waypoint.core.network.PayloadID.CLIENT_UPDATE_REQUEST;
 
 public record UpdateRequestC2SPayload(ClientUpdateRequestBuffer clientUpdateRequestBuffer) implements ModPayload {
-    public static final Identifier CLIENT_UPDATE_REQUEST_PAYLOAD = Identifier.of(ModInfo.MOD_ID, CLIENT_UPDATE_REQUEST);
+    public static final ResourceLocation CLIENT_UPDATE_REQUEST_PAYLOAD = ResourceLocation.fromNamespaceAndPath(ModInfo.MOD_ID, CLIENT_UPDATE_REQUEST);
 //? if >= 1.20.5 {
-    public static final CustomPayload.Id<UpdateRequestC2SPayload> ID = new CustomPayload.Id<>(CLIENT_UPDATE_REQUEST_PAYLOAD);
-    public static final PacketCodec<ByteBuf, UpdateRequestC2SPayload> PACKET_CODEC = new PacketCodec<>() {
+    public static final CustomPacketPayload.Type<UpdateRequestC2SPayload> ID = new CustomPacketPayload.Type<>(CLIENT_UPDATE_REQUEST_PAYLOAD);
+    public static final StreamCodec<ByteBuf, UpdateRequestC2SPayload> PACKET_CODEC = new StreamCodec<>() {
         @Override
         public void encode(ByteBuf buf, UpdateRequestC2SPayload value) {
             ClientUpdateRequestBufferCodec.encode(buf, value.clientUpdateRequestBuffer);
@@ -34,7 +34,7 @@ public record UpdateRequestC2SPayload(ClientUpdateRequestBuffer clientUpdateRequ
     };
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 //?} else if fabric {

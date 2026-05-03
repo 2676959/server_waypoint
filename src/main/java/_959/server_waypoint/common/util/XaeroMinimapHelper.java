@@ -4,8 +4,6 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.world.World;
 import xaero.common.minimap.waypoints.Waypoint;
 import xaero.hud.minimap.BuiltInHudModules;
 import xaero.hud.minimap.module.MinimapSession;
@@ -17,6 +15,8 @@ import xaero.hud.path.XaeroPath;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 
 import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionKey;
 
@@ -25,11 +25,11 @@ public class XaeroMinimapHelper {
         return BuiltInHudModules.MINIMAP.getCurrentSession();
     }
     
-    public static String getMinimapWorldNode(MinimapSession session, RegistryKey<World> dimKey) {
+    public static String getMinimapWorldNode(MinimapSession session, ResourceKey<Level> dimKey) {
         return session.getWorldStateUpdater().getPotentialWorldNode(dimKey, false);
     }
 
-    public static MinimapWorld getMinimapWorld(MinimapSession session, RegistryKey<World> dimKey) {
+    public static MinimapWorld getMinimapWorld(MinimapSession session, ResourceKey<Level> dimKey) {
         String dimId = session.getDimensionHelper().getDimensionDirectoryName(dimKey);
         MinimapWorldManager manager = session.getWorldManager();
         XaeroPath root = manager.getAutoRootContainer().getPath();
@@ -51,7 +51,7 @@ public class XaeroMinimapHelper {
         session.getWorldManagerIO().saveWorld(minimapWorld);
     }
 
-    public static void saveMinimapWorld(MinimapSession session, RegistryKey<World> dimKey) throws IOException {
+    public static void saveMinimapWorld(MinimapSession session, ResourceKey<Level> dimKey) throws IOException {
         MinimapWorld minimapWorld = getMinimapWorld(session, dimKey);
         saveMinimapWorld(session, minimapWorld);
     }
@@ -80,7 +80,7 @@ public class XaeroMinimapHelper {
         }
     }
 
-    public static void addOrReplaceWaypointLists(MinimapSession session, RegistryKey<World> dimKey, List<WaypointList> waypointLists) {
+    public static void addOrReplaceWaypointLists(MinimapSession session, ResourceKey<Level> dimKey, List<WaypointList> waypointLists) {
         MinimapWorld minimapWorld = getMinimapWorld(session, dimKey);
         replaceWaypointLists(minimapWorld, waypointLists);
     }

@@ -1,14 +1,15 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.text.Text;
 import org.joml.Matrix4f;
 
 import static _959.server_waypoint.util.ColorUtils.*;
 
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.network.chat.Component;
+
 public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.HSVSlider> {
     public HSVColorPicker(int x, int y, int slotWidth, int slotHeight, ColorPickerCallBack callback) {
-        super(x, y, slotWidth, slotHeight, Text.of("HSV Color"),
+        super(x, y, slotWidth, slotHeight, Component.nullToEmpty("HSV Color"),
                 new HueSlider(0, 0, slotWidth, slotHeight),
                 new SaturationSlider(0, 0, slotWidth, slotHeight, 0xFFFFFFFF),
                 new BrightnessSlider(0, 0, slotWidth, slotHeight, 0xFFFFFFFF),

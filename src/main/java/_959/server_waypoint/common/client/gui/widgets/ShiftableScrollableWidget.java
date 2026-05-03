@@ -2,15 +2,15 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.WidgetThemeColors;
 import _959.server_waypoint.common.util.MathHelper;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 
 public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget {
     public final int SCROLLBAR_WIDTH = 6;
     private double scrollY;
     private boolean scrolling;
 
-    public ShiftableScrollableWidget(int x, int y, int width, int height, Text text) {
+    public ShiftableScrollableWidget(int x, int y, int width, int height, Component text) {
         super(x, y, width, height, text);
     }
 
@@ -45,7 +45,7 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
         return mouseX >= (double)(right - SCROLLBAR_WIDTH) && mouseX <= (double)right && mouseY >= (double)y && mouseY <= (double)bottom;
     }
 
-    public void drawScrollbar(DrawContext context) {
+    public void drawScrollbar(GuiGraphics context) {
         if (!this.overflows()) {
             return;
         }

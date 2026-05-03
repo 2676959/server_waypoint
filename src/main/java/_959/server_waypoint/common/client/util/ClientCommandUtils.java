@@ -1,13 +1,13 @@
 package _959.server_waypoint.common.client.util;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 
 public final class ClientCommandUtils {
     public static boolean sendCommand(String command) {
-        ClientPlayNetworkHandler networkHandler = MinecraftClient.getInstance().getNetworkHandler();
+        ClientPacketListener networkHandler = Minecraft.getInstance().getConnection();
         if (networkHandler != null) {
-            networkHandler.sendCommand(command);
+            networkHandler.sendUnsignedCommand(command);
             return true;
         } else {
             return false;

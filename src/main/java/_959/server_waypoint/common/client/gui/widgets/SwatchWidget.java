@@ -1,12 +1,12 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.util.ColorUtils.VANILLA_COLORS;
@@ -29,29 +29,29 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
     private final IntegerField vEntry;
     private final ColorSquareButton currentColorButton = new ColorSquareButton(0, 0, 21, 0, false, () -> this.confirmCallback.onColorUpdate(this.currentColorButton.getColor()));
     private final ColorSquareButton previousColorButton = new ColorSquareButton(0, 0, 21, 0, false, () -> {});
-    private Element focused = this.currentColorButton;
+    private GuiEventListener focused = this.currentColorButton;
 
-    public SwatchWidget(int x, int y, TextRenderer textRenderer, ColorPickerCallBack confirmCallback) {
-        super(x, y, 0, 0, Text.of("Swatch"));
+    public SwatchWidget(int x, int y, Font textRenderer, ColorPickerCallBack confirmCallback) {
+        super(x, y, 0, 0, Component.nullToEmpty("Swatch"));
         this.confirmCallback = confirmCallback;
         WidgetStack slidersRow = new WidgetStack(0, 0, 0);
         WidgetStack labelCol = new WidgetStack(0, 0, 2, true, false);
         WidgetStack pickerCol = new WidgetStack(0, 0, 0, true, false);
         WidgetStack integerFieldCol = new WidgetStack(0, 0, 2, true, false);
 
-        ScalableText hLabel = new ScalableText(0, 0, Text.of("H"), 0xFFFFFFFF, textRenderer);
-        ScalableText sLabel = new ScalableText(0, 0, Text.of("S"), 0xFFFFFFFF, textRenderer);
-        ScalableText vLabel = new ScalableText(0, 0, Text.of("V"), 0xFFFFFFFF, textRenderer);
-        ScalableText rLabel = new ScalableText(0, 0, Text.of("R"), 0xFFFF0000, textRenderer);
-        ScalableText gLabel = new ScalableText(0, 0, Text.of("G"), 0xFF00FF00, textRenderer);
-        ScalableText bLabel = new ScalableText(0, 0, Text.of("B"), 0xFF0000FF, textRenderer);
+        ScalableText hLabel = new ScalableText(0, 0, Component.nullToEmpty("H"), 0xFFFFFFFF, textRenderer);
+        ScalableText sLabel = new ScalableText(0, 0, Component.nullToEmpty("S"), 0xFFFFFFFF, textRenderer);
+        ScalableText vLabel = new ScalableText(0, 0, Component.nullToEmpty("V"), 0xFFFFFFFF, textRenderer);
+        ScalableText rLabel = new ScalableText(0, 0, Component.nullToEmpty("R"), 0xFFFF0000, textRenderer);
+        ScalableText gLabel = new ScalableText(0, 0, Component.nullToEmpty("G"), 0xFF00FF00, textRenderer);
+        ScalableText bLabel = new ScalableText(0, 0, Component.nullToEmpty("B"), 0xFF0000FF, textRenderer);
 
-        this.hEntry = new IntegerField(0, 0, 21, 0, 360, 0, Text.of("H"), textRenderer);
-        this.sEntry = new IntegerField(0, 0, 21, 0, 100, 0, Text.of("S"), textRenderer);
-        this.vEntry = new IntegerField(0, 0, 21, 0, 100, 0, Text.of("V"), textRenderer);
-        this.rEntry = new IntegerField(0, 0, 21, 0, 255, 0, Text.of("R"), textRenderer);
-        this.gEntry = new IntegerField(0, 0, 21, 0, 255, 0, Text.of("G"), textRenderer);
-        this.bEntry = new IntegerField(0, 0, 21, 0, 255, 0, Text.of("B"), textRenderer);
+        this.hEntry = new IntegerField(0, 0, 21, 0, 360, 0, Component.nullToEmpty("H"), textRenderer);
+        this.sEntry = new IntegerField(0, 0, 21, 0, 100, 0, Component.nullToEmpty("S"), textRenderer);
+        this.vEntry = new IntegerField(0, 0, 21, 0, 100, 0, Component.nullToEmpty("V"), textRenderer);
+        this.rEntry = new IntegerField(0, 0, 21, 0, 255, 0, Component.nullToEmpty("R"), textRenderer);
+        this.gEntry = new IntegerField(0, 0, 21, 0, 255, 0, Component.nullToEmpty("G"), textRenderer);
+        this.bEntry = new IntegerField(0, 0, 21, 0, 255, 0, Component.nullToEmpty("B"), textRenderer);
 
         this.hEntry.setMaxLength(3);
         this.sEntry.setMaxLength(3);
@@ -136,7 +136,7 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
 
         RandomColorSquareButton randomColorBtn = new RandomColorSquareButton(0, 0, 10, false, () -> {
         });
-        randomColorBtn.setTooltip(Tooltip.of(Text.of("🎲")));
+        randomColorBtn.setTooltip(Tooltip.create(Component.nullToEmpty("🎲")));
         colorRow1.addClickable(randomColorBtn);
         randomColorBtn.setCallback(() -> {
             this.setColor(randomColorBtn.getColor());
@@ -145,8 +145,8 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
 
         this.currentColorButton.setYOffset(-12);
         this.previousColorButton.setYOffset(-12);
-        this.currentColorButton.setTooltip(Tooltip.of(Text.translatable("waypoint.edit.screen.current_color.hover")));
-        this.previousColorButton.setTooltip(Tooltip.of(Text.translatable("waypoint.edit.screen.previous_color.hover")));
+        this.currentColorButton.setTooltip(Tooltip.create(Component.translatable("waypoint.edit.screen.current_color.hover")));
+        this.previousColorButton.setTooltip(Tooltip.create(Component.translatable("waypoint.edit.screen.previous_color.hover")));
         this.currentColorButton.setCallback(() -> {
             updateFocused(this.currentColorButton);
             int currentColor = this.currentColorButton.getColor();
@@ -195,15 +195,15 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
     }
 
     private void setHSVEntryValues(int hue, int saturation, int brightness) {
-        this.hEntry.setText(Integer.toString(hue));
-        this.sEntry.setText(Integer.toString(saturation));
-        this.vEntry.setText(Integer.toString(brightness));
+        this.hEntry.setValue(Integer.toString(hue));
+        this.sEntry.setValue(Integer.toString(saturation));
+        this.vEntry.setValue(Integer.toString(brightness));
     }
 
     private void setRGBEntryValues(int red, int green, int blue) {
-        this.rEntry.setText(Integer.toString(red));
-        this.gEntry.setText(Integer.toString(green));
-        this.bEntry.setText(Integer.toString(blue));
+        this.rEntry.setValue(Integer.toString(red));
+        this.gEntry.setValue(Integer.toString(green));
+        this.bEntry.setValue(Integer.toString(blue));
     }
 
     private void hueEntryListener(int hue) {
@@ -266,7 +266,7 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
         }
     }
 
-    public void updateFocused(Element focused) {
+    public void updateFocused(GuiEventListener focused) {
         this.focused.setFocused(false);
         this.focused = focused;
         this.focused.setFocused(true);
@@ -414,29 +414,29 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
         this.currentColorButton.setColor(rgb);
         this.rgbColorPicker.setColor(rgb);
         this.hsvColorPicker.setColor(rgb);
-        this.rEntry.setText(Integer.toString(this.rgbColorPicker.getSlider0Level()));
-        this.gEntry.setText(Integer.toString(this.rgbColorPicker.getSlider1Level()));
-        this.bEntry.setText(Integer.toString(this.rgbColorPicker.getSlider2Level()));
-        this.hEntry.setText(Integer.toString(this.hsvColorPicker.getSlider0Level()));
-        this.sEntry.setText(Integer.toString(this.hsvColorPicker.getSlider1Level()));
-        this.vEntry.setText(Integer.toString(this.hsvColorPicker.getSlider2Level()));
+        this.rEntry.setValue(Integer.toString(this.rgbColorPicker.getSlider0Level()));
+        this.gEntry.setValue(Integer.toString(this.rgbColorPicker.getSlider1Level()));
+        this.bEntry.setValue(Integer.toString(this.rgbColorPicker.getSlider2Level()));
+        this.hEntry.setValue(Integer.toString(this.hsvColorPicker.getSlider0Level()));
+        this.sEntry.setValue(Integer.toString(this.hsvColorPicker.getSlider1Level()));
+        this.vEntry.setValue(Integer.toString(this.hsvColorPicker.getSlider2Level()));
     }
 
     @Override
-    public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
         if (this.visible) {
             int x = getX() - BG_PADDING_X;
             int y = getY() - BG_PADDING_Y;
             int paddingWidth = BG_PADDING_X << 1;
             int paddingHeight = BG_PADDING_Y << 1;
             context.fill(x, y, x + this.width + paddingWidth, y + this.height + paddingHeight, TRANSPARENT_BG_COLOR);
-            context.drawBorder(x, y, this.width + paddingWidth, this.height + paddingHeight, 0xFFFFFFFF);
+            context.renderOutline(x, y, this.width + paddingWidth, this.height + paddingHeight, 0xFFFFFFFF);
             this.mainLayout.render(context, mouseX, mouseY, deltaTicks);
         }
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
 
     }
 }

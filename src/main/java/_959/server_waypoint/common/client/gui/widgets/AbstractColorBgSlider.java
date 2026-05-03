@@ -1,18 +1,18 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.util.MathHelper;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.ScreenRect;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.joml.Matrix4f;
 
 import java.util.function.Consumer;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.LayoutElement;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.renderer.RenderType;
 
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.vertex;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.withVertexConsumers;
@@ -20,7 +20,7 @@ import static _959.server_waypoint.common.client.gui.DrawContextHelper.withVerte
 /**
  * A discrete slider with a color gradient background.
  * */
-public abstract class AbstractColorBgSlider implements Widget, Drawable, Element {
+public abstract class AbstractColorBgSlider implements LayoutElement, Renderable, GuiEventListener {
     private final float sliderHalfWidth;
     private final float unitLength;
     private final int maxLevel;
@@ -144,19 +144,19 @@ public abstract class AbstractColorBgSlider implements Widget, Drawable, Element
     }
 
     @Override
-    public final void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        context.getMatrices().push();
-        MatrixStack matrixStack = context.getMatrices();
+    public final void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+        context.pose().pushPose();
+        PoseStack matrixStack = context.pose();
         matrixStack.translate(this.x, this.y, 0);
-        Matrix4f matrix =  matrixStack.peek().getPositionMatrix();
+        Matrix4f matrix =  matrixStack.last().pose();
         withVertexConsumers(context, vertexConsumerProvider -> {
-            VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getGui());
+            VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderType.gui());
             // draw the slot background
             drawSlotBackground(vertexConsumer, matrix);
             // draw the slider
             drawSlider(vertexConsumer, matrix);
         });
-        context.getMatrices().pop();
+        context.pose().popPose();
     }
 
     public abstract void drawSlotBackground(VertexConsumer vertexConsumer, Matrix4f matrix);
@@ -190,12 +190,12 @@ public abstract class AbstractColorBgSlider implements Widget, Drawable, Element
     }
 
     @Override
-    public ScreenRect getNavigationFocus() {
-        return Element.super.getNavigationFocus();
+    public ScreenRectangle getRectangle() {
+        return GuiEventListener.super.getRectangle();
     }
 
     @Override
-    public void forEachChild(Consumer<ClickableWidget> consumer) {}
+    public void visitWidgets(Consumer<AbstractWidget> consumer) {}
 
     @Override
     public void setFocused(boolean focused) {

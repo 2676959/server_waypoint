@@ -5,11 +5,11 @@ import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
 import _959.server_waypoint.common.client.gui.widgets.WaypointListWidget;
 import _959.server_waypoint.core.waypoint.WaypointList;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.getCurrentDimensionName;
 
@@ -23,11 +23,11 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private final WidgetStack mainLayout = new WidgetStack(0, 0, 0, true, false);
 
     public WaypointManagerScreen(WaypointClientMod waypointClientMod) {
-        super(Text.of("Server Waypoints"));
+        super(Component.nullToEmpty("Server Waypoints"));
         this.waypointClientMod = waypointClientMod;
         int widgetWidth = 240;
-        dimensionListWidget = new DimensionListWidget(0, 0, widgetWidth, this, this.textRenderer, this::onSelectDimension);
-        waypointListWidget = new WaypointListWidget(0, 0, widgetWidth, 200, this, this.textRenderer);
+        dimensionListWidget = new DimensionListWidget(0, 0, widgetWidth, this, this.font, this::onSelectDimension);
+        waypointListWidget = new WaypointListWidget(0, 0, widgetWidth, 200, this, this.font);
         mainLayout.addPaddedClickable(dimensionListWidget, 0);
         mainLayout.addPaddedClickable(waypointListWidget, 0);
     }
@@ -109,14 +109,14 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         }
 
         waypointListWidget.updateWaypointLists(defaultWaypointLists);
-        this.addDrawableChild(waypointListWidget);
-        this.addDrawableChild(dimensionListWidget);
+        this.addRenderableWidget(waypointListWidget);
+        this.addRenderableWidget(dimensionListWidget);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_C) {
-            this.client.setScreen(new ClientConfigScreen(this));
+            this.minecraft.setScreen(new ClientConfigScreen(this));
             return true;
         }
         return waypointListWidget.keyPressed(keyCode, scanCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers);
@@ -128,16 +128,16 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         waypointListWidget.renderWidget(context, mouseX, mouseY, delta);
         dimensionListWidget.renderWidget(context, mouseX, mouseY, delta);
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         isRendering = false;
         waypointListWidget = null;
         dimensionListWidget = null;
-        super.close();
+        super.onClose();
     }
 }

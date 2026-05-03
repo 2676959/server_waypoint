@@ -3,15 +3,8 @@ package _959.server_waypoint.common.client.render;
 import _959.server_waypoint.common.util.MathHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.Window;
-import net.minecraft.util.math.Vec3d;
+import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.Unmodifiable;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -22,10 +15,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.phys.Vec3;
 
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.vertex;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
-import static net.minecraft.client.render.LightmapTextureManager.MAX_LIGHT_COORDINATE;
+import static net.minecraft.client.renderer.LightTexture.FULL_BRIGHT;
 
 public class OptimizedWaypointRenderer {
 
@@ -78,11 +78,11 @@ public class OptimizedWaypointRenderer {
     // =========================================================
     public static final Matrix4f ModelViewMatrix = new Matrix4f();
     public static final Matrix4f ProjectionMatrix = new Matrix4f();
-    private static final MinecraftClient mc = MinecraftClient.getInstance();
-    private static final TextRenderer textRenderer = mc.textRenderer;
-    private static final int textHeight = textRenderer.fontHeight;
+    private static final Minecraft mc = Minecraft.getInstance();
+    private static final Font textRenderer = mc.font;
+    private static final int textHeight = textRenderer.lineHeight;
     private static final Window window = mc.getWindow();
-    private static final Camera camera = mc.gameRenderer.getCamera();
+    private static final Camera camera = mc.gameRenderer.getMainCamera();
     private static final Matrix4f identity = new Matrix4f();
     private static final Vector4f posVec = new Vector4f();
 
@@ -347,7 +347,7 @@ public class OptimizedWaypointRenderer {
     }
 
     private static float getTextWidth(String text) {
-        return textRenderer.getTextHandler().getWidth(text) - 1;
+        return textRenderer.getSplitter().stringWidth(text) - 1;
     }
 
     private static float getTextBgWidth(String text) {
@@ -423,7 +423,7 @@ public class OptimizedWaypointRenderer {
     // 3. RENDER LOOP (RENDER THREAD)
     // =========================================================
     @SuppressWarnings("deprecation")
-    public static void render(DrawContext context) {
+    public static void render(GuiGraphics context) {
         if (!initialized) return;
 
         // A. Process Queue
@@ -436,13 +436,13 @@ public class OptimizedWaypointRenderer {
         if (DISABLED) return;
 
         // B. Render
-        int scaledWidth = window.getScaledWidth();
+        int scaledWidth = window.getGuiScaledWidth();
         float windowCenterX = scaledWidth / 2F;
-        int scaledHeight = window.getScaledHeight();
+        int scaledHeight = window.getGuiScaledHeight();
         float windowCenterY = scaledHeight / 2F;
-        float guiScaleFactor = (float) window.getScaleFactor();
-        int framebufferHeight = window.getFramebufferHeight();
-        Vec3d cameraPos = camera.getPos().negate();
+        float guiScaleFactor = (float) window.getGuiScale();
+        int framebufferHeight = window.getHeight();
+        Vec3 cameraPos = camera.getPosition().reverse();
         float camX = (float) cameraPos.x;
         float camY = (float) cameraPos.y;
         float camZ = (float) cameraPos.z;
@@ -453,7 +453,7 @@ public class OptimizedWaypointRenderer {
         //? if <= 1.21
         /*VertexConsumerProvider.Immediate immediate = context.getVertexConsumers();*/
 
-        context.draw(
+        context.drawSpecial(
                 (
                         //? if > 1.21
                         immediate
@@ -513,7 +513,7 @@ public class OptimizedWaypointRenderer {
                 float ty = winY - textHeight * scale / 2F;
                 float bgWidth = initialsTextBgWidth[i];
                 float bgXOffset = (textWidth - bgWidth) / 2F;
-                VertexConsumer consumer = immediate.getBuffer(RenderLayer.getDebugQuads());
+                VertexConsumer consumer = immediate.getBuffer(RenderType.debugQuads());
                 Matrix4f matrix = identity.translation(tx, ty, -(91F + depth)).scale(scale);
                 drawQuad(consumer, bgXOffset, 0, bgWidth, textHeight, matrix, WAYPOINT_BG_ALPHA_MASK | textBgColor);
                 drawTextWithoutBg(0, 1, matrix, initial, textColor, immediate);
@@ -560,7 +560,7 @@ public class OptimizedWaypointRenderer {
                 float bgXOffest = (textWidth - bgWidth) / 2F;
 
                 Matrix4f matrix = identity.translation(tx, ty, -90.1F).scale(detail_scale);
-                drawQuad(immediate.getBuffer(RenderLayer.getDebugQuads()), bgXOffest, 0, bgWidth, textHeight, matrix, 0xFF000000 | textBgColor);
+                drawQuad(immediate.getBuffer(RenderType.debugQuads()), bgXOffest, 0, bgWidth, textHeight, matrix, 0xFF000000 | textBgColor);
                 drawTextWithoutBg(0, 1, matrix, name, textColor, immediate);
                 identity.identity();
 
@@ -592,8 +592,8 @@ public class OptimizedWaypointRenderer {
         });
     }
 
-    private static void drawDefaultText(float x, float y, Matrix4f matrix, String text, VertexConsumerProvider vertexConsumers) {
-        textRenderer.draw(text, x, y, 0xFFFFFFFF, false, matrix, vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0x80000000, MAX_LIGHT_COORDINATE);
+    private static void drawDefaultText(float x, float y, Matrix4f matrix, String text, MultiBufferSource vertexConsumers) {
+        textRenderer.drawInBatch(text, x, y, 0xFFFFFFFF, false, matrix, vertexConsumers, Font.DisplayMode.NORMAL, 0x80000000, FULL_BRIGHT);
     }
 
     private static void drawQuad(VertexConsumer consumer, float x0, float y0, float width, float height, Matrix4f matrix, int color) {
@@ -605,8 +605,8 @@ public class OptimizedWaypointRenderer {
         vertex(consumer, matrix, x1, y0, 0, color);
     }
 
-    private static void drawTextWithoutBg(float x, float y, Matrix4f matrix, String text, int fgColor, VertexConsumerProvider vertexConsumers) {
-        textRenderer.draw(text, x, y, fgColor, false, matrix, vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0, MAX_LIGHT_COORDINATE);
+    private static void drawTextWithoutBg(float x, float y, Matrix4f matrix, String text, int fgColor, MultiBufferSource vertexConsumers) {
+        textRenderer.drawInBatch(text, x, y, fgColor, false, matrix, vertexConsumers, Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
     }
 
     private static boolean isIn2DBox(float x, float y, float min_x, float min_y, float max_x, float max_y) {

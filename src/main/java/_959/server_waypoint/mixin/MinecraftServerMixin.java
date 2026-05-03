@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
-    @Inject(method = "loadWorld", at = @At("TAIL"))
+    @Inject(method = "loadLevel", at = @At("TAIL"))
     private void onLoadWorld(CallbackInfo ci) {
         WaypointServerMod.getInstance().setMinecraftServer((MinecraftServer) (Object) this);
     }

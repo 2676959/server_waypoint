@@ -5,7 +5,7 @@ import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.NotNull;
 
 import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
@@ -22,8 +22,8 @@ public class ClientWaypointCommand {
     }
 
     private static int executeOpenGui() {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        mc.send(() -> mc.setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance())));
+        Minecraft mc = Minecraft.getInstance();
+        mc.schedule(() -> mc.setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance())));
         return Command.SINGLE_SUCCESS;
     }
 }

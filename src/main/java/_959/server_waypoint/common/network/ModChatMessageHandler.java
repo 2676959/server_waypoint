@@ -2,11 +2,11 @@ package _959.server_waypoint.common.network;
 
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.core.network.ChatMessageHandler;
-import net.minecraft.network.message.MessageType;
-import net.minecraft.network.message.SignedMessage;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.PlayerChatMessage;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
 import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionKey;
@@ -14,19 +14,19 @@ import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionK
 //? if neoforge
 /*import net.minecraft.text.Text;*/
 
-public abstract class ModChatMessageHandler<K> extends ChatMessageHandler<ServerCommandSource, K, ServerPlayerEntity> {
+public abstract class ModChatMessageHandler<K> extends ChatMessageHandler<CommandSourceStack, K, ServerPlayer> {
     private MinecraftServer server;
 
     public void onChatMessage(
             //? if fabric {
-            SignedMessage message,
+            PlayerChatMessage message,
             //?} elif neoforge {
             /*Text message,
             *///?}
-            ServerPlayerEntity player, MessageType.Parameters parameters) {
+            ServerPlayer player, ChatType.Bound parameters) {
         String messageString = message
                 //? if fabric
-                .getContent()
+                .decoratedContent()
                 .getString();
         this.onChatMessage(player, messageString);
     }
@@ -35,7 +35,7 @@ public abstract class ModChatMessageHandler<K> extends ChatMessageHandler<Server
         this.server = server;
     }
 
-    public ModChatMessageHandler(ModMessageSender sender, PermissionManager<ServerCommandSource, K, ServerPlayerEntity> permissionManager) {
+    public ModChatMessageHandler(ModMessageSender sender, PermissionManager<CommandSourceStack, K, ServerPlayer> permissionManager) {
         super(sender, permissionManager);
     }
 
@@ -45,6 +45,6 @@ public abstract class ModChatMessageHandler<K> extends ChatMessageHandler<Server
             LOGGER.info("MinecraftServer not initialized.");
             return false;
         }
-        return this.server.getWorld(getDimensionKey(dimensionName)) != null;
+        return this.server.getLevel(getDimensionKey(dimensionName)) != null;
     }
 }

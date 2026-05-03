@@ -1,8 +1,8 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.Component;
 
 public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlider> extends ShiftableClickableWidget implements Colorable {
     protected final ColorPickerCallBack callback;
@@ -13,7 +13,7 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlide
     protected final T slider2;
     private int focusedIndex = 0;
 
-    protected Abstract3ChannelColorPicker(int x, int y, int slotWidth, int slotHeight, Text message, T slider0, T slider1, T slider2, ColorPickerCallBack callback) {
+    protected Abstract3ChannelColorPicker(int x, int y, int slotWidth, int slotHeight, Component message, T slider0, T slider1, T slider2, ColorPickerCallBack callback) {
         super(x, y, slotWidth, slotHeight * 3, message);
         this.slotHeight = slotHeight;
         this.slotWidth = slotWidth;
@@ -200,12 +200,12 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlide
     }
 
     @Override
-    public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
         this.slider0.render(context, mouseX, mouseY, deltaTicks);
         this.slider1.render(context, mouseX, mouseY, deltaTicks);
         this.slider2.render(context, mouseX, mouseY, deltaTicks);
     }
 
     @Override
-    public void appendClickableNarrations(NarrationMessageBuilder builder) {}
+    public void updateWidgetNarration(NarrationElementOutput builder) {}
 }

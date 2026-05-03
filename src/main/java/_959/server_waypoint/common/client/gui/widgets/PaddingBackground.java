@@ -1,12 +1,12 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.Padding;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.widget.Widget;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.layouts.LayoutElement;
 
-public class PaddingBackground implements Drawable, Padding {
-    private final Widget widget;
+public class PaddingBackground implements Renderable, Padding {
+    private final LayoutElement widget;
     private final int topPadding;
     private final int bottomPadding;
     private final int leftPadding;
@@ -15,11 +15,11 @@ public class PaddingBackground implements Drawable, Padding {
     private final int bgColor;
     private final int bdColor;
 
-    public PaddingBackground(Widget widget, int topBottomPadding, int leftRightPadding, int bgColor, int bdColor, boolean border) {
+    public PaddingBackground(LayoutElement widget, int topBottomPadding, int leftRightPadding, int bgColor, int bdColor, boolean border) {
         this(widget, topBottomPadding, topBottomPadding, leftRightPadding, leftRightPadding, bgColor, bdColor, border);
     }
 
-    public PaddingBackground(Widget widget, int topPadding, int bottomPadding, int leftPadding, int rightPadding, int bgColor, int bdColor, boolean border) {
+    public PaddingBackground(LayoutElement widget, int topPadding, int bottomPadding, int leftPadding, int rightPadding, int bgColor, int bdColor, boolean border) {
         this.widget = widget;
         this.topPadding = topPadding;
         this.bottomPadding = bottomPadding;
@@ -31,7 +31,7 @@ public class PaddingBackground implements Drawable, Padding {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
         int x = this.widget.getX();
         int y = this.widget.getY();
         int width = this.widget.getWidth();
@@ -40,7 +40,7 @@ public class PaddingBackground implements Drawable, Padding {
         int y1 = y - this.topPadding;
         context.fill(x1, y1, x + width + this.rightPadding, y + height + this.bottomPadding, bgColor);
         if (border) {
-            context.drawBorder(x1, y1, getVisualWidth(), getVisualHeight(), bdColor);
+            context.renderOutline(x1, y1, getVisualWidth(), getVisualHeight(), bdColor);
         }
     }
 

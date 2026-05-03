@@ -3,22 +3,22 @@ package _959.server_waypoint.common.network.payload.s2c;
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.core.network.buffer.XaerosWorldIdBuffer;
 import _959.server_waypoint.core.network.codec.XaerosWorldIdBufferCodec;
-import net.minecraft.util.Identifier;
-
-//? if >= 1.20.5 {
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.resources.ResourceLocation;
+//? if >= 1.20.5 {
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?} else if fabric {
 /*import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.PacketByteBuf;
 *///?}
 
+
 public record XaerosWorldIdS2CPayload(XaerosWorldIdBuffer worldIdBuffer) implements ModPayload {
-    public static final Identifier XAEROS_WORLD_ID_PAYLOAD_ID = Identifier.of("xaerominimap", "main");
+    public static final ResourceLocation XAEROS_WORLD_ID_PAYLOAD_ID = ResourceLocation.fromNamespaceAndPath("xaerominimap", "main");
 //? if >= 1.20.5 {
-    public static final CustomPayload.Id<XaerosWorldIdS2CPayload> ID = new CustomPayload.Id<>(XAEROS_WORLD_ID_PAYLOAD_ID);
-    public static final PacketCodec<ByteBuf, XaerosWorldIdS2CPayload> PACKET_CODEC = new PacketCodec<>() {
+    public static final CustomPacketPayload.Type<XaerosWorldIdS2CPayload> ID = new CustomPacketPayload.Type<>(XAEROS_WORLD_ID_PAYLOAD_ID);
+    public static final StreamCodec<ByteBuf, XaerosWorldIdS2CPayload> PACKET_CODEC = new StreamCodec<>() {
         @Override
         public void encode(ByteBuf buf, XaerosWorldIdS2CPayload value) {
             XaerosWorldIdBufferCodec.encode(buf, value.worldIdBuffer());
@@ -31,7 +31,7 @@ public record XaerosWorldIdS2CPayload(XaerosWorldIdBuffer worldIdBuffer) impleme
     };
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 //?} else if fabric {

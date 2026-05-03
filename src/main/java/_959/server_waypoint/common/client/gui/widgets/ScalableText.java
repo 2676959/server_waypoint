@@ -1,62 +1,61 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Text;
-
+import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 
 public class ScalableText extends ShiftableWidget {
-    private final TextRenderer textRenderer;
-    private Text text;
+    private final Font textRenderer;
+    private Component text;
     private float scale;
     private int color;
     private final int maxWidth;
-    private volatile List<OrderedText> warpLines = List.of();
+    private volatile List<FormattedCharSequence> warpLines = List.of();
 
-    public ScalableText(int x, int y, Text text, int color, TextRenderer textRenderer) {
+    public ScalableText(int x, int y, Component text, int color, Font textRenderer) {
         this(x, y, text, 1, color, textRenderer);
     }
 
-    public ScalableText(int x, int y, Text text, float scale, int color, TextRenderer textRenderer) {
+    public ScalableText(int x, int y, Component text, float scale, int color, Font textRenderer) {
         this(x, y, text, scale, color, -1, textRenderer);
     }
 
-    public ScalableText(int x, int y, Text text, float scale, int color, int maxWidth, TextRenderer textRenderer) {
-        super(x, y, Math.round(textRenderer.getWidth(text) * scale), Math.round(textRenderer.fontHeight * scale));
+    public ScalableText(int x, int y, Component text, float scale, int color, int maxWidth, Font textRenderer) {
+        super(x, y, Math.round(textRenderer.width(text) * scale), Math.round(textRenderer.lineHeight * scale));
         this.text = text;
         this.scale = scale;
         this.color = color;
         this.maxWidth = maxWidth;
         this.textRenderer = textRenderer;
         if (maxWidth != -1) {
-            this.warpLines = textRenderer.wrapLines(text, maxWidth);
+            this.warpLines = textRenderer.split(text, maxWidth);
         }
     }
 
     public void setMaxWidth(int width) {
         if (maxWidth == -1) return;
-        this.warpLines = this.textRenderer.wrapLines(this.text, width);
+        this.warpLines = this.textRenderer.split(this.text, width);
     }
 
     @Override
     public int getWidth() {
-        return Math.round((this.maxWidth == -1 ? this.textRenderer.getWidth(this.text) : this.maxWidth) * this.scale);
+        return Math.round((this.maxWidth == -1 ? this.textRenderer.width(this.text) : this.maxWidth) * this.scale);
     }
 
     @Override
     public int getHeight() {
-        return Math.round((this.maxWidth == -1 ? 1 : this.warpLines.size()) * this.textRenderer.fontHeight * this.scale);
+        return Math.round((this.maxWidth == -1 ? 1 : this.warpLines.size()) * this.textRenderer.lineHeight * this.scale);
     }
 
-    public void setText(Text text) {
+    public void setText(Component text) {
         this.text = text;
     }
 
     public void setText(String text) {
-        this.text = Text.of(text);
+        this.text = Component.nullToEmpty(text);
     }
 
     public void setScale(int scale) {
@@ -68,18 +67,18 @@ public class ScalableText extends ShiftableWidget {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        MatrixStack matrixStack = context.getMatrices();
-        matrixStack.push();
+    public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+        PoseStack matrixStack = context.pose();
+        matrixStack.pushPose();
         matrixStack.translate(this.getShiftedX(), this.getShiftedY(), 0.0F);
         matrixStack.scale(this.scale, this.scale, 1.0F);
         if (this.maxWidth == -1) {
-            context.drawText(this.textRenderer, this.text, 0, 0, this.color, true);
+            context.drawString(this.textRenderer, this.text, 0, 0, this.color, true);
         } else {
             for (int i = 0; i < this.warpLines.size(); i++) {
-                context.drawText(this.textRenderer, this.warpLines.get(i), 0, i * this.textRenderer.fontHeight, this.color, true);
+                context.drawString(this.textRenderer, this.warpLines.get(i), 0, i * this.textRenderer.lineHeight, this.color, true);
             }
         }
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 }

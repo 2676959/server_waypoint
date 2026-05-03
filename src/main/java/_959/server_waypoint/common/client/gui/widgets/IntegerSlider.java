@@ -1,31 +1,31 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.WidgetThemeColors;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.text.Text;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.joml.Matrix4f;
 
 import java.util.function.Consumer;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.Component;
 
 public class IntegerSlider extends ShiftableClickableWidget {
     private static final int padding = 5;
     private final Consumer<Integer> onChange;
     private final IntegerField integerField;
     private final Slider slider;
-    private Element focused;
+    private GuiEventListener focused;
 
-    public IntegerSlider(int x, int y, int min, int max, int defaultValue, Consumer<Integer> onChange, TextRenderer textRenderer) {
+    public IntegerSlider(int x, int y, int min, int max, int defaultValue, Consumer<Integer> onChange, Font textRenderer) {
         this(x, y, 100, 30, min, max, defaultValue, onChange, textRenderer);
     }
 
-    public IntegerSlider(int x, int y, int sliderWidth, int fieldWidth, int min, int max, int defaultValue, Consumer<Integer> onChange, TextRenderer textRenderer) {
-        super(x, y, sliderWidth + fieldWidth + padding, 0, Text.of("Integer Slider"));
+    public IntegerSlider(int x, int y, int sliderWidth, int fieldWidth, int min, int max, int defaultValue, Consumer<Integer> onChange, Font textRenderer) {
+        super(x, y, sliderWidth + fieldWidth + padding, 0, Component.nullToEmpty("Integer Slider"));
         this.onChange = onChange;
-        this.integerField = new IntegerField(x + sliderWidth + padding, y, fieldWidth, min, max, defaultValue, Text.empty(), textRenderer);
+        this.integerField = new IntegerField(x + sliderWidth + padding, y, fieldWidth, min, max, defaultValue, Component.empty(), textRenderer);
         this.integerField.setYOffset(2);
         this.slider = new Slider(x, y, sliderWidth, this.integerField.getVisualHeight(), max - min);
         this.height = this.integerField.getVisualHeight();
@@ -39,21 +39,21 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
         this.slider.setOnChange(level -> {
             int value = level + min;
-            this.integerField.setText(String.valueOf(value));
+            this.integerField.setValue(String.valueOf(value));
             this.onChange.accept(value);
         });
         this.focused = this.integerField;
         this.setValue(defaultValue);
     }
 
-    public void updateFocused(Element focused) {
+    public void updateFocused(GuiEventListener focused) {
         this.focused.setFocused(false);
         this.focused = focused;
         this.focused.setFocused(true);
     }
 
     public void setValue(int value) {
-        this.integerField.setText(String.valueOf(value));
+        this.integerField.setValue(String.valueOf(value));
         this.slider.setSliderLevel(value - this.integerField.minValue);
     }
 
@@ -140,14 +140,14 @@ public class IntegerSlider extends ShiftableClickableWidget {
     }
 
     @Override
-    public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
         this.slider.render(context, mouseX, mouseY, deltaTicks);
         this.integerField.render(context, mouseX, mouseY, deltaTicks);
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {
-        this.integerField.appendNarrations(builder);
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
+        this.integerField.updateNarration(builder);
     }
 
     public static class Slider extends AbstractColorBgSlider {

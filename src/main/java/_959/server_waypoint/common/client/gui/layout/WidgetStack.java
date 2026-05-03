@@ -3,14 +3,13 @@ package _959.server_waypoint.common.client.gui.layout;
 import _959.server_waypoint.common.client.gui.Padding;
 import _959.server_waypoint.common.client.gui.widgets.ShiftableWidget;
 import _959.server_waypoint.util.Pair;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.gui.widget.Widget;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.layouts.LayoutElement;
 
 /**
  * Stack widgets horizontally or vertically within one specific direction
@@ -19,9 +18,9 @@ public class WidgetStack extends ShiftableWidget {
     private final int defaultPdx;
     private final boolean toPositive;
     private final boolean isHorizontal;
-    private final List<ClickableWidget> clickable = new ArrayList<>();
-    private final List<Pair<Widget, Integer>> children = new ArrayList<>();
-    private final List<Drawable> drawables = new ArrayList<>();
+    private final List<AbstractWidget> clickable = new ArrayList<>();
+    private final List<Pair<LayoutElement, Integer>> children = new ArrayList<>();
+    private final List<Renderable> drawables = new ArrayList<>();
     private int mainAxisSize = 0;
     private int offAxisSize = 0;
 
@@ -40,12 +39,12 @@ public class WidgetStack extends ShiftableWidget {
         this.isHorizontal = isHorizontal;
     }
 
-    public <W extends ClickableWidget & Padding> void addPaddedClickable(W child, int pdx) {
+    public <W extends AbstractWidget & Padding> void addPaddedClickable(W child, int pdx) {
         this.addPadded(child, pdx);
         this.clickable.add(child);
     }
 
-    public <W extends Widget & Padding & Drawable> void addPadded(W child, int pdx) {
+    public <W extends LayoutElement & Padding & Renderable> void addPadded(W child, int pdx) {
         int widgetSpan, relativePos, widgetPerpSpan;
         if (isHorizontal) {
             widgetSpan = child.getVisualWidth();
@@ -66,21 +65,21 @@ public class WidgetStack extends ShiftableWidget {
         this.mainAxisSize += widgetSpan + pdx;
     }
 
-    public <W extends ClickableWidget> void addClickable(W child) {
+    public <W extends AbstractWidget> void addClickable(W child) {
         this.addChild(child, this.defaultPdx);
         this.clickable.add(child);
     }
 
-    public <W extends ClickableWidget> void addClickable(W child, int pdx) {
+    public <W extends AbstractWidget> void addClickable(W child, int pdx) {
         this.addChild(child, pdx);
         this.clickable.add(child);
     }
 
-    public <W extends Widget & Drawable> void addChild(W child) {
+    public <W extends LayoutElement & Renderable> void addChild(W child) {
         this.addChild(child, this.defaultPdx);
     }
 
-    public <W extends Widget & Drawable> void addChild(W child, int pdx) {
+    public <W extends LayoutElement & Renderable> void addChild(W child, int pdx) {
         int widgetSpan, relativePos, widgetPerpSpan;
         if (isHorizontal) {
             widgetSpan = child.getWidth();
@@ -102,7 +101,7 @@ public class WidgetStack extends ShiftableWidget {
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        for (ClickableWidget child : clickable) {
+        for (AbstractWidget child : clickable) {
             if (child.mouseClicked(mouseX, mouseY, button)) {
                 return true;
             }
@@ -111,8 +110,8 @@ public class WidgetStack extends ShiftableWidget {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        for (Drawable child : drawables) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+        for (Renderable child : drawables) {
             child.render(context, mouseX, mouseY, deltaTicks);
         }
     }
@@ -120,8 +119,8 @@ public class WidgetStack extends ShiftableWidget {
     private void updateX() {
         int shiftedX = this.getShiftedX();
         if (isHorizontal) {
-            for (Pair<? extends Widget, Integer> child : children) {
-                Widget widget = child.left();
+            for (Pair<? extends LayoutElement, Integer> child : children) {
+                LayoutElement widget = child.left();
                 Integer relativePos = child.right();
                 if (widget instanceof Padding) {
                     ((Padding) widget).setPaddedX(shiftedX + relativePos);
@@ -130,8 +129,8 @@ public class WidgetStack extends ShiftableWidget {
                 }
             }
         } else {
-            for (Pair<? extends Widget, Integer> child : children) {
-                Widget widget = child.left();
+            for (Pair<? extends LayoutElement, Integer> child : children) {
+                LayoutElement widget = child.left();
                 if (widget instanceof Padding) {
                     ((Padding) widget).setPaddedX(shiftedX);
                 } else {
@@ -144,8 +143,8 @@ public class WidgetStack extends ShiftableWidget {
     private void updateY() {
         int shiftedY = this.getShiftedY();
         if (isHorizontal) {
-            for (Pair<? extends Widget, Integer> child : children) {
-                Widget widget = child.left();
+            for (Pair<? extends LayoutElement, Integer> child : children) {
+                LayoutElement widget = child.left();
                 if (widget instanceof Padding) {
                     ((Padding) widget).setPaddedY(shiftedY);
                 } else {
@@ -153,9 +152,9 @@ public class WidgetStack extends ShiftableWidget {
                 }
             }
         } else {
-            for (Pair<? extends Widget, Integer> child : children) {
+            for (Pair<? extends LayoutElement, Integer> child : children) {
                 Integer relativePos = child.right();
-                Widget widget = child.left();
+                LayoutElement widget = child.left();
                 if (widget instanceof Padding) {
                     ((Padding) widget).setPaddedY(shiftedY + relativePos);
                 } else {
@@ -196,8 +195,8 @@ public class WidgetStack extends ShiftableWidget {
         int shiftedX = this.getShiftedX();
         int shiftedY = this.getShiftedY();
         if (isHorizontal) {
-            for (Pair<? extends Widget, Integer> child : children) {
-                Widget widget = child.left();
+            for (Pair<? extends LayoutElement, Integer> child : children) {
+                LayoutElement widget = child.left();
                 if (widget instanceof Padding) {
                     ((Padding) widget).setPaddedPosition(shiftedX + child.right(), shiftedY);
                 } else {
@@ -205,8 +204,8 @@ public class WidgetStack extends ShiftableWidget {
                 }
             }
         } else {
-            for (Pair<? extends Widget, Integer> child : children) {
-                Widget widget = child.left();
+            for (Pair<? extends LayoutElement, Integer> child : children) {
+                LayoutElement widget = child.left();
                 if (widget instanceof Padding) {
                     ((Padding) widget).setPaddedPosition(shiftedX, shiftedY + child.right());
                 } else {
@@ -227,7 +226,7 @@ public class WidgetStack extends ShiftableWidget {
     }
 
     @Override
-    public void forEachChild(Consumer<ClickableWidget> consumer) {
+    public void visitWidgets(Consumer<AbstractWidget> consumer) {
         this.clickable.forEach(consumer);
     }
 }

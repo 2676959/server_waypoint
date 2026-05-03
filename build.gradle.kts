@@ -79,7 +79,6 @@ repositories {
 }
 
 dependencies {
-    val yarn_build: String by project
     minecraft("com.mojang:minecraft:$minecraft")
     implementation(project(":common"))
     if (minecraft == "1.20.1" || minecraft == "1.20.2") {
@@ -105,7 +104,7 @@ dependencies {
         } else {
             modImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_fabric")
         }
-        mappings("net.fabricmc:yarn:$minecraft+build.$yarn_build:v2")
+        mappings(loom.officialMojangMappings())
         modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_api")
         modImplementation("me.lucko:fabric-permissions-api:$fabric_permissions_api") {
             // exclude fabric-api brought by fabric-permission-api
@@ -114,7 +113,6 @@ dependencies {
     }
     if (loader == "neoforge") {
         val neoforge_loader: String by project
-        val neoforge_patch: String by project
         val xaeros_minimap_neoforge: String by project
 //        val parchment_version: String by project
         "neoForge"("net.neoforged:neoforge:$neoforge_loader")
@@ -127,12 +125,7 @@ dependencies {
 //            officialMojangMappings()
 //            parchment("org.parchmentmc.data:parchment-$parchment_version@zip")
 //        })
-        mappings(loom.layered {
-            mappings("net.fabricmc:yarn:$minecraft+build.$yarn_build:v2")
-            neoforge_patch.takeUnless { it.startsWith('[') }?.let {
-                mappings("dev.architectury:yarn-mappings-patch-neoforge:$it")
-            }
-        })
+        mappings(loom.officialMojangMappings())
     }
 }
 

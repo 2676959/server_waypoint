@@ -15,10 +15,10 @@ import java.util.function.Consumer;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.WorldSavePath;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.LevelResource;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,9 +108,9 @@ public class WaypointServerMod extends WaypointServerCore {
 
     public void load(MinecraftServer minecraftServer) {
         setMinecraftServer(minecraftServer);
-        hasClient = !minecraftServer.isDedicated();
+        hasClient = !minecraftServer.isDedicatedServer();
         if (CONFIG.Features().sendXaerosWorldId()) {
-            this.initXearoWorldId(minecraftServer.getSavePath(WorldSavePath.LEVEL_DAT).getParent());
+            this.initXearoWorldId(minecraftServer.getWorldPath(LevelResource.LEVEL_DATA_FILE).getParent());
         }
         try {
             if (!hasClient) {
@@ -123,10 +123,10 @@ public class WaypointServerMod extends WaypointServerCore {
             } else {
                 WaypointList.excludeClientOnlyFields = false;
                 if (loaded) {
-                    changeWaypointFilesDir(asIntegratedServer(minecraftServer.getSavePath(WorldSavePath.ROOT)));
+                    changeWaypointFilesDir(asIntegratedServer(minecraftServer.getWorldPath(LevelResource.ROOT)));
                 } else {
                     initConfigAndLanguageResource();
-                    this.waypointFilesDir = asIntegratedServer(minecraftServer.getSavePath(WorldSavePath.ROOT));
+                    this.waypointFilesDir = asIntegratedServer(minecraftServer.getWorldPath(LevelResource.ROOT));
                     initOrReadWaypointFiles();
                 }
             }
@@ -149,8 +149,8 @@ public class WaypointServerMod extends WaypointServerCore {
             LOGGER.warn("MinecraftServer is not initialized");
             return false;
         } else {
-            RegistryKey<World> dimKey = getDimensionKey(dimensionName);
-            World world = MINECRAFT_SERVER.getWorld(dimKey);
+            ResourceKey<Level> dimKey = getDimensionKey(dimensionName);
+            Level world = MINECRAFT_SERVER.getLevel(dimKey);
             return world != null;
         }
     }

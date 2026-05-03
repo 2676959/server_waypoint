@@ -2,10 +2,9 @@ package _959.server_waypoint.common.client.gui.layout;
 
 import _959.server_waypoint.common.client.gui.Expandable;
 import _959.server_waypoint.common.client.gui.Padding;
-import net.minecraft.client.gui.widget.Widget;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.gui.layouts.LayoutElement;
 
 public class ExpandableManager implements Expandable {
     private int width;
@@ -24,7 +23,7 @@ public class ExpandableManager implements Expandable {
         this.height = height;
     }
 
-    public <T extends Widget & Expandable & Padding> void addChild(T child, int widthRatio, int heightRatio) {
+    public <T extends LayoutElement & Expandable & Padding> void addChild(T child, int widthRatio, int heightRatio) {
         this.children.add(new Entry(child, child, widthRatio, heightRatio));
         if (widthRatio > 0) {
             this.totalWidthRatio += widthRatio;
@@ -106,6 +105,6 @@ public class ExpandableManager implements Expandable {
         }
     }
 
-    private record Entry(Widget widget, Expandable expandable, int widthRatio, int heightRatio) {
+    private record Entry(LayoutElement widget, Expandable expandable, int widthRatio, int heightRatio) {
     }
 }

@@ -16,14 +16,13 @@ import _959.server_waypoint.fabric.permission.FabricPermissionManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.PlayerChatMessage;
+import net.minecraft.server.level.ServerPlayer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.message.MessageType;
-import net.minecraft.network.message.SignedMessage;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-
 import java.nio.file.Path;
 
 //? if >= 1.20.5
@@ -41,12 +40,12 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         FabricPermissionManager permissionManager = new FabricPermissionManager();
         ModChatMessageHandler<String> handler = new ModChatMessageHandler<>(messageSender, permissionManager) {
             @Override
-            public void onChatMessage(SignedMessage message, ServerPlayerEntity player, MessageType.Parameters parameters) {
+            public void onChatMessage(PlayerChatMessage message, ServerPlayer player, ChatType.Bound parameters) {
                 super.onChatMessage(message, player, parameters);
             }
         };
         WaypointServerMod waypointServer = new WaypointServerMod(this.getAssignedConfigDirectory(), handler);
-        C2SPacketHandler<ServerCommandSource, ServerPlayerEntity> c2sPacketHandler = new C2SPacketHandler<>(messageSender, waypointServer);
+        C2SPacketHandler<CommandSourceStack, ServerPlayer> c2sPacketHandler = new C2SPacketHandler<>(messageSender, waypointServer);
         WaypointCommand waypointCommand = new WaypointCommand(waypointServer, messageSender, permissionManager);
 
         FabricLoader fabricLoader = FabricLoader.getInstance();

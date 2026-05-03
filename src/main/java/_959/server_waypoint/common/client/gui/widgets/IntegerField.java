@@ -1,9 +1,8 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.text.Text;
-
 import java.util.function.Consumer;
+import net.minecraft.client.gui.Font;
+import net.minecraft.network.chat.Component;
 
 public class IntegerField extends TranslucentTextField {
     protected int defaultValue;
@@ -11,15 +10,15 @@ public class IntegerField extends TranslucentTextField {
     protected final int maxValue;
     protected Consumer<Integer> valueEnteredCallback;
 
-    public IntegerField(int x, int y, int width, int minValue, int maxValue, int defaultValue, Text text, TextRenderer textRenderer) {
+    public IntegerField(int x, int y, int width, int minValue, int maxValue, int defaultValue, Component text, Font textRenderer) {
         super(x, y, width, text, textRenderer);
         this.maxValue = maxValue;
         this.minValue = minValue;
         this.defaultValue = defaultValue;
-        this.setTextPredicate(this::testInRange);
+        this.setFilter(this::testInRange);
     }
 
-    public IntegerField(int x, int y, int width, Text text, TextRenderer textRenderer) {
+    public IntegerField(int x, int y, int width, Component text, Font textRenderer) {
         this(x, y, width, Integer.MIN_VALUE, Integer.MAX_VALUE, 0, text, textRenderer);
     }
 
@@ -34,23 +33,23 @@ public class IntegerField extends TranslucentTextField {
     @Override
     public void setFocused(boolean focused) {
         super.setFocused(focused);
-        if (!focused && this.getText().isEmpty()) {
-            this.setText(Integer.toString(this.defaultValue));
+        if (!focused && super.getValue().isEmpty()) {
+            this.setValue(Integer.toString(this.defaultValue));
             if (this.valueEnteredCallback != null) this.valueEnteredCallback.accept(this.defaultValue);
         }
     }
 
     @Override
-    public void write(String text) {
-        if (text.isEmpty()) super.write(text);
-        else if (text.matches("-?[0-9]+")) super.write(text);
+    public void insertText(String text) {
+        if (text.isEmpty()) super.insertText(text);
+        else if (text.matches("-?[0-9]+")) super.insertText(text);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        int prev = getValue();
+        int prev = getIntValue();
         boolean bl = super.keyPressed(keyCode, scanCode, modifiers);
-        int current = this.getValue();
+        int current = this.getIntValue();
         if (bl && this.valueEnteredCallback != null && prev != current) {
             this.valueEnteredCallback.accept(current);
         }
@@ -59,42 +58,42 @@ public class IntegerField extends TranslucentTextField {
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        if (!this.isActive()) {
+        if (!this.canConsumeInput()) {
             return false;
         }
         switch (chr) {
             case '-' -> {
-                String currentValue = this.getText();
+                String currentValue = super.getValue();
                 if (currentValue.isEmpty()) {
                     return false;
                 }
                 if (currentValue.charAt(0) != '-') {
-                        this.setText("-" + currentValue);
+                        this.setValue("-" + currentValue);
                         if (this.valueEnteredCallback != null) {
-                            this.valueEnteredCallback.accept(this.getValue());
+                            this.valueEnteredCallback.accept(this.getIntValue());
                         }
                         return true;
                 }
                 return false;
             }
             case '+' -> {
-                String currentValue = this.getText();
+                String currentValue = super.getValue();
                 if (currentValue.isEmpty()) {
                     return false;
                 }
                 if (currentValue.charAt(0) == '-') {
-                        this.setText(currentValue.substring(1));
+                        this.setValue(currentValue.substring(1));
                         if (this.valueEnteredCallback != null) {
-                            this.valueEnteredCallback.accept(this.getValue());
+                            this.valueEnteredCallback.accept(this.getIntValue());
                         }
                         return true;
                 }
                 return false;
             }
             case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> {
-                this.write(Character.toString(chr));
+                this.insertText(Character.toString(chr));
                 if (this.valueEnteredCallback != null) {
-                    this.valueEnteredCallback.accept(this.getValue());
+                    this.valueEnteredCallback.accept(this.getIntValue());
                 }
                 return true;
             }
@@ -102,9 +101,9 @@ public class IntegerField extends TranslucentTextField {
         }
     }
 
-    public int getValue() {
+    public int getIntValue() {
         try {
-            return Integer.parseInt(this.getText());
+            return Integer.parseInt(super.getValue());
         } catch (NumberFormatException e) {
             return this.defaultValue;
         }
@@ -115,7 +114,7 @@ public class IntegerField extends TranslucentTextField {
             return true;
         }
         if (text.equals("-")) {
-            setText("");
+            setValue("");
             return false;
         }
         int n;

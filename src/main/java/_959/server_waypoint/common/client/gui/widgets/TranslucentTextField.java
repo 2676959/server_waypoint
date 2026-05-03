@@ -1,23 +1,23 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
-
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
 
-public class TranslucentTextField extends TextFieldWidget implements Shiftable {
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.Component;
+
+public class TranslucentTextField extends EditBox implements Shiftable {
     private int shiftedX;
     private int shiftedY;
     private int xOffset;
     private int yOffset;
     protected final int backgroundHeight;
 
-    public TranslucentTextField(int x, int y, int width, Text text, TextRenderer textRenderer) {
-        super(textRenderer, x, y, width, textRenderer.fontHeight, null, text);
-        this.setEditableColor(0xFFFFFFFF);
-        this.setDrawsBackground(false);
+    public TranslucentTextField(int x, int y, int width, Component text, Font textRenderer) {
+        super(textRenderer, x, y, width, textRenderer.lineHeight, null, text);
+        this.setTextColor(0xFFFFFFFF);
+        this.setBordered(false);
         this.backgroundHeight = this.height + 2;
     }
 
@@ -25,22 +25,22 @@ public class TranslucentTextField extends TextFieldWidget implements Shiftable {
     public void
     //$ renderWidget_swap
     renderWidget
-            (DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+            (GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
         int x = getShiftedX() - 2;
         int y = getShiftedY() - 2;
         int right = x - 1 + this.width;
         int bottom = y - 1 + this.backgroundHeight;
         context.fill(x + 1, y + 1, right, bottom, BUTTON_BG_COLOR);
-        this.hovered = mouseX >= x && mouseY >= y && mouseX <= right && mouseY <= bottom;
+        this.isHovered = mouseX >= x && mouseY >= y && mouseX <= right && mouseY <= bottom;
         int bdColor = isFocused() | isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
-        context.drawBorder(x, y, this.width, this.backgroundHeight, bdColor);
+        context.renderOutline(x, y, this.width, this.backgroundHeight, bdColor);
         super.
         //$ renderWidget_swap
         renderWidget
         (context, mouseX, mouseY, deltaTicks);
     }
 
-    public void renderTextField(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+    public void renderTextField(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
         super.
         //$ renderWidget_swap
         renderWidget

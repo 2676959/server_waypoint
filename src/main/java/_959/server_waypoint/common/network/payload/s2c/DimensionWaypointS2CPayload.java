@@ -4,12 +4,11 @@ import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
 import _959.server_waypoint.core.network.codec.DimensionWaypointCodec;
-import net.minecraft.util.Identifier;
-
-//? if >= 1.20.5 {
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.resources.ResourceLocation;
+//? if >= 1.20.5 {
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?} else if fabric {
 /*import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.PacketByteBuf;
@@ -18,10 +17,10 @@ import net.minecraft.network.PacketByteBuf;
 import static _959.server_waypoint.core.network.PayloadID.DIMENSION_WAYPOINT;
 
 public record DimensionWaypointS2CPayload(DimensionWaypointBuffer dimensionWaypointBuffer) implements ModPayload {
-    public static final Identifier DIM_WAYPOINT_PAYLOAD_ID = Identifier.of(ModInfo.MOD_ID, DIMENSION_WAYPOINT);
+    public static final ResourceLocation DIM_WAYPOINT_PAYLOAD_ID = ResourceLocation.fromNamespaceAndPath(ModInfo.MOD_ID, DIMENSION_WAYPOINT);
 //? if >= 1.20.5 {
-    public static final CustomPayload.Id<DimensionWaypointS2CPayload> ID = new CustomPayload.Id<>(DIM_WAYPOINT_PAYLOAD_ID);
-    public static final PacketCodec<ByteBuf, DimensionWaypointS2CPayload> PACKET_CODEC = new PacketCodec<>() {
+    public static final CustomPacketPayload.Type<DimensionWaypointS2CPayload> ID = new CustomPacketPayload.Type<>(DIM_WAYPOINT_PAYLOAD_ID);
+    public static final StreamCodec<ByteBuf, DimensionWaypointS2CPayload> PACKET_CODEC = new StreamCodec<>() {
         @Override
         public void encode(ByteBuf buf, DimensionWaypointS2CPayload value) {
             DimensionWaypointCodec.encode(buf, value.dimensionWaypointBuffer());
@@ -34,7 +33,7 @@ public record DimensionWaypointS2CPayload(DimensionWaypointBuffer dimensionWaypo
     };
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 //?} else if fabric {

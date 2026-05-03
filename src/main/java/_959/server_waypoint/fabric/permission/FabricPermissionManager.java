@@ -3,17 +3,11 @@ package _959.server_waypoint.fabric.permission;
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.command.permission.PermissionStringKeys;
-import _959.server_waypoint.common.permission.PermissionKey;
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.kyori.adventure.audience.Audience;
-import net.minecraft.command.CommandSource;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
 
-import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
-
-public class FabricPermissionManager extends PermissionManager<ServerCommandSource, String, ServerPlayerEntity> {
+public class FabricPermissionManager extends PermissionManager<CommandSourceStack, String, ServerPlayer> {
     private static boolean isFabricPermissionAPILoaded = false;
 
     public FabricPermissionManager() {
@@ -25,20 +19,20 @@ public class FabricPermissionManager extends PermissionManager<ServerCommandSour
     }
 
     @Override
-    public boolean hasPermission(ServerCommandSource source, PermissionKeys<String>.PermissionKey key, int defaultLevel) {
+    public boolean hasPermission(CommandSourceStack source, PermissionKeys<String>.PermissionKey key, int defaultLevel) {
         if (isFabricPermissionAPILoaded) {
             return Permissions.check(source, key.getKey(), defaultLevel);
         } else {
-            return source.hasPermissionLevel(defaultLevel);
+            return source.hasPermission(defaultLevel);
         }
     }
 
     @Override
-    public boolean checkPlayerPermission(ServerPlayerEntity player, PermissionKeys<String>.PermissionKey key, int defaultLevel) {
+    public boolean checkPlayerPermission(ServerPlayer player, PermissionKeys<String>.PermissionKey key, int defaultLevel) {
         if (isFabricPermissionAPILoaded) {
             return Permissions.check(player, key.getKey(), defaultLevel);
         } else {
-            return player.hasPermissionLevel(defaultLevel);
+            return player.hasPermissions(defaultLevel);
         }
     }
 }

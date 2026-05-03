@@ -1,31 +1,31 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.mixin.BoundKeyAccessor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.text.Text;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 
 public abstract class MovementAllowedScreen extends Screen {
-    protected final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-    private KeyBinding forwardKeyBinding;
-    private KeyBinding leftKeyBinding;
-    private KeyBinding backKeyBinding;
-    private KeyBinding rightKeyBinding;
-    private KeyBinding jumpKeyBinding;
-    private KeyBinding sneakKeyBinding;
-    private KeyBinding sprintKeyBinding;
-    private InputUtil.Key forwardKey;
-    private InputUtil.Key leftKey;
-    private InputUtil.Key backKey;
-    private InputUtil.Key rightKey;
-    private InputUtil.Key jumpKey;
-    private InputUtil.Key sneakKey;
-    private InputUtil.Key sprintKey;
+    protected final Font font = Minecraft.getInstance().font;
+    private KeyMapping forwardKeyBinding;
+    private KeyMapping leftKeyBinding;
+    private KeyMapping backKeyBinding;
+    private KeyMapping rightKeyBinding;
+    private KeyMapping jumpKeyBinding;
+    private KeyMapping sneakKeyBinding;
+    private KeyMapping sprintKeyBinding;
+    private InputConstants.Key forwardKey;
+    private InputConstants.Key leftKey;
+    private InputConstants.Key backKey;
+    private InputConstants.Key rightKey;
+    private InputConstants.Key jumpKey;
+    private InputConstants.Key sneakKey;
+    private InputConstants.Key sprintKey;
     private int forwardKeyCode;
     private int leftKeyCode;
     private int backKeyCode;
@@ -35,7 +35,7 @@ public abstract class MovementAllowedScreen extends Screen {
     private int sprintKeyCode;
     private boolean movementAllowed = true;
 
-    protected MovementAllowedScreen(Text title) {
+    protected MovementAllowedScreen(Component title) {
         super(title);
     }
 
@@ -60,17 +60,17 @@ public abstract class MovementAllowedScreen extends Screen {
 
     @Override
     protected void init() {
-        if (this.client == null) {
+        if (this.minecraft == null) {
             LOGGER.warn("MinecraftClient is null, not support to initialize");
             return;
         }
-        forwardKeyBinding = this.client.options.forwardKey;
-        leftKeyBinding = this.client.options.leftKey;
-        backKeyBinding = this.client.options.backKey;
-        rightKeyBinding = this.client.options.rightKey;
-        jumpKeyBinding = this.client.options.jumpKey;
-        sneakKeyBinding = this.client.options.sneakKey;
-        sprintKeyBinding = this.client.options.sprintKey;
+        forwardKeyBinding = this.minecraft.options.keyUp;
+        leftKeyBinding = this.minecraft.options.keyLeft;
+        backKeyBinding = this.minecraft.options.keyDown;
+        rightKeyBinding = this.minecraft.options.keyRight;
+        jumpKeyBinding = this.minecraft.options.keyJump;
+        sneakKeyBinding = this.minecraft.options.keyShift;
+        sprintKeyBinding = this.minecraft.options.keySprint;
 
         forwardKey = ((BoundKeyAccessor) forwardKeyBinding).getBoundKey();
         leftKey = ((BoundKeyAccessor) leftKeyBinding).getBoundKey();
@@ -80,23 +80,23 @@ public abstract class MovementAllowedScreen extends Screen {
         sneakKey = ((BoundKeyAccessor) sneakKeyBinding).getBoundKey();
         sprintKey = ((BoundKeyAccessor) sprintKeyBinding).getBoundKey();
 
-        forwardKeyCode = forwardKey.getCode();
-        leftKeyCode = leftKey.getCode();
-        backKeyCode = backKey.getCode();
-        rightKeyCode = rightKey.getCode();
-        jumpKeyCode = jumpKey.getCode();
-        sneakKeyCode = sneakKey.getCode();
-        sprintKeyCode = sprintKey.getCode();
+        forwardKeyCode = forwardKey.getValue();
+        leftKeyCode = leftKey.getValue();
+        backKeyCode = backKey.getValue();
+        rightKeyCode = rightKey.getValue();
+        jumpKeyCode = jumpKey.getValue();
+        sneakKeyCode = sneakKey.getValue();
+        sprintKeyCode = sprintKey.getValue();
     }
 
     private void unpressAllMovementKeys() {
-        forwardKeyBinding.setPressed(false);
-        leftKeyBinding.setPressed(false);
-        backKeyBinding.setPressed(false);
-        rightKeyBinding.setPressed(false);
-        jumpKeyBinding.setPressed(false);
-        sneakKeyBinding.setPressed(false);
-        sprintKeyBinding.setPressed(false);
+        forwardKeyBinding.setDown(false);
+        leftKeyBinding.setDown(false);
+        backKeyBinding.setDown(false);
+        rightKeyBinding.setDown(false);
+        jumpKeyBinding.setDown(false);
+        sneakKeyBinding.setDown(false);
+        sprintKeyBinding.setDown(false);
     }
 
     @Override
@@ -107,32 +107,32 @@ public abstract class MovementAllowedScreen extends Screen {
         }
         boolean ret = false;
         if (keyCode == forwardKeyCode || scanCode == forwardKeyCode) {
-            forwardKeyBinding.setPressed(true);
-            KeyBinding.onKeyPressed(forwardKey);
+            forwardKeyBinding.setDown(true);
+            KeyMapping.click(forwardKey);
             ret = true;
         } else if (keyCode == leftKeyCode || scanCode == leftKeyCode) {
-            leftKeyBinding.setPressed(true);
-            KeyBinding.onKeyPressed(leftKey);
+            leftKeyBinding.setDown(true);
+            KeyMapping.click(leftKey);
             ret = true;
         } else if (keyCode == backKeyCode || scanCode == backKeyCode) {
-            backKeyBinding.setPressed(true);
-            KeyBinding.onKeyPressed(backKey);
+            backKeyBinding.setDown(true);
+            KeyMapping.click(backKey);
             ret = true;
         } else if (keyCode == rightKeyCode || scanCode == rightKeyCode) {
-            rightKeyBinding.setPressed(true);
-            KeyBinding.onKeyPressed(rightKey);
+            rightKeyBinding.setDown(true);
+            KeyMapping.click(rightKey);
             ret = true;
         } else if (keyCode == jumpKeyCode || scanCode == jumpKeyCode) {
-            jumpKeyBinding.setPressed(true);
-            KeyBinding.onKeyPressed(jumpKey);
+            jumpKeyBinding.setDown(true);
+            KeyMapping.click(jumpKey);
             ret = true;
         } else if (keyCode == sneakKeyCode || scanCode == sneakKeyCode) {
-            sneakKeyBinding.setPressed(true);
-            KeyBinding.onKeyPressed(sneakKey);
+            sneakKeyBinding.setDown(true);
+            KeyMapping.click(sneakKey);
             ret = true;
         } else if (keyCode == sprintKeyCode || scanCode == sprintKeyCode) {
-            sprintKeyBinding.setPressed(true);
-            KeyBinding.onKeyPressed(sprintKey);
+            sprintKeyBinding.setDown(true);
+            KeyMapping.click(sprintKey);
             ret = true;
         }
         boolean ret2 = super.keyPressed(keyCode, scanCode, modifiers);
@@ -147,25 +147,25 @@ public abstract class MovementAllowedScreen extends Screen {
         }
         boolean ret = false;
         if (keyCode == forwardKeyCode || scanCode == forwardKeyCode) {
-            forwardKeyBinding.setPressed(false);
+            forwardKeyBinding.setDown(false);
             ret = true;
         } else if (keyCode == leftKeyCode || scanCode == leftKeyCode) {
-            leftKeyBinding.setPressed(false);
+            leftKeyBinding.setDown(false);
             ret = true;
         } else if (keyCode == backKeyCode || scanCode == backKeyCode) {
-            backKeyBinding.setPressed(false);
+            backKeyBinding.setDown(false);
             ret = true;
         } else if (keyCode == rightKeyCode || scanCode == rightKeyCode) {
-            rightKeyBinding.setPressed(false);
+            rightKeyBinding.setDown(false);
             ret = true;
         } else if (keyCode == jumpKeyCode || scanCode == jumpKeyCode) {
-            jumpKeyBinding.setPressed(false);
+            jumpKeyBinding.setDown(false);
             ret = true;
         } else if (keyCode == sneakKeyCode || scanCode == sneakKeyCode) {
-            sneakKeyBinding.setPressed(false);
+            sneakKeyBinding.setDown(false);
             ret = true;
         } else if (keyCode == sprintKeyCode || scanCode == sprintKeyCode) {
-            sprintKeyBinding.setPressed(false);
+            sprintKeyBinding.setDown(false);
             ret = true;
         }
         boolean ret2 = super.keyReleased(keyCode, scanCode, modifiers);
@@ -173,7 +173,7 @@ public abstract class MovementAllowedScreen extends Screen {
     }
 
     @Override
-    public boolean shouldPause() {
+    public boolean isPauseScreen() {
         return false;
     }
 }

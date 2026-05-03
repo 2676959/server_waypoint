@@ -1,35 +1,35 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.FONT_COLOR;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 
 public abstract class DialogWidget extends ShiftableClickableWidget {
-    protected final TextRenderer textRenderer;
+    protected final Font textRenderer;
     protected final WidgetStack content;
-    protected final Text title;
+    protected final Component title;
     protected final WidgetStack mainLayout = new WidgetStack(0, 0, 10, true, false);
     protected final PaddingBackground paddingBackground = new PaddingBackground(this.mainLayout, 6, 8, TRANSPARENT_BG_COLOR, FONT_COLOR, true);
     protected final WidgetStack buttonRow = new WidgetStack(0, 0, 10, false);
 
-    public DialogWidget(int x, int y, Text title, WidgetStack content, TextRenderer textRenderer) {
-        super(x, y, textRenderer.getWidth(title), 0, title);
+    public DialogWidget(int x, int y, Component title, WidgetStack content, Font textRenderer) {
+        super(x, y, textRenderer.width(title), 0, title);
         this.textRenderer = textRenderer;
         this.title = title;
         this.content = content;
         this.mainLayout.addChild(new ScalableText(0, 0, this.title, 1.2F, FONT_COLOR, this.textRenderer), 0);
         this.mainLayout.addChild(content);
-        List<ClickableWidget> buttons = this.createButtons();
+        List<AbstractWidget> buttons = this.createButtons();
         this.buttonRow.addClickable(buttons.get(0), 0);
         for (int i = 1; i < buttons.size(); i++) {
             this.buttonRow.addClickable(buttons.get(i));
@@ -40,7 +40,7 @@ public abstract class DialogWidget extends ShiftableClickableWidget {
         this.height = this.mainLayout.getHeight();
     }
 
-    abstract protected @Unmodifiable List<ClickableWidget> createButtons();
+    abstract protected @Unmodifiable List<AbstractWidget> createButtons();
 
     @Override
     public int getWidth() {
@@ -77,12 +77,12 @@ public abstract class DialogWidget extends ShiftableClickableWidget {
     }
 
     @Override
-    public void forEachChild(Consumer<ClickableWidget> consumer) {
-        this.buttonRow.forEachChild(consumer);
+    public void visitWidgets(Consumer<AbstractWidget> consumer) {
+        this.buttonRow.visitWidgets(consumer);
     }
 
     @Override
-    public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
+    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
         if (this.visible) {
             this.paddingBackground.render(context, mouseX, mouseY, deltaTicks);
             this.mainLayout.render(context, mouseX, mouseY, deltaTicks);
@@ -95,5 +95,5 @@ public abstract class DialogWidget extends ShiftableClickableWidget {
     }
 
     @Override
-    protected void appendClickableNarrations(NarrationMessageBuilder builder) {}
+    protected void updateWidgetNarration(NarrationElementOutput builder) {}
 }

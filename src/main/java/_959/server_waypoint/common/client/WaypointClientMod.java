@@ -19,8 +19,8 @@ import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ServerInfo;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
@@ -51,9 +51,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
 //    private final WaypointFilesManagerCore localManager;
     private final Path gameRoot;
     private final Path configPath;
-    private final MinecraftClient mc;
+    private final Minecraft mc;
 
-    public static void createInstance(MinecraftClient mc, Path gameRoot, Path configDir) {
+    public static void createInstance(Minecraft mc, Path gameRoot, Path configDir) {
         if (INSTANCE == null) {
             INSTANCE = new WaypointClientMod(mc, gameRoot, configDir);
             INSTANCE.loadConfig();
@@ -70,7 +70,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         return networkState;
     }
 
-    private WaypointClientMod(MinecraftClient mc, Path gameRoot, Path configDir) {
+    private WaypointClientMod(Minecraft mc, Path gameRoot, Path configDir) {
         super();
         this.mc = mc;
         this.gameRoot = gameRoot;
@@ -218,19 +218,19 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
 
     public void onLeaveServer() {
         OptimizedWaypointRenderer.clearScene();
-        if (!this.mc.isConnectedToLocalServer()) {
+        if (!this.mc.isSingleplayer()) {
             this.saveAllWaypointFiles();
         }
         this.resetNetworkState();
     }
 
     public boolean loadCachedWaypointFiles(int serverId) {
-        ServerInfo currentServerEntry = this.mc.getCurrentServerEntry();
+        ServerData currentServerEntry = this.mc.getCurrentServer();
         if (currentServerEntry == null) {
             LOGGER.warn("current server entry is null");
             return false;
         }
-        changeWaypointFilesDir(asClientFromRemoteServer(this.gameRoot, currentServerEntry.address, serverId));
+        changeWaypointFilesDir(asClientFromRemoteServer(this.gameRoot, currentServerEntry.ip, serverId));
         return true;
     }
 
@@ -244,7 +244,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     public void onJoinServer() {
         networkState = ClientNetworkState.NOT_READY;
         OptimizedWaypointRenderer.clearScene();
-        if (this.mc.isConnectedToLocalServer()) {
+        if (this.mc.isSingleplayer()) {
             changeFileManagerMap(WaypointServerMod.getInstance().getFileManagerMap());
             OptimizedWaypointRenderer.loadScene(getCurrentWaypointLists());
             this.waypointFilesDir = null;
@@ -362,7 +362,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         if (WaypointServerMod.hasClient()) return;
         this.fileManagerMap.clear();
         OptimizedWaypointRenderer.clearScene();
-        currentDimensionName = this.mc.world.getRegistryKey().getValue().toString();
+        currentDimensionName = this.mc.level.dimension().location().toString();
         boolean found = false;
         for (DimensionWaypointBuffer dimensionWaypoint : buffer) {
             String dimensionName = dimensionWaypoint.dimensionName();

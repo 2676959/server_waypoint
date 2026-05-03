@@ -1,12 +1,11 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.gui.widget.Widget;
-
 import java.util.function.Consumer;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.layouts.LayoutElement;
 
-public abstract class ShiftableWidget implements Widget, Shiftable, Drawable {
+public abstract class ShiftableWidget implements LayoutElement, Shiftable, Renderable {
     private int x;
     private int y;
     private int shiftedX;
@@ -82,7 +81,7 @@ public abstract class ShiftableWidget implements Widget, Shiftable, Drawable {
     }
 
     @Override
-    public void forEachChild(Consumer<ClickableWidget> consumer) {
+    public void visitWidgets(Consumer<AbstractWidget> consumer) {
 
     }
 }

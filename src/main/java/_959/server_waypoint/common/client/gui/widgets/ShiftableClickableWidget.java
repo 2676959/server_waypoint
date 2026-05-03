@@ -1,17 +1,15 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
-//? if <= 1.20.2
-/*import net.minecraft.client.gui.DrawContext;*/
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.network.chat.Component;
 
-public abstract class ShiftableClickableWidget extends ClickableWidget implements Shiftable {
+public abstract class ShiftableClickableWidget extends AbstractWidget implements Shiftable {
     protected int shiftedX;
     protected int shiftedY;
     protected int xOffset;
     protected int yOffset;
 
-    public ShiftableClickableWidget(int x, int y, int width, int height, Text message) {
+    public ShiftableClickableWidget(int x, int y, int width, int height, Component message) {
         super(x, y, width, height, message);
     }
 
