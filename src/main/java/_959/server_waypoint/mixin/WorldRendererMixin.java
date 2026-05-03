@@ -13,25 +13,25 @@ import static _959.server_waypoint.common.client.render.OptimizedWaypointRendere
 @Mixin(LevelRenderer.class)
 public class WorldRendererMixin {
     //? if > 1.21 {
-    @Inject(
+    /*@Inject(
             method = "addMainPass",
             at = @At(value = "HEAD")
     )
-    //?} else {
-    /*@Inject(
-            method = "render",
+    *///?} else {
+    @Inject(
+            method = "renderLevel",
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/mojang/blaze3d/systems/RenderSystem;applyModelViewMatrix()V",
                     //? if >= 1.20.6 {
                     ordinal = 0,
                     //?} else {
-                    /^ordinal = 1,
-                    ^///?}
+                    /*ordinal = 1,
+                    *///?}
                     shift = At.Shift.AFTER
             )
     )
-    *///?}
+    //?}
     private void renderWaypoint(CallbackInfo ci) {
         ModelViewMatrix.set(RenderSystem.getModelViewMatrix());
         ProjectionMatrix.set(RenderSystem.getProjectionMatrix());

@@ -24,7 +24,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 //? if >= 1.21.2
-import java.util.Collections;
+/*import java.util.Collections;*/
 
 public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, ServerPlayer, ResourceLocation, Coordinates> {
     public WaypointCommand(WaypointServerMod waypointServer, PlatformMessageSender<CommandSourceStack, ServerPlayer> networkAdapter, PermissionManager<CommandSourceStack, String, ServerPlayer> permissionManager) {
@@ -87,10 +87,10 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     protected void teleportPlayer(CommandSourceStack source, ServerPlayer player, ResourceLocation dimensionArgument, WaypointPos pos, int yaw) {
         ServerLevel world = getWorldFromId(source, dimensionArgument);
         //? if >= 1.21.2 {
-        player.teleportTo(world, pos.X(), pos.y(), pos.Z(), Collections.emptySet(), yaw, 0, false);
-        //?} else {
-        /*player.teleport(world, pos.X(), pos.y(), pos.Z(), yaw, 0);
-        *///?}
+        /*player.teleportTo(world, pos.X(), pos.y(), pos.Z(), Collections.emptySet(), yaw, 0, false);
+        *///?} else {
+        player.teleportTo(world, pos.X(), pos.y(), pos.Z(), yaw, 0);
+        //?}
     }
 
     @Override

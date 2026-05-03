@@ -23,7 +23,13 @@ public class ClientWaypointCommand {
 
     private static int executeOpenGui() {
         Minecraft mc = Minecraft.getInstance();
-        mc.schedule(() -> mc.setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance())));
+        mc.
+                //? if > 1.21 {
+                //schedule
+                //? } else {
+                execute
+                //? }
+                (() -> mc.setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance())));
         return Command.SINGLE_SUCCESS;
     }
 }

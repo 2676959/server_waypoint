@@ -451,12 +451,18 @@ public class OptimizedWaypointRenderer {
         float projectionScale = baseScale * projectionConstant;
         float minBaseScale = baseScale / 5F;
         //? if <= 1.21
-        /*VertexConsumerProvider.Immediate immediate = context.getVertexConsumers();*/
+        MultiBufferSource.BufferSource immediate = context.bufferSource();
 
-        context.drawSpecial(
+        context.
+                //? if > 1.21 {
+                //drawSpecial
+                //? } else {
+                drawManaged
+                //?}
+                        (
                 (
                         //? if > 1.21
-                        immediate
+                        /*immediate*/
                 )
                         -> {
             // hovered rendering
@@ -573,11 +579,11 @@ public class OptimizedWaypointRenderer {
                 float distanceTextScale = detail_scale * 0.8F;
                 Matrix4f distMatrix = identity.translation(tx + (bgXOffest + 1F - 0.2F) * detail_scale, detail_winY + halfHeight + distanceTextScale, -91F).scale(distanceTextScale);
                 //? if > 1.21 {
-                drawDefaultText(0, 0, distMatrix, distanceText, immediate);
-                //?} else {
-                /*// z flip
+                /*drawDefaultText(0, 0, distMatrix, distanceText, immediate);
+                *///?} else {
+                // z flip
                 drawDefaultText(0, 0, distMatrix.scale(1, 1, -1), distanceText, immediate);
-                *///?}
+                //?}
                 identity.identity();
 
                 float scaledRealBgWidth = bgWidth * detail_scale;

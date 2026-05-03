@@ -469,9 +469,9 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                 withVertexConsumers(context, drawer -> {
                     textRenderer.drawInBatch(initials, 15, finalY, finalTextColor, true, matrixStack.last().pose(), drawer, Font.DisplayMode.NORMAL, backgroundColor, FULL_BRIGHT);
                     //? if <= 1.21 {
-                    /*matrixStack.translate(0, 0, 0.1);
-                    textRenderer.draw(initials, 15, finalY, finalTextColor, true, matrixStack.peek().getPositionMatrix(), drawer, TextRenderer.TextLayerType.NORMAL, 0, MAX_LIGHT_COORDINATE);
-                    *///?}
+                    matrixStack.translate(0, 0, 0.1);
+                    textRenderer.drawInBatch(initials, 15, finalY, finalTextColor, true, matrixStack.last().pose(), drawer, Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
+                    //?}
                 });
                 matrixStack.popPose();
                 context.drawString(textRenderer, name, 55, finalY, textColor);
