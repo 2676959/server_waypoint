@@ -7,19 +7,19 @@ import _959.server_waypoint.core.network.codec.UpdatesBundleCodec;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.resources.ResourceLocation;
 //? if >= 1.20.5 {
-import net.minecraft.network.codec.StreamCodec;
+/*import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-//?} else if fabric {
-/*import net.fabricmc.fabric.api.networking.v1.PacketType;
-import net.minecraft.network.PacketByteBuf;
-*///?}
+*///?} else if fabric {
+import net.fabricmc.fabric.api.networking.v1.PacketType;
+import net.minecraft.network.FriendlyByteBuf;
+//?}
 
 import static _959.server_waypoint.core.network.PayloadID.UPDATES_BUNDLE;
 
 public record UpdatesBundleS2CPayload(UpdatesBundleBuffer updatesBundleBuffer) implements ModPayload {
-    public static final ResourceLocation UPDATES_BUNDLE_PAYLOAD_ID = ResourceLocation.fromNamespaceAndPath(ModInfo.MOD_ID, UPDATES_BUNDLE);
+    public static final ResourceLocation UPDATES_BUNDLE_PAYLOAD_ID = _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, UPDATES_BUNDLE);
 //? if >= 1.20.5 {
-    public static final CustomPacketPayload.Type<UpdatesBundleS2CPayload> ID = new CustomPacketPayload.Type<>(UPDATES_BUNDLE_PAYLOAD_ID);
+    /*public static final CustomPacketPayload.Type<UpdatesBundleS2CPayload> ID = new CustomPacketPayload.Type<>(UPDATES_BUNDLE_PAYLOAD_ID);
     public static final StreamCodec<ByteBuf, UpdatesBundleS2CPayload> PACKET_CODEC = new StreamCodec<>() {
         @Override
         public void encode(ByteBuf buf, UpdatesBundleS2CPayload value) {
@@ -36,15 +36,15 @@ public record UpdatesBundleS2CPayload(UpdatesBundleBuffer updatesBundleBuffer) i
     public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
-//?} else if fabric {
-    /*public static final PacketType<UpdatesBundleS2CPayload> ID = PacketType.create(UPDATES_BUNDLE_PAYLOAD_ID, UpdatesBundleS2CPayload::new);
+*///?} else if fabric {
+    public static final PacketType<UpdatesBundleS2CPayload> ID = PacketType.create(UPDATES_BUNDLE_PAYLOAD_ID, UpdatesBundleS2CPayload::new);
 
-    public UpdatesBundleS2CPayload(PacketByteBuf buf) {
+    public UpdatesBundleS2CPayload(FriendlyByteBuf buf) {
         this(UpdatesBundleCodec.decode(buf));
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         UpdatesBundleCodec.encode(buf, updatesBundleBuffer);
     }
 
@@ -52,5 +52,5 @@ public record UpdatesBundleS2CPayload(UpdatesBundleBuffer updatesBundleBuffer) i
     public PacketType<?> getType() {
         return ID;
     }
-*///?}
+//?}
 }

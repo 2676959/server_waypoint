@@ -26,9 +26,9 @@ public class ClientWaypointCommand {
         mc.
                 //? if > 1.21 {
                 //schedule
-                //? } else {
+                //?} else {
                 execute
-                //? }
+                //?}
                 (() -> mc.setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance())));
         return Command.SINGLE_SUCCESS;
     }

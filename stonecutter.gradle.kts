@@ -4,4 +4,4 @@ plugins {
     id("architectury-plugin") version "3.4-SNAPSHOT" apply false
     id("com.github.johnrengelman.shadow") version "8.1.1" apply false
 }
-stonecutter active "1.21-fabric"
+stonecutter active "1.20.1-fabric"

@@ -1,6 +1,7 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 
 public abstract class ShiftableClickableWidget extends AbstractWidget implements Shiftable {
@@ -13,17 +14,8 @@ public abstract class ShiftableClickableWidget extends AbstractWidget implements
         super(x, y, width, height, message);
     }
 
-    //? if <= 1.20.2 {
-    /*abstract public void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks);
-
-    @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        this.renderWidget(context, mouseX, mouseY, deltaTicks);
-    }
-    *///?}
-
     //? if <= 1.20.1 {
-    /*public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         return super.mouseScrolled(mouseX, mouseY, verticalAmount);
     }
 
@@ -31,7 +23,7 @@ public abstract class ShiftableClickableWidget extends AbstractWidget implements
     public boolean mouseScrolled(double mouseX, double mouseY, double verticalAmount) {
         return this.mouseScrolled(mouseX, mouseY, 0, verticalAmount);
     }
-    *///?}
+    //?}
 
     @Override
     public int getX() {

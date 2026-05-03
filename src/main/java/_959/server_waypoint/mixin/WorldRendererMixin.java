@@ -24,10 +24,10 @@ public class WorldRendererMixin {
                     value = "INVOKE",
                     target = "Lcom/mojang/blaze3d/systems/RenderSystem;applyModelViewMatrix()V",
                     //? if >= 1.20.6 {
-                    ordinal = 0,
-                    //?} else {
-                    /*ordinal = 1,
-                    *///?}
+                    /*ordinal = 0,
+                    *///?} else {
+                    ordinal = 1,
+                    //?}
                     shift = At.Shift.AFTER
             )
     )

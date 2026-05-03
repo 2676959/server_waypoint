@@ -28,9 +28,9 @@ public final class DrawContextHelper {
 
     public static void vertex(VertexConsumer vertexConsumer, Matrix4f matrix, float x, float y, float z, int color) {
         //? if > 1.20.6 {
-        vertexConsumer.addVertex(matrix, x, y, z).setColor(color);
-        //?} else {
-        /*vertexConsumer.vertex(matrix, x, y, z).color(color).next();
-        *///?}
+        /*vertexConsumer.addVertex(matrix, x, y, z).setColor(color);
+        *///?} else {
+        vertexConsumer.vertex(matrix, x, y, z).color(color).endVertex();
+        //?}
     }
 }

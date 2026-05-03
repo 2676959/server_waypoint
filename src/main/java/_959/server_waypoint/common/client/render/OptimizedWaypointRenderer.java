@@ -456,7 +456,7 @@ public class OptimizedWaypointRenderer {
         context.
                 //? if > 1.21 {
                 //drawSpecial
-                //? } else {
+                //?} else {
                 drawManaged
                 //?}
                         (

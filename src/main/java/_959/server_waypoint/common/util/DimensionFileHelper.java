@@ -13,6 +13,6 @@ public class DimensionFileHelper {
         if (idParts.length != 2) {
             return null;
         }
-        return ResourceKey.create(Registries.DIMENSION, ResourceLocation.fromNamespaceAndPath(idParts[0], idParts[1]));
+        return ResourceKey.create(Registries.DIMENSION, _959.server_waypoint.common.util.ResourceLocationHelper.id(idParts[0], idParts[1]));
     }
 }

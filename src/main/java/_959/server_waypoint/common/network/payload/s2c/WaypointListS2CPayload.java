@@ -7,20 +7,20 @@ import _959.server_waypoint.core.network.codec.WaypointListBufferCodec;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.resources.ResourceLocation;
 //? if >= 1.20.5 {
-import net.minecraft.network.codec.StreamCodec;
+/*import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-//?} else if fabric {
-/*import net.fabricmc.fabric.api.networking.v1.PacketType;
-import net.minecraft.network.PacketByteBuf;
-*///?}
+*///?} else if fabric {
+import net.fabricmc.fabric.api.networking.v1.PacketType;
+import net.minecraft.network.FriendlyByteBuf;
+//?}
 
 import static _959.server_waypoint.core.network.PayloadID.WAYPOINT_LIST;
 
 public record WaypointListS2CPayload(WaypointListBuffer waypointListBuffer) implements ModPayload {
-    public static final ResourceLocation WAYPOINT_LIST_PAYLOAD_ID = ResourceLocation.fromNamespaceAndPath(ModInfo.MOD_ID, WAYPOINT_LIST);
+    public static final ResourceLocation WAYPOINT_LIST_PAYLOAD_ID = _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, WAYPOINT_LIST);
 //? if >= 1.20.5 {
 
-    public static final CustomPacketPayload.Type<WaypointListS2CPayload> ID = new CustomPacketPayload.Type<>(WAYPOINT_LIST_PAYLOAD_ID);
+    /*public static final CustomPacketPayload.Type<WaypointListS2CPayload> ID = new CustomPacketPayload.Type<>(WAYPOINT_LIST_PAYLOAD_ID);
     public static final StreamCodec<ByteBuf, WaypointListS2CPayload> PACKET_CODEC = new StreamCodec<>() {
         @Override
         public void encode(ByteBuf buf, WaypointListS2CPayload value) {
@@ -37,15 +37,15 @@ public record WaypointListS2CPayload(WaypointListBuffer waypointListBuffer) impl
     public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
-//?} else if fabric {
-    /*public static final PacketType<WaypointListS2CPayload> ID = PacketType.create(WAYPOINT_LIST_PAYLOAD_ID, WaypointListS2CPayload::new);
+*///?} else if fabric {
+    public static final PacketType<WaypointListS2CPayload> ID = PacketType.create(WAYPOINT_LIST_PAYLOAD_ID, WaypointListS2CPayload::new);
 
-    public WaypointListS2CPayload(PacketByteBuf buf) {
+    public WaypointListS2CPayload(FriendlyByteBuf buf) {
         this(WaypointListBufferCodec.decode(buf));
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         WaypointListBufferCodec.encode(buf, waypointListBuffer);
     }
 
@@ -53,5 +53,5 @@ public record WaypointListS2CPayload(WaypointListBuffer waypointListBuffer) impl
     public PacketType<?> getType() {
         return ID;
     }
-*///?}
+//?}
 }
