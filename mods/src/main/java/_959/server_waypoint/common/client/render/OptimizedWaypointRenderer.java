@@ -124,6 +124,7 @@ public class OptimizedWaypointRenderer {
     private static final Minecraft mc = Minecraft.getInstance();
     private static final Font textRenderer = mc.font;
     private static final int textHeight = textRenderer.lineHeight;
+    private static final int textBgHeight = textHeight + 2;
     private static final Window window = mc.getWindow();
     private static final Camera camera = mc.gameRenderer.getMainCamera();
     public static final Matrix4f ModelViewMatrix = new Matrix4f();
@@ -403,7 +404,7 @@ public class OptimizedWaypointRenderer {
     }
 
     private static float getTextBgWidth(String text) {
-        return Math.max(getTextWidth(text) + 4, textHeight + 2);
+        return Math.max(getTextWidth(text) + 4, textBgHeight);
     }
 
     /**
@@ -543,7 +544,7 @@ public class OptimizedWaypointRenderer {
             float winY = (1.0F - ndcY) * windowCenterY;
             float iconScale = getIconScale(depth, projectionScale, minBaseScale);
             float bgWidth = initialsTextBgWidth[i];
-            float bgHeight = textHeight;
+            float bgHeight = textBgHeight;
 
             visibleIndex[renderCount] = i;
             visibleDepth[renderCount] = depth;
@@ -581,21 +582,21 @@ public class OptimizedWaypointRenderer {
             String name = names[detailIndex];
             float textWidth = nameTextWidth[detailIndex];
             float bgWidth = nameTextBgWidth[detailIndex];
-            float halfHeight = textHeight * detailScale * 0.5F;
+            float halfHeight = textBgHeight * detailScale * 0.5F;
             float labelTop = detailWinY - halfHeight;
-            float labelLeft = detailWinX - textWidth * detailScale * 0.5F;
-            float bgXOffset = (textWidth - bgWidth) * 0.5F;
+            float labelBgLeft = getBoxLeft(detailWinX, bgWidth, detailScale);
+            float labelBgBottom = labelTop + textBgHeight * detailScale;
 
             drawTextBox(context, name, detailWinX, labelTop, detailScale, textWidth, bgWidth, 0xFF000000 | bgColor[detailIndex], fgColor[detailIndex]);
 
             String distanceText = getDistanceText(detailDistance);
+            float distanceWidth = getTextWidth(distanceText);
+            float distanceBgWidth = getTextBgWidth(distanceText);
             float distanceScale = detailScale * 0.8F;
-            float distanceX = labelLeft + (bgXOffset + 0.8F) * detailScale;
-            float distanceY = detailWinY + halfHeight + distanceScale;
-            drawScaledText(context, distanceText, distanceX, distanceY, distanceScale, 0xFFFFFFFF, true);
+            drawTextBoxAt(context, distanceText, labelBgLeft, labelBgBottom, distanceScale, distanceWidth, distanceBgWidth, 0xFF000000, 0xFFFFFFFF, false);
 
             float scaledRealBgWidth = bgWidth * detailScale;
-            float scaledRealBgHeight = textHeight * detailScale;
+            float scaledRealBgHeight = textBgHeight * detailScale;
             float upperCornerX = detailWinX - scaledRealBgWidth * 0.5F;
             float upperCornerY = detailWinY - scaledRealBgHeight * 0.5F;
             float lowerCornerX = upperCornerX + scaledRealBgWidth;
@@ -625,7 +626,7 @@ public class OptimizedWaypointRenderer {
                     float iconScale = visibleIconScale[i];
                     float bgWidth = initialsTextBgWidth[waypointIndex];
                     float left = getBoxLeft(visibleWinX[i], bgWidth, iconScale);
-                    float top = visibleWinY[i] - textHeight * iconScale * 0.5F;
+                    float top = visibleWinY[i] - textBgHeight * iconScale * 0.5F;
                     float depth = visibleDepth[i];
                     float textX = getCenteredTextX(bgWidth, initialsTextWidth[waypointIndex]);
 
@@ -640,7 +641,7 @@ public class OptimizedWaypointRenderer {
                     int waypointIndex = visibleIndex[i];
                     float iconScale = visibleIconScale[i];
                     float bgWidth = initialsTextBgWidth[waypointIndex];
-                    float bgHeight = textHeight;
+                    float bgHeight = textBgHeight;
                     float left = getBoxLeft(visibleWinX[i], bgWidth, iconScale);
                     float top = visibleWinY[i] - bgHeight * iconScale * 0.5F;
                     float right = left + (float) Math.ceil(bgWidth) * iconScale;
@@ -676,7 +677,11 @@ public class OptimizedWaypointRenderer {
     }
 
     private static float getCenteredTextX(float backgroundWidth, float textWidth) {
-        return ((float) Math.ceil(backgroundWidth) - textWidth) * 0.5F;
+        return ((float) Math.ceil(backgroundWidth) - getCenteredTextWidth(textWidth)) * 0.5F;
+    }
+
+    private static float getCenteredTextWidth(float textWidth) {
+        return Math.max(0.0F, textWidth - 1.0F);
     }
 
     private static void drawTextBackground(VertexConsumer consumer, float left, float top, float right, float bottom, float z, int color) {
@@ -688,15 +693,30 @@ public class OptimizedWaypointRenderer {
 
     private static void drawTextBox(GuiGraphics context, String text, float centerX, float topY, float boxScale, float textWidth, float backgroundWidth, int backgroundColor, int textColor) {
         int bgWidth = (int) Math.ceil(backgroundWidth);
-        int bgHeight = textHeight;
+        int bgHeight = textBgHeight;
         float left = centerX - bgWidth * boxScale * 0.5F;
-        float textX = (bgWidth - textWidth) * 0.5F;
+        float textX = getCenteredTextX(bgWidth, textWidth);
 
         push(context);
         translate(context, left, topY);
         scale(context, boxScale, boxScale);
         context.fill(0, 0, bgWidth, bgHeight, backgroundColor);
-        context.drawString(textRenderer, text, Math.round(textX), 1, textColor, false);
+        translate(context, textX, 0.0F);
+        context.drawString(textRenderer, text, 0, 1, textColor, false);
+        pop(context);
+    }
+
+    private static void drawTextBoxAt(GuiGraphics context, String text, float left, float topY, float boxScale, float textWidth, float backgroundWidth, int backgroundColor, int textColor, boolean shadow) {
+        int bgWidth = (int) Math.ceil(backgroundWidth);
+        int bgHeight = textBgHeight;
+        float textX = getCenteredTextX(bgWidth, textWidth);
+
+        push(context);
+        translate(context, left, topY);
+        scale(context, boxScale, boxScale);
+        context.fill(0, 0, bgWidth, bgHeight, backgroundColor);
+        translate(context, textX, 0.0F);
+        context.drawString(textRenderer, text, 0, 1, textColor, shadow);
         pop(context);
     }
 
