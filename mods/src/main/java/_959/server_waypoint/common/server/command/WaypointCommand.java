@@ -16,7 +16,7 @@ import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -24,21 +24,21 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 //? if >= 1.21.2
-/*import java.util.Collections;*/
+import java.util.Collections;
 
-public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, ServerPlayer, ResourceLocation, Coordinates> {
+public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, ServerPlayer, Identifier, Coordinates> {
     public WaypointCommand(WaypointServerMod waypointServer, PlatformMessageSender<CommandSourceStack, ServerPlayer> networkAdapter, PermissionManager<CommandSourceStack, String, ServerPlayer> permissionManager) {
         super(waypointServer, networkAdapter, permissionManager, DimensionArgument::dimension, BlockPosArgument::blockPos);
     }
 
     @Nullable
-    private ServerLevel getWorldFromId(CommandSourceStack source, ResourceLocation id) {
+    private ServerLevel getWorldFromId(CommandSourceStack source, Identifier id) {
         ResourceKey<Level> dimKey = ResourceKey.create(Registries.DIMENSION, id);
         return source.getServer().getLevel(dimKey);
     }
 
     @Override
-    protected String toDimensionName(ResourceLocation dimensionArgument) {
+    protected String toDimensionName(Identifier dimensionArgument) {
         return dimensionArgument.toString();
     }
 
@@ -49,7 +49,7 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     }
 
     @Override
-    protected boolean isDimensionValid(CommandSourceStack source, ResourceLocation dimensionArgument) {
+    protected boolean isDimensionValid(CommandSourceStack source, Identifier dimensionArgument) {
         return getWorldFromId(source, dimensionArgument) != null;
     }
 
@@ -59,8 +59,8 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     }
 
     @Override
-    protected ResourceLocation getSourceDimension(CommandSourceStack source) {
-        return source.getLevel().dimension().location();
+    protected Identifier getSourceDimension(CommandSourceStack source) {
+        return source.getLevel().dimension().identifier();
     }
 
     @Override
@@ -84,13 +84,13 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     }
 
     @Override
-    protected void teleportPlayer(CommandSourceStack source, ServerPlayer player, ResourceLocation dimensionArgument, WaypointPos pos, int yaw) {
+    protected void teleportPlayer(CommandSourceStack source, ServerPlayer player, Identifier dimensionArgument, WaypointPos pos, int yaw) {
         ServerLevel world = getWorldFromId(source, dimensionArgument);
         //? if >= 1.21.2 {
-        /*player.teleportTo(world, pos.X(), pos.y(), pos.Z(), Collections.emptySet(), yaw, 0, false);
-        *///?} else {
-        player.teleportTo(world, pos.X(), pos.y(), pos.Z(), yaw, 0);
-        //?}
+        player.teleportTo(world, pos.X(), pos.y(), pos.Z(), Collections.emptySet(), yaw, 0, false);
+        //?} else {
+        /*player.teleportTo(world, pos.X(), pos.y(), pos.Z(), yaw, 0);
+        *///?}
     }
 
     @Override

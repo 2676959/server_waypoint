@@ -11,6 +11,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 import static _959.server_waypoint.common.client.ClientConfig.isXaerosMinimapLoaded;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.nextLayer;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.FONT_COLOR;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.MUTED_FONT_COLOR;
 import static _959.server_waypoint.util.ColorUtils.GREEN;
@@ -147,9 +149,9 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         int centeredX = centered(this.width, this.xaerosSyncConfirmationDialog.getWidth());
         int centeredY = centered(this.height, this.xaerosSyncConfirmationDialog.getHeight());
         this.xaerosSyncConfirmationDialog.setPosition(centeredX, centeredY);
-        context.pose().translate(0, 0, 1);
+        nextLayer(context);
         this.xaerosSyncConfirmationDialog.render(context, mouseX, mouseY, delta);
-        context.pose().translate(0, 0, -1);
+        previousLayer(context);
     }
 
     @Override

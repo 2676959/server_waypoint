@@ -26,7 +26,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import java.nio.file.Path;
 
 //? if >= 1.20.5
-/*import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;*/
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
 
 import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
@@ -62,7 +62,7 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         } else {
             LOGGER.info("xaero's mod is not loaded, set sendXaerosWorldId to {} by config.json", CONFIG.Features().sendXaerosWorldId());
             //? if >= 1.20.5
-            /*PayloadTypeRegistry.playS2C().register(XaerosWorldIdS2CPayload.ID, XaerosWorldIdS2CPayload.PACKET_CODEC);*/
+            PayloadTypeRegistry.playS2C().register(XaerosWorldIdS2CPayload.ID, XaerosWorldIdS2CPayload.PACKET_CODEC);
         }
 
         // register waypoint command
@@ -74,25 +74,25 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         registerPayloads();
 
         //? if >= 1.20.5 {
-        /*ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (handshakeC2SPayload, context) ->
+        ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (handshakeC2SPayload, context) ->
                 c2sPacketHandler.onClientUpdateRequest(context.player(), handshakeC2SPayload.clientUpdateRequestBuffer())
         );
         ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (clientHandshakeC2SPayload, context) ->
                 c2sPacketHandler.onClientHandshake(context.player(), clientHandshakeC2SPayload.clientHandshakeBuffer())
         );
-        *///?} else if fabric {
-        ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (packet, player, responseSender) ->
+        //?} else if fabric {
+        /*ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (packet, player, responseSender) ->
                 c2sPacketHandler.onClientUpdateRequest(player, packet.clientUpdateRequestBuffer()
                 ));
         ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (packet, player, responseSender) ->
                 c2sPacketHandler.onClientHandshake(player, packet.clientHandshakeBuffer()
                 ));
-        //?}
+        *///?}
     }
 
     public static void registerPayloads() {
         //? if >= 1.20.5 {
-        /*PayloadTypeRegistry.playS2C().register(WaypointListS2CPayload.ID, WaypointListS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(WaypointListS2CPayload.ID, WaypointListS2CPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(DimensionWaypointS2CPayload.ID, DimensionWaypointS2CPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(WorldWaypointS2CPayload.ID, WorldWaypointS2CPayload.PACKET_CODEC);
         PayloadTypeRegistry.playS2C().register(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC);
@@ -101,7 +101,7 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
 
         PayloadTypeRegistry.playC2S().register(ClientHandshakeC2SPayload.ID, ClientHandshakeC2SPayload.PACKET_CODEC);
         PayloadTypeRegistry.playC2S().register(UpdateRequestC2SPayload.ID, UpdateRequestC2SPayload.PACKET_CODEC);
-        *///?}
+        //?}
     }
 
     @Override

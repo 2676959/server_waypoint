@@ -1,16 +1,16 @@
 package _959.server_waypoint.common.util;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public final class ResourceLocationHelper {
     private ResourceLocationHelper() {
     }
 
-    public static ResourceLocation id(String namespace, String path) {
+    public static Identifier id(String namespace, String path) {
         //? if > 1.20.6 {
-        /*return ResourceLocation.fromNamespaceAndPath(namespace, path);
-        *///?} else {
-        return new ResourceLocation(namespace, path);
-        //?}
+        return Identifier.fromNamespaceAndPath(namespace, path);
+        //?} else {
+        /*return new Identifier(namespace, path);
+        *///?}
     }
 }

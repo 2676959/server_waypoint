@@ -10,7 +10,6 @@ import _959.server_waypoint.common.util.MathHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.util.Pair;
-import com.mojang.blaze3d.vertex.PoseStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -20,33 +19,33 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import static _959.server_waypoint.ModInfo.MOD_ID;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.texture;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.withVertexConsumers;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.util.CommandGenerator.*;
 import static _959.server_waypoint.util.ListMapUtils.getLastElement;
 import static java.util.Collections.binarySearch;
-import static net.minecraft.client.renderer.LightTexture.FULL_BRIGHT;
 
 public class WaypointListWidget extends ShiftableScrollableWidget implements Padding, Expandable {
     public static int TELEPORT_KEY = 84;
     public static final Component EMPTY_INFO_TEXT = Component.translatable("waypoint.empty_mark");
-    public static final ResourceLocation SHOW_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/show.png");
-    public static final ResourceLocation HIDE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/hide.png");
-    public static final ResourceLocation ADD_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/add.png");
-    public static final ResourceLocation EDIT_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/edit.png");
-    public static final ResourceLocation REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/delete.png");
-    public static final ResourceLocation CONFIRM_REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/confirm_delete.png");
-    public static final ResourceLocation LIST_EMPTY = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_empty.png");
-    public static final ResourceLocation LIST_EXPAND_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_expand.png");
-    public static final ResourceLocation LIST_COLLAPSE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_collapse.png");
+    public static final Identifier SHOW_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/show.png");
+    public static final Identifier HIDE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/hide.png");
+    public static final Identifier ADD_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/add.png");
+    public static final Identifier EDIT_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/edit.png");
+    public static final Identifier REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/delete.png");
+    public static final Identifier CONFIRM_REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/confirm_delete.png");
+    public static final Identifier LIST_EMPTY = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_empty.png");
+    public static final Identifier LIST_EXPAND_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_expand.png");
+    public static final Identifier LIST_COLLAPSE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_collapse.png");
     private static final int listIconSize = 16;
     private static final int buttonIconSize = 12;
     private static double SCROLLED_POSITION = 0.0D;
@@ -201,9 +200,7 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                     if (mouseX > thirdBtn) {
                         // clicked on remove button
                         if (removeClickedPos == pos) {
-                            ClientPacketListener networkHandler = Minecraft.getInstance().getConnection();
-                            if (networkHandler != null) {
-                                networkHandler.sendUnsignedCommand(removeListCmd(this.parentScreen.getSelectedDimension(), waypointList.name(), false));
+                            if (sendCommand(removeListCmd(this.parentScreen.getSelectedDimension(), waypointList.name(), false))) {
                                 this.removeClickedPos = -1;
                                 return true;
                             }
@@ -262,9 +259,7 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                 if (mouseX > thirdBtn) {
                     // clicked on remove button
                     if (removeClickedPos == pos) {
-                        ClientPacketListener networkHandler = Minecraft.getInstance().getConnection();
-                        if (networkHandler != null) {
-                            networkHandler.sendUnsignedCommand(removeCmd(this.parentScreen.getSelectedDimension(), waypointList.name(), waypoint, false));
+                        if (sendCommand(removeCmd(this.parentScreen.getSelectedDimension(), waypointList.name(), waypoint, false))) {
                             this.removeClickedPos = -1;
                             return true;
                         }
@@ -337,21 +332,20 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
         context.enableScissor(x, y, x + width, y + height);
 
         // offset
-        PoseStack matrixStack = context.pose();
-        matrixStack.translate(x, y, 0.0D);
+        push(context);
+        translate(context, x, y);
 
         int listWidth = overflows() ?  width - SCROLLBAR_WIDTH : width;
         
         if (empty) {
             context.drawString(textRenderer, EMPTY_INFO_TEXT, 5, textVertOffset, 0x55FFFFFF, true);
-            matrixStack.translate(0.0D, scrollY, 0.0D);
-            matrixStack.translate(-x, -y, 0.0D);
+            pop(context);
             context.disableScissor();
             this.drawScrollbar(context);
             return;
         }
 
-        matrixStack.translate(0.0D, -scrollY, 0.0D);
+        translate(context, 0.0F, (float) -scrollY);
 
         // highlight
         hoverPos = -2;
@@ -464,22 +458,13 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                 if (waypoint.global()) {
                     context.drawString(textRenderer, "*", 6, finalY, textColor);
                 }
-                matrixStack.pushPose();
-                matrixStack.translate(0, 0, 0.1);
-                withVertexConsumers(context, drawer -> {
-                    textRenderer.drawInBatch(initials, 15, finalY, finalTextColor, true, matrixStack.last().pose(), drawer, Font.DisplayMode.NORMAL, backgroundColor, FULL_BRIGHT);
-                    //? if <= 1.21 {
-                    matrixStack.translate(0, 0, 0.1);
-                    textRenderer.drawInBatch(initials, 15, finalY, finalTextColor, true, matrixStack.last().pose(), drawer, Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
-                    //?}
-                });
-                matrixStack.popPose();
+                context.fill(15, finalY - 1, 15 + textRenderer.width(initials), finalY + textRenderer.lineHeight, backgroundColor);
+                context.drawString(textRenderer, initials, 15, finalY, finalTextColor, true);
                 context.drawString(textRenderer, name, 55, finalY, textColor);
                 i++;
             }
         }
-        matrixStack.translate(0.0D, scrollY, 0.0D);
-        matrixStack.translate(-x, -y, 0.0D);
+        pop(context);
         context.disableScissor();
         this.drawScrollbar(context);
     }

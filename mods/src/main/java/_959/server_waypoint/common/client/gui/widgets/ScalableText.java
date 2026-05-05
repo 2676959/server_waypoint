@@ -1,11 +1,15 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
+
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.scale;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
 
 public class ScalableText extends ShiftableWidget {
     private final Font textRenderer;
@@ -68,10 +72,9 @@ public class ScalableText extends ShiftableWidget {
 
     @Override
     public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
-        PoseStack matrixStack = context.pose();
-        matrixStack.pushPose();
-        matrixStack.translate(this.getShiftedX(), this.getShiftedY(), 0.0F);
-        matrixStack.scale(this.scale, this.scale, 1.0F);
+        push(context);
+        translate(context, this.getShiftedX(), this.getShiftedY());
+        scale(context, this.scale, this.scale);
         if (this.maxWidth == -1) {
             context.drawString(this.textRenderer, this.text, 0, 0, this.color, true);
         } else {
@@ -79,6 +82,6 @@ public class ScalableText extends ShiftableWidget {
                 context.drawString(this.textRenderer, this.warpLines.get(i), 0, i * this.textRenderer.lineHeight, this.color, true);
             }
         }
-        matrixStack.popPose();
+        pop(context);
     }
 }

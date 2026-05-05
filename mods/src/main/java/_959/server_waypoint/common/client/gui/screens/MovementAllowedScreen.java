@@ -6,6 +6,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
@@ -99,11 +100,10 @@ public abstract class MovementAllowedScreen extends Screen {
         sprintKeyBinding.setDown(false);
     }
 
-    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (!movementAllowed) {
             unpressAllMovementKeys();
-            return super.keyPressed(keyCode, scanCode, modifiers);
+            return super.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
         }
         boolean ret = false;
         if (keyCode == forwardKeyCode || scanCode == forwardKeyCode) {
@@ -135,15 +135,19 @@ public abstract class MovementAllowedScreen extends Screen {
             KeyMapping.click(sprintKey);
             ret = true;
         }
-        boolean ret2 = super.keyPressed(keyCode, scanCode, modifiers);
+        boolean ret2 = super.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
         return ret || ret2;
     }
 
     @Override
+    public boolean keyPressed(KeyEvent keyEvent) {
+        return this.keyPressed(keyEvent.key(), keyEvent.scancode(), keyEvent.modifiers());
+    }
+
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
         if (!movementAllowed) {
             unpressAllMovementKeys();
-            return super.keyReleased(keyCode, scanCode, modifiers);
+            return super.keyReleased(new KeyEvent(keyCode, scanCode, modifiers));
         }
         boolean ret = false;
         if (keyCode == forwardKeyCode || scanCode == forwardKeyCode) {
@@ -168,8 +172,13 @@ public abstract class MovementAllowedScreen extends Screen {
             sprintKeyBinding.setDown(false);
             ret = true;
         }
-        boolean ret2 = super.keyReleased(keyCode, scanCode, modifiers);
+        boolean ret2 = super.keyReleased(new KeyEvent(keyCode, scanCode, modifiers));
         return ret || ret2;
+    }
+
+    @Override
+    public boolean keyReleased(KeyEvent keyEvent) {
+        return this.keyReleased(keyEvent.key(), keyEvent.scancode(), keyEvent.modifiers());
     }
 
     @Override

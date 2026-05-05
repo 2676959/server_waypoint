@@ -18,7 +18,7 @@ public class MinecraftClientMixin {
         if (world == null) {
             return;
         }
-        String worldName = world.dimension().location().toString();
+        String worldName = world.dimension().identifier().toString();
         WaypointManagerScreen.resetWidgetStates();
         onDimensionChange(worldName);
     }

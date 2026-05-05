@@ -25,10 +25,10 @@ public class ClientWaypointCommand {
         Minecraft mc = Minecraft.getInstance();
         mc.
                 //? if > 1.21 {
-                //schedule
+                schedule
                 //?} else {
-                execute
-                //?}
+                /*execute
+                *///?}
                 (() -> mc.setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance())));
         return Command.SINGLE_SUCCESS;
     }

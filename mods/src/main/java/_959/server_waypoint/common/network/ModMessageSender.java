@@ -1,7 +1,7 @@
 package _959.server_waypoint.common.network;
 
 //? if <= 1.20.1
-import _959.server_waypoint.access.PlayerLocaleAccessor;
+/*import _959.server_waypoint.access.PlayerLocaleAccessor;*/
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.buffer.MessageBuffer;
 import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
@@ -19,9 +19,9 @@ import static _959.server_waypoint.common.network.BufferPayloadMapping.getPayloa
 import static net.kyori.adventure.text.Component.text;
 
 //? if >= 1.20.3 {
-/*import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.network.chat.ComponentSerialization;
-*///?}
+//?}
 //? if fabric {
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 //?} elif neoforge {
@@ -37,15 +37,15 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
 
     public static net.minecraft.network.chat.Component toVanillaText(Component component) {
         //? if >= 1.20.3 {
-        /*var result = ComponentSerialization.CODEC.decode(JsonOps.INSTANCE, GsonComponentSerializer.gson().serializeToTree(component)).result();
+        var result = ComponentSerialization.CODEC.decode(JsonOps.INSTANCE, GsonComponentSerializer.gson().serializeToTree(component)).result();
         if (result.isPresent()) {
             return result.get().getFirst();
         } else {
             return net.minecraft.network.chat.Component.literal("failed to decode message component");
         }
-        *///?} else {
-        return net.minecraft.network.chat.Component.Serializer.fromJson(GsonComponentSerializer.gson().serializeToTree(component));
-        //?}
+        //?} else {
+        /*return net.minecraft.network.chat.Component.Serializer.fromJson(GsonComponentSerializer.gson().serializeToTree(component));
+        *///?}
     }
 
     private net.minecraft.network.chat.Component getTranslatedText(CommandSourceStack source, Component component) {
@@ -59,10 +59,10 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
 
     private net.minecraft.network.chat.Component getTranslatedText(ServerPlayer player, Component component) {
         //? if <= 1.20.1 {
-        String language = ((PlayerLocaleAccessor) player).sw$getLocale();
-        //?} else {
-        /*String language = player.clientInformation().language();
-        *///?}
+        /*String language = ((PlayerLocaleAccessor) player).sw$getLocale();
+        *///?} else {
+        String language = player.clientInformation().language();
+        //?}
         Locale locale = Translator.parseLocale(language);
         if (locale == null) {
             locale = Locale.getDefault();

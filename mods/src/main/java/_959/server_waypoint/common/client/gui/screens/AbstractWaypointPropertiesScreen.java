@@ -17,6 +17,8 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.nextLayer;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.util.ColorUtils.*;
 
 public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedScreen {
@@ -261,9 +263,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
 
         this.drawBackground(context);
         this.mainLayout.render(context, mouseX, mouseY, delta);
-        context.pose().translate(0, 0, 1);
+        nextLayer(context);
         this.swatchWidget.renderWidget(context, mouseX, mouseY, delta);
-        context.pose().translate(0, 0, -1);
+        previousLayer(context);
     }
 
     private void drawBackground(GuiGraphics context) {
@@ -271,7 +273,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         int bgHeight = (BG_PADDING_Y << 1) + CONTENT_HEIGHT;
         int bgCenteredX = centered(this.width, bgWidth);
         int bgCenteredY = centered(this.height, bgHeight);
-        context.fill(bgCenteredX, bgCenteredY, bgCenteredX + bgWidth, bgCenteredY + bgHeight, 0, TRANSPARENT_BG_COLOR);
+        context.fill(bgCenteredX, bgCenteredY, bgCenteredX + bgWidth, bgCenteredY + bgHeight, TRANSPARENT_BG_COLOR);
     }
 
     @Override

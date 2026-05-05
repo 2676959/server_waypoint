@@ -73,6 +73,13 @@ repositories {
     maven("https://maven.parchmentmc.org")
     maven("https://maven.neoforged.net/releases/")
     maven("https://maven.architectury.dev/")
+    maven {
+        name = "Xaero's Maven"
+        url = uri("https://chocolateminecraft.com/maven")
+        content {
+            includeGroup("xaero.lib")
+        }
+    }
 }
 
 dependencies {
@@ -96,6 +103,12 @@ dependencies {
         val xaeros_minimap_fabric: String by project
         val fabric_permissions_api: String by project
         modImplementation("net.fabricmc:fabric-loader:$fabric_loader")
+        if (project.hasProperty("xaerolib_fabric")) {
+            modImplementation("xaero.lib:xaerolib-fabric-$minecraft:${property("xaerolib_fabric")}") {
+                exclude("net.fabricmc")
+                exclude("net.fabricmc.fabric-api")
+            }
+        }
         if (minecraft == "1.21.2") { // Xaero's minimap does not have 1.21.2 support
             modCompileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_fabric")
         } else {

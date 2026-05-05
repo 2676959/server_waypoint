@@ -7,7 +7,7 @@ public final class ClientCommandUtils {
     public static boolean sendCommand(String command) {
         ClientPacketListener networkHandler = Minecraft.getInstance().getConnection();
         if (networkHandler != null) {
-            networkHandler.sendUnsignedCommand(command);
+            networkHandler.sendCommand(command);
             return true;
         } else {
             return false;

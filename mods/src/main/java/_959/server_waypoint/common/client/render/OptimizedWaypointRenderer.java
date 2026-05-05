@@ -3,10 +3,13 @@ package _959.server_waypoint.common.client.render;
 import _959.server_waypoint.common.util.MathHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.jetbrains.annotations.Unmodifiable;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.joml.Vector4f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +22,19 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.world.phys.Vec3;
 
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.scale;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.vertex;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.withVertexConsumers;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
-import static net.minecraft.client.renderer.LightTexture.FULL_BRIGHT;
 
 public class OptimizedWaypointRenderer {
 
@@ -40,6 +49,16 @@ public class OptimizedWaypointRenderer {
     private static int WAYPOINT_BG_ALPHA_MASK = 0x80000000;
     private static float WAYPOINT_VERTICAL_OFFSET = 0;
     private static long SQUARED_VIEW_DISTANCE = 12 * 16 * 12 * 16;
+    private static final float WAYPOINT_Y_OFFSET = 0.5F;
+    private static final float MIN_DEPTH = 0.05F;
+    private static final float OFFSCREEN_MARGIN = 0.2F;
+    private static final RenderType WAYPOINT_BACKGROUND_RENDER_TYPE = RenderType.create(
+            "server_waypoint_background",
+            RenderSetup.builder(RenderPipelines.GUI)
+                    .sortOnUpload()
+                    .bufferSize(RenderType.SMALL_BUFFER_SIZE)
+                    .createRenderSetup()
+    );
 
     // =========================================================
     // STATE (RENDER THREAD ONLY)
@@ -73,17 +92,24 @@ public class OptimizedWaypointRenderer {
     private static float[] initialsTextBgWidth;
     private static boolean[] local;
 
+    private static int[] visibleIndex;
+    private static float[] visibleDepth;
+    private static float[] visibleWinX;
+    private static float[] visibleWinY;
+    private static float[] visibleIconScale;
+    private static CachedOrthoProjectionMatrixBuffer waypointProjectionMatrixBuffer;
+
     // =========================================================
     // MINECRAFT RENDERING CONTEXT
     // =========================================================
-    public static final Matrix4f ModelViewMatrix = new Matrix4f();
-    public static final Matrix4f ProjectionMatrix = new Matrix4f();
     private static final Minecraft mc = Minecraft.getInstance();
     private static final Font textRenderer = mc.font;
     private static final int textHeight = textRenderer.lineHeight;
     private static final Window window = mc.getWindow();
     private static final Camera camera = mc.gameRenderer.getMainCamera();
-    private static final Matrix4f identity = new Matrix4f();
+    public static final Matrix4f ModelViewMatrix = new Matrix4f();
+    public static final Matrix4f ProjectionMatrix = new Matrix4f();
+    private static final Matrix4f GuiVertexMatrix = new Matrix4f();
     private static final Vector4f posVec = new Vector4f();
 
     // =========================================================
@@ -138,6 +164,12 @@ public class OptimizedWaypointRenderer {
         initialsTextWidth = new float[MAX_WAYPOINTS];
         initialsTextBgWidth = new float[MAX_WAYPOINTS];
         local = new boolean[MAX_WAYPOINTS];
+        visibleIndex = new int[MAX_WAYPOINTS];
+        visibleDepth = new float[MAX_WAYPOINTS];
+        visibleWinX = new float[MAX_WAYPOINTS];
+        visibleWinY = new float[MAX_WAYPOINTS];
+        visibleIconScale = new float[MAX_WAYPOINTS];
+        waypointProjectionMatrixBuffer = new CachedOrthoProjectionMatrixBuffer("server_waypoint", MIN_DEPTH, 1_000_000.0F, true);
         initialized = true;
         LOGGER.info("waypoint renderer initialized");
     }
@@ -347,11 +379,11 @@ public class OptimizedWaypointRenderer {
     }
 
     private static float getTextWidth(String text) {
-        return textRenderer.getSplitter().stringWidth(text) - 1;
+        return text == null ? 0 : textRenderer.width(text);
     }
 
     private static float getTextBgWidth(String text) {
-        return Math.max(getTextWidth(text) + 2, textHeight);
+        return Math.max(getTextWidth(text) + 4, textHeight + 2);
     }
 
     /**
@@ -435,184 +467,226 @@ public class OptimizedWaypointRenderer {
 
         if (DISABLED) return;
 
-        // B. Render
+        // B. Render projected world waypoints as GUI elements.
         int scaledWidth = window.getGuiScaledWidth();
         float windowCenterX = scaledWidth / 2F;
         int scaledHeight = window.getGuiScaledHeight();
         float windowCenterY = scaledHeight / 2F;
         float guiScaleFactor = (float) window.getGuiScale();
         int framebufferHeight = window.getHeight();
-        Vec3 cameraPos = camera.getPosition().reverse();
-        float camX = (float) cameraPos.x;
-        float camY = (float) cameraPos.y;
-        float camZ = (float) cameraPos.z;
         float projectionConstant = ProjectionMatrix.m11();
         float baseScale = WAYPOINT_BASE_SCALE * 0.01F * framebufferHeight / guiScaleFactor;
         float projectionScale = baseScale * projectionConstant;
         float minBaseScale = baseScale / 5F;
-        //? if <= 1.21
-        MultiBufferSource.BufferSource immediate = context.bufferSource();
+        Vec3 cameraPos = camera.position();
+        float camX = (float) cameraPos.x;
+        float camY = (float) cameraPos.y;
+        float camZ = (float) cameraPos.z;
+        float minDepth = Float.MAX_VALUE;
+        int detailIndex = -1;
+        float detailWinX = 0.0F;
+        float detailWinY = 0.0F;
+        float detailScale = 1.0F;
+        double detailDistance = 0.0;
+        int renderCount = 0;
 
-        context.
-                //? if > 1.21 {
-                //drawSpecial
-                //?} else {
-                drawManaged
-                //?}
-                        (
-                (
-                        //? if > 1.21
-                        /*immediate*/
-                )
-                        -> {
-            // hovered rendering
-            float minDepth = Float.MAX_VALUE;
-            float detail_winX = 0, detail_winY = 0, detail_scale = 0;
-            double detail_distance = 0;
-            // Pass 1: Render basic info and find the closest hovered waypoint
-            for (int i = 0; i < count; i++) {
-                // Retrieve raw data from SoA
-                float wx = xPos[i];
-                float wy = yPos[i] + WAYPOINT_VERTICAL_OFFSET;
-                float wz = zPos[i];
-                boolean isLocal = local[i];
+        if (HOVERED_ID >= count) {
+            HOVERED_ID = -1;
+            IS_HOVERED = false;
+        }
 
-                Vector4f pos = posVec.set(wx, wy, wz, 1F);
-//                pos.y += 0.5F;
-                pos.add(camX, camY, camZ, 0F);
-                // only include horizontal distance
-                float horizontalDistanceSquared = pos.x * pos.x + pos.z * pos.z;
-                if (isLocal && horizontalDistanceSquared > SQUARED_VIEW_DISTANCE) {
-                    continue;
-                }
-
-                float relativeY = pos.y;
-
-                pos.mul(ModelViewMatrix);
-                pos.mul(ProjectionMatrix);
-                float depth = pos.w();
-                if (depth <= 0) continue;
-
-                pos.div(depth);
-
-                // ndc space
-                float x = pos.x();
-                float y = pos.y();
-
-                // window space
-                float winX = (x + 1F) * windowCenterX;
-                float winY = (1F - y) * windowCenterY;
-
-                // scale with perspective
-                float scale = WAYPOINT_BASE_SCALE * projectionScale / depth;
-                if (scale < minBaseScale) {
-                    scale = minBaseScale;
-                }
-
-                String initial = initials[i];
-                int textBgColor = bgColor[i];
-                int textColor = fgColor[i];
-                float textWidth = initialsTextWidth[i];
-
-                // center text and background
-                float tx = winX - (textWidth * scale / 2F);
-                float ty = winY - textHeight * scale / 2F;
-                float bgWidth = initialsTextBgWidth[i];
-                float bgXOffset = (textWidth - bgWidth) / 2F;
-                VertexConsumer consumer = immediate.getBuffer(RenderType.debugQuads());
-                Matrix4f matrix = identity.translation(tx, ty, -(91F + depth)).scale(scale);
-                drawQuad(consumer, bgXOffset, 0, bgWidth, textHeight, matrix, WAYPOINT_BG_ALPHA_MASK | textBgColor);
-                drawTextWithoutBg(0, 1, matrix, initial, textColor, immediate);
-                identity.identity();
-
-                // text hover area
-                if (IS_HOVERED) {
-                    if (i == HOVERED_ID) {
-                        detail_winX = winX;
-                        detail_winY = winY;
-                        detail_scale = scale;
-                        detail_distance = Math.sqrt(horizontalDistanceSquared + relativeY * relativeY);
-                    }
-                } else {
-                    float scaledRealBgWidth = bgWidth * scale;
-                    float scaledRealBgHeight = textHeight * scale;
-                    float upperCornerX = winX - scaledRealBgWidth / 2F;
-                    float upperCornerY = winY - scaledRealBgHeight / 2F;
-                    float lowerCornerX = upperCornerX + scaledRealBgWidth;
-                    float lowerCornerY = upperCornerY + scaledRealBgHeight;
-                    if (isIn2DBox(windowCenterX, windowCenterY, upperCornerX, upperCornerY, lowerCornerX, lowerCornerY)) {
-                        if (depth < minDepth) {
-                            minDepth = depth;
-                            HOVERED_ID = i;
-                            detail_winX = winX;
-                            detail_winY = winY;
-                            detail_scale = scale;
-                            detail_distance = Math.sqrt(horizontalDistanceSquared + relativeY * relativeY);
-                        }
-                    }
-                }
+        for (int i = 0; i < count; i++) {
+            float relX = xPos[i] - camX;
+            float relY = yPos[i] + WAYPOINT_Y_OFFSET + WAYPOINT_VERTICAL_OFFSET - camY;
+            float relZ = zPos[i] - camZ;
+            float horizontalDistanceSquared = relX * relX + relZ * relZ;
+            if (local[i] && horizontalDistanceSquared > SQUARED_VIEW_DISTANCE) {
+                continue;
             }
 
-            if (HOVERED_ID != -1) {
-                String name = names[HOVERED_ID];
-                float textWidth = nameTextWidth[HOVERED_ID];
-                float bgWidth = nameTextBgWidth[HOVERED_ID];
-                int textBgColor = bgColor[HOVERED_ID];
-                int textColor = fgColor[HOVERED_ID];
+            Vector4f projected = posVec.set(relX, relY, relZ, 1.0F);
+            projected.mul(ModelViewMatrix);
+            projected.mul(ProjectionMatrix);
 
-                float tx = detail_winX - textWidth * detail_scale / 2F;
-                float halfHeight = textHeight * detail_scale / 2F;
-                float ty = detail_winY - halfHeight;
-                float bgXOffest = (textWidth - bgWidth) / 2F;
-
-                Matrix4f matrix = identity.translation(tx, ty, -90.1F).scale(detail_scale);
-                drawQuad(immediate.getBuffer(RenderType.debugQuads()), bgXOffest, 0, bgWidth, textHeight, matrix, 0xFF000000 | textBgColor);
-                drawTextWithoutBg(0, 1, matrix, name, textColor, immediate);
-                identity.identity();
-
-                String distanceText;
-                if (detail_distance >= 1000) {
-                    distanceText = (Math.round(detail_distance / 100.0) / 10.0) + "km";
-                } else {
-                    distanceText = (Math.round(detail_distance * 10.0) / 10.0) + "m";
-                }
-                float distanceTextScale = detail_scale * 0.8F;
-                Matrix4f distMatrix = identity.translation(tx + (bgXOffest + 1F - 0.2F) * detail_scale, detail_winY + halfHeight + distanceTextScale, -91F).scale(distanceTextScale);
-                //? if > 1.21 {
-                /*drawDefaultText(0, 0, distMatrix, distanceText, immediate);
-                *///?} else {
-                // z flip
-                drawDefaultText(0, 0, distMatrix.scale(1, 1, -1), distanceText, immediate);
-                //?}
-                identity.identity();
-
-                float scaledRealBgWidth = bgWidth * detail_scale;
-                float scaledRealBgHeight = textHeight * detail_scale;
-                float upperCornerX = detail_winX - scaledRealBgWidth / 2F;
-                float upperCornerY = detail_winY - scaledRealBgHeight / 2F;
-                float lowerCornerX = upperCornerX + scaledRealBgWidth;
-                float lowerCornerY = upperCornerY + scaledRealBgHeight;
-                IS_HOVERED = isIn2DBox(windowCenterX, windowCenterY, upperCornerX, upperCornerY, lowerCornerX, lowerCornerY);
-                HOVERED_ID = IS_HOVERED ? HOVERED_ID : -1;
+            float depth = projected.w();
+            if (depth <= MIN_DEPTH) {
+                continue;
             }
-        });
+
+            float ndcX = projected.x() / depth;
+            float ndcY = projected.y() / depth;
+            if (ndcX < -1.0F - OFFSCREEN_MARGIN || ndcX > 1.0F + OFFSCREEN_MARGIN || ndcY < -1.0F - OFFSCREEN_MARGIN || ndcY > 1.0F + OFFSCREEN_MARGIN) {
+                continue;
+            }
+
+            float winX = (ndcX + 1.0F) * windowCenterX;
+            float winY = (1.0F - ndcY) * windowCenterY;
+            float iconScale = getIconScale(depth, projectionScale, minBaseScale);
+            float bgWidth = initialsTextBgWidth[i];
+            float bgHeight = textHeight;
+
+            visibleIndex[renderCount] = i;
+            visibleDepth[renderCount] = depth;
+            visibleWinX[renderCount] = winX;
+            visibleWinY[renderCount] = winY;
+            visibleIconScale[renderCount] = iconScale;
+            renderCount++;
+
+            if (IS_HOVERED) {
+                if (i == HOVERED_ID) {
+                    detailIndex = i;
+                    detailWinX = winX;
+                    detailWinY = winY;
+                    detailScale = iconScale;
+                    detailDistance = Math.sqrt(horizontalDistanceSquared + relY * relY);
+                }
+            } else {
+                float halfWidth = bgWidth * iconScale * 0.5F;
+                float halfHeight = bgHeight * iconScale * 0.5F;
+                if (isIn2DBox(windowCenterX, windowCenterY, winX - halfWidth, winY - halfHeight, winX + halfWidth, winY + halfHeight) && depth < minDepth) {
+                    minDepth = depth;
+                    HOVERED_ID = i;
+                    detailIndex = i;
+                    detailWinX = winX;
+                    detailWinY = winY;
+                    detailScale = iconScale;
+                    detailDistance = Math.sqrt(horizontalDistanceSquared + relY * relY);
+                }
+            }
+        }
+
+        drawWaypointBackgrounds(context, renderCount, scaledWidth, scaledHeight);
+        for (int i = 0; i < renderCount; i++) {
+            int waypointIndex = visibleIndex[i];
+            float iconScale = visibleIconScale[i];
+            float bgWidth = initialsTextBgWidth[waypointIndex];
+            float bgHeight = textHeight;
+            float winX = visibleWinX[i];
+            float winY = visibleWinY[i];
+            float left = getBoxLeft(winX, bgWidth, iconScale);
+            float top = winY - bgHeight * iconScale * 0.5F;
+            float textX = getCenteredTextX(bgWidth, initialsTextWidth[waypointIndex]);
+
+            drawScaledText(context, initials[waypointIndex], left, top, iconScale, textX, 1.0F, fgColor[waypointIndex], false);
+        }
+
+        if (detailIndex != -1) {
+            String name = names[detailIndex];
+            float textWidth = nameTextWidth[detailIndex];
+            float bgWidth = nameTextBgWidth[detailIndex];
+            float halfHeight = textHeight * detailScale * 0.5F;
+            float labelTop = detailWinY - halfHeight;
+            float labelLeft = detailWinX - textWidth * detailScale * 0.5F;
+            float bgXOffset = (textWidth - bgWidth) * 0.5F;
+
+            drawTextBox(context, name, detailWinX, labelTop, detailScale, textWidth, bgWidth, 0xFF000000 | bgColor[detailIndex], fgColor[detailIndex]);
+
+            String distanceText = getDistanceText(detailDistance);
+            float distanceScale = detailScale * 0.8F;
+            float distanceX = labelLeft + (bgXOffset + 0.8F) * detailScale;
+            float distanceY = detailWinY + halfHeight + distanceScale;
+            drawScaledText(context, distanceText, distanceX, distanceY, distanceScale, 0xFFFFFFFF, true);
+
+            float scaledRealBgWidth = bgWidth * detailScale;
+            float scaledRealBgHeight = textHeight * detailScale;
+            float upperCornerX = detailWinX - scaledRealBgWidth * 0.5F;
+            float upperCornerY = detailWinY - scaledRealBgHeight * 0.5F;
+            float lowerCornerX = upperCornerX + scaledRealBgWidth;
+            float lowerCornerY = upperCornerY + scaledRealBgHeight;
+            IS_HOVERED = isIn2DBox(windowCenterX, windowCenterY, upperCornerX, upperCornerY, lowerCornerX, lowerCornerY);
+            HOVERED_ID = IS_HOVERED ? detailIndex : -1;
+        } else {
+            HOVERED_ID = -1;
+            IS_HOVERED = false;
+        }
     }
 
-    private static void drawDefaultText(float x, float y, Matrix4f matrix, String text, MultiBufferSource vertexConsumers) {
-        textRenderer.drawInBatch(text, x, y, 0xFFFFFFFF, false, matrix, vertexConsumers, Font.DisplayMode.NORMAL, 0x80000000, FULL_BRIGHT);
+    private static void drawWaypointBackgrounds(GuiGraphics context, int renderCount, int scaledWidth, int scaledHeight) {
+        if (renderCount == 0) {
+            return;
+        }
+
+        Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
+        RenderSystem.backupProjectionMatrix();
+        RenderSystem.setProjectionMatrix(waypointProjectionMatrixBuffer.getBuffer(scaledWidth, scaledHeight), ProjectionType.ORTHOGRAPHIC);
+        modelViewStack.pushMatrix();
+        modelViewStack.identity();
+        try {
+            withVertexConsumers(context, vertexConsumers -> {
+                VertexConsumer consumer = vertexConsumers.getBuffer(WAYPOINT_BACKGROUND_RENDER_TYPE);
+                for (int i = 0; i < renderCount; i++) {
+                    int waypointIndex = visibleIndex[i];
+                    float iconScale = visibleIconScale[i];
+                    float bgWidth = initialsTextBgWidth[waypointIndex];
+                    float bgHeight = textHeight;
+                    float left = getBoxLeft(visibleWinX[i], bgWidth, iconScale);
+                    float top = visibleWinY[i] - bgHeight * iconScale * 0.5F;
+                    float right = left + (float) Math.ceil(bgWidth) * iconScale;
+                    float bottom = top + bgHeight * iconScale;
+
+                    drawQuad(consumer, left, top, right, bottom, -visibleDepth[i], WAYPOINT_BG_ALPHA_MASK | bgColor[waypointIndex]);
+                }
+            });
+        } finally {
+            modelViewStack.popMatrix();
+            RenderSystem.restoreProjectionMatrix();
+        }
     }
 
-    private static void drawQuad(VertexConsumer consumer, float x0, float y0, float width, float height, Matrix4f matrix, int color) {
-        float x1 = x0 + width;
-        float y1 = y0 + height;
-        vertex(consumer, matrix, x0, y0, 0, color);
-        vertex(consumer, matrix, x0, y1, 0, color);
-        vertex(consumer, matrix, x1, y1, 0, color);
-        vertex(consumer, matrix, x1, y0, 0, color);
+    private static float getIconScale(float depth, float projectionScale, float minBaseScale) {
+        float scale = WAYPOINT_BASE_SCALE * projectionScale / depth;
+        if (scale < minBaseScale) {
+            return minBaseScale;
+        }
+        return scale;
     }
 
-    private static void drawTextWithoutBg(float x, float y, Matrix4f matrix, String text, int fgColor, MultiBufferSource vertexConsumers) {
-        textRenderer.drawInBatch(text, x, y, fgColor, false, matrix, vertexConsumers, Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
+    private static String getDistanceText(double distance) {
+        if (distance >= 1000.0) {
+            return (Math.round(distance / 100.0) / 10.0) + "km";
+        }
+        return (Math.round(distance * 10.0) / 10.0) + "m";
+    }
+
+    private static float getBoxLeft(float centerX, float backgroundWidth, float boxScale) {
+        return centerX - (float) Math.ceil(backgroundWidth) * boxScale * 0.5F;
+    }
+
+    private static float getCenteredTextX(float backgroundWidth, float textWidth) {
+        return ((float) Math.ceil(backgroundWidth) - textWidth) * 0.5F;
+    }
+
+    private static void drawQuad(VertexConsumer consumer, float left, float top, float right, float bottom, float z, int color) {
+        vertex(consumer, GuiVertexMatrix, left, top, z, color);
+        vertex(consumer, GuiVertexMatrix, left, bottom, z, color);
+        vertex(consumer, GuiVertexMatrix, right, bottom, z, color);
+        vertex(consumer, GuiVertexMatrix, right, top, z, color);
+    }
+
+    private static void drawTextBox(GuiGraphics context, String text, float centerX, float topY, float boxScale, float textWidth, float backgroundWidth, int backgroundColor, int textColor) {
+        int bgWidth = (int) Math.ceil(backgroundWidth);
+        int bgHeight = textHeight;
+        float left = centerX - bgWidth * boxScale * 0.5F;
+        float textX = (bgWidth - textWidth) * 0.5F;
+
+        push(context);
+        translate(context, left, topY);
+        scale(context, boxScale, boxScale);
+        context.fill(0, 0, bgWidth, bgHeight, backgroundColor);
+        context.drawString(textRenderer, text, Math.round(textX), 1, textColor, false);
+        pop(context);
+    }
+
+    private static void drawScaledText(GuiGraphics context, String text, float x, float y, float textScale, int textColor, boolean shadow) {
+        drawScaledText(context, text, x, y, textScale, 0.0F, 0.0F, textColor, shadow);
+    }
+
+    private static void drawScaledText(GuiGraphics context, String text, float x, float y, float textScale, float textX, float textY, int textColor, boolean shadow) {
+        push(context);
+        translate(context, x, y);
+        scale(context, textScale, textScale);
+        context.drawString(textRenderer, text, Math.round(textX), Math.round(textY), textColor, shadow);
+        pop(context);
     }
 
     private static boolean isIn2DBox(float x, float y, float min_x, float min_y, float max_x, float max_y) {

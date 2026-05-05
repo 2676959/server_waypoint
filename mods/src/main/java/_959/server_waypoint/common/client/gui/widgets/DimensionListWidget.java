@@ -18,6 +18,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.scale;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 
 public class DimensionListWidget extends ShiftableClickableWidget implements Padding, Expandable {
@@ -145,15 +149,15 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
         addBtn.render(context, mouseX, mouseY, deltaTicks);
 
         context.enableScissor(x, y, x2, y2);
-        context.pose().pushPose();
-        context.pose().translate(x, y, 0);
+        push(context);
+        translate(context, x, y);
 
         // render dimension name
         if (this.empty) {
             context.drawString(textRenderer, WaypointListWidget.EMPTY_INFO_TEXT, 0, 0, 0xFFFFFFFF, true);
         } else {
             context.drawString(textRenderer, dimensionNames.get(index), 0, 0, 0xFFFFFFFF, true);
-            context.pose().translate(0, textHeight + 2, 0);
+            translate(context, 0, textHeight + 2);
             int size = dimensionNames.size();
             int y1 = y + textHeight;
             // render hover highlight background
@@ -162,16 +166,16 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
                 int hoverIndex = (int) (relativePos / iconSize);
                 if (hoverIndex >= 0 && hoverIndex < size) {
                     float highlightPos = scrolledPosition + hoverIndex * iconSize;
-                    context.pose().translate(highlightPos, 0, 0);
+                    translate(context, highlightPos, 0);
                     context.fill(0, 0, iconSize, iconSize, 0x99FFFFFF);
-                    context.pose().translate(-highlightPos, 0, 0);
+                    translate(context, -highlightPos, 0);
                 }
             }
             // render selected border
-            context.pose().translate(scrolledPosition, 0, 0);
+            translate(context, scrolledPosition, 0);
             context.renderOutline(index * iconSize, 0, iconSize, iconSize, 0xFFFFFFFF);
             // render dimension icons
-            context.pose().scale(itemIconScale, itemIconScale, 1.0F);
+            scale(context, itemIconScale, itemIconScale);
             for (int i = 0; i < size; i++) {
                 String dimensionName = dimensionNames.get(i);
                 switch (dimensionName) {
@@ -189,7 +193,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
                 }
             }
         }
-        context.pose().popPose();
+        pop(context);
         context.disableScissor();
     }
 

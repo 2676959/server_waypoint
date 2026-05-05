@@ -8,10 +8,10 @@ import xaero.hud.minimap.waypoint.WaypointPurpose;
 import static _959.server_waypoint.util.ColorUtils.rgbToClosestColorIndex;
 
 //? if >= 1.21.5 {
-/*import xaero.hud.minimap.waypoint.WaypointVisibilityType;
-*///?} else {
-import xaero.common.minimap.waypoints.WaypointVisibilityType;
-//?}
+import xaero.hud.minimap.waypoint.WaypointVisibilityType;
+//?} else {
+/*import xaero.common.minimap.waypoints.WaypointVisibilityType;
+*///?}
 
 public class XaerosWaypointHelper {
     public static Waypoint simpleWaypointToXaerosWaypoint(SimpleWaypoint simpleWaypoint) {

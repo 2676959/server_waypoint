@@ -1,7 +1,6 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.util.MathHelper;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.joml.Matrix4f;
 
@@ -12,10 +11,13 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.renderer.RenderType;
 
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.currentMatrix;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.vertex;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.withVertexConsumers;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.withGuiVertices;
 
 /**
  * A discrete slider with a color gradient background.
@@ -145,18 +147,16 @@ public abstract class AbstractColorBgSlider implements LayoutElement, Renderable
 
     @Override
     public final void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
-        context.pose().pushPose();
-        PoseStack matrixStack = context.pose();
-        matrixStack.translate(this.x, this.y, 0);
-        Matrix4f matrix =  matrixStack.last().pose();
-        withVertexConsumers(context, vertexConsumerProvider -> {
-            VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderType.gui());
+        push(context);
+        translate(context, this.x, this.y);
+        Matrix4f matrix = currentMatrix(context);
+        withGuiVertices(context, vertexConsumer -> {
             // draw the slot background
             drawSlotBackground(vertexConsumer, matrix);
             // draw the slider
             drawSlider(vertexConsumer, matrix);
         });
-        context.pose().popPose();
+        pop(context);
     }
 
     public abstract void drawSlotBackground(VertexConsumer vertexConsumer, Matrix4f matrix);

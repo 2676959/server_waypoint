@@ -10,16 +10,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //? if <= 1.20.1
-import net.minecraft.network.protocol.game.ServerboundClientInformationPacket;
+/*import net.minecraft.network.protocol.game.ServerboundClientInformationPacket;*/
 
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerEntityMixin
 //? if <= 1.20.1 {
-        implements PlayerLocaleAccessor
-//?}
+        /*implements PlayerLocaleAccessor
+*///?}
 {
 //? if <= 1.20.1 {
-    @Unique
+    /*@Unique
     private String sw$locale;
 
     @Inject(
@@ -35,5 +35,5 @@ public abstract class ServerPlayerEntityMixin
     public String sw$getLocale() {
         return this.sw$locale;
     }
-//?}
+*///?}
 }

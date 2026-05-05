@@ -5,22 +5,22 @@ import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
 import _959.server_waypoint.core.network.codec.WaypointModificationBufferCodec;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 //? if >= 1.20.5 {
-/*import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-*///?} else if fabric {
-import net.fabricmc.fabric.api.networking.v1.PacketType;
+//?} else if fabric {
+/*import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.FriendlyByteBuf;
-//?}
+*///?}
 
 
 import static _959.server_waypoint.core.network.PayloadID.WAYPOINT_MODIFICATION;
 
 public record WaypointModificationS2CPayload(WaypointModificationBuffer waypointModification) implements ModPayload {
-    public static final ResourceLocation WAYPOINT_MODIFICATION_PAYLOAD_ID = _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, WAYPOINT_MODIFICATION);
+    public static final Identifier WAYPOINT_MODIFICATION_PAYLOAD_ID = _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, WAYPOINT_MODIFICATION);
 //? if >= 1.20.5 {
-    /*public static final CustomPacketPayload.Type<WaypointModificationS2CPayload> ID = new CustomPacketPayload.Type<>(WAYPOINT_MODIFICATION_PAYLOAD_ID);
+    public static final CustomPacketPayload.Type<WaypointModificationS2CPayload> ID = new CustomPacketPayload.Type<>(WAYPOINT_MODIFICATION_PAYLOAD_ID);
     public static final StreamCodec<ByteBuf, WaypointModificationS2CPayload> PACKET_CODEC = new StreamCodec<>() {
         @Override
         public void encode(ByteBuf buf, WaypointModificationS2CPayload value) {
@@ -37,8 +37,8 @@ public record WaypointModificationS2CPayload(WaypointModificationBuffer waypoint
     public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
-*///?} else if fabric {
-    public static final PacketType<WaypointModificationS2CPayload> ID = PacketType.create(WAYPOINT_MODIFICATION_PAYLOAD_ID, WaypointModificationS2CPayload::new);
+//?} else if fabric {
+    /*public static final PacketType<WaypointModificationS2CPayload> ID = PacketType.create(WAYPOINT_MODIFICATION_PAYLOAD_ID, WaypointModificationS2CPayload::new);
 
     public WaypointModificationS2CPayload(FriendlyByteBuf buf) {
         this(WaypointModificationBufferCodec.decode(buf));
@@ -53,5 +53,5 @@ public record WaypointModificationS2CPayload(WaypointModificationBuffer waypoint
     public PacketType<?> getType() {
         return ID;
     }
-//?}
+*///?}
 }

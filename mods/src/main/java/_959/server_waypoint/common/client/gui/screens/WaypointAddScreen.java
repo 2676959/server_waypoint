@@ -30,9 +30,9 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         this.listNameField.setValue(listName);
         this.buttonRow.setXOffset(CONTENT_WIDTH);
         Minecraft minecraftClient = Minecraft.getInstance();
-        BlockPos defaultPos = minecraftClient.gameRenderer.getMainCamera().getBlockPosition();
-        if (minecraftClient.cameraEntity != null) {
-            defaultPos = minecraftClient.cameraEntity.blockPosition();
+        BlockPos defaultPos = minecraftClient.gameRenderer.getMainCamera().blockPosition();
+        if (minecraftClient.getCameraEntity() != null) {
+            defaultPos = minecraftClient.getCameraEntity().blockPosition();
         }
         int x1 = defaultPos.getX();
         int y1 = defaultPos.getY();
