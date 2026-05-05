@@ -1,12 +1,16 @@
 package _959.server_waypoint.common.client.render;
 
 import _959.server_waypoint.common.util.MathHelper;
+import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import com.mojang.blaze3d.ProjectionType;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import org.jetbrains.annotations.Unmodifiable;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -24,17 +28,19 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.rendertype.LayeringTransform;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.scale;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.vertex;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.withVertexConsumers;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
+import static net.minecraft.client.renderer.LightTexture.FULL_BRIGHT;
 
 public class OptimizedWaypointRenderer {
 
@@ -52,9 +58,22 @@ public class OptimizedWaypointRenderer {
     private static final float WAYPOINT_Y_OFFSET = 0.5F;
     private static final float MIN_DEPTH = 0.05F;
     private static final float OFFSCREEN_MARGIN = 0.2F;
+    private static final float WAYPOINT_TEXT_DEPTH_OFFSET = 0.25F;
+    private static final RenderPipeline WAYPOINT_BACKGROUND_PIPELINE = RenderPipelines.register(
+            RenderPipeline.builder(RenderPipelines.TEXT_SNIPPET, RenderPipelines.FOG_SNIPPET)
+                    .withLocation(Identifier.fromNamespaceAndPath(ModInfo.MOD_ID, "pipeline/waypoint_text_background"))
+                    .withVertexShader("core/rendertype_text_background")
+                    .withFragmentShader("core/rendertype_text_background")
+                    .withSampler("Sampler2")
+                    .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.QUADS)
+                    .withDepthWrite(false)
+                    .build()
+    );
     private static final RenderType WAYPOINT_BACKGROUND_RENDER_TYPE = RenderType.create(
             "server_waypoint_background",
-            RenderSetup.builder(RenderPipelines.GUI)
+            RenderSetup.builder(WAYPOINT_BACKGROUND_PIPELINE)
+                    .useLightmap()
+                    .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING_FORWARD)
                     .sortOnUpload()
                     .bufferSize(RenderType.SMALL_BUFFER_SIZE)
                     .createRenderSetup()
@@ -110,6 +129,7 @@ public class OptimizedWaypointRenderer {
     public static final Matrix4f ModelViewMatrix = new Matrix4f();
     public static final Matrix4f ProjectionMatrix = new Matrix4f();
     private static final Matrix4f GuiVertexMatrix = new Matrix4f();
+    private static final Matrix4f TextMatrix = new Matrix4f();
     private static final Vector4f posVec = new Vector4f();
 
     // =========================================================
@@ -555,20 +575,7 @@ public class OptimizedWaypointRenderer {
             }
         }
 
-        drawWaypointBackgrounds(context, renderCount, scaledWidth, scaledHeight);
-        for (int i = 0; i < renderCount; i++) {
-            int waypointIndex = visibleIndex[i];
-            float iconScale = visibleIconScale[i];
-            float bgWidth = initialsTextBgWidth[waypointIndex];
-            float bgHeight = textHeight;
-            float winX = visibleWinX[i];
-            float winY = visibleWinY[i];
-            float left = getBoxLeft(winX, bgWidth, iconScale);
-            float top = winY - bgHeight * iconScale * 0.5F;
-            float textX = getCenteredTextX(bgWidth, initialsTextWidth[waypointIndex]);
-
-            drawScaledText(context, initials[waypointIndex], left, top, iconScale, textX, 1.0F, fgColor[waypointIndex], false);
-        }
+        drawWaypointIcons(context, renderCount, scaledWidth, scaledHeight);
 
         if (detailIndex != -1) {
             String name = names[detailIndex];
@@ -601,7 +608,7 @@ public class OptimizedWaypointRenderer {
         }
     }
 
-    private static void drawWaypointBackgrounds(GuiGraphics context, int renderCount, int scaledWidth, int scaledHeight) {
+    private static void drawWaypointIcons(GuiGraphics context, int renderCount, int scaledWidth, int scaledHeight) {
         if (renderCount == 0) {
             return;
         }
@@ -613,7 +620,22 @@ public class OptimizedWaypointRenderer {
         modelViewStack.identity();
         try {
             withVertexConsumers(context, vertexConsumers -> {
-                VertexConsumer consumer = vertexConsumers.getBuffer(WAYPOINT_BACKGROUND_RENDER_TYPE);
+                for (int i = 0; i < renderCount; i++) {
+                    int waypointIndex = visibleIndex[i];
+                    float iconScale = visibleIconScale[i];
+                    float bgWidth = initialsTextBgWidth[waypointIndex];
+                    float left = getBoxLeft(visibleWinX[i], bgWidth, iconScale);
+                    float top = visibleWinY[i] - textHeight * iconScale * 0.5F;
+                    float depth = visibleDepth[i];
+                    float textX = getCenteredTextX(bgWidth, initialsTextWidth[waypointIndex]);
+
+                    TextMatrix.identity()
+                            .translation(left, top, -depth + WAYPOINT_TEXT_DEPTH_OFFSET)
+                            .scale(iconScale);
+                    textRenderer.drawInBatch(initials[waypointIndex], textX, 1.0F, fgColor[waypointIndex], false, TextMatrix, vertexConsumers, Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
+                }
+
+                VertexConsumer backgroundConsumer = vertexConsumers.getBuffer(WAYPOINT_BACKGROUND_RENDER_TYPE);
                 for (int i = 0; i < renderCount; i++) {
                     int waypointIndex = visibleIndex[i];
                     float iconScale = visibleIconScale[i];
@@ -623,8 +645,9 @@ public class OptimizedWaypointRenderer {
                     float top = visibleWinY[i] - bgHeight * iconScale * 0.5F;
                     float right = left + (float) Math.ceil(bgWidth) * iconScale;
                     float bottom = top + bgHeight * iconScale;
+                    float depth = visibleDepth[i];
 
-                    drawQuad(consumer, left, top, right, bottom, -visibleDepth[i], WAYPOINT_BG_ALPHA_MASK | bgColor[waypointIndex]);
+                    drawTextBackground(backgroundConsumer, left, top, right, bottom, -depth, WAYPOINT_BG_ALPHA_MASK | bgColor[waypointIndex]);
                 }
             });
         } finally {
@@ -656,11 +679,11 @@ public class OptimizedWaypointRenderer {
         return ((float) Math.ceil(backgroundWidth) - textWidth) * 0.5F;
     }
 
-    private static void drawQuad(VertexConsumer consumer, float left, float top, float right, float bottom, float z, int color) {
-        vertex(consumer, GuiVertexMatrix, left, top, z, color);
-        vertex(consumer, GuiVertexMatrix, left, bottom, z, color);
-        vertex(consumer, GuiVertexMatrix, right, bottom, z, color);
-        vertex(consumer, GuiVertexMatrix, right, top, z, color);
+    private static void drawTextBackground(VertexConsumer consumer, float left, float top, float right, float bottom, float z, int color) {
+        consumer.addVertex(GuiVertexMatrix, left, top, z).setColor(color).setLight(FULL_BRIGHT);
+        consumer.addVertex(GuiVertexMatrix, left, bottom, z).setColor(color).setLight(FULL_BRIGHT);
+        consumer.addVertex(GuiVertexMatrix, right, bottom, z).setColor(color).setLight(FULL_BRIGHT);
+        consumer.addVertex(GuiVertexMatrix, right, top, z).setColor(color).setLight(FULL_BRIGHT);
     }
 
     private static void drawTextBox(GuiGraphics context, String text, float centerX, float topY, float boxScale, float textWidth, float backgroundWidth, int backgroundColor, int textColor) {
