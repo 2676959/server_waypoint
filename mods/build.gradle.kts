@@ -95,6 +95,8 @@ dependencies {
         implementation("net.kyori:adventure-text-serializer-gson:4.20.0")
     } else if (minecraft == "1.21.5") {
         implementation("net.kyori:adventure-text-serializer-gson:4.24.0")
+    } else if (minecraft >= "1.21.6") {
+        implementation("net.kyori:adventure-text-serializer-gson:4.25.0")
     }
 
     if (loader == "fabric") {
