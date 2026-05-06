@@ -11,7 +11,6 @@
 		"BoundKeyAccessor",
 		"GameHudMixin",
 		"WorldRendererMixin",
-		"PerspectiveProjectionMatrixBufferMixin",
 		"PlayerManagerMixin",
 		"ServerPlayerEntityMixin",
 		"WorldSessionMixin"

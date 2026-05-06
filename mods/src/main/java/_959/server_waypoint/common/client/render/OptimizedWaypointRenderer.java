@@ -64,7 +64,8 @@ public class OptimizedWaypointRenderer {
     private static final float WAYPOINT_Y_OFFSET = 0.5F;
     private static final float MIN_DEPTH = 0.05F;
     private static final float OFFSCREEN_MARGIN = 0.2F;
-    private static final float WAYPOINT_TEXT_DEPTH_OFFSET = 0.25F;
+    private static final float WAYPOINT_RENDER_LAYER_OFFSET = -0.4F;
+    private static final float WAYPOINT_TEXT_DEPTH_OFFSET = 0.2F;
     private static final RenderPipeline WAYPOINT_BACKGROUND_PIPELINE = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.TEXT_SNIPPET, RenderPipelines.FOG_SNIPPET)
                     //? if >= 1.21.11 {
@@ -652,7 +653,7 @@ public class OptimizedWaypointRenderer {
                     float textX = getCenteredTextX(bgWidth, initialsTextWidth[waypointIndex]);
 
                     TextMatrix.identity()
-                            .translation(left, top, -depth + WAYPOINT_TEXT_DEPTH_OFFSET)
+                            .translation(left, top, -depth + WAYPOINT_TEXT_DEPTH_OFFSET + WAYPOINT_RENDER_LAYER_OFFSET)
                             .scale(iconScale);
                     textRenderer.drawInBatch(initials[waypointIndex], textX, 1.0F, fgColor[waypointIndex], false, TextMatrix, vertexConsumers, Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
                 }
@@ -669,7 +670,7 @@ public class OptimizedWaypointRenderer {
                     float bottom = top + bgHeight * iconScale;
                     float depth = visibleDepth[i];
 
-                    drawTextBackground(backgroundConsumer, left, top, right, bottom, -depth, WAYPOINT_BG_ALPHA_MASK | bgColor[waypointIndex]);
+                    drawTextBackground(backgroundConsumer, left, top, right, bottom, -depth + WAYPOINT_RENDER_LAYER_OFFSET, WAYPOINT_BG_ALPHA_MASK | bgColor[waypointIndex]);
                 }
             });
         } finally {
