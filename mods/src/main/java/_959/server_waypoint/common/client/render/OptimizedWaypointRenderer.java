@@ -28,10 +28,16 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
 import net.minecraft.client.renderer.RenderPipelines;
+//? if >= 1.21.11 {
 import net.minecraft.client.renderer.rendertype.LayeringTransform;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
+//?} else {
+/*import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
+*///?}
 import net.minecraft.world.phys.Vec3;
 
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
@@ -61,7 +67,11 @@ public class OptimizedWaypointRenderer {
     private static final float WAYPOINT_TEXT_DEPTH_OFFSET = 0.25F;
     private static final RenderPipeline WAYPOINT_BACKGROUND_PIPELINE = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.TEXT_SNIPPET, RenderPipelines.FOG_SNIPPET)
+                    //? if >= 1.21.11 {
                     .withLocation(Identifier.fromNamespaceAndPath(ModInfo.MOD_ID, "pipeline/waypoint_text_background"))
+                    //?} else {
+                    /*.withLocation(ResourceLocation.fromNamespaceAndPath(ModInfo.MOD_ID, "pipeline/waypoint_text_background"))
+                    *///?}
                     .withVertexShader("core/rendertype_text_background")
                     .withFragmentShader("core/rendertype_text_background")
                     .withSampler("Sampler2")
@@ -71,12 +81,23 @@ public class OptimizedWaypointRenderer {
     );
     private static final RenderType WAYPOINT_BACKGROUND_RENDER_TYPE = RenderType.create(
             "server_waypoint_background",
+            //? if >= 1.21.11 {
             RenderSetup.builder(WAYPOINT_BACKGROUND_PIPELINE)
                     .useLightmap()
                     .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING_FORWARD)
                     .sortOnUpload()
                     .bufferSize(RenderType.SMALL_BUFFER_SIZE)
                     .createRenderSetup()
+            //?} else {
+            /*RenderType.SMALL_BUFFER_SIZE,
+            false,
+            true,
+            WAYPOINT_BACKGROUND_PIPELINE,
+            RenderType.CompositeState.builder()
+                    .setLightmapState(RenderStateShard.LIGHTMAP)
+                    .setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING_FORWARD)
+                    .createCompositeState(false)
+            *///?}
     );
 
     // =========================================================

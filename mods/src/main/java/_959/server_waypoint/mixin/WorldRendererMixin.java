@@ -20,9 +20,14 @@ public class WorldRendererMixin {
             method = "renderLevel",
             at = @At(
                     value = "INVOKE",
+                    //? if >= 1.21.11 {
                     target = "Lnet/minecraft/client/renderer/LevelRenderer;addMainPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/culling/Frustum;Lorg/joml/Matrix4f;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;ZLnet/minecraft/client/renderer/state/LevelRenderState;Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/util/profiling/ProfilerFiller;)V"
+                    //?} else {
+                    /*target = "Lnet/minecraft/client/renderer/LevelRenderer;addMainPass(Lcom/mojang/blaze3d/framegraph/FrameGraphBuilder;Lnet/minecraft/client/renderer/culling/Frustum;Lnet/minecraft/client/Camera;Lorg/joml/Matrix4f;Lcom/mojang/blaze3d/buffers/GpuBufferSlice;ZZLnet/minecraft/client/DeltaTracker;Lnet/minecraft/util/profiling/ProfilerFiller;)V"
+                    *///?}
             )
     )
+    //? if >= 1.21.11 {
     private void renderWaypoint(
             GraphicsResourceAllocator graphicsResourceAllocator,
             DeltaTracker deltaTracker,
@@ -38,4 +43,20 @@ public class WorldRendererMixin {
     ) {
         ModelViewMatrix.set(modelViewMatrix);
     }
+    //?} else {
+    /*private void renderWaypoint(
+            GraphicsResourceAllocator graphicsResourceAllocator,
+            DeltaTracker deltaTracker,
+            boolean renderBlockOutline,
+            Camera camera,
+            Matrix4f modelViewMatrix,
+            Matrix4f projectionMatrix,
+            GpuBufferSlice fogBuffer,
+            Vector4f fogColor,
+            boolean renderSky,
+            CallbackInfo ci
+    ) {
+        ModelViewMatrix.set(modelViewMatrix);
+    }
+    *///?}
 }

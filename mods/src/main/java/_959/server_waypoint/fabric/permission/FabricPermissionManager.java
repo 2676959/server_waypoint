@@ -5,8 +5,10 @@ import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.command.permission.PermissionStringKeys;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.commands.CommandSourceStack;
+//? if >= 1.21.11 {
 import net.minecraft.server.permissions.Permission;
 import net.minecraft.server.permissions.PermissionLevel;
+//?}
 import net.minecraft.server.level.ServerPlayer;
 
 public class FabricPermissionManager extends PermissionManager<CommandSourceStack, String, ServerPlayer> {
@@ -25,7 +27,11 @@ public class FabricPermissionManager extends PermissionManager<CommandSourceStac
         if (isFabricPermissionAPILoaded) {
             return Permissions.check(source, key.getKey(), defaultLevel);
         } else {
+            //? if >= 1.21.11 {
             return source.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(defaultLevel)));
+            //?} else {
+            /*return source.hasPermission(defaultLevel);
+            *///?}
         }
     }
 
@@ -34,7 +40,11 @@ public class FabricPermissionManager extends PermissionManager<CommandSourceStac
         if (isFabricPermissionAPILoaded) {
             return Permissions.check(player, key.getKey(), defaultLevel);
         } else {
+            //? if >= 1.21.11 {
             return player.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(defaultLevel)));
+            //?} else {
+            /*return player.getPermissionLevel() >= defaultLevel;
+            *///?}
         }
     }
 }

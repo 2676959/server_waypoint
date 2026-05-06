@@ -18,7 +18,11 @@ public class MinecraftClientMixin {
         if (world == null) {
             return;
         }
+        //? if >= 1.21.11 {
         String worldName = world.dimension().identifier().toString();
+        //?} else {
+        /*String worldName = world.dimension().location().toString();
+        *///?}
         WaypointManagerScreen.resetWidgetStates();
         onDimensionChange(worldName);
     }

@@ -362,7 +362,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         if (WaypointServerMod.hasClient()) return;
         this.fileManagerMap.clear();
         OptimizedWaypointRenderer.clearScene();
+        //? if >= 1.21.11 {
         currentDimensionName = this.mc.level.dimension().identifier().toString();
+        //?} else {
+        /*currentDimensionName = this.mc.level.dimension().location().toString();
+        *///?}
         boolean found = false;
         for (DimensionWaypointBuffer dimensionWaypoint : buffer) {
             String dimensionName = dimensionWaypoint.dimensionName();

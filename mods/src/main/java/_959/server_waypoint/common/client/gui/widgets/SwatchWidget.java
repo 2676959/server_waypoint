@@ -6,8 +6,10 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+//? if >= 1.21.11 {
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
+//?}
 import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
@@ -391,12 +393,20 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        //? if >= 1.21.11 {
         return this.focused.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
+        //?} else {
+        /*return this.focused.keyPressed(keyCode, scanCode, modifiers);
+        *///?}
     }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
+        //? if >= 1.21.11 {
         return this.focused.charTyped(new CharacterEvent(chr, modifiers));
+        //?} else {
+        /*return this.focused.charTyped(chr, modifiers);
+        *///?}
     }
 
     @Override

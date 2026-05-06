@@ -6,6 +6,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
+//? if >= 1.21.11
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.network.chat.Component;
 
@@ -103,7 +104,11 @@ public abstract class MovementAllowedScreen extends Screen {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (!movementAllowed) {
             unpressAllMovementKeys();
+            //? if >= 1.21.11 {
             return super.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
+            //?} else {
+            /*return super.keyPressed(keyCode, scanCode, modifiers);
+            *///?}
         }
         boolean ret = false;
         if (keyCode == forwardKeyCode || scanCode == forwardKeyCode) {
@@ -135,19 +140,29 @@ public abstract class MovementAllowedScreen extends Screen {
             KeyMapping.click(sprintKey);
             ret = true;
         }
+        //? if >= 1.21.11 {
         boolean ret2 = super.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
+        //?} else {
+        /*boolean ret2 = super.keyPressed(keyCode, scanCode, modifiers);
+        *///?}
         return ret || ret2;
     }
 
+    //? if >= 1.21.11 {
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
         return this.keyPressed(keyEvent.key(), keyEvent.scancode(), keyEvent.modifiers());
     }
+    //?}
 
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
         if (!movementAllowed) {
             unpressAllMovementKeys();
+            //? if >= 1.21.11 {
             return super.keyReleased(new KeyEvent(keyCode, scanCode, modifiers));
+            //?} else {
+            /*return super.keyReleased(keyCode, scanCode, modifiers);
+            *///?}
         }
         boolean ret = false;
         if (keyCode == forwardKeyCode || scanCode == forwardKeyCode) {
@@ -172,14 +187,20 @@ public abstract class MovementAllowedScreen extends Screen {
             sprintKeyBinding.setDown(false);
             ret = true;
         }
+        //? if >= 1.21.11 {
         boolean ret2 = super.keyReleased(new KeyEvent(keyCode, scanCode, modifiers));
+        //?} else {
+        /*boolean ret2 = super.keyReleased(keyCode, scanCode, modifiers);
+        *///?}
         return ret || ret2;
     }
 
+    //? if >= 1.21.11 {
     @Override
     public boolean keyReleased(KeyEvent keyEvent) {
         return this.keyReleased(keyEvent.key(), keyEvent.scancode(), keyEvent.modifiers());
     }
+    //?}
 
     @Override
     public boolean isPauseScreen() {

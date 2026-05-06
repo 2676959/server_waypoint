@@ -2,9 +2,11 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.GuiGraphics;
+//? if >= 1.21.11 {
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+//?}
 import net.minecraft.network.chat.Component;
 
 public abstract class ShiftableClickableWidget extends AbstractWidget implements Shiftable {
@@ -111,6 +113,7 @@ public abstract class ShiftableClickableWidget extends AbstractWidget implements
         return false;
     }
 
+    //? if >= 1.21.11 {
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
         return this.keyPressed(keyEvent.key(), keyEvent.scancode(), keyEvent.modifiers());
@@ -140,4 +143,5 @@ public abstract class ShiftableClickableWidget extends AbstractWidget implements
     public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double deltaX, double deltaY) {
         return this.mouseDragged(mouseButtonEvent.x(), mouseButtonEvent.y(), mouseButtonEvent.button(), deltaX, deltaY);
     }
+    //?}
 }

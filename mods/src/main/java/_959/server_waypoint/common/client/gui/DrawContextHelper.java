@@ -13,14 +13,16 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 //?}
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
+//? if >= 1.21.11
 import net.minecraft.resources.Identifier;
+//? if < 1.21.11
+/*import net.minecraft.resources.ResourceLocation;*/
 import org.joml.Matrix4f;
 
 public final class DrawContextHelper {
     private static final Matrix4f IDENTITY_MATRIX = new Matrix4f();
 
-    public static void texture(GuiGraphics context, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
+    public static void texture(GuiGraphics context, /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
         //? if >= 1.21.6 {
         context.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, textureWidth, textureHeight);
         //?} elif > 1.21 {
@@ -188,6 +190,7 @@ public final class DrawContextHelper {
             return this;
         }
 
+        //? if >= 1.21.11
         @Override
         public VertexConsumer setLineWidth(float width) {
             return this;
@@ -213,12 +216,21 @@ public final class DrawContextHelper {
             @Nullable ScreenRectangle scissorArea
     ) implements GuiElementRenderState {
         @Override
+        //? if >= 1.21.11 {
         public void buildVertices(VertexConsumer vertexConsumer) {
             vertexConsumer.addVertexWith2DPose(this.pose, this.x0, this.y0).setColor(this.color0);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x1, this.y1).setColor(this.color1);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x2, this.y2).setColor(this.color2);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x3, this.y3).setColor(this.color3);
         }
+        //?} else {
+        /*public void buildVertices(VertexConsumer vertexConsumer, float depth) {
+            vertexConsumer.addVertexWith2DPose(this.pose, this.x0, this.y0, depth).setColor(this.color0);
+            vertexConsumer.addVertexWith2DPose(this.pose, this.x1, this.y1, depth).setColor(this.color1);
+            vertexConsumer.addVertexWith2DPose(this.pose, this.x2, this.y2, depth).setColor(this.color2);
+            vertexConsumer.addVertexWith2DPose(this.pose, this.x3, this.y3, depth).setColor(this.color3);
+        }
+        *///?}
 
         @Override
         public @Nullable ScreenRectangle bounds() {

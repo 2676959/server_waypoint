@@ -29,7 +29,11 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
                 "server_waypoint.waypoint_manager_gui.keybind",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT_SHIFT,
+                //? if >= 1.21.11 {
                 KeyMapping.Category.register(_959.server_waypoint.common.util.ResourceLocationHelper.id("server_waypoint", "mod_name"))
+                //?} else {
+                /*"key.categories.server_waypoint.mod_name"
+                *///?}
         ));
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
                 ClientWaypointCommand.register(dispatcher));
