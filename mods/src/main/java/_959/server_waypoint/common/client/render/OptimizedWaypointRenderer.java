@@ -8,7 +8,10 @@ import com.mojang.blaze3d.ProjectionType;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import org.jetbrains.annotations.Unmodifiable;
@@ -19,7 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.client.Camera;
@@ -27,6 +32,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
 //? if >= 1.21.11 {
 import net.minecraft.client.renderer.rendertype.LayeringTransform;
@@ -44,7 +50,6 @@ import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.scale;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.withVertexConsumers;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
 import static net.minecraft.client.renderer.LightTexture.FULL_BRIGHT;
 
@@ -61,7 +66,6 @@ public class OptimizedWaypointRenderer {
     private static int WAYPOINT_BG_ALPHA_MASK = 0x80000000;
     private static float WAYPOINT_VERTICAL_OFFSET = 0;
     private static long SQUARED_VIEW_DISTANCE = 12 * 16 * 12 * 16;
-    private static final float WAYPOINT_Y_OFFSET = 0.5F;
     private static final float MIN_DEPTH = 0.05F;
     private static final float OFFSCREEN_MARGIN = 0.2F;
     private static final float WAYPOINT_RENDER_LAYER_OFFSET = -0.4F;
@@ -149,6 +153,7 @@ public class OptimizedWaypointRenderer {
     private static final int textBgHeight = textHeight + 2;
     private static final Window window = mc.getWindow();
     private static final Camera camera = mc.gameRenderer.getMainCamera();
+    private static final WaypointBufferSource waypointBufferSource = new WaypointBufferSource();
     public static final Matrix4f ModelViewMatrix = new Matrix4f();
     public static final Matrix4f ProjectionMatrix = new Matrix4f();
     private static final Matrix4f GuiVertexMatrix = new Matrix4f();
@@ -540,7 +545,7 @@ public class OptimizedWaypointRenderer {
 
         for (int i = 0; i < count; i++) {
             float relX = xPos[i] - camX;
-            float relY = yPos[i] + WAYPOINT_Y_OFFSET + WAYPOINT_VERTICAL_OFFSET - camY;
+            float relY = yPos[i] + WAYPOINT_VERTICAL_OFFSET - camY;
             float relZ = zPos[i] - camZ;
             float horizontalDistanceSquared = relX * relX + relZ * relZ;
             if (local[i] && horizontalDistanceSquared > SQUARED_VIEW_DISTANCE) {
@@ -637,12 +642,13 @@ public class OptimizedWaypointRenderer {
         }
 
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
+        mc.renderBuffers().bufferSource().endBatch();
         RenderSystem.backupProjectionMatrix();
         RenderSystem.setProjectionMatrix(waypointProjectionMatrixBuffer.getBuffer(scaledWidth, scaledHeight), ProjectionType.ORTHOGRAPHIC);
         modelViewStack.pushMatrix();
         modelViewStack.identity();
         try {
-            withVertexConsumers(context, vertexConsumers -> {
+            try {
                 for (int i = 0; i < renderCount; i++) {
                     int waypointIndex = visibleIndex[i];
                     float iconScale = visibleIconScale[i];
@@ -655,10 +661,10 @@ public class OptimizedWaypointRenderer {
                     TextMatrix.identity()
                             .translation(left, top, -depth + WAYPOINT_TEXT_DEPTH_OFFSET + WAYPOINT_RENDER_LAYER_OFFSET)
                             .scale(iconScale);
-                    textRenderer.drawInBatch(initials[waypointIndex], textX, 1.0F, fgColor[waypointIndex], false, TextMatrix, vertexConsumers, Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
+                    textRenderer.drawInBatch(initials[waypointIndex], textX, 1.0F, fgColor[waypointIndex], false, TextMatrix, waypointBufferSource, Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
                 }
 
-                VertexConsumer backgroundConsumer = vertexConsumers.getBuffer(WAYPOINT_BACKGROUND_RENDER_TYPE);
+                VertexConsumer backgroundConsumer = waypointBufferSource.getBuffer(WAYPOINT_BACKGROUND_RENDER_TYPE);
                 for (int i = 0; i < renderCount; i++) {
                     int waypointIndex = visibleIndex[i];
                     float iconScale = visibleIconScale[i];
@@ -672,7 +678,9 @@ public class OptimizedWaypointRenderer {
 
                     drawTextBackground(backgroundConsumer, left, top, right, bottom, -depth + WAYPOINT_RENDER_LAYER_OFFSET, WAYPOINT_BG_ALPHA_MASK | bgColor[waypointIndex]);
                 }
-            });
+            } finally {
+                waypointBufferSource.endBatch();
+            }
         } finally {
             modelViewStack.popMatrix();
             RenderSystem.restoreProjectionMatrix();
@@ -756,6 +764,64 @@ public class OptimizedWaypointRenderer {
 
     private static boolean isIn2DBox(float x, float y, float min_x, float min_y, float max_x, float max_y) {
         return (min_x <= x) && (x <= max_x) && (min_y <= y) && (y <= max_y);
+    }
+
+    private static final class WaypointBufferSource implements MultiBufferSource {
+        private final Map<RenderType, ByteBufferBuilder> byteBuffers = new LinkedHashMap<>();
+        private final Map<RenderType, BufferBuilder> activeBuffers = new LinkedHashMap<>();
+
+        @Override
+        public VertexConsumer getBuffer(RenderType renderType) {
+            BufferBuilder activeBuffer = this.activeBuffers.get(renderType);
+            if (activeBuffer != null) {
+                if (renderType.canConsolidateConsecutiveGeometry()) {
+                    return activeBuffer;
+                }
+
+                this.endBatch(renderType);
+            }
+
+            ByteBufferBuilder byteBuffer = this.byteBuffers.computeIfAbsent(renderType, key -> new ByteBufferBuilder(key.bufferSize()));
+            BufferBuilder buffer = new BufferBuilder(byteBuffer, renderType.mode(), renderType.format());
+            this.activeBuffers.put(renderType, buffer);
+            return buffer;
+        }
+
+        public void endBatch(RenderType renderType) {
+            BufferBuilder buffer = this.activeBuffers.remove(renderType);
+            if (buffer != null) {
+                this.draw(renderType, buffer);
+            }
+        }
+
+        public void endBatch() {
+            this.activeBuffers.entrySet().removeIf(entry -> {
+                RenderType renderType = entry.getKey();
+                if (!renderType.sortOnUpload()) {
+                    this.draw(renderType, entry.getValue());
+                    return true;
+                }
+
+                return false;
+            });
+            this.activeBuffers.entrySet().removeIf(entry -> {
+                this.draw(entry.getKey(), entry.getValue());
+                return true;
+            });
+        }
+
+        private void draw(RenderType renderType, BufferBuilder buffer) {
+            MeshData meshData = buffer.build();
+            if (meshData == null) {
+                return;
+            }
+
+            if (renderType.sortOnUpload()) {
+                meshData.sortQuads(this.byteBuffers.get(renderType), RenderSystem.getProjectionType().vertexSorting());
+            }
+
+            renderType.draw(meshData);
+        }
     }
 
     // =========================================================
