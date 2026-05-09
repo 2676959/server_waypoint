@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.texture;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
 
@@ -31,7 +32,7 @@ public class IconButton extends ShiftableClickableWidget {
         int x = getX();
         int y = getY();
         if (isFocused() || isHovered()) {
-            context.renderOutline(x, y, width, height, BORDER_FOCUS_COLOR);
+            renderOutline(context, x, y, width, height, BORDER_FOCUS_COLOR);
         }
         int bgColor = isHovered() ? BUTTON_BG_HOVER_COLOR : 0;
         context.fill(x, y, x + width, y + height, bgColor);

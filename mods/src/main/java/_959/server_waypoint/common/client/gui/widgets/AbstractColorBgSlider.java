@@ -169,17 +169,26 @@ public abstract class AbstractColorBgSlider implements LayoutElement, Renderable
     }
 
     protected void drawGradient(VertexConsumer vertexConsumer, Matrix4f matrix, int startColor, int endColor) {
-        vertex(vertexConsumer, matrix, 0, 0, 0, startColor);
-        vertex(vertexConsumer, matrix, 0, slotHeight, 0, startColor);
-        vertex(vertexConsumer, matrix, slotWidth, slotHeight, 0, endColor);
-        vertex(vertexConsumer, matrix, slotWidth, 0, 0, endColor);
+        drawAlphaGradient(vertexConsumer, matrix, 0, slotWidth, solid(startColor), solid(endColor));
     }
 
     protected void drawGradient(VertexConsumer vertexConsumer, Matrix4f matrix, float startX, float endX, int startColor, int endColor) {
+        drawAlphaGradient(vertexConsumer, matrix, startX, endX, solid(startColor), solid(endColor));
+    }
+
+    protected void drawAlphaGradient(VertexConsumer vertexConsumer, Matrix4f matrix, int startColor, int endColor) {
+        drawAlphaGradient(vertexConsumer, matrix, 0, slotWidth, startColor, endColor);
+    }
+
+    protected void drawAlphaGradient(VertexConsumer vertexConsumer, Matrix4f matrix, float startX, float endX, int startColor, int endColor) {
         vertex(vertexConsumer, matrix, startX, 0, 0, startColor);
         vertex(vertexConsumer, matrix, startX, slotHeight, 0, startColor);
         vertex(vertexConsumer, matrix, endX, slotHeight, 0, endColor);
         vertex(vertexConsumer, matrix, endX, 0, 0, endColor);
+    }
+
+    private static int solid(int color) {
+        return 0xFF000000 | color;
     }
 
     protected void drawSlider(VertexConsumer vertexConsumer, Matrix4f matrix) {

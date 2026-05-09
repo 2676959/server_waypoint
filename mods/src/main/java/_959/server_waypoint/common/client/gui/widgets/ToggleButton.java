@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 
@@ -39,7 +40,7 @@ public class ToggleButton extends ShiftableClickableWidget {
         int x = getX();
         int y = getY();
         if (isFocused() || isHovered()) {
-            context.renderOutline(x - 1, y - 2, width + 2, height + 2, BORDER_FOCUS_COLOR);
+            renderOutline(context, x - 1, y - 2, width + 2, height + 2, BORDER_FOCUS_COLOR);
         }
         int bgColor = isHovered() ? BUTTON_BG_HOVER_COLOR : BUTTON_BG_COLOR;
         int fixedY = y - 1;

@@ -10,7 +10,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.layouts.LayoutElement;
-//? if >= 1.21.11 {
+//? if >= 1.21.9 {
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 //?}
@@ -105,7 +105,7 @@ public class WidgetStack extends ShiftableWidget {
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        //? if >= 1.21.11 {
+        //? if >= 1.21.9 {
         MouseButtonEvent event = new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(button, 0));
         for (AbstractWidget child : clickable) {
             if (child.mouseClicked(event, false)) {

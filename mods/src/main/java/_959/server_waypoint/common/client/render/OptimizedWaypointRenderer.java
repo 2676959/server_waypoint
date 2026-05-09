@@ -66,9 +66,9 @@ public class OptimizedWaypointRenderer {
     private static int WAYPOINT_BG_ALPHA_MASK = 0x80000000;
     private static float WAYPOINT_VERTICAL_OFFSET = 0;
     private static long SQUARED_VIEW_DISTANCE = 12 * 16 * 12 * 16;
-    private static final float MIN_DEPTH = 0.05F;
+    private static final float MIN_DEPTH = 0F;
     private static final float OFFSCREEN_MARGIN = 0.2F;
-    private static final float WAYPOINT_RENDER_LAYER_OFFSET = -0.4F;
+    private static final float WAYPOINT_RENDER_LAYER_OFFSET = 0F;
     private static final float WAYPOINT_TEXT_DEPTH_OFFSET = 0.2F;
     private static final RenderPipeline WAYPOINT_BACKGROUND_PIPELINE = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.TEXT_SNIPPET, RenderPipelines.FOG_SNIPPET)
@@ -684,6 +684,7 @@ public class OptimizedWaypointRenderer {
         } finally {
             modelViewStack.popMatrix();
             RenderSystem.restoreProjectionMatrix();
+            clearMainDepthBuffer();
         }
     }
 
@@ -764,6 +765,12 @@ public class OptimizedWaypointRenderer {
 
     private static boolean isIn2DBox(float x, float y, float min_x, float min_y, float max_x, float max_y) {
         return (min_x <= x) && (x <= max_x) && (min_y <= y) && (y <= max_y);
+    }
+
+    private static void clearMainDepthBuffer() {
+        //? if >= 1.21.6 {
+        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(mc.getMainRenderTarget().getDepthTexture(), 1.0);
+        //?}
     }
 
     private static final class WaypointBufferSource implements MultiBufferSource {

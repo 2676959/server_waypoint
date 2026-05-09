@@ -92,11 +92,11 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
         }
 
         public void drawWhiteOverlay(VertexConsumer vertexConsumer, Matrix4f matrix) {
-            drawGradient(vertexConsumer, matrix, this.whiteOverlay, this.whiteOverlay);
+            drawAlphaGradient(vertexConsumer, matrix, this.whiteOverlay, this.whiteOverlay);
         }
 
         public void drawBlackOverlay(VertexConsumer vertexConsumer, Matrix4f matrix) {
-            drawGradient(vertexConsumer, matrix, this.blackOverlay, this.blackOverlay);
+            drawAlphaGradient(vertexConsumer, matrix, this.blackOverlay, this.blackOverlay);
         }
     }
 
@@ -155,7 +155,7 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
         public void drawSlotBackground(VertexConsumer vertexConsumer, Matrix4f matrix) {
             drawGradient(vertexConsumer, matrix, endColor, endColor);
             drawWhiteOverlay(vertexConsumer, matrix);
-            drawGradient(vertexConsumer, matrix, 0xFF000000, 0);
+            drawAlphaGradient(vertexConsumer, matrix, 0xFF000000, 0);
         }
     }
 }

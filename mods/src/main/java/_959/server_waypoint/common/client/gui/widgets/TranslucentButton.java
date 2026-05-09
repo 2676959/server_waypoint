@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 
@@ -33,7 +34,7 @@ public class TranslucentButton extends ShiftableClickableWidget {
         int x = getX();
         int y = getY();
         int bdColor = isFocused() || isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
-        context.renderOutline(x - 1, y - 2, width + 2, height + 2, bdColor);
+        renderOutline(context, x - 1, y - 2, width + 2, height + 2, bdColor);
         int bgColor = isHovered() ? BUTTON_BG_HOVER_COLOR : BUTTON_BG_COLOR;
         int fixedY = y - 1;
         context.fill(x, fixedY, x + width, fixedY + height, bgColor);

@@ -28,6 +28,7 @@ import net.minecraft.resources.Identifier;
 import static _959.server_waypoint.ModInfo.MOD_ID;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.texture;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
@@ -379,7 +380,7 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
             boolean hoverOnList = hoverPos == i;
             if (hoverOnList) {
                 context.fill(0, y1, listWidth, y1 + itemHeight, 0x30FFFFFF);
-                context.renderOutline(0, y1, listWidth, itemHeight, 0xFFFFFFFF);
+                renderOutline(context, 0, y1, listWidth, itemHeight, 0xFFFFFFFF);
             }
             // plus one for list name row
             i++;
@@ -451,7 +452,7 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                         removeClickedPos = -1;
                     }
                     // border
-                    context.renderOutline(0, y1, listWidth, itemHeight, 0xFF000000 + rgb);
+                    renderOutline(context, 0, y1, listWidth, itemHeight, 0xFF000000 + rgb);
                 } else {
                     context.fill(0, y1, listWidth, y2, 0x10000000 + rgb);
                 }

@@ -5,6 +5,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.layouts.LayoutElement;
 
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
+
 public class PaddingBackground implements Renderable, Padding {
     private final LayoutElement widget;
     private final int topPadding;
@@ -40,7 +42,7 @@ public class PaddingBackground implements Renderable, Padding {
         int y1 = y - this.topPadding;
         context.fill(x1, y1, x + width + this.rightPadding, y + height + this.bottomPadding, bgColor);
         if (border) {
-            context.renderOutline(x1, y1, getVisualWidth(), getVisualHeight(), bdColor);
+            renderOutline(context, x1, y1, getVisualWidth(), getVisualHeight(), bdColor);
         }
     }
 

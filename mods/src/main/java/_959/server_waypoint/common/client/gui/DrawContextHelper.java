@@ -78,6 +78,21 @@ public final class DrawContextHelper {
         *///?}
     }
 
+    public static void renderOutline(GuiGraphics context, int x, int y, int width, int height, int color) {
+        //? if = 1.21.9 {
+        /*renderOutlineWithFill(context, x, y, width, height, color);
+        *///?} else {
+        context.renderOutline(x, y, width, height, color);
+        //?}
+    }
+
+    private static void renderOutlineWithFill(GuiGraphics context, int x, int y, int width, int height, int color) {
+        context.fill(x, y, x + width, y + 1, color);
+        context.fill(x, y + height - 1, x + width, y + height, color);
+        context.fill(x, y + 1, x + 1, y + height - 1, color);
+        context.fill(x + width - 1, y + 1, x + width, y + height - 1, color);
+    }
+
     public static Matrix4f currentMatrix(GuiGraphics context) {
         //? if >= 1.21.6 {
         return IDENTITY_MATRIX;
@@ -216,7 +231,7 @@ public final class DrawContextHelper {
             @Nullable ScreenRectangle scissorArea
     ) implements GuiElementRenderState {
         @Override
-        //? if >= 1.21.11 {
+        //? if >= 1.21.9 {
         public void buildVertices(VertexConsumer vertexConsumer) {
             vertexConsumer.addVertexWith2DPose(this.pose, this.x0, this.y0).setColor(this.color0);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x1, this.y1).setColor(this.color1);

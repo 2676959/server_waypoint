@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.BORDER_COLOR;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.BORDER_FOCUS_COLOR;
 
@@ -38,7 +39,7 @@ public class ColorSquareButton extends ShiftableClickableWidget implements Color
         int x = getX();
         int y = getY();
         int bdColor = isFocused() || isHovered() ? BORDER_FOCUS_COLOR : renderBorder ? BORDER_COLOR : 0;
-        context.renderOutline(x - 1, y - 1, width + 2, width + 2, bdColor);
+        renderOutline(context, x - 1, y - 1, width + 2, width + 2, bdColor);
         context.fill(x, y, x + width, y + width, color);
     }
 

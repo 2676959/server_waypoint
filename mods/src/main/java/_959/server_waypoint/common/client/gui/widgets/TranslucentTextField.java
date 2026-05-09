@@ -1,11 +1,12 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
-//? if >= 1.21.11 {
+//? if >= 1.21.9 {
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -39,7 +40,7 @@ public class TranslucentTextField extends EditBox implements Shiftable {
         context.fill(x + 1, y + 1, right, bottom, BUTTON_BG_COLOR);
         this.isHovered = mouseX >= x && mouseY >= y && mouseX <= right && mouseY <= bottom;
         int bdColor = isFocused() | isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
-        context.renderOutline(x, y, this.width, this.backgroundHeight, bdColor);
+        renderOutline(context, x, y, this.width, this.backgroundHeight, bdColor);
         super.
         //$ renderWidget_swap
         renderWidget
@@ -58,7 +59,7 @@ public class TranslucentTextField extends EditBox implements Shiftable {
     }
 
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        //? if >= 1.21.11 {
+        //? if >= 1.21.9 {
         return super.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
         //?} else {
         /*return super.keyPressed(keyCode, scanCode, modifiers);
@@ -66,7 +67,7 @@ public class TranslucentTextField extends EditBox implements Shiftable {
     }
 
     public boolean charTyped(char chr, int modifiers) {
-        //? if >= 1.21.11 {
+        //? if >= 1.21.9 {
         return super.charTyped(new CharacterEvent(chr, modifiers));
         //?} else {
         /*return super.charTyped(chr, modifiers);
@@ -74,14 +75,14 @@ public class TranslucentTextField extends EditBox implements Shiftable {
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        //? if >= 1.21.11 {
+        //? if >= 1.21.9 {
         return super.mouseClicked(new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(button, 0)), false);
         //?} else {
         /*return super.mouseClicked(mouseX, mouseY, button);
         *///?}
     }
 
-    //? if >= 1.21.11 {
+    //? if >= 1.21.9 {
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
         return this.keyPressed(keyEvent.key(), keyEvent.scancode(), keyEvent.modifiers());

@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.Blocks;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.scale;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
@@ -173,7 +174,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
             }
             // render selected border
             translate(context, scrolledPosition, 0);
-            context.renderOutline(index * iconSize, 0, iconSize, iconSize, 0xFFFFFFFF);
+            renderOutline(context, index * iconSize, 0, iconSize, iconSize, 0xFFFFFFFF);
             // render dimension icons
             scale(context, itemIconScale, itemIconScale);
             for (int i = 0; i < size; i++) {
