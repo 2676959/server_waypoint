@@ -26,6 +26,8 @@ public class TranslucentTextField extends EditBox implements Shiftable {
         this.setTextColor(0xFFFFFFFF);
         this.setBordered(false);
         this.backgroundHeight = this.height + 2;
+        this.setX(x);
+        this.setY(y);
     }
 
     @Override
@@ -106,26 +108,28 @@ public class TranslucentTextField extends EditBox implements Shiftable {
 
     @Override
     public void setX(int x) {
-        super.setX(x);
         this.shiftedX = x + this.xOffset;
+        super.setX(x);
     }
 
     @Override
     public void setY(int y) {
-        super.setY(y);
         this.shiftedY = y + this.yOffset;
+        super.setY(y);
     }
 
     @Override
     public void setXOffset(int x) {
         this.xOffset = x;
         this.shiftedX = super.getX() + x;
+        super.setX(super.getX());
     }
 
     @Override
     public void setYOffset(int y) {
         this.yOffset = y;
         this.shiftedY = super.getY() + y;
+        super.setY(super.getY());
     }
 
     @Override
