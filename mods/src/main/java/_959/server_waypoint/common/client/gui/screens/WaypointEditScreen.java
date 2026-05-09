@@ -24,7 +24,7 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
         ScalableText titleLabel = new ScalableText(0, 0, this.getTitle(), 0xFFFFFFFF, font);
         WidgetStack infoRow = new WidgetStack(0, 0, 5);
         ScalableText dimensionLabel = new ScalableText(0, 0, Component.translatable("waypoint.dimension.info", ""), 0.8F, MUTED_FONT_COLOR, font);
-        int dimensionColor = ColorHelper.scaleRgb(getDimensionColor(this.dimensionName).value(), 0.8F);
+        int dimensionColor = ColorHelper.scaleRgb(0xFF000000 | getDimensionColor(this.dimensionName).value(), 0.8F);
         ScalableText dimensionNameLabel = new ScalableText(0, 0, Component.nullToEmpty(this.dimensionName), 0.8F, dimensionColor, font);
         ScalableText listNameLabel = new ScalableText(0, 0, Component.translatable("waypoint.list_name.info", this.listName), 0.8F, MUTED_FONT_COLOR, font);
         infoRow.addChild(dimensionLabel, 0);
