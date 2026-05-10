@@ -39,7 +39,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
-import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 import static _959.server_waypoint.core.waypoint.WaypointList.SERVER_N;
 import static _959.server_waypoint.core.waypoint.WaypointModificationType.ADD_LIST;
 import static _959.server_waypoint.core.waypoint.WaypointModificationType.REMOVE_LIST;
@@ -574,17 +573,19 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             sendHexColorCodeError(source, hexCode);
         } else {
             runWithSelectorTarget(source, dimensionArgument, listName, oldName, (fileManager, waypointList, waypoint) ->
-                this.waypointServer.updateWaypointProperties(fileManager, waypoint, newName, initials, waypointPos, rgb, yaw, global,
+                this.waypointServer.updateWaypointProperties(fileManager, waypointList, waypoint, newName, initials, waypointPos, rgb, yaw, global,
                         () -> {
                             waypointList.incSyncNum();
                             saveChanges(source, fileManager);
                             String dimensionName = fileManager.getDimensionName();
                             WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, oldName, waypoint, WaypointModificationType.UPDATE, waypointList.getSyncNum());
-                            LOGGER.info("syncNum: {}", waypointList.getSyncNum());
+//                            LOGGER.info("syncNum: {}", waypointList.getSyncNum());
                             this.sender.broadcastWaypointModification(source, buffer);
                             this.sender.sendMessage(source, translatable("waypoint.edit.success", waypointTextWithTp(waypoint, dimensionName, listName)));
                         },
-                        () -> this.sender.sendMessage(source, translatable("waypoint.edit.identical", text(oldName))))
+
+                        () -> this.sender.sendMessage(source, translatable("waypoint.edit.existing-name", text(newName))),
+                        () -> this.sender.sendMessage(source, translatable("waypoint.edit.identical")))
             );
         }
     }

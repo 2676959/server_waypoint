@@ -82,6 +82,10 @@ public class WaypointList {
         return this.simpleWaypoints.stream().filter((waypoint) -> waypoint.name().equals(name)).findFirst().orElse(null);
     }
 
+    public boolean hasWaypoint(String name) {
+        return this.simpleWaypoints.stream().anyMatch((waypoint) -> waypoint.name().equals(name));
+    }
+
     public String name() {
         return this.name;
     }

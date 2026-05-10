@@ -108,12 +108,16 @@ public class WaypointFilesManagerCore {
         }
     }
 
-    public void updateWaypointProperties(@NotNull WaypointFileManager fileManager, @NotNull SimpleWaypoint waypoint, String name, String initials, WaypointPos waypointPos, int rgb, int yaw, boolean global, Runnable successAction, Runnable identicalAction) {
-        if (waypoint.compareProperties(name, initials, waypointPos, rgb, yaw, global)) {
+    public void updateWaypointProperties(@NotNull WaypointFileManager fileManager, @NotNull WaypointList waypointList, @NotNull SimpleWaypoint waypoint, String newName, String initials, WaypointPos waypointPos, int rgb, int yaw, boolean global, Runnable successAction, Runnable nameUsedAction, Runnable identicalAction) {
+        if (waypointList.hasWaypoint(newName)) {
+            nameUsedAction.run();
+            return;
+        }
+        if (waypoint.compareProperties(newName, initials, waypointPos, rgb, yaw, global)) {
             identicalAction.run();
             return;
         }
-        waypoint.setName(name);
+        waypoint.setName(newName);
         waypoint.setInitials(initials);
         waypoint.setPos(waypointPos);
         waypoint.setRgb(rgb);

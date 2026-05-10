@@ -74,15 +74,13 @@ public class WaypointServerMod extends WaypointServerCore {
     }
 
     @Override
-    public void updateWaypointProperties(@NotNull WaypointFileManager fileManager, @NotNull SimpleWaypoint waypoint, String name, String initials, WaypointPos waypointPos, int rgb, int yaw, boolean global, Runnable successAction, Runnable identicalAction) {
-        super.updateWaypointProperties(fileManager, waypoint, name, initials, waypointPos, rgb, yaw, global, () -> {
+    public void updateWaypointProperties(@NotNull WaypointFileManager fileManager, @NotNull WaypointList waypointList, @NotNull SimpleWaypoint waypoint, String newName, String initials, WaypointPos waypointPos, int rgb, int yaw, boolean global, Runnable successAction, Runnable nameUsedAction, Runnable identicalAction) {
+        super.updateWaypointProperties(fileManager, waypointList, waypoint, newName, initials, waypointPos, rgb, yaw, global, () -> {
             successAction.run();
-            if (hasClient) {
-                if (fileManager.getDimensionName().equals(WaypointClientMod.getCurrentDimensionName())) {
-                    OptimizedWaypointRenderer.updateWaypoint(waypoint);
-                }
+            if (hasClient && fileManager.getDimensionName().equals(WaypointClientMod.getCurrentDimensionName())) {
+                OptimizedWaypointRenderer.updateWaypoint(waypoint);
             }
-        }, identicalAction);
+        }, nameUsedAction, identicalAction);
     }
 
     @Override
@@ -150,6 +148,7 @@ public class WaypointServerMod extends WaypointServerCore {
             return false;
         } else {
             ResourceKey<Level> dimKey = getDimensionKey(dimensionName);
+            if (dimKey == null) return false;
             Level world = MINECRAFT_SERVER.getLevel(dimKey);
             return world != null;
         }

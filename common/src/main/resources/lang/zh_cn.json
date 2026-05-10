@@ -16,6 +16,7 @@
   "waypoint.nonexist.waypoint": "路径点“{0}”不存在",
 
   "waypoint.edit.identical": "提供的参数与此路径点相同，未做出修改",
+  "waypoint.edit.existing-name": "路径点名称：“{0}”已被使用",
   "waypoint.edit.success": "路径点{0}已更新",
 
   "waypoint.remove.success": "路径点{0}已被移除，恢复该路径点？{1}",

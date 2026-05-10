@@ -16,6 +16,7 @@
   "waypoint.nonexist.waypoint": "Waypoint \"{0}\" does not exist",
 
   "waypoint.edit.identical": "Identical properties provided, no changes made",
+  "waypoint.edit.existing-name": "Waypoint name: \"{0}\" is already used",
   "waypoint.edit.success": "Waypoint {0} has been updated",
 
   "waypoint.remove.success": "Waypoint {0} has been removed, Restore it? {1}",
