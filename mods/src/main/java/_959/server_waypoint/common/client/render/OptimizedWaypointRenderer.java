@@ -26,8 +26,7 @@ import static _959.server_waypoint.common.client.gui.DrawContextHelper.scale;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
 
-public class OptimizedWaypointRenderer {
-
+public final class OptimizedWaypointRenderer {
     // =========================================================
     // CONFIGURATION
     // =========================================================
@@ -43,7 +42,6 @@ public class OptimizedWaypointRenderer {
     private static float WAYPOINT_VERTICAL_OFFSET = 0;
     private static long SQUARED_VIEW_DISTANCE = 12 * 16 * 12 * 16;
     private static final float MIN_DEPTH = 0F;
-    private static final float OFFSCREEN_MARGIN = 0.2F;
 
     // =========================================================
     // STATE (RENDER THREAD ONLY)
@@ -129,7 +127,7 @@ public class OptimizedWaypointRenderer {
     }
 
     // =========================================================
-    // 1. INITIALIZATION
+    // INITIALIZATION
     // =========================================================
     public static void init() {
         if (initialized) return;
@@ -161,7 +159,7 @@ public class OptimizedWaypointRenderer {
     }
 
     // =========================================================
-    // 2. PUBLIC API (LOGIC THREAD)
+    // PUBLIC API (LOGIC THREAD)
     // =========================================================
     public static void enableRendering(boolean enable) {
         DISABLED = !enable;
@@ -213,7 +211,7 @@ public class OptimizedWaypointRenderer {
     }
 
     /**
-     * Efficiently adds multiple WaypointLists in a single batch.
+     * Adds multiple WaypointLists in a single batch.
      * Only adds waypoints from lists where isShow() is true.
      */
     public static void loadScene(@Unmodifiable List<WaypointList> lists) {
@@ -438,9 +436,8 @@ public class OptimizedWaypointRenderer {
     }
 
     // =========================================================
-    // 3. RENDER LOOP (RENDER THREAD)
+    // RENDER LOOP (RENDER THREAD)
     // =========================================================
-    @SuppressWarnings("deprecation")
     public static void render(GuiGraphics context) {
         if (!initialized) return;
 
@@ -505,15 +502,15 @@ public class OptimizedWaypointRenderer {
 
             float ndcX = projected.x() / depth;
             float ndcY = projected.y() / depth;
-            if (ndcX < -1.0F - OFFSCREEN_MARGIN || ndcX > 1.0F + OFFSCREEN_MARGIN || ndcY < -1.0F - OFFSCREEN_MARGIN || ndcY > 1.0F + OFFSCREEN_MARGIN) {
+            float iconScale = getIconScale(depth, projectionScale, minBaseScale);
+            float marginX = initialsTextBgWidth[i] * iconScale / (scaledWidth >> 1);
+            float marginY = textBgHeight * iconScale / (scaledHeight >> 1);
+            if (ndcX < -1.0F - marginX || ndcX > 1.0F + marginX || ndcY < -1.0F - marginY || ndcY > 1.0F + marginY) {
                 continue;
             }
 
             float winX = (ndcX + 1.0F) * windowCenterX;
             float winY = (1.0F - ndcY) * windowCenterY;
-            float iconScale = getIconScale(depth, projectionScale, minBaseScale);
-            float bgWidth = initialsTextBgWidth[i];
-            float bgHeight = textBgHeight;
 
             visibleIndex[renderCount] = i;
             visibleWinX[renderCount] = winX;
@@ -531,8 +528,8 @@ public class OptimizedWaypointRenderer {
                     detailDistance = Math.sqrt(horizontalDistanceSquared + relY * relY);
                 }
             } else {
-                float halfWidth = bgWidth * iconScale * 0.5F;
-                float halfHeight = bgHeight * iconScale * 0.5F;
+                float halfWidth = initialsTextBgWidth[i] * iconScale * 0.5F;
+                float halfHeight = textBgHeight * iconScale * 0.5F;
                 if (isIn2DBox(windowCenterX, windowCenterY, winX - halfWidth, winY - halfHeight, winX + halfWidth, winY + halfHeight) && depth < minDepth) {
                     minDepth = depth;
                     HOVERED_ID = i;
@@ -700,7 +697,7 @@ public class OptimizedWaypointRenderer {
     }
 
     // =========================================================
-    // 4. INTERNAL HELPERS
+    // INTERNAL HELPERS
     // =========================================================
 
     /**
