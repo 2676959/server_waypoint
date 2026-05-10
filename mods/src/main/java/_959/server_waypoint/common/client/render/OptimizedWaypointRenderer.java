@@ -1,49 +1,23 @@
 package _959.server_waypoint.common.client.render;
 
 import _959.server_waypoint.common.util.MathHelper;
-import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
-import com.mojang.blaze3d.ProjectionType;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import org.jetbrains.annotations.Unmodifiable;
 import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 import org.joml.Vector4f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.CachedOrthoProjectionMatrixBuffer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderPipelines;
-//? if >= 1.21.11 {
-import net.minecraft.client.renderer.rendertype.LayeringTransform;
-import net.minecraft.client.renderer.rendertype.RenderSetup;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.resources.Identifier;
-//?} else {
-/*import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.resources.ResourceLocation;
-*///?}
 import net.minecraft.world.phys.Vec3;
 
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
@@ -51,7 +25,6 @@ import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.scale;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
-import static net.minecraft.client.renderer.LightTexture.FULL_BRIGHT;
 
 public class OptimizedWaypointRenderer {
 
@@ -61,6 +34,9 @@ public class OptimizedWaypointRenderer {
     private static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_renderer");
     private static final int MAX_WAYPOINTS = 10000;
     private static final int MAX_RENDER_ID = 20000;
+    private static final int DEPTH_RADIX_BITS = 8;
+    private static final int DEPTH_RADIX_SIZE = 1 << DEPTH_RADIX_BITS;
+    private static final int DEPTH_RADIX_MASK = DEPTH_RADIX_SIZE - 1;
     private static boolean DISABLED = false;
     private static float WAYPOINT_BASE_SCALE = 1.0F;
     private static int WAYPOINT_BG_ALPHA_MASK = 0x80000000;
@@ -68,42 +44,6 @@ public class OptimizedWaypointRenderer {
     private static long SQUARED_VIEW_DISTANCE = 12 * 16 * 12 * 16;
     private static final float MIN_DEPTH = 0F;
     private static final float OFFSCREEN_MARGIN = 0.2F;
-    private static final float WAYPOINT_RENDER_LAYER_OFFSET = 0F;
-    private static final float WAYPOINT_TEXT_DEPTH_OFFSET = 0.2F;
-    private static final RenderPipeline WAYPOINT_BACKGROUND_PIPELINE = RenderPipelines.register(
-            RenderPipeline.builder(RenderPipelines.TEXT_SNIPPET, RenderPipelines.FOG_SNIPPET)
-                    //? if >= 1.21.11 {
-                    .withLocation(Identifier.fromNamespaceAndPath(ModInfo.MOD_ID, "pipeline/waypoint_text_background"))
-                    //?} else {
-                    /*.withLocation(ResourceLocation.fromNamespaceAndPath(ModInfo.MOD_ID, "pipeline/waypoint_text_background"))
-                    *///?}
-                    .withVertexShader("core/rendertype_text_background")
-                    .withFragmentShader("core/rendertype_text_background")
-                    .withSampler("Sampler2")
-                    .withVertexFormat(DefaultVertexFormat.POSITION_COLOR_LIGHTMAP, VertexFormat.Mode.QUADS)
-                    .withDepthWrite(false)
-                    .build()
-    );
-    private static final RenderType WAYPOINT_BACKGROUND_RENDER_TYPE = RenderType.create(
-            "server_waypoint_background",
-            //? if >= 1.21.11 {
-            RenderSetup.builder(WAYPOINT_BACKGROUND_PIPELINE)
-                    .useLightmap()
-                    .setLayeringTransform(LayeringTransform.VIEW_OFFSET_Z_LAYERING_FORWARD)
-                    .sortOnUpload()
-                    .bufferSize(RenderType.SMALL_BUFFER_SIZE)
-                    .createRenderSetup()
-            //?} else {
-            /*RenderType.SMALL_BUFFER_SIZE,
-            false,
-            true,
-            WAYPOINT_BACKGROUND_PIPELINE,
-            RenderType.CompositeState.builder()
-                    .setLightmapState(RenderStateShard.LIGHTMAP)
-                    .setLayeringState(RenderStateShard.VIEW_OFFSET_Z_LAYERING_FORWARD)
-                    .createCompositeState(false)
-            *///?}
-    );
 
     // =========================================================
     // STATE (RENDER THREAD ONLY)
@@ -138,11 +78,12 @@ public class OptimizedWaypointRenderer {
     private static boolean[] local;
 
     private static int[] visibleIndex;
-    private static float[] visibleDepth;
     private static float[] visibleWinX;
     private static float[] visibleWinY;
     private static float[] visibleIconScale;
-    private static CachedOrthoProjectionMatrixBuffer waypointProjectionMatrixBuffer;
+    private static long[] visibleDepthSortKey;
+    private static long[] visibleDepthSortScratch;
+    private static final int[] depthSortCounts = new int[DEPTH_RADIX_SIZE];
 
     // =========================================================
     // MINECRAFT RENDERING CONTEXT
@@ -150,14 +91,11 @@ public class OptimizedWaypointRenderer {
     private static final Minecraft mc = Minecraft.getInstance();
     private static final Font textRenderer = mc.font;
     private static final int textHeight = textRenderer.lineHeight;
-    private static final int textBgHeight = textHeight + 2;
+    private static final int textBgHeight = textHeight;
     private static final Window window = mc.getWindow();
     private static final Camera camera = mc.gameRenderer.getMainCamera();
-    private static final WaypointBufferSource waypointBufferSource = new WaypointBufferSource();
     public static final Matrix4f ModelViewMatrix = new Matrix4f();
     public static final Matrix4f ProjectionMatrix = new Matrix4f();
-    private static final Matrix4f GuiVertexMatrix = new Matrix4f();
-    private static final Matrix4f TextMatrix = new Matrix4f();
     private static final Vector4f posVec = new Vector4f();
 
     // =========================================================
@@ -213,11 +151,11 @@ public class OptimizedWaypointRenderer {
         initialsTextBgWidth = new float[MAX_WAYPOINTS];
         local = new boolean[MAX_WAYPOINTS];
         visibleIndex = new int[MAX_WAYPOINTS];
-        visibleDepth = new float[MAX_WAYPOINTS];
         visibleWinX = new float[MAX_WAYPOINTS];
         visibleWinY = new float[MAX_WAYPOINTS];
         visibleIconScale = new float[MAX_WAYPOINTS];
-        waypointProjectionMatrixBuffer = new CachedOrthoProjectionMatrixBuffer("server_waypoint", MIN_DEPTH, 1_000_000.0F, true);
+        visibleDepthSortKey = new long[MAX_WAYPOINTS];
+        visibleDepthSortScratch = new long[MAX_WAYPOINTS];
         initialized = true;
         LOGGER.info("waypoint renderer initialized");
     }
@@ -431,11 +369,11 @@ public class OptimizedWaypointRenderer {
     }
 
     private static float getTextBgWidth(String text) {
-        return Math.max(getTextWidth(text) + 4, textBgHeight);
+        return Math.max(getTextWidth(text) + 2, textBgHeight);
     }
 
     /**
-     * Gets a reusable command object from the pool, or creates a new one if empty.
+     * Gets a reusable command object from the pool or creates a new one if empty.
      */
     private static WaypointRendererCommand obtainCommand() {
         WaypointRendererCommand cmd = commandPool.poll();
@@ -526,7 +464,11 @@ public class OptimizedWaypointRenderer {
         float baseScale = WAYPOINT_BASE_SCALE * 0.01F * framebufferHeight / guiScaleFactor;
         float projectionScale = baseScale * projectionConstant;
         float minBaseScale = baseScale / 5F;
+        //? if >= 1.21.6 {
         Vec3 cameraPos = camera.position();
+        //?} else {
+        /*Vec3 cameraPos = camera.getPosition();
+        *///?}
         float camX = (float) cameraPos.x;
         float camY = (float) cameraPos.y;
         float camZ = (float) cameraPos.z;
@@ -557,7 +499,7 @@ public class OptimizedWaypointRenderer {
             projected.mul(ProjectionMatrix);
 
             float depth = projected.w();
-            if (depth <= MIN_DEPTH) {
+            if (!Float.isFinite(depth) || depth <= MIN_DEPTH) {
                 continue;
             }
 
@@ -574,10 +516,10 @@ public class OptimizedWaypointRenderer {
             float bgHeight = textBgHeight;
 
             visibleIndex[renderCount] = i;
-            visibleDepth[renderCount] = depth;
             visibleWinX[renderCount] = winX;
             visibleWinY[renderCount] = winY;
             visibleIconScale[renderCount] = iconScale;
+            visibleDepthSortKey[renderCount] = packDepthSortKey(depth, renderCount);
             renderCount++;
 
             if (IS_HOVERED) {
@@ -603,7 +545,7 @@ public class OptimizedWaypointRenderer {
             }
         }
 
-        drawWaypointIcons(context, renderCount, scaledWidth, scaledHeight);
+        drawWaypointIcons(context, renderCount);
 
         if (detailIndex != -1) {
             String name = names[detailIndex];
@@ -613,15 +555,12 @@ public class OptimizedWaypointRenderer {
             float labelTop = detailWinY - halfHeight;
             float labelBgLeft = getBoxLeft(detailWinX, bgWidth, detailScale);
             float labelBgBottom = labelTop + textBgHeight * detailScale;
-
             drawTextBox(context, name, detailWinX, labelTop, detailScale, textWidth, bgWidth, 0xFF000000 | bgColor[detailIndex], fgColor[detailIndex]);
-
             String distanceText = getDistanceText(detailDistance);
             float distanceWidth = getTextWidth(distanceText);
             float distanceBgWidth = getTextBgWidth(distanceText);
             float distanceScale = detailScale * 0.8F;
-            drawTextBoxAt(context, distanceText, labelBgLeft, labelBgBottom, distanceScale, distanceWidth, distanceBgWidth, 0xFF000000, 0xFFFFFFFF, false);
-
+            drawTextBoxAt(context, distanceText, labelBgLeft, labelBgBottom, distanceScale, distanceWidth, distanceBgWidth, 0x88000000, 0xFFFFFFFF);
             float scaledRealBgWidth = bgWidth * detailScale;
             float scaledRealBgHeight = textBgHeight * detailScale;
             float upperCornerX = detailWinX - scaledRealBgWidth * 0.5F;
@@ -636,64 +575,68 @@ public class OptimizedWaypointRenderer {
         }
     }
 
-    private static void drawWaypointIcons(GuiGraphics context, int renderCount, int scaledWidth, int scaledHeight) {
+    private static void drawWaypointIcons(GuiGraphics context, int renderCount) {
         if (renderCount == 0) {
             return;
         }
 
-        Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
-        mc.renderBuffers().bufferSource().endBatch();
-        RenderSystem.backupProjectionMatrix();
-        RenderSystem.setProjectionMatrix(waypointProjectionMatrixBuffer.getBuffer(scaledWidth, scaledHeight), ProjectionType.ORTHOGRAPHIC);
-        modelViewStack.pushMatrix();
-        modelViewStack.identity();
-        try {
-            try {
-                for (int i = 0; i < renderCount; i++) {
-                    int waypointIndex = visibleIndex[i];
-                    float iconScale = visibleIconScale[i];
-                    float bgWidth = initialsTextBgWidth[waypointIndex];
-                    float left = getBoxLeft(visibleWinX[i], bgWidth, iconScale);
-                    float top = visibleWinY[i] - textBgHeight * iconScale * 0.5F;
-                    float depth = visibleDepth[i];
-                    float textX = getCenteredTextX(bgWidth, initialsTextWidth[waypointIndex]);
+        sortVisibleDepthKeys(renderCount);
+        for (int sortedIndex = renderCount - 1; sortedIndex >= 0; sortedIndex--) {
+            int visibleSlot = unpackVisibleSlot(visibleDepthSortKey[sortedIndex]);
+            int waypointIndex = visibleIndex[visibleSlot];
+            float iconScale = visibleIconScale[visibleSlot];
+            float bgWidth = initialsTextBgWidth[waypointIndex];
+            float left = getBoxLeft(visibleWinX[visibleSlot], bgWidth, iconScale);
+            float top = visibleWinY[visibleSlot] - textBgHeight * iconScale * 0.5F;
 
-                    TextMatrix.identity()
-                            .translation(left, top, -depth + WAYPOINT_TEXT_DEPTH_OFFSET + WAYPOINT_RENDER_LAYER_OFFSET)
-                            .scale(iconScale);
-                    textRenderer.drawInBatch(initials[waypointIndex], textX, 1.0F, fgColor[waypointIndex], false, TextMatrix, waypointBufferSource, Font.DisplayMode.NORMAL, 0, FULL_BRIGHT);
-                }
-
-                VertexConsumer backgroundConsumer = waypointBufferSource.getBuffer(WAYPOINT_BACKGROUND_RENDER_TYPE);
-                for (int i = 0; i < renderCount; i++) {
-                    int waypointIndex = visibleIndex[i];
-                    float iconScale = visibleIconScale[i];
-                    float bgWidth = initialsTextBgWidth[waypointIndex];
-                    float bgHeight = textBgHeight;
-                    float left = getBoxLeft(visibleWinX[i], bgWidth, iconScale);
-                    float top = visibleWinY[i] - bgHeight * iconScale * 0.5F;
-                    float right = left + (float) Math.ceil(bgWidth) * iconScale;
-                    float bottom = top + bgHeight * iconScale;
-                    float depth = visibleDepth[i];
-
-                    drawTextBackground(backgroundConsumer, left, top, right, bottom, -depth + WAYPOINT_RENDER_LAYER_OFFSET, WAYPOINT_BG_ALPHA_MASK | bgColor[waypointIndex]);
-                }
-            } finally {
-                waypointBufferSource.endBatch();
-            }
-        } finally {
-            modelViewStack.popMatrix();
-            RenderSystem.restoreProjectionMatrix();
-            clearMainDepthBuffer();
+            drawTextBoxAt(context, initials[waypointIndex], left, top, iconScale, initialsTextWidth[waypointIndex], bgWidth, WAYPOINT_BG_ALPHA_MASK | bgColor[waypointIndex], fgColor[waypointIndex]);
         }
+    }
+
+    private static long packDepthSortKey(float depth, int visibleSlot) {
+        return ((Float.floatToRawIntBits(depth) & 0xFFFFFFFFL) << 32) | (visibleSlot & 0xFFFFFFFFL);
+    }
+
+    private static void sortVisibleDepthKeys(int renderCount) {
+        long[] from = visibleDepthSortKey;
+        long[] to = visibleDepthSortScratch;
+
+        for (int shift = Integer.SIZE; shift < Long.SIZE; shift += DEPTH_RADIX_BITS) {
+            Arrays.fill(depthSortCounts, 0);
+            for (int i = 0; i < renderCount; i++) {
+                depthSortCounts[(int) (from[i] >>> shift) & DEPTH_RADIX_MASK]++;
+            }
+
+            int offset = 0;
+            for (int i = 0; i < DEPTH_RADIX_SIZE; i++) {
+                int bucketSize = depthSortCounts[i];
+                depthSortCounts[i] = offset;
+                offset += bucketSize;
+            }
+
+            for (int i = 0; i < renderCount; i++) {
+                long key = from[i];
+                int bucket = (int) (key >>> shift) & DEPTH_RADIX_MASK;
+                to[depthSortCounts[bucket]++] = key;
+            }
+
+            long[] swap = from;
+            from = to;
+            to = swap;
+        }
+
+        if (from != visibleDepthSortKey) {
+            System.arraycopy(from, 0, visibleDepthSortKey, 0, renderCount);
+        }
+    }
+
+    private static int unpackVisibleSlot(long depthSortKey) {
+        return (int) depthSortKey;
     }
 
     private static float getIconScale(float depth, float projectionScale, float minBaseScale) {
         float scale = WAYPOINT_BASE_SCALE * projectionScale / depth;
-        if (scale < minBaseScale) {
-            return minBaseScale;
-        }
-        return scale;
+        return scale < minBaseScale ? minBaseScale : scale;
     }
 
     private static String getDistanceText(double distance) {
@@ -715,120 +658,45 @@ public class OptimizedWaypointRenderer {
         return Math.max(0.0F, textWidth - 1.0F);
     }
 
-    private static void drawTextBackground(VertexConsumer consumer, float left, float top, float right, float bottom, float z, int color) {
-        consumer.addVertex(GuiVertexMatrix, left, top, z).setColor(color).setLight(FULL_BRIGHT);
-        consumer.addVertex(GuiVertexMatrix, left, bottom, z).setColor(color).setLight(FULL_BRIGHT);
-        consumer.addVertex(GuiVertexMatrix, right, bottom, z).setColor(color).setLight(FULL_BRIGHT);
-        consumer.addVertex(GuiVertexMatrix, right, top, z).setColor(color).setLight(FULL_BRIGHT);
-    }
-
     private static void drawTextBox(GuiGraphics context, String text, float centerX, float topY, float boxScale, float textWidth, float backgroundWidth, int backgroundColor, int textColor) {
         int bgWidth = (int) Math.ceil(backgroundWidth);
-        int bgHeight = textBgHeight;
         float left = centerX - bgWidth * boxScale * 0.5F;
         float textX = getCenteredTextX(bgWidth, textWidth);
 
         push(context);
         translate(context, left, topY);
         scale(context, boxScale, boxScale);
-        context.fill(0, 0, bgWidth, bgHeight, backgroundColor);
+        context.fill(0, 0, bgWidth, textBgHeight, backgroundColor);
         translate(context, textX, 0.0F);
         context.drawString(textRenderer, text, 0, 1, textColor, false);
         pop(context);
+        finishGuiLayer(context);
     }
 
-    private static void drawTextBoxAt(GuiGraphics context, String text, float left, float topY, float boxScale, float textWidth, float backgroundWidth, int backgroundColor, int textColor, boolean shadow) {
+    private static void drawTextBoxAt(GuiGraphics context, String text, float left, float topY, float boxScale, float textWidth, float backgroundWidth, int backgroundColor, int textColor) {
         int bgWidth = (int) Math.ceil(backgroundWidth);
-        int bgHeight = textBgHeight;
         float textX = getCenteredTextX(bgWidth, textWidth);
 
         push(context);
         translate(context, left, topY);
         scale(context, boxScale, boxScale);
-        context.fill(0, 0, bgWidth, bgHeight, backgroundColor);
+        context.fill(0, 0, bgWidth, textBgHeight, backgroundColor);
         translate(context, textX, 0.0F);
-        context.drawString(textRenderer, text, 0, 1, textColor, shadow);
+        context.drawString(textRenderer, text, 0, 1, textColor, false);
         pop(context);
+        finishGuiLayer(context);
     }
 
-    private static void drawScaledText(GuiGraphics context, String text, float x, float y, float textScale, int textColor, boolean shadow) {
-        drawScaledText(context, text, x, y, textScale, 0.0F, 0.0F, textColor, shadow);
-    }
-
-    private static void drawScaledText(GuiGraphics context, String text, float x, float y, float textScale, float textX, float textY, int textColor, boolean shadow) {
-        push(context);
-        translate(context, x, y);
-        scale(context, textScale, textScale);
-        context.drawString(textRenderer, text, Math.round(textX), Math.round(textY), textColor, shadow);
-        pop(context);
+    private static void finishGuiLayer(GuiGraphics context) {
+        //? if >= 1.21.6 {
+        context.nextStratum();
+        //?} else {
+        /*context.flush();
+        *///?}
     }
 
     private static boolean isIn2DBox(float x, float y, float min_x, float min_y, float max_x, float max_y) {
         return (min_x <= x) && (x <= max_x) && (min_y <= y) && (y <= max_y);
-    }
-
-    private static void clearMainDepthBuffer() {
-        //? if >= 1.21.6 {
-        RenderSystem.getDevice().createCommandEncoder().clearDepthTexture(mc.getMainRenderTarget().getDepthTexture(), 1.0);
-        //?}
-    }
-
-    private static final class WaypointBufferSource implements MultiBufferSource {
-        private final Map<RenderType, ByteBufferBuilder> byteBuffers = new LinkedHashMap<>();
-        private final Map<RenderType, BufferBuilder> activeBuffers = new LinkedHashMap<>();
-
-        @Override
-        public VertexConsumer getBuffer(RenderType renderType) {
-            BufferBuilder activeBuffer = this.activeBuffers.get(renderType);
-            if (activeBuffer != null) {
-                if (renderType.canConsolidateConsecutiveGeometry()) {
-                    return activeBuffer;
-                }
-
-                this.endBatch(renderType);
-            }
-
-            ByteBufferBuilder byteBuffer = this.byteBuffers.computeIfAbsent(renderType, key -> new ByteBufferBuilder(key.bufferSize()));
-            BufferBuilder buffer = new BufferBuilder(byteBuffer, renderType.mode(), renderType.format());
-            this.activeBuffers.put(renderType, buffer);
-            return buffer;
-        }
-
-        public void endBatch(RenderType renderType) {
-            BufferBuilder buffer = this.activeBuffers.remove(renderType);
-            if (buffer != null) {
-                this.draw(renderType, buffer);
-            }
-        }
-
-        public void endBatch() {
-            this.activeBuffers.entrySet().removeIf(entry -> {
-                RenderType renderType = entry.getKey();
-                if (!renderType.sortOnUpload()) {
-                    this.draw(renderType, entry.getValue());
-                    return true;
-                }
-
-                return false;
-            });
-            this.activeBuffers.entrySet().removeIf(entry -> {
-                this.draw(entry.getKey(), entry.getValue());
-                return true;
-            });
-        }
-
-        private void draw(RenderType renderType, BufferBuilder buffer) {
-            MeshData meshData = buffer.build();
-            if (meshData == null) {
-                return;
-            }
-
-            if (renderType.sortOnUpload()) {
-                meshData.sortQuads(this.byteBuffers.get(renderType), RenderSystem.getProjectionType().vertexSorting());
-            }
-
-            renderType.draw(meshData);
-        }
     }
 
     // =========================================================

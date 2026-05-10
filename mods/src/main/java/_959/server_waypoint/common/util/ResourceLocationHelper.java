@@ -12,8 +12,10 @@ public final class ResourceLocationHelper {
     public static /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ id(String namespace, String path) {
         //? if >= 1.21.11 {
         return Identifier.fromNamespaceAndPath(namespace, path);
-        //?} else {
+        //?} elif >= 1.21 {
         /*return ResourceLocation.fromNamespaceAndPath(namespace, path);
+        *///?} else {
+        /*return new ResourceLocation(namespace, path);
         *///?}
     }
 }

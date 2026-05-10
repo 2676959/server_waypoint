@@ -13,6 +13,8 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 //?}
 import net.minecraft.client.renderer.MultiBufferSource;
+//? if < 1.21.6
+/*import net.minecraft.client.renderer.RenderType;*/
 //? if >= 1.21.11
 import net.minecraft.resources.Identifier;
 //? if < 1.21.11

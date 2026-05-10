@@ -43,7 +43,7 @@ public class FabricPermissionManager extends PermissionManager<CommandSourceStac
             //? if >= 1.21.11 {
             return player.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(defaultLevel)));
             //?} else {
-            /*return player.getPermissionLevel() >= defaultLevel;
+            /*return player.hasPermissions(defaultLevel);
             *///?}
         }
     }
