@@ -62,9 +62,9 @@ public final class OptimizedWaypointRenderer {
 
     // --- Structure of Arrays (SoA) ---
     private static int[] ids;
-    private static float[] xPos;
-    private static float[] yPos;
-    private static float[] zPos;
+    private static double[] xPos;
+    private static double[] yPos;
+    private static double[] zPos;
     private static int[] bgColor;
     private static int[] fgColor;
     private static String[] names;
@@ -104,7 +104,7 @@ public final class OptimizedWaypointRenderer {
 
         Type type;
         int renderId;
-        float x, y, z;
+        double x, y, z;
         int bgColor;
         int fgColor;
         String name;
@@ -136,9 +136,9 @@ public final class OptimizedWaypointRenderer {
         Arrays.fill(idMap, -1);
 
         ids = new int[MAX_WAYPOINTS];
-        xPos = new float[MAX_WAYPOINTS];
-        yPos = new float[MAX_WAYPOINTS];
-        zPos = new float[MAX_WAYPOINTS];
+        xPos = new double[MAX_WAYPOINTS];
+        yPos = new double[MAX_WAYPOINTS];
+        zPos = new double[MAX_WAYPOINTS];
         bgColor = new int[MAX_WAYPOINTS];
         fgColor = new int[MAX_WAYPOINTS];
         names = new String[MAX_WAYPOINTS];
@@ -272,7 +272,7 @@ public final class OptimizedWaypointRenderer {
         wp.renderId = assignedId;
 
         // 2. Send Command (Asynchronous)
-        sendCommand(WaypointRendererCommand.Type.ADD, assignedId, wp.X(), wp.Y(), wp.Z(), wp.rgb(), wp.name(), wp.initials(), !wp.global());
+        sendCommand(WaypointRendererCommand.Type.ADD, assignedId, getWaypointX(wp), getWaypointY(wp), getWaypointZ(wp), wp.rgb(), wp.name(), wp.initials(), !wp.global());
     }
 
     public static void addList(@Unmodifiable List<SimpleWaypoint> newWaypoints) {
@@ -358,8 +358,20 @@ public final class OptimizedWaypointRenderer {
 
     public static void updateWaypoint(SimpleWaypoint wp) {
         if (wp.renderId != -1) {
-            sendCommand(WaypointRendererCommand.Type.UPDATE, wp.renderId, wp.X(), wp.Y(), wp.Z(), wp.rgb(), wp.name(), wp.initials(), !wp.global());
+            sendCommand(WaypointRendererCommand.Type.UPDATE, wp.renderId, getWaypointX(wp), getWaypointY(wp), getWaypointZ(wp), wp.rgb(), wp.name(), wp.initials(), !wp.global());
         }
+    }
+
+    private static double getWaypointX(SimpleWaypoint waypoint) {
+        return waypoint.x() + 0.5D;
+    }
+
+    private static double getWaypointY(SimpleWaypoint waypoint) {
+        return waypoint.y() + 0.5D;
+    }
+
+    private static double getWaypointZ(SimpleWaypoint waypoint) {
+        return waypoint.z() + 0.5D;
     }
 
     private static float getTextWidth(String text) {
@@ -407,7 +419,7 @@ public final class OptimizedWaypointRenderer {
         cmd.bulkLocal = null;
     }
 
-    private static void sendCommand(WaypointRendererCommand.Type type, int id, float x, float y, float z, int color, String name, String initials, boolean isLocal) {
+    private static void sendCommand(WaypointRendererCommand.Type type, int id, double x, double y, double z, int color, String name, String initials, boolean isLocal) {
         // 1. REUSE instead of NEW
         WaypointRendererCommand cmd = obtainCommand();
 
@@ -466,9 +478,9 @@ public final class OptimizedWaypointRenderer {
         //?} else {
         /*Vec3 cameraPos = camera.getPosition();
         *///?}
-        float camX = (float) cameraPos.x;
-        float camY = (float) cameraPos.y;
-        float camZ = (float) cameraPos.z;
+        double camX = cameraPos.x;
+        double camY = cameraPos.y;
+        double camZ = cameraPos.z;
         float minDepth = Float.MAX_VALUE;
         int detailIndex = -1;
         float detailWinX = 0.0F;
@@ -483,15 +495,15 @@ public final class OptimizedWaypointRenderer {
         }
 
         for (int i = 0; i < count; i++) {
-            float relX = xPos[i] - camX;
-            float relY = yPos[i] + WAYPOINT_VERTICAL_OFFSET - camY;
-            float relZ = zPos[i] - camZ;
-            float horizontalDistanceSquared = relX * relX + relZ * relZ;
+            double relX = xPos[i] - camX;
+            double relY = yPos[i] + WAYPOINT_VERTICAL_OFFSET - camY;
+            double relZ = zPos[i] - camZ;
+            double horizontalDistanceSquared = relX * relX + relZ * relZ;
             if (local[i] && horizontalDistanceSquared > SQUARED_VIEW_DISTANCE) {
                 continue;
             }
 
-            Vector4f projected = posVec.set(relX, relY, relZ, 1.0F);
+            Vector4f projected = posVec.set((float) relX, (float) relY, (float) relZ, 1.0F);
             projected.mul(ModelViewMatrix);
             projected.mul(ProjectionMatrix);
 
@@ -745,7 +757,7 @@ public final class OptimizedWaypointRenderer {
                 if (cmd.bulkWaypoints != null) {
                     for (int i = 0; i < cmd.bulkWaypoints.length; i++) {
                         SimpleWaypoint wp = cmd.bulkWaypoints[i];
-                        addInternal(wp.renderId, wp.X(), wp.Y(), wp.Z(), wp.rgb(), cmd.bulkFgColor[i], wp.name(), wp.initials(), cmd.bulkNameWidth[i], cmd.bulkInitialsWidth[i], cmd.bulkNameBgWidth[i], cmd.bulkInitialsBgWidth[i], cmd.bulkLocal[i]);
+                        addInternal(wp.renderId, getWaypointX(wp), getWaypointY(wp), getWaypointZ(wp), wp.rgb(), cmd.bulkFgColor[i], wp.name(), wp.initials(), cmd.bulkNameWidth[i], cmd.bulkInitialsWidth[i], cmd.bulkNameBgWidth[i], cmd.bulkInitialsBgWidth[i], cmd.bulkLocal[i]);
                     }
                 }
                 break;
@@ -761,7 +773,7 @@ public final class OptimizedWaypointRenderer {
         }
     }
 
-    private static void addInternal(int id, float x, float y, float z, int bg_color, int fg_color, String name, String initial, float nameWidth, float initialsWidth, float nameBgWidth, float initialsBgWidth, boolean isLocal) {
+    private static void addInternal(int id, double x, double y, double z, int bg_color, int fg_color, String name, String initial, float nameWidth, float initialsWidth, float nameBgWidth, float initialsBgWidth, boolean isLocal) {
         if (id >= MAX_RENDER_ID || idMap[id] != -1) return;
         if (count >= MAX_WAYPOINTS) return;
 

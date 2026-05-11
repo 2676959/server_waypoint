@@ -109,7 +109,7 @@ public class WaypointFilesManagerCore {
     }
 
     public void updateWaypointProperties(@NotNull WaypointFileManager fileManager, @NotNull WaypointList waypointList, @NotNull SimpleWaypoint waypoint, String newName, String initials, WaypointPos waypointPos, int rgb, int yaw, boolean global, Runnable successAction, Runnable nameUsedAction, Runnable identicalAction) {
-        if (waypointList.hasWaypoint(newName)) {
+        if (!newName.equals(waypoint.name()) && waypointList.hasWaypoint(newName)) {
             nameUsedAction.run();
             return;
         }
