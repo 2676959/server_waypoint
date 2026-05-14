@@ -2,8 +2,6 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.WidgetThemeColors;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import org.joml.Matrix4f;
 
 import java.util.function.Consumer;
 import net.minecraft.client.gui.Font;
@@ -182,8 +180,8 @@ public class IntegerSlider extends ShiftableClickableWidget {
         }
 
         @Override
-        public void drawSlotBackground(VertexConsumer vertexConsumer, Matrix4f matrix) {
-            drawSolidColor(vertexConsumer, matrix, WidgetThemeColors.TRANSPARENT_BG_COLOR);
+        public void drawSlotBackground(GuiGraphicsExtractor context) {
+            drawSolidColor(context, WidgetThemeColors.TRANSPARENT_BG_COLOR);
         }
 
         @Override

@@ -2,8 +2,6 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.util.MathHelper;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import org.joml.Matrix4f;
 
 import java.util.function.Consumer;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -13,12 +11,11 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.currentMatrix;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawColorGradient;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawHorizontalGradient;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.vertex;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.withGuiVertices;
 
 /**
  * A discrete slider with a color gradient background.
@@ -153,53 +150,49 @@ public abstract class AbstractColorBgSlider implements LayoutElement, Renderable
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         push(context);
         translate(context, this.x, this.y);
-        Matrix4f matrix = currentMatrix(context);
-        withGuiVertices(context, vertexConsumer -> {
-            // draw the slot background
-            drawSlotBackground(vertexConsumer, matrix);
-            // draw the slider
-            drawSlider(vertexConsumer, matrix);
-        });
+        drawSlotBackground(context);
+        drawSlider(context);
         pop(context);
     }
 
-    public abstract void drawSlotBackground(VertexConsumer vertexConsumer, Matrix4f matrix);
+    public abstract void drawSlotBackground(GuiGraphicsExtractor context);
 
-    protected void drawSolidColor(VertexConsumer vertexConsumer, Matrix4f matrix, int color) {
-        vertex(vertexConsumer, matrix, 0, 0, 0, color);
-        vertex(vertexConsumer, matrix, 0, slotHeight, 0, color);
-        vertex(vertexConsumer, matrix, slotWidth, slotHeight, 0, color);
-        vertex(vertexConsumer, matrix, slotWidth, 0, 0, color);
+    protected void drawSolidColor(GuiGraphicsExtractor context, int color) {
+        drawColorGradient(context, 0, 0, this.slotWidth, this.slotHeight, color, color, color, color);
     }
 
-    protected void drawGradient(VertexConsumer vertexConsumer, Matrix4f matrix, int startColor, int endColor) {
-        drawAlphaGradient(vertexConsumer, matrix, 0, slotWidth, solid(startColor), solid(endColor));
+    protected void drawGradient(GuiGraphicsExtractor context, int startColor, int endColor) {
+        drawAlphaGradient(context, 0, this.slotWidth, solid(startColor), solid(endColor));
     }
 
-    protected void drawGradient(VertexConsumer vertexConsumer, Matrix4f matrix, float startX, float endX, int startColor, int endColor) {
-        drawAlphaGradient(vertexConsumer, matrix, startX, endX, solid(startColor), solid(endColor));
+    protected void drawGradient(GuiGraphicsExtractor context, float startX, float endX, int startColor, int endColor) {
+        drawAlphaGradient(context, startX, endX, solid(startColor), solid(endColor));
     }
 
-    protected void drawAlphaGradient(VertexConsumer vertexConsumer, Matrix4f matrix, int startColor, int endColor) {
-        drawAlphaGradient(vertexConsumer, matrix, 0, slotWidth, startColor, endColor);
+    protected void drawAlphaGradient(GuiGraphicsExtractor context, int startColor, int endColor) {
+        drawAlphaGradient(context, 0, this.slotWidth, startColor, endColor);
     }
 
-    protected void drawAlphaGradient(VertexConsumer vertexConsumer, Matrix4f matrix, float startX, float endX, int startColor, int endColor) {
-        vertex(vertexConsumer, matrix, startX, 0, 0, startColor);
-        vertex(vertexConsumer, matrix, startX, slotHeight, 0, startColor);
-        vertex(vertexConsumer, matrix, endX, slotHeight, 0, endColor);
-        vertex(vertexConsumer, matrix, endX, 0, 0, endColor);
+    protected void drawAlphaGradient(GuiGraphicsExtractor context, float startX, float endX, int startColor, int endColor) {
+        drawHorizontalGradient(context, startX, 0, endX, this.slotHeight, startColor, endColor);
     }
 
     private static int solid(int color) {
         return 0xFF000000 | color;
     }
 
-    protected void drawSlider(VertexConsumer vertexConsumer, Matrix4f matrix) {
-        vertex(vertexConsumer, matrix, this.sliderLeft, 0, 0, 0xFFFFFFFF);
-        vertex(vertexConsumer, matrix, this.sliderLeft, slotHeight, 0, 0xFFFFFFFF);
-        vertex(vertexConsumer, matrix, this.sliderRight, slotHeight, 0, 0xFFFFFFFF);
-        vertex(vertexConsumer, matrix, this.sliderRight, 0, 0, 0xFFFFFFFF);
+    protected void drawSlider(GuiGraphicsExtractor context) {
+        //? if = 26.1.2 {
+        int sliderX = MathHelper.clamp((int) this.sliderCenter, 0, this.slotWidth - 1);
+        drawSolidColor(context, sliderX, sliderX + 1, 0xFFFFFFFF);
+        //?} else {
+        
+        /*drawSolidColor(context, this.sliderLeft, this.sliderRight, 0xFFFFFFFF);
+        *///?}
+    }
+
+    private void drawSolidColor(GuiGraphicsExtractor context, float startX, float endX, int color) {
+        drawColorGradient(context, startX, 0, endX, this.slotHeight, color, color, color, color);
     }
 
     @Override

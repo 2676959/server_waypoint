@@ -1,9 +1,9 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.network.chat.Component;
-import org.joml.Matrix4f;
 
 public class RGBColorPicker extends Abstract3ChannelColorPicker<RGBColorPicker.RGBChannelSlider> {
     public RGBColorPicker(int x, int y, int slotWidth, int slotHeight, ColorPickerCallBack callback) {
@@ -70,8 +70,8 @@ public class RGBColorPicker extends Abstract3ChannelColorPicker<RGBColorPicker.R
         }
 
         @Override
-        public void drawSlotBackground(VertexConsumer vertexConsumer, Matrix4f matrix) {
-            drawGradient(vertexConsumer, matrix, this.startColor, this.endColor);
+        public void drawSlotBackground(GuiGraphicsExtractor context) {
+            drawGradient(context, this.startColor, this.endColor);
         }
     }
 }
