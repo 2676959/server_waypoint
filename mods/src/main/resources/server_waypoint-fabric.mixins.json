@@ -5,11 +5,9 @@
 	"client": [
 		"ClientPlayNetworkHandlerMixin",
 		"MinimapWorldStateUpdaterMixin",
-		"WorldRendererMixin",
 		"GameHudMixin",
 		"MinecraftClientMixin",
 		"BoundKeyAccessor",
-		"GameHudMixin",
 		"WorldRendererMixin",
 		"PlayerManagerMixin",
 		"ServerPlayerEntityMixin",

@@ -196,8 +196,48 @@ public final class DrawContextHelper {
             int minY = (int) Math.floor(Math.min(Math.min(this.y[0], this.y[1]), Math.min(this.y[2], this.y[3])));
             int maxX = (int) Math.ceil(Math.max(Math.max(this.x[0], this.x[1]), Math.max(this.x[2], this.x[3])));
             int maxY = (int) Math.ceil(Math.max(Math.max(this.y[0], this.y[1]), Math.max(this.y[2], this.y[3])));
-            this.context.fill(minX, minY, maxX, maxY, this.color[0]);
+            //? if = 26.1.2 {
+            int width = maxX - minX;
+            if (width <= 1 || allColorsMatch()) {
+                this.context.fill(minX, minY, maxX, maxY, this.color[0]);
+                return;
+            }
+
+            for (int x = minX; x < maxX; x++) {
+                float progress = (float) (x - minX) / (width - 1);
+                int topColor = lerpColor(this.color[0], this.color[3], progress);
+                int bottomColor = lerpColor(this.color[1], this.color[2], progress);
+                this.context.fillGradient(x, minY, x + 1, maxY, topColor, bottomColor);
+            }
+            //?} else {
+            /*this.context.fill(minX, minY, maxX, maxY, this.color[0]);
+            *///?}
             //?}
+        }
+
+        private boolean allColorsMatch() {
+            return this.color[0] == this.color[1] && this.color[0] == this.color[2] && this.color[0] == this.color[3];
+        }
+
+        private static int lerpColor(int startColor, int endColor, float progress) {
+            int startAlpha = startColor >>> 24;
+            int startRed = startColor >> 16 & 0xFF;
+            int startGreen = startColor >> 8 & 0xFF;
+            int startBlue = startColor & 0xFF;
+            int endAlpha = endColor >>> 24;
+            int endRed = endColor >> 16 & 0xFF;
+            int endGreen = endColor >> 8 & 0xFF;
+            int endBlue = endColor & 0xFF;
+
+            int alpha = lerpChannel(startAlpha, endAlpha, progress);
+            int red = lerpChannel(startRed, endRed, progress);
+            int green = lerpChannel(startGreen, endGreen, progress);
+            int blue = lerpChannel(startBlue, endBlue, progress);
+            return alpha << 24 | red << 16 | green << 8 | blue;
+        }
+
+        private static int lerpChannel(int startValue, int endValue, float progress) {
+            return (int) (startValue + (endValue - startValue) * progress + 0.5F);
         }
 
         @Override
