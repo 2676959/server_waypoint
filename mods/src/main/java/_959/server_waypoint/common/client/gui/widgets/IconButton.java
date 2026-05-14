@@ -8,15 +8,15 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 //? if >= 1.21.11
-import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.Identifier;*/
 //? if < 1.21.11
-/*import net.minecraft.resources.ResourceLocation;*/
+import net.minecraft.resources.ResourceLocation;
 
 public class IconButton extends ShiftableClickableWidget {
-    private final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ icon;
+    private final /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ icon;
     private final ButtonClickCallback callback;
 
-    public IconButton(int x, int y, int width, int height, Component message, /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ icon, ButtonClickCallback callback) {
+    public IconButton(int x, int y, int width, int height, Component message, /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ icon, ButtonClickCallback callback) {
         super(x, y, width, height, message);
         this.icon = icon;
         this.callback = callback;

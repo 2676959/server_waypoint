@@ -31,10 +31,10 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         this.buttonRow.setXOffset(CONTENT_WIDTH);
         Minecraft minecraftClient = Minecraft.getInstance();
         //? if >= 1.21.11 {
-        BlockPos defaultPos = minecraftClient.gameRenderer.getMainCamera().blockPosition();
-        //?} else {
-        /*BlockPos defaultPos = minecraftClient.gameRenderer.getMainCamera().getBlockPosition();
-        *///?}
+        /*BlockPos defaultPos = minecraftClient.gameRenderer.getMainCamera().blockPosition();
+        *///?} else {
+        BlockPos defaultPos = minecraftClient.gameRenderer.getMainCamera().getBlockPosition();
+        //?}
         if (minecraftClient.getCameraEntity() != null) {
             defaultPos = minecraftClient.getCameraEntity().blockPosition();
         }

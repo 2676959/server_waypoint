@@ -18,7 +18,11 @@ import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+//? if fabric {
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+//?} elif neoforge {
+/*import net.neoforged.neoforge.network.PacketDistributor;
+*///?}
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import org.jetbrains.annotations.NotNull;
@@ -238,7 +242,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
      * can only be called when connected to a server
      * */
     public void requestUpdates() {
+        //? if fabric {
         ClientPlayNetworking.send(getClientUpdateRequestPayload());
+        //?} elif neoforge {
+        /*PacketDistributor.sendToServer(getClientUpdateRequestPayload());
+        *///?}
     }
 
     public void onJoinServer() {
@@ -252,7 +260,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         } else {
             // send handshake to server -> onServerHandShake
             networkState = ClientNetworkState.NO_SERVERSIDE_SUPPORT;
+            //? if fabric {
             ClientPlayNetworking.send(clientHandshake);
+            //?} elif neoforge {
+            /*PacketDistributor.sendToServer(clientHandshake);
+            *///?}
         }
     }
 
@@ -363,10 +375,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         this.fileManagerMap.clear();
         OptimizedWaypointRenderer.clearScene();
         //? if >= 1.21.11 {
-        currentDimensionName = this.mc.level.dimension().identifier().toString();
-        //?} else {
-        /*currentDimensionName = this.mc.level.dimension().location().toString();
-        *///?}
+        /*currentDimensionName = this.mc.level.dimension().identifier().toString();
+        *///?} else {
+        currentDimensionName = this.mc.level.dimension().location().toString();
+        //?}
         boolean found = false;
         for (DimensionWaypointBuffer dimensionWaypoint : buffer) {
             String dimensionName = dimensionWaypoint.dimensionName();

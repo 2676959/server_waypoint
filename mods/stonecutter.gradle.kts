@@ -5,4 +5,4 @@ plugins {
     id("net.neoforged.gradle.userdev") version "7.1.27" apply false
     id("com.gradleup.shadow") version "9.4.1" apply false
 }
-stonecutter active "1.21.11-fabric"
+stonecutter active "1.21.6-fabric"

@@ -1,17 +1,28 @@
 package _959.server_waypoint.neoforge.permission;
 
-import _959.server_waypoint.common.permission.PermissionKey;
+import _959.server_waypoint.command.permission.PermissionKeys;
+import _959.server_waypoint.command.permission.PermissionManager;
+import _959.server_waypoint.command.permission.PermissionStringKeys;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.server.permission.PermissionAPI;
 
-public class NeoForgePermissionManager {
-    public static boolean hasPermission(CommandSourceStack source, PermissionKey permission, int defaultRequiredLevel) {
+public class NeoForgePermissionManager extends PermissionManager<CommandSourceStack, String, ServerPlayer> {
+    public NeoForgePermissionManager() {
+        super(new PermissionStringKeys());
+    }
+
+    @Override
+    public boolean hasPermission(CommandSourceStack source, PermissionKeys<String>.PermissionKey key, int defaultLevel) {
         ServerPlayer player = source.getPlayer();
         if (player == null) {
-            return source.hasPermission(defaultRequiredLevel);
+            return source.hasPermission(defaultLevel);
         } else {
-            return PermissionAPI.getPermission(player, permission.getNode());
+            return checkPlayerPermission(player, key, defaultLevel);
         }
+    }
+
+    @Override
+    public boolean checkPlayerPermission(ServerPlayer player, PermissionKeys<String>.PermissionKey key, int defaultLevel) {
+        return player.hasPermissions(defaultLevel);
     }
 }
