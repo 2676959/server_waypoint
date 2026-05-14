@@ -1,7 +1,8 @@
 plugins {
     id("dev.kikugie.stonecutter")
-    id("dev.architectury.loom") version "1.14.473" apply false
-    id("architectury-plugin") version "3.4-SNAPSHOT" apply false
-    id("com.github.johnrengelman.shadow") version "8.1.1" apply false
+    id("fabric-loom") version "1.14.10" apply false
+    id("net.neoforged.moddev") version "2.0.141" apply false
+    id("net.neoforged.gradle.userdev") version "7.1.27" apply false
+    id("com.gradleup.shadow") version "9.4.1" apply false
 }
 stonecutter active "1.21.11-fabric"
