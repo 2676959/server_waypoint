@@ -26,7 +26,7 @@
 		"server_waypoint-fabric.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.16.10",
+		"fabricloader": "${fabricloader_dependency}",
 		"minecraft": "${minecraft_dependency}",
 		"java": ">=${java_version}",
 		"fabric-api": "*"
