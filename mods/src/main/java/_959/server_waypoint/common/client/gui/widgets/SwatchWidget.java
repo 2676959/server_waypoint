@@ -1,15 +1,16 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 //? if >= 1.21.9 {
-/*import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
-*///?}
+//?}
 import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
@@ -395,19 +396,19 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         //? if >= 1.21.9 {
-        /*return this.focused.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
-        *///?} else {
-        return this.focused.keyPressed(keyCode, scanCode, modifiers);
-        //?}
+        return this.focused.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
+        //?} else {
+        /*return this.focused.keyPressed(keyCode, scanCode, modifiers);
+        *///?}
     }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
         //? if >= 1.21.9 {
-        /*return this.focused.charTyped(new CharacterEvent(chr, modifiers));
-        *///?} else {
-        return this.focused.charTyped(chr, modifiers);
-        //?}
+        return this.focused.charTyped(new CharacterEvent(chr/*? if <26 {*//*, modifiers*//*?}*/));
+        //?} else {
+        /*return this.focused.charTyped(chr, modifiers);
+        *///?}
     }
 
     @Override
@@ -436,7 +437,10 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
     }
 
     @Override
-    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+    public void
+    //$ render_widget_method_swap
+    extractWidgetRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         if (this.visible) {
             int x = getX() - BG_PADDING_X;
             int y = getY() - BG_PADDING_Y;
@@ -444,7 +448,10 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
             int paddingHeight = BG_PADDING_Y << 1;
             context.fill(x, y, x + this.width + paddingWidth, y + this.height + paddingHeight, TRANSPARENT_BG_COLOR);
             renderOutline(context, x, y, this.width + paddingWidth, this.height + paddingHeight, 0xFFFFFFFF);
-            this.mainLayout.render(context, mouseX, mouseY, deltaTicks);
+            this.mainLayout.
+            //$ render_method_swap
+            extractRenderState
+                    (context, mouseX, mouseY, deltaTicks);
         }
     }
 

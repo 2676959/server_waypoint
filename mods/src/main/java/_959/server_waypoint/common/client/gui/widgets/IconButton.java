@@ -1,22 +1,23 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.texture;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 //? if >= 1.21.11
-/*import net.minecraft.resources.Identifier;*/
+import net.minecraft.resources.Identifier;
 //? if < 1.21.11
-import net.minecraft.resources.ResourceLocation;
+/*import net.minecraft.resources.ResourceLocation;*/
 
 public class IconButton extends ShiftableClickableWidget {
-    private final /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ icon;
+    private final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ icon;
     private final ButtonClickCallback callback;
 
-    public IconButton(int x, int y, int width, int height, Component message, /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ icon, ButtonClickCallback callback) {
+    public IconButton(int x, int y, int width, int height, Component message, /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ icon, ButtonClickCallback callback) {
         super(x, y, width, height, message);
         this.icon = icon;
         this.callback = callback;
@@ -28,7 +29,10 @@ public class IconButton extends ShiftableClickableWidget {
     }
 
     @Override
-    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+    public void
+    //$ render_widget_method_swap
+    extractWidgetRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
         if (isFocused() || isHovered()) {

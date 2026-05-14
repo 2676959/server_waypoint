@@ -1,3 +1,4 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
@@ -9,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -256,19 +257,28 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void
+    //$ render_method_swap
+    extractRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         int centeredX = getCenteredX();
         int centeredY = getCenteredY();
         setOffsets(centeredX, centeredY);
 
         this.drawBackground(context);
-        this.mainLayout.render(context, mouseX, mouseY, delta);
+        this.mainLayout.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
         nextLayer(context);
-        this.swatchWidget.renderWidget(context, mouseX, mouseY, delta);
+        this.swatchWidget.
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+                (context, mouseX, mouseY, delta);
         previousLayer(context);
     }
 
-    private void drawBackground(GuiGraphics context) {
+    private void drawBackground(GuiGraphicsExtractor context) {
         int bgWidth = (BG_PADDING_X << 1) + CONTENT_WIDTH;
         int bgHeight = (BG_PADDING_Y << 1) + CONTENT_HEIGHT;
         int bgCenteredX = centered(this.width, bgWidth);

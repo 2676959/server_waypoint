@@ -1,3 +1,4 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
@@ -8,7 +9,7 @@ import _959.server_waypoint.core.waypoint.WaypointList;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.getCurrentDimensionName;
@@ -128,9 +129,18 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        waypointListWidget.renderWidget(context, mouseX, mouseY, delta);
-        dimensionListWidget.renderWidget(context, mouseX, mouseY, delta);
+    public void
+    //$ render_method_swap
+    extractRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        waypointListWidget.
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+                (context, mouseX, mouseY, delta);
+        dimensionListWidget.
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+                (context, mouseX, mouseY, delta);
     }
 
     @Override

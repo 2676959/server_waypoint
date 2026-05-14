@@ -6,9 +6,9 @@ import _959.server_waypoint.core.network.buffer.WaypointListBuffer;
 import _959.server_waypoint.core.network.codec.WaypointListBufferCodec;
 import io.netty.buffer.ByteBuf;
 //? if >= 1.21.11
-/*import net.minecraft.resources.Identifier;*/
+import net.minecraft.resources.Identifier;
 //? if < 1.21.11
-import net.minecraft.resources.ResourceLocation;
+/*import net.minecraft.resources.ResourceLocation;*/
 //? if >= 1.20.5 {
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -20,7 +20,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import static _959.server_waypoint.core.network.PayloadID.WAYPOINT_LIST;
 
 public record WaypointListS2CPayload(WaypointListBuffer waypointListBuffer) implements ModPayload {
-    public static final /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ WAYPOINT_LIST_PAYLOAD_ID = _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, WAYPOINT_LIST);
+    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ WAYPOINT_LIST_PAYLOAD_ID = _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, WAYPOINT_LIST);
 //? if >= 1.20.5 {
 
     public static final CustomPacketPayload.Type<WaypointListS2CPayload> ID = new CustomPacketPayload.Type<>(WAYPOINT_LIST_PAYLOAD_ID);

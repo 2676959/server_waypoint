@@ -59,7 +59,7 @@ public class HandlerForXaerosMinimap implements BufferHandler {
         MinimapSession session = getMinimapSession();
         MinimapWorld minimapWorld = getMinimapWorld(session, dimKey);
         replaceWaypointList(minimapWorld, waypointList);
-        player.displayClientMessage(Component.translatable("server_waypoint.list.added.xaeros", waypointList.name()), false);
+        displayClientMessage(player, Component.translatable("server_waypoint.list.added.xaeros", waypointList.name()));
         saveMinimapWorldWithFeedback(session, minimapWorld, player);
     }
 
@@ -75,7 +75,7 @@ public class HandlerForXaerosMinimap implements BufferHandler {
         MinimapSession session = getMinimapSession();
         MinimapWorld minimapWorld = getMinimapWorld(session, dimKey);
         replaceWaypointLists(minimapWorld, buffer.waypointLists());
-        player.displayClientMessage(Component.translatable("server_waypoint.dimension.waypoint.added.xaeros", Component.literal(dimensionName).withStyle(getDimensionColor(dimensionName))), false);
+        displayClientMessage(player, Component.translatable("server_waypoint.dimension.waypoint.added.xaeros", Component.literal(dimensionName).withStyle(getDimensionColor(dimensionName))));
         saveMinimapWorldWithFeedback(session, minimapWorld, player);
     }
 
@@ -86,7 +86,7 @@ public class HandlerForXaerosMinimap implements BufferHandler {
         for (DimensionWaypointBuffer dimensionWaypointBuffer : buffer) {
             addDimensionWaypoint(session, dimensionWaypointBuffer);
         }
-        player.displayClientMessage(Component.translatable("server_waypoint.all.added.xaeros"), false);
+        displayClientMessage(player, Component.translatable("server_waypoint.all.added.xaeros"));
         for (DimensionWaypointBuffer dimensionWaypointBuffer : buffer) {
             String dimensionName = dimensionWaypointBuffer.dimensionName();
             ResourceKey<Level> dimKey = getDimensionKey(dimensionName);
@@ -98,7 +98,7 @@ public class HandlerForXaerosMinimap implements BufferHandler {
                 saveMinimapWorld(session, dimKey);
             } catch (IOException e) {
                 LOGGER.warn("Failed to save waypoints for dimension {}.", dimensionName, e);
-                player.displayClientMessage(Component.translatable("server_waypoint.save.dimension.failed.xaeros", Component.literal(dimensionName).withStyle(getDimensionColor(dimensionName))), false);
+                displayClientMessage(player, Component.translatable("server_waypoint.save.dimension.failed.xaeros", Component.literal(dimensionName).withStyle(getDimensionColor(dimensionName))));
             }
         }
     }
@@ -131,7 +131,7 @@ public class HandlerForXaerosMinimap implements BufferHandler {
             case ADD -> {
                 SimpleWaypoint simpleWaypoint = buffer.waypoint();
                 waypointSet.add(simpleWaypointToXaerosWaypoint(simpleWaypoint));
-                player.displayClientMessage(Component.translatable("server_waypoint.modification.add.xaeros", toVanillaText(waypointTextWithTp(simpleWaypoint, dimensionName, listName))), false);
+                displayClientMessage(player, Component.translatable("server_waypoint.modification.add.xaeros", toVanillaText(waypointTextWithTp(simpleWaypoint, dimensionName, listName))));
             }
             case REMOVE -> {
                 String waypointName = buffer.waypointName();
@@ -141,7 +141,7 @@ public class HandlerForXaerosMinimap implements BufferHandler {
             case UPDATE -> {
                 SimpleWaypoint simpleWaypoint = buffer.waypoint();
                 replaceWaypoint(waypointSet, simpleWaypointToXaerosWaypoint(simpleWaypoint));
-                player.displayClientMessage(Component.translatable("server_waypoint.modification.update.xaeros", toVanillaText(waypointTextWithTp(simpleWaypoint, dimensionName, listName))), false);
+                displayClientMessage(player, Component.translatable("server_waypoint.modification.update.xaeros", toVanillaText(waypointTextWithTp(simpleWaypoint, dimensionName, listName))));
             }
         }
         saveMinimapWorldWithFeedback(session, minimapWorld, player);
@@ -152,12 +152,19 @@ public class HandlerForXaerosMinimap implements BufferHandler {
             saveMinimapWorld(session, minimapWorld);
         } catch (IOException e) {
             LOGGER.warn("Failed to save waypoints", e);
-            player.displayClientMessage(Component.translatable("server_waypoint.save.failed.xaeros").withStyle(ChatFormatting.RED), false);
+            displayClientMessage(player, Component.translatable("server_waypoint.save.failed.xaeros").withStyle(ChatFormatting.RED));
         }
     }
 
     protected void warnInvalidDimension(Player player, String dimensionName) {
         LOGGER.warn("Failed to decode dimension {}", dimensionName);
-        player.displayClientMessage(Component.translatable("server_waypoint.dimension.decode.fail", Component.literal(dimensionName)), false);
+        displayClientMessage(player, Component.translatable("server_waypoint.dimension.decode.fail", Component.literal(dimensionName)));
+    }
+
+    private static void displayClientMessage(Player player, Component message) {
+        //? if >=26
+        player.sendSystemMessage(message);
+        //? if <26
+        /*player.displayClientMessage(message, false);*/
     }
 }

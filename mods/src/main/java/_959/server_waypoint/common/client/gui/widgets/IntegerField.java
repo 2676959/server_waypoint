@@ -15,7 +15,6 @@ public class IntegerField extends TranslucentTextField {
         this.maxValue = maxValue;
         this.minValue = minValue;
         this.defaultValue = defaultValue;
-        this.setFilter(this::testInRange);
     }
 
     public IntegerField(int x, int y, int width, Component text, Font textRenderer) {

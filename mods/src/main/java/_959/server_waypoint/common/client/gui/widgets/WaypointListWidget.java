@@ -1,3 +1,4 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.Expandable;
@@ -17,13 +18,13 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 //? if >= 1.21.11
-/*import net.minecraft.resources.Identifier;*/
+import net.minecraft.resources.Identifier;
 //? if < 1.21.11
-import net.minecraft.resources.ResourceLocation;
+/*import net.minecraft.resources.ResourceLocation;*/
 
 import static _959.server_waypoint.ModInfo.MOD_ID;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
@@ -41,15 +42,15 @@ import static java.util.Collections.binarySearch;
 public class WaypointListWidget extends ShiftableScrollableWidget implements Padding, Expandable {
     public static int TELEPORT_KEY = 84;
     public static final Component EMPTY_INFO_TEXT = Component.translatable("waypoint.empty_mark");
-    public static final /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ SHOW_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/show.png");
-    public static final /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ HIDE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/hide.png");
-    public static final /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ ADD_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/add.png");
-    public static final /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ EDIT_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/edit.png");
-    public static final /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/delete.png");
-    public static final /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ CONFIRM_REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/confirm_delete.png");
-    public static final /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ LIST_EMPTY = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_empty.png");
-    public static final /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ LIST_EXPAND_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_expand.png");
-    public static final /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ LIST_COLLAPSE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_collapse.png");
+    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ SHOW_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/show.png");
+    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ HIDE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/hide.png");
+    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ ADD_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/add.png");
+    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ EDIT_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/edit.png");
+    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/delete.png");
+    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ CONFIRM_REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/confirm_delete.png");
+    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ LIST_EMPTY = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_empty.png");
+    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ LIST_EXPAND_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_expand.png");
+    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ LIST_COLLAPSE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_collapse.png");
     private static final int listIconSize = 16;
     private static final int buttonIconSize = 12;
     private static double SCROLLED_POSITION = 0.0D;
@@ -325,13 +326,19 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
     }
 
     @Override
-    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+    public void
+    //$ render_widget_method_swap
+    extractWidgetRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         double scrollY = getScrollY();
         int i = 0;
         int x = getX();
         int y = getY();
 
-        this.paddingBackground.render(context, mouseX, mouseY, deltaTicks);
+        this.paddingBackground.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, deltaTicks);
 
         context.enableScissor(x, y, x + width, y + height);
 
@@ -342,7 +349,10 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
         int listWidth = overflows() ?  width - SCROLLBAR_WIDTH : width;
         
         if (empty) {
-            context.drawString(textRenderer, EMPTY_INFO_TEXT, 5, textVertOffset, 0x55FFFFFF, true);
+            context.
+            //$ gui_text_method_swap
+            text
+                    (textRenderer, EMPTY_INFO_TEXT, 5, textVertOffset, 0x55FFFFFF, true);
             pop(context);
             context.disableScissor();
             this.drawScrollbar(context);
@@ -406,7 +416,10 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                 }
             }
             // waypoint list name
-            context.drawString(textRenderer, waypointList.name(), 18, y1 + textVertOffset, textColor, true);
+            context.
+            //$ gui_text_method_swap
+            text
+                    (textRenderer, waypointList.name(), 18, y1 + textVertOffset, textColor, true);
             // render list expand icon
             if (isListEmpty) {
                 texture(context, LIST_EMPTY, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
@@ -460,11 +473,20 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                 final int finalTextColor = textColor;
                 final int backgroundColor = bgAlpha | rgb;
                 if (waypoint.global()) {
-                    context.drawString(textRenderer, "*", 6, finalY, textColor);
+                    context.
+                    //$ gui_text_method_swap
+                    text
+                            (textRenderer, "*", 6, finalY, textColor);
                 }
                 context.fill(15, finalY - 1, 15 + textRenderer.width(initials), finalY + textRenderer.lineHeight, backgroundColor);
-                context.drawString(textRenderer, initials, 15, finalY, finalTextColor, true);
-                context.drawString(textRenderer, name, 55, finalY, textColor);
+                context.
+                //$ gui_text_method_swap
+                text
+                        (textRenderer, initials, 15, finalY, finalTextColor, true);
+                context.
+                //$ gui_text_method_swap
+                text
+                        (textRenderer, name, 55, finalY, textColor);
                 i++;
             }
         }

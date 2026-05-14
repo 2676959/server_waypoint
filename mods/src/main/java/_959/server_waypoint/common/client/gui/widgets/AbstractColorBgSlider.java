@@ -1,3 +1,4 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.util.MathHelper;
@@ -5,7 +6,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import org.joml.Matrix4f;
 
 import java.util.function.Consumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -146,7 +147,10 @@ public abstract class AbstractColorBgSlider implements LayoutElement, Renderable
     }
 
     @Override
-    public final void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+    public final void
+    //$ render_method_swap
+    extractRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         push(context);
         translate(context, this.x, this.y);
         Matrix4f matrix = currentMatrix(context);

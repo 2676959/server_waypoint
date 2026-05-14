@@ -1,10 +1,11 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.BORDER_COLOR;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.BORDER_FOCUS_COLOR;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
@@ -35,7 +36,10 @@ public class ColorSquareButton extends ShiftableClickableWidget implements Color
     }
 
     @Override
-    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+    public void
+    //$ render_widget_method_swap
+    extractWidgetRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
         int bdColor = isFocused() || isHovered() ? BORDER_FOCUS_COLOR : renderBorder ? BORDER_COLOR : 0;

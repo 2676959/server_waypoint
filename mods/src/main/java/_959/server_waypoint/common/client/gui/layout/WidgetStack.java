@@ -1,3 +1,4 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.layout;
 
 import _959.server_waypoint.common.client.gui.Padding;
@@ -6,14 +7,14 @@ import _959.server_waypoint.util.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.layouts.LayoutElement;
 //? if >= 1.21.9 {
-/*import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
-*///?}
+//?}
 
 /**
  * Stack widgets horizontally or vertically within one specific direction
@@ -106,26 +107,32 @@ public class WidgetStack extends ShiftableWidget {
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         //? if >= 1.21.9 {
-        /*MouseButtonEvent event = new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(button, 0));
+        MouseButtonEvent event = new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(button, 0));
         for (AbstractWidget child : clickable) {
             if (child.mouseClicked(event, false)) {
                 return true;
             }
         }
-        *///?} else {
-        for (AbstractWidget child : clickable) {
+        //?} else {
+        /*for (AbstractWidget child : clickable) {
             if (child.mouseClicked(mouseX, mouseY, button)) {
                 return true;
             }
         }
-        //?}
+        *///?}
         return false;
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+    public void
+    //$ render_method_swap
+    extractRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         for (Renderable child : drawables) {
-            child.render(context, mouseX, mouseY, deltaTicks);
+            child.
+            //$ render_method_swap
+            extractRenderState
+                    (context, mouseX, mouseY, deltaTicks);
         }
     }
 

@@ -62,7 +62,10 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         } else {
             LOGGER.info("xaero's mod is not loaded, set sendXaerosWorldId to {} by config.json", CONFIG.Features().sendXaerosWorldId());
             //? if >= 1.20.5
-            PayloadTypeRegistry.playS2C().register(XaerosWorldIdS2CPayload.ID, XaerosWorldIdS2CPayload.PACKET_CODEC);
+            PayloadTypeRegistry.
+            //$ payload_s2c_registry_swap
+            clientboundPlay
+            ().register(XaerosWorldIdS2CPayload.ID, XaerosWorldIdS2CPayload.PACKET_CODEC);
         }
 
         // register waypoint command
@@ -92,15 +95,39 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
 
     public static void registerPayloads() {
         //? if >= 1.20.5 {
-        PayloadTypeRegistry.playS2C().register(WaypointListS2CPayload.ID, WaypointListS2CPayload.PACKET_CODEC);
-        PayloadTypeRegistry.playS2C().register(DimensionWaypointS2CPayload.ID, DimensionWaypointS2CPayload.PACKET_CODEC);
-        PayloadTypeRegistry.playS2C().register(WorldWaypointS2CPayload.ID, WorldWaypointS2CPayload.PACKET_CODEC);
-        PayloadTypeRegistry.playS2C().register(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC);
-        PayloadTypeRegistry.playS2C().register(UpdatesBundleS2CPayload.ID, UpdatesBundleS2CPayload.PACKET_CODEC);
-        PayloadTypeRegistry.playS2C().register(ServerHandshakeS2CPayload.ID, ServerHandshakeS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.
+        //$ payload_s2c_registry_swap
+        clientboundPlay
+        ().register(WaypointListS2CPayload.ID, WaypointListS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.
+        //$ payload_s2c_registry_swap
+        clientboundPlay
+        ().register(DimensionWaypointS2CPayload.ID, DimensionWaypointS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.
+        //$ payload_s2c_registry_swap
+        clientboundPlay
+        ().register(WorldWaypointS2CPayload.ID, WorldWaypointS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.
+        //$ payload_s2c_registry_swap
+        clientboundPlay
+        ().register(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.
+        //$ payload_s2c_registry_swap
+        clientboundPlay
+        ().register(UpdatesBundleS2CPayload.ID, UpdatesBundleS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.
+        //$ payload_s2c_registry_swap
+        clientboundPlay
+        ().register(ServerHandshakeS2CPayload.ID, ServerHandshakeS2CPayload.PACKET_CODEC);
 
-        PayloadTypeRegistry.playC2S().register(ClientHandshakeC2SPayload.ID, ClientHandshakeC2SPayload.PACKET_CODEC);
-        PayloadTypeRegistry.playC2S().register(UpdateRequestC2SPayload.ID, UpdateRequestC2SPayload.PACKET_CODEC);
+        PayloadTypeRegistry.
+        //$ payload_c2s_registry_swap
+        serverboundPlay
+        ().register(ClientHandshakeC2SPayload.ID, ClientHandshakeC2SPayload.PACKET_CODEC);
+        PayloadTypeRegistry.
+        //$ payload_c2s_registry_swap
+        serverboundPlay
+        ().register(UpdateRequestC2SPayload.ID, UpdateRequestC2SPayload.PACKET_CODEC);
         //?}
     }
 

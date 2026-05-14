@@ -19,10 +19,10 @@ public class MinecraftClientMixin {
             return;
         }
         //? if >= 1.21.11 {
-        /*String worldName = world.dimension().identifier().toString();
-        *///?} else {
-        String worldName = world.dimension().location().toString();
-        //?}
+        String worldName = world.dimension().identifier().toString();
+        //?} else {
+        /*String worldName = world.dimension().location().toString();
+        *///?}
         WaypointManagerScreen.resetWidgetStates();
         onDimensionChange(worldName);
     }

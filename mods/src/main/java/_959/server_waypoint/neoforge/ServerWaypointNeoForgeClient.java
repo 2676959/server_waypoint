@@ -34,13 +34,13 @@
 //
 //    public ServerWaypointNeoForgeClient(IEventBus modEventBus) {
 //        modEventBus.addListener(this::registerPayloads);
-//        modEventBus.addListener(this::registerKeyMappings);
+//        modEventBus.addListener(this::registerKeyBindings);
 //        NeoForge.EVENT_BUS.addListener(this::registerClientCommands);
 //        NeoForge.EVENT_BUS.addListener(this::onClientStarted);
 //        NeoForge.EVENT_BUS.addListener(this::onClientTick);
 //    }
 //
-//    private void registerKeyMappings(RegisterKeyMappingsEvent event) {
+//    private void registerKeyBindings(RegisterKeyMappingsEvent event) {
 //        keyBinding = new KeyMapping(
 //                "server_waypoint.waypoint_manager_gui.keybind",
 //                InputConstants.Type.KEYSYM,

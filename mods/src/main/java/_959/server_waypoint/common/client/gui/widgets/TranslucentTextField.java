@@ -1,17 +1,18 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 //? if >= 1.21.9 {
-/*import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
-*///?}
+//?}
 import net.minecraft.network.chat.Component;
 
 public class TranslucentTextField extends EditBox implements Shiftable {
@@ -32,9 +33,9 @@ public class TranslucentTextField extends EditBox implements Shiftable {
 
     @Override
     public void
-    //$ renderWidget_swap
-    renderWidget
-            (GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+    //$ render_widget_method_swap
+    extractWidgetRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int x = getShiftedX() - 2;
         int y = getShiftedY() - 2;
         int right = x - 1 + this.width;
@@ -44,15 +45,15 @@ public class TranslucentTextField extends EditBox implements Shiftable {
         int bdColor = isFocused() | isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
         renderOutline(context, x, y, this.width, this.backgroundHeight, bdColor);
         super.
-        //$ renderWidget_swap
-        renderWidget
+        //$ render_widget_method_swap
+        extractWidgetRenderState
         (context, mouseX, mouseY, deltaTicks);
     }
 
-    public void renderTextField(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+    public void renderTextField(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         super.
-        //$ renderWidget_swap
-        renderWidget
+        //$ render_widget_method_swap
+        extractWidgetRenderState
         (context, mouseX, mouseY, deltaTicks);
     }
 
@@ -62,39 +63,42 @@ public class TranslucentTextField extends EditBox implements Shiftable {
 
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         //? if >= 1.21.9 {
-        /*return super.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
-        *///?} else {
-        return super.keyPressed(keyCode, scanCode, modifiers);
-        //?}
+        return super.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
+        //?} else {
+        /*return super.keyPressed(keyCode, scanCode, modifiers);
+        *///?}
     }
 
     public boolean charTyped(char chr, int modifiers) {
         //? if >= 1.21.9 {
-        /*return super.charTyped(new CharacterEvent(chr, modifiers));
-        *///?} else {
-        return super.charTyped(chr, modifiers);
-        //?}
+        return super.charTyped(new CharacterEvent(chr/*? if <26 {*//*, modifiers*//*?}*/));
+        //?} else {
+        /*return super.charTyped(chr, modifiers);
+        *///?}
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         //? if >= 1.21.9 {
-        /*return super.mouseClicked(new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(button, 0)), false);
-        *///?} else {
-        return super.mouseClicked(mouseX, mouseY, button);
-        //?}
+        return super.mouseClicked(new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(button, 0)), false);
+        //?} else {
+        /*return super.mouseClicked(mouseX, mouseY, button);
+        *///?}
     }
 
     //? if >= 1.21.9 {
-    /*@Override
+    @Override
     public boolean keyPressed(KeyEvent keyEvent) {
         return this.keyPressed(keyEvent.key(), keyEvent.scancode(), keyEvent.modifiers());
     }
 
     @Override
     public boolean charTyped(CharacterEvent characterEvent) {
-        return this.charTyped(characterEvent.codepointAsString().charAt(0), characterEvent.modifiers());
+        return this.charTyped(
+                characterEvent.codepointAsString().charAt(0),
+                /*? if >=26 {*/ 0 /*?} else {*//* characterEvent.modifiers() *//*?}*/
+        );
     }
-    *///?}
+    //?}
 
     @Override
     public int getX() {

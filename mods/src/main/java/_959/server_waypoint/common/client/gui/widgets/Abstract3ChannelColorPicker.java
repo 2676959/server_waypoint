@@ -1,6 +1,7 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
@@ -200,10 +201,22 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlide
     }
 
     @Override
-    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
-        this.slider0.render(context, mouseX, mouseY, deltaTicks);
-        this.slider1.render(context, mouseX, mouseY, deltaTicks);
-        this.slider2.render(context, mouseX, mouseY, deltaTicks);
+    public void
+    //$ render_widget_method_swap
+    extractWidgetRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        this.slider0.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, deltaTicks);
+        this.slider1.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, deltaTicks);
+        this.slider2.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, deltaTicks);
     }
 
     @Override

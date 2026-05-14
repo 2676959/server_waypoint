@@ -1,3 +1,4 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.Expandable;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -140,14 +141,23 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     }
 
     @Override
-    public void renderWidget(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+    public void
+    //$ render_widget_method_swap
+    extractWidgetRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
         int x2 = x + width;
         int y2 = y + height;
         // render background
-        paddingBackground.render(context, mouseX, mouseY, deltaTicks);
-        addBtn.render(context, mouseX, mouseY, deltaTicks);
+        paddingBackground.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, deltaTicks);
+        addBtn.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, deltaTicks);
 
         context.enableScissor(x, y, x2, y2);
         push(context);
@@ -155,9 +165,15 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
 
         // render dimension name
         if (this.empty) {
-            context.drawString(textRenderer, WaypointListWidget.EMPTY_INFO_TEXT, 0, 0, 0xFFFFFFFF, true);
+            context.
+            //$ gui_text_method_swap
+            text
+                    (textRenderer, WaypointListWidget.EMPTY_INFO_TEXT, 0, 0, 0xFFFFFFFF, true);
         } else {
-            context.drawString(textRenderer, dimensionNames.get(index), 0, 0, 0xFFFFFFFF, true);
+            context.
+            //$ gui_text_method_swap
+            text
+                    (textRenderer, dimensionNames.get(index), 0, 0, 0xFFFFFFFF, true);
             translate(context, 0, textHeight + 2);
             int size = dimensionNames.size();
             int y1 = y + textHeight;
@@ -181,16 +197,28 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
                 String dimensionName = dimensionNames.get(i);
                 switch (dimensionName) {
                     case MINECRAFT_OVERWORLD:
-                        context.renderItem(OVERWORLD_ICON, i * 16, 0);
+                        context.
+                        //$ gui_item_method_swap
+                        item
+                                (OVERWORLD_ICON, i * 16, 0);
                         break;
                     case MINECRAFT_THE_NETHER:
-                        context.renderItem(THE_NETHER_ICON, i * 16, 0);
+                        context.
+                        //$ gui_item_method_swap
+                        item
+                                (THE_NETHER_ICON, i * 16, 0);
                         break;
                     case MINECRAFT_THE_END:
-                        context.renderItem(THE_END_ICON, i * 16, 0);
+                        context.
+                        //$ gui_item_method_swap
+                        item
+                                (THE_END_ICON, i * 16, 0);
                         break;
                     default:
-                        context.renderItem(CUSTOM_DIMENSION_ICON, i * 16, 0);
+                        context.
+                        //$ gui_item_method_swap
+                        item
+                                (CUSTOM_DIMENSION_ICON, i * 16, 0);
                 }
             }
         }
