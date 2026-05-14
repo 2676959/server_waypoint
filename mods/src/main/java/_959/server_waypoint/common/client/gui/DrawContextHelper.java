@@ -108,14 +108,6 @@ public final class DrawContextHelper {
         *///?}
     }
 
-    public static void withGuiVertices(GuiGraphicsExtractor context, Consumer<VertexConsumer> consumer) {
-        //? if >= 1.21.6 {
-        consumer.accept(new GuiQuadVertexConsumer(context));
-        //?} else {
-        /*withVertexConsumers(context, vertexConsumerProvider -> consumer.accept(vertexConsumerProvider.getBuffer(RenderType.gui())));
-        *///?}
-    }
-
     @SuppressWarnings("deprecation")
     public static void withVertexConsumers(GuiGraphicsExtractor context, Consumer<MultiBufferSource> consumer) {
         //? if >= 1.21.6 {
@@ -129,7 +121,65 @@ public final class DrawContextHelper {
         *///?}
     }
 
-    public static void vertex(VertexConsumer vertexConsumer, Matrix4f matrix, float x, float y, float z, int color) {
+    public static void drawHorizontalGradient(GuiGraphicsExtractor context, float left, float top, float right, float bottom, int leftColor, int rightColor) {
+        drawColorGradient(context, left, top, right, bottom, leftColor, leftColor, rightColor, rightColor);
+    }
+
+    public static void drawColorGradient(
+            GuiGraphicsExtractor context,
+            float left,
+            float top,
+            float right,
+            float bottom,
+            int topLeftColor,
+            int bottomLeftColor,
+            int bottomRightColor,
+            int topRightColor
+    ) {
+        //? if >= 1.21.6 {
+        //? if neoforge {
+        /*context.submitGuiElementRenderState(new ColoredQuadRenderState(
+                RenderPipelines.GUI,
+                TextureSetup.noTexture(),
+                new Matrix3x2f(context.pose()),
+                left, top,
+                left, bottom,
+                right, bottom,
+                right, top,
+                topLeftColor, bottomLeftColor, bottomRightColor, topRightColor,
+                context.peekScissorStack()
+        ));
+        *///?} else {
+        ColoredQuadRenderState renderState = new ColoredQuadRenderState(
+                RenderPipelines.GUI,
+                TextureSetup.noTexture(),
+                new Matrix3x2f(context.pose()),
+                left, top,
+                left, bottom,
+                right, bottom,
+                right, top,
+                topLeftColor, bottomLeftColor, bottomRightColor, topRightColor,
+                context.scissorStack.peek()
+        );
+        //? if >= 26.1 {
+        context.guiRenderState.addGuiElement(renderState);
+        //?} else {
+        /*context.guiRenderState.submitGuiElement(renderState);
+        *///?}
+        //?}
+        //?} else {
+        /*withVertexConsumers(context, vertexConsumerProvider -> {
+            VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderType.gui());
+            Matrix4f matrix = currentMatrix(context);
+            addColoredVertex(vertexConsumer, matrix, left, top, 0, topLeftColor);
+            addColoredVertex(vertexConsumer, matrix, left, bottom, 0, bottomLeftColor);
+            addColoredVertex(vertexConsumer, matrix, right, bottom, 0, bottomRightColor);
+            addColoredVertex(vertexConsumer, matrix, right, top, 0, topRightColor);
+        });
+        *///?}
+    }
+
+    private static void addColoredVertex(VertexConsumer vertexConsumer, Matrix4f matrix, float x, float y, float z, int color) {
         //? if > 1.20.6 {
         vertexConsumer.addVertex(matrix, x, y, z).setColor(color);
         //?} else {
@@ -138,135 +188,6 @@ public final class DrawContextHelper {
     }
 
     //? if >= 1.21.6 {
-    private static final class GuiQuadVertexConsumer implements VertexConsumer {
-        private final GuiGraphicsExtractor context;
-        private final float[] x = new float[4];
-        private final float[] y = new float[4];
-        private final int[] color = new int[4];
-        private int index;
-
-        private GuiQuadVertexConsumer(GuiGraphicsExtractor context) {
-            this.context = context;
-        }
-
-        @Override
-        public VertexConsumer addVertex(float x, float y, float z) {
-            this.x[this.index] = x;
-            this.y[this.index] = y;
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setColor(int red, int green, int blue, int alpha) {
-            this.color[this.index] = alpha << 24 | red << 16 | green << 8 | blue;
-            this.index++;
-            if (this.index == 4) {
-                this.flush();
-                this.index = 0;
-            }
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setColor(int color) {
-            this.color[this.index] = color;
-            this.index++;
-            if (this.index == 4) {
-                this.flush();
-                this.index = 0;
-            }
-            return this;
-        }
-
-        private void flush() {
-            //? if neoforge {
-            /*this.context.submitGuiElementRenderState(new ColoredQuadRenderState(
-                    RenderPipelines.GUI,
-                    TextureSetup.noTexture(),
-                    new Matrix3x2f(this.context.pose()),
-                    this.x[0], this.y[0],
-                    this.x[1], this.y[1],
-                    this.x[2], this.y[2],
-                    this.x[3], this.y[3],
-                    this.color[0], this.color[1], this.color[2], this.color[3],
-                    this.context.peekScissorStack()
-            ));
-            *///?} else {
-            int minX = (int) Math.floor(Math.min(Math.min(this.x[0], this.x[1]), Math.min(this.x[2], this.x[3])));
-            int minY = (int) Math.floor(Math.min(Math.min(this.y[0], this.y[1]), Math.min(this.y[2], this.y[3])));
-            int maxX = (int) Math.ceil(Math.max(Math.max(this.x[0], this.x[1]), Math.max(this.x[2], this.x[3])));
-            int maxY = (int) Math.ceil(Math.max(Math.max(this.y[0], this.y[1]), Math.max(this.y[2], this.y[3])));
-            //? if = 26.1.2 {
-            int width = maxX - minX;
-            if (width <= 1 || allColorsMatch()) {
-                this.context.fill(minX, minY, maxX, maxY, this.color[0]);
-                return;
-            }
-
-            for (int x = minX; x < maxX; x++) {
-                float progress = (float) (x - minX) / (width - 1);
-                int topColor = lerpColor(this.color[0], this.color[3], progress);
-                int bottomColor = lerpColor(this.color[1], this.color[2], progress);
-                this.context.fillGradient(x, minY, x + 1, maxY, topColor, bottomColor);
-            }
-            //?} else {
-            /*this.context.fill(minX, minY, maxX, maxY, this.color[0]);
-            *///?}
-            //?}
-        }
-
-        private boolean allColorsMatch() {
-            return this.color[0] == this.color[1] && this.color[0] == this.color[2] && this.color[0] == this.color[3];
-        }
-
-        private static int lerpColor(int startColor, int endColor, float progress) {
-            int startAlpha = startColor >>> 24;
-            int startRed = startColor >> 16 & 0xFF;
-            int startGreen = startColor >> 8 & 0xFF;
-            int startBlue = startColor & 0xFF;
-            int endAlpha = endColor >>> 24;
-            int endRed = endColor >> 16 & 0xFF;
-            int endGreen = endColor >> 8 & 0xFF;
-            int endBlue = endColor & 0xFF;
-
-            int alpha = lerpChannel(startAlpha, endAlpha, progress);
-            int red = lerpChannel(startRed, endRed, progress);
-            int green = lerpChannel(startGreen, endGreen, progress);
-            int blue = lerpChannel(startBlue, endBlue, progress);
-            return alpha << 24 | red << 16 | green << 8 | blue;
-        }
-
-        private static int lerpChannel(int startValue, int endValue, float progress) {
-            return (int) (startValue + (endValue - startValue) * progress + 0.5F);
-        }
-
-        @Override
-        public VertexConsumer setUv(float u, float v) {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv1(int u, int v) {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setUv2(int u, int v) {
-            return this;
-        }
-
-        @Override
-        public VertexConsumer setNormal(float x, float y, float z) {
-            return this;
-        }
-
-        //? if >= 1.21.11
-        @Override
-        public VertexConsumer setLineWidth(float width) {
-            return this;
-        }
-    }
-
     private record ColoredQuadRenderState(
             RenderPipeline pipeline,
             TextureSetup textureSetup,

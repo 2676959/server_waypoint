@@ -1,10 +1,9 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
-
-import org.joml.Matrix4f;
 
 import static _959.server_waypoint.util.ColorUtils.*;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
 public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.HSVSlider> {
@@ -91,12 +90,12 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
             this.blackOverlay = ((100 - brightness) * 255 / 100) << 24 & 0xFF000000;
         }
 
-        public void drawWhiteOverlay(VertexConsumer vertexConsumer, Matrix4f matrix) {
-            drawAlphaGradient(vertexConsumer, matrix, this.whiteOverlay, this.whiteOverlay);
+        public void drawWhiteOverlay(GuiGraphicsExtractor context) {
+            drawAlphaGradient(context, this.whiteOverlay, this.whiteOverlay);
         }
 
-        public void drawBlackOverlay(VertexConsumer vertexConsumer, Matrix4f matrix) {
-            drawAlphaGradient(vertexConsumer, matrix, this.blackOverlay, this.blackOverlay);
+        public void drawBlackOverlay(GuiGraphicsExtractor context) {
+            drawAlphaGradient(context, this.blackOverlay, this.blackOverlay);
         }
     }
 
@@ -118,16 +117,16 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
         }
 
         @Override
-        public void drawSlotBackground(VertexConsumer vertexConsumer, Matrix4f matrix) {
-            drawGradient(vertexConsumer, matrix, 0F, this.secondQuad, RED, YELLOW);
-            drawGradient(vertexConsumer, matrix, this.secondQuad, this.thirdQuad, YELLOW, GREEN);
-            drawGradient(vertexConsumer, matrix, this.thirdQuad, this.fourthQuad, GREEN, CYAN);
-            drawGradient(vertexConsumer, matrix, this.fourthQuad, this.fifthQuad, CYAN, BLUE);
-            drawGradient(vertexConsumer, matrix, this.fifthQuad, this.sixthQuad, BLUE, MAGENTA);
-            drawGradient(vertexConsumer, matrix, this.sixthQuad, this.slotWidth, MAGENTA, RED);
-            drawWhiteOverlay(vertexConsumer, matrix);
-            drawBlackOverlay(vertexConsumer, matrix);
-            drawSlider(vertexConsumer, matrix);
+        public void drawSlotBackground(GuiGraphicsExtractor context) {
+            drawGradient(context, 0F, this.secondQuad, RED, YELLOW);
+            drawGradient(context, this.secondQuad, this.thirdQuad, YELLOW, GREEN);
+            drawGradient(context, this.thirdQuad, this.fourthQuad, GREEN, CYAN);
+            drawGradient(context, this.fourthQuad, this.fifthQuad, CYAN, BLUE);
+            drawGradient(context, this.fifthQuad, this.sixthQuad, BLUE, MAGENTA);
+            drawGradient(context, this.sixthQuad, this.slotWidth, MAGENTA, RED);
+            drawWhiteOverlay(context);
+            drawBlackOverlay(context);
+            drawSlider(context);
         }
     }
 
@@ -139,9 +138,9 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
         }
 
         @Override
-        public void drawSlotBackground(VertexConsumer vertexConsumer, Matrix4f matrix) {
-            drawGradient(vertexConsumer, matrix, 0xFFFFFFFF, endColor);
-            drawBlackOverlay(vertexConsumer, matrix);
+        public void drawSlotBackground(GuiGraphicsExtractor context) {
+            drawGradient(context, 0xFFFFFFFF, endColor);
+            drawBlackOverlay(context);
         }
     }
 
@@ -152,10 +151,10 @@ public class HSVColorPicker extends Abstract3ChannelColorPicker<HSVColorPicker.H
         }
 
         @Override
-        public void drawSlotBackground(VertexConsumer vertexConsumer, Matrix4f matrix) {
-            drawGradient(vertexConsumer, matrix, endColor, endColor);
-            drawWhiteOverlay(vertexConsumer, matrix);
-            drawAlphaGradient(vertexConsumer, matrix, 0xFF000000, 0);
+        public void drawSlotBackground(GuiGraphicsExtractor context) {
+            drawGradient(context, endColor, endColor);
+            drawWhiteOverlay(context);
+            drawAlphaGradient(context, 0xFF000000, 0);
         }
     }
 }

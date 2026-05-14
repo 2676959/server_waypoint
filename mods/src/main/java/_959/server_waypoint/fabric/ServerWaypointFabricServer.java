@@ -61,11 +61,12 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
             LOGGER.info("found xaero's mod, force disabling sendXaerosWorldId");
         } else {
             LOGGER.info("xaero's mod is not loaded, set sendXaerosWorldId to {} by config.json", CONFIG.Features().sendXaerosWorldId());
-            //? if >= 1.20.5
+            //? if >= 1.20.5 {
             PayloadTypeRegistry.
             //$ payload_s2c_registry_swap
             clientboundPlay
             ().register(XaerosWorldIdS2CPayload.ID, XaerosWorldIdS2CPayload.PACKET_CODEC);
+            //?}
         }
 
         // register waypoint command
