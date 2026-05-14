@@ -21,8 +21,19 @@ base {
 
 stonecutter {
     constants.match(loader, "fabric", "neoforge")
-    swaps["renderWidget_swap"] = "renderWidget"
+    val usesTwentySixApi = eval(current.version, ">=26")
+
+    swaps["render_widget_method_swap"] = if (usesTwentySixApi) "extractWidgetRenderState" else "renderWidget"
+    swaps["render_method_swap"] = if (usesTwentySixApi) "extractRenderState" else "render"
+    swaps["gui_text_method_swap"] = if (usesTwentySixApi) "text" else "drawString"
+    swaps["gui_item_method_swap"] = if (usesTwentySixApi) "item" else "renderItem"
+    swaps["gui_outline_method_swap"] = if (usesTwentySixApi) "outline" else "renderOutline"
+    swaps["payload_s2c_registry_swap"] = if (usesTwentySixApi) "clientboundPlay" else "playS2C"
+    swaps["payload_c2s_registry_swap"] = if (usesTwentySixApi) "serverboundPlay" else "playC2S"
     swaps["mouseScrolled_swap"] = "mouseScrolled($1, $2, $3, $4)"
+
+    replacements.regex("gui_graphics_26", usesTwentySixApi) { replace("\\bGuiGraphics\\b", "GuiGraphicsExtractor"); reverse("\\bGuiGraphicsExtractor\\b", "GuiGraphics") }
+    replacements.string("gui_render_state_26", usesTwentySixApi) { replace("net.minecraft.client.gui.render.state.GuiElementRenderState", "net.minecraft.client.renderer.state.gui.GuiElementRenderState") }
 }
 
 sourceSets.main {

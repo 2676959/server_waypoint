@@ -1,3 +1,4 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
@@ -5,7 +6,7 @@ import _959.server_waypoint.common.client.gui.WidgetThemeColors;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.handlers.HandlerForXaerosMinimap;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -143,14 +144,23 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void
+    //$ render_method_swap
+    extractRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         context.fill(0, 0, this.width, this.height, WidgetThemeColors.TRANSPARENT_BG_COLOR);
-        this.mainLayout.render(context, mouseX, mouseY, delta);
+        this.mainLayout.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
         int centeredX = centered(this.width, this.xaerosSyncConfirmationDialog.getWidth());
         int centeredY = centered(this.height, this.xaerosSyncConfirmationDialog.getHeight());
         this.xaerosSyncConfirmationDialog.setPosition(centeredX, centeredY);
         nextLayer(context);
-        this.xaerosSyncConfirmationDialog.render(context, mouseX, mouseY, delta);
+        this.xaerosSyncConfirmationDialog.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
         previousLayer(context);
     }
 

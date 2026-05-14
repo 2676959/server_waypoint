@@ -1,13 +1,15 @@
+//~ gui_render_state_26
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.function.Consumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 //? if >= 1.21.6 {
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.GuiElementRenderState;
+import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import net.minecraft.client.renderer.RenderPipelines;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
@@ -16,15 +18,15 @@ import net.minecraft.client.renderer.MultiBufferSource;
 //? if < 1.21.6
 /*import net.minecraft.client.renderer.RenderType;*/
 //? if >= 1.21.11
-/*import net.minecraft.resources.Identifier;*/
+import net.minecraft.resources.Identifier;
 //? if < 1.21.11
-import net.minecraft.resources.ResourceLocation;
+/*import net.minecraft.resources.ResourceLocation;*/
 import org.joml.Matrix4f;
 
 public final class DrawContextHelper {
     private static final Matrix4f IDENTITY_MATRIX = new Matrix4f();
 
-    public static void texture(GuiGraphics context, /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
+    public static void texture(GuiGraphicsExtractor context, /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
         //? if >= 1.21.6 {
         context.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, textureWidth, textureHeight);
         //?} elif > 1.21 {
@@ -34,7 +36,7 @@ public final class DrawContextHelper {
         *///?}
     }
 
-    public static void push(GuiGraphics context) {
+    public static void push(GuiGraphicsExtractor context) {
         //? if >= 1.21.6 {
         context.pose().pushMatrix();
         //?} else {
@@ -42,7 +44,7 @@ public final class DrawContextHelper {
         *///?}
     }
 
-    public static void pop(GuiGraphics context) {
+    public static void pop(GuiGraphicsExtractor context) {
         //? if >= 1.21.6 {
         context.pose().popMatrix();
         //?} else {
@@ -50,7 +52,7 @@ public final class DrawContextHelper {
         *///?}
     }
 
-    public static void translate(GuiGraphics context, float x, float y) {
+    public static void translate(GuiGraphicsExtractor context, float x, float y) {
         //? if >= 1.21.6 {
         context.pose().translate(x, y);
         //?} else {
@@ -58,7 +60,7 @@ public final class DrawContextHelper {
         *///?}
     }
 
-    public static void scale(GuiGraphics context, float x, float y) {
+    public static void scale(GuiGraphicsExtractor context, float x, float y) {
         //? if >= 1.21.6 {
         context.pose().scale(x, y);
         //?} else {
@@ -66,7 +68,7 @@ public final class DrawContextHelper {
         *///?}
     }
 
-    public static void nextLayer(GuiGraphics context) {
+    public static void nextLayer(GuiGraphicsExtractor context) {
         //? if >= 1.21.6 {
         context.nextStratum();
         //?} else {
@@ -74,28 +76,31 @@ public final class DrawContextHelper {
         *///?}
     }
 
-    public static void previousLayer(GuiGraphics context) {
+    public static void previousLayer(GuiGraphicsExtractor context) {
         //? if < 1.21.6 {
         /*context.pose().translate(0.0F, 0.0F, -1.0F);
         *///?}
     }
 
-    public static void renderOutline(GuiGraphics context, int x, int y, int width, int height, int color) {
+    public static void renderOutline(GuiGraphicsExtractor context, int x, int y, int width, int height, int color) {
         //? if = 1.21.9 {
         /*renderOutlineWithFill(context, x, y, width, height, color);
         *///?} else {
-        context.renderOutline(x, y, width, height, color);
+        context.
+        //$ gui_outline_method_swap
+        outline
+                (x, y, width, height, color);
         //?}
     }
 
-    private static void renderOutlineWithFill(GuiGraphics context, int x, int y, int width, int height, int color) {
+    private static void renderOutlineWithFill(GuiGraphicsExtractor context, int x, int y, int width, int height, int color) {
         context.fill(x, y, x + width, y + 1, color);
         context.fill(x, y + height - 1, x + width, y + height, color);
         context.fill(x, y + 1, x + 1, y + height - 1, color);
         context.fill(x + width - 1, y + 1, x + width, y + height - 1, color);
     }
 
-    public static Matrix4f currentMatrix(GuiGraphics context) {
+    public static Matrix4f currentMatrix(GuiGraphicsExtractor context) {
         //? if >= 1.21.6 {
         return IDENTITY_MATRIX;
         //?} else {
@@ -103,7 +108,7 @@ public final class DrawContextHelper {
         *///?}
     }
 
-    public static void withGuiVertices(GuiGraphics context, Consumer<VertexConsumer> consumer) {
+    public static void withGuiVertices(GuiGraphicsExtractor context, Consumer<VertexConsumer> consumer) {
         //? if >= 1.21.6 {
         consumer.accept(new GuiQuadVertexConsumer(context));
         //?} else {
@@ -112,7 +117,7 @@ public final class DrawContextHelper {
     }
 
     @SuppressWarnings("deprecation")
-    public static void withVertexConsumers(GuiGraphics context, Consumer<MultiBufferSource> consumer) {
+    public static void withVertexConsumers(GuiGraphicsExtractor context, Consumer<MultiBufferSource> consumer) {
         //? if >= 1.21.6 {
         MultiBufferSource.BufferSource immediate = net.minecraft.client.Minecraft.getInstance().renderBuffers().bufferSource();
         consumer.accept(immediate);
@@ -134,13 +139,13 @@ public final class DrawContextHelper {
 
     //? if >= 1.21.6 {
     private static final class GuiQuadVertexConsumer implements VertexConsumer {
-        private final GuiGraphics context;
+        private final GuiGraphicsExtractor context;
         private final float[] x = new float[4];
         private final float[] y = new float[4];
         private final int[] color = new int[4];
         private int index;
 
-        private GuiQuadVertexConsumer(GuiGraphics context) {
+        private GuiQuadVertexConsumer(GuiGraphicsExtractor context) {
             this.context = context;
         }
 
@@ -187,17 +192,11 @@ public final class DrawContextHelper {
                     this.context.peekScissorStack()
             ));
             *///?} else {
-            this.context.guiRenderState.submitGuiElement(new ColoredQuadRenderState(
-                    RenderPipelines.GUI,
-                    TextureSetup.noTexture(),
-                    new Matrix3x2f(this.context.pose()),
-                    this.x[0], this.y[0],
-                    this.x[1], this.y[1],
-                    this.x[2], this.y[2],
-                    this.x[3], this.y[3],
-                    this.color[0], this.color[1], this.color[2], this.color[3],
-                    this.context.scissorStack.peek()
-            ));
+            int minX = (int) Math.floor(Math.min(Math.min(this.x[0], this.x[1]), Math.min(this.x[2], this.x[3])));
+            int minY = (int) Math.floor(Math.min(Math.min(this.y[0], this.y[1]), Math.min(this.y[2], this.y[3])));
+            int maxX = (int) Math.ceil(Math.max(Math.max(this.x[0], this.x[1]), Math.max(this.x[2], this.x[3])));
+            int maxY = (int) Math.ceil(Math.max(Math.max(this.y[0], this.y[1]), Math.max(this.y[2], this.y[3])));
+            this.context.fill(minX, minY, maxX, maxY, this.color[0]);
             //?}
         }
 
@@ -222,7 +221,7 @@ public final class DrawContextHelper {
         }
 
         //? if >= 1.21.11
-        /*@Override*/
+        @Override
         public VertexConsumer setLineWidth(float width) {
             return this;
         }
@@ -248,20 +247,20 @@ public final class DrawContextHelper {
     ) implements GuiElementRenderState {
         @Override
         //? if >= 1.21.9 {
-        /*public void buildVertices(VertexConsumer vertexConsumer) {
+        public void buildVertices(VertexConsumer vertexConsumer) {
             vertexConsumer.addVertexWith2DPose(this.pose, this.x0, this.y0).setColor(this.color0);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x1, this.y1).setColor(this.color1);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x2, this.y2).setColor(this.color2);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x3, this.y3).setColor(this.color3);
         }
-        *///?} else {
-        public void buildVertices(VertexConsumer vertexConsumer, float depth) {
+        //?} else {
+        /*public void buildVertices(VertexConsumer vertexConsumer, float depth) {
             vertexConsumer.addVertexWith2DPose(this.pose, this.x0, this.y0, depth).setColor(this.color0);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x1, this.y1, depth).setColor(this.color1);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x2, this.y2, depth).setColor(this.color2);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x3, this.y3, depth).setColor(this.color3);
         }
-        //?}
+        *///?}
 
         @Override
         public @Nullable ScreenRectangle bounds() {

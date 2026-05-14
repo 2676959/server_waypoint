@@ -1,4 +1,6 @@
 //? if fabric {
+//~ fabric_key_mapping_import_26
+//~ fabric_key_mapping_call_26
 package _959.server_waypoint.fabric;
 
 import _959.server_waypoint.common.client.ClientConfig;
@@ -13,7 +15,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
@@ -25,15 +27,15 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientConfig.isXaerosMinimapLoaded = FabricLoader.getInstance().isModLoaded("xaerominimap");
-        keyBinding = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        keyBinding = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "server_waypoint.waypoint_manager_gui.keybind",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT_SHIFT,
                 //? if >= 1.21.9 {
-                /*KeyMapping.Category.register(_959.server_waypoint.common.util.ResourceLocationHelper.id("server_waypoint", "mod_name"))
-                *///?} else {
-                "key.categories.server_waypoint.mod_name"
-                //?}
+                KeyMapping.Category.register(_959.server_waypoint.common.util.ResourceLocationHelper.id("server_waypoint", "mod_name"))
+                //?} else {
+                /*"key.categories.server_waypoint.mod_name"
+                *///?}
         ));
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
                 ClientWaypointCommand.register(dispatcher));

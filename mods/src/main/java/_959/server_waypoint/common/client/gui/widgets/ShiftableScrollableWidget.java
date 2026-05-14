@@ -1,8 +1,9 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.WidgetThemeColors;
 import _959.server_waypoint.common.util.MathHelper;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
 public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget {
@@ -45,7 +46,7 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
         return mouseX >= (double)(right - SCROLLBAR_WIDTH) && mouseX <= (double)right && mouseY >= (double)y && mouseY <= (double)bottom;
     }
 
-    public void drawScrollbar(GuiGraphics context) {
+    public void drawScrollbar(GuiGraphicsExtractor context) {
         if (!this.overflows()) {
             return;
         }

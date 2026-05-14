@@ -13,7 +13,8 @@
 		"WorldRendererMixin",
 		"PlayerManagerMixin",
 		"ServerPlayerEntityMixin",
-		"WorldSessionMixin"
+		"WorldSessionMixin",
+		"GameRendererMixin"
 	],
 	"server": [
 		"PlayerManagerMixin",

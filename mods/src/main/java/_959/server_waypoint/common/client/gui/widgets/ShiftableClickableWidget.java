@@ -1,12 +1,13 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 //? if >= 1.21.9 {
-/*import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-*///?}
+//?}
 import net.minecraft.network.chat.Component;
 
 public abstract class ShiftableClickableWidget extends AbstractWidget implements Shiftable {
@@ -114,7 +115,7 @@ public abstract class ShiftableClickableWidget extends AbstractWidget implements
     }
 
     //? if >= 1.21.9 {
-    /*@Override
+    @Override
     public boolean keyPressed(KeyEvent keyEvent) {
         return this.keyPressed(keyEvent.key(), keyEvent.scancode(), keyEvent.modifiers());
     }
@@ -126,7 +127,10 @@ public abstract class ShiftableClickableWidget extends AbstractWidget implements
 
     @Override
     public boolean charTyped(CharacterEvent characterEvent) {
-        return this.charTyped(characterEvent.codepointAsString().charAt(0), characterEvent.modifiers());
+        return this.charTyped(
+                characterEvent.codepointAsString().charAt(0),
+                /*? if >=26 {*/ 0 /*?} else {*//* characterEvent.modifiers() *//*?}*/
+        );
     }
 
     @Override
@@ -143,5 +147,5 @@ public abstract class ShiftableClickableWidget extends AbstractWidget implements
     public boolean mouseDragged(MouseButtonEvent mouseButtonEvent, double deltaX, double deltaY) {
         return this.mouseDragged(mouseButtonEvent.x(), mouseButtonEvent.y(), mouseButtonEvent.button(), deltaX, deltaY);
     }
-    *///?}
+    //?}
 }

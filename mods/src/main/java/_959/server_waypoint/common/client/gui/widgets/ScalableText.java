@@ -1,8 +1,9 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
 import java.util.List;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 
@@ -71,15 +72,24 @@ public class ScalableText extends ShiftableWidget {
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+    public void
+    //$ render_method_swap
+    extractRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         push(context);
         translate(context, this.getShiftedX(), this.getShiftedY());
         scale(context, this.scale, this.scale);
         if (this.maxWidth == -1) {
-            context.drawString(this.textRenderer, this.text, 0, 0, this.color, true);
+            context.
+            //$ gui_text_method_swap
+            text
+                    (this.textRenderer, this.text, 0, 0, this.color, true);
         } else {
             for (int i = 0; i < this.warpLines.size(); i++) {
-                context.drawString(this.textRenderer, this.warpLines.get(i), 0, i * this.textRenderer.lineHeight, this.color, true);
+                context.
+                //$ gui_text_method_swap
+                text
+                        (this.textRenderer, this.warpLines.get(i), 0, i * this.textRenderer.lineHeight, this.color, true);
             }
         }
         pop(context);

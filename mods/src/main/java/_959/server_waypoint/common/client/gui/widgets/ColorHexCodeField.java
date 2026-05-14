@@ -1,9 +1,10 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
@@ -55,16 +56,19 @@ public class ColorHexCodeField extends TranslucentTextField implements Colorable
 
     @Override
     public void
-    //$ renderWidget_swap
-    renderWidget
-            (GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+    //$ render_widget_method_swap
+    extractWidgetRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int x = getShiftedX() - 2;
         int y = getShiftedY() - 2;
         int x1 = x - 6;
         int right = x - 1 + this.width;
         int bottom = y - 1 + this.backgroundHeight;
         context.fill(x1 + 1, y + 1, right, bottom, BUTTON_BG_COLOR);
-        context.drawString(textRenderer, "#", x - 4, y + 2, 0xFFFFFFFF, true);
+        context.
+        //$ gui_text_method_swap
+        text
+                (textRenderer, "#", x - 4, y + 2, 0xFFFFFFFF, true);
         this.isHovered = mouseX >= x1 && mouseY >= y && mouseX <= right && mouseY <= bottom;
         int bdColor = isFocused() | isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
         renderOutline(context, x1, y, this.width + 6, this.backgroundHeight, bdColor);

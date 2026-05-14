@@ -1,3 +1,4 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.render;
 
 import _959.server_waypoint.common.util.MathHelper;
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.phys.Vec3;
 
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
@@ -450,7 +451,10 @@ public final class OptimizedWaypointRenderer {
     // =========================================================
     // RENDER LOOP (RENDER THREAD)
     // =========================================================
-    public static void render(GuiGraphics context) {
+    public static void
+    //$ render_method_swap
+    renderWaypoints
+            (GuiGraphicsExtractor context) {
         if (!initialized) return;
 
         // A. Process Queue
@@ -584,7 +588,7 @@ public final class OptimizedWaypointRenderer {
         }
     }
 
-    private static void drawWaypointIcons(GuiGraphics context, int renderCount) {
+    private static void drawWaypointIcons(GuiGraphicsExtractor context, int renderCount) {
         if (renderCount == 0) {
             return;
         }
@@ -667,7 +671,7 @@ public final class OptimizedWaypointRenderer {
         return Math.max(0.0F, textWidth - 1.0F);
     }
 
-    private static void drawTextBox(GuiGraphics context, String text, float centerX, float topY, float boxScale, float textWidth, float backgroundWidth, int backgroundColor, int textColor) {
+    private static void drawTextBox(GuiGraphicsExtractor context, String text, float centerX, float topY, float boxScale, float textWidth, float backgroundWidth, int backgroundColor, int textColor) {
         int bgWidth = (int) Math.ceil(backgroundWidth);
         float left = centerX - bgWidth * boxScale * 0.5F;
         float textX = getCenteredTextX(bgWidth, textWidth);
@@ -677,12 +681,15 @@ public final class OptimizedWaypointRenderer {
         scale(context, boxScale, boxScale);
         context.fill(0, 0, bgWidth, textBgHeight, backgroundColor);
         translate(context, textX, 0.0F);
-        context.drawString(textRenderer, text, 0, 1, textColor, false);
+        context.
+        //$ gui_text_method_swap
+        text
+                (textRenderer, text, 0, 1, textColor, false);
         pop(context);
         finishGuiLayer(context);
     }
 
-    private static void drawTextBoxAt(GuiGraphics context, String text, float left, float topY, float boxScale, float textWidth, float backgroundWidth, int backgroundColor, int textColor) {
+    private static void drawTextBoxAt(GuiGraphicsExtractor context, String text, float left, float topY, float boxScale, float textWidth, float backgroundWidth, int backgroundColor, int textColor) {
         int bgWidth = (int) Math.ceil(backgroundWidth);
         float textX = getCenteredTextX(bgWidth, textWidth);
 
@@ -691,12 +698,15 @@ public final class OptimizedWaypointRenderer {
         scale(context, boxScale, boxScale);
         context.fill(0, 0, bgWidth, textBgHeight, backgroundColor);
         translate(context, textX, 0.0F);
-        context.drawString(textRenderer, text, 0, 1, textColor, false);
+        context.
+        //$ gui_text_method_swap
+        text
+                (textRenderer, text, 0, 1, textColor, false);
         pop(context);
         finishGuiLayer(context);
     }
 
-    private static void finishGuiLayer(GuiGraphics context) {
+    private static void finishGuiLayer(GuiGraphicsExtractor context) {
         //? if >= 1.21.6 {
         context.nextStratum();
         //?} else {
