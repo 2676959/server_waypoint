@@ -466,8 +466,7 @@ public final class OptimizedWaypointRenderer {
     // RENDER LOOP (RENDER THREAD)
     // =========================================================
     public static void
-    //$ render_method_swap
-    renderWaypoints
+    render
             (GuiGraphicsExtractor context) {
         if (!initialized) return;
 

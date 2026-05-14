@@ -53,10 +53,7 @@ public class GameRendererMixin {
         CameraRenderState cameraState = gameRenderState.levelRenderState.cameraRenderState;
         Matrix4f projectionMatrix = sw$getFinalLevelProjectionMatrix(deltaTracker, cameraState);
         OptimizedWaypointRenderer.updateCameraSnapshot(cameraState.pos, cameraState.viewRotationMatrix, projectionMatrix);
-        OptimizedWaypointRenderer.
-        //$ render_method_swap
-                renderWaypoints
-                (graphics);
+        OptimizedWaypointRenderer.render(graphics);
     }
 
     private Matrix4f sw$getFinalLevelProjectionMatrix(DeltaTracker deltaTracker, CameraRenderState cameraState) {

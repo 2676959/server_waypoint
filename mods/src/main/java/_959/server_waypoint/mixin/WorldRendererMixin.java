@@ -1,13 +1,9 @@
 package _959.server_waypoint.mixin;
 
-//? if >= 1.21.6
+//? if < 26.1 {
+/*//? if >= 1.21.6
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 //? if >= 1.21.5 {
-//? if >= 26.1 {
-import net.minecraft.client.renderer.chunk.ChunkSectionsToRender;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
-import org.joml.Matrix4fc;
-//?}
 import org.joml.Vector4f;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import net.minecraft.client.Camera;
@@ -15,9 +11,10 @@ import net.minecraft.client.DeltaTracker;
 import org.joml.Matrix4f;
 //?}
 //? if = 1.21.5
-/*import net.minecraft.client.renderer.GameRenderer;*/
+/^import net.minecraft.client.renderer.GameRenderer;^/
 //? if >= 1.20 && <= 1.21.3 {
-/*import com.mojang.blaze3d.systems.RenderSystem;
+/^import com.mojang.blaze3d.systems.RenderSystem;
+^///?}
 *///?}
 import net.minecraft.client.renderer.LevelRenderer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,30 +27,28 @@ import static _959.server_waypoint.common.client.render.OptimizedWaypointRendere
 
 @Mixin(LevelRenderer.class)
 public class WorldRendererMixin {
-    //? if >= 1.21.5 {
+    //? if < 26.1 {
+    /*//? if >= 1.21.5 {
     @Inject(
             method = {"renderLevel"},
             at = {@At("HEAD")}
     )
     public void
     sw$copyMatrices(
-    //? if >= 26.1 {
-    GraphicsResourceAllocator resourceAllocator, DeltaTracker deltaTracker, boolean renderOutline, CameraRenderState cameraState, Matrix4fc modelViewMatrix, GpuBufferSlice terrainFog, Vector4f fogColor, boolean shouldRenderSky, ChunkSectionsToRender chunkSectionsToRender
-    //?} elif >= 1.21.9 {
-//    GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, Matrix4f modelViewMatrix, Matrix4f projectionMatrix, Matrix4f cullingProjectionMatrix, GpuBufferSlice fogBuffer, Vector4f fogVector, boolean skyPass
+    //? if >= 1.21.9 {
+    GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, Matrix4f modelViewMatrix, Matrix4f projectionMatrix, Matrix4f cullingProjectionMatrix, GpuBufferSlice fogBuffer, Vector4f fogVector, boolean skyPass
     //?} elif >= 1.21.6 {
-    /*GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, Matrix4f modelViewMatrix, Matrix4f projectionMatrix, GpuBufferSlice fogBuffer, Vector4f fogVector, boolean skyPass
-    *///?} else {
-    /*GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, GameRenderer gameRenderer, Matrix4f modelViewMatrix, Matrix4f projectionMatrix
-    *///?}
+    /^GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, Matrix4f modelViewMatrix, Matrix4f projectionMatrix, GpuBufferSlice fogBuffer, Vector4f fogVector, boolean skyPass
+    ^///?} else {
+    /^GraphicsResourceAllocator graphicsResourceAllocator, DeltaTracker deltaTracker, boolean bl, Camera camera, GameRenderer gameRenderer, Matrix4f modelViewMatrix, Matrix4f projectionMatrix
+    ^///?}
             , CallbackInfo info)
     {
-        //? if < 26.1
-        /*ProjectionMatrix.set(projectionMatrix);*/
+        ProjectionMatrix.set(projectionMatrix);
         ModelViewMatrix.set(modelViewMatrix);
     }
     //?} elif >= 1.21.2 {
-    /*@Inject(
+    /^@Inject(
             method = {"addMainPass"},
             at = {@At("HEAD")}
     )
@@ -62,8 +57,8 @@ public class WorldRendererMixin {
         ModelViewMatrix.set(RenderSystem.getModelViewMatrix());
         ProjectionMatrix.set(RenderSystem.getProjectionMatrix());
     }
-    *///?} elif >= 1.20 {
-    /*@Inject(
+    ^///?} elif >= 1.20 {
+    /^@Inject(
             method = "renderLevel",
             at = @At(
                     value = "INVOKE",
@@ -71,8 +66,8 @@ public class WorldRendererMixin {
                     //? if >= 1.20.6 {
                     ordinal = 0,
                     //?} else {
-                    /^ordinal = 1,
-                    ^///?}
+                    /^¹ordinal = 1,
+                    ¹^///?}
                     shift = At.Shift.AFTER
             )
     )
@@ -80,5 +75,6 @@ public class WorldRendererMixin {
         ModelViewMatrix.set(RenderSystem.getModelViewMatrix());
         ProjectionMatrix.set(RenderSystem.getProjectionMatrix());
     }
+    ^///?}
     *///?}
 }
