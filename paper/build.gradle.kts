@@ -2,7 +2,7 @@ plugins {
     id("java")
     id("xyz.jpenilla.run-paper") version "2.3.1"
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.18"
-    id("com.github.johnrengelman.shadow")
+    id("com.gradleup.shadow")
 }
 
 group = "_959.server_waypoint"
@@ -65,5 +65,4 @@ tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
 }
-
 

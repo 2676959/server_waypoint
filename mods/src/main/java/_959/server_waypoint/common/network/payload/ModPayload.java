@@ -6,10 +6,11 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 /*import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 *///?}
 
-public interface ModPayload extends
+public interface ModPayload
 //? if >= 1.20.5 {
- CustomPacketPayload
+        extends CustomPacketPayload
 //?} else if fabric {
-        /*FabricPacket
+        /*extends FabricPacket
 *///?}
-{}
+{
+}
