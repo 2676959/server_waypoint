@@ -6,9 +6,9 @@ import _959.server_waypoint.core.network.buffer.ServerHandshakeBuffer;
 import _959.server_waypoint.core.network.codec.ServerHandshakeCodec;
 import io.netty.buffer.ByteBuf;
 //? if >= 1.21.11
-import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.Identifier;*/
 //? if < 1.21.11
-/*import net.minecraft.resources.ResourceLocation;*/
+import net.minecraft.resources.ResourceLocation;
 //? if >= 1.20.5 {
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -20,7 +20,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import static _959.server_waypoint.core.network.PayloadID.SERVER_HANDSHAKE;
 
 public record ServerHandshakeS2CPayload(ServerHandshakeBuffer serverHandshakeBuffer) implements ModPayload {
-    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ SERVER_HANDSHAKE_PAYLOAD = _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, SERVER_HANDSHAKE);
+    public static final /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ SERVER_HANDSHAKE_PAYLOAD = _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, SERVER_HANDSHAKE);
 //? if >= 1.20.5 {
     public static final CustomPacketPayload.Type<ServerHandshakeS2CPayload> ID = new CustomPacketPayload.Type<>(SERVER_HANDSHAKE_PAYLOAD);
     public static final StreamCodec<ByteBuf, ServerHandshakeS2CPayload> PACKET_CODEC = new StreamCodec<>() {

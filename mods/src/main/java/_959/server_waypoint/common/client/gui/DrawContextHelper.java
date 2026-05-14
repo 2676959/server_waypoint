@@ -16,15 +16,15 @@ import net.minecraft.client.renderer.MultiBufferSource;
 //? if < 1.21.6
 /*import net.minecraft.client.renderer.RenderType;*/
 //? if >= 1.21.11
-import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.Identifier;*/
 //? if < 1.21.11
-/*import net.minecraft.resources.ResourceLocation;*/
+import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 
 public final class DrawContextHelper {
     private static final Matrix4f IDENTITY_MATRIX = new Matrix4f();
 
-    public static void texture(GuiGraphics context, /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
+    public static void texture(GuiGraphics context, /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
         //? if >= 1.21.6 {
         context.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, textureWidth, textureHeight);
         //?} elif > 1.21 {
@@ -174,6 +174,19 @@ public final class DrawContextHelper {
         }
 
         private void flush() {
+            //? if neoforge {
+            /*this.context.submitGuiElementRenderState(new ColoredQuadRenderState(
+                    RenderPipelines.GUI,
+                    TextureSetup.noTexture(),
+                    new Matrix3x2f(this.context.pose()),
+                    this.x[0], this.y[0],
+                    this.x[1], this.y[1],
+                    this.x[2], this.y[2],
+                    this.x[3], this.y[3],
+                    this.color[0], this.color[1], this.color[2], this.color[3],
+                    this.context.peekScissorStack()
+            ));
+            *///?} else {
             this.context.guiRenderState.submitGuiElement(new ColoredQuadRenderState(
                     RenderPipelines.GUI,
                     TextureSetup.noTexture(),
@@ -185,6 +198,7 @@ public final class DrawContextHelper {
                     this.color[0], this.color[1], this.color[2], this.color[3],
                     this.context.scissorStack.peek()
             ));
+            //?}
         }
 
         @Override
@@ -208,7 +222,7 @@ public final class DrawContextHelper {
         }
 
         //? if >= 1.21.11
-        @Override
+        /*@Override*/
         public VertexConsumer setLineWidth(float width) {
             return this;
         }
@@ -234,20 +248,20 @@ public final class DrawContextHelper {
     ) implements GuiElementRenderState {
         @Override
         //? if >= 1.21.9 {
-        public void buildVertices(VertexConsumer vertexConsumer) {
+        /*public void buildVertices(VertexConsumer vertexConsumer) {
             vertexConsumer.addVertexWith2DPose(this.pose, this.x0, this.y0).setColor(this.color0);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x1, this.y1).setColor(this.color1);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x2, this.y2).setColor(this.color2);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x3, this.y3).setColor(this.color3);
         }
-        //?} else {
-        /*public void buildVertices(VertexConsumer vertexConsumer, float depth) {
+        *///?} else {
+        public void buildVertices(VertexConsumer vertexConsumer, float depth) {
             vertexConsumer.addVertexWith2DPose(this.pose, this.x0, this.y0, depth).setColor(this.color0);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x1, this.y1, depth).setColor(this.color1);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x2, this.y2, depth).setColor(this.color2);
             vertexConsumer.addVertexWith2DPose(this.pose, this.x3, this.y3, depth).setColor(this.color3);
         }
-        *///?}
+        //?}
 
         @Override
         public @Nullable ScreenRectangle bounds() {

@@ -106,7 +106,7 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
         //? if fabric {
         ServerPlayNetworking.send(player, getPayload(packet));
         //?} else {
-        /*PacketDistributor.sendToPlayer(player, payload);
+        /*PacketDistributor.sendToPlayer(player, getPayload(packet));
          *///?}
     }
 

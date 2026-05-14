@@ -6,9 +6,9 @@ import _959.server_waypoint.core.network.buffer.UpdatesBundleBuffer;
 import _959.server_waypoint.core.network.codec.UpdatesBundleCodec;
 import io.netty.buffer.ByteBuf;
 //? if >= 1.21.11
-import net.minecraft.resources.Identifier;
+/*import net.minecraft.resources.Identifier;*/
 //? if < 1.21.11
-/*import net.minecraft.resources.ResourceLocation;*/
+import net.minecraft.resources.ResourceLocation;
 //? if >= 1.20.5 {
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -20,7 +20,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import static _959.server_waypoint.core.network.PayloadID.UPDATES_BUNDLE;
 
 public record UpdatesBundleS2CPayload(UpdatesBundleBuffer updatesBundleBuffer) implements ModPayload {
-    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ UPDATES_BUNDLE_PAYLOAD_ID = _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, UPDATES_BUNDLE);
+    public static final /*? if < 1.21.11 {*/ResourceLocation/*?} else {*/ /*Identifier *//*?}*/ UPDATES_BUNDLE_PAYLOAD_ID = _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, UPDATES_BUNDLE);
 //? if >= 1.20.5 {
     public static final CustomPacketPayload.Type<UpdatesBundleS2CPayload> ID = new CustomPacketPayload.Type<>(UPDATES_BUNDLE_PAYLOAD_ID);
     public static final StreamCodec<ByteBuf, UpdatesBundleS2CPayload> PACKET_CODEC = new StreamCodec<>() {

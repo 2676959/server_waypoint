@@ -1,74 +1,96 @@
 //? if neoforge {
 /*package _959.server_waypoint.neoforge;
 
-import _959.server_waypoint.common.ServerWaypointMod;
-import _959.server_waypoint.common.network.ChatMessageHandler;
-import _959.server_waypoint.common.network.ClientHandshakeHandler;
-import _959.server_waypoint.common.network.payload.c2s.HandshakeC2SPayload;
+import _959.server_waypoint.ModInfo;
+import _959.server_waypoint.common.network.ModChatMessageHandler;
+import _959.server_waypoint.common.network.ModMessageSender;
+import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
+import _959.server_waypoint.common.network.payload.c2s.UpdateRequestC2SPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
-import _959.server_waypoint.common.permission.PermissionKey;
+import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.common.server.command.WaypointCommand;
+import _959.server_waypoint.core.IPlatformConfigPath;
+import _959.server_waypoint.core.network.C2SPacketHandler;
+import _959.server_waypoint.neoforge.permission.NeoForgePermissionManager;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
 import net.neoforged.fml.loading.FMLConfig;
 import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.ServerChatEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import net.neoforged.neoforge.server.permission.events.PermissionGatherEvent;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.nio.file.Path;
 
-@Mod(value = ServerWaypointNeoForge.MOD_ID, dist = Dist.DEDICATED_SERVER)
-@EventBusSubscriber(modid = ServerWaypointNeoForge.MOD_ID, value = Dist.DEDICATED_SERVER)
-public class ServerWaypointNeoForge extends ServerWaypointMod {
+@Mod(value = ModInfo.MOD_ID, dist = Dist.DEDICATED_SERVER)
+@EventBusSubscriber(modid = ModInfo.MOD_ID, value = Dist.DEDICATED_SERVER)
+public class ServerWaypointNeoForge implements IPlatformConfigPath {
+    private final WaypointServerMod waypointServer;
+    private final C2SPacketHandler<CommandSourceStack, ServerPlayer> c2sPacketHandler;
+    private final WaypointCommand waypointCommand;
+    private final ModChatMessageHandler<String> chatMessageHandler;
+
     public ServerWaypointNeoForge(IEventBus modEventBus) {
-        modEventBus.addListener(this::initWaypointServer);
+        ModMessageSender messageSender = ModMessageSender.getInstance();
+        NeoForgePermissionManager permissionManager = new NeoForgePermissionManager();
+        this.chatMessageHandler = new ModChatMessageHandler<>(messageSender, permissionManager) {};
+        this.waypointServer = new WaypointServerMod(this.getAssignedConfigDirectory(), this.chatMessageHandler);
+        this.c2sPacketHandler = new C2SPacketHandler<>(messageSender, this.waypointServer);
+        this.waypointCommand = new WaypointCommand(this.waypointServer, messageSender, permissionManager);
+
+        modEventBus.addListener(this::registerPayloads);
+        NeoForge.EVENT_BUS.addListener(this::onServerStarting);
+        NeoForge.EVENT_BUS.addListener(this::onServerStopping);
+        NeoForge.EVENT_BUS.addListener(this::listenChatMessages);
+        NeoForge.EVENT_BUS.addListener(this::registerCommands);
     }
 
-    private void initWaypointServer(FMLDedicatedServerSetupEvent event) {
-        startServer();
-
+    private void onServerStarting(ServerStartingEvent event) {
+        this.waypointServer.load(event.getServer());
     }
 
-    @SubscribeEvent
-    public static void registerPermissionNodes(PermissionGatherEvent.Nodes event) {
-        for (PermissionKey permissionKey: PermissionKey.values()) {
-            event.addNodes(permissionKey.getNode());
-        }
+    private void onServerStopping(ServerStoppingEvent event) {
+        this.waypointServer.unload();
     }
 
-    @SubscribeEvent
-    public static void listenChatMessages(ServerChatEvent event) {
-        ChatMessageHandler.onChatMessage(event.getMessage(), event.getPlayer(), null);
+    private void listenChatMessages(ServerChatEvent event) {
+        this.chatMessageHandler.onChatMessage(event.getPlayer(), event.getRawText());
     }
 
-    @SubscribeEvent
-    public static void registerPayloads(RegisterPayloadHandlersEvent event) {
+    private void registerPayloads(RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar("1");
         // S2C
-        registrar.playToClient(SimpleWaypointS2CPayload.ID, SimpleWaypointS2CPayload.PACKET_CODEC, (payload, context) -> {});
         registrar.playToClient(WaypointListS2CPayload.ID, WaypointListS2CPayload.PACKET_CODEC, (payload, context) -> {});
         registrar.playToClient(DimensionWaypointS2CPayload.ID, DimensionWaypointS2CPayload.PACKET_CODEC, (payload, context) -> {});
         registrar.playToClient(WorldWaypointS2CPayload.ID, WorldWaypointS2CPayload.PACKET_CODEC, (payload, context) -> {});
         registrar.playToClient(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC, (payload, context) -> {});
+        registrar.playToClient(UpdatesBundleS2CPayload.ID, UpdatesBundleS2CPayload.PACKET_CODEC, (payload, context) -> {});
+        registrar.playToClient(ServerHandshakeS2CPayload.ID, ServerHandshakeS2CPayload.PACKET_CODEC, (payload, context) -> {});
+        registrar.playToClient(XaerosWorldIdS2CPayload.ID, XaerosWorldIdS2CPayload.PACKET_CODEC, (payload, context) -> {});
         // C2S
-        registrar.playToServer(HandshakeC2SPayload.ID, HandshakeC2SPayload.PACKET_CODEC, ClientHandshakeHandler::onClientHandshake);
+        registrar.playToServer(ClientHandshakeC2SPayload.ID, ClientHandshakeC2SPayload.PACKET_CODEC, (payload, context) ->
+                context.enqueueWork(() -> this.c2sPacketHandler.onClientHandshake((ServerPlayer) context.player(), payload.clientHandshakeBuffer()))
+        );
+        registrar.playToServer(UpdateRequestC2SPayload.ID, UpdateRequestC2SPayload.PACKET_CODEC, (payload, context) ->
+                context.enqueueWork(() -> this.c2sPacketHandler.onClientUpdateRequest((ServerPlayer) context.player(), payload.clientUpdateRequestBuffer()))
+        );
     }
 
-    @SubscribeEvent
-    public static void registerCommands(RegisterCommandsEvent event) {
-        WaypointCommand.register(event.getDispatcher());
+    private void registerCommands(RegisterCommandsEvent event) {
+        this.waypointCommand.register(event.getDispatcher());
     }
 
     @Override
-    public Path getConfigDirectory() {
-        return FMLPaths.GAMEDIR.get().resolve(FMLConfig.defaultConfigPath());
+    public Path getAssignedConfigDirectory() {
+        return FMLPaths.GAMEDIR.get().resolve(FMLConfig.defaultConfigPath()).resolve(ModInfo.MOD_ID);
     }
 }
 *///?}
