@@ -7,6 +7,7 @@ import _959.server_waypoint.core.waypoint.WaypointList;
 import com.mojang.blaze3d.platform.Window;
 import org.jetbrains.annotations.Unmodifiable;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +97,10 @@ public final class OptimizedWaypointRenderer {
     public static final Matrix4f ModelViewMatrix = new Matrix4f();
     public static final Matrix4f ProjectionMatrix = new Matrix4f();
     private static final Vector4f posVec = new Vector4f();
+    private static boolean hasCameraSnapshot = false;
+    private static double cameraSnapshotX = 0.0D;
+    private static double cameraSnapshotY = 0.0D;
+    private static double cameraSnapshotZ = 0.0D;
 
     // =========================================================
     // DATA TRANSFER OBJECTS
@@ -357,6 +362,15 @@ public final class OptimizedWaypointRenderer {
         }
     }
 
+    public static void updateCameraSnapshot(Vec3 cameraPos, Matrix4fc modelViewMatrix, Matrix4fc projectionMatrix) {
+        cameraSnapshotX = cameraPos.x;
+        cameraSnapshotY = cameraPos.y;
+        cameraSnapshotZ = cameraPos.z;
+        ModelViewMatrix.set(modelViewMatrix);
+        ProjectionMatrix.set(projectionMatrix);
+        hasCameraSnapshot = true;
+    }
+
     public static void updateWaypoint(SimpleWaypoint wp) {
         if (wp.renderId != -1) {
             sendCommand(WaypointRendererCommand.Type.UPDATE, wp.renderId, getWaypointX(wp), getWaypointY(wp), getWaypointZ(wp), wp.rgb(), wp.name(), wp.initials(), !wp.global());
@@ -477,14 +491,23 @@ public final class OptimizedWaypointRenderer {
         float baseScale = WAYPOINT_BASE_SCALE * 0.01F * framebufferHeight / guiScaleFactor;
         float projectionScale = baseScale * projectionConstant;
         float minBaseScale = baseScale / 5F;
-        //? if >= 1.21.6 {
-        Vec3 cameraPos = camera.position();
-        //?} else {
-        /*Vec3 cameraPos = camera.getPosition();
-        *///?}
-        double camX = cameraPos.x;
-        double camY = cameraPos.y;
-        double camZ = cameraPos.z;
+        double camX;
+        double camY;
+        double camZ;
+        if (hasCameraSnapshot) {
+            camX = cameraSnapshotX;
+            camY = cameraSnapshotY;
+            camZ = cameraSnapshotZ;
+        } else {
+            //? if >= 1.21.6 {
+            Vec3 cameraPos = camera.position();
+            //?} else {
+            /*Vec3 cameraPos = camera.getPosition();
+            *///?}
+            camX = cameraPos.x;
+            camY = cameraPos.y;
+            camZ = cameraPos.z;
+        }
         float minDepth = Float.MAX_VALUE;
         int detailIndex = -1;
         float detailWinX = 0.0F;
