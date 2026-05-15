@@ -188,6 +188,7 @@ public class ColorUtils {
             hexCode = hexCode.substring(1);
         }
         try {
+            hexCode = hexCode.length() > 6 ? hexCode.substring(0, 6) : hexCode;
             return Integer.parseInt(hexCode, 16);
         } catch (NumberFormatException e) {
             return -1;

@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.WidgetThemeColors;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
@@ -32,9 +33,9 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     private final ConfirmationDialog xaerosSyncConfirmationDialog;
 
     public ClientConfigScreen(Screen parentScreen) {
-        super(Component.empty());
+        super(Component.translatable("server_waypoint.config.screen.title", ModInfo.MOD_VERSION));
         this.parentScreen = parentScreen;
-        ScalableText title = new ScalableText(0, 0, Component.translatable("server_waypoint.config.screen.title"), 1.2F, FONT_COLOR, font);
+        ScalableText title = new ScalableText(0, 0, this.title, 1.2F, FONT_COLOR, font);
         title.setXOffset(5);
         WidgetStack row1 = new WidgetStack(0, 0, 8);
         WidgetStack row2 = new WidgetStack(0, 0, 8);

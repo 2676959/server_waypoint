@@ -18,7 +18,7 @@ public class XaerosMapHelper {
                 args[1],
                 args[2],
                 new WaypointPos(Integer.parseInt(args[3]), Integer.parseInt(args[4]), Integer.parseInt(args[5])),
-                Integer.parseInt(args[6]),
+                ColorUtils.colorIndexToRgb(Integer.parseInt(args[6])),
                 Integer.parseInt(args[8]),
                 true
         );
@@ -40,7 +40,7 @@ public class XaerosMapHelper {
                 if (xaeroDimString.length() < 4) {
                     yield "";
                 }
-                yield xaeroDimString.substring(4).replace("$", ":").replace("%", "/").replaceAll("-", "_");
+                yield xaeroDimString.substring(4).replace("$", ":").replace("%", "/").replace("-", "_");
             }
         };
     }
