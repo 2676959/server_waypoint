@@ -95,7 +95,7 @@ public class TranslucentTextField extends EditBox implements Shiftable {
     public boolean charTyped(CharacterEvent characterEvent) {
         return this.charTyped(
                 characterEvent.codepointAsString().charAt(0),
-                /*? if >=26 {*/ 0 /*?} else {*//* characterEvent.modifiers() *//*?}*/
+                /*? if >=26 {*/ 0 /*?} else {*/ /*characterEvent.modifiers() *//*?}*/
         );
     }
     //?}
