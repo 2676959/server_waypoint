@@ -3,6 +3,7 @@ package _959.server_waypoint.network;
 import _959.server_waypoint.core.network.ChatMessageHandler;
 import _959.server_waypoint.server.command.permission.PaperPermissionManager;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
@@ -17,6 +18,8 @@ public class PaperChatMessageHandler extends ChatMessageHandler<CommandSourceSta
 
     @Override
     protected boolean isDimensionValid(String dimensionName) {
-        return this.server.getWorld(dimensionName) != null;
+        String[] split = dimensionName.split(":");
+        NamespacedKey dimensionKey = new NamespacedKey(split[0], split[1]);
+        return server.getWorld(dimensionKey) != null;
     }
 }
