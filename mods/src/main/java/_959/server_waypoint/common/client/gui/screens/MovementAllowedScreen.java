@@ -6,11 +6,12 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
-//? if >= 1.21.9
+//? if >= 1.21.9 {
 import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+//?}
 import net.minecraft.network.chat.Component;
-
-import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
+import org.jspecify.annotations.NonNull;
 
 public abstract class MovementAllowedScreen extends Screen {
     protected final Font font = Minecraft.getInstance().font;
@@ -62,10 +63,6 @@ public abstract class MovementAllowedScreen extends Screen {
 
     @Override
     protected void init() {
-        if (this.minecraft == null) {
-            LOGGER.warn("MinecraftClient is null, not support to initialize");
-            return;
-        }
         forwardKeyBinding = this.minecraft.options.keyUp;
         leftKeyBinding = this.minecraft.options.keyLeft;
         backKeyBinding = this.minecraft.options.keyDown;
@@ -101,6 +98,115 @@ public abstract class MovementAllowedScreen extends Screen {
         sprintKeyBinding.setDown(false);
     }
 
+    private boolean testMovementKeysDown(int keyCode) {
+        boolean ret = false;
+        if (keyCode == forwardKeyCode) {
+            forwardKeyBinding.setDown(true);
+            KeyMapping.click(forwardKey);
+            ret = true;
+        } else if (keyCode == leftKeyCode) {
+            leftKeyBinding.setDown(true);
+            KeyMapping.click(leftKey);
+            ret = true;
+        } else if (keyCode == backKeyCode) {
+            backKeyBinding.setDown(true);
+            KeyMapping.click(backKey);
+            ret = true;
+        } else if (keyCode == rightKeyCode) {
+            rightKeyBinding.setDown(true);
+            KeyMapping.click(rightKey);
+            ret = true;
+        } else if (keyCode == jumpKeyCode) {
+            jumpKeyBinding.setDown(true);
+            KeyMapping.click(jumpKey);
+            ret = true;
+        } else if (keyCode == sneakKeyCode) {
+            sneakKeyBinding.setDown(true);
+            KeyMapping.click(sneakKey);
+            ret = true;
+        } else if (keyCode == sprintKeyCode) {
+            sprintKeyBinding.setDown(true);
+            KeyMapping.click(sprintKey);
+            ret = true;
+        }
+        return ret;
+    }
+
+    private boolean testMovementKeysUp(int keyCode) {
+        boolean ret = false;
+        if (keyCode == forwardKeyCode) {
+            forwardKeyBinding.setDown(false);
+            ret = true;
+        } else if (keyCode == leftKeyCode) {
+            leftKeyBinding.setDown(false);
+            ret = true;
+        } else if (keyCode == backKeyCode) {
+            backKeyBinding.setDown(false);
+            ret = true;
+        } else if (keyCode == rightKeyCode) {
+            rightKeyBinding.setDown(false);
+            ret = true;
+        } else if (keyCode == jumpKeyCode) {
+            jumpKeyBinding.setDown(false);
+            ret = true;
+        } else if (keyCode == sneakKeyCode) {
+            sneakKeyBinding.setDown(false);
+            ret = true;
+        } else if (keyCode == sprintKeyCode) {
+            sprintKeyBinding.setDown(false);
+            ret = true;
+        }
+        return ret;
+    }
+
+    //? if >= 1.21.9 {
+    @Override
+    public boolean mouseClicked(@NonNull MouseButtonEvent mouseButtonEvent, boolean doubleClicked) {
+        if (!movementAllowed) {
+            unpressAllMovementKeys();
+            return super.mouseClicked(mouseButtonEvent, doubleClicked);
+        }
+        int button = mouseButtonEvent.button();
+        boolean ret = testMovementKeysDown(button);
+        boolean ret2 = super.mouseClicked(mouseButtonEvent, doubleClicked);
+        return ret || ret2;
+    }
+
+    @Override
+    public boolean mouseReleased(@NonNull MouseButtonEvent mouseButtonEvent) {
+        if (!movementAllowed) {
+            unpressAllMovementKeys();
+            return super.mouseReleased(mouseButtonEvent);
+        }
+        int button = mouseButtonEvent.button();
+        boolean ret = testMovementKeysUp(button);
+        boolean ret2 = super.mouseReleased(mouseButtonEvent);
+        return ret || ret2;
+    }
+    //?} else {
+    /*@Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (!movementAllowed) {
+            unpressAllMovementKeys();
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+        boolean ret = testMovementKeysDown(button);
+        boolean ret2 = super.mouseClicked(mouseX, mouseY, button);
+        return ret || ret2;
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (!movementAllowed) {
+            unpressAllMovementKeys();
+            return super.mouseReleased(mouseX, mouseY, button);
+        }
+        boolean ret = testMovementKeysUp(button);
+        boolean ret2 = super.mouseReleased(mouseX, mouseY, button);
+        return ret || ret2;
+    }
+    *///?}
+
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (!movementAllowed) {
             unpressAllMovementKeys();
@@ -110,36 +216,7 @@ public abstract class MovementAllowedScreen extends Screen {
             /*return super.keyPressed(keyCode, scanCode, modifiers);
             *///?}
         }
-        boolean ret = false;
-        if (keyCode == forwardKeyCode || scanCode == forwardKeyCode) {
-            forwardKeyBinding.setDown(true);
-            KeyMapping.click(forwardKey);
-            ret = true;
-        } else if (keyCode == leftKeyCode || scanCode == leftKeyCode) {
-            leftKeyBinding.setDown(true);
-            KeyMapping.click(leftKey);
-            ret = true;
-        } else if (keyCode == backKeyCode || scanCode == backKeyCode) {
-            backKeyBinding.setDown(true);
-            KeyMapping.click(backKey);
-            ret = true;
-        } else if (keyCode == rightKeyCode || scanCode == rightKeyCode) {
-            rightKeyBinding.setDown(true);
-            KeyMapping.click(rightKey);
-            ret = true;
-        } else if (keyCode == jumpKeyCode || scanCode == jumpKeyCode) {
-            jumpKeyBinding.setDown(true);
-            KeyMapping.click(jumpKey);
-            ret = true;
-        } else if (keyCode == sneakKeyCode || scanCode == sneakKeyCode) {
-            sneakKeyBinding.setDown(true);
-            KeyMapping.click(sneakKey);
-            ret = true;
-        } else if (keyCode == sprintKeyCode || scanCode == sprintKeyCode) {
-            sprintKeyBinding.setDown(true);
-            KeyMapping.click(sprintKey);
-            ret = true;
-        }
+        boolean ret = testMovementKeysDown(keyCode);
         //? if >= 1.21.9 {
         boolean ret2 = super.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
         //?} else {
@@ -164,29 +241,7 @@ public abstract class MovementAllowedScreen extends Screen {
             /*return super.keyReleased(keyCode, scanCode, modifiers);
             *///?}
         }
-        boolean ret = false;
-        if (keyCode == forwardKeyCode || scanCode == forwardKeyCode) {
-            forwardKeyBinding.setDown(false);
-            ret = true;
-        } else if (keyCode == leftKeyCode || scanCode == leftKeyCode) {
-            leftKeyBinding.setDown(false);
-            ret = true;
-        } else if (keyCode == backKeyCode || scanCode == backKeyCode) {
-            backKeyBinding.setDown(false);
-            ret = true;
-        } else if (keyCode == rightKeyCode || scanCode == rightKeyCode) {
-            rightKeyBinding.setDown(false);
-            ret = true;
-        } else if (keyCode == jumpKeyCode || scanCode == jumpKeyCode) {
-            jumpKeyBinding.setDown(false);
-            ret = true;
-        } else if (keyCode == sneakKeyCode || scanCode == sneakKeyCode) {
-            sneakKeyBinding.setDown(false);
-            ret = true;
-        } else if (keyCode == sprintKeyCode || scanCode == sprintKeyCode) {
-            sprintKeyBinding.setDown(false);
-            ret = true;
-        }
+        boolean ret = testMovementKeysUp(keyCode);
         //? if >= 1.21.9 {
         boolean ret2 = super.keyReleased(new KeyEvent(keyCode, scanCode, modifiers));
         //?} else {
