@@ -31,16 +31,10 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build -Dorg.gradle.java.home=$JAVA_HOME
-      - name: Collect mod jars
-        run: |
-          shopt -s extglob
-          mkdir mod-jars
-          for jar in versions/*/build/libs/*.jar; do
-              cp -p "$jar" mod-jars/
-          done
-          ls -l mod-jars
+      - name: collect build artifacts
+        run: ./move_builds.sh
       - name: capture build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Artifacts
-          path: mod-jars/
+          path: builds/
