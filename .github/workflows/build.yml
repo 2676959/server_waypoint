@@ -26,6 +26,7 @@ jobs:
           java-version: |
             17
             21
+            25
           distribution: 'microsoft'
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
