@@ -44,6 +44,5 @@ test_files/
 
 builds/
 .java-version
-move_builds.sh
 /TODO.md
 /minecraft_source_code/
