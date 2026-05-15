@@ -562,6 +562,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         WaypointPos waypointPos = toWaypointPos(source, blockPosArgument);
         if (waypointPos == null) {
             sendPosArgumentError(source);
+            return;
         }
         int rgb;
         if (RANDOM_COLOR.equals(hexCode)) {
