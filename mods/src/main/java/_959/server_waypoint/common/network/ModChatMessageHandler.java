@@ -46,6 +46,8 @@ public abstract class ModChatMessageHandler<K> extends ChatMessageHandler<Comman
             LOGGER.info("MinecraftServer not initialized.");
             return false;
         }
-        return this.server.getLevel(getDimensionKey(dimensionName)) != null;
+        var key = getDimensionKey(dimensionName);
+        if (key == null) return false;
+        return this.server.getLevel(key) != null;
     }
 }

@@ -49,20 +49,6 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
         INSTANCE = this;
     }
 
-    public abstract boolean isDimensionKeyValid(String dimString);
-
-    /**
-     * Can only be called after Minecraft server initialized.
-     */
-    @SuppressWarnings("unused")
-    public void removeInvalidDimensions() {
-        for (String fileName : this.fileManagerMap.keySet()) {
-            if (this.isDimensionKeyValid(fileName)) {
-                fileManagerMap.remove(fileName);
-            }
-        }
-    }
-
     @Nullable
     public WorldWaypointBuffer toWorldWaypointBuffer() {
         List<DimensionWaypointBuffer> dimensionWaypointBuffers = new ArrayList<>();
