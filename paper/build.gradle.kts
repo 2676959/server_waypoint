@@ -51,6 +51,13 @@ tasks.shadowJar {
     archiveClassifier.set("")
 }
 
+tasks.processResources {
+    inputs.property("version", mod_version)
+    filesMatching("paper-plugin.yml") {
+        expand("version" to mod_version)
+    }
+}
+
 java {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
