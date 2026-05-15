@@ -1,6 +1,8 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import java.util.function.Consumer;
+
+import _959.server_waypoint.util.MathUtils;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 
@@ -22,7 +24,7 @@ public class IntegerField extends TranslucentTextField {
     }
 
     public void setValueEnteredCallback(Consumer<Integer> callback) {
-        this.valueEnteredCallback = callback;
+        this.valueEnteredCallback = value -> callback.accept(MathUtils.clamp(value, minValue, maxValue));
     }
 
     public void setDefaultValue(int defaultValue) {
@@ -32,9 +34,9 @@ public class IntegerField extends TranslucentTextField {
     @Override
     public void setFocused(boolean focused) {
         super.setFocused(focused);
-        if (!focused && super.getValue().isEmpty()) {
-            this.setValue(Integer.toString(this.defaultValue));
-            if (this.valueEnteredCallback != null) this.valueEnteredCallback.accept(this.defaultValue);
+        if (!focused) {
+            this.setValue(Integer.toString(getIntValue()));
+            if (this.valueEnteredCallback != null) this.valueEnteredCallback.accept(getIntValue());
         }
     }
 
@@ -62,6 +64,9 @@ public class IntegerField extends TranslucentTextField {
         }
         switch (chr) {
             case '-' -> {
+                if (this.minValue >= 0) {
+                    return false;
+                }
                 String currentValue = super.getValue();
                 if (currentValue.isEmpty()) {
                     return false;
@@ -76,6 +81,9 @@ public class IntegerField extends TranslucentTextField {
                 return false;
             }
             case '+' -> {
+                if (this.minValue >= 0) {
+                    return false;
+                }
                 String currentValue = super.getValue();
                 if (currentValue.isEmpty()) {
                     return false;
@@ -102,7 +110,7 @@ public class IntegerField extends TranslucentTextField {
 
     public int getIntValue() {
         try {
-            return Integer.parseInt(super.getValue());
+            return MathUtils.clamp(Integer.parseInt(super.getValue()), minValue, maxValue);
         } catch (NumberFormatException e) {
             return this.defaultValue;
         }

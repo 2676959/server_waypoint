@@ -24,27 +24,35 @@ public class FabricPermissionManager extends PermissionManager<CommandSourceStac
 
     @Override
     public boolean hasPermission(CommandSourceStack source, PermissionKeys<String>.PermissionKey key, int defaultLevel) {
+        //? if >= 1.21.11 {
         if (isFabricPermissionAPILoaded) {
+            return Permissions.check(source, key.getKey(), PermissionLevel.byId(defaultLevel));
+        } else {
+            return source.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(defaultLevel)));
+        }
+        //?} else {
+        /*if (isFabricPermissionAPILoaded) {
             return Permissions.check(source, key.getKey(), defaultLevel);
         } else {
-            //? if >= 1.21.11 {
-            return source.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(defaultLevel)));
-            //?} else {
-            /*return source.hasPermission(defaultLevel);
-            *///?}
+            return source.hasPermission(defaultLevel);
         }
+        *///?}
     }
 
     @Override
     public boolean checkPlayerPermission(ServerPlayer player, PermissionKeys<String>.PermissionKey key, int defaultLevel) {
+        //? if >= 1.21.11 {
         if (isFabricPermissionAPILoaded) {
+            return Permissions.check(player, key.getKey(), PermissionLevel.byId(defaultLevel));
+        } else {
+            return player.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(defaultLevel)));
+        }
+        //?} else {
+        /*if (isFabricPermissionAPILoaded) {
             return Permissions.check(player, key.getKey(), defaultLevel);
         } else {
-            //? if >= 1.21.11 {
-            return player.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(defaultLevel)));
-            //?} else {
-            /*return player.hasPermissions(defaultLevel);
-            *///?}
+            return player.hasPermissions(defaultLevel);
         }
+        *///?}
     }
 }

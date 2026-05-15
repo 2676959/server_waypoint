@@ -129,7 +129,7 @@ public abstract class ShiftableClickableWidget extends AbstractWidget implements
     public boolean charTyped(CharacterEvent characterEvent) {
         return this.charTyped(
                 characterEvent.codepointAsString().charAt(0),
-                /*? if >=26 {*/ 0 /*?} else {*//* characterEvent.modifiers() *//*?}*/
+                /*? if >=26 {*/ 0 /*?} else {*/ /*characterEvent.modifiers() *//*?}*/
         );
     }
 
