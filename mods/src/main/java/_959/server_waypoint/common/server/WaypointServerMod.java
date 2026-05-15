@@ -15,15 +15,12 @@ import java.util.function.Consumer;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionKey;
 import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asIntegratedServer;
 
 public class WaypointServerMod extends WaypointServerCore {
@@ -139,19 +136,6 @@ public class WaypointServerMod extends WaypointServerCore {
         setMinecraftServer(null);
         this.loaded = false;
         hasClient = false;
-    }
-
-    @Override
-    public boolean isDimensionKeyValid(String dimensionName) {
-        if (MINECRAFT_SERVER == null) {
-            LOGGER.warn("MinecraftServer is not initialized");
-            return false;
-        } else {
-            ResourceKey<Level> dimKey = getDimensionKey(dimensionName);
-            if (dimKey == null) return false;
-            Level world = MINECRAFT_SERVER.getLevel(dimKey);
-            return world != null;
-        }
     }
 
     public void setMinecraftServer(MinecraftServer server) {

@@ -16,9 +16,4 @@ public class WaypointServerPlugin extends WaypointServerCore {
         initConfigAndLanguageResource();
         initOrReadWaypointFiles();
     }
-
-    @Override
-    public boolean isDimensionKeyValid(String dimString) {
-        return false;
-    }
 }
