@@ -21,6 +21,7 @@ base {
 stonecutter {
     constants.match(loader, "fabric", "neoforge")
     val usesTwentySixApi = eval(current.version, ">=26")
+    val usesResourceLocation = eval(current.version, "<1.21.11")
 
     swaps["render_widget_method_swap"] = if (usesTwentySixApi) "extractWidgetRenderState" else "renderWidget"
     swaps["render_method_swap"] = if (usesTwentySixApi) "extractRenderState" else "render"
@@ -29,6 +30,7 @@ stonecutter {
     swaps["gui_outline_method_swap"] = if (usesTwentySixApi) "outline" else "renderOutline"
     swaps["payload_s2c_registry_swap"] = if (usesTwentySixApi) "clientboundPlay" else "playS2C"
     swaps["payload_c2s_registry_swap"] = if (usesTwentySixApi) "serverboundPlay" else "playC2S"
+    swaps["resource_location_type_swap"] = if (usesResourceLocation) "ResourceLocation" else "Identifier"
     swaps["mouseScrolled_swap"] = when {
         eval(current.version, "<=1.20.1") -> "mouseScrolled($1, $2, $3)"
         else -> "mouseScrolled($1, $2, $3, $4)"
@@ -40,6 +42,9 @@ stonecutter {
     }
     replacements.string("gui_render_state_26", usesTwentySixApi) {
         replace("net.minecraft.client.gui.render.state.GuiElementRenderState", "net.minecraft.client.renderer.state.gui.GuiElementRenderState")
+    }
+    replacements.string("resource_location_import", usesResourceLocation) {
+        replace("net.minecraft.resources.Identifier", "net.minecraft.resources.ResourceLocation")
     }
 }
 

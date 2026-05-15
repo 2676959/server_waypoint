@@ -1,3 +1,4 @@
+//~ resource_location_import
 //~ gui_render_state_26
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui;
@@ -17,16 +18,16 @@ import org.joml.Matrix3x2f;
 import net.minecraft.client.renderer.MultiBufferSource;
 //? if < 1.21.6
 /*import net.minecraft.client.renderer.RenderType;*/
-//? if >= 1.21.11
 import net.minecraft.resources.Identifier;
-//? if < 1.21.11
-/*import net.minecraft.resources.ResourceLocation;*/
 import org.joml.Matrix4f;
 
 public final class DrawContextHelper {
     private static final Matrix4f IDENTITY_MATRIX = new Matrix4f();
 
-    public static void texture(GuiGraphicsExtractor context, /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
+    public static void texture(GuiGraphicsExtractor context,
+    //$ resource_location_type_swap
+    Identifier
+    texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
         //? if >= 1.21.6 {
         context.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, textureWidth, textureHeight);
         //?} elif > 1.21 {

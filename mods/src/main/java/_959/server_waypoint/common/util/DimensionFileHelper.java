@@ -2,10 +2,6 @@ package _959.server_waypoint.common.util;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-//? if >= 1.21.11
-import net.minecraft.resources.Identifier;
-//? if < 1.21.11
-/*import net.minecraft.resources.ResourceLocation;*/
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 

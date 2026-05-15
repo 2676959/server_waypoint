@@ -1,3 +1,4 @@
+//~ resource_location_import
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
@@ -21,10 +22,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-//? if >= 1.21.11
 import net.minecraft.resources.Identifier;
-//? if < 1.21.11
-/*import net.minecraft.resources.ResourceLocation;*/
 
 import static _959.server_waypoint.ModInfo.MOD_ID;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
@@ -42,15 +40,42 @@ import static java.util.Collections.binarySearch;
 public class WaypointListWidget extends ShiftableScrollableWidget implements Padding, Expandable {
     public static int TELEPORT_KEY = 84;
     public static final Component EMPTY_INFO_TEXT = Component.translatable("waypoint.empty_mark");
-    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ SHOW_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/show.png");
-    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ HIDE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/hide.png");
-    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ ADD_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/add.png");
-    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ EDIT_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/edit.png");
-    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/delete.png");
-    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ CONFIRM_REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/confirm_delete.png");
-    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ LIST_EMPTY = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_empty.png");
-    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ LIST_EXPAND_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_expand.png");
-    public static final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ LIST_COLLAPSE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_collapse.png");
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    SHOW_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/show.png");
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    HIDE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/hide.png");
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    ADD_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/add.png");
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    EDIT_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/edit.png");
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/delete.png");
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    CONFIRM_REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/confirm_delete.png");
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    LIST_EMPTY = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_empty.png");
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    LIST_EXPAND_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_expand.png");
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    LIST_COLLAPSE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_collapse.png");
     private static final int listIconSize = 16;
     private static final int buttonIconSize = 12;
     private static double SCROLLED_POSITION = 0.0D;
@@ -347,7 +372,7 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
         translate(context, x, y);
 
         int listWidth = overflows() ?  width - SCROLLBAR_WIDTH : width;
-        
+
         if (empty) {
             context.
             //$ gui_text_method_swap

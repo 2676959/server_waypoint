@@ -1,3 +1,4 @@
+//~ resource_location_import
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
@@ -8,16 +9,19 @@ import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-//? if >= 1.21.11
 import net.minecraft.resources.Identifier;
-//? if < 1.21.11
-/*import net.minecraft.resources.ResourceLocation;*/
 
 public class IconButton extends ShiftableClickableWidget {
-    private final /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ icon;
+    private final
+    //$ resource_location_type_swap
+    Identifier
+    icon;
     private final ButtonClickCallback callback;
 
-    public IconButton(int x, int y, int width, int height, Component message, /*? if < 1.21.11 {*//*ResourceLocation*//*?} else {*/ Identifier /*?}*/ icon, ButtonClickCallback callback) {
+    public IconButton(int x, int y, int width, int height, Component message,
+    //$ resource_location_type_swap
+    Identifier
+    icon, ButtonClickCallback callback) {
         super(x, y, width, height, message);
         this.icon = icon;
         this.callback = callback;
