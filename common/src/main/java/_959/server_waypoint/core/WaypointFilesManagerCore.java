@@ -15,10 +15,10 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import static _959.server_waypoint.util.ListMapUtils.getEntriesSortedByKey;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 
 /**
@@ -26,28 +26,34 @@ import static _959.server_waypoint.util.VanillaDimensionNames.*;
 **/
 public class WaypointFilesManagerCore {
     public static final Logger LOGGER = LoggerFactory.getLogger("waypoint_files_manager");
-    protected LinkedHashMap<String, WaypointFileManager> fileManagerMap;
+    protected Map<String, WaypointFileManager> fileManagerMap;
     protected Path waypointFilesDir;
 
     /**
      * initialize without waypointFilesDir set
      * */
     public WaypointFilesManagerCore() {
-        this.fileManagerMap = new LinkedHashMap<>();
+        this.fileManagerMap = new ConcurrentHashMap<>();
     }
 
     public WaypointFilesManagerCore(Path waypointsDir) {
         this.waypointFilesDir = waypointsDir;
-        this.fileManagerMap = new LinkedHashMap<>();
+        this.fileManagerMap = new ConcurrentHashMap<>();
     }
 
-    public LinkedHashMap<String, WaypointFileManager> getFileManagerMap() {
+    public Map<String, WaypointFileManager> getFileManagerMap() {
         return this.fileManagerMap;
     }
 
     public @Unmodifiable List<Map.Entry<String, WaypointFileManager>> getSortedMap() {
-        // maintain the list order for vanilla dimensions
-        return getEntriesSortedByKey(this.fileManagerMap, 3);
+        List<Map.Entry<String, WaypointFileManager>> entries = new ArrayList<>(this.fileManagerMap.entrySet());
+        entries.sort((a, b) -> {
+            int aOrd = vanillaOrdinal(a.getKey());
+            int bOrd = vanillaOrdinal(b.getKey());
+            if (aOrd != bOrd) return Integer.compare(aOrd, bOrd);
+            return a.getKey().compareTo(b.getKey());
+        });
+        return entries.stream().toList();
     }
 
     public @Nullable WaypointFileManager getWaypointFileManager(String dimensionName) {
@@ -165,10 +171,6 @@ public class WaypointFilesManagerCore {
         }
 
         this.fileManagerMap.clear();
-        // maintain the list order for vanilla dimensions
-        this.fileManagerMap.put(MINECRAFT_OVERWORLD, null);
-        this.fileManagerMap.put(MINECRAFT_THE_NETHER, null);
-        this.fileManagerMap.put(MINECRAFT_THE_END, null);
 
         List<Pair<String, WaypointFileManager>> fileManagers = new ArrayList<>();
         try (DirectoryStream<Path> entries = Files.newDirectoryStream(this.waypointFilesDir)) {

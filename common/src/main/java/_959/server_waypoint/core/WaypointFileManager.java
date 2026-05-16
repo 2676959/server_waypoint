@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class WaypointFileManager {
     private final Map<String, WaypointList> waypointListMap;
@@ -29,7 +30,7 @@ public class WaypointFileManager {
             dimensionName = fileName.replace("%", "/").replace("$", ":");
         }
         this.dimensionName = dimensionName;
-        this.waypointListMap = new HashMap<>();
+        this.waypointListMap = new ConcurrentHashMap<>();
         if (waypointsDir == null) {
             this.dimensionFilePath = null;
             return;
@@ -140,8 +141,8 @@ public class WaypointFileManager {
         return this.waypointListMap.values().stream().toList();
     }
 
-    public Map<String, WaypointList> getWaypointListMap() {
-        return this.waypointListMap;
+    public @Unmodifiable Map<String, WaypointList> getWaypointListMap() {
+        return Collections.unmodifiableMap(this.waypointListMap);
     }
 
     public @Nullable WaypointList getWaypointListByName(String name) {
