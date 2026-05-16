@@ -36,11 +36,12 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static _959.server_waypoint.ModInfo.MOD_ID;
+import static _959.server_waypoint.util.VanillaDimensionNames.vanillaOrdinal;
 import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asClientFromRemoteServer;
 
 public class WaypointClientMod extends WaypointFilesManagerCore implements BufferHandler {
@@ -171,7 +172,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     /**
      * change the reference of {@link _959.server_waypoint.core.WaypointFilesManagerCore#fileManagerMap fileManagerMap} and release the old one
      * */
-    public void changeFileManagerMap(LinkedHashMap<String, WaypointFileManager> fileManagerMap) {
+    public void changeFileManagerMap(Map<String, WaypointFileManager> fileManagerMap) {
         this.fileManagerMap = fileManagerMap;
     }
 
@@ -186,15 +187,14 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
      * */
     @NotNull
     public @Unmodifiable List<String> getDimensionNames() {
-        // keep the order of vanilla dimensions and sort the rest alphabetically
-        int size = this.fileManagerMap.size();
-        if (size <= 3) {
-            return this.fileManagerMap.keySet().stream().toList();
-        } else {
-            List<String> dimensionNames = new ArrayList<>(this.fileManagerMap.keySet());
-            dimensionNames.subList(3, size).sort(String::compareTo);
-            return dimensionNames.stream().toList();
-        }
+        List<String> dimensionNames = new ArrayList<>(this.fileManagerMap.keySet());
+        dimensionNames.sort((a, b) -> {
+            int aOrd = vanillaOrdinal(a);
+            int bOrd = vanillaOrdinal(b);
+            if (aOrd != bOrd) return Integer.compare(aOrd, bOrd);
+            return a.compareTo(b);
+        });
+        return dimensionNames.stream().toList();
     }
 
     @NotNull
@@ -372,6 +372,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     @Override
     public void onWorldWaypoint(WorldWaypointBuffer buffer) {
         if (WaypointServerMod.hasClient()) return;
+        if (this.mc.level == null) {
+            LOGGER.error("ClientLevel is null at this time");
+            return;
+        }
         this.fileManagerMap.clear();
         OptimizedWaypointRenderer.clearScene();
         //? if >= 1.21.11 {
