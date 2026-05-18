@@ -4,6 +4,7 @@ plugins {
     id("net.neoforged.moddev") version "2.0.141" apply false
     id("net.neoforged.gradle.userdev") version "7.1.27" apply false
     id("com.gradleup.shadow") version "9.4.1" apply false
+    id("me.modmuss50.mod-publish-plugin") version "2.0.0-beta.1" apply false
 }
 
 allprojects {
