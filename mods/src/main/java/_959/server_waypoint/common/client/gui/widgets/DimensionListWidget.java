@@ -1,10 +1,12 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.Expandable;
 import _959.server_waypoint.common.client.gui.Padding;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.util.MathHelper;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import org.jspecify.annotations.NonNull;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
@@ -101,7 +104,12 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
         }
     }
 
+    @NotNull
     public String getSelectedDimensionName() {
+        if (index < 0 || index >= dimensionNames.size()) {
+            WaypointClientMod.LOGGER.info("no dimensions have found currently");
+            return "none";
+        }
         return dimensionNames.get(index);
     }
 
@@ -119,7 +127,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (empty) return false;
+        if (empty) return addBtn.mouseClicked(mouseX, mouseY, button);
         int x = getX();
         int y = getY();
         int x2 = x + this.width;
@@ -144,7 +152,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     public void
     //$ render_widget_method_swap
     extractWidgetRenderState
-            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+            (@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
         int x2 = x + width;
@@ -251,7 +259,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     }
 
     @Override
-    protected void updateWidgetNarration(NarrationElementOutput builder) {
+    protected void updateWidgetNarration(@NonNull NarrationElementOutput builder) {
 
     }
 
