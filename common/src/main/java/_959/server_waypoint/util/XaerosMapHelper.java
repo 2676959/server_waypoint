@@ -13,7 +13,7 @@ public class XaerosMapHelper {
         return messageArgs.length == 10 && XAEROS_SHARE_PREFIX.equals(messageArgs[0]);
     }
 
-    public static Pair<SimpleWaypoint, String> toSimpleWaypoint(String[] args) {
+    public static Pair<SimpleWaypoint, String> toSimpleWaypoint(String[] args) throws NumberFormatException {
         SimpleWaypoint simpleWaypoint = new SimpleWaypoint(
                 args[1],
                 args[2],
