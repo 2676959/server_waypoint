@@ -14,4 +14,11 @@ public abstract class VanillaDimensionNames {
             default -> 3;
         };
     }
+
+    public static int dimensionNameComparator(String a, String b) {
+        int aOrd = vanillaOrdinal(a);
+        int bOrd = vanillaOrdinal(b);
+        if (aOrd != bOrd) return Integer.compare(aOrd, bOrd);
+        return a.compareTo(b);
+    }
 }
