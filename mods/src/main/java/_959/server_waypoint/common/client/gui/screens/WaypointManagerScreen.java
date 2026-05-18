@@ -5,7 +5,9 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
 import _959.server_waypoint.common.client.gui.widgets.WaypointListWidget;
+import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import org.jspecify.annotations.NonNull;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
@@ -94,6 +96,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     protected void init() {
         isRendering = true;
         super.init();
+        String currentDimension = WaypointClientMod.getCurrentDimensionName();
+        if (WaypointServerMod.runsWithClient()) {
+            WaypointServerMod.getInstance().getOrCreateWaypointFileManager(currentDimension);
+        } else {
+            WaypointClientMod.getInstance().getOrCreateWaypointFileManager(currentDimension);
+        }
         updateWidgetDimension();
         int centeredX = getCenteredX();
         int centeredY = getCenteredY();
@@ -132,7 +140,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     public void
     //$ render_method_swap
     extractRenderState
-            (GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+            (@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         waypointListWidget.
         //$ render_widget_method_swap
         extractWidgetRenderState

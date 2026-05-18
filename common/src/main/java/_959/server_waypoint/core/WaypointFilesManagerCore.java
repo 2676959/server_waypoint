@@ -3,7 +3,6 @@ package _959.server_waypoint.core;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
-import _959.server_waypoint.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -41,18 +40,13 @@ public class WaypointFilesManagerCore {
         this.fileManagerMap = new ConcurrentHashMap<>();
     }
 
-    public Map<String, WaypointFileManager> getFileManagerMap() {
-        return this.fileManagerMap;
+    public @Unmodifiable Map<String, WaypointFileManager> getFileManagerMap() {
+        return Collections.unmodifiableMap(this.fileManagerMap);
     }
 
     public @Unmodifiable List<Map.Entry<String, WaypointFileManager>> getSortedMap() {
         List<Map.Entry<String, WaypointFileManager>> entries = new ArrayList<>(this.fileManagerMap.entrySet());
-        entries.sort((a, b) -> {
-            int aOrd = vanillaOrdinal(a.getKey());
-            int bOrd = vanillaOrdinal(b.getKey());
-            if (aOrd != bOrd) return Integer.compare(aOrd, bOrd);
-            return a.getKey().compareTo(b.getKey());
-        });
+        entries.sort((a, b) -> dimensionNameComparator(a.getKey(), b.getKey()));
         return entries.stream().toList();
     }
 
@@ -62,14 +56,19 @@ public class WaypointFilesManagerCore {
 
     public @NotNull WaypointFileManager getOrCreateWaypointFileManager(String dimensionName) {
         WaypointFileManager fileManager = this.fileManagerMap.get(dimensionName);
-        return fileManager == null ? addWaypointListManager(dimensionName) : fileManager;
+        if (fileManager == null) {
+            fileManager = WaypointFileManager.buildFromDimensionName(this.waypointFilesDir, dimensionName);
+            this.fileManagerMap.put(dimensionName, fileManager);
+            return fileManager;
+        }
+        return fileManager;
     }
 
     public void addWaypoint(String dimensionName, String listName, SimpleWaypoint waypoint, BiConsumer<@NotNull WaypointFileManager, @NotNull WaypointList> successAction, Consumer<@NotNull SimpleWaypoint> duplicateAction) {
         WaypointFileManager fileManager = this.getWaypointFileManager(dimensionName);
         WaypointList waypointList;
         if (fileManager == null) {
-            fileManager = this.addWaypointListManager(dimensionName);
+            fileManager = this.addWaypointFileManager(dimensionName);
             waypointList = WaypointList.buildByServer(listName);
             fileManager.addWaypointList(waypointList);
         } else {
@@ -91,7 +90,7 @@ public class WaypointFilesManagerCore {
     public void addWaypointList(String dimensionName, String listName, Consumer<WaypointFileManager> successAction, Runnable listExistsAction) {
         WaypointFileManager fileManager = this.getWaypointFileManager(dimensionName);
         if (fileManager == null) {
-            fileManager = this.addWaypointListManager(dimensionName);
+            fileManager = this.addWaypointFileManager(dimensionName);
         }
         WaypointList foundList = fileManager.getWaypointListByName(listName);
         if (foundList == null) {
@@ -139,13 +138,13 @@ public class WaypointFilesManagerCore {
     /**
      * Add an empty waypoint list manager to this files manager by dimension name </br>
      * */
-    public WaypointFileManager addWaypointListManager(String dimensionName) {
+    public WaypointFileManager addWaypointFileManager(String dimensionName) {
         WaypointFileManager waypointFileManager = this.fileManagerMap.get(dimensionName);
         if (waypointFileManager != null) {
             LOGGER.warn("Duplicate dimension key: {}", dimensionName);
             return waypointFileManager;
         } else {
-            WaypointFileManager fileManager = new WaypointFileManager(null, dimensionName, this.waypointFilesDir);
+            WaypointFileManager fileManager = WaypointFileManager.buildFromDimensionName(this.waypointFilesDir, dimensionName);
             this.fileManagerMap.put(dimensionName, fileManager);
             return fileManager;
         }
@@ -170,9 +169,9 @@ public class WaypointFilesManagerCore {
             throw e;
         }
 
-        this.fileManagerMap.clear();
+        this.fileManagerMap = new ConcurrentHashMap<>();
 
-        List<Pair<String, WaypointFileManager>> fileManagers = new ArrayList<>();
+        List<WaypointFileManager> fileManagers = new ArrayList<>();
         try (DirectoryStream<Path> entries = Files.newDirectoryStream(this.waypointFilesDir)) {
             for (Path path : entries) {
                 if (path.toFile().isDirectory()) {
@@ -200,7 +199,7 @@ public class WaypointFilesManagerCore {
                 } else {
                     continue;
                 }
-                WaypointFileManager fileManager = new WaypointFileManager(fileName, null, this.waypointFilesDir);
+                WaypointFileManager fileManager = WaypointFileManager.buildFromFileName(this.waypointFilesDir, fileName);
                 try {
                     if (isTxt) {
                         // convert to json format
@@ -209,7 +208,7 @@ public class WaypointFilesManagerCore {
                     } else {
                         fileManager.readDimension();
                     }
-                    fileManagers.add(new Pair<>(fileManager.getDimensionName(), fileManager));
+                    fileManagers.add(fileManager);
                 } catch (IOException e) {
                     WaypointServerCore.LOGGER.error("Failed to load dimension file", e);
                     throw e;
@@ -217,10 +216,8 @@ public class WaypointFilesManagerCore {
             }
         }
         // sort by dimension names to get rid of random file reading order
-        fileManagers.sort(Comparator.comparing(Pair::left));
-        for  (Pair<String, WaypointFileManager> pair : fileManagers) {
-            fileManagerMap.put(pair.left(), pair.right());
-        }
+        fileManagers.sort((a, b) -> dimensionNameComparator(a.getDimensionName(), b.getDimensionName()));
+        fileManagers.forEach(fileManager -> fileManagerMap.put(fileManager.getDimensionName(), fileManager));
         fileManagers.clear();
     }
 

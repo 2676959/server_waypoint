@@ -7,6 +7,7 @@ import _959.server_waypoint.core.waypoint.WaypointPos;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -23,19 +24,10 @@ public class WaypointFileManager {
     private final Path dimensionFilePath;
     private final String dimensionName;
 
-    public WaypointFileManager(String fileName, String dimensionName, Path waypointsDir) {
-        if (fileName == null && dimensionName != null) {
-            fileName = dimensionName.replace("/", "%").replace(":", "$");
-        } else if (fileName != null && dimensionName == null) {
-            dimensionName = fileName.replace("%", "/").replace("$", ":");
-        }
+    private WaypointFileManager(@NotNull String fileName, @NotNull String dimensionName, @NotNull Path waypointsDir) {
+        this.dimensionFilePath = waypointsDir.resolve(fileName + ".json");
         this.dimensionName = dimensionName;
         this.waypointListMap = new ConcurrentHashMap<>();
-        if (waypointsDir == null) {
-            this.dimensionFilePath = null;
-            return;
-        }
-        this.dimensionFilePath = waypointsDir.resolve(fileName + ".json");
     }
 
     public DimensionWaypointBuffer toDimensionWaypoint() {
@@ -178,5 +170,13 @@ public class WaypointFileManager {
                 WaypointServerCore.LOGGER.error("Failed to delete dimension file: {}", this.dimensionFilePath, e);
             }
         }
+    }
+
+    public static WaypointFileManager buildFromDimensionName(@NotNull Path waypointFileFolder, @NotNull String dimensionName) {
+        return new WaypointFileManager(dimensionName.replace("/", "%").replace(":", "$"), dimensionName, waypointFileFolder);
+    }
+
+    public static WaypointFileManager buildFromFileName(@NotNull Path waypointFileFolder, @NotNull String fileName) {
+        return new WaypointFileManager(fileName, fileName.replace("%", "/").replace("$", ":"), waypointFileFolder);
     }
 }
