@@ -34,7 +34,13 @@ public abstract class ChatMessageHandler<S, K, P> {
             String[] args = message.split(XAEROS_SEPARATOR);
             if (isValidXaerosSharingMessage(args)) {
                 LOGGER.info("Found chat shared waypoint");
-                Pair<SimpleWaypoint, String> waypointWithDim = toSimpleWaypoint(args);
+                Pair<SimpleWaypoint, String> waypointWithDim;
+                try {
+                    waypointWithDim = toSimpleWaypoint(args);
+                } catch (NumberFormatException e) {
+                    LOGGER.warn("Malformed xaero waypoint sharing message, ignoring", e);
+                    return;
+                }
                 SimpleWaypoint waypoint = waypointWithDim.left();
                 String dimensionName = waypointWithDim.right();
                 WaypointFileManager waypointFileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(dimensionName);
