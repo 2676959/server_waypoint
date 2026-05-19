@@ -2,7 +2,6 @@ plugins {
     id("java-library")
     id("net.neoforged.gradle.userdev")
     id("com.gradleup.shadow")
-    id("me.modmuss50.mod-publish-plugin")
 }
 
 val minecraft = stonecutter.current.version
@@ -15,19 +14,10 @@ val mod_version: String by project
 val maven_group: String by project
 
 group = maven_group
-version = "$mod_version-$loader-mc$mcVersionRange"
 
 base {
     archivesName.set("$mod_id-$mod_version-$loader-mc$mcVersionRange")
 }
-
-val publishMinecraftVersions = expandMinecraftVersions(mcVersionRange)
-val publishChangelog = providers.gradleProperty("mod_changelog")
-    .orElse(providers.environmentVariable("MOD_CHANGELOG"))
-    .orElse("Release $mod_version")
-val publishDryRun = providers.gradleProperty("publish_dry_run")
-    .map(String::toBoolean)
-    .orElse(false)
 
 stonecutter {
     constants.match(loader, "fabric", "neoforge")
@@ -166,64 +156,4 @@ tasks.register<Copy>("buildAndCollect") {
     from(tasks.shadowJar.map { it.archiveFile })
     into(rootProject.layout.buildDirectory.file("libs/$mod_version"))
     dependsOn("build")
-}
-
-publishMods {
-    file.set(tasks.shadowJar.flatMap { it.archiveFile })
-    changelog.set(publishChangelog)
-    type.set(STABLE)
-    version.set(project.version.toString())
-    displayName.set("$mod_name $mod_version NeoForge mc$mcVersionRange")
-    modLoaders.add(loader)
-    dryRun.set(publishDryRun)
-
-    modrinth {
-        accessToken.set(publishToken("MODRINTH_TOKEN", "MODRINTH_API_KEY"))
-        projectId.set("server_waypoint")
-        minecraftVersions.addAll(publishMinecraftVersions)
-        optional("xaeros-minimap")
-    }
-
-    curseforge {
-        accessToken.set(publishToken("CURSEFORGE_TOKEN", "CURSEFORGE_API_KEY"))
-        projectId.set("1416929")
-        projectSlug.set("server-waypoint")
-        minecraftVersions.addAll(publishMinecraftVersions)
-        clientRequired.set(true)
-        serverRequired.set(true)
-        javaVersions.add(JavaVersion.toVersion(targetJavaVersion))
-        optional("xaeros-minimap")
-    }
-}
-
-fun publishToken(vararg names: String) = names
-    .map { providers.environmentVariable(it).orElse(providers.gradleProperty(it)) }
-    .reduce { tokenProvider, nextTokenProvider -> tokenProvider.orElse(nextTokenProvider) }
-
-fun expandMinecraftVersions(versionRange: String): List<String> {
-    if (!versionRange.contains("-")) {
-        return listOf(versionRange)
-    }
-
-    val (start, end) = versionRange.split("-", limit = 2)
-    val startParts = start.split(".")
-    val endParts = end.split(".")
-
-    if (startParts.size == endParts.size && startParts.dropLast(1) == endParts.dropLast(1)) {
-        val startPatch = startParts.last().toIntOrNull()
-        val endPatch = endParts.last().toIntOrNull()
-        if (startPatch != null && endPatch != null && startPatch <= endPatch) {
-            val prefix = startParts.dropLast(1).joinToString(".")
-            return (startPatch..endPatch).map { "$prefix.$it" }
-        }
-    }
-
-    if (startParts.size + 1 == endParts.size && endParts.dropLast(1).joinToString(".") == start) {
-        val endPatch = endParts.last().toIntOrNull()
-        if (endPatch != null) {
-            return listOf(start) + (1..endPatch).map { "$start.$it" }
-        }
-    }
-
-    return listOf(start, end)
 }
