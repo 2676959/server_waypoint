@@ -11,7 +11,6 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 //?}
 import net.minecraft.network.chat.Component;
-import org.jspecify.annotations.NonNull;
 
 public abstract class MovementAllowedScreen extends Screen {
     protected final Font font = Minecraft.getInstance().font;
@@ -161,7 +160,7 @@ public abstract class MovementAllowedScreen extends Screen {
 
     //? if >= 1.21.9 {
     @Override
-    public boolean mouseClicked(@NonNull MouseButtonEvent mouseButtonEvent, boolean doubleClicked) {
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClicked) {
         if (!movementAllowed) {
             unpressAllMovementKeys();
             return super.mouseClicked(mouseButtonEvent, doubleClicked);
@@ -173,7 +172,7 @@ public abstract class MovementAllowedScreen extends Screen {
     }
 
     @Override
-    public boolean mouseReleased(@NonNull MouseButtonEvent mouseButtonEvent) {
+    public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
         if (!movementAllowed) {
             unpressAllMovementKeys();
             return super.mouseReleased(mouseButtonEvent);

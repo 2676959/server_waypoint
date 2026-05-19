@@ -7,7 +7,6 @@ import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
 import _959.server_waypoint.common.client.gui.widgets.WaypointListWidget;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.waypoint.WaypointList;
-import org.jspecify.annotations.NonNull;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
@@ -140,7 +139,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     public void
     //$ render_method_swap
     extractRenderState
-            (@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         waypointListWidget.
         //$ render_widget_method_swap
         extractWidgetRenderState
