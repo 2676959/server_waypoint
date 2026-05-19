@@ -10,6 +10,7 @@ import com.google.gson.reflect.TypeToken;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jetbrains.annotations.UnmodifiableView;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -133,7 +134,7 @@ public class WaypointFileManager {
         return this.waypointListMap.values().stream().toList();
     }
 
-    public @Unmodifiable Map<String, WaypointList> getWaypointListMap() {
+    public @UnmodifiableView Map<String, WaypointList> getWaypointListMap() {
         return Collections.unmodifiableMap(this.waypointListMap);
     }
 
