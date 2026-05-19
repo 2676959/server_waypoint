@@ -9,11 +9,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -133,10 +136,10 @@ public class LanguageFilesManager {
             Set<String> allLanguageCodes = translations.keySet();
             for (String languageCode : allLanguageCodes) {
                 if (languageCode.toLowerCase().contains(language)) {
-                    return translations.get(languageCode).get(key);
+                    return getTranslation(languageCode, key);
                 }
             }
-            return translations.get(FALL_BACK_LANGUAGE).get(key);
+            return getTranslation(FALL_BACK_LANGUAGE, key);
         }
         return languageMap.get(key);
     }
@@ -145,9 +148,12 @@ public class LanguageFilesManager {
         String jarPath;
         try {
             // get path of the mod jar itself
-            jarPath = getClass().getProtectionDomain()
-                    .getCodeSource()
-                    .getLocation()
+            URL location = getCodeSourceLocation();
+            if (location == null) {
+                LOGGER.error("Failed to get path of the mod jar itself: code source location is unavailable");
+                return new ArrayList<>();
+            }
+            jarPath = location
                     .toURI()
                     .getPath();
         } catch (URISyntaxException e) {
@@ -198,5 +204,18 @@ public class LanguageFilesManager {
         } catch (Exception e) {
             return FileSystems.newFileSystem(uri, Collections.emptyMap());
         }
+    }
+
+    @Nullable
+    private URL getCodeSourceLocation() {
+        ProtectionDomain protectionDomain = getClass().getProtectionDomain();
+        if (protectionDomain == null) {
+            return null;
+        }
+        CodeSource codeSource = protectionDomain.getCodeSource();
+        if (codeSource == null) {
+            return null;
+        }
+        return codeSource.getLocation();
     }
 }
