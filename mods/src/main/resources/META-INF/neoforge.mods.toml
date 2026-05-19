@@ -29,6 +29,3 @@ side="CLIENT"
 
 [[mixins]]
 config = "server_waypoint-common.mixins.json"
-
-[[mixins]]
-config = "server_waypoint-neoforge.mixins.json"

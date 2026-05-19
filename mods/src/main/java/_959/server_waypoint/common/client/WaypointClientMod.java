@@ -21,7 +21,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 //? if fabric {
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-//?} elif neoforge {
+//?} elif neoforge && >= 1.21.9 {
+/*import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+*///?} elif neoforge {
 /*import net.neoforged.neoforge.network.PacketDistributor;
 *///?}
 import net.minecraft.client.Minecraft;
@@ -249,7 +251,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     public void requestUpdates() {
         //? if fabric {
         ClientPlayNetworking.send(getClientUpdateRequestPayload());
-        //?} elif neoforge {
+        //?} elif neoforge && >= 1.21.9 {
+        /*ClientPacketDistributor.sendToServer(getClientUpdateRequestPayload());
+        *///?} elif neoforge {
         /*PacketDistributor.sendToServer(getClientUpdateRequestPayload());
         *///?}
     }
@@ -268,12 +272,13 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             networkState = ClientNetworkState.NO_SERVERSIDE_SUPPORT;
             //? if fabric {
             ClientPlayNetworking.send(clientHandshake);
-            //?} elif neoforge {
+            //?} elif neoforge && >= 1.21.9 {
+            /*ClientPacketDistributor.sendToServer(clientHandshake);
+            *///?} elif neoforge {
             /*PacketDistributor.sendToServer(clientHandshake);
             *///?}
         }
     }
-
     @Override
     public void onServerHandshake(ServerHandshakeBuffer buffer) {
         networkState = ClientNetworkState.HANDSHAKE_FINISHED;

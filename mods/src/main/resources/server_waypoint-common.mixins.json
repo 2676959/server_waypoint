@@ -5,7 +5,20 @@
   "mixins": [
   ],
   "client": [
-
+    "ClientPlayNetworkHandlerMixin",
+    "MinimapWorldStateUpdaterMixin",
+    "GameHudMixin",
+    "MinecraftClientMixin",
+    "BoundKeyAccessor",
+    "WorldRendererMixin",
+    "PlayerManagerMixin",
+    "ServerPlayerEntityMixin",
+    "WorldSessionMixin",
+    "GameRendererMixin"
+  ],
+  "server": [
+    "PlayerManagerMixin",
+    "ServerPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -5,7 +5,11 @@ plugins {
 
 val minecraft = stonecutter.current.version
 val loader = "neoforge"
-val targetJavaVersion = if (stonecutter.eval(stonecutter.current.version, ">=1.20.5")) 21 else 17
+val targetJavaVersion = when {
+    stonecutter.eval(stonecutter.current.version, ">=26") -> 25
+    stonecutter.eval(stonecutter.current.version, ">=1.20.5") -> 21
+    else -> 17
+}
 val mcVersionRange: String by project
 val mod_id: String by project
 val mod_name: String by project
