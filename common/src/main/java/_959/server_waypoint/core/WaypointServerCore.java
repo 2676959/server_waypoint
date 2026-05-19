@@ -66,7 +66,7 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
         }
     }
 
-    public void loadConfig(FileReader reader) {
+    public void loadConfig(Reader reader) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         CONFIG = gson.fromJson(reader, Config.class);
         LOGGER.info("Loaded config {}", CONFIG);
@@ -77,7 +77,9 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
 
         try {
             if (Files.exists(configFile) && Files.isRegularFile(configFile)) {
-                this.loadConfig(new FileReader(configFile.toFile()));
+                try (Reader reader = new FileReader(configFile.toFile())) {
+                    this.loadConfig(reader);
+                }
             } else {
                 Files.createFile(configFile);
                 Files.write(configFile, this.DEFAULT_CONFIG);
