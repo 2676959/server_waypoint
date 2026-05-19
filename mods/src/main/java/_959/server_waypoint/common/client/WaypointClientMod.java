@@ -26,6 +26,8 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 //?} elif neoforge {
 /*import net.neoforged.neoforge.network.PacketDistributor;
 *///?}
+//? if neoforge && = 1.20.2
+/*import _959.server_waypoint.neoforge.ServerWaypointNeoForge;*/
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import org.jetbrains.annotations.NotNull;
@@ -253,7 +255,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         /*ClientPlayNetworking.send(getClientUpdateRequestPayload());
         *///?} elif neoforge && >= 1.21.9 {
         ClientPacketDistributor.sendToServer(getClientUpdateRequestPayload());
-        //?} elif neoforge {
+        //?} elif neoforge && = 1.20.2 {
+        /*ServerWaypointNeoForge.PACKET_CHANNEL.sendToServer(getClientUpdateRequestPayload());
+        *///?} elif neoforge && = 1.20.4 {
+        /*PacketDistributor.SERVER.noArg().send(getClientUpdateRequestPayload());
+        *///?} elif neoforge {
         /*PacketDistributor.sendToServer(getClientUpdateRequestPayload());
         *///?}
     }
@@ -274,7 +280,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             /*ClientPlayNetworking.send(clientHandshake);
             *///?} elif neoforge && >= 1.21.9 {
             ClientPacketDistributor.sendToServer(clientHandshake);
-            //?} elif neoforge {
+            //?} elif neoforge && = 1.20.2 {
+            /*ServerWaypointNeoForge.PACKET_CHANNEL.sendToServer(clientHandshake);
+            *///?} elif neoforge && = 1.20.4 {
+            /*PacketDistributor.SERVER.noArg().send(clientHandshake);
+            *///?} elif neoforge {
             /*PacketDistributor.sendToServer(clientHandshake);
             *///?}
         }

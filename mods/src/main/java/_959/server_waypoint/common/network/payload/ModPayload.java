@@ -4,6 +4,8 @@ package _959.server_waypoint.common.network.payload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?} else if fabric {
 /*import net.fabricmc.fabric.api.networking.v1.FabricPacket;
+*///?} else if neoforge {
+/*import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 *///?}
 
 public interface ModPayload
@@ -11,6 +13,8 @@ public interface ModPayload
         extends CustomPacketPayload
 //?} else if fabric {
         /*extends FabricPacket
+*///?} else if neoforge {
+        /*extends CustomPacketPayload
 *///?}
 {
 }
