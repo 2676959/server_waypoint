@@ -1,5 +1,5 @@
 //? if neoforge {
-/*package _959.server_waypoint.neoforge;
+package _959.server_waypoint.neoforge;
 
 import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.ModChatMessageHandler;
@@ -130,4 +130,4 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         }
     }
 }
-*///?}
+//?}

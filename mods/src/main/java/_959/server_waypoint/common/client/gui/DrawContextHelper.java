@@ -139,7 +139,7 @@ public final class DrawContextHelper {
     ) {
         //? if >= 1.21.6 {
         //? if neoforge {
-        /*context.submitGuiElementRenderState(new ColoredQuadRenderState(
+        context.submitGuiElementRenderState(new ColoredQuadRenderState(
                 RenderPipelines.GUI,
                 TextureSetup.noTexture(),
                 new Matrix3x2f(context.pose()),
@@ -150,8 +150,8 @@ public final class DrawContextHelper {
                 topLeftColor, bottomLeftColor, bottomRightColor, topRightColor,
                 context.peekScissorStack()
         ));
-        *///?} else {
-        ColoredQuadRenderState renderState = new ColoredQuadRenderState(
+        //?} else {
+        /*ColoredQuadRenderState renderState = new ColoredQuadRenderState(
                 RenderPipelines.GUI,
                 TextureSetup.noTexture(),
                 new Matrix3x2f(context.pose()),
@@ -165,9 +165,9 @@ public final class DrawContextHelper {
         //? if >= 26.1 {
         context.guiRenderState.addGuiElement(renderState);
         //?} else {
-        /*context.guiRenderState.submitGuiElement(renderState);
+        /^context.guiRenderState.submitGuiElement(renderState);
+        ^///?}
         *///?}
-        //?}
         //?} else {
         /*withVertexConsumers(context, vertexConsumerProvider -> {
             VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderType.gui());

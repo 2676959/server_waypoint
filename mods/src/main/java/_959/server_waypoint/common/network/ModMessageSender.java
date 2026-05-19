@@ -23,10 +23,10 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.network.chat.ComponentSerialization;
 //?}
 //? if fabric {
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-//?} elif neoforge {
-/*import net.neoforged.neoforge.network.PacketDistributor;
-*///?}
+/*import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+*///?} elif neoforge {
+import net.neoforged.neoforge.network.PacketDistributor;
+//?}
 
 public class ModMessageSender implements PlatformMessageSender<CommandSourceStack, ServerPlayer> {
     private static final ModMessageSender INSTANCE = new ModMessageSender();
@@ -104,10 +104,10 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
     @Override
     public void sendPlayerPacket(ServerPlayer player, MessageBuffer packet) {
         //? if fabric {
-        ServerPlayNetworking.send(player, getPayload(packet));
-        //?} else {
-        /*PacketDistributor.sendToPlayer(player, getPayload(packet));
-         *///?}
+        /*ServerPlayNetworking.send(player, getPayload(packet));
+        *///?} else {
+        PacketDistributor.sendToPlayer(player, getPayload(packet));
+         //?}
     }
 
     @Override

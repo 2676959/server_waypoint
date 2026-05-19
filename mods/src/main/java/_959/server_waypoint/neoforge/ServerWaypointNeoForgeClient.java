@@ -1,5 +1,5 @@
 //? if neoforge {
-/*package _959.server_waypoint.neoforge;
+package _959.server_waypoint.neoforge;
 
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
@@ -96,4 +96,4 @@ public class ServerWaypointNeoForgeClient {
         registrar.playToClient(UpdatesBundleS2CPayload.ID, UpdatesBundleS2CPayload.PACKET_CODEC, updatesBundleHandler::handle);
     }
 }
-*///?}
+//?}
