@@ -16,14 +16,14 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-          "_959.server_waypoint.fabric.ServerWaypointFabricServer"
+			"_959.server_waypoint.fabric.ServerWaypointFabricServer"
 		],
 		"client": [
 			"_959.server_waypoint.fabric.ServerWaypointFabricClient"
 		]
 	},
 	"mixins": [
-		"server_waypoint-fabric.mixins.json"
+		"server_waypoint-common.mixins.json"
 	],
 	"depends": {
 		"fabricloader": "${fabricloader_dependency}",
