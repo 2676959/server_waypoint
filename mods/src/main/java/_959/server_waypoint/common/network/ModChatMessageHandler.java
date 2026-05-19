@@ -12,22 +12,22 @@ import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
 import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionKey;
 
 //? if neoforge
-/*import net.minecraft.network.chat.Component;*/
+import net.minecraft.network.chat.Component;
 
 public abstract class ModChatMessageHandler<K> extends ChatMessageHandler<CommandSourceStack, K, ServerPlayer> {
     private MinecraftServer server;
 
     public void onChatMessage(
             //? if fabric {
-            PlayerChatMessage message,
-            //?} elif neoforge {
-            /*Component message,
-            *///?}
+            /*PlayerChatMessage message,
+            *///?} elif neoforge {
+            Component message,
+            //?}
             ServerPlayer player, ChatType.Bound parameters) {
         String messageString = message
                 //? if fabric {
-                .decoratedContent()
-                //?}
+                /*.decoratedContent()
+                *///?}
                 .getString();
         this.onChatMessage(player, messageString);
     }
