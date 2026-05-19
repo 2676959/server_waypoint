@@ -6,6 +6,7 @@ import _959.server_waypoint.core.waypoint.WaypointPos;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jetbrains.annotations.UnmodifiableView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ public class WaypointFilesManagerCore {
         this.fileManagerMap = new ConcurrentHashMap<>();
     }
 
-    public @Unmodifiable Map<String, WaypointFileManager> getFileManagerMap() {
+    public @UnmodifiableView Map<String, WaypointFileManager> getFileManagerMap() {
         return Collections.unmodifiableMap(this.fileManagerMap);
     }
 
