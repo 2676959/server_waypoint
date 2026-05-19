@@ -46,5 +46,31 @@ for version_dir in "$VERSIONS_DIR"/*/ ; do
     fi
 done
 
+# Iterate through each directory in paper versions/
+PAPER_VERSIONS_DIR="$SCRIPT_DIR/paper/versions"
+for version_dir in "$PAPER_VERSIONS_DIR"/*/ ; do
+    if [ -d "$version_dir" ]; then
+        version_name=$(basename "$version_dir")
+        build_libs_dir="$version_dir/build/libs"
+
+        if [ -d "$build_libs_dir" ]; then
+            echo "Moving Paper builds from $version_name..."
+
+            for jar in "$build_libs_dir"/*.jar; do
+                if [ -f "$jar" ]; then
+                    if [[ "$jar" != *"-dev.jar"
+                    && "$jar" != *"-sources.jar"
+                    && "$jar" != *"-shadow.jar"
+                    ]]; then
+                        mv "$jar" "$OUTPUT_DIR/"
+                        echo "  Moved $(basename "$jar")"
+                    fi
+                fi
+            done
+        else
+            echo "No build/libs directory found in paper $version_name"
+        fi
+    fi
+done
+
 echo "Build files have been moved to $OUTPUT_DIR"
-open builds
