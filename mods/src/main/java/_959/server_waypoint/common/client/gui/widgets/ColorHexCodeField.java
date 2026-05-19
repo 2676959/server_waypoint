@@ -70,7 +70,7 @@ public class ColorHexCodeField extends TranslucentTextField implements Colorable
         text
                 (textRenderer, "#", x - 4, y + 2, 0xFFFFFFFF, true);
         this.isHovered = mouseX >= x1 && mouseY >= y && mouseX <= right && mouseY <= bottom;
-        int bdColor = isFocused() | isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
+        int bdColor = isFocused() || isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
         renderOutline(context, x1, y, this.width + 6, this.backgroundHeight, bdColor);
         this.renderTextField(context, mouseX, mouseY, deltaTicks);
     }
