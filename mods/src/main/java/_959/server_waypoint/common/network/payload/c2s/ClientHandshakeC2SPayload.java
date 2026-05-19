@@ -13,6 +13,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?} else if fabric {
 /*import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.FriendlyByteBuf;
+*///?} else if neoforge {
+/*import net.minecraft.network.FriendlyByteBuf;
 *///?}
 
 
@@ -56,6 +58,20 @@ public record ClientHandshakeC2SPayload(ClientHandshakeBuffer clientHandshakeBuf
     @Override
     public PacketType<?> getType() {
         return ID;
+    }
+*///?} else if neoforge {
+    /*public ClientHandshakeC2SPayload(FriendlyByteBuf buf) {
+        this(ClientHandshakeCodec.decode(buf));
+    }
+
+    @Override
+    public void write(FriendlyByteBuf buf) {
+        ClientHandshakeCodec.encode(buf);
+    }
+
+    @Override
+    public net.minecraft.resources.ResourceLocation id() {
+        return CLIENT_HANDSHAKE_PAYLOAD;
     }
 *///?}
 }

@@ -10,9 +10,7 @@ import _959.server_waypoint.core.network.buffer.*;
 *///?} elif fabric {
 /*import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.player.LocalPlayer;
-*///?} elif neoforge {
-import net.neoforged.neoforge.network.handling.IPayloadContext;
- //?}
+*///?}
 
 /**
  * handle mod custom payloads for fabric and neoforge
@@ -31,8 +29,8 @@ public class S2CPayloadHandler {
                 /*LocalPlayer player, PacketSender responseSender
                 // }
                 *///?} elif neoforge {
-                IPayloadContext context
-                 //?}
+                Object context
+                //?}
         ) {
             this.bufferHandler(this.payloadToBuffer(payload));
         }

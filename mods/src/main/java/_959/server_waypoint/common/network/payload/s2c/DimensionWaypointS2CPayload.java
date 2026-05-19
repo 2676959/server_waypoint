@@ -13,6 +13,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?} else if fabric {
 /*import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.FriendlyByteBuf;
+*///?} else if neoforge {
+/*import net.minecraft.network.FriendlyByteBuf;
 *///?}
 
 import static _959.server_waypoint.core.network.PayloadID.DIMENSION_WAYPOINT;
@@ -55,6 +57,20 @@ public record DimensionWaypointS2CPayload(DimensionWaypointBuffer dimensionWaypo
     @Override
     public PacketType<?> getType() {
         return ID;
+    }
+*///?} else if neoforge {
+    /*public DimensionWaypointS2CPayload(FriendlyByteBuf buf) {
+        this(DimensionWaypointCodec.decode(buf));
+    }
+
+    @Override
+    public void write(FriendlyByteBuf buf) {
+        DimensionWaypointCodec.encode(buf, dimensionWaypointBuffer);
+    }
+
+    @Override
+    public net.minecraft.resources.ResourceLocation id() {
+        return DIM_WAYPOINT_PAYLOAD_ID;
     }
 *///?}
 }

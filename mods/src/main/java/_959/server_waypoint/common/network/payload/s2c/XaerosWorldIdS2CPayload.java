@@ -12,6 +12,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?} else if fabric {
 /*import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.FriendlyByteBuf;
+*///?} else if neoforge {
+/*import net.minecraft.network.FriendlyByteBuf;
 *///?}
 
 
@@ -53,6 +55,20 @@ public record XaerosWorldIdS2CPayload(XaerosWorldIdBuffer worldIdBuffer) impleme
     @Override
     public PacketType<?> getType() {
         return ID;
+    }
+*///?} else if neoforge {
+    /*public XaerosWorldIdS2CPayload(FriendlyByteBuf buf) {
+        this(XaerosWorldIdBufferCodec.decode(buf));
+    }
+
+    @Override
+    public void write(FriendlyByteBuf buf) {
+        XaerosWorldIdBufferCodec.encode(buf, worldIdBuffer);
+    }
+
+    @Override
+    public net.minecraft.resources.ResourceLocation id() {
+        return XAEROS_WORLD_ID_PAYLOAD_ID;
     }
 *///?}
 }
