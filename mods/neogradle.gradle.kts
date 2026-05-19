@@ -19,6 +19,11 @@ base {
     archivesName.set("$mod_id-$mod_version-$loader-mc$mcVersionRange")
 }
 
+val shadedDependencies by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
 stonecutter {
     constants.match(loader, "fabric", "neoforge")
     val usesTwentySixApi = eval(current.version, ">=26")
@@ -72,7 +77,11 @@ dependencies {
     val neoforge_loader: String by project
     implementation("net.neoforged:neoforge:$neoforge_loader")
     implementation(project(":common"))
-    implementation("net.kyori:adventure-text-serializer-gson:4.14.0")
+    add(shadedDependencies.name, project(":common"))
+
+    val adventureSerializer = "net.kyori:adventure-text-serializer-gson:4.14.0"
+    implementation(adventureSerializer)
+    add(shadedDependencies.name, adventureSerializer)
 
     val xaeros_minimap_neoforge: String by project
     compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
@@ -135,6 +144,7 @@ tasks.jar {
 }
 
 tasks.shadowJar {
+    configurations = listOf(shadedDependencies)
     dependencies {
         include(project(":common"))
         include(dependency("net.kyori:.*"))
