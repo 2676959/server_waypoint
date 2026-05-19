@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 public class UtfStringCodec {
     public static void encode(ByteBuf byteBuf, String string) {
         byte[] raw = string.getBytes(StandardCharsets.UTF_8);
-        int length = Math.min(raw.length, 255);
+        int length = raw.length;
         byteBuf.writeByte(length);
         byteBuf.writeBytes(raw);
     }
