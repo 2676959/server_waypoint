@@ -28,7 +28,9 @@ public class GameHudMixin {
             ^///?}
             CallbackInfo ci
     ) {
+        //? if !(neoforge && <= 1.20.4) {
         OptimizedWaypointRenderer.render(context);
+        //?}
     }
     *///?}
 }
