@@ -15,6 +15,10 @@ val mod_id: String by project
 val mod_name: String by project
 val mod_version: String by project
 val maven_group: String by project
+val commonMainSourceSet = project(":common")
+    .extensions
+    .getByType(org.gradle.api.tasks.SourceSetContainer::class.java)
+    .named("main")
 
 group = maven_group
 
@@ -23,6 +27,11 @@ base {
 }
 
 val shadedDependencies by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
+val devRuntimeLibraries by configurations.creating {
     isCanBeConsumed = false
     isCanBeResolved = true
 }
@@ -92,6 +101,9 @@ neoForge {
     validateAccessTransformers = true
 
     runs {
+        configureEach {
+            getAdditionalRuntimeClasspathConfiguration().extendsFrom(devRuntimeLibraries)
+        }
         register("client") {
             client()
             gameDirectory = file("run")
@@ -105,6 +117,7 @@ neoForge {
     mods {
         register(mod_id) {
             sourceSet(sourceSets["main"])
+            sourceSet(commonMainSourceSet.get())
         }
     }
 }
@@ -208,4 +221,5 @@ fun DependencyHandlerScope.addAdventureSerializerDependency() {
     val dependencyNotation = "net.kyori:adventure-text-serializer-gson:$version"
     implementation(dependencyNotation)
     add(shadedDependencies.name, dependencyNotation)
+    add(devRuntimeLibraries.name, dependencyNotation)
 }
