@@ -7,7 +7,7 @@ modId = "server_waypoint"
 version = "${version}"
 displayName = "${name}"
 authors = "2676959"
-description = ""
+description = "Manage waypoints and sync them to other player's client automatically. Compatible with Xaero's minimap."
 logoFile = "assets/server_waypoint/icon.png"
 logoBlur = false
 
@@ -22,7 +22,7 @@ side="BOTH"
 # Xaero's Minimap
 [[dependencies.${id}]]
 modId="xaerominimap"
-type="required"
+type="optional"
 versionRange="[5.2.6,)"
 ordering="NONE"
 side="CLIENT"
