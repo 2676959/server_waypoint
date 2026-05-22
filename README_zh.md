@@ -1,4 +1,4 @@
-# Server Waypoint
+# 服务器路径点 Server Waypoint
 
 [中文](README_zh.md) [English](README.md)
 
@@ -7,13 +7,10 @@
 ![both](https://img.shields.io/badge/Environment-Server%26Client-4caf50?style=flat-square)
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/server_waypoint?style=flat-square&logo=modrinth&logoColor=%2300AF5C&label=Modrinth%20Downloads&color=%2300AF5C)](https://modrinth.com/plugin/server_waypoint)
 [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1416929?style=flat-square&logo=curseforge&logoColor=%23F16436&label=CurseForge%20Downloads&color=%23F16436)](https://www.curseforge.com/minecraft/mc-mods/server-waypoint)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/2676959/server_waypoint/total?style=flat-square&logo=github&logoColor=%23181717&label=GitHub%20Downloads&color=%23181717)
 
-![Static Badge](https://img.shields.io/badge/1.20.x-5395FD?style=flat-square)
-![Static Badge](https://img.shields.io/badge/1.21--1.21.10-5395FD?style=flat-square)
-
-[![fabric](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/supported/fabric_vector.svg)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
-[![paper](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/compact/supported/paper_vector.svg)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
+[![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1.x-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
+[![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1.x-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
+[![Paper](https://img.shields.io/badge/1.21.x%20%2026.1.x-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
 
 管理路径点并自动将其同步到其他玩家的客户端。兼容 Xaero 小地图 (Xaero's Minimap)。
 
