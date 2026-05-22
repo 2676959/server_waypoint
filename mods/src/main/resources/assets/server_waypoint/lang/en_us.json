@@ -48,6 +48,7 @@
   "server_waypoint.config.sync_to_xaeros.warn.5": "Any waypoints you added to these shared lists. Any list you created that happens to share a name with a server list.",
 
   "server_waypoint.mod_name": "Server Waypoint",
+  "key.category.server_waypoint.mod_name": "Server Waypoint",
   "server_waypoint.waypoint_manager_gui.keybind": "Open waypoint manager screen",
   "server_waypoint.config.confirm_sync": "Sync",
   "server_waypoint.config.true": "True",

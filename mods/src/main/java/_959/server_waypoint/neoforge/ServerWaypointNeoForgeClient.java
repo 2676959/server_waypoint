@@ -61,7 +61,7 @@ public class ServerWaypointNeoForgeClient {
             try {
                 return (KeyMapping) KeyMapping.class
                         .getConstructor(String.class, InputConstants.Type.class, int.class, String.class)
-                        .newInstance("server_waypoint.waypoint_manager_gui.keybind", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, "key.categories.server_waypoint.mod_name");
+                        .newInstance("server_waypoint.waypoint_manager_gui.keybind", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, "key.category.server_waypoint.mod_name");
             } catch (ReflectiveOperationException reflectiveException) {
                 throw new IllegalStateException("Failed to create key binding", reflectiveException);
             }
