@@ -75,7 +75,7 @@ repositories {
 
 dependencies {
     val neoforge_loader: String by project
-    implementation("net.neoforged:neoforge:$neoforge_loader")
+    compileOnly("net.neoforged:neoforge:$neoforge_loader")
     implementation(project(":common"))
     add(shadedDependencies.name, project(":common"))
 
@@ -91,7 +91,6 @@ dependencies {
 runs {
     configureEach {
         workingDirectory = file("run")
-        modSource(sourceSets.main.get())
     }
 }
 
@@ -100,6 +99,8 @@ tasks.processResources {
     inputs.property("name", mod_name)
     inputs.property("version", mod_version)
     inputs.property("java_version", targetJavaVersion)
+    val resourcePackFormat = 18
+    inputs.property("resource_pack_format", resourcePackFormat)
 
     filesMatching(listOf("*.mixins.json")) {
         expand("java_version" to targetJavaVersion)
@@ -114,6 +115,26 @@ tasks.processResources {
             "version" to mod_version,
             "minecraft_dependency" to mcVersionForge,
         ))
+    }
+
+    doLast {
+        destinationDir.resolve("assets/server_waypoint/icon.png")
+            .copyTo(destinationDir.resolve("server_waypoint.png"), overwrite = true)
+
+        destinationDir.resolve("pack.mcmeta").writeText("""
+            {
+              "pack": {
+                "pack_format": $resourcePackFormat,
+                "description": "$mod_name resources"
+              }
+            }
+        """.trimIndent() + "\n")
+
+        val metaInf = destinationDir.resolve("META-INF")
+        val legacyMetadata = metaInf.resolve("neoforge.mods.toml").readText()
+            .replace(Regex("""type\s*=\s*"required""""), "mandatory=true")
+            .replace(Regex("""type\s*=\s*"optional""""), "mandatory=false")
+        metaInf.resolve("mods.toml").writeText(legacyMetadata)
     }
 }
 
@@ -145,12 +166,26 @@ tasks.jar {
 
 tasks.shadowJar {
     configurations = listOf(shadedDependencies)
+    addMultiReleaseAttribute.set(false)
     dependencies {
         include(project(":common"))
         include(dependency("net.kyori:.*"))
         exclude("mappings/*")
     }
     archiveClassifier.set("")
+}
+
+val prepareRunMods by tasks.registering(Copy::class) {
+    group = "runs"
+    from(tasks.shadowJar.map { it.archiveFile })
+    into(layout.projectDirectory.dir("run/mods"))
+    dependsOn(tasks.shadowJar)
+}
+
+tasks.configureEach {
+    if (name == "runClient" || name == "runServer") {
+        dependsOn(prepareRunMods)
+    }
 }
 
 tasks.assemble {
