@@ -18,6 +18,9 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 //?} else {
 /*import net.neoforged.neoforge.event.TickEvent;
 *///?}
+//? if <= 1.20.4 {
+/*import net.neoforged.neoforge.client.event.RenderGuiEvent;
+*///?}
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -40,6 +43,9 @@ public class ServerWaypointNeoForgeClient {
         modEventBus.addListener(ServerWaypointNeoForgeClient::registerKeyBindings);
         NeoForge.EVENT_BUS.addListener(ServerWaypointNeoForgeClient::registerClientCommands);
         NeoForge.EVENT_BUS.addListener(ServerWaypointNeoForgeClient::onClientTick);
+//? if <= 1.20.4 {
+        /*NeoForge.EVENT_BUS.addListener(ServerWaypointNeoForgeClient::onRenderGui);
+*///?}
     }
 
     private static void registerKeyBindings(RegisterKeyMappingsEvent event) {
@@ -87,6 +93,12 @@ public class ServerWaypointNeoForgeClient {
             net.minecraft.client.Minecraft.getInstance().setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance()));
         }
     }
+
+//? if <= 1.20.4 {
+    /*private static void onRenderGui(RenderGuiEvent.Pre event) {
+        OptimizedWaypointRenderer.render(event.getGuiGraphics());
+    }
+*///?}
 
     private static void ensureClientStarted() {
         if (clientInitialized) {
