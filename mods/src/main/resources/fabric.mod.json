@@ -3,7 +3,7 @@
 	"id": "server_waypoint",
 	"version": "${version}",
 	"name": "Server Waypoint",
-	"description": "",
+	"description": "Manage waypoints and sync them to other player's client automatically. Compatible with Xaero's minimap.",
 	"authors": [
 		"2676959"
 	],
