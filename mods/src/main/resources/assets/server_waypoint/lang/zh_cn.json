@@ -48,6 +48,7 @@
   "server_waypoint.config.sync_to_xaeros.warn.5": "您在与服务器同名的集合中添加的所有路径点。您自行创建的、但恰好与服务器列表重名的集合。",
 
   "server_waypoint.mod_name": "服务器路径点",
+  "key.category.server_waypoint.mod_name": "服务器路径点",
   "server_waypoint.waypoint_manager_gui.keybind": "打开路径点管理器图形界面",
   "server_waypoint.config.confirm_sync": "同步",
   "server_waypoint.config.true": "是",
