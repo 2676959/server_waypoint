@@ -156,6 +156,19 @@ tasks.processResources {
             "minecraft_dependency" to mcVersionForge,
         ))
     }
+
+    doLast {
+        destinationDir.resolve("assets/server_waypoint/icon.png")
+            .copyTo(destinationDir.resolve("server_waypoint.png"), overwrite = true)
+    }
+
+    if (stonecutter.eval(minecraft, "<1.20.5")) {
+        doLast {
+            val metaInf = destinationDir.resolve("META-INF")
+            metaInf.resolve("neoforge.mods.toml")
+                .copyTo(metaInf.resolve("mods.toml"), overwrite = true)
+        }
+    }
 }
 
 java {
@@ -186,6 +199,7 @@ tasks.jar {
 
 tasks.shadowJar {
     configurations = listOf(shadedDependencies)
+    addMultiReleaseAttribute.set(false)
     dependencies {
         include(project(":common"))
         include(dependency("net.kyori:.*"))

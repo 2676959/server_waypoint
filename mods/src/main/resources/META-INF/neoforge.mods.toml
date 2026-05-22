@@ -8,7 +8,7 @@ version = "${version}"
 displayName = "${name}"
 authors = "2676959"
 description = "Manage waypoints and sync them to other player's client automatically. Compatible with Xaero's minimap."
-logoFile = "assets/server_waypoint/icon.png"
+logoFile = "server_waypoint.png"
 logoBlur = false
 
 [[dependencies.${id}]]
