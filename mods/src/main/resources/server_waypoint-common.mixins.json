@@ -1,4 +1,5 @@
 {
+  "minVersion": "0.8.5",
   "required": true,
   "package": "_959.server_waypoint.mixin",
   "compatibilityLevel": "JAVA_${java_version}",
