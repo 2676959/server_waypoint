@@ -25,6 +25,7 @@ val maven_group: String by project
 val forge_loader: String by project
 val mixinConfig = "server_waypoint-common.mixins.json"
 val mixinRefmap = "server_waypoint-common.refmap.json"
+val usesSrgMappings = !stonecutter.eval(mcVersion, ">=26")
 evaluationDependsOn(":common")
 val commonMainSourceSet = project(":common")
     .extensions
@@ -227,8 +228,10 @@ configure<net.minecraftforge.gradle.MinecraftExtensionForProject> {
             workingDir.set(project.layout.projectDirectory.dir("run"))
             systemProperty("forge.logging.markers", "REGISTRIES")
             systemProperty("forge.logging.console.level", "debug")
-            systemProperty("mixin.env.remapRefMap", "true")
-            systemProperty("mixin.env.refMapRemappingFile", devRefmapRemappingFile.get().asFile.absolutePath)
+            if (usesSrgMappings) {
+                systemProperty("mixin.env.remapRefMap", "true")
+                systemProperty("mixin.env.refMapRemappingFile", devRefmapRemappingFile.get().asFile.absolutePath)
+            }
             args("-mixin.config=$mixinConfig")
             mods {
                 create(mod_id) {
@@ -241,8 +244,10 @@ configure<net.minecraftforge.gradle.MinecraftExtensionForProject> {
             workingDir.set(project.layout.projectDirectory.dir("run"))
             systemProperty("forge.logging.markers", "REGISTRIES")
             systemProperty("forge.logging.console.level", "debug")
-            systemProperty("mixin.env.remapRefMap", "true")
-            systemProperty("mixin.env.refMapRemappingFile", devRefmapRemappingFile.get().asFile.absolutePath)
+            if (usesSrgMappings) {
+                systemProperty("mixin.env.remapRefMap", "true")
+                systemProperty("mixin.env.refMapRemappingFile", devRefmapRemappingFile.get().asFile.absolutePath)
+            }
             args("-mixin.config=$mixinConfig")
             mods {
                 create(mod_id) {
@@ -300,16 +305,18 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 tasks.named<JavaCompile>("compileJava") {
-    dependsOn(unpackMixinMappings)
-    inputs.file(unpackedMixinMappings)
     outputs.file(mixinRefmapFile)
-    options.compilerArgs.addAll(listOf(
-        "-AoutRefMapFile=${mixinRefmapFile.get().asFile.absolutePath}",
-        "-AreobfTsrgFile=${unpackedMixinMappings.get().asFile.absolutePath}",
-        "-AoutTsrgFile=${mixinSrgFile.get().asFile.absolutePath}",
-        "-AmappingTypes=tsrg",
-        "-AdefaultObfuscationEnv=searge"
-    ))
+    options.compilerArgs.add("-AoutRefMapFile=${mixinRefmapFile.get().asFile.absolutePath}")
+    if (usesSrgMappings) {
+        dependsOn(unpackMixinMappings)
+        inputs.file(unpackedMixinMappings)
+        options.compilerArgs.addAll(listOf(
+            "-AreobfTsrgFile=${unpackedMixinMappings.get().asFile.absolutePath}",
+            "-AoutTsrgFile=${mixinSrgFile.get().asFile.absolutePath}",
+            "-AmappingTypes=tsrg",
+            "-AdefaultObfuscationEnv=searge"
+        ))
+    }
 }
 
 tasks.named("compileJava") {
@@ -321,7 +328,7 @@ tasks.named("processResources") {
 }
 
 tasks.configureEach {
-    if (name == "runClient" || name == "runServer" || name == "runTestClient" || name == "runTestServer") {
+    if (usesSrgMappings && (name == "runClient" || name == "runServer" || name == "runTestClient" || name == "runTestServer")) {
         dependsOn(createMixinDevRemapMappings)
     }
 }
@@ -344,25 +351,37 @@ tasks.jar {
     }
 }
 
-val renamedShadowJar = extensions
-    .getByType(net.minecraftforge.renamer.gradle.RenamerExtension::class.java)
-    .classes("renameShadowJar", tasks.named<ShadowJar>("shadowJar")) {
-        archiveClassifier.set("renamed")
-        output.set(layout.buildDirectory.file("tmp/renameShadowJar/${base.archivesName.get()}.jar"))
-        dependsOn(unpackMixinMappings)
-        setMappings(files(unpackedMixinMappings))
-    }
+val shadowJarTask = tasks.named<ShadowJar>("shadowJar")
+val reobfShadowJar = if (usesSrgMappings) {
+    val renamedShadowJar = extensions
+        .getByType(net.minecraftforge.renamer.gradle.RenamerExtension::class.java)
+        .classes("renameShadowJar", shadowJarTask) {
+            archiveClassifier.set("renamed")
+            output.set(layout.buildDirectory.file("tmp/renameShadowJar/${base.archivesName.get()}.jar"))
+            dependsOn(unpackMixinMappings)
+            setMappings(files(unpackedMixinMappings))
+        }
 
-val reobfShadowJar by tasks.registering(Zip::class) {
-    group = "build"
-    archiveFileName.set(base.archivesName.map { "$it.jar" })
-    destinationDirectory.set(layout.buildDirectory.dir("libs"))
-    from(renamedShadowJar.flatMap { it.output }.map { zipTree(it.asFile) })
-    exclude("fernflower_abstract_parameter_names.txt")
-    dependsOn(renamedShadowJar)
+    tasks.register<Zip>("reobfShadowJar") {
+        group = "build"
+        archiveFileName.set(base.archivesName.map { "$it.jar" })
+        destinationDirectory.set(layout.buildDirectory.dir("libs"))
+        from(renamedShadowJar.flatMap { it.output }.map { zipTree(it.asFile) })
+        exclude("fernflower_abstract_parameter_names.txt")
+        dependsOn(renamedShadowJar)
+    }
+} else {
+    tasks.register<Zip>("reobfShadowJar") {
+        group = "build"
+        archiveFileName.set(base.archivesName.map { "$it.jar" })
+        destinationDirectory.set(layout.buildDirectory.dir("libs"))
+        from(shadowJarTask.flatMap { it.archiveFile }.map { zipTree(it.asFile) })
+        exclude("fernflower_abstract_parameter_names.txt")
+        dependsOn(shadowJarTask)
+    }
 }
 
-tasks.named<ShadowJar>("shadowJar") {
+shadowJarTask {
     configurations = listOf(shadedDependencies)
     addMultiReleaseAttribute.set(false)
     archiveClassifier.set("dev-shadow")

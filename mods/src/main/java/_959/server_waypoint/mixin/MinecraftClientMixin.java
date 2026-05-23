@@ -13,7 +13,7 @@ import static _959.server_waypoint.common.client.WaypointClientMod.onDimensionCh
 @Mixin(Minecraft.class)
 public class MinecraftClientMixin {
 
-    @Inject(method = "updateLevelInEngines", at = @At(value = "HEAD"))
+    @Inject(method = "updateLevelInEngines", at = @At(value = "HEAD")/*? if >= 26 {*/, remap = false/*?}*/)
     public void setWorld(ClientLevel world, CallbackInfo ci) {
         if (world == null) {
             return;

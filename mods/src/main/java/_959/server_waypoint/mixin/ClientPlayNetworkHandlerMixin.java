@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientPacketListener.class)
 public class ClientPlayNetworkHandlerMixin {
 
-    @Inject(method = "handleLogin", at = @At(value = "TAIL"))
+    @Inject(method = "handleLogin", at = @At(value = "TAIL")/*? if >= 26 {*/, remap = false/*?}*/)
     private void setHandshakeStatus(ClientboundLoginPacket packet, CallbackInfo ci) {
         WaypointClientMod.getInstance().onJoinServer();
     }

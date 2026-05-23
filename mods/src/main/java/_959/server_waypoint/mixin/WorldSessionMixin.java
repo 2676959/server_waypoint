@@ -11,7 +11,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class WorldSessionMixin {
     @Inject(
             method = "onDisconnect",
-            at = @At(value = "TAIL")
+            at = @At(value = "TAIL")/*? if >= 26 {*/,
+            remap = false/*?}*/
     )
     private void sw$onLeaveServer(CallbackInfo ci) {
         WaypointClientMod.getInstance().onLeaveServer();
