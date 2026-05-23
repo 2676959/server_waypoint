@@ -145,6 +145,67 @@ repositories {
     maven("https://maven.minecraftforge.net/")
 }
 
+val mixinMappingsVersion = "$mcVersion-20230612.114412"
+val mixinMappingsArchive = rootProject.layout.projectDirectory.file(
+    ".gradle/mavenizer/repo/net/minecraft/mappings_official/$mixinMappingsVersion/mappings_official-$mixinMappingsVersion-map2srg.tsrg.gz"
+)
+val unpackedMixinMappings = layout.buildDirectory.file("mixin/official-to-srg.tsrg")
+val devRefmapRemappingFile = layout.buildDirectory.file("mixin/srg-to-official.srg")
+val mixinRefmapFile = layout.buildDirectory.file("classes/java/main/$mixinRefmap")
+val mixinSrgFile = layout.buildDirectory.file("tmp/compileJava/server_waypoint-common-mixins.srg")
+
+val unpackMixinMappings by tasks.registering {
+    inputs.file(mixinMappingsArchive)
+    outputs.file(unpackedMixinMappings)
+
+    doLast {
+        val output = unpackedMixinMappings.get().asFile
+        output.parentFile.mkdirs()
+        GZIPInputStream(mixinMappingsArchive.asFile.inputStream()).use { input ->
+            Files.copy(input, output.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        }
+    }
+}
+
+val createMixinDevRemapMappings by tasks.registering {
+    inputs.file(unpackedMixinMappings)
+    outputs.file(devRefmapRemappingFile)
+    dependsOn(unpackMixinMappings)
+
+    doLast {
+        val output = devRefmapRemappingFile.get().asFile
+        output.parentFile.mkdirs()
+
+        var officialClass: String? = null
+        var srgClass: String? = null
+        output.printWriter().use { writer ->
+            unpackedMixinMappings.get().asFile.forEachLine { line ->
+                if (line.isBlank() || line.startsWith("tsrg")) {
+                    return@forEachLine
+                }
+
+                val parts = line.trim().split(Regex("\\s+"))
+                if (!line.startsWith("\t")) {
+                    officialClass = parts.getOrNull(0)
+                    srgClass = parts.getOrNull(1)
+                    return@forEachLine
+                }
+
+                val currentOfficialClass = officialClass ?: return@forEachLine
+                val currentSrgClass = srgClass ?: return@forEachLine
+                when {
+                    parts.size == 2 && parts[0].firstOrNull()?.isDigit() != true -> {
+                        writer.println("FD: $currentSrgClass/${parts[1]} $currentOfficialClass/${parts[0]}")
+                    }
+                    parts.size == 3 && parts[1].startsWith("(") -> {
+                        writer.println("MD: $currentSrgClass/${parts[2]} ${parts[1]} $currentOfficialClass/${parts[0]} ${parts[1]}")
+                    }
+                }
+            }
+        }
+    }
+}
+
 configure<net.minecraftforge.gradle.MinecraftExtensionForProject> {
     mappings("official", mcVersion)
 
@@ -153,6 +214,8 @@ configure<net.minecraftforge.gradle.MinecraftExtensionForProject> {
             workingDir.set(project.layout.projectDirectory.dir("run"))
             systemProperty("forge.logging.markers", "REGISTRIES")
             systemProperty("forge.logging.console.level", "debug")
+            systemProperty("mixin.env.remapRefMap", "true")
+            systemProperty("mixin.env.refMapRemappingFile", devRefmapRemappingFile.get().asFile.absolutePath)
             args("-mixin.config=$mixinConfig")
             mods {
                 create(mod_id) {
@@ -165,6 +228,8 @@ configure<net.minecraftforge.gradle.MinecraftExtensionForProject> {
             workingDir.set(project.layout.projectDirectory.dir("run"))
             systemProperty("forge.logging.markers", "REGISTRIES")
             systemProperty("forge.logging.console.level", "debug")
+            systemProperty("mixin.env.remapRefMap", "true")
+            systemProperty("mixin.env.refMapRemappingFile", devRefmapRemappingFile.get().asFile.absolutePath)
             args("-mixin.config=$mixinConfig")
             mods {
                 create(mod_id) {
@@ -219,27 +284,6 @@ tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
 }
 
-val mixinMappingsVersion = "$mcVersion-20230612.114412"
-val mixinMappingsArchive = rootProject.layout.projectDirectory.file(
-    ".gradle/mavenizer/repo/net/minecraft/mappings_official/$mixinMappingsVersion/mappings_official-$mixinMappingsVersion-map2srg.tsrg.gz"
-)
-val unpackedMixinMappings = layout.buildDirectory.file("mixin/official-to-srg.tsrg")
-val mixinRefmapFile = layout.buildDirectory.file("classes/java/main/$mixinRefmap")
-val mixinSrgFile = layout.buildDirectory.file("tmp/compileJava/server_waypoint-common-mixins.srg")
-
-val unpackMixinMappings by tasks.registering {
-    inputs.file(mixinMappingsArchive)
-    outputs.file(unpackedMixinMappings)
-
-    doLast {
-        val output = unpackedMixinMappings.get().asFile
-        output.parentFile.mkdirs()
-        GZIPInputStream(mixinMappingsArchive.asFile.inputStream()).use { input ->
-            Files.copy(input, output.toPath(), StandardCopyOption.REPLACE_EXISTING)
-        }
-    }
-}
-
 tasks.named<JavaCompile>("compileJava") {
     dependsOn(unpackMixinMappings)
     inputs.file(unpackedMixinMappings)
@@ -259,6 +303,12 @@ tasks.named("compileJava") {
 
 tasks.named("processResources") {
     dependsOn("stonecutterGenerate")
+}
+
+tasks.configureEach {
+    if (name == "runClient" || name == "runServer" || name == "runTestClient" || name == "runTestServer") {
+        dependsOn(createMixinDevRemapMappings)
+    }
 }
 
 tasks.jar {
