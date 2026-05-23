@@ -68,7 +68,7 @@ public record XaerosWorldIdS2CPayload(XaerosWorldIdBuffer worldIdBuffer) impleme
 
     //? if neoforge {
     @Override
-    public net.minecraft.resources.ResourceLocation id() {
+    public net.minecraft.resources.Identifier id() {
         return XAEROS_WORLD_ID_PAYLOAD_ID;
     }
     //?}

@@ -70,7 +70,7 @@ public record ServerHandshakeS2CPayload(ServerHandshakeBuffer serverHandshakeBuf
 
     //? if neoforge {
     @Override
-    public net.minecraft.resources.ResourceLocation id() {
+    public net.minecraft.resources.Identifier id() {
         return SERVER_HANDSHAKE_PAYLOAD;
     }
     //?}

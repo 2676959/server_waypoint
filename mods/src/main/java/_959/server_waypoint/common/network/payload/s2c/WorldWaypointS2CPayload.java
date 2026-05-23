@@ -70,7 +70,7 @@ public record WorldWaypointS2CPayload(WorldWaypointBuffer worldWaypointBuffer) i
 
     //? if neoforge {
     @Override
-    public net.minecraft.resources.ResourceLocation id() {
+    public net.minecraft.resources.Identifier id() {
         return WORLD_WAYPOINT_PAYLOAD_ID;
     }
     //?}

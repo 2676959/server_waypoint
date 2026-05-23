@@ -68,10 +68,8 @@ stonecutter {
 
 sourceSets.main {
     java {
-        exclude("_959/server_waypoint/forge")
         exclude("_959/server_waypoint/fabric")
-        exclude("ServerWaypointNeoForge.java")
-        exclude("ServerWaypointNeoForgeClient.java")
+        exclude("_959/server_waypoint/forge")
     }
     resources {
         exclude("fabric.mod.json")

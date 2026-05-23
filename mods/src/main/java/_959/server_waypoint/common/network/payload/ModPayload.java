@@ -2,6 +2,8 @@ package _959.server_waypoint.common.network.payload;
 
 //? if >= 1.20.5 {
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+//? if forge && < 1.20.5
+/*import net.minecraft.network.FriendlyByteBuf;*/
 //?} else if fabric {
 /*import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 *///?} else if neoforge {
@@ -19,6 +21,6 @@ public interface ModPayload
         /*extends CustomPacketPayload
 *///?}
 {
-//? if forge
+//? if forge && < 1.20.5
     /*void write(FriendlyByteBuf buf);*/
 }

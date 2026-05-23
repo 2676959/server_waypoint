@@ -19,9 +19,12 @@ import _959.server_waypoint.config.Features;
 import _959.server_waypoint.core.IPlatformConfigPath;
 import _959.server_waypoint.core.network.C2SPacketHandler;
 import _959.server_waypoint.forge.permission.ForgePermissionManager;
+//? if >= 1.20.5
+import io.netty.buffer.ByteBuf;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+//? if >= 1.20.5
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -29,23 +32,25 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
+//? if < 1.21.6
+/*import net.minecraftforge.eventbus.api.IEventBus;*/
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLConfig;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+//? if < 1.21.6
+/*import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;*/
 import net.minecraftforge.network.NetworkDirection;
 //? if <= 1.20.1 {
-import net.minecraftforge.network.NetworkEvent;
+/*import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
-//?} else {
-/*import net.minecraftforge.event.network.CustomPayloadEvent;
+*///?} else {
+import net.minecraftforge.event.network.CustomPayloadEvent;
 import net.minecraftforge.network.ChannelBuilder;
 import net.minecraftforge.network.SimpleChannel;
-*///?}
+//?}
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -60,18 +65,18 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 public class ServerWaypointForge implements IPlatformConfigPath {
     private static final String NETWORK_PROTOCOL_VERSION = "1";
 //? if <= 1.20.1 {
-    public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
+    /*public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
             _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, "main"),
             () -> NETWORK_PROTOCOL_VERSION,
             NETWORK_PROTOCOL_VERSION::equals,
             NETWORK_PROTOCOL_VERSION::equals
     );
-//?} else {
-    /*public static final SimpleChannel PACKET_CHANNEL = ChannelBuilder
+*///?} else {
+    public static final SimpleChannel PACKET_CHANNEL = ChannelBuilder
             .named(_959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, "main"))
             .networkProtocolVersion(Integer.parseInt(NETWORK_PROTOCOL_VERSION))
             .simpleChannel();
-    *///?}
+    //?}
 
     private final WaypointServerMod waypointServer;
     private final C2SPacketHandler<CommandSourceStack, ServerPlayer> c2sPacketHandler;
@@ -86,20 +91,32 @@ public class ServerWaypointForge implements IPlatformConfigPath {
         this.c2sPacketHandler = new C2SPacketHandler<>(messageSender, this.waypointServer);
         this.waypointCommand = new WaypointCommand(this.waypointServer, messageSender, permissionManager);
 
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        //? if < 1.21.6
+        /*IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();*/
         this.configureLoadedMods();
         this.registerPayloads();
         if (FMLEnvironment.dist == Dist.CLIENT) {
-            ServerWaypointForgeClient.initialize(modEventBus);
+            //? if < 1.21.6 {
+            /*ServerWaypointForgeClient.initialize(modEventBus);
+            *///?} else {
+            ServerWaypointForgeClient.initialize();
+            //?}
         }
-        MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
+        //? if < 1.21.6 {
+        /*MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopping);
         MinecraftForge.EVENT_BUS.addListener(this::listenChatMessages);
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
+        *///?} else {
+        ServerStartingEvent.BUS.addListener(this::onServerStarting);
+        ServerStoppingEvent.BUS.addListener(this::onServerStopping);
+        ServerChatEvent.BUS.addListener(this::listenChatMessages);
+        RegisterCommandsEvent.BUS.addListener(this::registerCommands);
+        //?}
     }
 
     private void configureLoadedMods() {
-        if (ModList.get().isLoaded("xaerominimap") || ModList.get().isLoaded("xaeroworldmap")) {
+        if (ModList/*? if < 26 {*//*.get()*//*?}*/.isLoaded("xaerominimap") || ModList/*? if < 26 {*//*.get()*//*?}*/.isLoaded("xaeroworldmap")) {
             Features.noXaerosMod = false;
             LOGGER.info("found xaero's mod, force disabling sendXaerosWorldId");
         } else {
@@ -123,32 +140,32 @@ public class ServerWaypointForge implements IPlatformConfigPath {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ServerWaypointForgeClient.registerClientPayloadHandlers();
         } else {
-            registerS2C(WaypointListS2CPayload.class, 0, WaypointListS2CPayload::new, (payload, context) -> {});
-            registerS2C(DimensionWaypointS2CPayload.class, 1, DimensionWaypointS2CPayload::new, (payload, context) -> {});
-            registerS2C(WorldWaypointS2CPayload.class, 2, WorldWaypointS2CPayload::new, (payload, context) -> {});
-            registerS2C(WaypointModificationS2CPayload.class, 3, WaypointModificationS2CPayload::new, (payload, context) -> {});
-            registerS2C(UpdatesBundleS2CPayload.class, 4, UpdatesBundleS2CPayload::new, (payload, context) -> {});
-            registerS2C(ServerHandshakeS2CPayload.class, 5, ServerHandshakeS2CPayload::new, (payload, context) -> {});
+            registerS2C(WaypointListS2CPayload.class, 0, /*? if >= 1.20.5 {*/ WaypointListS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointListS2CPayload::new *//*?}*/, (payload, context) -> {});
+            registerS2C(DimensionWaypointS2CPayload.class, 1, /*? if >= 1.20.5 {*/ DimensionWaypointS2CPayload.PACKET_CODEC /*?} else {*/ /*DimensionWaypointS2CPayload::new *//*?}*/, (payload, context) -> {});
+            registerS2C(WorldWaypointS2CPayload.class, 2, /*? if >= 1.20.5 {*/ WorldWaypointS2CPayload.PACKET_CODEC /*?} else {*/ /*WorldWaypointS2CPayload::new *//*?}*/, (payload, context) -> {});
+            registerS2C(WaypointModificationS2CPayload.class, 3, /*? if >= 1.20.5 {*/ WaypointModificationS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointModificationS2CPayload::new *//*?}*/, (payload, context) -> {});
+            registerS2C(UpdatesBundleS2CPayload.class, 4, /*? if >= 1.20.5 {*/ UpdatesBundleS2CPayload.PACKET_CODEC /*?} else {*/ /*UpdatesBundleS2CPayload::new *//*?}*/, (payload, context) -> {});
+            registerS2C(ServerHandshakeS2CPayload.class, 5, /*? if >= 1.20.5 {*/ ServerHandshakeS2CPayload.PACKET_CODEC /*?} else {*/ /*ServerHandshakeS2CPayload::new *//*?}*/, (payload, context) -> {});
         }
         if (Features.noXaerosMod) {
-            registerS2C(XaerosWorldIdS2CPayload.class, 6, XaerosWorldIdS2CPayload::new, (payload, context) -> {});
+            registerS2C(XaerosWorldIdS2CPayload.class, 6, /*? if >= 1.20.5 {*/ XaerosWorldIdS2CPayload.PACKET_CODEC /*?} else {*/ /*XaerosWorldIdS2CPayload::new *//*?}*/, (payload, context) -> {});
         }
-        registerC2S(ClientHandshakeC2SPayload.class, 7, ClientHandshakeC2SPayload::new, (payload, context) -> {
+        registerC2S(ClientHandshakeC2SPayload.class, 7, /*? if >= 1.20.5 {*/ ClientHandshakeC2SPayload.PACKET_CODEC /*?} else {*/ /*ClientHandshakeC2SPayload::new *//*?}*/, (payload, context) -> {
 //? if <= 1.20.1 {
-            ServerPlayer player = context.get().getSender();
-//?} else {
-            /*ServerPlayer player = context.getSender();
-            *///?}
+            /*ServerPlayer player = context.get().getSender();
+*///?} else {
+            ServerPlayer player = context.getSender();
+            //?}
             if (player != null) {
                 this.c2sPacketHandler.onClientHandshake(player, payload.clientHandshakeBuffer());
             }
         });
-        registerC2S(UpdateRequestC2SPayload.class, 8, UpdateRequestC2SPayload::new, (payload, context) -> {
+        registerC2S(UpdateRequestC2SPayload.class, 8, /*? if >= 1.20.5 {*/ UpdateRequestC2SPayload.PACKET_CODEC /*?} else {*/ /*UpdateRequestC2SPayload::new *//*?}*/, (payload, context) -> {
 //? if <= 1.20.1 {
-            ServerPlayer player = context.get().getSender();
-//?} else {
-            /*ServerPlayer player = context.getSender();
-            *///?}
+            /*ServerPlayer player = context.get().getSender();
+*///?} else {
+            ServerPlayer player = context.getSender();
+            //?}
             if (player != null) {
                 this.c2sPacketHandler.onClientUpdateRequest(player, payload.clientUpdateRequestBuffer());
             }
@@ -158,15 +175,19 @@ public class ServerWaypointForge implements IPlatformConfigPath {
     private static <T extends ModPayload> void registerS2C(
             Class<T> payloadClass,
             int id,
-            Function<FriendlyByteBuf, T> decoder,
-            //? if <= 1.20.1 {
-            BiConsumer<T, Supplier<NetworkEvent.Context>> handler
+            //? if >= 1.20.5 {
+            StreamCodec<ByteBuf, T> codec,
             //?} else {
-            /*BiConsumer<T, CustomPayloadEvent.Context> handler
+            /*Function<FriendlyByteBuf, T> decoder,
             *///?}
+            //? if <= 1.20.1 {
+            /*BiConsumer<T, Supplier<NetworkEvent.Context>> handler
+            *///?} else {
+            BiConsumer<T, CustomPayloadEvent.Context> handler
+            //?}
     ) {
 //? if <= 1.20.1 {
-        PACKET_CHANNEL.registerMessage(
+        /*PACKET_CHANNEL.registerMessage(
                 id,
                 payloadClass,
                 (payload, buf) -> payload.write(buf),
@@ -174,27 +195,35 @@ public class ServerWaypointForge implements IPlatformConfigPath {
                 handler,
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT)
         );
-//?} else {
-        /*PACKET_CHANNEL.messageBuilder(payloadClass, id, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder((payload, buf) -> payload.write(buf))
+*///?} else {
+        PACKET_CHANNEL.messageBuilder(payloadClass, id, NetworkDirection.PLAY_TO_CLIENT)
+                //? if >= 1.20.5 {
+                .codec((StreamCodec) codec)
+                //?} else {
+                /*.encoder((payload, buf) -> payload.write(buf))
                 .decoder(decoder)
+                *///?}
                 .consumerMainThread(handler)
                 .add();
-        *///?}
+        //?}
     }
 
     private static <T extends ModPayload> void registerC2S(
             Class<T> payloadClass,
             int id,
-            Function<FriendlyByteBuf, T> decoder,
-            //? if <= 1.20.1 {
-            BiConsumer<T, Supplier<NetworkEvent.Context>> handler
+            //? if >= 1.20.5 {
+            StreamCodec<ByteBuf, T> codec,
             //?} else {
-            /*BiConsumer<T, CustomPayloadEvent.Context> handler
+            /*Function<FriendlyByteBuf, T> decoder,
             *///?}
+            //? if <= 1.20.1 {
+            /*BiConsumer<T, Supplier<NetworkEvent.Context>> handler
+            *///?} else {
+            BiConsumer<T, CustomPayloadEvent.Context> handler
+            //?}
     ) {
 //? if <= 1.20.1 {
-        PACKET_CHANNEL.registerMessage(
+        /*PACKET_CHANNEL.registerMessage(
                 id,
                 payloadClass,
                 (payload, buf) -> payload.write(buf),
@@ -205,13 +234,17 @@ public class ServerWaypointForge implements IPlatformConfigPath {
                 },
                 Optional.of(NetworkDirection.PLAY_TO_SERVER)
         );
-//?} else {
-        /*PACKET_CHANNEL.messageBuilder(payloadClass, id, NetworkDirection.PLAY_TO_SERVER)
-                .encoder((payload, buf) -> payload.write(buf))
+*///?} else {
+        PACKET_CHANNEL.messageBuilder(payloadClass, id, NetworkDirection.PLAY_TO_SERVER)
+                //? if >= 1.20.5 {
+                .codec((StreamCodec) codec)
+                //?} else {
+                /*.encoder((payload, buf) -> payload.write(buf))
                 .decoder(decoder)
+                *///?}
                 .consumerMainThread(handler)
                 .add();
-        *///?}
+        //?}
     }
 
     private void registerCommands(RegisterCommandsEvent event) {

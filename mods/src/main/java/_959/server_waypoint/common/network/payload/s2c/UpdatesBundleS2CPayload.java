@@ -70,7 +70,7 @@ public record UpdatesBundleS2CPayload(UpdatesBundleBuffer updatesBundleBuffer) i
 
     //? if neoforge {
     @Override
-    public net.minecraft.resources.ResourceLocation id() {
+    public net.minecraft.resources.Identifier id() {
         return UPDATES_BUNDLE_PAYLOAD_ID;
     }
     //?}

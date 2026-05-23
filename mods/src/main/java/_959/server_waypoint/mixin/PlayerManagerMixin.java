@@ -15,7 +15,7 @@ import static _959.server_waypoint.core.WaypointServerCore.getWorldId;
 
 @Mixin(PlayerList.class)
 public class PlayerManagerMixin {
-    @Inject(method = "sendLevelInfo", at = @At(value = "TAIL"))
+    @Inject(method = "sendLevelInfo", at = @At(value = "TAIL")/*? if >= 26 {*/, remap = false/*?}*/)
     private void onSendWorldInfo(ServerPlayer player, ServerLevel world, CallbackInfo ci) {
         if (CONFIG.Features().sendXaerosWorldId()) {
             ModMessageSender.getInstance().sendPlayerPacket(player, new XaerosWorldIdBuffer(getWorldId()));

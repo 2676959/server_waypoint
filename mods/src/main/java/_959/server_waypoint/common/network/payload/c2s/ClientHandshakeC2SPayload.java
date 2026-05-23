@@ -71,7 +71,7 @@ public record ClientHandshakeC2SPayload(ClientHandshakeBuffer clientHandshakeBuf
 
     //? if neoforge {
     @Override
-    public net.minecraft.resources.ResourceLocation id() {
+    public net.minecraft.resources.Identifier id() {
         return CLIENT_HANDSHAKE_PAYLOAD;
     }
     //?}

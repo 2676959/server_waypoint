@@ -70,7 +70,7 @@ public record DimensionWaypointS2CPayload(DimensionWaypointBuffer dimensionWaypo
 
     //? if neoforge {
     @Override
-    public net.minecraft.resources.ResourceLocation id() {
+    public net.minecraft.resources.Identifier id() {
         return DIM_WAYPOINT_PAYLOAD_ID;
     }
     //?}

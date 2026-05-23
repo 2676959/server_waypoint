@@ -71,7 +71,7 @@ public record UpdateRequestC2SPayload(ClientUpdateRequestBuffer clientUpdateRequ
 
     //? if neoforge {
     @Override
-    public net.minecraft.resources.ResourceLocation id() {
+    public net.minecraft.resources.Identifier id() {
         return CLIENT_UPDATE_REQUEST_PAYLOAD;
     }
     //?}
