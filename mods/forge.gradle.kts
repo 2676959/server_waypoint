@@ -1,5 +1,8 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.minecraftforge.gradle.shadow.net.minecraftforge.gradleutils.shared.ToolsExtension
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import java.util.zip.GZIPInputStream
 
 plugins {
     id("net.minecraftforge.renamer")
@@ -15,6 +18,32 @@ val mod_id: String by project
 val mod_name: String by project
 val mod_version: String by project
 val maven_group: String by project
+val mixinConfig = "server_waypoint-common.mixins.json"
+val mixinRefmap = "server_waypoint-common.refmap.json"
+val commonMainSourceSet = project(":common")
+    .extensions
+    .getByType(org.gradle.api.tasks.SourceSetContainer::class.java)
+    .named("main")
+val forgeRunRuntimeDir = layout.buildDirectory.dir("forgeRunRuntime/classes")
+
+val copyForgeRunRuntime by tasks.registering(Sync::class) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(commonMainSourceSet.map { it.output })
+    from({
+        shadedDependencies
+            .filter {
+                it.isFile && it.extension == "jar" && (
+                    it.name.startsWith("adventure-") ||
+                        it.name.startsWith("examination-") ||
+                        it.name.startsWith("option-")
+                )
+            }
+            .map { zipTree(it) }
+    })
+    exclude("META-INF/*.DSA", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/MANIFEST.MF", "mappings/**")
+    into(forgeRunRuntimeDir)
+    dependsOn(project(":common").tasks.named("classes"), project(":common").tasks.named("jar"))
+}
 
 group = maven_group
 version = mod_version
@@ -31,6 +60,14 @@ java {
 
 extensions.configure<ToolsExtension>("fgtools") {
     configure("slimelauncher") {
+        getJavaLauncher().set(javaToolchains.launcherFor {
+            languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
+        })
+    }
+}
+
+extensions.configure<net.minecraftforge.renamer.gradle.shadow.net.minecraftforge.gradleutils.shared.ToolsExtension>("renamerTools") {
+    configure("classes") {
         getJavaLauncher().set(javaToolchains.launcherFor {
             languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
         })
@@ -76,8 +113,6 @@ sourceSets.main {
     java {
         exclude("_959/server_waypoint/fabric")
         exclude("_959/server_waypoint/neoforge")
-        exclude("ServerWaypointNeoForge.java")
-        exclude("ServerWaypointNeoForgeClient.java")
     }
     resources {
         exclude("fabric.mod.json")
@@ -86,9 +121,16 @@ sourceSets.main {
     }
 }
 
+val forgeRunRuntimeSourceSet = sourceSets.create("forgeRunRuntime") {
+    java.setSrcDirs(emptyList<String>())
+    resources.setSrcDirs(emptyList<String>())
+    output.dir(mapOf("builtBy" to copyForgeRunRuntime), forgeRunRuntimeDir)
+}
+
 repositories {
     mavenCentral()
     maven("https://libraries.minecraft.net")
+    maven("https://repo.spongepowered.org/repository/maven-public/")
     exclusiveContent {
         forRepository {
             maven {
@@ -111,10 +153,11 @@ configure<net.minecraftforge.gradle.MinecraftExtensionForProject> {
             workingDir.set(project.layout.projectDirectory.dir("run"))
             systemProperty("forge.logging.markers", "REGISTRIES")
             systemProperty("forge.logging.console.level", "debug")
-            args("-mixin.config=server_waypoint-common.mixins.json")
+            args("-mixin.config=$mixinConfig")
             mods {
                 create(mod_id) {
                     source(sourceSets.main.get())
+                    source(forgeRunRuntimeSourceSet)
                 }
             }
         }
@@ -122,10 +165,11 @@ configure<net.minecraftforge.gradle.MinecraftExtensionForProject> {
             workingDir.set(project.layout.projectDirectory.dir("run"))
             systemProperty("forge.logging.markers", "REGISTRIES")
             systemProperty("forge.logging.console.level", "debug")
-            args("-mixin.config=server_waypoint-common.mixins.json")
+            args("-mixin.config=$mixinConfig")
             mods {
                 create(mod_id) {
                     source(sourceSets.main.get())
+                    source(forgeRunRuntimeSourceSet)
                 }
             }
         }
@@ -137,6 +181,7 @@ minecraftExtension.mavenizer(repositories)
 
 dependencies {
     implementation(minecraftExtension.dependency("net.minecraftforge:forge:$mcVersion-${property("forge_loader")}").asProvider())
+    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 
     implementation(project(":common"))
     add(shadedDependencies.name, project(":common"))
@@ -144,7 +189,6 @@ dependencies {
 
     val xaeros_minimap_forge: String by project
     compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
-    runtimeOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
 }
 
 tasks.processResources {
@@ -168,16 +212,45 @@ tasks.processResources {
             "forge_dependency" to "[47,)",
         ))
     }
-
-    doLast {
-        destinationDir.resolve("assets/server_waypoint/icon.png")
-            .copyTo(destinationDir.resolve("server_waypoint.png"), overwrite = true)
-    }
 }
 
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
+}
+
+val mixinMappingsVersion = "$mcVersion-20230612.114412"
+val mixinMappingsArchive = rootProject.layout.projectDirectory.file(
+    ".gradle/mavenizer/repo/net/minecraft/mappings_official/$mixinMappingsVersion/mappings_official-$mixinMappingsVersion-map2srg.tsrg.gz"
+)
+val unpackedMixinMappings = layout.buildDirectory.file("mixin/official-to-srg.tsrg")
+val mixinRefmapFile = layout.buildDirectory.file("classes/java/main/$mixinRefmap")
+val mixinSrgFile = layout.buildDirectory.file("tmp/compileJava/server_waypoint-common-mixins.srg")
+
+val unpackMixinMappings by tasks.registering {
+    inputs.file(mixinMappingsArchive)
+    outputs.file(unpackedMixinMappings)
+
+    doLast {
+        val output = unpackedMixinMappings.get().asFile
+        output.parentFile.mkdirs()
+        GZIPInputStream(mixinMappingsArchive.asFile.inputStream()).use { input ->
+            Files.copy(input, output.toPath(), StandardCopyOption.REPLACE_EXISTING)
+        }
+    }
+}
+
+tasks.named<JavaCompile>("compileJava") {
+    dependsOn(unpackMixinMappings)
+    inputs.file(unpackedMixinMappings)
+    outputs.file(mixinRefmapFile)
+    options.compilerArgs.addAll(listOf(
+        "-AoutRefMapFile=${mixinRefmapFile.get().asFile.absolutePath}",
+        "-AreobfTsrgFile=${unpackedMixinMappings.get().asFile.absolutePath}",
+        "-AoutTsrgFile=${mixinSrgFile.get().asFile.absolutePath}",
+        "-AmappingTypes=tsrg",
+        "-AdefaultObfuscationEnv=searge"
+    ))
 }
 
 tasks.named("compileJava") {
@@ -198,7 +271,7 @@ tasks.jar {
             "Implementation-Title" to mod_name,
             "Implementation-Version" to mod_version,
             "Implementation-Vendor" to "2676959",
-            "MixinConfigs" to "server_waypoint-common.mixins.json",
+            "MixinConfigs" to mixinConfig,
         ))
     }
     from(rootProject.file("LICENSE")) {
@@ -206,27 +279,45 @@ tasks.jar {
     }
 }
 
+val renamedShadowJar = extensions
+    .getByType(net.minecraftforge.renamer.gradle.RenamerExtension::class.java)
+    .classes("renameShadowJar", tasks.named<ShadowJar>("shadowJar")) {
+        archiveClassifier.set("renamed")
+        output.set(layout.buildDirectory.file("tmp/renameShadowJar/${base.archivesName.get()}-$mod_version.jar"))
+        dependsOn(unpackMixinMappings)
+        setMappings(files(unpackedMixinMappings))
+    }
+
+val reobfShadowJar by tasks.registering(Zip::class) {
+    group = "build"
+    archiveFileName.set(base.archivesName.map { "$it-$mod_version.jar" })
+    destinationDirectory.set(layout.buildDirectory.dir("libs"))
+    from(renamedShadowJar.flatMap { it.output }.map { zipTree(it.asFile) })
+    exclude("fernflower_abstract_parameter_names.txt")
+    dependsOn(renamedShadowJar)
+}
+
 tasks.named<ShadowJar>("shadowJar") {
     configurations = listOf(shadedDependencies)
-    archiveClassifier.set("")
+    addMultiReleaseAttribute.set(false)
+    archiveClassifier.set("dev-shadow")
     dependencies {
         include(project(":common"))
         include(dependency("net.kyori:.*"))
-        exclude("mappings/*")
     }
 }
 
 tasks.assemble {
-    dependsOn(tasks.named("shadowJar"))
+    dependsOn(reobfShadowJar)
 }
 
 artifacts {
-    archives(tasks.named("shadowJar"))
+    archives(reobfShadowJar)
 }
 
 tasks.register<Copy>("buildAndCollect") {
     group = "build"
-    from(tasks.named<ShadowJar>("shadowJar").map { it.archiveFile })
+    from(reobfShadowJar.map { it.archiveFile })
     into(rootProject.layout.buildDirectory.file("libs/$mod_version"))
     dependsOn("build")
 }
