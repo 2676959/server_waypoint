@@ -283,14 +283,14 @@ val renamedShadowJar = extensions
     .getByType(net.minecraftforge.renamer.gradle.RenamerExtension::class.java)
     .classes("renameShadowJar", tasks.named<ShadowJar>("shadowJar")) {
         archiveClassifier.set("renamed")
-        output.set(layout.buildDirectory.file("tmp/renameShadowJar/${base.archivesName.get()}-$mod_version.jar"))
+        output.set(layout.buildDirectory.file("tmp/renameShadowJar/${base.archivesName.get()}.jar"))
         dependsOn(unpackMixinMappings)
         setMappings(files(unpackedMixinMappings))
     }
 
 val reobfShadowJar by tasks.registering(Zip::class) {
     group = "build"
-    archiveFileName.set(base.archivesName.map { "$it-$mod_version.jar" })
+    archiveFileName.set(base.archivesName.map { "$it.jar" })
     destinationDirectory.set(layout.buildDirectory.dir("libs"))
     from(renamedShadowJar.flatMap { it.output }.map { zipTree(it.asFile) })
     exclude("fernflower_abstract_parameter_names.txt")
