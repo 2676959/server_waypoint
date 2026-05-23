@@ -42,9 +42,8 @@ stonecutter {
 
 sourceSets.main {
     java {
+        exclude("_959/server_waypoint/forge")
         exclude("_959/server_waypoint/neoforge")
-        exclude("ServerWaypointNeoForge.java")
-        exclude("ServerWaypointNeoForgeClient.java")
     }
     resources {
         exclude("META-INF")
