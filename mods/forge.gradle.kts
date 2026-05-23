@@ -12,14 +12,20 @@ plugins {
 
 val mcVersion = stonecutter.current.version
 val loader = "forge"
-val targetJavaVersion = 17
+val targetJavaVersion = when {
+    stonecutter.eval(stonecutter.current.version, ">=26") -> 25
+    stonecutter.eval(stonecutter.current.version, ">=1.20.5") -> 21
+    else -> 17
+}
 val mcVersionRange: String by project
 val mod_id: String by project
 val mod_name: String by project
 val mod_version: String by project
 val maven_group: String by project
+val forge_loader: String by project
 val mixinConfig = "server_waypoint-common.mixins.json"
 val mixinRefmap = "server_waypoint-common.refmap.json"
+evaluationDependsOn(":common")
 val commonMainSourceSet = project(":common")
     .extensions
     .getByType(org.gradle.api.tasks.SourceSetContainer::class.java)
@@ -145,10 +151,17 @@ repositories {
     maven("https://maven.minecraftforge.net/")
 }
 
-val mixinMappingsVersion = "$mcVersion-20230612.114412"
-val mixinMappingsArchive = rootProject.layout.projectDirectory.file(
-    ".gradle/mavenizer/repo/net/minecraft/mappings_official/$mixinMappingsVersion/mappings_official-$mixinMappingsVersion-map2srg.tsrg.gz"
-)
+val mixinMappingsArchive = providers.provider {
+    val mappingsDir = rootProject.layout.projectDirectory
+        .dir(".gradle/mavenizer/repo/net/minecraft/mappings_official")
+        .asFile
+    mappingsDir
+        .listFiles { file -> file.isDirectory && file.name.startsWith("$mcVersion-") }
+        ?.asSequence()
+        ?.map { file -> file.resolve("mappings_official-${file.name}-map2srg.tsrg.gz") }
+        ?.firstOrNull { file -> file.isFile }
+        ?: throw GradleException("Missing Forge official-to-SRG mappings for Minecraft $mcVersion")
+}
 val unpackedMixinMappings = layout.buildDirectory.file("mixin/official-to-srg.tsrg")
 val devRefmapRemappingFile = layout.buildDirectory.file("mixin/srg-to-official.srg")
 val mixinRefmapFile = layout.buildDirectory.file("classes/java/main/$mixinRefmap")
@@ -161,7 +174,7 @@ val unpackMixinMappings by tasks.registering {
     doLast {
         val output = unpackedMixinMappings.get().asFile
         output.parentFile.mkdirs()
-        GZIPInputStream(mixinMappingsArchive.asFile.inputStream()).use { input ->
+        GZIPInputStream(mixinMappingsArchive.get().inputStream()).use { input ->
             Files.copy(input, output.toPath(), StandardCopyOption.REPLACE_EXISTING)
         }
     }
@@ -245,7 +258,7 @@ val minecraftExtension = extensions.getByType<net.minecraftforge.gradle.Minecraf
 minecraftExtension.mavenizer(repositories)
 
 dependencies {
-    implementation(minecraftExtension.dependency("net.minecraftforge:forge:$mcVersion-${property("forge_loader")}").asProvider())
+    implementation(minecraftExtension.dependency("net.minecraftforge:forge:$mcVersion-$forge_loader").asProvider())
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 
     implementation(project(":common"))
@@ -267,14 +280,16 @@ tasks.processResources {
     }
 
     val mcVersionForge: String by project
+    val forgeDependency = "[${forge_loader.substringBefore(".")},)"
     inputs.property("minecraft_dependency", mcVersionForge)
+    inputs.property("forge_dependency", forgeDependency)
     filesMatching("META-INF/mods.toml") {
         expand(mapOf(
             "id" to mod_id,
             "name" to mod_name,
             "version" to mod_version,
             "minecraft_dependency" to mcVersionForge,
-            "forge_dependency" to "[47,)",
+            "forge_dependency" to forgeDependency,
         ))
     }
 }
@@ -373,7 +388,15 @@ tasks.register<Copy>("buildAndCollect") {
 }
 
 fun DependencyHandlerScope.addAdventureSerializerDependency() {
-    val dependencyNotation = "net.kyori:adventure-text-serializer-gson:4.14.0"
+    val version = when (mcVersion) {
+        "1.20.2" -> "4.14.0"
+        "1.20.4" -> "4.16.0"
+        "1.20.6", "1.21" -> "4.17.0"
+        "1.21.3" -> "4.20.0"
+        "1.21.5" -> "4.24.0"
+        else -> if (stonecutter.eval(stonecutter.current.version, ">=1.21.6")) "4.25.0" else "4.16.0"
+    }
+    val dependencyNotation = "net.kyori:adventure-text-serializer-gson:$version"
     implementation(dependencyNotation)
     add(shadedDependencies.name, dependencyNotation)
 }

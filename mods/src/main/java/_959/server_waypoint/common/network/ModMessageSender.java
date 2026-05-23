@@ -111,7 +111,11 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
         //? if fabric {
         /*ServerPlayNetworking.send(player, getPayload(packet));
         *///?} elif forge {
-        /*ServerWaypointForge.PACKET_CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), getPayload(packet));
+        /*//? if <= 1.20.1 {
+        ServerWaypointForge.PACKET_CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), getPayload(packet));
+        //?} else {
+        ServerWaypointForge.PACKET_CHANNEL.send(getPayload(packet), PacketDistributor.PLAYER.with(player));
+        //?}
         *///?} elif neoforge && = 1.20.2 {
         /*ServerWaypointNeoForge.PACKET_CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), getPayload(packet));
         *///?} elif neoforge && = 1.20.4 {
