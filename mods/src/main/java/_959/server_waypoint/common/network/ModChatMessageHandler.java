@@ -11,7 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
 import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionKey;
 
-//? if neoforge
+//? if neoforge || forge
 import net.minecraft.network.chat.Component;
 
 public abstract class ModChatMessageHandler<K> extends ChatMessageHandler<CommandSourceStack, K, ServerPlayer> {
@@ -20,7 +20,7 @@ public abstract class ModChatMessageHandler<K> extends ChatMessageHandler<Comman
     public void onChatMessage(
             //? if fabric {
             /*PlayerChatMessage message,
-            *///?} elif neoforge {
+            *///?} elif neoforge || forge {
             Component message,
             //?}
             ServerPlayer player, ChatType.Bound parameters) {

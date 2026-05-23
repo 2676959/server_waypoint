@@ -13,7 +13,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?} else if fabric {
 /*import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.FriendlyByteBuf;
-*///?} else if neoforge {
+*///?} else if neoforge || forge {
 /*import net.minecraft.network.FriendlyByteBuf;
 *///?}
 
@@ -58,7 +58,7 @@ public record UpdatesBundleS2CPayload(UpdatesBundleBuffer updatesBundleBuffer) i
     public PacketType<?> getType() {
         return ID;
     }
-*///?} else if neoforge {
+*///?} else if neoforge || forge {
     /*public UpdatesBundleS2CPayload(FriendlyByteBuf buf) {
         this(UpdatesBundleCodec.decode(buf));
     }
@@ -68,9 +68,11 @@ public record UpdatesBundleS2CPayload(UpdatesBundleBuffer updatesBundleBuffer) i
         UpdatesBundleCodec.encode(buf, updatesBundleBuffer);
     }
 
+    //? if neoforge {
     @Override
     public net.minecraft.resources.ResourceLocation id() {
         return UPDATES_BUNDLE_PAYLOAD_ID;
     }
+    //?}
 *///?}
 }

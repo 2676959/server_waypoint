@@ -13,7 +13,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?} else if fabric {
 /*import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.FriendlyByteBuf;
-*///?} else if neoforge {
+*///?} else if neoforge || forge {
 /*import net.minecraft.network.FriendlyByteBuf;
 *///?}
 
@@ -58,7 +58,7 @@ public record WorldWaypointS2CPayload(WorldWaypointBuffer worldWaypointBuffer) i
     public PacketType<?> getType() {
         return ID;
     }
-*///?} else if neoforge {
+*///?} else if neoforge || forge {
     /*public WorldWaypointS2CPayload(FriendlyByteBuf buf) {
         this(DimensionWaypointsListCodec.decode(buf, WorldWaypointBuffer::new));
     }
@@ -68,9 +68,11 @@ public record WorldWaypointS2CPayload(WorldWaypointBuffer worldWaypointBuffer) i
         DimensionWaypointsListCodec.encode(buf, worldWaypointBuffer);
     }
 
+    //? if neoforge {
     @Override
     public net.minecraft.resources.ResourceLocation id() {
         return WORLD_WAYPOINT_PAYLOAD_ID;
     }
+    //?}
 *///?}
 }
