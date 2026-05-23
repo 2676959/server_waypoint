@@ -3,6 +3,7 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
         maven("https://maven.fabricmc.net/") { name = "Fabric" }
+        maven("https://maven.minecraftforge.net/") { name = "MinecraftForge" }
         maven("https://maven.neoforged.net/releases/") { name = "NeoForged" }
         maven("https://maven.kikugie.dev/snapshots") { name = "KikuGie Snapshots" }
         maven("https://maven.kikugie.dev/releases") { name = "KikuGie Releases" }
@@ -31,6 +32,7 @@ stonecutter {
             "1.20.2", "1.20.4", "1.20.6",
             "1.21", "1.21.2", "1.21.3", "1.21.5", "1.21.6", "1.21.9", "1.21.11",
             "26.1.2")
+        mc("forge", "1.20.1")
 
         mapBuilds { _, data ->
             val loader = data.project.substringAfterLast('-')

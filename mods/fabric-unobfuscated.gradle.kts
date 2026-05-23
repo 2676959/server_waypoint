@@ -19,7 +19,7 @@ base {
 }
 
 stonecutter {
-    constants.match(loader, "fabric", "neoforge")
+    constants.match(loader, "fabric", "neoforge", "forge")
     val usesTwentySixApi = eval(current.version, ">=26")
     val usesResourceLocation = eval(current.version, "<1.21.11")
 

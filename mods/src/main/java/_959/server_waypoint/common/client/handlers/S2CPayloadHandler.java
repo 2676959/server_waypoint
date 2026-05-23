@@ -28,7 +28,7 @@ public class S2CPayloadHandler {
                 *///?} elif fabric {
                 /*LocalPlayer player, PacketSender responseSender
                 // }
-                *///?} elif neoforge {
+                *///?} elif neoforge || forge {
                 Object context
                 //?}
         ) {

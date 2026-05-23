@@ -1,37 +1,43 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import net.minecraftforge.gradle.shadow.net.minecraftforge.gradleutils.shared.ToolsExtension
+
 plugins {
-    id("net.neoforged.moddev")
+    id("net.minecraftforge.renamer")
+    id("net.minecraftforge.gradle")
     id("com.gradleup.shadow")
 }
 
-val minecraft = stonecutter.current.version
-val loader = "neoforge"
-val targetJavaVersion = when {
-    stonecutter.eval(stonecutter.current.version, ">=26") -> 25
-    stonecutter.eval(stonecutter.current.version, ">=1.20.5") -> 21
-    else -> 17
-}
+val mcVersion = stonecutter.current.version
+val loader = "forge"
+val targetJavaVersion = 17
 val mcVersionRange: String by project
 val mod_id: String by project
 val mod_name: String by project
 val mod_version: String by project
 val maven_group: String by project
-val commonMainSourceSet = project(":common")
-    .extensions
-    .getByType(org.gradle.api.tasks.SourceSetContainer::class.java)
-    .named("main")
 
 group = maven_group
+version = mod_version
 
 base {
     archivesName.set("$mod_id-$mod_version-$loader-mc$mcVersionRange")
 }
 
-val shadedDependencies by configurations.creating {
-    isCanBeConsumed = false
-    isCanBeResolved = true
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
+    }
 }
 
-val devRuntimeLibraries by configurations.creating {
+extensions.configure<ToolsExtension>("fgtools") {
+    configure("slimelauncher") {
+        getJavaLauncher().set(javaToolchains.launcherFor {
+            languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
+        })
+    }
+}
+
+val shadedDependencies by configurations.creating {
     isCanBeConsumed = false
     isCanBeResolved = true
 }
@@ -68,20 +74,21 @@ stonecutter {
 
 sourceSets.main {
     java {
-        exclude("_959/server_waypoint/forge")
         exclude("_959/server_waypoint/fabric")
+        exclude("_959/server_waypoint/neoforge")
         exclude("ServerWaypointNeoForge.java")
         exclude("ServerWaypointNeoForgeClient.java")
     }
     resources {
         exclude("fabric.mod.json")
-        exclude("META-INF/mods.toml")
+        exclude("META-INF/neoforge.mods.toml")
         exclude("server_waypoint-fabric.mixins.json")
     }
 }
 
 repositories {
     mavenCentral()
+    maven("https://libraries.minecraft.net")
     exclusiveContent {
         forRepository {
             maven {
@@ -93,49 +100,51 @@ repositories {
             includeGroup("maven.modrinth")
         }
     }
-    maven("https://maven.parchmentmc.org")
-    maven("https://maven.neoforged.net/releases/")
+    maven("https://maven.minecraftforge.net/")
 }
 
-neoForge {
-    val neoforge_loader: String by project
-    version = neoforge_loader
-    validateAccessTransformers = true
+configure<net.minecraftforge.gradle.MinecraftExtensionForProject> {
+    mappings("official", mcVersion)
 
     runs {
-        configureEach {
-            getAdditionalRuntimeClasspathConfiguration().extendsFrom(devRuntimeLibraries)
+        create("client") {
+            workingDir.set(project.layout.projectDirectory.dir("run"))
+            systemProperty("forge.logging.markers", "REGISTRIES")
+            systemProperty("forge.logging.console.level", "debug")
+            args("-mixin.config=server_waypoint-common.mixins.json")
+            mods {
+                create(mod_id) {
+                    source(sourceSets.main.get())
+                }
+            }
         }
-        register("client") {
-            client()
-            gameDirectory = file("run")
-        }
-        register("server") {
-            server()
-            gameDirectory = file("run")
-        }
-    }
-
-    mods {
-        register(mod_id) {
-            sourceSet(sourceSets["main"])
-            sourceSet(commonMainSourceSet.get())
+        create("server") {
+            workingDir.set(project.layout.projectDirectory.dir("run"))
+            systemProperty("forge.logging.markers", "REGISTRIES")
+            systemProperty("forge.logging.console.level", "debug")
+            args("-mixin.config=server_waypoint-common.mixins.json")
+            mods {
+                create(mod_id) {
+                    source(sourceSets.main.get())
+                }
+            }
         }
     }
 }
 
+val minecraftExtension = extensions.getByType<net.minecraftforge.gradle.MinecraftExtensionForProject>()
+minecraftExtension.mavenizer(repositories)
+
 dependencies {
+    implementation(minecraftExtension.dependency("net.minecraftforge:forge:$mcVersion-${property("forge_loader")}").asProvider())
+
     implementation(project(":common"))
     add(shadedDependencies.name, project(":common"))
     addAdventureSerializerDependency()
 
-    val xaeros_minimap_neoforge: String by project
-    if (minecraft == "1.21.2") {
-        compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
-    } else {
-        compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
-        runtimeOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
-    }
+    val xaeros_minimap_forge: String by project
+    compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
+    runtimeOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
 }
 
 tasks.processResources {
@@ -150,32 +159,19 @@ tasks.processResources {
 
     val mcVersionForge: String by project
     inputs.property("minecraft_dependency", mcVersionForge)
-    filesMatching("META-INF/neoforge.mods.toml") {
+    filesMatching("META-INF/mods.toml") {
         expand(mapOf(
             "id" to mod_id,
             "name" to mod_name,
             "version" to mod_version,
             "minecraft_dependency" to mcVersionForge,
+            "forge_dependency" to "[47,)",
         ))
     }
 
     doLast {
         destinationDir.resolve("assets/server_waypoint/icon.png")
             .copyTo(destinationDir.resolve("server_waypoint.png"), overwrite = true)
-    }
-
-    if (stonecutter.eval(minecraft, "<1.20.5")) {
-        doLast {
-            val metaInf = destinationDir.resolve("META-INF")
-            metaInf.resolve("neoforge.mods.toml")
-                .copyTo(metaInf.resolve("mods.toml"), overwrite = true)
-        }
-    }
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
     }
 }
 
@@ -194,48 +190,49 @@ tasks.named("processResources") {
 
 tasks.jar {
     archiveClassifier.set("thin")
+    manifest {
+        attributes(mapOf(
+            "Specification-Title" to mod_id,
+            "Specification-Vendor" to "2676959",
+            "Specification-Version" to "1",
+            "Implementation-Title" to mod_name,
+            "Implementation-Version" to mod_version,
+            "Implementation-Vendor" to "2676959",
+            "MixinConfigs" to "server_waypoint-common.mixins.json",
+        ))
+    }
     from(rootProject.file("LICENSE")) {
         rename { "${it}_$mod_name" }
     }
 }
 
-tasks.shadowJar {
+tasks.named<ShadowJar>("shadowJar") {
     configurations = listOf(shadedDependencies)
-    addMultiReleaseAttribute.set(false)
+    archiveClassifier.set("")
     dependencies {
         include(project(":common"))
         include(dependency("net.kyori:.*"))
         exclude("mappings/*")
     }
-    archiveClassifier.set("")
 }
 
 tasks.assemble {
-    dependsOn(tasks.shadowJar)
+    dependsOn(tasks.named("shadowJar"))
 }
 
 artifacts {
-    archives(tasks.shadowJar)
+    archives(tasks.named("shadowJar"))
 }
 
 tasks.register<Copy>("buildAndCollect") {
     group = "build"
-    from(tasks.shadowJar.map { it.archiveFile })
+    from(tasks.named<ShadowJar>("shadowJar").map { it.archiveFile })
     into(rootProject.layout.buildDirectory.file("libs/$mod_version"))
     dependsOn("build")
 }
 
 fun DependencyHandlerScope.addAdventureSerializerDependency() {
-    val version = when (minecraft) {
-        "1.20.2" -> "4.14.0"
-        "1.20.4" -> "4.16.0"
-        "1.20.6", "1.21" -> "4.17.0"
-        "1.21.3" -> "4.20.0"
-        "1.21.5" -> "4.24.0"
-        else -> if (stonecutter.eval(stonecutter.current.version, ">=1.21.6")) "4.25.0" else "4.16.0"
-    }
-    val dependencyNotation = "net.kyori:adventure-text-serializer-gson:$version"
+    val dependencyNotation = "net.kyori:adventure-text-serializer-gson:4.14.0"
     implementation(dependencyNotation)
     add(shadedDependencies.name, dependencyNotation)
-    add(devRuntimeLibraries.name, dependencyNotation)
 }

@@ -24,6 +24,9 @@ import net.minecraft.network.chat.ComponentSerialization;
 //?}
 //? if fabric {
 /*import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+*///?} elif forge {
+/*import _959.server_waypoint.forge.ServerWaypointForge;
+import net.minecraftforge.network.PacketDistributor;
 *///?} elif neoforge {
 import net.neoforged.neoforge.network.PacketDistributor;
 //?}
@@ -107,6 +110,8 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
     public void sendPlayerPacket(ServerPlayer player, MessageBuffer packet) {
         //? if fabric {
         /*ServerPlayNetworking.send(player, getPayload(packet));
+        *///?} elif forge {
+        /*ServerWaypointForge.PACKET_CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), getPayload(packet));
         *///?} elif neoforge && = 1.20.2 {
         /*ServerWaypointNeoForge.PACKET_CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), getPayload(packet));
         *///?} elif neoforge && = 1.20.4 {

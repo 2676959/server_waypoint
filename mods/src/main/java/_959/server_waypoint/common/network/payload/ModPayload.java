@@ -6,6 +6,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 /*import net.fabricmc.fabric.api.networking.v1.FabricPacket;
 *///?} else if neoforge {
 /*import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+*///?} else if forge {
+/*import net.minecraft.network.FriendlyByteBuf;
 *///?}
 
 public interface ModPayload
@@ -17,4 +19,6 @@ public interface ModPayload
         /*extends CustomPacketPayload
 *///?}
 {
+//? if forge
+    /*void write(FriendlyByteBuf buf);*/
 }

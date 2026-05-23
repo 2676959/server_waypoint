@@ -19,7 +19,7 @@ base {
 }
 
 stonecutter {
-    constants.match(loader, "fabric", "neoforge")
+    constants.match(loader, "fabric", "neoforge", "forge")
     val usesTwentySixApi = eval(current.version, ">=26")
     val usesResourceLocation = eval(current.version, "<1.21.11")
 
@@ -56,6 +56,7 @@ stonecutter {
 
 sourceSets.main {
     java {
+        exclude("_959/server_waypoint/forge")
         exclude("_959/server_waypoint/neoforge")
         exclude("ServerWaypointNeoForge.java")
         exclude("ServerWaypointNeoForgeClient.java")

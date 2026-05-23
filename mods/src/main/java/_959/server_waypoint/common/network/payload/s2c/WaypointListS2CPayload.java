@@ -13,7 +13,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?} else if fabric {
 /*import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.FriendlyByteBuf;
-*///?} else if neoforge {
+*///?} else if neoforge || forge {
 /*import net.minecraft.network.FriendlyByteBuf;
 *///?}
 
@@ -59,7 +59,7 @@ public record WaypointListS2CPayload(WaypointListBuffer waypointListBuffer) impl
     public PacketType<?> getType() {
         return ID;
     }
-*///?} else if neoforge {
+*///?} else if neoforge || forge {
     /*public WaypointListS2CPayload(FriendlyByteBuf buf) {
         this(WaypointListBufferCodec.decode(buf));
     }
@@ -69,9 +69,11 @@ public record WaypointListS2CPayload(WaypointListBuffer waypointListBuffer) impl
         WaypointListBufferCodec.encode(buf, waypointListBuffer);
     }
 
+    //? if neoforge {
     @Override
     public net.minecraft.resources.ResourceLocation id() {
         return WAYPOINT_LIST_PAYLOAD_ID;
     }
+    //?}
 *///?}
 }
