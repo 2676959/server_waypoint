@@ -25,7 +25,9 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.network.NetworkDirection;
+//? if <= 1.20.1 {
 import net.minecraftforge.network.NetworkEvent;
+//?}
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Optional;
@@ -103,6 +105,7 @@ public class ServerWaypointForgeClient {
             Function<FriendlyByteBuf, P> decoder,
             S2CPayloadHandler.CustomPayloadHandler<?, P> handler
     ) {
+//? if <= 1.20.1 {
         ServerWaypointForge.PACKET_CHANNEL.registerMessage(
                 id,
                 payloadClass,
@@ -114,5 +117,12 @@ public class ServerWaypointForgeClient {
                 },
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT)
         );
+//?} else {
+        /*ServerWaypointForge.PACKET_CHANNEL.messageBuilder(payloadClass, id, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder((payload, buf) -> payload.write(buf))
+                .decoder(decoder)
+                .consumerMainThread(handler::handle)
+                .add();
+        *///?}
     }
 }
