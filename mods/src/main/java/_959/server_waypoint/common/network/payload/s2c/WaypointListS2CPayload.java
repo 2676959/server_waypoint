@@ -70,10 +70,10 @@ public record WaypointListS2CPayload(WaypointListBuffer waypointListBuffer) impl
     }
 
     //? if neoforge {
-    @Override
+    /^@Override
     public net.minecraft.resources.Identifier id() {
         return WAYPOINT_LIST_PAYLOAD_ID;
     }
-    //?}
+    ^///?}
 *///?}
 }
