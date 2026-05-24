@@ -7,6 +7,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(KeyMapping.class)
 public interface BoundKeyAccessor {
-    @Accessor("key")
+    @Accessor(value = "key"/*? if >= 26 {*/, remap = false/*?}*/)
     InputConstants.Key getBoundKey();
 }

@@ -28,15 +28,15 @@ import org.spongepowered.asm.mixin.Mixin;
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
     //? if >= 26.1 {
-    @Shadow @Final private GameRenderState gameRenderState;
-    @Shadow private float spinningEffectTime;
-    @Shadow private float spinningEffectSpeed;
+    @Shadow/*? if >= 26 {*/(remap = false)/*?}*/ @Final private GameRenderState gameRenderState;
+    @Shadow/*? if >= 26 {*/(remap = false)/*?}*/ private float spinningEffectTime;
+    @Shadow/*? if >= 26 {*/(remap = false)/*?}*/ private float spinningEffectSpeed;
 
-    @Shadow
+    @Shadow/*? if >= 26 {*/(remap = false)/*?}*/
     private void bobHurt(CameraRenderState cameraState, PoseStack poseStack) {
     }
 
-    @Shadow
+    @Shadow/*? if >= 26 {*/(remap = false)/*?}*/
     private void bobView(CameraRenderState cameraState, PoseStack poseStack) {
     }
 
