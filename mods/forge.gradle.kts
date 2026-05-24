@@ -60,6 +60,8 @@ base {
 }
 
 java {
+    sourceCompatibility = JavaVersion.toVersion(targetJavaVersion)
+    targetCompatibility = JavaVersion.toVersion(targetJavaVersion)
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
     }
@@ -300,6 +302,7 @@ tasks.processResources {
 }
 
 tasks.withType<JavaCompile>().configureEach {
+    options.release.set(targetJavaVersion)
     options.encoding = "UTF-8"
     options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
 }
