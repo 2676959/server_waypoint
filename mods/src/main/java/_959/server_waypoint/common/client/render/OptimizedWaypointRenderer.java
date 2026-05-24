@@ -22,6 +22,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.phys.Vec3;
 
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.scale;
@@ -703,10 +704,7 @@ public final class OptimizedWaypointRenderer {
         scale(context, boxScale, boxScale);
         context.fill(0, 0, bgWidth, textBgHeight, backgroundColor);
         translate(context, textX, 0.0F);
-        context.
-        //$ gui_text_method_swap
-        text
-                (textRenderer, text, 0, 1, textColor, false);
+        drawText(context, textRenderer, text, 0, 1, textColor, false);
         pop(context);
         finishGuiLayer(context);
     }
@@ -720,10 +718,7 @@ public final class OptimizedWaypointRenderer {
         scale(context, boxScale, boxScale);
         context.fill(0, 0, bgWidth, textBgHeight, backgroundColor);
         translate(context, textX, 0.0F);
-        context.
-        //$ gui_text_method_swap
-        text
-                (textRenderer, text, 0, 1, textColor, false);
+        drawText(context, textRenderer, text, 0, 1, textColor, false);
         pop(context);
         finishGuiLayer(context);
     }

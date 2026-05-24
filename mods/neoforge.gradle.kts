@@ -43,7 +43,6 @@ stonecutter {
 
     swaps["render_widget_method_swap"] = if (usesTwentySixApi) "extractWidgetRenderState" else "renderWidget"
     swaps["render_method_swap"] = if (usesTwentySixApi) "extractRenderState" else "render"
-    swaps["gui_text_method_swap"] = if (usesTwentySixApi) "text" else "drawString"
     swaps["gui_item_method_swap"] = if (usesTwentySixApi) "item" else "renderItem"
     swaps["gui_outline_method_swap"] = if (usesTwentySixApi) "outline" else "renderOutline"
     swaps["payload_s2c_registry_swap"] = if (usesTwentySixApi) "clientboundPlay" else "playS2C"

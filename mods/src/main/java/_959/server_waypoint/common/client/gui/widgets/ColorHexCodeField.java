@@ -6,6 +6,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
 import static _959.server_waypoint.common.network.ModMessageSender.toVanillaText;
@@ -65,10 +66,7 @@ public class ColorHexCodeField extends TranslucentTextField implements Colorable
         int right = x - 1 + this.width;
         int bottom = y - 1 + this.backgroundHeight;
         context.fill(x1 + 1, y + 1, right, bottom, BUTTON_BG_COLOR);
-        context.
-        //$ gui_text_method_swap
-        text
-                (textRenderer, "#", x - 4, y + 2, 0xFFFFFFFF, true);
+        drawText(context, textRenderer, "#", x - 4, y + 2, 0xFFFFFFFF, true);
         this.isHovered = mouseX >= x1 && mouseY >= y && mouseX <= right && mouseY <= bottom;
         int bdColor = isFocused() || isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
         renderOutline(context, x1, y, this.width + 6, this.backgroundHeight, bdColor);

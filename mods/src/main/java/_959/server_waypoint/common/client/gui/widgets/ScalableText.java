@@ -7,6 +7,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.scale;
@@ -80,16 +81,10 @@ public class ScalableText extends ShiftableWidget {
         translate(context, this.getShiftedX(), this.getShiftedY());
         scale(context, this.scale, this.scale);
         if (this.maxWidth == -1) {
-            context.
-            //$ gui_text_method_swap
-            text
-                    (this.textRenderer, this.text, 0, 0, this.color, true);
+            drawText(context, this.textRenderer, this.text, 0, 0, this.color, true);
         } else {
             for (int i = 0; i < this.warpLines.size(); i++) {
-                context.
-                //$ gui_text_method_swap
-                text
-                        (this.textRenderer, this.warpLines.get(i), 0, i * this.textRenderer.lineHeight, this.color, true);
+                drawText(context, this.textRenderer, this.warpLines.get(i), 0, i * this.textRenderer.lineHeight, this.color, true);
             }
         }
         pop(context);

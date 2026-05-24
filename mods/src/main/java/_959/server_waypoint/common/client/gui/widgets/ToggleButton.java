@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
@@ -55,10 +56,7 @@ public class ToggleButton extends ShiftableClickableWidget {
         int textWidth = textRenderer.width(text);
         int centerX = centered(this.width, textWidth);
         int centerY = centered(this.height, textRenderer.lineHeight);
-        context.
-        //$ gui_text_method_swap
-        text
-                (textRenderer, text, x + centerX, y + centerY, 0xFFFFFFFF, true);
+        drawText(context, textRenderer, text, x + centerX, y + centerY, 0xFFFFFFFF, true);
     }
 
     @Override

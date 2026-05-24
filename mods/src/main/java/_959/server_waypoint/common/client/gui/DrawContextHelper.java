@@ -5,6 +5,7 @@ package _959.server_waypoint.common.client.gui;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.function.Consumer;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 //? if >= 1.21.6 {
 import com.mojang.blaze3d.pipeline.RenderPipeline;
@@ -18,7 +19,9 @@ import org.joml.Matrix3x2f;
 import net.minecraft.client.renderer.MultiBufferSource;
 //? if < 1.21.6
 /*import net.minecraft.client.renderer.RenderType;*/
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.FormattedCharSequence;
 import org.joml.Matrix4f;
 
 public final class DrawContextHelper {
@@ -34,6 +37,42 @@ public final class DrawContextHelper {
         /*context.blit(RenderType::guiTextured, texture, x, y, u, v, width, height, textureWidth, textureHeight);
         *///?} else {
         /*context.blit(texture, x, y, u, v, width, height, textureWidth, textureHeight);
+        *///?}
+    }
+
+    public static void drawText(GuiGraphicsExtractor context, Font font, String text, int x, int y, int color) {
+        drawText(context, font, text, x, y, color, true);
+    }
+
+    public static void drawText(GuiGraphicsExtractor context, Font font, String text, int x, int y, int color, boolean shadow) {
+        //? if >= 26 {
+        context.text(font, text, x, y, color, shadow);
+        //?} else {
+        /*context.drawString(font, text, x, y, color, shadow);
+        *///?}
+    }
+
+    public static void drawText(GuiGraphicsExtractor context, Font font, Component text, int x, int y, int color) {
+        drawText(context, font, text, x, y, color, true);
+    }
+
+    public static void drawText(GuiGraphicsExtractor context, Font font, Component text, int x, int y, int color, boolean shadow) {
+        //? if >= 26 {
+        context.text(font, text, x, y, color, shadow);
+        //?} else {
+        /*context.drawString(font, text, x, y, color, shadow);
+        *///?}
+    }
+
+    public static void drawText(GuiGraphicsExtractor context, Font font, FormattedCharSequence text, int x, int y, int color) {
+        drawText(context, font, text, x, y, color, true);
+    }
+
+    public static void drawText(GuiGraphicsExtractor context, Font font, FormattedCharSequence text, int x, int y, int color, boolean shadow) {
+        //? if >= 26 {
+        context.text(font, text, x, y, color, shadow);
+        //?} else {
+        /*context.drawString(font, text, x, y, color, shadow);
         *///?}
     }
 
