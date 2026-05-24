@@ -212,12 +212,21 @@ tasks.processResources {
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.release.set(targetJavaVersion)
-    options.compilerArgs.addAll(listOf(
+    val mixinCompilerArgs = mutableListOf(
         "-Xlint:deprecation",
         "-Xlint:unchecked",
         "-AoutRefMapFile=${layout.buildDirectory.file("sourceSets/main/$mixinRefmap").get().asFile.absolutePath}",
         "-AMSG_NO_OBFDATA_FOR_TARGET=warning",
-    ))
+    )
+    if (!stonecutter.eval(minecraftVersion, ">=26")) {
+        mixinCompilerArgs.addAll(listOf(
+            "-AreobfTsrgFile=${layout.buildDirectory.file("mixin/official-to-srg.tsrg").get().asFile.absolutePath}",
+            "-AoutTsrgFile=${layout.buildDirectory.file("tmp/compileJava/${mixinRefmap.removeSuffix(".refmap.json")}-mixins.tsrg").get().asFile.absolutePath}",
+            "-AmappingTypes=tsrg",
+            "-AdefaultObfuscationEnv=searge",
+        ))
+    }
+    options.compilerArgs.addAll(mixinCompilerArgs)
 }
 
 tasks.named("compileJava") {
