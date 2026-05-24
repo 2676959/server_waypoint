@@ -140,7 +140,16 @@ public final class DrawContextHelper {
         //!TODO should not use linear interpolation
         //? if >= 1.21.6 {
         //? if forge && < 26.1 {
-        /*drawGradientWithFill(context, left, top, right, bottom, topLeftColor, bottomLeftColor, bottomRightColor, topRightColor);
+        /*context.getRenderState().submitGuiElement(new ColoredQuadRenderState(
+                RenderPipelines.GUI,
+                TextureSetup.noTexture(),
+                new Matrix3x2f(context.pose()),
+                left, top,
+                left, bottom,
+                right, bottom,
+                right, top,
+                topLeftColor, bottomLeftColor, bottomRightColor, topRightColor,
+                context.getScissorStack().peek()));
         *///?} elif neoforge {
         context.submitGuiElementRenderState(new ColoredQuadRenderState(
                 RenderPipelines.GUI,
@@ -189,55 +198,6 @@ public final class DrawContextHelper {
             addColoredVertex(vertexConsumer, matrix, right, top, 0, topRightColor);
         });
         *///?}
-    }
-
-    private static void drawGradientWithFill(
-            GuiGraphicsExtractor context,
-            float left,
-            float top,
-            float right,
-            float bottom,
-            int topLeftColor,
-            int bottomLeftColor,
-            int bottomRightColor,
-            int topRightColor
-    ) {
-        int startX = (int) Math.floor(left);
-        int endX = (int) Math.ceil(right);
-        int startY = (int) Math.floor(top);
-        int endY = (int) Math.ceil(bottom);
-        int width = endX - startX;
-        if (width <= 0 || endY <= startY) {
-            return;
-        }
-
-        for (int x = startX; x < endX; x++) {
-            float delta = width == 1 ? 0.0F : (float) (x - startX) / (float) (width - 1);
-            int topColor = interpolateColor(topLeftColor, topRightColor, delta);
-            int bottomColor = interpolateColor(bottomLeftColor, bottomRightColor, delta);
-            if (topColor == bottomColor) {
-                context.fill(x, startY, x + 1, endY, topColor);
-            } else {
-                context.fillGradient(x, startY, x + 1, endY, topColor, bottomColor);
-            }
-        }
-    }
-
-    private static int interpolateColor(int startColor, int endColor, float delta) {
-        int startAlpha = startColor >>> 24;
-        int startRed = startColor >> 16 & 0xFF;
-        int startGreen = startColor >> 8 & 0xFF;
-        int startBlue = startColor & 0xFF;
-        int endAlpha = endColor >>> 24;
-        int endRed = endColor >> 16 & 0xFF;
-        int endGreen = endColor >> 8 & 0xFF;
-        int endBlue = endColor & 0xFF;
-
-        int alpha = startAlpha + Math.round((endAlpha - startAlpha) * delta);
-        int red = startRed + Math.round((endRed - startRed) * delta);
-        int green = startGreen + Math.round((endGreen - startGreen) * delta);
-        int blue = startBlue + Math.round((endBlue - startBlue) * delta);
-        return alpha << 24 | red << 16 | green << 8 | blue;
     }
 
     private static void addColoredVertex(VertexConsumer vertexConsumer, Matrix4f matrix, float x, float y, float z, int color) {
