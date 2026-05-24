@@ -27,7 +27,7 @@ val maven_group: String by project
 val forge_loader: String by project
 val mixinConfig = "server_waypoint-common.mixins.json"
 val mixinRefmap = "server_waypoint-common.refmap.json"
-val needsSrgReobf = !stonecutter.eval(minecraftVersion, ">=26")
+val needsSrgReobf = stonecutter.eval(minecraftVersion, "<1.20.6")
 
 evaluationDependsOn(":common")
 val commonMainSourceSet = project(":common")
@@ -169,6 +169,12 @@ val minecraftExtension = extensions.getByType<net.minecraftforge.gradle.Minecraf
 
 minecraft {
     mappings("official", minecraftVersion)
+
+    if (stonecutter.eval(minecraftVersion, ">=1.20.6")) {
+        javaClass.methods
+            .singleOrNull { it.name == "setReobf" && it.parameterTypes.contentEquals(arrayOf(Boolean::class.javaPrimitiveType)) }
+            ?.invoke(this, false)
+    }
 
     runs {
         configureEach {
