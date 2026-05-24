@@ -21,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
@@ -172,15 +173,9 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
 
         // render dimension name
         if (this.empty) {
-            context.
-            //$ gui_text_method_swap
-            text
-                    (textRenderer, WaypointListWidget.EMPTY_INFO_TEXT, 0, 0, 0xFFFFFFFF, true);
+            drawText(context, textRenderer, WaypointListWidget.EMPTY_INFO_TEXT, 0, 0, 0xFFFFFFFF, true);
         } else {
-            context.
-            //$ gui_text_method_swap
-            text
-                    (textRenderer, dimensionNames.get(index), 0, 0, 0xFFFFFFFF, true);
+            drawText(context, textRenderer, dimensionNames.get(index), 0, 0, 0xFFFFFFFF, true);
             translate(context, 0, textHeight + 2);
             int size = dimensionNames.size();
             int y1 = y + textHeight;

@@ -25,6 +25,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
 import static _959.server_waypoint.ModInfo.MOD_ID;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
@@ -374,10 +375,7 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
         int listWidth = overflows() ?  width - SCROLLBAR_WIDTH : width;
 
         if (empty) {
-            context.
-            //$ gui_text_method_swap
-            text
-                    (textRenderer, EMPTY_INFO_TEXT, 5, textVertOffset, 0x55FFFFFF, true);
+            drawText(context, textRenderer, EMPTY_INFO_TEXT, 5, textVertOffset, 0x55FFFFFF, true);
             pop(context);
             context.disableScissor();
             this.drawScrollbar(context);
@@ -441,10 +439,7 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                 }
             }
             // waypoint list name
-            context.
-            //$ gui_text_method_swap
-            text
-                    (textRenderer, waypointList.name(), 18, y1 + textVertOffset, textColor, true);
+            drawText(context, textRenderer, waypointList.name(), 18, y1 + textVertOffset, textColor, true);
             // render list expand icon
             if (isListEmpty) {
                 texture(context, LIST_EMPTY, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
@@ -498,20 +493,11 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                 final int finalTextColor = textColor;
                 final int backgroundColor = bgAlpha | rgb;
                 if (waypoint.global()) {
-                    context.
-                    //$ gui_text_method_swap
-                    text
-                            (textRenderer, "*", 6, finalY, textColor);
+                    drawText(context, textRenderer, "*", 6, finalY, textColor);
                 }
                 context.fill(15, finalY - 1, 15 + textRenderer.width(initials), finalY + textRenderer.lineHeight, backgroundColor);
-                context.
-                //$ gui_text_method_swap
-                text
-                        (textRenderer, initials, 15, finalY, finalTextColor, true);
-                context.
-                //$ gui_text_method_swap
-                text
-                        (textRenderer, name, 55, finalY, textColor);
+                drawText(context, textRenderer, initials, 15, finalY, finalTextColor, true);
+                drawText(context, textRenderer, name, 55, finalY, textColor);
                 i++;
             }
         }
