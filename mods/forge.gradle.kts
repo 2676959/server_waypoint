@@ -1,22 +1,20 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.minecraftforge.gradle.shadow.net.minecraftforge.gradleutils.shared.ToolsExtension
-import java.nio.file.Files
-import java.nio.file.StandardCopyOption
-import java.util.zip.GZIPInputStream
+import org.gradle.jvm.tasks.Jar
 
 plugins {
-    id("net.minecraftforge.renamer")
     id("net.minecraftforge.gradle")
     id("com.gradleup.shadow")
 }
 
-val mcVersion = stonecutter.current.version
+val minecraftVersion = stonecutter.current.version
 val loader = "forge"
 val targetJavaVersion = when {
-    stonecutter.eval(stonecutter.current.version, ">=26") -> 25
-    stonecutter.eval(stonecutter.current.version, ">=1.20.5") -> 21
+    stonecutter.eval(minecraftVersion, ">=26") -> 25
+    stonecutter.eval(minecraftVersion, ">=1.20.5") -> 21
     else -> 17
 }
+
 val mcVersionRange: String by project
 val mod_id: String by project
 val mod_name: String by project
@@ -25,32 +23,12 @@ val maven_group: String by project
 val forge_loader: String by project
 val mixinConfig = "server_waypoint-common.mixins.json"
 val mixinRefmap = "server_waypoint-common.refmap.json"
-val usesSrgMappings = !stonecutter.eval(mcVersion, ">=26")
+
 evaluationDependsOn(":common")
 val commonMainSourceSet = project(":common")
     .extensions
     .getByType(org.gradle.api.tasks.SourceSetContainer::class.java)
     .named("main")
-val forgeRunRuntimeDir = layout.buildDirectory.dir("forgeRunRuntime/classes")
-
-val copyForgeRunRuntime by tasks.registering(Sync::class) {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from(commonMainSourceSet.map { it.output })
-    from({
-        shadedDependencies
-            .filter {
-                it.isFile && it.extension == "jar" && (
-                    it.name.startsWith("adventure-") ||
-                        it.name.startsWith("examination-") ||
-                        it.name.startsWith("option-")
-                )
-            }
-            .map { zipTree(it) }
-    })
-    exclude("META-INF/*.DSA", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/MANIFEST.MF", "mappings/**")
-    into(forgeRunRuntimeDir)
-    dependsOn(project(":common").tasks.named("classes"), project(":common").tasks.named("jar"))
-}
 
 group = maven_group
 version = mod_version
@@ -60,23 +38,15 @@ base {
 }
 
 java {
-    sourceCompatibility = JavaVersion.toVersion(targetJavaVersion)
-    targetCompatibility = JavaVersion.toVersion(targetJavaVersion)
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
     }
+    sourceCompatibility = JavaVersion.toVersion(targetJavaVersion)
+    targetCompatibility = JavaVersion.toVersion(targetJavaVersion)
 }
 
 extensions.configure<ToolsExtension>("fgtools") {
     configure("slimelauncher") {
-        getJavaLauncher().set(javaToolchains.launcherFor {
-            languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
-        })
-    }
-}
-
-extensions.configure<net.minecraftforge.renamer.gradle.shadow.net.minecraftforge.gradleutils.shared.ToolsExtension>("renamerTools") {
-    configure("classes") {
         getJavaLauncher().set(javaToolchains.launcherFor {
             languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
         })
@@ -124,21 +94,25 @@ sourceSets.main {
         exclude("_959/server_waypoint/neoforge")
     }
     resources {
+        srcDir("src/generated/resources")
         exclude("fabric.mod.json")
         exclude("META-INF/neoforge.mods.toml")
         exclude("server_waypoint-fabric.mixins.json")
     }
 }
 
-val forgeRunRuntimeSourceSet = sourceSets.create("forgeRunRuntime") {
-    java.setSrcDirs(emptyList<String>())
-    resources.setSrcDirs(emptyList<String>())
-    output.dir(mapOf("builtBy" to copyForgeRunRuntime), forgeRunRuntimeDir)
+sourceSets.configureEach {
+    val outputDir = layout.buildDirectory.dir("sourceSets/$name")
+    output.setResourcesDir(outputDir.get().asFile)
+    java.destinationDirectory.set(outputDir)
 }
 
 repositories {
+    clear()
+    maven("https://libraries.minecraft.net") {
+        name = "MinecraftLibraries"
+    }
     mavenCentral()
-    maven("https://libraries.minecraft.net")
     maven("https://repo.spongepowered.org/repository/maven-public/")
     exclusiveContent {
         forRepository {
@@ -154,118 +128,54 @@ repositories {
     maven("https://maven.minecraftforge.net/")
 }
 
-val mixinMappingsArchive = providers.provider {
-    val mappingsDir = rootProject.layout.projectDirectory
-        .dir(".gradle/mavenizer/repo/net/minecraft/mappings_official")
-        .asFile
-    mappingsDir
-        .listFiles { file -> file.isDirectory && file.name.startsWith("$mcVersion-") }
-        ?.asSequence()
-        ?.map { file -> file.resolve("mappings_official-${file.name}-map2srg.tsrg.gz") }
-        ?.firstOrNull { file -> file.isFile }
-        ?: throw GradleException("Missing Forge official-to-SRG mappings for Minecraft $mcVersion")
-}
-val unpackedMixinMappings = layout.buildDirectory.file("mixin/official-to-srg.tsrg")
-val devRefmapRemappingFile = layout.buildDirectory.file("mixin/srg-to-official.srg")
-val mixinRefmapFile = layout.buildDirectory.file("classes/java/main/$mixinRefmap")
-val mixinSrgFile = layout.buildDirectory.file("tmp/compileJava/server_waypoint-common-mixins.srg")
+val minecraftExtension = extensions.getByType<net.minecraftforge.gradle.MinecraftExtensionForProject>()
 
-val unpackMixinMappings by tasks.registering {
-    inputs.file(mixinMappingsArchive)
-    outputs.file(unpackedMixinMappings)
-
-    doLast {
-        val output = unpackedMixinMappings.get().asFile
-        output.parentFile.mkdirs()
-        GZIPInputStream(mixinMappingsArchive.get().inputStream()).use { input ->
-            Files.copy(input, output.toPath(), StandardCopyOption.REPLACE_EXISTING)
-        }
-    }
-}
-
-val createMixinDevRemapMappings by tasks.registering {
-    inputs.file(unpackedMixinMappings)
-    outputs.file(devRefmapRemappingFile)
-    dependsOn(unpackMixinMappings)
-
-    doLast {
-        val output = devRefmapRemappingFile.get().asFile
-        output.parentFile.mkdirs()
-
-        var officialClass: String? = null
-        var srgClass: String? = null
-        output.printWriter().use { writer ->
-            unpackedMixinMappings.get().asFile.forEachLine { line ->
-                if (line.isBlank() || line.startsWith("tsrg")) {
-                    return@forEachLine
-                }
-
-                val parts = line.trim().split(Regex("\\s+"))
-                if (!line.startsWith("\t")) {
-                    officialClass = parts.getOrNull(0)
-                    srgClass = parts.getOrNull(1)
-                    return@forEachLine
-                }
-
-                val currentOfficialClass = officialClass ?: return@forEachLine
-                val currentSrgClass = srgClass ?: return@forEachLine
-                when {
-                    parts.size == 2 && parts[0].firstOrNull()?.isDigit() != true -> {
-                        writer.println("FD: $currentSrgClass/${parts[1]} $currentOfficialClass/${parts[0]}")
-                    }
-                    parts.size == 3 && parts[1].startsWith("(") -> {
-                        writer.println("MD: $currentSrgClass/${parts[2]} ${parts[1]} $currentOfficialClass/${parts[0]} ${parts[1]}")
-                    }
-                }
-            }
-        }
-    }
-}
-
-configure<net.minecraftforge.gradle.MinecraftExtensionForProject> {
-    mappings("official", mcVersion)
+minecraft {
+    mappings("official", minecraftVersion)
 
     runs {
-        create("client") {
+        configureEach {
             workingDir.set(project.layout.projectDirectory.dir("run"))
             systemProperty("forge.logging.markers", "REGISTRIES")
             systemProperty("forge.logging.console.level", "debug")
-            if (usesSrgMappings) {
-                systemProperty("mixin.env.remapRefMap", "true")
-                systemProperty("mixin.env.refMapRemappingFile", devRefmapRemappingFile.get().asFile.absolutePath)
-            }
             args("-mixin.config=$mixinConfig")
             mods {
                 create(mod_id) {
                     source(sourceSets.main.get())
-                    source(forgeRunRuntimeSourceSet)
+                    source(commonMainSourceSet.get())
                 }
             }
         }
+
+        create("client") {
+            systemProperty("forge.enabledGameTestNamespaces", mod_id)
+        }
+
         create("server") {
-            workingDir.set(project.layout.projectDirectory.dir("run"))
-            systemProperty("forge.logging.markers", "REGISTRIES")
-            systemProperty("forge.logging.console.level", "debug")
-            if (usesSrgMappings) {
-                systemProperty("mixin.env.remapRefMap", "true")
-                systemProperty("mixin.env.refMapRemappingFile", devRefmapRemappingFile.get().asFile.absolutePath)
-            }
-            args("-mixin.config=$mixinConfig")
-            mods {
-                create(mod_id) {
-                    source(sourceSets.main.get())
-                    source(forgeRunRuntimeSourceSet)
-                }
-            }
+            systemProperty("forge.enabledGameTestNamespaces", mod_id)
+            args("--nogui")
+        }
+
+        create("gameTestServer") {
+            systemProperty("forge.enabledGameTestNamespaces", mod_id)
+        }
+
+        create("data") {
+            workingDir.set(project.layout.projectDirectory.dir("run-data"))
+            args(
+                "--mod", mod_id,
+                "--all",
+                "--output", file("src/generated/resources/"),
+                "--existing", file("src/main/resources/")
+            )
         }
     }
 }
 
-val minecraftExtension = extensions.getByType<net.minecraftforge.gradle.MinecraftExtensionForProject>()
 minecraftExtension.mavenizer(repositories)
 
 dependencies {
-    implementation(minecraftExtension.dependency("net.minecraftforge:forge:$mcVersion-$forge_loader").asProvider())
+    implementation(minecraftExtension.dependency("net.minecraftforge:forge:$minecraftVersion-$forge_loader").asProvider())
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 
     implementation(project(":common"))
@@ -277,49 +187,37 @@ dependencies {
 }
 
 tasks.processResources {
-    inputs.property("id", mod_id)
-    inputs.property("name", mod_name)
-    inputs.property("version", mod_version)
-    inputs.property("java_version", targetJavaVersion)
+    val mcVersionForge: String by project
+    val forgeDependency = "[${forge_loader.substringBefore(".")},)"
+    val replaceProperties = mapOf(
+        "id" to mod_id,
+        "name" to mod_name,
+        "version" to mod_version,
+        "java_version" to targetJavaVersion,
+        "minecraft_dependency" to mcVersionForge,
+        "forge_dependency" to forgeDependency,
+    )
+
+    inputs.properties(replaceProperties)
 
     filesMatching(listOf("*.mixins.json")) {
         expand("java_version" to targetJavaVersion)
     }
 
-    val mcVersionForge: String by project
-    val forgeDependency = "[${forge_loader.substringBefore(".")},)"
-    inputs.property("minecraft_dependency", mcVersionForge)
-    inputs.property("forge_dependency", forgeDependency)
     filesMatching("META-INF/mods.toml") {
-        expand(mapOf(
-            "id" to mod_id,
-            "name" to mod_name,
-            "version" to mod_version,
-            "minecraft_dependency" to mcVersionForge,
-            "forge_dependency" to forgeDependency,
-        ))
+        expand(replaceProperties)
     }
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.release.set(targetJavaVersion)
     options.encoding = "UTF-8"
-    options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
-}
-
-tasks.named<JavaCompile>("compileJava") {
-    outputs.file(mixinRefmapFile)
-    options.compilerArgs.add("-AoutRefMapFile=${mixinRefmapFile.get().asFile.absolutePath}")
-    if (usesSrgMappings) {
-        dependsOn(unpackMixinMappings)
-        inputs.file(unpackedMixinMappings)
-        options.compilerArgs.addAll(listOf(
-            "-AreobfTsrgFile=${unpackedMixinMappings.get().asFile.absolutePath}",
-            "-AoutTsrgFile=${mixinSrgFile.get().asFile.absolutePath}",
-            "-AmappingTypes=tsrg",
-            "-AdefaultObfuscationEnv=searge"
-        ))
-    }
+    options.release.set(targetJavaVersion)
+    options.compilerArgs.addAll(listOf(
+        "-Xlint:deprecation",
+        "-Xlint:unchecked",
+        "-AoutRefMapFile=${layout.buildDirectory.file("sourceSets/main/$mixinRefmap").get().asFile.absolutePath}",
+        "-AMSG_NO_OBFDATA_FOR_TARGET=warning",
+    ))
 }
 
 tasks.named("compileJava") {
@@ -330,14 +228,8 @@ tasks.named("processResources") {
     dependsOn("stonecutterGenerate")
 }
 
-tasks.configureEach {
-    if (usesSrgMappings && (name == "runClient" || name == "runServer" || name == "runTestClient" || name == "runTestServer")) {
-        dependsOn(createMixinDevRemapMappings)
-    }
-}
-
-tasks.jar {
-    archiveClassifier.set("thin")
+tasks.withType<Jar>().configureEach {
+    archiveVersion.set("")
     manifest {
         attributes(mapOf(
             "Specification-Title" to mod_id,
@@ -354,40 +246,15 @@ tasks.jar {
     }
 }
 
-val shadowJarTask = tasks.named<ShadowJar>("shadowJar")
-val reobfShadowJar = if (usesSrgMappings) {
-    val renamedShadowJar = extensions
-        .getByType(net.minecraftforge.renamer.gradle.RenamerExtension::class.java)
-        .classes("renameShadowJar", shadowJarTask) {
-            archiveClassifier.set("renamed")
-            output.set(layout.buildDirectory.file("tmp/renameShadowJar/${base.archivesName.get()}.jar"))
-            dependsOn(unpackMixinMappings)
-            setMappings(files(unpackedMixinMappings))
-        }
-
-    tasks.register<Zip>("reobfShadowJar") {
-        group = "build"
-        archiveFileName.set(base.archivesName.map { "$it.jar" })
-        destinationDirectory.set(layout.buildDirectory.dir("libs"))
-        from(renamedShadowJar.flatMap { it.output }.map { zipTree(it.asFile) })
-        exclude("fernflower_abstract_parameter_names.txt")
-        dependsOn(renamedShadowJar)
-    }
-} else {
-    tasks.register<Zip>("reobfShadowJar") {
-        group = "build"
-        archiveFileName.set(base.archivesName.map { "$it.jar" })
-        destinationDirectory.set(layout.buildDirectory.dir("libs"))
-        from(shadowJarTask.flatMap { it.archiveFile }.map { zipTree(it.asFile) })
-        exclude("fernflower_abstract_parameter_names.txt")
-        dependsOn(shadowJarTask)
-    }
+tasks.jar {
+    archiveClassifier.set("thin")
 }
 
-shadowJarTask {
+tasks.named<ShadowJar>("shadowJar") {
     configurations = listOf(shadedDependencies)
+    archiveClassifier.set("")
     addMultiReleaseAttribute.set(false)
-    archiveClassifier.set("dev-shadow")
+    exclude("META-INF/*.DSA", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/MANIFEST.MF", "mappings/**")
     dependencies {
         include(project(":common"))
         include(dependency("net.kyori:.*"))
@@ -395,22 +262,22 @@ shadowJarTask {
 }
 
 tasks.assemble {
-    dependsOn(reobfShadowJar)
+    dependsOn(tasks.shadowJar)
 }
 
 artifacts {
-    archives(reobfShadowJar)
+    archives(tasks.shadowJar)
 }
 
 tasks.register<Copy>("buildAndCollect") {
     group = "build"
-    from(reobfShadowJar.map { it.archiveFile })
+    from(tasks.shadowJar.map { it.archiveFile })
     into(rootProject.layout.buildDirectory.file("libs/$mod_version"))
     dependsOn("build")
 }
 
 fun DependencyHandlerScope.addAdventureSerializerDependency() {
-    val version = when (mcVersion) {
+    val version = when (minecraftVersion) {
         "1.20.2" -> "4.14.0"
         "1.20.4" -> "4.16.0"
         "1.20.6", "1.21" -> "4.17.0"
