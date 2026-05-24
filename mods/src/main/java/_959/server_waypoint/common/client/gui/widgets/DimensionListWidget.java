@@ -21,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawItem;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
@@ -199,28 +200,16 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
                 String dimensionName = dimensionNames.get(i);
                 switch (dimensionName) {
                     case MINECRAFT_OVERWORLD:
-                        context.
-                        //$ gui_item_method_swap
-                        item
-                                (OVERWORLD_ICON, i * 16, 0);
+                        drawItem(context, OVERWORLD_ICON, i * 16, 0);
                         break;
                     case MINECRAFT_THE_NETHER:
-                        context.
-                        //$ gui_item_method_swap
-                        item
-                                (THE_NETHER_ICON, i * 16, 0);
+                        drawItem(context, THE_NETHER_ICON, i * 16, 0);
                         break;
                     case MINECRAFT_THE_END:
-                        context.
-                        //$ gui_item_method_swap
-                        item
-                                (THE_END_ICON, i * 16, 0);
+                        drawItem(context, THE_END_ICON, i * 16, 0);
                         break;
                     default:
-                        context.
-                        //$ gui_item_method_swap
-                        item
-                                (CUSTOM_DIMENSION_ICON, i * 16, 0);
+                        drawItem(context, CUSTOM_DIMENSION_ICON, i * 16, 0);
                 }
             }
         }

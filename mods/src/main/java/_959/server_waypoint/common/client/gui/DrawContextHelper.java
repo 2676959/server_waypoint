@@ -22,6 +22,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
 
 public final class DrawContextHelper {
@@ -37,6 +38,14 @@ public final class DrawContextHelper {
         /*context.blit(RenderType::guiTextured, texture, x, y, u, v, width, height, textureWidth, textureHeight);
         *///?} else {
         /*context.blit(texture, x, y, u, v, width, height, textureWidth, textureHeight);
+        *///?}
+    }
+
+    public static void drawItem(GuiGraphicsExtractor context, ItemStack itemStack, int x, int y) {
+        //? if >= 26 {
+        context.item(itemStack, x, y);
+        //?} else {
+        /*context.renderItem(itemStack, x, y);
         *///?}
     }
 
