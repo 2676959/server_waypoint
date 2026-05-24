@@ -70,10 +70,10 @@ public record UpdateRequestC2SPayload(ClientUpdateRequestBuffer clientUpdateRequ
     }
 
     //? if neoforge {
-    @Override
+    /^@Override
     public net.minecraft.resources.Identifier id() {
         return CLIENT_UPDATE_REQUEST_PAYLOAD;
     }
-    //?}
+    ^///?}
 *///?}
 }

@@ -69,10 +69,10 @@ public record ServerHandshakeS2CPayload(ServerHandshakeBuffer serverHandshakeBuf
     }
 
     //? if neoforge {
-    @Override
+    /^@Override
     public net.minecraft.resources.Identifier id() {
         return SERVER_HANDSHAKE_PAYLOAD;
     }
-    //?}
+    ^///?}
 *///?}
 }

@@ -70,10 +70,10 @@ public record WaypointModificationS2CPayload(WaypointModificationBuffer waypoint
     }
 
     //? if neoforge {
-    @Override
+    /^@Override
     public net.minecraft.resources.Identifier id() {
         return WAYPOINT_MODIFICATION_PAYLOAD_ID;
     }
-    //?}
+    ^///?}
 *///?}
 }
