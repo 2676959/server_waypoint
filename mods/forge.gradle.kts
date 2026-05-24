@@ -1,8 +1,12 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.minecraftforge.gradle.shadow.net.minecraftforge.gradleutils.shared.ToolsExtension
 import org.gradle.jvm.tasks.Jar
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+import java.util.zip.GZIPInputStream
 
 plugins {
+    id("net.minecraftforge.renamer")
     id("net.minecraftforge.gradle")
     id("com.gradleup.shadow")
 }
@@ -23,6 +27,7 @@ val maven_group: String by project
 val forge_loader: String by project
 val mixinConfig = "server_waypoint-common.mixins.json"
 val mixinRefmap = "server_waypoint-common.refmap.json"
+val needsSrgReobf = !stonecutter.eval(minecraftVersion, ">=26")
 
 evaluationDependsOn(":common")
 val commonMainSourceSet = project(":common")
@@ -53,9 +58,41 @@ extensions.configure<ToolsExtension>("fgtools") {
     }
 }
 
+extensions.configure<net.minecraftforge.renamer.gradle.shadow.net.minecraftforge.gradleutils.shared.ToolsExtension>("renamerTools") {
+    configure("classes") {
+        getJavaLauncher().set(javaToolchains.launcherFor {
+            languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
+        })
+    }
+}
+
 val shadedDependencies by configurations.creating {
     isCanBeConsumed = false
     isCanBeResolved = true
+}
+
+val unpackedMixinMappings = layout.buildDirectory.file("mixin/official-to-srg.tsrg")
+val unpackMixinMappings = if (needsSrgReobf) {
+    val mixinMappingsArchive = providers.provider {
+        rootProject.fileTree(".gradle/mavenizer/repo/net/minecraft/mappings_official") {
+            include("$minecraftVersion-*/mappings_official-$minecraftVersion-*-map2srg.tsrg.gz")
+        }.singleFile
+    }
+
+    tasks.register("unpackMixinMappings") {
+        inputs.file(mixinMappingsArchive)
+        outputs.file(unpackedMixinMappings)
+
+        doLast {
+            val output = unpackedMixinMappings.get().asFile
+            output.parentFile.mkdirs()
+            GZIPInputStream(mixinMappingsArchive.get().inputStream()).use { input ->
+                Files.copy(input, output.toPath(), StandardCopyOption.REPLACE_EXISTING)
+            }
+        }
+    }
+} else {
+    null
 }
 
 stonecutter {
@@ -188,14 +225,14 @@ dependencies {
 
 tasks.processResources {
     val mcVersionForge: String by project
-    val forgeDependency = "[${forge_loader.substringBefore(".")},)"
+    val loaderVersion: String by project
     val replaceProperties = mapOf(
         "id" to mod_id,
         "name" to mod_name,
         "version" to mod_version,
         "java_version" to targetJavaVersion,
         "minecraft_dependency" to mcVersionForge,
-        "forge_dependency" to forgeDependency,
+        "forge_dependency" to loaderVersion,
     )
 
     inputs.properties(replaceProperties)
@@ -218,9 +255,10 @@ tasks.withType<JavaCompile>().configureEach {
         "-AoutRefMapFile=${layout.buildDirectory.file("sourceSets/main/$mixinRefmap").get().asFile.absolutePath}",
         "-AMSG_NO_OBFDATA_FOR_TARGET=warning",
     )
-    if (!stonecutter.eval(minecraftVersion, ">=26")) {
+    if (needsSrgReobf) {
+        dependsOn(unpackMixinMappings!!)
         mixinCompilerArgs.addAll(listOf(
-            "-AreobfTsrgFile=${layout.buildDirectory.file("mixin/official-to-srg.tsrg").get().asFile.absolutePath}",
+            "-AreobfTsrgFile=${unpackedMixinMappings.get().asFile.absolutePath}",
             "-AoutTsrgFile=${layout.buildDirectory.file("tmp/compileJava/${mixinRefmap.removeSuffix(".refmap.json")}-mixins.tsrg").get().asFile.absolutePath}",
             "-AmappingTypes=tsrg",
             "-AdefaultObfuscationEnv=searge",
@@ -261,7 +299,7 @@ tasks.jar {
 
 tasks.named<ShadowJar>("shadowJar") {
     configurations = listOf(shadedDependencies)
-    archiveClassifier.set("")
+    archiveClassifier.set(if (needsSrgReobf) "dev-shadow" else "")
     addMultiReleaseAttribute.set(false)
     exclude("META-INF/*.DSA", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/MANIFEST.MF", "mappings/**")
     dependencies {
@@ -270,17 +308,30 @@ tasks.named<ShadowJar>("shadowJar") {
     }
 }
 
+val reobfShadowJar = if (needsSrgReobf) {
+    extensions
+        .getByType(net.minecraftforge.renamer.gradle.RenamerExtension::class.java)
+        .classes("reobfShadowJar", tasks.named<ShadowJar>("shadowJar")) {
+            archiveClassifier.set("")
+            output.set(layout.buildDirectory.file("libs/${base.archivesName.get()}.jar"))
+            dependsOn(unpackMixinMappings!!)
+            setMappings(files(unpackedMixinMappings))
+        }
+} else {
+    null
+}
+
 tasks.assemble {
-    dependsOn(tasks.shadowJar)
+    dependsOn(reobfShadowJar ?: tasks.shadowJar)
 }
 
 artifacts {
-    archives(tasks.shadowJar)
+    archives(reobfShadowJar ?: tasks.shadowJar)
 }
 
 tasks.register<Copy>("buildAndCollect") {
     group = "build"
-    from(tasks.shadowJar.map { it.archiveFile })
+    from(if (reobfShadowJar != null) reobfShadowJar.map { it.output } else tasks.shadowJar.map { it.archiveFile })
     into(rootProject.layout.buildDirectory.file("libs/$mod_version"))
     dependsOn("build")
 }
