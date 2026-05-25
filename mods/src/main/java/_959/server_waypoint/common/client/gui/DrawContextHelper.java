@@ -135,10 +135,11 @@ public final class DrawContextHelper {
         //? if = 1.21.9 {
         /*renderOutlineWithFill(context, x, y, width, height, color);
         *///?} else {
-        context.
-        //$ gui_outline_method_swap
-        outline
-                (x, y, width, height, color);
+        //? if >= 26 {
+        context.outline(x, y, width, height, color);
+        //?} else {
+        /*context.renderOutline(x, y, width, height, color);
+        *///?}
         //?}
     }
 
