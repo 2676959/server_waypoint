@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static _959.server_waypoint.ModInfo.MOD_ID;
+import static _959.server_waypoint.common.client.util.NetworkHelper.sendPayloadToServer;
 import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asClientFromRemoteServer;
 
 public class WaypointClientMod extends WaypointFilesManagerCore implements BufferHandler {
@@ -251,17 +252,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
      * can only be called when connected to a server
      * */
     public void requestUpdates() {
-        //? if fabric {
-        /*ClientPlayNetworking.send(getClientUpdateRequestPayload());
-        *///?} elif neoforge && >= 1.21.9 {
-        ClientPacketDistributor.sendToServer(getClientUpdateRequestPayload());
-        //?} elif neoforge && = 1.20.2 {
-        /*ServerWaypointNeoForge.PACKET_CHANNEL.sendToServer(getClientUpdateRequestPayload());
-        *///?} elif neoforge && = 1.20.4 {
-        /*PacketDistributor.SERVER.noArg().send(getClientUpdateRequestPayload());
-        *///?} elif neoforge {
-        /*PacketDistributor.sendToServer(getClientUpdateRequestPayload());
-        *///?}
+        sendPayloadToServer(getClientUpdateRequestPayload());
     }
 
     public void onJoinServer() {
@@ -276,17 +267,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         } else {
             // send handshake to server -> onServerHandShake
             networkState = ClientNetworkState.NO_SERVERSIDE_SUPPORT;
-            //? if fabric {
-            /*ClientPlayNetworking.send(clientHandshake);
-            *///?} elif neoforge && >= 1.21.9 {
-            ClientPacketDistributor.sendToServer(clientHandshake);
-            //?} elif neoforge && = 1.20.2 {
-            /*ServerWaypointNeoForge.PACKET_CHANNEL.sendToServer(clientHandshake);
-            *///?} elif neoforge && = 1.20.4 {
-            /*PacketDistributor.SERVER.noArg().send(clientHandshake);
-            *///?} elif neoforge {
-            /*PacketDistributor.sendToServer(clientHandshake);
-            *///?}
+            sendPayloadToServer(clientHandshake);
         }
     }
     @Override
