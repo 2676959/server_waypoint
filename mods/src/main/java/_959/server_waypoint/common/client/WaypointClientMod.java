@@ -434,7 +434,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                     if (dimensionName.equals(currentDimensionName)) {
                         OptimizedWaypointRenderer.add(waypoint);
                     }
-                    WaypointManagerScreen.refreshWaypointLists(dimensionName);
+                    WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
                 }
                 case REMOVE -> {
                     if (fileManager == null) {

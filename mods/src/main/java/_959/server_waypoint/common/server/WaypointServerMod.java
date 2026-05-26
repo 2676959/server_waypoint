@@ -54,7 +54,7 @@ public class WaypointServerMod extends WaypointServerCore {
                 if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
                     OptimizedWaypointRenderer.add(waypoint);
                 }
-                WaypointManagerScreen.refreshWaypointLists(dimensionName);
+                WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
             }
         }, duplicateAction);
     }
