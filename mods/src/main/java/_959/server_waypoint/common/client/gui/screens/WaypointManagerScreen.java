@@ -7,13 +7,18 @@ import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
 import _959.server_waypoint.common.client.gui.widgets.WaypointListWidget;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import net.minecraft.network.chat.MutableComponent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
+import static _959.server_waypoint.common.client.WaypointClientMod.ClientNetworkState.INCOMPATIBLE_PROTOCOL;
+import static _959.server_waypoint.common.client.WaypointClientMod.ClientNetworkState.NO_SERVERSIDE_SUPPORT;
 import static _959.server_waypoint.common.client.WaypointClientMod.getCurrentDimensionName;
+import static _959.server_waypoint.common.client.WaypointClientMod.getNetworkState;
+import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 
 public class WaypointManagerScreen extends MovementAllowedScreen {
     private static boolean isRendering = false;
@@ -39,11 +44,29 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         DimensionListWidget.resetStates();
     }
 
-    public static void updateAll() {
+    public static void updateCurrentView() {
         if (isRendering) {
-            WaypointClientMod waypointClientMod = WaypointClientMod.getInstance();
-            dimensionListWidget.updateDimensionNames(waypointClientMod.getDimensionNames());
-            waypointListWidget.updateWaypointLists(waypointClientMod.getCurrentWaypointLists());
+            WaypointClientMod waypointClient = WaypointClientMod.getInstance();
+            dimensionListWidget.updateDimensionNames(waypointClient.getDimensionNames());
+            waypointListWidget.updateWaypointLists(waypointClient.getWaypointListsByDimensionName(dimensionListWidget.getSelectedDimensionName()));
+        }
+    }
+
+    public static void updateDimensionList() {
+        if (isRendering) {
+            WaypointClientMod waypointClient = WaypointClientMod.getInstance();
+            String selectedDimensionName =  dimensionListWidget.getSelectedDimensionName();
+            List<String> dimensionNames = waypointClient.getDimensionNames();
+            if (dimensionNames.contains(selectedDimensionName)) {
+                dimensionListWidget.updateDimensionNames(dimensionNames);
+                dimensionListWidget.setDimensionName(selectedDimensionName);
+            } else if (!dimensionNames.isEmpty()) {
+                dimensionListWidget.updateDimensionNames(dimensionNames);
+                dimensionListWidget.setDimensionName(WaypointClientMod.getCurrentDimensionName());
+                waypointListWidget.updateWaypointLists(waypointClient.getCurrentWaypointLists());
+            } else {
+                dimensionListWidget.updateDimensionNames(dimensionNames);
+            }
         }
     }
 
@@ -59,15 +82,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         }
     }
 
-    @SuppressWarnings("unused")
     public static void refreshWaypointLists(String dimensionName) {
         if (isRendering && dimensionName.equals(dimensionListWidget.getSelectedDimensionName())) {
-            waypointListWidget.reCalculateRenderData();
-        }
-    }
-
-    public static void refreshWaypointLists() {
-        if (isRendering) {
             waypointListWidget.reCalculateRenderData();
         }
     }
@@ -99,7 +115,11 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         if (WaypointServerMod.runsWithClient()) {
             WaypointServerMod.getInstance().getOrCreateWaypointFileManager(currentDimension);
         } else {
-            WaypointClientMod.getInstance().getOrCreateWaypointFileManager(currentDimension);
+            if (WaypointClientMod.getNetworkState() == WaypointClientMod.ClientNetworkState.SYNC_FINISHED) {
+                WaypointClientMod.getInstance().getOrCreateWaypointFileManager(currentDimension);
+            } else {
+                return;
+            }
         }
         updateWidgetDimension();
         int centeredX = getCenteredX();
@@ -140,6 +160,18 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     //$ render_method_swap
     extractRenderState
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        WaypointClientMod.ClientNetworkState networkState = getNetworkState();
+        if (networkState == NO_SERVERSIDE_SUPPORT) {
+            Component info = Component.translatable("server_waypoint.no_serverside_support");
+            int infoWidth = font.width(info);
+            drawText(context, this.font, info, centered(this.width, infoWidth), this.height / 2, 0xFFFFFFFF);
+            return;
+        } else if (networkState == INCOMPATIBLE_PROTOCOL) {
+            Component info = Component.translatable("server_waypoint.incompatible_protocol_version");
+            int infoWidth = font.width(info);
+            drawText(context, this.font, info, centered(this.width, infoWidth), this.height / 2, 0xFFFFFFFF);
+            return;
+        }
         waypointListWidget.
         //$ render_widget_method_swap
         extractWidgetRenderState

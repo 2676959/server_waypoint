@@ -19,15 +19,6 @@ import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.util.VanillaDimensionNames;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-//? if fabric {
-/*import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-*///?} elif neoforge && >= 1.21.9 {
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
-//?} elif neoforge {
-/*import net.neoforged.neoforge.network.PacketDistributor;
-*///?}
-//? if neoforge && = 1.20.2
-/*import _959.server_waypoint.neoforge.ServerWaypointNeoForge;*/
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import org.jetbrains.annotations.NotNull;
@@ -222,20 +213,16 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             }
             final List<WaypointList> waypointLists = waypointFileManager.getWaypointLists();
             OptimizedWaypointRenderer.loadScene(waypointLists);
-            WaypointManagerScreen.updateAll();
+            WaypointManagerScreen.updateCurrentView();
         }
     }
 
     public void onLeaveServer() {
         OptimizedWaypointRenderer.clearScene();
-        if (!isSingleplayer()) {
+        if (!WaypointServerMod.runsWithClient()) {
             this.saveAllWaypointFiles();
         }
         this.resetNetworkState();
-    }
-
-    private boolean isSingleplayer() {
-        return this.mc.isSingleplayer();
     }
 
     public boolean loadCachedWaypointFiles(int serverId) {
@@ -404,7 +391,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             }
         }
         networkState = ClientNetworkState.SYNC_FINISHED;
-        WaypointManagerScreen.updateAll();
+        WaypointManagerScreen.updateCurrentView();
     }
 
     private void updateDimensionName() {
@@ -434,6 +421,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                 case ADD -> {
                     if (fileManager == null) {
                         fileManager = this.addWaypointFileManager(dimensionName);
+                        WaypointManagerScreen.updateDimensionList();
                     }
                     WaypointList waypointList = fileManager.getWaypointListByName(listName);
                     int syncId = buffer.syncId();
@@ -445,8 +433,8 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                     fileManager.saveDimension();
                     if (dimensionName.equals(currentDimensionName)) {
                         OptimizedWaypointRenderer.add(waypoint);
-                        WaypointManagerScreen.refreshWaypointLists();
                     }
+                    WaypointManagerScreen.refreshWaypointLists(dimensionName);
                 }
                 case REMOVE -> {
                     if (fileManager == null) {
@@ -462,9 +450,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                         waypointList.remove(wpToRemove, buffer.syncId());
                         fileManager.saveDimension();
                         if (dimensionName.equals(currentDimensionName)) {
-                            WaypointManagerScreen.refreshWaypointLists();
                             OptimizedWaypointRenderer.remove(wpToRemove);
                         }
+                        WaypointManagerScreen.refreshWaypointLists(dimensionName);
                     }
                 }
                 case UPDATE -> {
@@ -489,6 +477,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                 case ADD_LIST -> {
                     if (fileManager == null) {
                         fileManager = this.addWaypointFileManager(dimensionName);
+                        WaypointManagerScreen.updateDimensionList();
                     }
                     WaypointList waypointList = fileManager.getWaypointListByName(listName);
                     if (waypointList == null) {
