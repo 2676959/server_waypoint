@@ -33,6 +33,8 @@
   "waypoint.edit.screen.previous_color.hover": "点击恢复上一个颜色",
   "waypoint.edit.screen.current_color.hover": "点击选择此颜色，再次点击确认",
 
+  "server_waypoint.no_serverside_support": "无服务端支持",
+  "server_waypoint.incompatible_protocol_version": "不兼容的服务端版本",
   "server_waypoint.config.screen.title": "服务器路径点（%1$s）客户端配置",
   "server_waypoint.config.enable_waypoint_render": "启用路径点渲染",
   "server_waypoint.config.waypoint_scale_factor": "路径点缩放比例（百分比）",

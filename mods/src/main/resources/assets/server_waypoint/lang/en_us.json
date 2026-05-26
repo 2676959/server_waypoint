@@ -33,6 +33,8 @@
   "waypoint.edit.screen.previous_color.hover": "Click to restore previous color",
   "waypoint.edit.screen.current_color.hover": "Click to select this color, click again to confirm",
 
+  "server_waypoint.no_serverside_support": "No serverside support",
+  "server_waypoint.incompatible_protocol_version": "Incompatible serverside mod version",
   "server_waypoint.config.screen.title": "Server Waypoint %1$s Client Configurations",
   "server_waypoint.config.enable_waypoint_render": "Enable Waypoint Rendering",
   "server_waypoint.config.waypoint_scale_factor": "Waypoint Rendering Scaling Factor (Percentage)",
