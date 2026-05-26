@@ -53,8 +53,8 @@ public class WaypointServerMod extends WaypointServerCore {
             if (runsWithClient) {
                 if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
                     OptimizedWaypointRenderer.add(waypoint);
-                    WaypointManagerScreen.refreshWaypointLists();
                 }
+                WaypointManagerScreen.refreshWaypointLists(dimensionName);
             }
         }, duplicateAction);
     }
@@ -62,10 +62,11 @@ public class WaypointServerMod extends WaypointServerCore {
     @Override
     public void removeWaypoint(@NotNull WaypointFileManager fileManager, WaypointList waypointList, SimpleWaypoint waypoint) {
         if (runsWithClient) {
-            if (fileManager.getDimensionName().equals(WaypointClientMod.getCurrentDimensionName())) {
+            String dimensionName = fileManager.getDimensionName();
+            if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
                 OptimizedWaypointRenderer.remove(waypoint);
-                WaypointManagerScreen.refreshWaypointLists();
             }
+            WaypointManagerScreen.refreshWaypointLists(dimensionName);
         }
         super.removeWaypoint(fileManager, waypointList, waypoint);
     }
