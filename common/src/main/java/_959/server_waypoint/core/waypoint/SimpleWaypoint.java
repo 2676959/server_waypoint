@@ -40,6 +40,8 @@ public class SimpleWaypoint {
         this.rgb = rgb;
         this.yaw = convertYaw(yaw);
         this.global = global;
+        //? if !paper
+        this.renderId = -1;
     }
 
     public SimpleWaypoint(String name, String initials, int x, int y, int z, int rgb, int yaw, boolean global) {
@@ -49,6 +51,8 @@ public class SimpleWaypoint {
         this.rgb = rgb;
         this.yaw = convertYaw(yaw);
         this.global = global;
+        //? if !paper
+        this.renderId = -1;
     }
 
     // do not need to copy renderId as renderId should be unique for each instance
