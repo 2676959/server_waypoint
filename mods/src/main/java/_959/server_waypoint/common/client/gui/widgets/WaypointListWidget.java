@@ -35,6 +35,7 @@ import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARE
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.util.CommandGenerator.*;
+import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
 import static _959.server_waypoint.util.ListMapUtils.getLastElement;
 import static java.util.Collections.binarySearch;
 
@@ -490,13 +491,11 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                     context.fill(0, y1, listWidth, y2, 0x10000000 + rgb);
                 }
                 final int finalY = y1 + textVertOffset;
-                final int finalTextColor = textColor;
                 final int backgroundColor = bgAlpha | rgb;
                 if (waypoint.global()) {
                     drawText(context, textRenderer, "*", 6, finalY, textColor);
                 }
-                context.fill(15, finalY - 1, 15 + textRenderer.width(initials), finalY + textRenderer.lineHeight, backgroundColor);
-                drawText(context, textRenderer, initials, 15, finalY, finalTextColor, true);
+                drawInitialsBox(context, initials, 15, finalY - 1, backgroundColor, getInitialsTextColor(rgb, wpRendered));
                 drawText(context, textRenderer, name, 55, finalY, textColor);
                 i++;
             }
@@ -509,6 +508,23 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
     @Override
     protected void updateWidgetNarration(NarrationElementOutput builder) {
 
+    }
+
+    private void drawInitialsBox(GuiGraphicsExtractor context, String initials, int x, int y, int backgroundColor, int textColor) {
+        int textWidth = textRenderer.width(initials);
+        int bgWidth = Math.max(textWidth + 2, textRenderer.lineHeight);
+        int textX = (bgWidth - Math.max(0, textWidth - 1)) / 2;
+
+        context.fill(x, y, x + bgWidth, y + textRenderer.lineHeight, backgroundColor);
+        drawText(context, textRenderer, initials, x + textX, y + 1, textColor, true);
+    }
+
+    private static int getInitialsTextColor(int rgb, boolean rendered) {
+        int color = getSafeTextColor(rgb);
+        if (rendered) {
+            return color;
+        }
+        return (color & 0x00FFFFFF) | 0x80000000;
     }
 
     @Override
