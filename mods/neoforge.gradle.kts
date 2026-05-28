@@ -71,7 +71,7 @@ sourceSets.main {
     resources {
         exclude("fabric.mod.json")
         exclude("META-INF/mods.toml")
-        exclude("server_waypoint-fabric.mixins.json")
+        exclude("pack.mcmeta")
     }
 }
 

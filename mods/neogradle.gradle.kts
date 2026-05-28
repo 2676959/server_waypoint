@@ -48,7 +48,8 @@ sourceSets.main {
     }
     resources {
         exclude("fabric.mod.json")
-        exclude("server_waypoint-fabric.mixins.json")
+        exclude("META-INF/neoforge.mods.toml")
+        exclude("pack.mcmeta")
     }
 }
 

@@ -58,7 +58,7 @@ sourceSets.main {
     }
     resources {
         exclude("META-INF")
-        exclude("server_waypoint-neoforge.mixins.json")
+        exclude("pack.mcmeta")
     }
 }
 
