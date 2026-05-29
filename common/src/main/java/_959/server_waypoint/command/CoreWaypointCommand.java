@@ -31,6 +31,8 @@ import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -46,6 +48,7 @@ import static _959.server_waypoint.text.TextButton.*;
 import static _959.server_waypoint.text.WaypointTextHelper.*;
 import static _959.server_waypoint.translation.LanguageFilesManager.getExternalLoadedLanguages;
 import static _959.server_waypoint.util.ColorUtils.*;
+import static _959.server_waypoint.util.ListMapUtils.getLastElement;
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
@@ -242,6 +245,19 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                         .suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)
                                         .then(argument(WAYPOINT_NAME_ARG, string())
                                                 .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
+                                                .executes(
+                                                        cxt -> {
+                                                            CommandContext<S> context = (CommandContext<S>) cxt;
+                                                            S source = context.getSource();
+                                                            executeQuickAddWaypoint(
+                                                                    source,
+                                                                    getArgument(context, POS_ARG),
+                                                                    getString(context, LIST_NAME_ARG),
+                                                                    getString(context, WAYPOINT_NAME_ARG)
+                                                            );
+                                                            return Command.SINGLE_SUCCESS;
+                                                        }
+                                                )
                                                 .then(argument(INITIALS_ARG, string())
                                                         .suggests((SuggestionProvider<Object>) NAME_INITIALS_SUGGESTION)
                                                         .then(argument(COLOR_ARG, string())
@@ -511,6 +527,33 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         }
     }
 
+    private void addWaypointDirectly(S source, String dimensionName, String listName, String name, String initials, WaypointPos waypointPos, int yaw, int rgb, boolean global) {
+        SimpleWaypoint newWaypoint = new SimpleWaypoint(name, initials, waypointPos, rgb, yaw, global);
+        this.waypointServer.addWaypoint(dimensionName, listName, newWaypoint,
+                // success
+                (fileManager, waypointList) -> {
+                    saveChanges(source, fileManager);
+                    this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(
+                            dimensionName,
+                            listName,
+                            name,
+                            newWaypoint,
+                            WaypointModificationType.ADD,
+                            waypointList.getSyncNum()
+                    ));
+                    this.sender.sendMessage(
+                            source,
+                            translatable("waypoint.add.success",
+                                    waypointTextWithTp(newWaypoint, dimensionName, listName),
+                                    text(listName)
+                            )
+                    );
+                },
+                // found duplicate
+                (waypointFound) -> this.sender.sendMessage(source, translatable("waypoint.add.exists", waypointTextWithTp(waypointFound, dimensionName, listName), TextButton.replaceButton(dimensionName, listName, newWaypoint)))
+        );
+    }
+
     private void executeAddWaypoint(S source, D dimensionArgument, String listName, String name, String initials, B blockPosArgument, int yaw, String hexCode, boolean global) {
         String dimensionName = toDimensionName(dimensionArgument);
         if  (isDimensionValid(source, dimensionArgument)) {
@@ -529,33 +572,14 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 sendHexColorCodeError(source, hexCode);
                 return;
             }
-            SimpleWaypoint newWaypoint = new SimpleWaypoint(name, initials, waypointPos, rgb, yaw, global);
-            this.waypointServer.addWaypoint(dimensionName, listName, newWaypoint,
-                    // success
-                    (fileManager, waypointList) -> {
-                        saveChanges(source, fileManager);
-                        this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(
-                                dimensionName,
-                                listName,
-                                name,
-                                newWaypoint,
-                                WaypointModificationType.ADD,
-                                waypointList.getSyncNum()
-                        ));
-                        this.sender.sendMessage(
-                                source,
-                                translatable("waypoint.add.success",
-                                        waypointTextWithTp(newWaypoint, dimensionName, listName),
-                                        text(listName)
-                                )
-                        );
-                    },
-                    // found duplicate
-                    (waypointFound) -> this.sender.sendMessage(source, translatable("waypoint.add.exists", waypointTextWithTp(waypointFound, dimensionName, listName), TextButton.replaceButton(dimensionName, listName, newWaypoint)))
-            );
+            addWaypointDirectly(source, dimensionName, listName, name, initials, waypointPos, yaw, rgb, global);
         } else {
             sendDimensionError(source, dimensionName);
         }
+    }
+
+    private void executeQuickAddWaypoint(S source, B blockPosArgument, String listName, String name) {
+        addWaypointDirectly(source, toDimensionName(getSourceDimension(source)), listName, name, getDefaultInitials(name), toWaypointPos(source, blockPosArgument), Math.round(getSourceYaw(source)), randomColor(), true);
     }
 
     private void executeEdit(S source, D dimensionArgument, String listName, String oldName, String newName, String initials, B blockPosArgument, int yaw, String hexCode, boolean global) {
@@ -766,7 +790,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         }
     }
 
-    private String stripOuterQuotes(String string) {
+    private @NotNull String stripOuterQuotes(String string) {
         if (string.startsWith("\"") || string.startsWith("'")) {
             string = string.substring(1);
         }
@@ -774,6 +798,140 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             string = string.substring(0, string.length() - 1);
         }
         return string;
+    }
+
+    private @NotNull String warpQuotes(String string) {
+        return "\"" + string + "\"";
+    }
+
+    private @NotNull String getInitialsFromCapitals(String name) {
+        StringBuilder sb = new StringBuilder(name.length());
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (Character.isUpperCase(c)) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    private boolean isVariationSelector(int codePoint) {
+        return (codePoint >= 0xFE00 && codePoint <= 0xFE0F) || (codePoint >= 0xE0100 && codePoint <= 0xE01EF);
+    }
+
+    private boolean isEmojiModifier(int codePoint) {
+        return codePoint >= 0x1F3FB && codePoint <= 0x1F3FF;
+    }
+
+    private boolean isRegionalIndicator(int codePoint) {
+        return codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF;
+    }
+
+    private boolean isGraphemeExtender(int codePoint) {
+        int type = Character.getType(codePoint);
+        return type == Character.NON_SPACING_MARK
+                || type == Character.COMBINING_SPACING_MARK
+                || type == Character.ENCLOSING_MARK
+                || isVariationSelector(codePoint)
+                || isEmojiModifier(codePoint);
+    }
+
+    private void appendFirstGraphemeCluster(String string, int start, StringBuilder sb) {
+        if (start >= string.length()) {
+            return;
+        }
+        int pos = start;
+        int firstCodePoint = string.codePointAt(pos);
+        boolean needsRegionalIndicatorPair = isRegionalIndicator(firstCodePoint);
+        sb.appendCodePoint(firstCodePoint);
+        pos += Character.charCount(firstCodePoint);
+        while (pos < string.length()) {
+            int codePoint = string.codePointAt(pos);
+            if (isGraphemeExtender(codePoint)) {
+                sb.appendCodePoint(codePoint);
+                pos += Character.charCount(codePoint);
+                continue;
+            }
+            if (needsRegionalIndicatorPair && isRegionalIndicator(codePoint)) {
+                sb.appendCodePoint(codePoint);
+                pos += Character.charCount(codePoint);
+                needsRegionalIndicatorPair = false;
+                continue;
+            }
+            if (codePoint == 0x200D) {
+                sb.appendCodePoint(codePoint);
+                pos += Character.charCount(codePoint);
+                if (pos < string.length()) {
+                    int joinedCodePoint = string.codePointAt(pos);
+                    sb.appendCodePoint(joinedCodePoint);
+                    pos += Character.charCount(joinedCodePoint);
+                }
+                needsRegionalIndicatorPair = false;
+                continue;
+            }
+            break;
+        }
+    }
+
+    private @NotNull String getInitialsBySplitting(String name, char separator, char connector) {
+        int length = name.length();
+        StringBuilder sb = new StringBuilder(length);
+        int lastPos = 0;
+        for (int i = 0; i < length; i++) {
+            char c = name.charAt(i);
+            if (c == separator) {
+                appendFirstGraphemeCluster(name, lastPos, sb);
+                lastPos = i + 1;
+                continue;
+            }
+            if (c == connector) {
+                sb.append(connector);
+            }
+        }
+        appendFirstGraphemeCluster(name, lastPos, sb);
+        return sb.toString();
+    }
+
+    private @NotNull String getInitialsBySplitting(String name, char separator) {
+        int length = name.length();
+        StringBuilder sb = new StringBuilder(length);
+        int lastPos = 0;
+        for (int i = 0; i < length; i++) {
+            char c = name.charAt(i);
+            if (c == separator) {
+                appendFirstGraphemeCluster(name, lastPos, sb);
+                lastPos = i + 1;
+            }
+        }
+        appendFirstGraphemeCluster(name, lastPos, sb);
+        return sb.toString();
+    }
+
+    private List<String> getInitialsCandidatesFromName(String name) {
+        if (name.isBlank()) {
+            return List.of();
+        }
+        List<String> candidates = new ArrayList<>();
+        candidates.add(name.substring(0, 1).toUpperCase());
+        if (name.length() >= 2) {
+            char c = name.charAt(1);
+            if (!(c == '-' || c == '_' || c == '.' || c == ' ')) {
+                candidates.add(name.substring(0, 2).toUpperCase());
+            }
+        }
+        if (name.matches(SINGLE_WORD_REGEX)) {
+            candidates.add(getInitialsBySplitting(name.replace('_', '-'), '-', '.'));
+            candidates.add(getInitialsFromCapitals(name));
+        } else {
+            candidates.add(getInitialsBySplitting(name, ' '));
+        }
+        candidates.sort(Comparator.comparingInt(String::length));
+        return candidates;
+    }
+
+    private String getDefaultInitials(String name) {
+        List<String> candidates = getInitialsCandidatesFromName(name);
+        return candidates.isEmpty() ? "" : getLastElement(candidates);
     }
 
     private class WaypointListSuggestion implements SuggestionProvider<S> {
@@ -828,47 +986,33 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         }
     }
 
+    private CompletableFuture<Suggestions> getInitialsSuggestions(CommandContext<S> context, SuggestionsBuilder builder, String argName) {
+        String name = getString(context.getLastChild(), argName);
+        List<String> initials = getInitialsCandidatesFromName(name);
+        if (initials.isEmpty()) {
+            return Suggestions.empty();
+        }
+        for (String initial : initials) {
+            if (initial.matches(SINGLE_WORD_REGEX)) {
+                builder.suggest(initial);
+            } else {
+                builder.suggest(warpQuotes(initial));
+            }
+        }
+        return builder.buildFuture();
+    }
+
     private class NameInitialsSuggestion implements SuggestionProvider<S> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-            String name = getString(context.getLastChild(), WAYPOINT_NAME_ARG);
-            if (name.isEmpty()) {
-                return Suggestions.empty();
-            }
-            if (name.matches(SINGLE_WORD_REGEX)) {
-                builder.suggest(name.toUpperCase().substring(0, 1));
-                if (name.length() > 1) {
-                    builder.suggest(name.substring(0, 2).toUpperCase());
-                }
-            } else  {
-                builder.suggest("\"%s\"".formatted(name.substring(0, 1)));
-                if (name.length() > 1) {
-                    builder.suggest("\"%s\"".formatted(name.substring(0, 2)));
-                }
-            }
-            return builder.buildFuture();
+            return getInitialsSuggestions(context, builder, WAYPOINT_NAME_ARG);
         }
     }
 
     private class NewNameInitialsSuggestion implements SuggestionProvider<S> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-            String name = getString(context.getLastChild(), NEW_WAYPOINT_NAME_ARG);
-            if (name.isEmpty()) {
-                return Suggestions.empty();
-            }
-            if (name.matches(SINGLE_WORD_REGEX)) {
-                builder.suggest(name.toUpperCase().substring(0, 1));
-                if (name.length() > 1) {
-                    builder.suggest(name.substring(0, 2).toUpperCase());
-                }
-            } else  {
-                builder.suggest("\"%s\"".formatted(name.substring(0, 1)));
-                if (name.length() > 1) {
-                    builder.suggest("\"%s\"".formatted(name.substring(0, 2)));
-                }
-            }
-            return builder.buildFuture();
+            return getInitialsSuggestions(context, builder, NEW_WAYPOINT_NAME_ARG);
         }
     }
 
