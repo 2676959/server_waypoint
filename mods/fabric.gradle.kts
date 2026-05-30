@@ -96,6 +96,7 @@ dependencies {
     val fabric_loader: String by project
     val fabric_permissions_api: String by project
     val xaeros_minimap_fabric: String by project
+    val xaeros_world_map_fabric: String by project
 
     modImplementation("net.fabricmc:fabric-loader:$fabric_loader")
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_api")
@@ -112,8 +113,10 @@ dependencies {
 
     if (minecraft == "1.21.2") {
         modCompileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_fabric")
+        modCompileOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_fabric")
     } else {
         modImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_fabric")
+        modImplementation("maven.modrinth:xaeros-world-map:$xaeros_world_map_fabric")
     }
 }
 

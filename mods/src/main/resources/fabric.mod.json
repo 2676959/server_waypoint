@@ -32,6 +32,7 @@
 		"fabric-api": "*"
 	},
 	"suggests": {
-		"xaerominimap": "~25.2.6"
+		"xaerominimap": "~25.2.6",
+		"xaeroworldmap": "*"
 	}
 }
