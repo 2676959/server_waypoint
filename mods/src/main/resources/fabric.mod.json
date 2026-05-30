@@ -33,6 +33,7 @@
 	},
 	"suggests": {
 		"xaerominimap": "~25.2.6",
-		"xaeroworldmap": "*"
+		"xaeroworldmap": "*",
+		"voxelmap": "*"
 	}
 }

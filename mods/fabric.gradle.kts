@@ -97,6 +97,7 @@ dependencies {
     val fabric_permissions_api: String by project
     val xaeros_minimap_fabric: String by project
     val xaeros_world_map_fabric: String by project
+    val voxelmap_fabric: String by project
 
     modImplementation("net.fabricmc:fabric-loader:$fabric_loader")
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_api")
@@ -118,6 +119,9 @@ dependencies {
         modImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_fabric")
         modImplementation("maven.modrinth:xaeros-world-map:$xaeros_world_map_fabric")
     }
+
+    // Use Modrinth version IDs because some VoxelMap version numbers collide with Forge uploads.
+    modImplementation("maven.modrinth:voxelmap-updated:$voxelmap_fabric")
 }
 
 tasks.processResources {
