@@ -8,7 +8,6 @@
   ],
   "client": [
     "ClientPlayNetworkHandlerMixin",
-    "MinimapWorldStateUpdaterMixin",
     "GameHudMixin",
     "MinecraftClientMixin",
     "BoundKeyAccessor",
@@ -17,7 +16,9 @@
     "ServerPlayerEntityMixin",
     "WorldSessionMixin",
     "GameRendererMixin",
-    "GameRendererAccessor"
+    "GameRendererAccessor",
+    "MinimapWorldStateUpdaterMixin",
+    "XaeroWorldMapGuiMapMixin"
   ],
   "server": [
     "PlayerManagerMixin",
