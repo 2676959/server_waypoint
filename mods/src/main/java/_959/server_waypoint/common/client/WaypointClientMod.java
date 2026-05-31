@@ -32,6 +32,7 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -504,6 +505,36 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         } catch (IOException e) {
             LOGGER.error("failed to save waypoints for dimension: {}", dimensionName, e);
         }
+    }
+
+    public static @Unmodifiable List<String> getAllAvailableDimensionNames() {
+        if (INSTANCE == null) return List.of();
+        return List.copyOf(INSTANCE.fileManagerMap.keySet());
+    }
+
+    public static @Unmodifiable List<String> getAllWaypointListNames(String dimensionName) {
+        if (INSTANCE == null) return List.of();
+        WaypointFileManager fileManager = INSTANCE.fileManagerMap.get(dimensionName);
+        if (fileManager == null) return List.of();
+        List<WaypointList> lists = fileManager.getWaypointLists();
+        List<String> names = new ArrayList<>(lists.size());
+        for (WaypointList list : lists) {
+            names.add(list.name());
+        }
+        return Collections.unmodifiableList(names);
+    }
+
+    public static @Unmodifiable List<String> getAllWaypointNames(String dimensionName, String listName) {
+        if (INSTANCE == null) return List.of();
+        WaypointFileManager fileManager = INSTANCE.fileManagerMap.get(dimensionName);
+        if (fileManager == null) return List.of();
+        WaypointList list = fileManager.getWaypointListByName(listName);
+        if (list == null) return List.of();
+        List<String> names = new ArrayList<>(list.size());
+        for (SimpleWaypoint waypoint : list.simpleWaypoints()) {
+            names.add(waypoint.name());
+        }
+        return Collections.unmodifiableList(names);
     }
 
     public enum ClientNetworkState {
