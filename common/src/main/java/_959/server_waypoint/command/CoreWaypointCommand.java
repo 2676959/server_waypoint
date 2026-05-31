@@ -14,6 +14,7 @@ import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.text.TextButton;
 import _959.server_waypoint.util.TriConsumer;
+import _959.server_waypoint.util.WaypointInitials;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
@@ -31,8 +32,6 @@ import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -48,7 +47,7 @@ import static _959.server_waypoint.text.TextButton.*;
 import static _959.server_waypoint.text.WaypointTextHelper.*;
 import static _959.server_waypoint.translation.LanguageFilesManager.getExternalLoadedLanguages;
 import static _959.server_waypoint.util.ColorUtils.*;
-import static _959.server_waypoint.util.ListMapUtils.getLastElement;
+import static _959.server_waypoint.util.WaypointInitials.SINGLE_WORD_REGEX;
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
 import static com.mojang.brigadier.arguments.IntegerArgumentType.getInteger;
@@ -73,7 +72,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private final SuggestionProvider<S> NEW_NAME_INITIALS_SUGGESTION = new NewNameInitialsSuggestion();
     private final SuggestionProvider<S> PLAYER_YAW_SUGGESTION = new PlayerYawSuggestion();
     private final SuggestionProvider<S> HEX_COLOR_CODE_SUGGESTION = new HexColorCodeSuggestion();
-    public static final String SINGLE_WORD_REGEX = "^[a-zA-Z0-9+._-]+$";
     public static final String WAYPOINT_COMMAND = "wp";
     public static final String ADD_COMMAND = "add";
     public static final String EDIT_COMMAND = "edit";
@@ -579,7 +577,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     }
 
     private void executeQuickAddWaypoint(S source, B blockPosArgument, String listName, String name) {
-        addWaypointDirectly(source, toDimensionName(getSourceDimension(source)), listName, name, getDefaultInitials(name), toWaypointPos(source, blockPosArgument), Math.round(getSourceYaw(source)), randomColor(), true);
+        addWaypointDirectly(source, toDimensionName(getSourceDimension(source)), listName, name, WaypointInitials.getDefaultInitials(name), toWaypointPos(source, blockPosArgument), Math.round(getSourceYaw(source)), randomColor(), true);
     }
 
     private void executeEdit(S source, D dimensionArgument, String listName, String oldName, String newName, String initials, B blockPosArgument, int yaw, String hexCode, boolean global) {
@@ -804,136 +802,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         return "\"" + string + "\"";
     }
 
-    private @NotNull String getInitialsFromCapitals(String name) {
-        StringBuilder sb = new StringBuilder(name.length());
-        for (int i = 0; i < name.length(); i++) {
-            char c = name.charAt(i);
-            if (Character.isUpperCase(c)) {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
-    private boolean isVariationSelector(int codePoint) {
-        return (codePoint >= 0xFE00 && codePoint <= 0xFE0F) || (codePoint >= 0xE0100 && codePoint <= 0xE01EF);
-    }
-
-    private boolean isEmojiModifier(int codePoint) {
-        return codePoint >= 0x1F3FB && codePoint <= 0x1F3FF;
-    }
-
-    private boolean isRegionalIndicator(int codePoint) {
-        return codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF;
-    }
-
-    private boolean isGraphemeExtender(int codePoint) {
-        int type = Character.getType(codePoint);
-        return type == Character.NON_SPACING_MARK
-                || type == Character.COMBINING_SPACING_MARK
-                || type == Character.ENCLOSING_MARK
-                || isVariationSelector(codePoint)
-                || isEmojiModifier(codePoint);
-    }
-
-    private void appendFirstGraphemeCluster(String string, int start, StringBuilder sb) {
-        if (start >= string.length()) {
-            return;
-        }
-        int pos = start;
-        int firstCodePoint = string.codePointAt(pos);
-        boolean needsRegionalIndicatorPair = isRegionalIndicator(firstCodePoint);
-        sb.appendCodePoint(firstCodePoint);
-        pos += Character.charCount(firstCodePoint);
-        while (pos < string.length()) {
-            int codePoint = string.codePointAt(pos);
-            if (isGraphemeExtender(codePoint)) {
-                sb.appendCodePoint(codePoint);
-                pos += Character.charCount(codePoint);
-                continue;
-            }
-            if (needsRegionalIndicatorPair && isRegionalIndicator(codePoint)) {
-                sb.appendCodePoint(codePoint);
-                pos += Character.charCount(codePoint);
-                needsRegionalIndicatorPair = false;
-                continue;
-            }
-            if (codePoint == 0x200D) {
-                sb.appendCodePoint(codePoint);
-                pos += Character.charCount(codePoint);
-                if (pos < string.length()) {
-                    int joinedCodePoint = string.codePointAt(pos);
-                    sb.appendCodePoint(joinedCodePoint);
-                    pos += Character.charCount(joinedCodePoint);
-                }
-                needsRegionalIndicatorPair = false;
-                continue;
-            }
-            break;
-        }
-    }
-
-    private @NotNull String getInitialsBySplitting(String name, char separator, char connector) {
-        int length = name.length();
-        StringBuilder sb = new StringBuilder(length);
-        int lastPos = 0;
-        for (int i = 0; i < length; i++) {
-            char c = name.charAt(i);
-            if (c == separator) {
-                appendFirstGraphemeCluster(name, lastPos, sb);
-                lastPos = i + 1;
-                continue;
-            }
-            if (c == connector) {
-                sb.append(connector);
-            }
-        }
-        appendFirstGraphemeCluster(name, lastPos, sb);
-        return sb.toString();
-    }
-
-    private @NotNull String getInitialsBySplitting(String name, char separator) {
-        int length = name.length();
-        StringBuilder sb = new StringBuilder(length);
-        int lastPos = 0;
-        for (int i = 0; i < length; i++) {
-            char c = name.charAt(i);
-            if (c == separator) {
-                appendFirstGraphemeCluster(name, lastPos, sb);
-                lastPos = i + 1;
-            }
-        }
-        appendFirstGraphemeCluster(name, lastPos, sb);
-        return sb.toString();
-    }
-
-    private List<String> getInitialsCandidatesFromName(String name) {
-        if (name.isBlank()) {
-            return List.of();
-        }
-        List<String> candidates = new ArrayList<>();
-        candidates.add(name.substring(0, 1).toUpperCase());
-        if (name.length() >= 2) {
-            char c = name.charAt(1);
-            if (!(c == '-' || c == '_' || c == '.' || c == ' ')) {
-                candidates.add(name.substring(0, 2).toUpperCase());
-            }
-        }
-        if (name.matches(SINGLE_WORD_REGEX)) {
-            candidates.add(getInitialsBySplitting(name.replace('_', '-'), '-', '.'));
-            candidates.add(getInitialsFromCapitals(name));
-        } else {
-            candidates.add(getInitialsBySplitting(name, ' '));
-        }
-        candidates.sort(Comparator.comparingInt(String::length));
-        return candidates;
-    }
-
-    private String getDefaultInitials(String name) {
-        List<String> candidates = getInitialsCandidatesFromName(name);
-        return candidates.isEmpty() ? "" : getLastElement(candidates);
-    }
-
     private class WaypointListSuggestion implements SuggestionProvider<S> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
@@ -988,7 +856,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     private CompletableFuture<Suggestions> getInitialsSuggestions(CommandContext<S> context, SuggestionsBuilder builder, String argName) {
         String name = getString(context.getLastChild(), argName);
-        List<String> initials = getInitialsCandidatesFromName(name);
+        List<String> initials = WaypointInitials.getInitialsCandidatesFromName(name);
         if (initials.isEmpty()) {
             return Suggestions.empty();
         }
