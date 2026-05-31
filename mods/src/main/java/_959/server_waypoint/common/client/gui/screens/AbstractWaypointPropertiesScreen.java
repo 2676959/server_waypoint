@@ -16,6 +16,9 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
+//? if >= 1.21.9 {
+import net.minecraft.client.input.MouseButtonEvent;
+//?}
 import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
@@ -246,6 +249,24 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.addRenderableWidget(this.swatchWidget);
     }
 
+    //? if >= 1.21.9 {
+    @Override
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClicked) {
+        if (this.mouseClickedTextFieldSuggestion(mouseButtonEvent.x(), mouseButtonEvent.y())) {
+            return true;
+        }
+        return super.mouseClicked(mouseButtonEvent, doubleClicked);
+    }
+    //?} else {
+    /*@Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.mouseClickedTextFieldSuggestion(mouseX, mouseY)) {
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+    *///?}
+
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         GuiEventListener focused = this.getFocused();
@@ -272,6 +293,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         extractRenderState
                 (context, mouseX, mouseY, delta);
         nextLayer(context);
+        this.renderTextFieldSuggestions(context, mouseX, mouseY);
+        previousLayer(context);
+        nextLayer(context);
         this.swatchWidget.
         //$ render_widget_method_swap
         extractWidgetRenderState
@@ -285,6 +309,21 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         int bgCenteredX = centered(this.width, bgWidth);
         int bgCenteredY = centered(this.height, bgHeight);
         context.fill(bgCenteredX, bgCenteredY, bgCenteredX + bgWidth, bgCenteredY + bgHeight, TRANSPARENT_BG_COLOR);
+    }
+
+    private void renderTextFieldSuggestions(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+        for (var child : this.getTitleRowClickableWidgets()) {
+            if (child instanceof TranslucentTextField textField) {
+                textField.renderSuggestions(context, mouseX, mouseY);
+            }
+        }
+        this.nameEditBox.renderSuggestions(context, mouseX, mouseY);
+        this.initialsEditBox.renderSuggestions(context, mouseX, mouseY);
+    }
+
+    private boolean mouseClickedTextFieldSuggestion(double mouseX, double mouseY) {
+        GuiEventListener focused = this.getFocused();
+        return focused instanceof TranslucentTextField textField && textField.mouseClickedSuggestion(mouseX, mouseY);
     }
 
     @Override

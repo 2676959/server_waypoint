@@ -1,9 +1,11 @@
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.ColorHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.util.WaypointInitials;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -62,6 +64,7 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
 
     public WaypointEditScreen(Screen previousScreen, String dimensionName, String listName, SimpleWaypoint waypoint) {
         super(previousScreen, Component.translatable("waypoint.edit.screen.title", waypoint.name()), dimensionName, listName, waypoint);
+        this.configureSuggestions();
         this.buttonRow.setXOffset(CONTENT_WIDTH);
     }
 
@@ -93,5 +96,14 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
         this.zEditBox.setValue(Integer.toString(this.z));
         this.yawEditBox.setValue(Integer.toString(this.yaw));
         this.globalToggle.setState(this.global);
+    }
+
+    private void configureSuggestions() {
+        this.nameEditBox.setSuggestionsProvider(() -> WaypointClientMod.getAllWaypointNames(this.dimensionName, this.listName));
+        this.initialsEditBox.setSuggestionsProvider(this::getWaypointInitialsSuggestions);
+    }
+
+    private List<String> getWaypointInitialsSuggestions() {
+        return WaypointInitials.getInitialsCandidatesFromName(this.nameEditBox.getValue());
     }
 }

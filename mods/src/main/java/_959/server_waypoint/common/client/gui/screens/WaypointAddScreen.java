@@ -1,15 +1,18 @@
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.ScalableText;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.util.WaypointInitials;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
@@ -29,6 +32,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         super(previousScreen, Component.translatable("waypoint.add.screen.title"), dimensionName, listName, null);
         this.dimensionField.setValue(dimensionName);
         this.listNameField.setValue(listName);
+        this.configureSuggestions();
         this.buttonRow.setXOffset(CONTENT_WIDTH);
         Minecraft minecraftClient = Minecraft.getInstance();
         //? if >= 1.21.11 {
@@ -109,4 +113,16 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
                         this.globalToggle.getState()
                 ), false));
     }
+
+    private void configureSuggestions() {
+        this.dimensionField.setSuggestionsProvider(WaypointClientMod::getAllAvailableDimensionNames);
+        this.listNameField.setSuggestionsProvider(() -> WaypointClientMod.getAllWaypointListNames(this.dimensionField.getValue()));
+        this.nameEditBox.setSuggestionsProvider(() -> WaypointClientMod.getAllWaypointNames(this.dimensionField.getValue(), this.listNameField.getValue()));
+        this.initialsEditBox.setSuggestionsProvider(this::getWaypointInitialsSuggestions);
+    }
+
+    private List<String> getWaypointInitialsSuggestions() {
+        return WaypointInitials.getInitialsCandidatesFromName(this.nameEditBox.getValue());
+    }
+
 }
