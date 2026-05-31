@@ -18,7 +18,8 @@
     "GameRendererMixin",
     "GameRendererAccessor",
     "MinimapWorldStateUpdaterMixin",
-    "XaeroWorldMapGuiMapMixin"
+    "XaeroWorldMapGuiMapMixin",
+    "XaerosWorldMapWaypointReaderMixin"
   ],
   "server": [
     "PlayerManagerMixin",
