@@ -334,7 +334,7 @@ public class TranslucentTextField extends EditBox implements Shiftable {
         }
         String value = this.getValue();
         String lowerValue = value.toLowerCase(Locale.ROOT);
-        List<String> matches = new ArrayList<>();
+        List<String> matches = new ArrayList<>(uniqueSuggestions.size());
         for (String suggestion : uniqueSuggestions) {
             if (suggestion.equals(value)) {
                 continue;

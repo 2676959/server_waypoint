@@ -84,8 +84,8 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
     private final WaypointManagerScreen parentScreen;
     private final Font textRenderer;
     private final PaddingBackground paddingBackground = new PaddingBackground(this, 5, 7, 10, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
-    private volatile @Unmodifiable List<WaypointList> waypointLists = new ArrayList<>();
-    private final List<Integer> listPositions = new ArrayList<>();
+    private volatile @Unmodifiable List<WaypointList> waypointLists = List.of();
+    private List<Integer> listPositions = List.of();
     private final int itemHeight = 20;
     private final int textVertOffset;
     private final int listIconVertOffset;
@@ -128,7 +128,7 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
     public void updateWaypointLists(@Unmodifiable List<WaypointList> newWaypointLists) {
         if (newWaypointLists.isEmpty()) {
             this.empty = true;
-            this.listPositions.clear();
+            this.listPositions = List.of();
         } else {
             this.empty = false;
         }
@@ -147,19 +147,23 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
     }
 
     private void recalculateListPositions() {
-        this.listPositions.clear();
-        if (this.waypointLists.isEmpty()) return;
-        this.listPositions.add(0);
+        if (this.waypointLists.isEmpty()) {
+            this.listPositions = List.of();
+            return;
+        }
+        List<Integer> listPositions = new ArrayList<>(this.waypointLists.size());
+        listPositions.add(0);
         for (int i = 1; i < this.waypointLists.size(); i++) {
             int prev = i - 1;
             WaypointList waypointList = this.waypointLists.get(prev);
-            int prevPosition = this.listPositions.get(prev);
+            int prevPosition = listPositions.get(prev);
             if (waypointList.isExpand()) {
-                this.listPositions.add(prevPosition + waypointList.size() + 1);
+                listPositions.add(prevPosition + waypointList.size() + 1);
             } else {
-                this.listPositions.add(prevPosition + 1);
+                listPositions.add(prevPosition + 1);
             }
         }
+        this.listPositions = listPositions;
     }
 
     /**

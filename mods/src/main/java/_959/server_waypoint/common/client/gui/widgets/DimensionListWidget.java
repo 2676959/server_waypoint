@@ -10,7 +10,6 @@ import _959.server_waypoint.common.util.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -40,7 +39,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     private static int index;
     private final DimensionListCallback callback;
     private final Screen parentScreen;
-    private volatile @Unmodifiable List<String> dimensionNames = new ArrayList<>();
+    private volatile @Unmodifiable List<String> dimensionNames = List.of();
     private final Font textRenderer;
     private final PaddingBackground paddingBackground = new PaddingBackground(this, 7, 0, 10, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
     private final IconButton addBtn = new IconButton(0, 0, 10, 10, Component.translatable("waypoint.add.button"), WaypointListWidget.ADD_ICON, this::openAddScreen);

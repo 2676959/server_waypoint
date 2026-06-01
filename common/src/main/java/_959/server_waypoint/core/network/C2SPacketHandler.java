@@ -49,11 +49,11 @@ public class C2SPacketHandler<S, P> {
             WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(dimensionOnClient);
             if (fileManager == null) {
                 // tell client to remove
-                updatesBundle.add(new DimensionWaypointBuffer(dimensionOnClient, new ArrayList<>()));
+                updatesBundle.add(new DimensionWaypointBuffer(dimensionOnClient, List.of()));
             } else {
                 // prepare updates in that dimension for client
                 List<String> allListsOnServer = new ArrayList<>(fileManager.getWaypointListMap().keySet());
-                List<WaypointList> listUpdates = new ArrayList<>();
+                List<WaypointList> listUpdates = new ArrayList<>(dimensionSyncId.listSyncIds().size() + allListsOnServer.size());
                 // iterating all lists from client and compare
                 for (WaypointListSyncIdentifier listSyncId : dimensionSyncId.listSyncIds()) {
                     String listOnClient = listSyncId.listName();

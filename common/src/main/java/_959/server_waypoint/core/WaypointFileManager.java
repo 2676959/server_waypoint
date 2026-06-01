@@ -131,7 +131,7 @@ public class WaypointFileManager {
      * returns a immutable shallow copy of the list
      * */
     public @Unmodifiable List<WaypointList> getWaypointLists() {
-        return this.waypointListMap.values().stream().toList();
+        return Collections.unmodifiableList(new ArrayList<>(this.waypointListMap.values()));
     }
 
     public @UnmodifiableView Map<String, WaypointList> getWaypointListMap() {

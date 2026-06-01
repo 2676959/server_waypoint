@@ -79,11 +79,21 @@ public class WaypointList {
     }
 
     public @Nullable SimpleWaypoint getWaypointByName(String name) {
-        return this.simpleWaypoints.stream().filter((waypoint) -> waypoint.name().equals(name)).findFirst().orElse(null);
+        for (SimpleWaypoint waypoint : this.simpleWaypoints) {
+            if (waypoint.name().equals(name)) {
+                return waypoint;
+            }
+        }
+        return null;
     }
 
     public boolean hasWaypoint(String name) {
-        return this.simpleWaypoints.stream().anyMatch((waypoint) -> waypoint.name().equals(name));
+        for (SimpleWaypoint waypoint : this.simpleWaypoints) {
+            if (waypoint.name().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public String name() {
@@ -103,7 +113,7 @@ public class WaypointList {
     }
 
     public @Unmodifiable List<SimpleWaypoint> simpleWaypoints() {
-        return this.simpleWaypoints.stream().toList();
+        return Collections.unmodifiableList(new ArrayList<>(this.simpleWaypoints));
     }
 
     public WaypointList setName(String name) {

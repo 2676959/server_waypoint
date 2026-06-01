@@ -156,12 +156,13 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     }
 
     public UpdateRequestC2SPayload getClientUpdateRequestPayload() {
-        List<DimensionSyncIdentifier> dimensionSyncIds = new ArrayList<>();
+        List<DimensionSyncIdentifier> dimensionSyncIds = new ArrayList<>(this.fileManagerMap.size());
         for (WaypointFileManager manager : this.fileManagerMap.values()) {
             if (manager == null) continue;
             String dimensionName = manager.getDimensionName();
-            List<WaypointListSyncIdentifier> listSyncIds = new ArrayList<>();
-            for (WaypointList waypointList : manager.getWaypointLists()) {
+            List<WaypointList> waypointLists = manager.getWaypointLists();
+            List<WaypointListSyncIdentifier> listSyncIds = new ArrayList<>(waypointLists.size());
+            for (WaypointList waypointList : waypointLists) {
                 listSyncIds.add(waypointList.getIdentifier());
             }
             dimensionSyncIds.add(new DimensionSyncIdentifier(dimensionName, listSyncIds));
@@ -189,7 +190,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     public @Unmodifiable List<String> getDimensionNames() {
         List<String> dimensionNames = new ArrayList<>(this.fileManagerMap.keySet());
         dimensionNames.sort(VanillaDimensionNames::dimensionNameComparator);
-        return dimensionNames.stream().toList();
+        return Collections.unmodifiableList(dimensionNames);
     }
 
     @NotNull

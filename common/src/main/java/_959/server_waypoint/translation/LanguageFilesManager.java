@@ -114,7 +114,9 @@ public class LanguageFilesManager {
     }
 
     public static @Unmodifiable @NotNull List<String> getExternalLoadedLanguages() {
-        return externalTranslations.keySet().stream().sorted().toList();
+        List<String> languageCodes = new ArrayList<>(externalTranslations.keySet());
+        Collections.sort(languageCodes);
+        return Collections.unmodifiableList(languageCodes);
     }
 
     @Nullable
@@ -130,7 +132,14 @@ public class LanguageFilesManager {
         if (translation == null) {
             // try without region code
             String language = locale.getLanguage().toLowerCase();
-            List<String> matchingLanguages = getAllLoadedLanguageCodes().stream().filter(value -> value.toLowerCase().startsWith(language)).sorted().toList();
+            Set<String> allLoadedLanguageCodes = getAllLoadedLanguageCodes();
+            List<String> matchingLanguages = new ArrayList<>(allLoadedLanguageCodes.size());
+            for (String value : allLoadedLanguageCodes) {
+                if (value.toLowerCase().startsWith(language)) {
+                    matchingLanguages.add(value);
+                }
+            }
+            Collections.sort(matchingLanguages);
             for (String languageCode : matchingLanguages) {
                 if ((translation = getTranslation(languageCode, key)) != null) {
                     break;
@@ -161,12 +170,12 @@ public class LanguageFilesManager {
             URL location = getCodeSourceLocation();
             if (location == null) {
                 LOGGER.error("Failed to get path of internal language files: code source location is unavailable");
-                return new ArrayList<>();
+                return List.of();
             }
             codeSourcePath = Path.of(location.toURI());
         } catch (URISyntaxException e) {
             LOGGER.error("Failed to get path of internal language files: {}", e.getMessage());
-            return new ArrayList<>();
+            return List.of();
         }
 
         if (Files.isDirectory(codeSourcePath)) {
@@ -185,12 +194,12 @@ public class LanguageFilesManager {
         }
 
         LOGGER.error("Internal language files not found near code source: {}", codeSourcePath);
-        return new ArrayList<>();
+        return List.of();
     }
 
     private List<Path> getInternalLanguageFilesFromDirectory(Path langPath) {
         if (!Files.isDirectory(langPath)) {
-            return new ArrayList<>();
+            return List.of();
         }
 
         try (Stream<Path> paths = walk(langPath, 1)) {
@@ -198,12 +207,12 @@ public class LanguageFilesManager {
                     .collect(Collectors.toList());
         } catch (IOException e) {
             LOGGER.error("Error loading internal language file: {}", e.getMessage());
-            return new ArrayList<>();
+            return List.of();
         }
     }
 
     private List<Path> getDirectoryCodeSourceLangPaths(Path codeSourcePath) {
-        List<Path> langPaths = new ArrayList<>();
+        List<Path> langPaths = new ArrayList<>(3);
         langPaths.add(codeSourcePath.resolve(ASSETS_PATH));
 
         Path buildDirectory = findParentDirectory(codeSourcePath, "build");
@@ -237,7 +246,7 @@ public class LanguageFilesManager {
             }
         } catch (IOException e) {
             LOGGER.error("Error loading internal language file: {}", e.getMessage());
-            return new ArrayList<>();
+            return List.of();
         }
     }
 
@@ -247,7 +256,7 @@ public class LanguageFilesManager {
                     .collect(Collectors.toList());
         } catch (IOException e) {
             LOGGER.error("External language files not found: {}", e.getMessage());
-            return new ArrayList<>();
+            return List.of();
         }
     }
 

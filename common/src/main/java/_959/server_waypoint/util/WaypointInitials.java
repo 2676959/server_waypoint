@@ -18,7 +18,7 @@ public final class WaypointInitials {
         if (name.isBlank()) {
             return List.of();
         }
-        List<String> candidates = new ArrayList<>();
+        List<String> candidates = new ArrayList<>(4);
         candidates.add(name.substring(0, 1).toUpperCase());
         if (name.length() >= 2) {
             char c = name.charAt(1);

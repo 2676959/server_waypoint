@@ -48,7 +48,7 @@ public class WaypointFilesManagerCore {
     public @Unmodifiable List<Map.Entry<String, WaypointFileManager>> getSortedMap() {
         List<Map.Entry<String, WaypointFileManager>> entries = new ArrayList<>(this.fileManagerMap.entrySet());
         entries.sort((a, b) -> dimensionNameComparator(a.getKey(), b.getKey()));
-        return entries.stream().toList();
+        return Collections.unmodifiableList(entries);
     }
 
     public @Nullable WaypointFileManager getWaypointFileManager(String dimensionName) {

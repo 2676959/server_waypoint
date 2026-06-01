@@ -3,6 +3,7 @@ package _959.server_waypoint.util;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -15,11 +16,11 @@ public final class ListMapUtils {
     public static <K extends Comparable<? super K>, V> @Unmodifiable List<Map.Entry<K, V>> getEntriesSortedByKey(Map<K, V> map, int offset) {
         int size = map.size();
         if (size <= offset) {
-            return map.entrySet().stream().toList();
+            return Collections.unmodifiableList(new ArrayList<>(map.entrySet()));
         } else {
             List<Map.Entry<K, V>> sortedList = new ArrayList<>(map.entrySet());
             sortedList.subList(offset, size).sort(Map.Entry.comparingByKey());
-            return sortedList.stream().toList();
+            return Collections.unmodifiableList(sortedList);
         }
     }
 

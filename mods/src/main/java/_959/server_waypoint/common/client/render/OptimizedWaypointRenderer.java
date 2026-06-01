@@ -343,21 +343,21 @@ public final class OptimizedWaypointRenderer {
      * Efficiently removes a whole list of waypoints.
      */
     public static void removeList(List<SimpleWaypoint> list) {
-        // Extract just the IDs to send to the Render Thread
-        int[] idsToRemove = list.stream()
-                .filter(wp -> wp.renderId != -1)
-                .mapToInt(wp -> wp.renderId)
-                .toArray();
-
-        // Reset Logic IDs immediately so Logic knows they are hidden
+        int[] idsToRemove = new int[list.size()];
+        int idsCount = 0;
         for (SimpleWaypoint wp : list) {
-            releaseRenderId(wp, wp.renderId);
+            int renderId = wp.renderId;
+            if (renderId != -1) {
+                idsToRemove[idsCount] = renderId;
+                idsCount++;
+            }
+            releaseRenderId(wp, renderId);
         }
 
-        if (idsToRemove.length > 0) {
+        if (idsCount > 0) {
             WaypointRendererCommand cmd = obtainCommand();
             cmd.type = WaypointRendererCommand.Type.BULK_REMOVE;
-            cmd.bulkIds = idsToRemove;
+            cmd.bulkIds = Arrays.copyOf(idsToRemove, idsCount);
             offerCommand(cmd);
         }
     }

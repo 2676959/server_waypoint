@@ -51,9 +51,9 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
 
     @Nullable
     public WorldWaypointBuffer toWorldWaypointBuffer() {
-        List<DimensionWaypointBuffer> dimensionWaypointBuffers = new ArrayList<>();
+        List<DimensionWaypointBuffer> dimensionWaypointBuffers = new ArrayList<>(this.getFileManagerMap().size());
 
-        for(WaypointFileManager fileManager : this.getFileManagerMap().values()) {
+        for (WaypointFileManager fileManager : this.getFileManagerMap().values()) {
             if (fileManager != null && !fileManager.hasNoWaypoints()) {
                 dimensionWaypointBuffers.add(fileManager.toDimensionWaypoint());
             }
