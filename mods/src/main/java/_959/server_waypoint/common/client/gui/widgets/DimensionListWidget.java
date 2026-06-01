@@ -39,7 +39,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     private static int index;
     private final DimensionListCallback callback;
     private final Screen parentScreen;
-    private volatile @Unmodifiable List<String> dimensionNames = List.of();
+    private @Unmodifiable List<String> dimensionNames = List.of();
     private final Font textRenderer;
     private final PaddingBackground paddingBackground = new PaddingBackground(this, 7, 0, 10, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
     private final IconButton addBtn = new IconButton(0, 0, 10, 10, Component.translatable("waypoint.add.button"), WaypointListWidget.ADD_ICON, this::openAddScreen);

@@ -84,7 +84,7 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
     private final WaypointManagerScreen parentScreen;
     private final Font textRenderer;
     private final PaddingBackground paddingBackground = new PaddingBackground(this, 5, 7, 10, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
-    private volatile @Unmodifiable List<WaypointList> waypointLists = List.of();
+    private @Unmodifiable List<WaypointList> waypointLists = List.of();
     private List<Integer> listPositions = List.of();
     private final int itemHeight = 20;
     private final int textVertOffset;
