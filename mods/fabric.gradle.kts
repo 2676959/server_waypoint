@@ -182,9 +182,15 @@ tasks.remapJar {
     dependsOn(tasks.shadowJar)
 }
 
-tasks.jar {
+tasks.withType<Jar>().configureEach {
     from(rootProject.file("LICENSE")) {
         rename { "${it}_$mod_name" }
+    }
+    from(rootProject.file("THIRD_PARTY_NOTICES.md")) {
+        into("META-INF")
+    }
+    from(rootProject.file("LICENSES/Apache-2.0.txt")) {
+        into("META-INF/licenses")
     }
 }
 

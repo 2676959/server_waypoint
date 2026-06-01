@@ -49,6 +49,9 @@ tasks.shadowJar {
     }
     relocate("org.bstats", project.group.toString())
     archiveClassifier.set("")
+    from(rootProject.file("LICENSE")) {
+        rename { "${it}_server_waypoint" }
+    }
 }
 
 tasks.processResources {
@@ -72,4 +75,3 @@ tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
 }
-

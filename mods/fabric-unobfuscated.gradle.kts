@@ -151,9 +151,6 @@ tasks.named("processResources") {
 
 tasks.jar {
     archiveClassifier.set("thin")
-    from(rootProject.file("LICENSE")) {
-        rename { "${it}_$mod_name" }
-    }
 }
 
 tasks.shadowJar {
@@ -163,8 +160,17 @@ tasks.shadowJar {
         exclude("mappings/*")
     }
     archiveClassifier.set("")
+}
+
+tasks.withType<Jar>().configureEach {
     from(rootProject.file("LICENSE")) {
         rename { "${it}_$mod_name" }
+    }
+    from(rootProject.file("THIRD_PARTY_NOTICES.md")) {
+        into("META-INF")
+    }
+    from(rootProject.file("LICENSES/Apache-2.0.txt")) {
+        into("META-INF/licenses")
     }
 }
 
