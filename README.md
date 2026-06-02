@@ -13,6 +13,9 @@
 [![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1.x-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
 [![Paper](https://img.shields.io/badge/1.21.x%20%2026.1.x-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
 
+[![discord-singular](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/social/discord-singular_vector.svg)](https://discord.com/invite/tKtSSYDkHx)
+[![crowdin](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/translate/crowdin_vector.svg)](https://crowdin.com/project/server-waypoint)
+
 Manage waypoints and sync them to other players' clients automatically. Compatible with Xaero's minimap.
 
 ## Features
@@ -47,16 +50,19 @@ Optional:
   - `/wp remove <dimension> <list>` remove an empty waypoint list.
 - `/wp tp` teleport the executor player to a waypoint
 
-## Translation
-This mod currently has built-in translations for English and Simplified Chinese. Command feedbacks will be automatically translated based on the language setting on the sender's client if the corresponding lang file is loaded.
+## Server-side Translations
+Messages and command feedbacks sent by this mod will be automatically translated based on the language setting on the sender's client if the corresponding lang file is loaded. This works entirely on the server-side; players can see the translated message without client-side installation of this mod. Right now, the mod comes with translations for English and Simplified Chinese. If you’re interested, you can help out by adding translations on [Crowdin](https://crowdin.com/project/server-waypoint)!
 
 - ### Add translations
-  Place the lang files under the directory: `<minecraft_root>\config\server_waypoint\lang\`. This mod will load them on server starting, use `/wp reload` if the server is already running. 
+  Place the lang files under the directory: `<minecraft_root>\config\server_waypoint\lang\`. This mod will load them on server starting, use `/wp reload` if the server is already running.
   
 - ### Create a lang file
   Follow the format used in [`en_us.json`](./common/src/main/resources/lang/en_us.json), [`zh_cn.json`](./common/src/main/resources/lang/zh_cn.json).
 
   Name the lang file with a [valid language code](https://minecraft.wiki/w/Language#Languages).
+
+- ### Translation order
+  If the translation you’ve added uses the same language code as the built-in language, this mod will try to find the translation key in the file you added first. If that key isn’t there, it’ll fall back to the built-in translation. So, if you’d like to use your own translation version, you can easily do that by adding your own file and overriding the built-in translation.
 
 ## Waypoints
 - #### Save Path
