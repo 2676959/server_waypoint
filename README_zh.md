@@ -13,7 +13,10 @@
 [![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1.x-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
 [![Paper](https://img.shields.io/badge/1.21.x%20%2026.1.x-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
 
-管理路径点并自动将其同步到其他玩家的客户端。兼容 Xaero 小地图 (Xaero's Minimap)。
+[![discord-singular](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/social/discord-singular_vector.svg)](https://discord.com/invite/tKtSSYDkHx)
+[![crowdin](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/translate/crowdin_vector.svg)](https://crowdin.com/project/server-waypoint)
+
+管理路径点并自动将其同步到其他玩家的客户端，兼容 Xaero 小地图 (Xaero's Minimap)。
 
 ## 主要功能
 - 从服务端自动同步路径点。
@@ -48,7 +51,7 @@
 - `/wp tp` 将执行该命令的玩家传送至指定路径点。
 
 ## 翻译
-本模组目前内置了英语和简体中文翻译。如果加载了对应的语言文件，命令反馈将根据发送者客户端的语言设置自动翻译。
+此模组发送的消息和命令反馈将根据玩家客户端的语言设置自动翻译。此功能完全在服务器端运行；玩家无需在客户端安装此模组即可看到翻译后的消息。目前，该模组支持英语和简体中文翻译。如果您有兴趣，可以在 [Crowdin](https://crowdin.com/project/server-waypoint) 上添加翻译，帮助我们完善翻译。
 
 - ### 添加翻译
   将语言文件放置在目录 `<minecraft_root>\config\server_waypoint\lang\` 下。模组将在服务器启动时加载它们，如果服务器已运行，请使用 `/wp reload`。
@@ -57,6 +60,9 @@
   请遵循 [`en_us.json`](./common/src/main/resources/lang/en_us.json) 或 [`zh_cn.json`](./common/src/main/resources/lang/zh_cn.json) 中的格式。
 
   使用[有效的语言代码](https://minecraft.wiki/w/Language#Languages)命名语言文件。
+  
+- ### 翻译顺序
+  如果您添加的翻译文件使用的语言代码与内置语言相同，此模组会首先尝试在您添加的文件中查找翻译键。如果找不到该键，则会回退到使用内置翻译。如果您想使用自己的翻译版本，只需添加您自己的文件并覆盖内置翻译即可轻松实现。
 
 ## 路径点
 - #### 保存路径
