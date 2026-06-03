@@ -28,6 +28,7 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientConfig.isXaerosMinimapLoaded = FabricLoader.getInstance().isModLoaded("xaerominimap");
+        ClientConfig.isVoxelMapLoaded = FabricLoader.getInstance().isModLoaded("voxelmap");
         keyBinding = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "server_waypoint.waypoint_manager_gui.keybind",
                 InputConstants.Type.KEYSYM,

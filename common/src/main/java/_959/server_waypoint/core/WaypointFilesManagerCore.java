@@ -45,6 +45,10 @@ public class WaypointFilesManagerCore {
         return Collections.unmodifiableMap(this.fileManagerMap);
     }
 
+    public @Nullable Path getWaypointFilesDir() {
+        return this.waypointFilesDir;
+    }
+
     public @Unmodifiable List<Map.Entry<String, WaypointFileManager>> getSortedMap() {
         List<Map.Entry<String, WaypointFileManager>> entries = new ArrayList<>(this.fileManagerMap.entrySet());
         entries.sort((a, b) -> dimensionNameComparator(a.getKey(), b.getKey()));

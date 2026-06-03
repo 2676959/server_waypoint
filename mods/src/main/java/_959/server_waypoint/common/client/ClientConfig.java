@@ -10,7 +10,9 @@ public class ClientConfig {
     @Expose private int waypointBackgroundAlpha = 0x80; // [0, 255]
     @Expose private int viewDistance = 12;
     @Expose private boolean autoSyncToXaerosMinimap = true;
+    @Expose private boolean autoSyncToVoxelMap = true;
     public static boolean isXaerosMinimapLoaded = false;
+    public static boolean isVoxelMapLoaded = false;
 
     private ClientConfig() {}
 
@@ -29,6 +31,14 @@ public class ClientConfig {
 
     public void setAutoSyncToXaerosMinimap(boolean autoSyncToXaerosMinimap) {
         this.autoSyncToXaerosMinimap = autoSyncToXaerosMinimap;
+    }
+
+    public boolean isAutoSyncToVoxelMap() {
+        return isVoxelMapLoaded && autoSyncToVoxelMap;
+    }
+
+    public void setAutoSyncToVoxelMap(boolean autoSyncToVoxelMap) {
+        this.autoSyncToVoxelMap = autoSyncToVoxelMap;
     }
 
     public int getViewDistance() {
