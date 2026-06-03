@@ -4,7 +4,6 @@ package _959.server_waypoint.common.network;
 /*import _959.server_waypoint.access.PlayerLocaleAccessor;*/
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.buffer.MessageBuffer;
-import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -12,12 +11,12 @@ import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.Translator;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
+
+import java.util.Collection;
 import java.util.Locale;
 
 
 import static _959.server_waypoint.common.network.BufferPayloadMapping.getPayload;
-import static net.kyori.adventure.text.Component.text;
-
 //? if >= 1.20.3 {
 import com.mojang.serialization.JsonOps;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -91,19 +90,13 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
     }
 
     @Override
-    public void broadcastWaypointModification(CommandSourceStack source, WaypointModificationBuffer modification) {
-        Component info = this.getModificationMessage(text(source.getTextName()), modification);
-//        if (executorPlayer != null) {
-//            info = Component.translatable("waypoint.modification.broadcast.player", Component.text(executorPlayer.getName().getString()), modification.type().toTranslatable(), waypointText);
-//        } else {
-//            info = Component.translatable("waypoint.modification.broadcast.server", modification.type().toTranslatable(), waypointText);
-//        }
-        source.getServer().getPlayerList().getPlayers().forEach(
-                player -> {
-                    sendPlayerMessage(player, info);
-                    sendPlayerPacket(player, modification);
-                }
-        );
+    public Collection<ServerPlayer> getBroadcastPlayers(CommandSourceStack source) {
+        return source.getServer().getPlayerList().getPlayers();
+    }
+
+    @Override
+    public Component getSenderName(CommandSourceStack source) {
+        return Component.text(source.getTextName());
     }
 
     @Override

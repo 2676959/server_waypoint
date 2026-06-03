@@ -13,9 +13,25 @@ public interface PlatformMessageSender<S, P> {
     void sendMessage(S source, Component component);
     void sendPlayerMessage(P player, Component component);
     void sendError(S source, Component component);
-    void broadcastWaypointModification(S source, WaypointModificationBuffer modification);
     void sendPacket(S source, MessageBuffer packet);
     void sendPlayerPacket(P player, MessageBuffer packet);
+    Iterable<? extends P> getBroadcastPlayers(S source);
+    Component getSenderName(S source);
+
+    default void broadcastWaypointModification(S source, WaypointModificationBuffer modification) {
+        Component info = this.getModificationMessage(this.getSenderName(source), modification);
+        for (P player : this.getBroadcastPlayers(source)) {
+            this.sendPlayerMessage(player, info);
+            this.sendPlayerPacket(player, modification);
+        }
+    }
+
+    default void broadcastPacket(S source, MessageBuffer packet) {
+        for (P player : this.getBroadcastPlayers(source)) {
+            this.sendPlayerPacket(player, packet);
+        }
+    }
+
     default Component getModificationMessage(Component senderName, WaypointModificationBuffer modification) {
         return switch (modification.type()) {
             case ADD, REMOVE, UPDATE -> {

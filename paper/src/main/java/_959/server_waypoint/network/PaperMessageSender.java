@@ -2,13 +2,13 @@ package _959.server_waypoint.network;
 
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.buffer.MessageBuffer;
-import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Server;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Collection;
 
 @SuppressWarnings("UnstableApiUsage")
 public class PaperMessageSender implements PlatformMessageSender<CommandSourceStack, Player> {
@@ -34,10 +34,13 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
     }
 
     @Override
-    public void broadcastWaypointModification(CommandSourceStack source, WaypointModificationBuffer modification) {
-        Server server = source.getSender().getServer();
-        server.sendMessage(this.getModificationMessage(source.getSender().name(), modification));
-        server.sendPluginMessage(this.plugin, modification.getChannelId().toString(), modification.encode());
+    public Collection<? extends Player> getBroadcastPlayers(CommandSourceStack source) {
+        return source.getSender().getServer().getOnlinePlayers();
+    }
+
+    @Override
+    public Component getSenderName(CommandSourceStack source) {
+        return source.getSender().name();
     }
 
     @Override

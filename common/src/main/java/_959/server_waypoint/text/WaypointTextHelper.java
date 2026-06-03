@@ -105,7 +105,11 @@ public class WaypointTextHelper {
                         .appendNewline()
                         .append(text("  ".repeat(indentLevel) + listName, NamedTextColor.WHITE))
                         .appendSpace().append(text("⬅")).appendSpace().append(dimensionNameWithColor(dimensionName));
-        listText = listText.decoration(TextDecoration.BOLD, true);
+        listText = listText.decoration(TextDecoration.BOLD, true)
+                .appendSpace()
+                .append(text("[", NamedTextColor.GRAY).decoration(TextDecoration.BOLD, false))
+                .append(waypointList.getSyncMode().toTranslatable().color(NamedTextColor.GRAY).decoration(TextDecoration.BOLD, false))
+                .append(text("]", NamedTextColor.GRAY).decoration(TextDecoration.BOLD, false));
         listText = listText.appendNewline();
         int secondLevel = indentLevel + 1;
         if (waypointList.isEmpty()) {

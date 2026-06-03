@@ -45,6 +45,10 @@
 
   "waypoint.reload": "Reload config file and language files",
   "waypoint.loaded.languages": "Loaded {0} languages: {1}",
+  "waypoint.sync_mode.replace_list": "Replace list",
+  "waypoint.sync_mode.tracked_waypoints": "Tracked waypoints only",
+  "waypoint.sync_mode.invalid": "Invalid sync mode: {0}",
+  "waypoint.sync_mode.success": "Waypoint list \"{0}\" sync mode set to {1}",
 
   "button.initials.tp": "click to tp",
   "button.replace": "click to replace",

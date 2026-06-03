@@ -3,6 +3,7 @@ package _959.server_waypoint.common.util;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.core.waypoint.WaypointSyncMode;
 import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
 import xaero.common.minimap.waypoints.Waypoint;
 import xaero.hud.minimap.BuiltInHudModules;
@@ -63,7 +64,11 @@ public class XaeroMinimapHelper {
     }
 
     public static void replaceWaypointList(MinimapWorld minimapWorld, WaypointList waypointList) {
-       WaypointSet waypointSet = WaypointSet.Builder.begin().setName(waypointList.name()).build();
+        if (waypointList.getSyncMode() == WaypointSyncMode.TRACKED_WAYPOINTS) {
+            syncWaypointListByWaypoints(minimapWorld, waypointList);
+            return;
+        }
+        WaypointSet waypointSet = WaypointSet.Builder.begin().setName(waypointList.name()).build();
         for (SimpleWaypoint simpleWaypoint : waypointList.simpleWaypoints()) {
             if (simpleWaypoint != null) {
 //                ServerWaypointClientMod.LOGGER.info("waypoint {} added", simpleWaypoint.name());
@@ -71,6 +76,19 @@ public class XaeroMinimapHelper {
             }
         }
         minimapWorld.addWaypointSet(waypointSet);
+    }
+
+    private static void syncWaypointListByWaypoints(MinimapWorld minimapWorld, WaypointList waypointList) {
+        WaypointSet waypointSet = minimapWorld.getWaypointSet(waypointList.name());
+        if (waypointSet == null) {
+            waypointSet = WaypointSet.Builder.begin().setName(waypointList.name()).build();
+            minimapWorld.addWaypointSet(waypointSet);
+        }
+        for (SimpleWaypoint simpleWaypoint : waypointList.simpleWaypoints()) {
+            if (simpleWaypoint != null) {
+                replaceWaypoint(waypointSet, XaerosWaypointHelper.simpleWaypointToXaerosWaypoint(simpleWaypoint));
+            }
+        }
     }
 
     public static void replaceWaypointLists(MinimapWorld minimapWorld, List<WaypointList> waypointLists) {
