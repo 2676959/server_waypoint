@@ -93,7 +93,7 @@ public class LanguageFilesManager {
         JsonObject jsonObject = JsonParser.parseReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
                 .getAsJsonObject();
         Map<String, String> languageMap = convertJsonToHashMap(jsonObject);
-        String key = fileName.split("\\.")[0];
+        String key = fileName.split("\\.")[0].toLowerCase();
         internalTranslations.put(key, languageMap);
     }
 
@@ -103,7 +103,7 @@ public class LanguageFilesManager {
             return;
         }
         try {
-            String key = fullPath.getFileName().toString().split("\\.")[0];
+            String key = fullPath.getFileName().toString().split("\\.")[0].toLowerCase();
             JsonObject jsonObject = JsonParser.parseReader(Files.newBufferedReader(fullPath, StandardCharsets.UTF_8))
                     .getAsJsonObject();
             Map<String, String> languageMap = convertJsonToHashMap(jsonObject);
