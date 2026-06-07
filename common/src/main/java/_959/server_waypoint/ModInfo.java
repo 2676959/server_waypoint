@@ -6,6 +6,6 @@ package _959.server_waypoint;
 public final class ModInfo {
     public static final String MOD_ID = "server_waypoint";
     public static final String MOD_NAME = "Server Waypoint";
-    public static final String MOD_VERSION = "3.0.2";
+    public static final String MOD_VERSION = "3.0.3";
     public static final String DOWNLOAD_URL = "https://modrinth.com/plugin/server_waypoint/versions";
 }
