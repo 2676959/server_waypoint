@@ -40,7 +40,7 @@ Optional:
 - In the waypoint manager screen, press `C` to open client configuration screen.
 
 ## Commands
-- `/wp add` add a new waypoint. Cannot add waypoint with duplicate name. Prompts user to use `/wp edit` to replace the existing one.
+- `/wp add` add a new waypoint. No duplicate name allowed. Prompts user to use `/wp edit` to replace the existing one.
   - `/wp add <dimension> <list>` add a waypoint list.
 - `/wp download` download waypoints and add to Xaero's Minimap (will not work without client installation).
 - `/wp edit` edit a waypoint.
@@ -63,6 +63,18 @@ Messages and command feedbacks sent by this mod will be automatically translated
 
 - ### Translation order
   If the translation you’ve added uses the same language code as the built-in language, this mod will try to find the translation key in the file you added first. If that key isn’t there, it’ll fall back to the built-in translation. So, if you’d like to use your own translation version, you can easily do that by adding your own file and overriding the built-in translation.
+
+Community translator credits and credit pull request guidelines are documented in [`TRANSLATOR_CREDITS.md`](./TRANSLATOR_CREDITS.md).
+
+## Translation Credits
+Thank you to the community translators who help make Server Waypoint available to more players in more languages.
+
+- #### Hebrew
+  - ##### [hotspotty](https://discord.com/users/575744894593663006)
+- #### Traditional Chinese
+  - ##### Ymaomi
+- #### Traditional Chinese (Hong Kong)
+  - ##### Ymaomi
 
 ## Waypoints
 - #### Save Path

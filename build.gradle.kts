@@ -1,3 +1,5 @@
+import org.gradle.jvm.tasks.Jar
+
 plugins {
     id("net.fabricmc.fabric-loom") version "1.15.5" apply false
     id("net.fabricmc.fabric-loom-remap") version "1.15.5" apply false
@@ -11,5 +13,13 @@ plugins {
 allprojects {
     repositories {
         mavenCentral()
+    }
+}
+
+subprojects {
+    tasks.withType<Jar>().configureEach {
+        from(rootProject.file("CREDITS.txt")) {
+            rename { "SERVER_WAYPOINT_CREDITS.txt" }
+        }
     }
 }

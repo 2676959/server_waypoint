@@ -64,6 +64,17 @@
 - ### 翻译顺序
   如果您添加的翻译文件使用的语言代码与内置语言相同，此模组会首先尝试在您添加的文件中查找翻译键。如果找不到该键，则会回退到使用内置翻译。如果您想使用自己的翻译版本，只需添加您自己的文件并覆盖内置翻译即可轻松实现。
 
+社区翻译者署名与署名 pull request 指南请见 [`TRANSLATOR_CREDITS.md`](./TRANSLATOR_CREDITS.md)。
+
+## 翻译鸣谢
+感谢社区翻译者帮助 Server Waypoint 支持更多语言，让更多玩家可以使用本模组。
+
+以下示例条目是占位内容，应在之后替换为真实的翻译贡献者。
+
+- Example Translator
+- Sample Localizer https://example.com/sample-localizer
+- Demo Contributor https://example.com/demo-contributor
+
 ## 路径点
 - #### 保存路径
   服务端：
