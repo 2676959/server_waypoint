@@ -7,7 +7,7 @@ import _959.server_waypoint.common.client.gui.WidgetThemeColors;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
-import _959.server_waypoint.common.client.handlers.HandlerForXaerosMinimap;
+import _959.server_waypoint.common.client.integrations.MapModIntegrations;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -101,7 +101,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
     private void runXaerosSync() {
         if (isXaerosMinimapLoaded) {
-            HandlerForXaerosMinimap.syncFromServerWaypointMod();
+            MapModIntegrations.syncXaerosMinimap(WaypointClientMod.getInstance());
         }
         this.closeXaerosSyncConfirmationDialog();
     }

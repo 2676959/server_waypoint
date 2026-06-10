@@ -16,18 +16,6 @@ import net.minecraft.client.player.LocalPlayer;
  * handle mod custom payloads for fabric and neoforge
  * */
 public class S2CPayloadHandler {
-    private static final BufferHandler xaeroMinimapPacketHandler = new HandlerForXaerosMinimap();
-    //? if fabric {
-    private static BufferHandler voxelMapPacketHandler;
-
-    private static BufferHandler getVoxelMapPacketHandler() {
-        if (voxelMapPacketHandler == null) {
-            voxelMapPacketHandler = new HandlerForVoxelMap();
-        }
-        return voxelMapPacketHandler;
-    }
-    //?}
-
     public interface CustomPayloadHandler<B extends MessageBuffer, P extends ModPayload> {
         void bufferHandler(B buffer);
         B payloadToBuffer(P payload);
@@ -67,8 +55,6 @@ public class S2CPayloadHandler {
         @Override
         public void bufferHandler(UpdatesBundleBuffer buffer) {
             WaypointClientMod.getInstance().onUpdatesBundle(buffer);
-            //? if fabric
-            if (WaypointClientMod.getClientConfig().isAutoSyncToVoxelMap()) getVoxelMapPacketHandler().onUpdatesBundle(buffer);
         }
     }
 
@@ -81,9 +67,6 @@ public class S2CPayloadHandler {
         @Override
         public void bufferHandler(WaypointListBuffer buffer) {
             WaypointClientMod.getInstance().onWaypointList(buffer);
-            if (WaypointClientMod.getClientConfig().isAutoSyncToXaerosMinimap()) xaeroMinimapPacketHandler.onWaypointList(buffer);
-            //? if fabric
-            if (WaypointClientMod.getClientConfig().isAutoSyncToVoxelMap()) getVoxelMapPacketHandler().onWaypointList(buffer);
         }
     }
 
@@ -96,9 +79,6 @@ public class S2CPayloadHandler {
         @Override
         public void bufferHandler(DimensionWaypointBuffer buffer) {
             WaypointClientMod.getInstance().onDimensionWaypoint(buffer);
-            if (WaypointClientMod.getClientConfig().isAutoSyncToXaerosMinimap()) xaeroMinimapPacketHandler.onDimensionWaypoint(buffer);
-            //? if fabric
-            if (WaypointClientMod.getClientConfig().isAutoSyncToVoxelMap()) getVoxelMapPacketHandler().onDimensionWaypoint(buffer);
         }
     }
 
@@ -111,9 +91,6 @@ public class S2CPayloadHandler {
         @Override
         public void bufferHandler(WorldWaypointBuffer buffer) {
             WaypointClientMod.getInstance().onWorldWaypoint(buffer);
-            if (WaypointClientMod.getClientConfig().isAutoSyncToXaerosMinimap()) xaeroMinimapPacketHandler.onWorldWaypoint(buffer);
-            //? if fabric
-            if (WaypointClientMod.getClientConfig().isAutoSyncToVoxelMap()) getVoxelMapPacketHandler().onWorldWaypoint(buffer);
         }
     }
 
@@ -126,9 +103,6 @@ public class S2CPayloadHandler {
         @Override
         public void bufferHandler(WaypointModificationBuffer buffer) {
             WaypointClientMod.getInstance().onWaypointModification(buffer);
-            if (WaypointClientMod.getClientConfig().isAutoSyncToXaerosMinimap()) xaeroMinimapPacketHandler.onWaypointModification(buffer);
-            //? if fabric
-            if (WaypointClientMod.getClientConfig().isAutoSyncToVoxelMap()) getVoxelMapPacketHandler().onWaypointModification(buffer);
         }
     }
 }

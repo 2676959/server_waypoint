@@ -1,8 +1,7 @@
 //? if fabric {
-package _959.server_waypoint.common.client.handlers;
+package _959.server_waypoint.common.client.integrations;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
-import _959.server_waypoint.core.network.buffer.*;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
@@ -18,110 +17,61 @@ import java.util.function.BiPredicate;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 
-/**
- * Runs VoxelMap related logic when receiving buffers.
- */
-public class HandlerForVoxelMap implements BufferHandler {
+public final class VoxelMapWaypointHelper {
     private static final String SERVER_WAYPOINT_PREFIX = "sw";
     private static final String NAME_SEPARATOR = "\u241F";
     private static final String SERVER_WAYPOINT_NAME_PREFIX = SERVER_WAYPOINT_PREFIX + NAME_SEPARATOR;
 
-    public static void syncFromServerWaypointMod() {
-        HandlerForVoxelMap handler = new HandlerForVoxelMap();
-        WaypointClientMod waypointClientMod = WaypointClientMod.getInstance();
-        waypointClientMod.forEachWaypointFileManager(fileManager ->
-                handler.replaceDimension(fileManager.getDimensionName(), fileManager.getWaypointLists()));
+    private VoxelMapWaypointHelper() {
     }
 
-    @Override
-    public void onServerHandshake(ServerHandshakeBuffer buffer) {
-    }
-
-    @Override
-    public void onUpdatesBundle(UpdatesBundleBuffer buffer) {
-        for (DimensionWaypointBuffer dimensionWaypointBuffer : buffer) {
-            String dimensionName = dimensionWaypointBuffer.dimensionName();
-            List<WaypointList> waypointLists = dimensionWaypointBuffer.waypointLists();
-            if (waypointLists.isEmpty()) {
-                removeDimension(dimensionName);
-                continue;
-            }
-            for (WaypointList waypointList : waypointLists) {
-                if (waypointList.getSyncNum() == WaypointList.REMOVE_LIST) {
-                    removeList(dimensionName, waypointList.name());
-                } else {
-                    replaceList(dimensionName, waypointList);
-                }
-            }
-        }
-    }
-
-    @Override
-    public void onWaypointList(WaypointListBuffer buffer) {
-        replaceList(buffer.dimensionName(), buffer.waypointList());
-    }
-
-    @Override
-    public void onDimensionWaypoint(DimensionWaypointBuffer buffer) {
-        replaceDimension(buffer.dimensionName(), buffer.waypointLists());
-    }
-
-    @Override
-    public void onWorldWaypoint(WorldWaypointBuffer buffer) {
+    public static void replaceAll(WaypointClientMod waypointClientMod) {
         WaypointManager manager = getWaypointManager();
         removeSyncedWaypoints(manager, (waypoint, parsedName) -> true);
-        for (DimensionWaypointBuffer dimensionWaypointBuffer : buffer) {
-            addLists(manager, dimensionWaypointBuffer.dimensionName(), dimensionWaypointBuffer.waypointLists());
-        }
+        waypointClientMod.forEachWaypointFileManager(fileManager ->
+                addLists(manager, fileManager.getDimensionName(), fileManager.getWaypointLists()));
     }
 
-    @Override
-    public void onWaypointModification(WaypointModificationBuffer buffer) {
-        WaypointManager manager = getWaypointManager();
-        WaypointModificationType type = buffer.type();
-        switch (type) {
-            case ADD, UPDATE -> {
-                removeSyncedWaypoint(manager, buffer.dimensionName(), buffer.listName(), buffer.waypointName());
-                addWaypoint(manager, buffer.dimensionName(), buffer.listName(), buffer.waypoint());
-            }
-            case REMOVE -> removeSyncedWaypoint(manager, buffer.dimensionName(), buffer.listName(), buffer.waypointName());
-            case REMOVE_LIST -> removeList(buffer.dimensionName(), buffer.listName());
-            case ADD_LIST -> {
-            }
-        }
-    }
-
-    private void replaceDimension(String dimensionName, List<WaypointList> waypointLists) {
+    public static void replaceDimension(String dimensionName, List<WaypointList> waypointLists) {
         WaypointManager manager = getWaypointManager();
         removeSyncedWaypoints(manager, (waypoint, parsedName) -> waypointInDimension(waypoint, dimensionName));
         addLists(manager, dimensionName, waypointLists);
     }
 
-    private void replaceList(String dimensionName, WaypointList waypointList) {
+    public static void replaceList(String dimensionName, WaypointList waypointList) {
         WaypointManager manager = getWaypointManager();
         removeSyncedWaypoints(manager, (waypoint, parsedName) ->
                 waypointList.name().equals(parsedName.listName()) && waypointInDimension(waypoint, dimensionName));
         addList(manager, dimensionName, waypointList);
     }
 
-    private void removeDimension(String dimensionName) {
+    public static void applyModification(String dimensionName, String listName, WaypointModificationType type, SimpleWaypoint waypoint, String waypointName) {
         WaypointManager manager = getWaypointManager();
-        removeSyncedWaypoints(manager, (waypoint, parsedName) -> waypointInDimension(waypoint, dimensionName));
+        switch (type) {
+            case ADD, UPDATE -> {
+                removeSyncedWaypoint(manager, dimensionName, listName, waypointName);
+                addWaypoint(manager, dimensionName, listName, waypoint);
+            }
+            case REMOVE -> removeSyncedWaypoint(manager, dimensionName, listName, waypointName);
+            case REMOVE_LIST -> removeList(dimensionName, listName);
+            case ADD_LIST -> {
+            }
+        }
     }
 
-    private void removeList(String dimensionName, String listName) {
+    private static void removeList(String dimensionName, String listName) {
         WaypointManager manager = getWaypointManager();
         removeSyncedWaypoints(manager, (waypoint, parsedName) ->
                 listName.equals(parsedName.listName()) && waypointInDimension(waypoint, dimensionName));
     }
 
-    private void addLists(WaypointManager manager, String dimensionName, List<WaypointList> waypointLists) {
+    private static void addLists(WaypointManager manager, String dimensionName, List<WaypointList> waypointLists) {
         for (WaypointList waypointList : waypointLists) {
             addList(manager, dimensionName, waypointList);
         }
     }
 
-    private void addList(WaypointManager manager, String dimensionName, WaypointList waypointList) {
+    private static void addList(WaypointManager manager, String dimensionName, WaypointList waypointList) {
         for (SimpleWaypoint simpleWaypoint : waypointList.simpleWaypoints()) {
             Waypoint waypoint = toVoxelMapWaypoint(manager, dimensionName, waypointList.name(), simpleWaypoint);
             if (waypoint != null) {
@@ -130,7 +80,7 @@ public class HandlerForVoxelMap implements BufferHandler {
         }
     }
 
-    private void addWaypoint(WaypointManager manager, String dimensionName, String listName, SimpleWaypoint simpleWaypoint) {
+    private static void addWaypoint(WaypointManager manager, String dimensionName, String listName, SimpleWaypoint simpleWaypoint) {
         if (simpleWaypoint == null) {
             return;
         }
@@ -141,7 +91,7 @@ public class HandlerForVoxelMap implements BufferHandler {
         manager.addWaypoint(waypoint);
     }
 
-    private Waypoint toVoxelMapWaypoint(WaypointManager manager, String dimensionName, String listName, SimpleWaypoint simpleWaypoint) {
+    private static Waypoint toVoxelMapWaypoint(WaypointManager manager, String dimensionName, String listName, SimpleWaypoint simpleWaypoint) {
         DimensionContainer dimension = VoxelConstants.getVoxelMapInstance()
                 .getDimensionManager()
                 .getDimensionContainerByIdentifier(dimensionName);
@@ -182,14 +132,14 @@ public class HandlerForVoxelMap implements BufferHandler {
         );
     }
 
-    private void removeSyncedWaypoint(WaypointManager manager, String dimensionName, String listName, String waypointName) {
+    private static void removeSyncedWaypoint(WaypointManager manager, String dimensionName, String listName, String waypointName) {
         removeSyncedWaypoints(manager, (waypoint, parsedName) ->
                 listName.equals(parsedName.listName())
                         && waypointName.equals(parsedName.waypointName())
                         && waypointInDimension(waypoint, dimensionName));
     }
 
-    private void removeSyncedWaypoints(WaypointManager manager, BiPredicate<Waypoint, ParsedVoxelMapName> shouldRemove) {
+    private static void removeSyncedWaypoints(WaypointManager manager, BiPredicate<Waypoint, ParsedVoxelMapName> shouldRemove) {
         List<Waypoint> matches = new ArrayList<>();
         for (Waypoint waypoint : manager.getWaypoints()) {
             ParsedVoxelMapName parsedName = parseVoxelMapName(waypoint.name);
@@ -202,7 +152,7 @@ public class HandlerForVoxelMap implements BufferHandler {
         }
     }
 
-    private boolean waypointInDimension(Waypoint waypoint, String dimensionName) {
+    private static boolean waypointInDimension(Waypoint waypoint, String dimensionName) {
         String voxelMapDimensionName = toVoxelMapStorageName(dimensionName);
         return waypoint.dimensions.stream().anyMatch(dimension -> voxelMapDimensionName.equals(dimension.getStorageName()));
     }

@@ -8,7 +8,7 @@ import xaero.hud.minimap.world.state.MinimapWorldStateUpdater;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.*;
 import static _959.server_waypoint.common.client.WaypointClientMod.ClientNetworkState.SYNC_FINISHED;
-import static _959.server_waypoint.common.client.handlers.HandlerForXaerosMinimap.syncFromServerWaypointMod;
+import static _959.server_waypoint.common.client.integrations.MapModIntegrations.syncXaerosMinimap;
 
 @Mixin(MinimapWorldStateUpdater.class)
 public class MinimapWorldStateUpdaterMixin {
@@ -17,7 +17,7 @@ public class MinimapWorldStateUpdaterMixin {
     private void injectOnServerLevelId(int id, CallbackInfo ci) {
         isXaerosMinimapReady = true;
         if (getClientConfig().isAutoSyncToXaerosMinimap() && getNetworkState().equals(SYNC_FINISHED)) {
-            syncFromServerWaypointMod();
+            syncXaerosMinimap(getInstance());
         }
     }
 }

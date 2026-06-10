@@ -3,7 +3,8 @@ package _959.server_waypoint.common.client;
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.handlers.BufferHandler;
-import _959.server_waypoint.common.client.handlers.HandlerForXaerosMinimap;
+import _959.server_waypoint.common.client.integrations.ClientWaypointSyncEvent;
+import _959.server_waypoint.common.client.integrations.MapModIntegrations;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
 import _959.server_waypoint.common.network.payload.c2s.UpdateRequestC2SPayload;
@@ -309,11 +310,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                 }
             }
         }
-        if (clientConfig.isAutoSyncToXaerosMinimap() && isXaerosMinimapReady) {
-            HandlerForXaerosMinimap.syncFromServerWaypointMod();
-        }
         networkState = ClientNetworkState.SYNC_FINISHED;
         OptimizedWaypointRenderer.loadScene(getCurrentWaypointLists());
+        MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.allSynced(), this);
     }
 
     @Override
@@ -336,6 +335,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             OptimizedWaypointRenderer.addList(newList.simpleWaypoints());
             WaypointManagerScreen.updateCurrentWaypointLists(fileManager.getWaypointLists());
         }
+        MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.listReplaced(dimensionName, newList), this);
     }
 
     @Override
@@ -358,6 +358,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             OptimizedWaypointRenderer.loadScene(waypointLists);
             WaypointManagerScreen.updateCurrentWaypointLists(waypointLists);
         }
+        MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.dimensionReplaced(buffer.dimensionName(), fileManager.getWaypointLists()), this);
     }
 
     @Override
@@ -394,6 +395,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         }
         networkState = ClientNetworkState.SYNC_FINISHED;
         WaypointManagerScreen.updateCurrentView();
+        MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.worldReplaced(), this);
     }
 
     private void updateDimensionName() {
@@ -437,6 +439,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                         OptimizedWaypointRenderer.add(waypoint);
                     }
                     WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
+                    MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, waypoint, waypoint.name()), this);
                 }
                 case REMOVE -> {
                     if (fileManager == null) {
@@ -455,6 +458,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                             OptimizedWaypointRenderer.remove(wpToRemove);
                         }
                         WaypointManagerScreen.refreshWaypointLists(dimensionName);
+                        MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, null, waypointName), this);
                     }
                 }
                 case UPDATE -> {
@@ -475,6 +479,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                     }
                     waypointList.setSyncNum(buffer.syncId());
                     fileManager.saveDimension();
+                    MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, waypointFound, buffer.waypointName()), this);
                 }
                 case ADD_LIST -> {
                     if (fileManager == null) {
@@ -488,6 +493,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                     }
                     WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
                     fileManager.saveDimension();
+                    MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, null, null), this);
                 }
                 case REMOVE_LIST -> {
                     if (fileManager == null) {
@@ -501,6 +507,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                     }
                     WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
                     fileManager.saveDimension();
+                    MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.waypointModified(dimensionName, listName, modificationType, null, null), this);
                 }
             }
         } catch (IOException e) {
