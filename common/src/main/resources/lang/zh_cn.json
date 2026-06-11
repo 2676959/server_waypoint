@@ -45,10 +45,6 @@
 
   "waypoint.reload": "正在重新加载配置文件和语言文件",
   "waypoint.loaded.languages": "已加载{0}种语言: {1}",
-  "waypoint.sync_mode.replace_list": "替换整个列表",
-  "waypoint.sync_mode.tracked_waypoints": "仅同步受管理路径点",
-  "waypoint.sync_mode.invalid": "无效的同步模式：{0}",
-  "waypoint.sync_mode.success": "路径点列表“{0}”的同步模式已设为{1}",
 
   "button.initials.tp": "点击传送",
   "button.replace": "点击替换路径点",

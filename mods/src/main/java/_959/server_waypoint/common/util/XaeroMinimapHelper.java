@@ -3,7 +3,6 @@ package _959.server_waypoint.common.util;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
-import _959.server_waypoint.core.waypoint.WaypointSyncMode;
 import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
 import xaero.common.minimap.waypoints.Waypoint;
 import xaero.hud.minimap.BuiltInHudModules;
@@ -64,18 +63,7 @@ public class XaeroMinimapHelper {
     }
 
     public static void replaceWaypointList(MinimapWorld minimapWorld, WaypointList waypointList) {
-        if (waypointList.getSyncMode() == WaypointSyncMode.TRACKED_WAYPOINTS) {
-            syncWaypointListByWaypoints(minimapWorld, waypointList);
-            return;
-        }
-        WaypointSet waypointSet = WaypointSet.Builder.begin().setName(waypointList.name()).build();
-        for (SimpleWaypoint simpleWaypoint : waypointList.simpleWaypoints()) {
-            if (simpleWaypoint != null) {
-//                ServerWaypointClientMod.LOGGER.info("waypoint {} added", simpleWaypoint.name());
-                waypointSet.add(XaerosWaypointHelper.simpleWaypointToXaerosWaypoint(simpleWaypoint));
-            }
-        }
-        minimapWorld.addWaypointSet(waypointSet);
+        syncWaypointListByWaypoints(minimapWorld, waypointList);
     }
 
     private static void syncWaypointListByWaypoints(MinimapWorld minimapWorld, WaypointList waypointList) {

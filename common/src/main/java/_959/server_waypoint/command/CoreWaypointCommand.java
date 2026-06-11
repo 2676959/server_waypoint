@@ -12,7 +12,6 @@ import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
-import _959.server_waypoint.core.waypoint.WaypointSyncMode;
 import _959.server_waypoint.text.TextButton;
 import _959.server_waypoint.util.TriConsumer;
 import _959.server_waypoint.util.WaypointInitials;
@@ -71,7 +70,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private final SuggestionProvider<S> WAYPOINT_LIST_SUGGESTION = new WaypointListSuggestion();
     private final SuggestionProvider<S> NAME_INITIALS_SUGGESTION = new NameInitialsSuggestion();
     private final SuggestionProvider<S> NEW_NAME_INITIALS_SUGGESTION = new NewNameInitialsSuggestion();
-    private final SuggestionProvider<S> SYNC_MODE_SUGGESTION = new SyncModeSuggestion();
     private final SuggestionProvider<S> PLAYER_YAW_SUGGESTION = new PlayerYawSuggestion();
     private final SuggestionProvider<S> HEX_COLOR_CODE_SUGGESTION = new HexColorCodeSuggestion();
     public static final String WAYPOINT_COMMAND = "wp";
@@ -79,7 +77,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String EDIT_COMMAND = "edit";
     public static final String REMOVE_COMMAND = "remove";
     public static final String LIST_COMMAND = "list";
-    public static final String SYNC_MODE_COMMAND = "sync-mode";
     public static final String DOWNLOAD_COMMAND = "download";
     public static final String TP_COMMAND = "tp";
     public static final String RELOAD_COMMAND = "reload";
@@ -92,7 +89,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String YAW_ARG = "yaw";
     public static final String COLOR_ARG = "color";
     public static final String VISIBILITY_ARG = "global";
-    public static final String SYNC_MODE_ARG = "sync mode";
     public static final String RANDOM_COLOR = "random";
 
     public CoreWaypointCommand(WaypointServerCore waypointServer, PlatformMessageSender<S, P> sender, PermissionManager<S, K, P> permissionManager, Supplier<ArgumentType<D>> dimensionArgument, Supplier<ArgumentType<B>> blockPositionArgument) {
@@ -185,11 +181,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     @SuppressWarnings("unchecked")
     private ArgumentBuilder<S, ?> listNameNode() {
         return (ArgumentBuilder<S, ?>) argument(LIST_NAME_ARG, string()).suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION);
-    }
-
-    @SuppressWarnings("unchecked")
-    private ArgumentBuilder<S, ?> syncModeNode() {
-        return (ArgumentBuilder<S, ?>) argument(SYNC_MODE_ARG, string()).suggests((SuggestionProvider<Object>) SYNC_MODE_SUGGESTION);
     }
 
     @SuppressWarnings("unchecked")
@@ -446,26 +437,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                     executeListCurrentDimension((S) context.getSource());
                                     return Command.SINGLE_SUCCESS;
                                 }
-                        )
-                )
-                .then(literal(SYNC_MODE_COMMAND)
-                        .requires(source -> hasEditPermission((S) source))
-                        .then((ArgumentBuilder<Object, ?>) dimensionNode()
-                                .then(listNameNode()
-                                        .then(syncModeNode()
-                                                .executes(
-                                                        context -> {
-                                                            executeSetSyncMode(
-                                                                    context.getSource(),
-                                                                    getArgument(context, DIMENSION_ARG),
-                                                                    getString(context, LIST_NAME_ARG),
-                                                                    getString(context, SYNC_MODE_ARG)
-                                                            );
-                                                            return Command.SINGLE_SUCCESS;
-                                                        }
-                                                )
-                                        )
-                                )
                         )
                 )
                 .then(literal(RELOAD_COMMAND)
@@ -784,28 +755,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 );
     }
 
-    private void executeSetSyncMode(S source, D dimensionArgument, String listName, String syncModeName) {
-        WaypointSyncMode syncMode;
-        try {
-            syncMode = WaypointSyncMode.fromSerializedName(syncModeName);
-        } catch (IllegalArgumentException e) {
-            this.sender.sendError(source, translatable("waypoint.sync_mode.invalid", text(syncModeName)));
-            return;
-        }
-        runWithSelectorTarget(source, dimensionArgument, listName,
-                (fileManager, waypointList) -> setSyncMode(source, fileManager, waypointList, syncMode),
-                (fileManager, waypointList) -> setSyncMode(source, fileManager, waypointList, syncMode));
-    }
-
-    private void setSyncMode(S source, WaypointFileManager fileManager, WaypointList waypointList, WaypointSyncMode syncMode) {
-        if (waypointList.getSyncMode() != syncMode) {
-            waypointList.setSyncMode(syncMode);
-            saveChanges(source, fileManager);
-            this.sender.broadcastPacket(source, new WaypointListBuffer(fileManager.getDimensionName(), waypointList));
-        }
-        this.sender.sendMessage(source, translatable("waypoint.sync_mode.success", text(waypointList.name()), syncMode.toTranslatable()));
-    }
-
     private void executeReload(S source) {
         executeByServer(source, () -> {
             this.waypointServer.reload();
@@ -1004,17 +953,4 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         }
     }
 
-    public class SyncModeSuggestion implements SuggestionProvider<S> {
-        @Override
-        public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-            String currentInput = stripOuterQuotes(builder.getRemaining());
-            for (WaypointSyncMode mode : WaypointSyncMode.values()) {
-                String name = mode.getSerializedName();
-                if (name.startsWith(currentInput)) {
-                    builder.suggest(name, getMessageFromComponent(mode.toTranslatable()));
-                }
-            }
-            return builder.buildFuture();
-        }
-    }
 }

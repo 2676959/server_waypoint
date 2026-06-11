@@ -26,12 +26,6 @@ public interface PlatformMessageSender<S, P> {
         }
     }
 
-    default void broadcastPacket(S source, MessageBuffer packet) {
-        for (P player : this.getBroadcastPlayers(source)) {
-            this.sendPlayerPacket(player, packet);
-        }
-    }
-
     default Component getModificationMessage(Component senderName, WaypointModificationBuffer modification) {
         return switch (modification.type()) {
             case ADD, REMOVE, UPDATE -> {

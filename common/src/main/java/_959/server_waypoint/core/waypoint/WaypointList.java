@@ -17,7 +17,6 @@ public class WaypointList {
     public static final int SERVER_N = 1;
     @Expose @SerializedName("list_name") private String name;
     @Expose @SerializedName("n") private int syncNum;
-    @Expose @SerializedName("sync_mode") private WaypointSyncMode syncMode = WaypointSyncMode.REPLACE_LIST;
     @Expose @SerializedName("waypoints") private List<SimpleWaypoint> simpleWaypoints;
     // client only fields and methods
     //? if !paper {
@@ -74,13 +73,8 @@ public class WaypointList {
     }
 
     public WaypointList(String name, int syncNum, List<SimpleWaypoint> simpleWaypoints) {
-        this(name, syncNum, WaypointSyncMode.REPLACE_LIST, simpleWaypoints);
-    }
-
-    public WaypointList(String name, int syncNum, WaypointSyncMode syncMode, List<SimpleWaypoint> simpleWaypoints) {
         this.name = name;
         this.syncNum = syncNum;
-        this.syncMode = syncMode;
         this.simpleWaypoints = simpleWaypoints;
     }
 
@@ -108,13 +102,6 @@ public class WaypointList {
 
     public int getSyncNum() {
         return this.syncNum;
-    }
-
-    public WaypointSyncMode getSyncMode() {
-        if (this.syncMode == null) {
-            this.syncMode = WaypointSyncMode.REPLACE_LIST;
-        }
-        return this.syncMode;
     }
 
     public int size() {
@@ -165,11 +152,6 @@ public class WaypointList {
         this.syncNum++;
     }
 
-    public void setSyncMode(WaypointSyncMode syncMode) {
-        this.syncMode = syncMode;
-        this.syncNum++;
-    }
-
     public WaypointList clear() {
         this.simpleWaypoints.clear();
         return this;
@@ -177,7 +159,7 @@ public class WaypointList {
 
     @SuppressWarnings("unused")
     public WaypointList deepCopy() {
-        WaypointList newList = build(this.name, this.syncNum, this.getSyncMode());
+        WaypointList newList = build(this.name, this.syncNum);
         for (SimpleWaypoint waypoint : this.simpleWaypoints) {
             newList.addWithoutIncrement(new SimpleWaypoint(waypoint));
         }
@@ -185,15 +167,11 @@ public class WaypointList {
     }
 
     public String toString() {
-        return "WaypointList{name='" + this.name + "', syncMode=" + this.getSyncMode() + ", simpleWaypoints=" + this.simpleWaypoints + "}";
+        return "WaypointList{name='" + this.name + "', simpleWaypoints=" + this.simpleWaypoints + "}";
     }
 
     public static WaypointList build(String name, int syncId) {
-        return build(name, syncId, WaypointSyncMode.REPLACE_LIST);
-    }
-
-    public static WaypointList build(String name, int syncId, WaypointSyncMode syncMode) {
-        return new WaypointList(name, syncId, syncMode, new ArrayList<>());
+        return new WaypointList(name, syncId, new ArrayList<>());
     }
 
     public static WaypointList buildByServer(String name) {
