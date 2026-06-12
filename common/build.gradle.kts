@@ -55,10 +55,16 @@ dependencies {
     api("net.kyori:adventure-api:4.16.0")
     api("net.kyori:adventure-text-serializer-gson:4.16.0")
     api("com.mojang:brigadier:1.0.18")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

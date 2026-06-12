@@ -5,6 +5,7 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
+import _959.server_waypoint.util.SyncedWaypointName;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
@@ -18,10 +19,6 @@ import java.util.function.BiPredicate;
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 
 public final class VoxelMapWaypointHelper {
-    private static final String SERVER_WAYPOINT_PREFIX = "sw";
-    private static final String NAME_SEPARATOR = "\u241F";
-    private static final String SERVER_WAYPOINT_NAME_PREFIX = SERVER_WAYPOINT_PREFIX + NAME_SEPARATOR;
-
     private VoxelMapWaypointHelper() {
     }
 
@@ -139,10 +136,10 @@ public final class VoxelMapWaypointHelper {
                         && waypointInDimension(waypoint, dimensionName));
     }
 
-    private static void removeSyncedWaypoints(WaypointManager manager, BiPredicate<Waypoint, ParsedVoxelMapName> shouldRemove) {
+    private static void removeSyncedWaypoints(WaypointManager manager, BiPredicate<Waypoint, SyncedWaypointName.ParsedName> shouldRemove) {
         List<Waypoint> matches = new ArrayList<>();
         for (Waypoint waypoint : manager.getWaypoints()) {
-            ParsedVoxelMapName parsedName = parseVoxelMapName(waypoint.name);
+            SyncedWaypointName.ParsedName parsedName = SyncedWaypointName.parse(waypoint.name);
             if (parsedName != null && shouldRemove.test(waypoint, parsedName)) {
                 matches.add(waypoint);
             }
@@ -158,25 +155,7 @@ public final class VoxelMapWaypointHelper {
     }
 
     private static String toVoxelMapName(String listName, String waypointName) {
-        if (listName == null || waypointName == null || listName.contains(NAME_SEPARATOR) || waypointName.contains(NAME_SEPARATOR)) {
-            return null;
-        }
-        return SERVER_WAYPOINT_NAME_PREFIX + listName + NAME_SEPARATOR + waypointName;
-    }
-
-    private static ParsedVoxelMapName parseVoxelMapName(String voxelMapName) {
-        if (!voxelMapName.startsWith(SERVER_WAYPOINT_NAME_PREFIX)) {
-            return null;
-        }
-        int listNameStart = SERVER_WAYPOINT_NAME_PREFIX.length();
-        int separatorIndex = voxelMapName.indexOf(NAME_SEPARATOR, listNameStart);
-        if (separatorIndex < 0 || voxelMapName.indexOf(NAME_SEPARATOR, separatorIndex + NAME_SEPARATOR.length()) >= 0) {
-            return null;
-        }
-        return new ParsedVoxelMapName(
-                voxelMapName.substring(listNameStart, separatorIndex),
-                voxelMapName.substring(separatorIndex + NAME_SEPARATOR.length())
-        );
+        return SyncedWaypointName.format(listName, waypointName);
     }
 
     private static String toVoxelMapStorageName(String dimensionName) {
@@ -189,9 +168,6 @@ public final class VoxelMapWaypointHelper {
 
     private static WaypointManager getWaypointManager() {
         return VoxelConstants.getVoxelMapInstance().getWaypointManager();
-    }
-
-    private record ParsedVoxelMapName(String listName, String waypointName) {
     }
 }
 //?}

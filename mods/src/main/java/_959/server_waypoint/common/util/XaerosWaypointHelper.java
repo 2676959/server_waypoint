@@ -15,11 +15,15 @@ import xaero.hud.minimap.waypoint.WaypointVisibilityType;
 
 public class XaerosWaypointHelper {
     public static Waypoint simpleWaypointToXaerosWaypoint(SimpleWaypoint simpleWaypoint) {
+        return simpleWaypointToXaerosWaypoint(simpleWaypoint, simpleWaypoint.name());
+    }
+
+    public static Waypoint simpleWaypointToXaerosWaypoint(SimpleWaypoint simpleWaypoint, String name) {
         Waypoint waypoint = new Waypoint(
                 simpleWaypoint.pos().x(),
                 simpleWaypoint.pos().y(),
                 simpleWaypoint.pos().z(),
-                simpleWaypoint.name(),
+                name,
                 simpleWaypoint.initials(),
                 WaypointColor.fromIndex(rgbToClosestColorIndex(simpleWaypoint.rgb())),
                 WaypointPurpose.NORMAL,

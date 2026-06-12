@@ -5,6 +5,7 @@ import _959.server_waypoint.util.GsonUtils;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -112,7 +113,7 @@ public class WaypointList {
         return this.simpleWaypoints.isEmpty();
     }
 
-    public @Unmodifiable List<SimpleWaypoint> simpleWaypoints() {
+    public @Unmodifiable List<@NotNull SimpleWaypoint> simpleWaypoints() {
         return Collections.unmodifiableList(new ArrayList<>(this.simpleWaypoints));
     }
 

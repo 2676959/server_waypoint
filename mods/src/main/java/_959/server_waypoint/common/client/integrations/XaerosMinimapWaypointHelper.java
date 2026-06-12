@@ -5,6 +5,7 @@ import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
+import _959.server_waypoint.util.SyncedWaypointName;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -23,7 +24,6 @@ import static _959.server_waypoint.common.network.ModMessageSender.toVanillaText
 import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionKey;
 import static _959.server_waypoint.common.util.TextHelper.getDimensionColor;
 import static _959.server_waypoint.common.util.XaeroMinimapHelper.*;
-import static _959.server_waypoint.common.util.XaerosWaypointHelper.simpleWaypointToXaerosWaypoint;
 import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
 
 public final class XaerosMinimapWaypointHelper {
@@ -75,11 +75,16 @@ public final class XaerosMinimapWaypointHelper {
 
         MinimapSession session = getMinimapSession();
         MinimapWorld minimapWorld = getMinimapWorld(session, dimKey);
-        WaypointSet waypointSet = minimapWorld.getWaypointSet(listName);
+        String syncedListName = SyncedWaypointName.formatSyncedName(listName);
+        if (syncedListName == null) {
+            LOGGER.warn("Skipping Xaero's Minimap sync for list {} because its generated name would be ambiguous.", listName);
+            return;
+        }
+        WaypointSet waypointSet = minimapWorld.getWaypointSet(syncedListName);
 
-        if (waypointSet == null && type != WaypointModificationType.REMOVE && type != WaypointModificationType.REMOVE_LIST) {
+        if (waypointSet == null && (type == WaypointModificationType.ADD || type == WaypointModificationType.UPDATE || type == WaypointModificationType.ADD_LIST)) {
             waypointSet = WaypointSet.Builder.begin()
-                    .setName(listName)
+                    .setName(syncedListName)
                     .build();
             LOGGER.info("Waypoint set {} not found in dimension {}, creating new one.", listName, dimKey);
             minimapWorld.addWaypointSet(waypointSet);
@@ -87,32 +92,32 @@ public final class XaerosMinimapWaypointHelper {
 
         switch (type) {
             case ADD -> {
-                if (waypointSet == null || waypoint == null) {
+                if (waypoint == null) {
                     return;
                 }
-                replaceWaypoint(waypointSet, simpleWaypointToXaerosWaypoint(waypoint));
+                replaceSyncedWaypoint(waypointSet, listName, waypoint);
                 displayClientMessage(player, Component.translatable("server_waypoint.modification.add.xaeros", toVanillaText(waypointTextWithTp(waypoint, dimensionName, listName))));
             }
             case REMOVE -> {
                 if (waypointSet == null) {
                     return;
                 }
-                removeWaypointsByName(waypointSet, waypointName);
+                removeSyncedWaypoint(waypointSet, waypointName);
             }
             case UPDATE -> {
-                if (waypointSet == null || waypoint == null) {
+                if (waypoint == null) {
                     return;
                 }
                 if (waypointName != null && !waypointName.equals(waypoint.name())) {
-                    removeWaypointsByName(waypointSet, waypointName);
+                    removeSyncedWaypoint(waypointSet, waypointName);
                 }
-                replaceWaypoint(waypointSet, simpleWaypointToXaerosWaypoint(waypoint));
+                replaceSyncedWaypoint(waypointSet, listName, waypoint);
                 displayClientMessage(player, Component.translatable("server_waypoint.modification.update.xaeros", toVanillaText(waypointTextWithTp(waypoint, dimensionName, listName))));
             }
             case ADD_LIST -> {
             }
             case REMOVE_LIST -> {
-                minimapWorld.removeWaypointSet(listName);
+                minimapWorld.removeWaypointSet(syncedListName);
             }
         }
         saveMinimapWorldWithFeedback(session, minimapWorld, player);
