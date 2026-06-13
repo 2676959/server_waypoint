@@ -23,7 +23,8 @@
 		]
 	},
 	"mixins": [
-		"server_waypoint-common.mixins.json"
+		"server_waypoint-common.mixins.json",
+		"server_waypoint-voxelmap.mixins.json"
 	],
 	"depends": {
 		"fabricloader": "${fabricloader_dependency}",

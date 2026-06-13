@@ -1,4 +1,4 @@
-package _959.server_waypoint.mixin;
+package _959.server_waypoint.mixin.xaeros_worldmap;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.gui.screens.Screen;

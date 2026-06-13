@@ -1,4 +1,4 @@
-package _959.server_waypoint.mixin;
+package _959.server_waypoint.mixin.xaeros_minimap;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

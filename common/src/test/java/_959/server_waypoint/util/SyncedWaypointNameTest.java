@@ -39,4 +39,16 @@ class SyncedWaypointNameTest {
         assertNull(SyncedWaypointName.parseSyncedName("Bases"));
         assertNull(SyncedWaypointName.parseSyncedName("sw\u241FBases\u241FSpawn"));
     }
+
+    @Test
+    void displaysSyncedWaypointNamesWithoutMarker() {
+        assertEquals("Spawn", SyncedWaypointName.toDisplayWaypointName("sw\u241FSpawn"));
+        assertEquals("Spawn", SyncedWaypointName.toDisplayVoxelMapWaypointName("sw\u241FBases\u241FSpawn"));
+    }
+
+    @Test
+    void leavesUnsyncedDisplayNamesUnchanged() {
+        assertEquals("Spawn", SyncedWaypointName.toDisplayWaypointName("Spawn"));
+        assertEquals("Spawn", SyncedWaypointName.toDisplayVoxelMapWaypointName("Spawn"));
+    }
 }
