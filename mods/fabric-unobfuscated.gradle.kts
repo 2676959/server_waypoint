@@ -112,6 +112,9 @@ tasks.processResources {
 
     filesMatching(listOf("*.mixins.json")) {
         expand("java_version" to targetJavaVersion)
+        filter { line: String ->
+            if (line.trim() == "\"refmap\": \"server_waypoint-common.refmap.json\",") "" else line
+        }
     }
 
     val fabric_loader: String by project
