@@ -8,12 +8,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import com.mamiyaotaru.voxelmap.util.WaypointContainer;
 
-@Mixin(WaypointContainer.class)
+@Mixin(value = WaypointContainer.class, remap = false)
 public class VoxelMapWaypointContainerMixin {
     @Redirect(
             method = "renderWaypoints",
             at = @At(value = "FIELD", target = "Lcom/mamiyaotaru/voxelmap/util/Waypoint;name:Ljava/lang/String;"),
-            remap = false
+            remap = false,
+            require = 0
     )
     private String sw$displaySyncedWaypointName(Waypoint waypoint) {
         return SyncedWaypointName.toDisplayVoxelMapWaypointName(waypoint.name);

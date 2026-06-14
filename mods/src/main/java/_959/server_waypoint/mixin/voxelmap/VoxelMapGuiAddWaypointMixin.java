@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint;
 
-@Mixin(GuiAddWaypoint.class)
+@Mixin(value = GuiAddWaypoint.class, remap = false)
 public class VoxelMapGuiAddWaypointMixin {
     @Shadow
     @Final

@@ -16,7 +16,7 @@ import java.util.Objects;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 
-@Mixin(WaypointReader.class)
+@Mixin(value = WaypointReader.class, remap = false)
 public class XaerosWorldMapWaypointReaderMixin {
     @Inject(method = "getRightClickOptions", at = @At(value = "TAIL"), remap = false)
     private void sw$addDropDownOption(final Waypoint element, IRightClickableElement target, CallbackInfoReturnable<ArrayList<RightClickOption>> cir, @Local(name = "options", ordinal = 0) ArrayList<RightClickOption> options) {

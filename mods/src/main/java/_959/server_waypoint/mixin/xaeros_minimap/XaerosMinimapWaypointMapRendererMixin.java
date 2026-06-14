@@ -7,12 +7,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import xaero.hud.minimap.waypoint.render.WaypointMapRenderer;
 import xaero.hud.minimap.waypoint.set.WaypointSet;
 
-@Mixin(WaypointMapRenderer.class)
+@Mixin(value = WaypointMapRenderer.class, remap = false)
 public class XaerosMinimapWaypointMapRendererMixin {
     @Redirect(
             method = "drawSetChange",
             at = @At(value = "INVOKE", target = "Lxaero/hud/minimap/waypoint/set/WaypointSet;getName()Ljava/lang/String;"),
-            remap = false
+            remap = false,
+            require = 0
     )
     private String sw$displaySyncedWaypointSetName(WaypointSet waypointSet) {
         return SyncedWaypointName.toDisplayWaypointName(waypointSet.getName());

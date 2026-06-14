@@ -14,7 +14,7 @@ import java.util.Objects;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 
-@Mixin(GuiMap.class)
+@Mixin(value = GuiMap.class, remap = false)
 public abstract class XaeroWorldMapGuiMapMixin {
     @Inject(method = "getRightClickOptions", at = @At(value = "TAIL"), remap = false)
     private void sw$addDropDownOption(CallbackInfoReturnable<ArrayList<RightClickOption>> cir, @Local(name = "options", ordinal = 0) ArrayList<RightClickOption> options) {

@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import com.mamiyaotaru.voxelmap.gui.GuiWaypoints;
 
-@Mixin(GuiWaypoints.class)
+@Mixin(value = GuiWaypoints.class, remap = false)
 public class VoxelMapGuiWaypointsMixin {
     @Redirect(
             method = "deleteClicked",

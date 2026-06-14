@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap;
 
-@Mixin(GuiPersistentMap.class)
+@Mixin(value = GuiPersistentMap.class, remap = false)
 public class VoxelMapPersistentMapMixin {
     @Redirect(
             method = {"drawWaypoint", "popupAction"},

@@ -10,7 +10,7 @@ import static _959.server_waypoint.common.client.WaypointClientMod.*;
 import static _959.server_waypoint.common.client.WaypointClientMod.ClientNetworkState.SYNC_FINISHED;
 import static _959.server_waypoint.common.client.integrations.MapModIntegrations.syncXaerosMinimap;
 
-@Mixin(MinimapWorldStateUpdater.class)
+@Mixin(value = MinimapWorldStateUpdater.class, remap = false)
 public class MinimapWorldStateUpdaterMixin {
 
     @Inject(method = "onServerLevelId", at = @At(value = "TAIL"), remap = false)

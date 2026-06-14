@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import xaero.common.minimap.waypoints.Waypoint;
 
-@Mixin(Waypoint.class)
+@Mixin(value = Waypoint.class, remap = false)
 public class XaerosMinimapWaypointMixin {
     @Inject(method = "getLocalizedName", at = @At("RETURN"), cancellable = true, remap = false)
     private void sw$displaySyncedWaypointName(CallbackInfoReturnable<String> cir) {
