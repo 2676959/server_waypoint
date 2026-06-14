@@ -47,6 +47,12 @@ class SyncedWaypointNameTest {
     }
 
     @Test
+    void displaysXaerosWorldMapNamesWithoutMarker() {
+        assertEquals("Spawn", SyncedWaypointName.toDisplayXaerosWorldMapName("sw\u241FSpawn"));
+        assertEquals("Bases", SyncedWaypointName.toDisplayXaerosWorldMapName("sw\u241FBases"));
+    }
+
+    @Test
     void leavesUnsyncedDisplayNamesUnchanged() {
         assertEquals("Spawn", SyncedWaypointName.toDisplayWaypointName("Spawn"));
         assertEquals("Spawn", SyncedWaypointName.toDisplayVoxelMapWaypointName("Spawn"));

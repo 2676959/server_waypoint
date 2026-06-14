@@ -21,6 +21,7 @@
     "xaeros_minimap.XaerosMinimapWaypointMapRendererMixin",
     "xaeros_minimap.XaerosMinimapWaypointMixin",
     "xaeros_worldmap.XaerosWorldMapWaypointReaderMixin",
+    "xaeros_worldmap.XaerosWorldMapWaypointMixin",
     "xaeros_worldmap.XaeroWorldMapGuiMapMixin"
   ],
   "server": [

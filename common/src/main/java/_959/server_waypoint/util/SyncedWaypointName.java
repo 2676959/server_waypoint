@@ -53,6 +53,10 @@ public final class SyncedWaypointName {
         return parsedName == null ? name : parsedName;
     }
 
+    public static String toDisplayXaerosWorldMapName(String name) {
+        return toDisplayWaypointName(name);
+    }
+
     public static String toDisplayVoxelMapWaypointName(String name) {
         ParsedName parsedName = parse(name);
         return parsedName == null ? name : parsedName.waypointName();
