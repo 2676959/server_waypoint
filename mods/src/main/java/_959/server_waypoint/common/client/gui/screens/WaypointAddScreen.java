@@ -7,6 +7,7 @@ import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.util.WaypointInitials;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -29,11 +30,22 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     private TranslucentButton addButton;
 
     public WaypointAddScreen(Screen previousScreen, String dimensionName, String listName) {
+        this(previousScreen, dimensionName, listName, null);
+    }
+
+    public WaypointAddScreen(Screen previousScreen, String dimensionName, String listName, WaypointPos defaultPos) {
         super(previousScreen, Component.translatable("waypoint.add.screen.title"), dimensionName, listName, null);
         this.dimensionField.setValue(dimensionName);
         this.listNameField.setValue(listName);
         this.configureSuggestions();
         this.buttonRow.setXOffset(CONTENT_WIDTH);
+        if (defaultPos == null) {
+            defaultPos = getCurrentDefaultPos();
+        }
+        this.setDefaultPos(defaultPos);
+    }
+
+    private WaypointPos getCurrentDefaultPos() {
         Minecraft minecraftClient = Minecraft.getInstance();
         //? if >= 1.21.11 {
         BlockPos defaultPos = MinecraftClientHelper.getMainCamera(minecraftClient).blockPosition();
@@ -43,15 +55,19 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         if (minecraftClient.getCameraEntity() != null) {
             defaultPos = minecraftClient.getCameraEntity().blockPosition();
         }
-        int x1 = defaultPos.getX();
-        int y1 = defaultPos.getY();
-        int z1 = defaultPos.getZ();
-        this.xEditBox.setDefaultValue(x1);
-        this.yEditBox.setDefaultValue(y1);
-        this.zEditBox.setDefaultValue(z1);
-        this.xEditBox.setValue(Integer.toString(x1));
-        this.yEditBox.setValue(Integer.toString(y1));
-        this.zEditBox.setValue(Integer.toString(z1));
+        return new WaypointPos(defaultPos.getX(), defaultPos.getY(), defaultPos.getZ());
+    }
+
+    private void setDefaultPos(WaypointPos defaultPos) {
+        int x = defaultPos.x();
+        int y = defaultPos.y();
+        int z = defaultPos.z();
+        this.xEditBox.setDefaultValue(x);
+        this.yEditBox.setDefaultValue(y);
+        this.zEditBox.setDefaultValue(z);
+        this.xEditBox.setValue(Integer.toString(x));
+        this.yEditBox.setValue(Integer.toString(y));
+        this.zEditBox.setValue(Integer.toString(z));
     }
 
     @Override
