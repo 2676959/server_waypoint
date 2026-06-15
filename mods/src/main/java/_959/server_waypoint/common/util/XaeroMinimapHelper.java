@@ -4,7 +4,6 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
-import _959.server_waypoint.util.SyncedWaypointName;
 import xaero.common.minimap.waypoints.Waypoint;
 import xaero.hud.minimap.BuiltInHudModules;
 import xaero.hud.minimap.module.MinimapSession;

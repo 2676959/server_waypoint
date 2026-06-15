@@ -20,7 +20,7 @@ import xaero.map.gui.dropdown.rightclick.RightClickOption;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import static _959.server_waypoint.util.XaerosMapHelper.resolveWorldMapRightClickY;
+import static _959.server_waypoint.common.util.XaerosMapHelper.resolveWorldMapRightClickY;
 
 @Mixin(value = GuiMap.class, remap = false)
 public abstract class XaeroWorldMapGuiMapMixin {

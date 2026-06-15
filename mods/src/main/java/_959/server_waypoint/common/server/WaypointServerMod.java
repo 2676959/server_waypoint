@@ -18,7 +18,7 @@ import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
-import _959.server_waypoint.util.ThreadDispatching;
+import _959.server_waypoint.common.util.ThreadDispatching;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;

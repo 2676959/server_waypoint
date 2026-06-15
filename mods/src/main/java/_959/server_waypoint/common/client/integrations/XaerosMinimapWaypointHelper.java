@@ -5,7 +5,7 @@ import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
-import _959.server_waypoint.util.SyncedWaypointName;
+import _959.server_waypoint.common.util.SyncedWaypointName;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;

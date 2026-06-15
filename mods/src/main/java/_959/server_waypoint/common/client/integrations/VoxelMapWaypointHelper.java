@@ -5,7 +5,7 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
-import _959.server_waypoint.util.SyncedWaypointName;
+import _959.server_waypoint.common.util.SyncedWaypointName;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;

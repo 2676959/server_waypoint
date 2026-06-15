@@ -224,6 +224,9 @@ dependencies {
 
     val xaeros_minimap_forge: String by project
     compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.processResources {
@@ -336,6 +339,10 @@ tasks.assemble {
 
 artifacts {
     archives(reobfShadowJar ?: tasks.shadowJar)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.register<Copy>("buildAndCollect") {

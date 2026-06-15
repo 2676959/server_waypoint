@@ -6,7 +6,7 @@ import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
-import _959.server_waypoint.util.SyncedWaypointName;
+import _959.server_waypoint.common.util.SyncedWaypointName;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -23,8 +23,7 @@ import xaero.map.mods.gui.WaypointReader;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import static _959.server_waypoint.util.XaerosMapHelper.resolveWorldMapWaypointY;
-import static _959.server_waypoint.util.ColorUtils.colorIndexToRgb;
+import static _959.server_waypoint.common.util.XaerosMapHelper.resolveWorldMapWaypointY;
 
 @Mixin(value = WaypointReader.class, remap = false)
 public class XaerosWorldMapWaypointReaderMixin {

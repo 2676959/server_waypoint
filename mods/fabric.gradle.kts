@@ -122,6 +122,9 @@ dependencies {
 
     // Use Modrinth version IDs because some VoxelMap version numbers collide with Forge uploads.
     modImplementation("maven.modrinth:voxelmap-updated:$voxelmap_fabric")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.processResources {
@@ -192,6 +195,10 @@ tasks.withType<Jar>().configureEach {
     from(rootProject.file("LICENSES/Apache-2.0.txt")) {
         into("META-INF/licenses")
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.register<Copy>("buildAndCollect") {

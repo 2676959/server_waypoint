@@ -1,6 +1,7 @@
-package _959.server_waypoint.util;
+package _959.server_waypoint.common.util;
 
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import org.joml.Vector3d;
 
 public final class CoordinateInputParser {
     private CoordinateInputParser() {
@@ -20,7 +21,7 @@ public final class CoordinateInputParser {
             );
         }
 
-        Vector3 localOffset = applyLocalCoordinatesToRotation(pitch, yaw, x.localValue(), y.localValue(), z.localValue());
+        Vector3d localOffset = applyLocalCoordinatesToRotation(pitch, yaw, x.localValue(), y.localValue(), z.localValue());
         int resolvedX = floor(playerPos.x() + localOffset.x());
         int resolvedY = floor(playerPos.y() + localOffset.y());
         int resolvedZ = floor(playerPos.z() + localOffset.z());
@@ -78,21 +79,22 @@ public final class CoordinateInputParser {
         return hasLocal && hasNonLocal;
     }
 
-    private static Vector3 applyLocalCoordinatesToRotation(float pitch, float yaw, double left, double up, double forwards) {
+    private static Vector3d applyLocalCoordinatesToRotation(float pitch, float yaw, double left, double up, double forwards) {
         float yawCos = cos((yaw + 90.0F) * degreesToRadians());
         float yawSin = sin((yaw + 90.0F) * degreesToRadians());
         float pitchCos = cos(-pitch * degreesToRadians());
         float pitchSin = sin(-pitch * degreesToRadians());
         float upPitchCos = cos((-pitch + 90.0F) * degreesToRadians());
         float upPitchSin = sin((-pitch + 90.0F) * degreesToRadians());
-        Vector3 forward = new Vector3(yawCos * pitchCos, pitchSin, yawSin * pitchCos);
-        Vector3 upVector = new Vector3(yawCos * upPitchCos, upPitchSin, yawSin * upPitchCos);
-        Vector3 leftVector = forward.cross(upVector).scale(-1.0D);
-        return new Vector3(
+        Vector3d forward = new Vector3d(yawCos * pitchCos, pitchSin, yawSin * pitchCos);
+        Vector3d upVector = new Vector3d(yawCos * upPitchCos, upPitchSin, yawSin * upPitchCos);
+        Vector3d leftVector = forward.cross(upVector, new Vector3d()).mul(-1.0D);
+        return new Vector3d(
                 forward.x() * forwards + upVector.x() * up + leftVector.x() * left,
                 forward.y() * forwards + upVector.y() * up + leftVector.y() * left,
                 forward.z() * forwards + upVector.z() * up + leftVector.z() * left
         );
+
     }
 
     private static float degreesToRadians() {
@@ -154,19 +156,5 @@ public final class CoordinateInputParser {
         ABSOLUTE,
         RELATIVE,
         LOCAL
-    }
-
-    private record Vector3(double x, double y, double z) {
-        Vector3 cross(Vector3 other) {
-            return new Vector3(
-                    this.y * other.z - this.z * other.y,
-                    this.z * other.x - this.x * other.z,
-                    this.x * other.y - this.y * other.x
-            );
-        }
-
-        Vector3 scale(double scalar) {
-            return new Vector3(this.x * scalar, this.y * scalar, this.z * scalar);
-        }
     }
 }

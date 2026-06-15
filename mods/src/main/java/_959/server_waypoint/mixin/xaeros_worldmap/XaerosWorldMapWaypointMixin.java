@@ -1,7 +1,7 @@
 package _959.server_waypoint.mixin.xaeros_worldmap;
 
 import _959.server_waypoint.access.XaerosWorldMapWaypointAccess;
-import _959.server_waypoint.util.SyncedWaypointName;
+import _959.server_waypoint.common.util.SyncedWaypointName;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;

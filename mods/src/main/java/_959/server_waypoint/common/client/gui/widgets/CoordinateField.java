@@ -1,6 +1,6 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
-import _959.server_waypoint.util.CoordinateInputParser;
+import _959.server_waypoint.common.util.CoordinateInputParser;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 

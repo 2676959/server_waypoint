@@ -8,7 +8,6 @@ import static _959.server_waypoint.util.VanillaDimensionNames.*;
 public class XaerosMapHelper {
     public static final String XAEROS_SEPARATOR = ":";
     public static final String XAEROS_SHARE_PREFIX = "xaero-waypoint";
-    public static final int XAEROS_WORLD_MAP_UNKNOWN_Y = 32767;
 
     public static boolean isValidXaerosSharingMessage(String[] messageArgs) {
         return messageArgs.length == 10 && XAEROS_SHARE_PREFIX.equals(messageArgs[0]);
@@ -44,19 +43,5 @@ public class XaerosMapHelper {
                 yield xaeroDimString.substring(4).replace("$", ":").replace("%", "/").replace("-", "_");
             }
         };
-    }
-
-    public static int resolveWorldMapRightClickY(int rightClickY, int fallbackY) {
-        if (rightClickY == XAEROS_WORLD_MAP_UNKNOWN_Y) {
-            return fallbackY;
-        }
-        return rightClickY + 1;
-    }
-
-    public static int resolveWorldMapWaypointY(boolean yIncluded, int waypointY, int fallbackY) {
-        if (yIncluded) {
-            return waypointY;
-        }
-        return fallbackY;
     }
 }

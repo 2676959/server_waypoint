@@ -1,4 +1,4 @@
-package _959.server_waypoint.util;
+package _959.server_waypoint.common.util;
 
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import org.junit.jupiter.api.Test;
@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CoordinateInputParserTest {
+
     @Test
     void resolvesAbsoluteAndRelativeCoordinates() {
         WaypointPos playerPos = new WaypointPos(10, 64, -5);

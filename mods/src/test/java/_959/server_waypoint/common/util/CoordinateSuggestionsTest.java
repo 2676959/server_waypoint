@@ -1,4 +1,4 @@
-package _959.server_waypoint.util;
+package _959.server_waypoint.common.util;
 
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import org.junit.jupiter.api.Test;

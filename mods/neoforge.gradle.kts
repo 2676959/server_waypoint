@@ -133,6 +133,9 @@ dependencies {
         compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
         runtimeOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
     }
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.processResources {
@@ -203,6 +206,10 @@ tasks.withType<Jar>().configureEach {
     from(rootProject.file("LICENSES/Apache-2.0.txt")) {
         into("META-INF/licenses")
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.shadowJar {

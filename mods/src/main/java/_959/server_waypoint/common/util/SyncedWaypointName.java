@@ -1,4 +1,4 @@
-package _959.server_waypoint.util;
+package _959.server_waypoint.common.util;
 
 public final class SyncedWaypointName {
     private static final String SERVER_WAYPOINT_PREFIX = "sw";

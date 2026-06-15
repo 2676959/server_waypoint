@@ -1,7 +1,7 @@
 //? if fabric {
 package _959.server_waypoint.mixin.voxelmap;
 
-import _959.server_waypoint.util.SyncedWaypointName;
+import _959.server_waypoint.common.util.SyncedWaypointName;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import net.minecraft.client.gui.components.EditBox;
 import org.spongepowered.asm.mixin.Final;
