@@ -339,7 +339,7 @@ public class TranslucentTextField extends EditBox implements Shiftable {
             if (suggestion.equals(value)) {
                 continue;
             }
-            if (lowerValue.isEmpty() || suggestion.toLowerCase(Locale.ROOT).startsWith(lowerValue)) {
+            if (this.shouldShowSuggestion(suggestion, value, lowerValue)) {
                 matches.add(suggestion);
             }
         }
@@ -349,6 +349,10 @@ public class TranslucentTextField extends EditBox implements Shiftable {
         this.suggestionOffset = Math.min(this.suggestionOffset, Math.max(this.suggestions.size() - MAX_VISIBLE_SUGGESTIONS, 0));
         this.ensureSelectedSuggestionVisible();
         this.updateInlineSuggestion();
+    }
+
+    protected boolean shouldShowSuggestion(String suggestion, String value, String lowerValue) {
+        return lowerValue.isEmpty() || suggestion.toLowerCase(Locale.ROOT).startsWith(lowerValue);
     }
 
     private void updateSuggestionBounds() {

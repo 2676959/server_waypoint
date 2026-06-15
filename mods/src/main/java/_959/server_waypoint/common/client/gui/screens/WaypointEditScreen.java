@@ -5,6 +5,7 @@ import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.ColorHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.util.WaypointInitials;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
@@ -69,13 +70,12 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     }
 
     public void sendEditCommand() {
+        WaypointPos resolvedPos = this.resolveCoordinateFields();
         sendCommand(editCmd(this.dimensionName, this.listName, this.waypointName,
                 new SimpleWaypoint(
                         this.nameEditBox.getValue(),
                         this.initialsEditBox.getValue(),
-                        this.xEditBox.getIntValue(),
-                        this.yEditBox.getIntValue(),
-                        this.zEditBox.getIntValue(),
+                        resolvedPos,
                         this.colorPickerButton.getColor() & 0xFFFFFF,
                         this.yawEditBox.getIntValue(),
                         this.globalToggle.getState()

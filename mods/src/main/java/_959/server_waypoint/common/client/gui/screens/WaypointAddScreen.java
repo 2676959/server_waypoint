@@ -62,6 +62,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         int x = defaultPos.x();
         int y = defaultPos.y();
         int z = defaultPos.z();
+        this.coordinateDefaultPos = defaultPos;
         this.xEditBox.setDefaultValue(x);
         this.yEditBox.setDefaultValue(y);
         this.zEditBox.setDefaultValue(z);
@@ -117,13 +118,12 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     }
 
     private void sendAddCommand() {
+        WaypointPos resolvedPos = this.resolveCoordinateFields();
         sendCommand(addCmd(this.dimensionField.getValue(), this.listNameField.getValue(),
                 new SimpleWaypoint(
                         this.nameEditBox.getValue(),
                         this.initialsEditBox.getValue(),
-                        this.xEditBox.getIntValue(),
-                        this.yEditBox.getIntValue(),
-                        this.zEditBox.getIntValue(),
+                        resolvedPos,
                         this.colorPickerButton.getColor() & 0xFFFFFF,
                         this.yawEditBox.getIntValue(),
                         this.globalToggle.getState()

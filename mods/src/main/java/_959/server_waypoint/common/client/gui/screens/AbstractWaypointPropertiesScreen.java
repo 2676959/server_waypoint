@@ -6,20 +6,29 @@ import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.CoordinateInputParser;
+import _959.server_waypoint.util.CoordinateSuggestions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.BlockPos;
 //? if >= 1.21.9 {
 import net.minecraft.client.input.MouseButtonEvent;
 //?}
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.nextLayer;
@@ -42,9 +51,12 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected final ColorSquareButton colorPickerButton = new ColorSquareButton(0, 0, 9, this::openSwatch);
     // coords label
     ScalableText coordsLabel = new ScalableText(0, 0, Component.translatable("waypoint.edit.screen.coords_yaw"), 0xFFFFFFFF, font);
-    protected final IntegerField xEditBox = new IntegerField(0, 0, 44, Component.nullToEmpty("X"), font);
-    protected final IntegerField yEditBox = new IntegerField(0, 0, 44, Component.nullToEmpty("Y"), font);
-    protected final IntegerField zEditBox = new IntegerField(0, 0, 44, Component.nullToEmpty("Z"), font);
+    protected final ScalableText xLabel = new ScalableText(0, 0, Component.nullToEmpty("X"), RED, font);
+    protected final ScalableText yLabel = new ScalableText(0, 0, Component.nullToEmpty("Y"), GREEN, font);
+    protected final ScalableText zLabel = new ScalableText(0, 0, Component.nullToEmpty("Z"), BLUE, font);
+    protected final CoordinateField xEditBox = new CoordinateField(0, 0, 44, Component.nullToEmpty("X"), font);
+    protected final CoordinateField yEditBox = new CoordinateField(0, 0, 44, Component.nullToEmpty("Y"), font);
+    protected final CoordinateField zEditBox = new CoordinateField(0, 0, 44, Component.nullToEmpty("Z"), font);
     protected final IntegerField yawEditBox = new IntegerField(0, 0, 27, Component.nullToEmpty("Yaw"), font);
     protected final ToggleButton globalToggle = new ToggleButton(0, 0, 40, 11, Component.translatable("waypoint.local"), Component.translatable("waypoint.global"), 0x04E500,0x005AE5, (state) -> {});
     protected final SwatchWidget swatchWidget = new SwatchWidget(0, 0, font, (color) -> {this.closeSwatch(); this.colorEditBox.setColor(color); this.colorPickerButton.setColor(color);});
@@ -59,6 +71,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected final int rgb;
     protected final int yaw;
     protected final boolean global;
+    protected WaypointPos coordinateDefaultPos;
+    private boolean enforcingCoordinateMode;
 
     protected abstract @NotNull WidgetStack createTitleRow();
     protected abstract @NotNull WidgetStack createButtonRow();
@@ -79,6 +93,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             this.rgb = 0xFF000000 | randomColor();
             this.yaw = 0;
             this.global = true;
+            this.coordinateDefaultPos = new WaypointPos(this.x, this.y, this.z);
             this.colorEditBox.setColor(rgb);
             this.colorPickerButton.setColor(rgb);
             this.swatchWidget.setColor(rgb);
@@ -93,6 +108,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             this.rgb = 0xFF000000 | waypoint.rgb();
             this.yaw = waypoint.yaw();
             this.global = waypoint.global();
+            this.coordinateDefaultPos = new WaypointPos(this.x, this.y, this.z);
             this.nameEditBox.setValue(this.waypointName);
             this.initialsEditBox.setValue(this.initials);
             int color = 0xFF000000 | this.rgb;
@@ -112,6 +128,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             this.globalToggle.setState(this.global);
         }
         this.swatchWidget.visible = false;
+        this.configureCoordinateModeEnforcement();
+        this.configureCoordinateSuggestions();
 
         // title row
         this.titleRow = createTitleRow();
@@ -133,16 +151,13 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
 
         // coords row
         WidgetStack coordsRow = new WidgetStack(0, 0, 5);
-        ScalableText xLabel = new ScalableText(0, 0, Component.nullToEmpty("X"), RED, font);
-        ScalableText yLabel = new ScalableText(0, 0, Component.nullToEmpty("Y"), GREEN, font);
-        ScalableText zLabel = new ScalableText(0, 0, Component.nullToEmpty("Z"), BLUE, font);
         ScalableText yawLabel = new ScalableText(0, 0, Component.nullToEmpty("Yaw"), 0xFFFFFFFF, font);
         this.yawEditBox.setMaxLength(4);
-        coordsRow.addChild(xLabel, 0);
+        coordsRow.addChild(this.xLabel, 0);
         coordsRow.addChild(this.xEditBox, 4);
-        coordsRow.addChild(yLabel, 13);
+        coordsRow.addChild(this.yLabel, 13);
         coordsRow.addChild(this.yEditBox, 4);
-        coordsRow.addChild(zLabel, 13);
+        coordsRow.addChild(this.zLabel, 13);
         coordsRow.addChild(this.zEditBox, 4);
         coordsRow.addChild(yawLabel, 5);
         coordsRow.addChild(this.yawEditBox, 4);
@@ -175,6 +190,141 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         int yOffset = centered(this.CONTENT_HEIGHT, this.swatchWidget.getHeight());
         this.swatchWidget.setPosition(x, y);
         this.swatchWidget.setOffsets(xOffset, yOffset);
+    }
+
+    protected WaypointPos resolveCoordinateFields() {
+        PlayerCoordinates playerCoordinates = getPlayerCoordinates();
+        return CoordinateInputParser.resolve(
+                this.xEditBox.getValue(),
+                this.yEditBox.getValue(),
+                this.zEditBox.getValue(),
+                playerCoordinates.pos(),
+                this.coordinateDefaultPos,
+                playerCoordinates.pitch(),
+                playerCoordinates.yaw()
+        );
+    }
+
+    private void configureCoordinateModeEnforcement() {
+        this.xEditBox.setValueChangedCallback(this::enforceCoordinateMode);
+        this.yEditBox.setValueChangedCallback(this::enforceCoordinateMode);
+        this.zEditBox.setValueChangedCallback(this::enforceCoordinateMode);
+    }
+
+    private void configureCoordinateSuggestions() {
+        this.xEditBox.setSuggestionsProvider(() -> getCoordinateSuggestions(CoordinateSuggestions.Axis.X));
+        this.yEditBox.setSuggestionsProvider(() -> getCoordinateSuggestions(CoordinateSuggestions.Axis.Y));
+        this.zEditBox.setSuggestionsProvider(() -> getCoordinateSuggestions(CoordinateSuggestions.Axis.Z));
+    }
+
+    private List<String> getCoordinateSuggestions(CoordinateSuggestions.Axis axis) {
+        return CoordinateSuggestions.forAxis(axis, getLookedAtBlockPos());
+    }
+
+    private void enforceCoordinateMode(CoordinateField editedField) {
+        if (this.enforcingCoordinateMode) {
+            return;
+        }
+        this.enforcingCoordinateMode = true;
+        try {
+            if (isLocalCoordinateField(editedField)) {
+                setLocalIfNeeded(this.xEditBox);
+                setLocalIfNeeded(this.yEditBox);
+                setLocalIfNeeded(this.zEditBox);
+                setCoordinateLabelsLocal(true);
+            } else if (hasLocalCoordinateField()) {
+                setDefaultAbsoluteIfLocal(this.xEditBox);
+                setDefaultAbsoluteIfLocal(this.yEditBox);
+                setDefaultAbsoluteIfLocal(this.zEditBox);
+                setCoordinateLabelsLocal(false);
+            } else {
+                setCoordinateLabelsLocal(false);
+            }
+        } finally {
+            this.enforcingCoordinateMode = false;
+        }
+    }
+
+    private void setCoordinateLabelsLocal(boolean local) {
+        this.xLabel.setText(local ? "R" : "X");
+        this.yLabel.setText(local ? "U" : "Y");
+        this.zLabel.setText(local ? "F" : "Z");
+    }
+
+    private boolean hasLocalCoordinateField() {
+        return isLocalCoordinateField(this.xEditBox) || isLocalCoordinateField(this.yEditBox) || isLocalCoordinateField(this.zEditBox);
+    }
+
+    private boolean isLocalCoordinateField(CoordinateField field) {
+        return CoordinateInputParser.isLocalCoordinateExpression(field.getValue());
+    }
+
+    private void setLocalIfNeeded(CoordinateField field) {
+        if (!isLocalCoordinateField(field)) {
+            field.setValue("^");
+        }
+    }
+
+    private void setDefaultAbsoluteIfLocal(CoordinateField field) {
+        if (isLocalCoordinateField(field)) {
+            field.setValue(Integer.toString(getDefaultCoordinate(field)));
+        }
+    }
+
+    private int getDefaultCoordinate(CoordinateField field) {
+        if (field == this.xEditBox) {
+            return this.coordinateDefaultPos.x();
+        }
+        if (field == this.yEditBox) {
+            return this.coordinateDefaultPos.y();
+        }
+        return this.coordinateDefaultPos.z();
+    }
+
+    private PlayerCoordinates getPlayerCoordinates() {
+        Minecraft minecraftClient = Minecraft.getInstance();
+        Entity entity = minecraftClient.player != null ? minecraftClient.player : minecraftClient.getCameraEntity();
+        if (entity == null) {
+            return new PlayerCoordinates(this.coordinateDefaultPos, 0.0F, 0.0F);
+        }
+        BlockPos blockPos = entity.blockPosition();
+        return new PlayerCoordinates(
+                new WaypointPos(blockPos.getX(), blockPos.getY(), blockPos.getZ()),
+                entity.getXRot(),
+                entity.getYRot()
+        );
+    }
+
+    private @Nullable WaypointPos getLookedAtBlockPos() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || mc.player == null) {
+            return null;
+        }
+
+        Vec3 start = mc.player.getEyePosition(1.0F);
+        double reach;
+        //? if >= 1.21.5 {
+        reach = mc.player.blockInteractionRange();
+        //?} else {
+        /*reach = mc.gameMode == null ? 4.5D : mc.gameMode.getPickRange();
+        *///?}
+        Vec3 end = start.add(mc.player.getViewVector(1.0F).scale(reach));
+        BlockHitResult hit = mc.level.clip(new ClipContext(
+                start,
+                end,
+                ClipContext.Block.OUTLINE,
+                ClipContext.Fluid.NONE,
+                mc.player
+        ));
+
+        if (hit.getType() != HitResult.Type.BLOCK) {
+            return null;
+        }
+        BlockPos blockPos = hit.getBlockPos();
+        if (mc.level.getBlockState(blockPos).isAir()) {
+            return null;
+        }
+        return new WaypointPos(blockPos.getX(), blockPos.getY(), blockPos.getZ());
     }
 
     private void openSwatch() {
@@ -319,6 +469,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         }
         this.nameEditBox.renderSuggestions(context, mouseX, mouseY);
         this.initialsEditBox.renderSuggestions(context, mouseX, mouseY);
+        this.xEditBox.renderSuggestions(context, mouseX, mouseY);
+        this.yEditBox.renderSuggestions(context, mouseX, mouseY);
+        this.zEditBox.renderSuggestions(context, mouseX, mouseY);
     }
 
     private boolean mouseClickedTextFieldSuggestion(double mouseX, double mouseY) {
@@ -329,5 +482,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     @Override
     public void onClose() {
         MinecraftClientHelper.setScreen(this.minecraft, this.previousScreen);
+    }
+
+    private record PlayerCoordinates(WaypointPos pos, float pitch, float yaw) {
     }
 }
