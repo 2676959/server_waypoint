@@ -18,6 +18,8 @@ import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.ThreadDispatching;
+import net.minecraft.client.Minecraft;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
 import org.jetbrains.annotations.NotNull;
@@ -54,26 +56,30 @@ public class WaypointServerMod extends WaypointServerCore {
         super.addWaypoint(dimensionName, listName, waypoint, (fileManager, waypointList) -> {
             successAction.accept(fileManager, waypointList);
             if (runsWithClient) {
-                if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
-                    OptimizedWaypointRenderer.add(waypoint);
-                }
-                WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
-                syncWaypointModification(dimensionName, listName, WaypointModificationType.ADD, waypoint, waypoint.name());
+                runOnClientThread(() -> {
+                    if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
+                        OptimizedWaypointRenderer.add(waypoint);
+                    }
+                    WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
+                    syncWaypointModification(dimensionName, listName, WaypointModificationType.ADD, waypoint, waypoint.name());
+                });
             }
         }, duplicateAction);
     }
 
     @Override
     public void removeWaypoint(@NotNull WaypointFileManager fileManager, WaypointList waypointList, SimpleWaypoint waypoint) {
+        super.removeWaypoint(fileManager, waypointList, waypoint);
         if (runsWithClient) {
             String dimensionName = fileManager.getDimensionName();
-            if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
-                OptimizedWaypointRenderer.remove(waypoint);
-            }
-            WaypointManagerScreen.refreshWaypointLists(dimensionName);
-            syncWaypointModification(dimensionName, waypointList.name(), WaypointModificationType.REMOVE, null, waypoint.name());
+            runOnClientThread(() -> {
+                if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
+                    OptimizedWaypointRenderer.remove(waypoint);
+                }
+                WaypointManagerScreen.refreshWaypointLists(dimensionName);
+                syncWaypointModification(dimensionName, waypointList.name(), WaypointModificationType.REMOVE, null, waypoint.name());
+            });
         }
-        super.removeWaypoint(fileManager, waypointList, waypoint);
     }
 
     @Override
@@ -82,10 +88,12 @@ public class WaypointServerMod extends WaypointServerCore {
         super.updateWaypointProperties(fileManager, waypointList, waypoint, newName, initials, waypointPos, rgb, yaw, global, () -> {
             successAction.run();
             if (runsWithClient) {
-                if (fileManager.getDimensionName().equals(WaypointClientMod.getCurrentDimensionName())) {
-                    OptimizedWaypointRenderer.updateWaypoint(waypoint);
-                }
-                syncWaypointModification(fileManager.getDimensionName(), waypointList.name(), WaypointModificationType.UPDATE, waypoint, oldName);
+                runOnClientThread(() -> {
+                    if (fileManager.getDimensionName().equals(WaypointClientMod.getCurrentDimensionName())) {
+                        OptimizedWaypointRenderer.updateWaypoint(waypoint);
+                    }
+                    syncWaypointModification(fileManager.getDimensionName(), waypointList.name(), WaypointModificationType.UPDATE, waypoint, oldName);
+                });
             }
         }, nameUsedAction, identicalAction);
     }
@@ -95,8 +103,10 @@ public class WaypointServerMod extends WaypointServerCore {
         super.addWaypointList(dimensionName, listName, (fileManager) -> {
             successAction.accept(fileManager);
             if (runsWithClient) {
-                WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
-                syncWaypointModification(dimensionName, listName, WaypointModificationType.ADD_LIST, null, null);
+                runOnClientThread(() -> {
+                    WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
+                    syncWaypointModification(dimensionName, listName, WaypointModificationType.ADD_LIST, null, null);
+                });
             }
         }, listExistsAction);
     }
@@ -106,11 +116,18 @@ public class WaypointServerMod extends WaypointServerCore {
         super.removeWaypointList(fileManager, listName, (fileManager1) -> {
             successAction.accept(fileManager1);
             if (runsWithClient) {
-                WaypointManagerScreen.updateWaypointLists(fileManager1.getDimensionName(), fileManager1.getWaypointLists());
-                syncWaypointModification(fileManager1.getDimensionName(), listName, WaypointModificationType.REMOVE_LIST, null, null);
+                runOnClientThread(() -> {
+                    WaypointManagerScreen.updateWaypointLists(fileManager1.getDimensionName(), fileManager1.getWaypointLists());
+                    syncWaypointModification(fileManager1.getDimensionName(), listName, WaypointModificationType.REMOVE_LIST, null, null);
+                });
             }
         }, listNotFoundAction, nonEmptyListAction);
 
+    }
+
+    private static void runOnClientThread(Runnable task) {
+        Minecraft minecraft = Minecraft.getInstance();
+        ThreadDispatching.runOnTargetThread(minecraft::isSameThread, minecraft::execute, task);
     }
 
     private static void syncWaypointModification(String dimensionName, String listName, WaypointModificationType type, SimpleWaypoint waypoint, String waypointName) {
