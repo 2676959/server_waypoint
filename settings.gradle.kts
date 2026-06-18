@@ -28,7 +28,7 @@ stonecutter {
         mc("fabric",
             "1.20.1", "1.20.2", "1.20.4", "1.20.6",
             "1.21", "1.21.2", "1.21.3", "1.21.5", "1.21.6", "1.21.9", "1.21.11",
-            "26.1.2")
+            "26.1.2", "26.2")
         mc("neoforge",
             "1.20.2", "1.20.4", "1.20.6",
             "1.21", "1.21.2", "1.21.3", "1.21.5", "1.21.6", "1.21.9", "1.21.11",
@@ -44,6 +44,7 @@ stonecutter {
             when (data.project) {
                 "1.20.2-neoforge" -> "neogradle.gradle.kts"
                 "26.1.2-fabric" -> "fabric-unobfuscated.gradle.kts"
+                "26.2-fabric" -> "fabric-unobfuscated.gradle.kts"
                 else -> "$loader.gradle.kts"
             }
         }
