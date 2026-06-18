@@ -4,6 +4,7 @@ import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.ScalableText;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -31,7 +32,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         this.buttonRow.setXOffset(CONTENT_WIDTH);
         Minecraft minecraftClient = Minecraft.getInstance();
         //? if >= 1.21.11 {
-        BlockPos defaultPos = minecraftClient.gameRenderer.getMainCamera().blockPosition();
+        BlockPos defaultPos = MinecraftClientHelper.getMainCamera(minecraftClient).blockPosition();
         //?} else {
         /*BlockPos defaultPos = minecraftClient.gameRenderer.getMainCamera().getBlockPosition();
         *///?}

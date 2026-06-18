@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.render;
 
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.util.MathHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
@@ -96,7 +97,7 @@ public final class OptimizedWaypointRenderer {
     private static final int textHeight = textRenderer.lineHeight;
     private static final int textBgHeight = textHeight;
     private static final Window window = mc.getWindow();
-    private static final Camera camera = mc.gameRenderer.getMainCamera();
+    private static final Camera camera = MinecraftClientHelper.getMainCamera(mc);
     public static final Matrix4f ModelViewMatrix = new Matrix4f();
     public static final Matrix4f ProjectionMatrix = new Matrix4f();
     private static final Vector4f posVec = new Vector4f();

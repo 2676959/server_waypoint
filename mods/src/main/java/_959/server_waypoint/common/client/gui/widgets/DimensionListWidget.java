@@ -5,6 +5,7 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.Expandable;
 import _959.server_waypoint.common.client.gui.Padding;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.util.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -75,7 +76,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     }
 
     private void openAddScreen() {
-        Minecraft.getInstance().setScreen(new WaypointAddScreen(parentScreen, getSelectedDimensionName(), ""));
+        MinecraftClientHelper.setScreen(new WaypointAddScreen(parentScreen, getSelectedDimensionName(), ""));
     }
 
     @Override

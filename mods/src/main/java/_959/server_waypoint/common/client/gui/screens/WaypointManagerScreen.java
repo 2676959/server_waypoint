@@ -2,12 +2,12 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
 import _959.server_waypoint.common.client.gui.widgets.WaypointListWidget;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.waypoint.WaypointList;
-import net.minecraft.network.chat.MutableComponent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
@@ -144,7 +144,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_C) {
-            this.minecraft.setScreen(new ClientConfigScreen(this));
+            MinecraftClientHelper.setScreen(this.minecraft, new ClientConfigScreen(this));
             return true;
         }
         return waypointListWidget.keyPressed(keyCode, scanCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers);

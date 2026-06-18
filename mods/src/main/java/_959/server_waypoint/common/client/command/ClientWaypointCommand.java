@@ -2,6 +2,7 @@ package _959.server_waypoint.common.client.command;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -29,7 +30,7 @@ public class ClientWaypointCommand {
                 //?} else {
                 /*execute
                 *///?}
-                (() -> mc.setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance())));
+                (() -> MinecraftClientHelper.setScreen(mc, new WaypointManagerScreen(WaypointClientMod.getInstance())));
         return Command.SINGLE_SUCCESS;
     }
 }

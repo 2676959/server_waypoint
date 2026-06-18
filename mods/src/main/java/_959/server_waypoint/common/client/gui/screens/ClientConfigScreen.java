@@ -6,6 +6,7 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.WidgetThemeColors;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.*;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.client.handlers.HandlerForXaerosMinimap;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
@@ -178,7 +179,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     @Override
     public void onClose() {
         WaypointClientMod.getInstance().saveConfig();
-        this.minecraft.setScreen(parentScreen);
+        MinecraftClientHelper.setScreen(this.minecraft, parentScreen);
     }
 
     // TODO: implement a scrollable widget to contain the configuration options

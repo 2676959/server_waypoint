@@ -9,6 +9,7 @@ import _959.server_waypoint.common.client.command.ClientWaypointCommand;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.handlers.S2CPayloadHandler;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
@@ -41,7 +42,7 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
                 ClientWaypointCommand.register(dispatcher));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (keyBinding.consumeClick()) {
-                client.setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance()));
+                MinecraftClientHelper.setScreen(client, new WaypointManagerScreen(WaypointClientMod.getInstance()));
             }
         });
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> {

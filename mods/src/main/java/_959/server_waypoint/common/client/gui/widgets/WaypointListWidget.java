@@ -8,6 +8,7 @@ import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.util.MathHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
@@ -17,7 +18,6 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -241,14 +241,14 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                         return true;
                     } else if (mouseX > secondBtn) {
                         // clicked on add button
-                        Minecraft.getInstance().setScreen(new WaypointAddScreen(this.parentScreen, this.parentScreen.getSelectedDimension(), waypointList.name()));
+                        MinecraftClientHelper.setScreen(new WaypointAddScreen(this.parentScreen, this.parentScreen.getSelectedDimension(), waypointList.name()));
                         this.removeClickedPos = -1;
                         return true;
                     }
                 } else {
                     if (mouseX > thirdBtn) {
                         // clicked on add button
-                        Minecraft.getInstance().setScreen(new WaypointAddScreen(this.parentScreen, this.parentScreen.getSelectedDimension(), waypointList.name()));
+                        MinecraftClientHelper.setScreen(new WaypointAddScreen(this.parentScreen, this.parentScreen.getSelectedDimension(), waypointList.name()));
                         this.removeClickedPos = -1;
                         return true;
                     } else if (mouseX > secondBtn) {
@@ -299,7 +299,7 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                     this.removeClickedPos = pos;
                 } else if (mouseX > secondBtn) {
                     // clicked on edit button
-                    Minecraft.getInstance().setScreen(new WaypointEditScreen(this.parentScreen, this.parentScreen.getSelectedDimension(), waypointList.name(), waypoint));
+                    MinecraftClientHelper.setScreen(new WaypointEditScreen(this.parentScreen, this.parentScreen.getSelectedDimension(), waypointList.name(), waypoint));
                     return true;
                 } else if (mouseX > firstBtn) {
                     // clicked on show button

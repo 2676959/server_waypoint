@@ -3,6 +3,7 @@ package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.*;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import org.jetbrains.annotations.NotNull;
@@ -288,6 +289,6 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(this.previousScreen);
+        MinecraftClientHelper.setScreen(this.minecraft, this.previousScreen);
     }
 }

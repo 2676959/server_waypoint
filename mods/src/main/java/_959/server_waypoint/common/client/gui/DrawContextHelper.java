@@ -16,7 +16,8 @@ import net.minecraft.client.renderer.RenderPipelines;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 //?}
-import net.minecraft.client.renderer.MultiBufferSource;
+//? if < 26.2
+/*import net.minecraft.client.renderer.MultiBufferSource;*/
 //? if < 1.21.6
 /*import net.minecraft.client.renderer.RenderType;*/
 import net.minecraft.network.chat.Component;
@@ -159,12 +160,20 @@ public final class DrawContextHelper {
     }
 
     @SuppressWarnings("deprecation")
-    public static void withVertexConsumers(GuiGraphicsExtractor context, Consumer<MultiBufferSource> consumer) {
-        //? if >= 1.21.6 {
-        MultiBufferSource.BufferSource immediate = net.minecraft.client.Minecraft.getInstance().renderBuffers().bufferSource();
+    public static void withVertexConsumers(GuiGraphicsExtractor context,
+            //? if < 26.2 {
+            /*Consumer<MultiBufferSource> consumer
+            *///?} else {
+            Consumer<?> consumer
+            //?}
+    ) {
+        //? if >= 26.2 {
+        throw new UnsupportedOperationException("Vertex consumers are not available during GUI extraction on Minecraft 26.2");
+        //?} elif >= 1.21.6 {
+        /*MultiBufferSource.BufferSource immediate = net.minecraft.client.Minecraft.getInstance().renderBuffers().bufferSource();
         consumer.accept(immediate);
         immediate.endBatch();
-        //?} elif > 1.21 {
+        *///?} elif > 1.21 {
         /*context.drawSpecial(consumer);
         *///?} else {
         /*context.drawManaged(() -> consumer.accept(context.bufferSource()));
