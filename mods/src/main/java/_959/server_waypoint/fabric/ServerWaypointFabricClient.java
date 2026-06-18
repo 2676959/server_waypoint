@@ -1,5 +1,5 @@
 //? if fabric {
-/*//~ fabric_key_mapping_import_26
+//~ fabric_key_mapping_import_26
 //~ fabric_key_mapping_call_26
 package _959.server_waypoint.fabric;
 
@@ -34,8 +34,8 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
                 //? if >= 1.21.9 {
                 KeyMapping.Category.register(_959.server_waypoint.common.util.ResourceLocationHelper.id("server_waypoint", "mod_name"))
                 //?} else {
-                /^"key.categories.server_waypoint.mod_name"
-                ^///?}
+                /*"key.categories.server_waypoint.mod_name"
+                *///?}
         ));
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
                 ClientWaypointCommand.register(dispatcher));
@@ -66,4 +66,4 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(UpdatesBundleS2CPayload.ID, updatesBundleHandler::handle);
     }
 }
-*///?}
+//?}

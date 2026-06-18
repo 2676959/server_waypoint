@@ -6,8 +6,8 @@ import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.core.network.buffer.*;
 
 //? if fabric && >= 1.20.5 {
-/*import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-*///?} elif fabric {
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+//?} elif fabric {
 /*import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.player.LocalPlayer;
 *///?}
@@ -24,13 +24,13 @@ public class S2CPayloadHandler {
         default void handle(
                 P payload,
                 //? if fabric && >= 1.20.5 {
-                /*ClientPlayNetworking.Context context
-                *///?} elif fabric {
+                ClientPlayNetworking.Context context
+                //?} elif fabric {
                 /*LocalPlayer player, PacketSender responseSender
                 // }
                 *///?} elif neoforge || forge {
-                Object context
-                //?}
+                /*Object context
+                *///?}
         ) {
             this.bufferHandler(this.payloadToBuffer(payload));
         }

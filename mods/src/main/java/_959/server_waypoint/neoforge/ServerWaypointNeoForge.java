@@ -1,5 +1,5 @@
 //? if neoforge {
-package _959.server_waypoint.neoforge;
+/*package _959.server_waypoint.neoforge;
 
 import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.ModChatMessageHandler;
@@ -29,13 +29,13 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 //?} elif = 1.20.4 {
-/*import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
+/^import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
 import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
-*///?} elif = 1.20.2 {
-/*import net.neoforged.neoforge.network.NetworkRegistry;
+^///?} elif = 1.20.2 {
+/^import net.neoforged.neoforge.network.NetworkRegistry;
 import net.neoforged.neoforge.network.PlayNetworkDirection;
 import net.neoforged.neoforge.network.simple.SimpleChannel;
-*///?}
+^///?}
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -48,13 +48,13 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 public class ServerWaypointNeoForge implements IPlatformConfigPath {
     private static final String NETWORK_PROTOCOL_VERSION = "1";
 //? if = 1.20.2 {
-    /*public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
+    /^public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
             _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, "main"),
             () -> NETWORK_PROTOCOL_VERSION,
             NETWORK_PROTOCOL_VERSION::equals,
             NETWORK_PROTOCOL_VERSION::equals
     );
-    *///?}
+    ^///?}
 
     private final WaypointServerMod waypointServer;
     private final C2SPacketHandler<CommandSourceStack, ServerPlayer> c2sPacketHandler;
@@ -71,8 +71,8 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
 
         this.configureLoadedMods();
 //? if = 1.20.2 {
-        /*this.registerPayloads();
-*///?} else {
+        /^this.registerPayloads();
+^///?} else {
         modEventBus.addListener(this::registerPayloads);
 //?}
         if (isClientDist()) {
@@ -131,7 +131,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         );
     }
 //?} elif = 1.20.4 {
-    /*private void registerPayloads(RegisterPayloadHandlerEvent event) {
+    /^private void registerPayloads(RegisterPayloadHandlerEvent event) {
         final IPayloadRegistrar registrar = event.registrar(ModInfo.MOD_ID).versioned(NETWORK_PROTOCOL_VERSION);
         if (isClientDist()) {
             ServerWaypointNeoForgeClient.registerClientPayloadHandlers(registrar);
@@ -165,8 +165,8 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
             registrar.play(XaerosWorldIdS2CPayload.XAEROS_WORLD_ID_PAYLOAD_ID, XaerosWorldIdS2CPayload::new, handler -> handler.client((payload, context) -> {}));
         }
     }
-*///?} elif = 1.20.2 {
-    /*private void registerPayloads() {
+^///?} elif = 1.20.2 {
+    /^private void registerPayloads() {
         if (isClientDist()) {
             ServerWaypointNeoForgeClient.registerClientPayloadHandlers(PACKET_CHANNEL);
         } else {
@@ -217,7 +217,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                 .consumerMainThread((payload, context) -> {})
                 .add();
     }
-*///?}
+^///?}
 
     private void registerCommands(RegisterCommandsEvent event) {
         this.waypointCommand.register(event.getDispatcher());
@@ -242,4 +242,4 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         }
     }
 }
-//?}
+*///?}

@@ -1,5 +1,5 @@
 //? if fabric {
-/*package _959.server_waypoint.fabric;
+package _959.server_waypoint.fabric;
 
 import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.ModMessageSender;
@@ -85,13 +85,13 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
                 c2sPacketHandler.onClientHandshake(context.player(), clientHandshakeC2SPayload.clientHandshakeBuffer())
         );
         //?} else if fabric {
-        /^ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (packet, player, responseSender) ->
+        /*ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (packet, player, responseSender) ->
                 c2sPacketHandler.onClientUpdateRequest(player, packet.clientUpdateRequestBuffer()
                 ));
         ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (packet, player, responseSender) ->
                 c2sPacketHandler.onClientHandshake(player, packet.clientHandshakeBuffer()
                 ));
-        ^///?}
+        *///?}
     }
 
     public static void registerPayloads() {
@@ -137,4 +137,4 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         return FabricLoader.getInstance().getConfigDir().resolve(ModInfo.MOD_ID);
     }
 }
-*///?}
+//?}

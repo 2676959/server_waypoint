@@ -183,12 +183,12 @@ public abstract class AbstractColorBgSlider implements LayoutElement, Renderable
 
     protected void drawSlider(GuiGraphicsExtractor context) {
         //? if = 26.1.2 {
-        int sliderX = MathHelper.clamp((int) this.sliderCenter, 0, this.slotWidth - 1);
+        /*int sliderX = MathHelper.clamp((int) this.sliderCenter, 0, this.slotWidth - 1);
         drawSolidColor(context, sliderX, sliderX + 1, 0xFFFFFFFF);
-        //?} else {
+        *///?} else {
         
-        /*drawSolidColor(context, this.sliderLeft, this.sliderRight, 0xFFFFFFFF);
-        *///?}
+        drawSolidColor(context, this.sliderLeft, this.sliderRight, 0xFFFFFFFF);
+        //?}
     }
 
     private void drawSolidColor(GuiGraphicsExtractor context, float startX, float endX, int color) {

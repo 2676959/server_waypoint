@@ -200,7 +200,7 @@ public final class DrawContextHelper {
                 topLeftColor, bottomLeftColor, bottomRightColor, topRightColor,
                 context.getScissorStack().peek()));
         *///?} elif neoforge {
-        context.submitGuiElementRenderState(new ColoredQuadRenderState(
+        /*context.submitGuiElementRenderState(new ColoredQuadRenderState(
                 RenderPipelines.GUI,
                 TextureSetup.noTexture(),
                 new Matrix3x2f(context.pose()),
@@ -211,8 +211,8 @@ public final class DrawContextHelper {
                 topLeftColor, bottomLeftColor, bottomRightColor, topRightColor,
                 context.peekScissorStack()
         ));
-        //?} else {
-        /*ColoredQuadRenderState renderState = new ColoredQuadRenderState(
+        *///?} else {
+        ColoredQuadRenderState renderState = new ColoredQuadRenderState(
                 RenderPipelines.GUI,
                 TextureSetup.noTexture(),
                 new Matrix3x2f(context.pose()),
@@ -222,21 +222,21 @@ public final class DrawContextHelper {
                 right, top,
                 topLeftColor, bottomLeftColor, bottomRightColor, topRightColor,
                 //? if forge && >= 26.1 {
-                null
-                //?} else {
+                /*null
+                *///?} else {
                 context.scissorStack.peek()
                 //?}
         );
         //? if >= 26.1 {
         //? if forge {
-        context.getRenderState().addGuiElement(renderState);
+        /*context.getRenderState().addGuiElement(renderState);
+        *///?} else {
+        context.guiRenderState.addGuiElement(renderState);
+        //?}
         //?} else {
-        /^context.guiRenderState.addGuiElement(renderState);
-        ^///?}
-        //?} else {
-        /^context.guiRenderState.submitGuiElement(renderState);
-        ^///?}
+        /*context.guiRenderState.submitGuiElement(renderState);
         *///?}
+        //?}
         //?} else {
         /*withVertexConsumers(context, vertexConsumerProvider -> {
             VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderType.gui());

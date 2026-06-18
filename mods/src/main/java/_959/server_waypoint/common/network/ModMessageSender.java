@@ -23,13 +23,13 @@ import com.mojang.serialization.JsonOps;
 import net.minecraft.network.chat.ComponentSerialization;
 //?}
 //? if fabric {
-/*import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-*///?} elif forge {
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+//?} elif forge {
 /*import _959.server_waypoint.forge.ServerWaypointForge;
 import net.minecraftforge.network.PacketDistributor;
 *///?} elif neoforge {
-import net.neoforged.neoforge.network.PacketDistributor;
-//?}
+/*import net.neoforged.neoforge.network.PacketDistributor;
+*///?}
 //? if neoforge && = 1.20.2
 /*import _959.server_waypoint.neoforge.ServerWaypointNeoForge;*/
 
@@ -109,8 +109,8 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
     @Override
     public void sendPlayerPacket(ServerPlayer player, MessageBuffer packet) {
         //? if fabric {
-        /*ServerPlayNetworking.send(player, getPayload(packet));
-        *///?} elif forge {
+        ServerPlayNetworking.send(player, getPayload(packet));
+        //?} elif forge {
         /*//? if <= 1.20.1 {
         /^ServerWaypointForge.PACKET_CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), getPayload(packet));
         ^///?} else {
@@ -121,8 +121,8 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
         *///?} elif neoforge && = 1.20.4 {
         /*PacketDistributor.PLAYER.with(player).send(getPayload(packet));
         *///?} else {
-        PacketDistributor.sendToPlayer(player, getPayload(packet));
-         //?}
+        /*PacketDistributor.sendToPlayer(player, getPayload(packet));
+         *///?}
     }
 
     @Override

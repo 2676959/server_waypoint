@@ -1,5 +1,5 @@
 //? if neoforge {
-package _959.server_waypoint.neoforge;
+/*package _959.server_waypoint.neoforge;
 
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
@@ -16,11 +16,11 @@ import net.neoforged.fml.ModList;
 //? if >= 1.20.5 {
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 //?} else {
-/*import net.neoforged.neoforge.event.TickEvent;
-*///?}
+/^import net.neoforged.neoforge.event.TickEvent;
+^///?}
 //? if <= 1.20.4 {
-/*import net.neoforged.neoforge.client.event.RenderGuiEvent;
-*///?}
+/^import net.neoforged.neoforge.client.event.RenderGuiEvent;
+^///?}
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -28,11 +28,11 @@ import net.neoforged.fml.loading.FMLPaths;
 //? if >= 1.20.5 {
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 //?} elif = 1.20.4 {
-/*import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
-*///?} elif = 1.20.2 {
-/*import net.neoforged.neoforge.network.PlayNetworkDirection;
+/^import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
+^///?} elif = 1.20.2 {
+/^import net.neoforged.neoforge.network.PlayNetworkDirection;
 import net.neoforged.neoforge.network.simple.SimpleChannel;
-*///?}
+^///?}
 import org.lwjgl.glfw.GLFW;
 
 public class ServerWaypointNeoForgeClient {
@@ -44,8 +44,8 @@ public class ServerWaypointNeoForgeClient {
         NeoForge.EVENT_BUS.addListener(ServerWaypointNeoForgeClient::registerClientCommands);
         NeoForge.EVENT_BUS.addListener(ServerWaypointNeoForgeClient::onClientTick);
 //? if <= 1.20.4 {
-        /*NeoForge.EVENT_BUS.addListener(ServerWaypointNeoForgeClient::onRenderGui);
-*///?}
+        /^NeoForge.EVENT_BUS.addListener(ServerWaypointNeoForgeClient::onRenderGui);
+^///?}
     }
 
     private static void registerKeyBindings(RegisterKeyMappingsEvent event) {
@@ -83,11 +83,11 @@ public class ServerWaypointNeoForgeClient {
 //? if >= 1.20.5 {
     private static void onClientTick(ClientTickEvent.Post event) {
 //?} else {
-    /*private static void onClientTick(TickEvent.ClientTickEvent event) {
+    /^private static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) {
             return;
         }
-*///?}
+^///?}
         ensureClientStarted();
         while (keyBinding != null && keyBinding.consumeClick()) {
             net.minecraft.client.Minecraft.getInstance().setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance()));
@@ -95,10 +95,10 @@ public class ServerWaypointNeoForgeClient {
     }
 
 //? if <= 1.20.4 {
-    /*private static void onRenderGui(RenderGuiEvent.Pre event) {
+    /^private static void onRenderGui(RenderGuiEvent.Pre event) {
         OptimizedWaypointRenderer.render(event.getGuiGraphics());
     }
-*///?}
+^///?}
 
     private static void ensureClientStarted() {
         if (clientInitialized) {
@@ -127,7 +127,7 @@ public class ServerWaypointNeoForgeClient {
         registrar.playToClient(UpdatesBundleS2CPayload.ID, UpdatesBundleS2CPayload.PACKET_CODEC, updatesBundleHandler::handle);
     }
 //?} elif = 1.20.4 {
-    /*public static void registerClientPayloadHandlers(IPayloadRegistrar registrar) {
+    /^public static void registerClientPayloadHandlers(IPayloadRegistrar registrar) {
         S2CPayloadHandler.WaypointListHandler waypointListHandler = new S2CPayloadHandler.WaypointListHandler();
         S2CPayloadHandler.DimensionWaypointHandler dimensionWaypointHandler = new S2CPayloadHandler.DimensionWaypointHandler();
         S2CPayloadHandler.WorldWaypointHandler worldWaypointHandler = new S2CPayloadHandler.WorldWaypointHandler();
@@ -141,8 +141,8 @@ public class ServerWaypointNeoForgeClient {
         registrar.play(ServerHandshakeS2CPayload.SERVER_HANDSHAKE_PAYLOAD, ServerHandshakeS2CPayload::new, handler -> handler.client(serverHandshakeHandler::handle));
         registrar.play(UpdatesBundleS2CPayload.UPDATES_BUNDLE_PAYLOAD_ID, UpdatesBundleS2CPayload::new, handler -> handler.client(updatesBundleHandler::handle));
     }
-*///?} elif = 1.20.2 {
-    /*public static void registerClientPayloadHandlers(SimpleChannel channel) {
+^///?} elif = 1.20.2 {
+    /^public static void registerClientPayloadHandlers(SimpleChannel channel) {
         S2CPayloadHandler.WaypointListHandler waypointListHandler = new S2CPayloadHandler.WaypointListHandler();
         S2CPayloadHandler.DimensionWaypointHandler dimensionWaypointHandler = new S2CPayloadHandler.DimensionWaypointHandler();
         S2CPayloadHandler.WorldWaypointHandler worldWaypointHandler = new S2CPayloadHandler.WorldWaypointHandler();
@@ -170,6 +170,6 @@ public class ServerWaypointNeoForgeClient {
                 .consumerMainThread(handler::handle)
                 .add();
     }
-*///?}
+^///?}
 }
-//?}
+*///?}
