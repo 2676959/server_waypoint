@@ -15,6 +15,8 @@ val mod_id: String by project
 val mod_name: String by project
 val mod_version: String by project
 val maven_group: String by project
+
+evaluationDependsOn(":common")
 val commonMainSourceSet = project(":common")
     .extensions
     .getByType(org.gradle.api.tasks.SourceSetContainer::class.java)

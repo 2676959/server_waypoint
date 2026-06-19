@@ -7,6 +7,7 @@ import _959.server_waypoint.common.client.command.ClientWaypointCommand;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.handlers.S2CPayloadHandler;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.common.util.ResourceLocationHelper;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -90,7 +91,7 @@ public class ServerWaypointNeoForgeClient {
 ^///?}
         ensureClientStarted();
         while (keyBinding != null && keyBinding.consumeClick()) {
-            net.minecraft.client.Minecraft.getInstance().setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance()));
+            MinecraftClientHelper.setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance()));
         }
     }
 
