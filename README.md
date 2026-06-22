@@ -45,7 +45,7 @@ Optional:
 - `/wp download` download waypoints and add to Xaero's Minimap (will not work without client installation).
 - `/wp edit` edit a waypoint.
 - `/wp list` list all waypoints. Shows all waypoints in a tree hierarchy. Allowing user to click to teleport, edit and remove the waypoint.
-- `/wp reload` reload `config.json` and translation files in `\config\server_waypoint\lang`, feature `sendXaerosWorldId` requires restarting to take effect.
+- `/wp reload` reload `config.json` and translation files in `/config/server_waypoint/lang`, feature `sendXaerosWorldId` requires restarting to take effect.
 - `/wp remove` remove a waypoint by name. Shows the removed waypoint and click it to restore that waypoint.
   - `/wp remove <dimension> <list>` remove an empty waypoint list.
 - `/wp tp` teleport the executor player to a waypoint
@@ -54,7 +54,7 @@ Optional:
 Messages and command feedbacks sent by this mod will be automatically translated based on the language setting on the receiver's client. This works entirely on the server-side; players can see the translated message without client-side installation of this mod. Right now, the mod comes with translations for English and Simplified Chinese. If you’re interested, you can help out by adding translations on [Crowdin](https://crowdin.com/project/server-waypoint)!
 
 - ### Add translations
-  Place the lang files under the directory: `<minecraft_root>\config\server_waypoint\lang\`. This mod will load them on server starting, use `/wp reload` if the server is already running.
+  Place the lang files under the directory: `<config-path>/server_waypoint/lang/`. This mod will load them on server starting, use `/wp reload` if the server is already running.
   
 - ### Create a lang file
   Follow the format used in [`en_us.json`](./common/src/main/resources/lang/en_us.json), [`zh_cn.json`](./common/src/main/resources/lang/zh_cn.json).
@@ -70,27 +70,39 @@ Community translator credits and credit pull request guidelines are documented i
 Thank you to the community translators who help make Server Waypoint available to more players in more languages.
 
 - #### Hebrew
-  - ##### [hotspotty](https://discord.com/users/575744894593663006)
+  [hotspotty](https://discord.com/users/575744894593663006)
+- #### Spanish
+  shimonsolo
 - #### Traditional Chinese
-  - ##### Ymaomi
+  Ymaomi
 - #### Traditional Chinese (Hong Kong)
-  - ##### Ymaomi
+  Ymaomi
 
 ## Waypoints
-- #### Save Path
+- #### Location
   For a dedicated server:
   
-  `<minecraft_root>\config\server_waypoint\waypoints\`
+  `<config-path>/server_waypoint/waypoints/`
 
   For a single player world:
 
-  `<minecraft_root>\saves\<world_name>\server_waypoint\waypoints\`
+  `<minecraft-root>/saves/<world-name>/server_waypoint/waypoints/`
 - #### File Format
   All waypoints are saved in json files. Each json file contains all waypoints in one dimension and the filename is the converted full registry name of that dimension.
   For example, all waypoints in the overworld is stored in `minecraft$overworld.json`.
 
 ## Server Configurations
-The configuration file is stored at `<minecraft_root>\config\server_waypoint\config.json`.
+Fabric, Quilt:
+
+`<minecraft-root>/config/server_waypoint/config.json` 
+
+NeoForge, Forge:
+
+`<minecraft-root>/defaultconfigs/server_waypoint/config.json`
+
+Paper, Purpur:
+
+`<server-root>/plugins/ServerWaypoint/config.json`
 
 Some changes made in `config.json` may take effects after server restarts.
 
