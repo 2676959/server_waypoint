@@ -4,6 +4,7 @@ import _959.server_waypoint.access.XaerosWorldMapWaypointAccess;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.common.util.SyncedWaypointName;
@@ -48,7 +49,7 @@ public class XaerosWorldMapWaypointReaderMixin {
                             String dimensionName = sw$getCurrentDimensionName();
                             String listName = sw$getListName(element, waypointAccess);
                             if (syncedWaypoint) {
-                                minecraft.setScreen(new WaypointEditScreen(
+                                MinecraftClientHelper.setScreen(minecraft, new WaypointEditScreen(
                                         screen,
                                         dimensionName,
                                         listName,
@@ -56,7 +57,7 @@ public class XaerosWorldMapWaypointReaderMixin {
                                 ));
                                 return;
                             }
-                            minecraft.setScreen(new WaypointAddScreen(
+                            MinecraftClientHelper.setScreen(minecraft, new WaypointAddScreen(
                                     screen,
                                     dimensionName,
                                     listName,
@@ -69,9 +70,9 @@ public class XaerosWorldMapWaypointReaderMixin {
 
     private static int sw$getFallbackY(Minecraft minecraft) {
         //? if >= 1.21.11 {
-        BlockPos defaultPos = minecraft.gameRenderer.getMainCamera().blockPosition();
+        BlockPos defaultPos = MinecraftClientHelper.getMainCamera(minecraft).blockPosition();
         //?} else {
-        /*BlockPos defaultPos = minecraft.gameRenderer.getMainCamera().getBlockPosition();
+        /*BlockPos defaultPos = MinecraftClientHelper.getMainCamera(minecraft).getBlockPosition();
         *///?}
         if (minecraft.getCameraEntity() != null) {
             defaultPos = minecraft.getCameraEntity().blockPosition();

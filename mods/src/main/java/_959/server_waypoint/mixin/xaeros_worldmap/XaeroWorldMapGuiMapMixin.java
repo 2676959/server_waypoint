@@ -2,6 +2,7 @@ package _959.server_waypoint.mixin.xaeros_worldmap;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
@@ -51,7 +52,7 @@ public abstract class XaeroWorldMapGuiMapMixin {
                                     resolveWorldMapRightClickY(rightClickY, sw$getFallbackY(minecraft)),
                                     rightClickZ
                             );
-                            minecraft.setScreen(new WaypointAddScreen(screen, sw$getDimensionName(rightClickDim), "", defaultPos));
+                            MinecraftClientHelper.setScreen(minecraft, new WaypointAddScreen(screen, sw$getDimensionName(rightClickDim), "", defaultPos));
                         }
                     }
         );
@@ -59,9 +60,9 @@ public abstract class XaeroWorldMapGuiMapMixin {
 
     private static int sw$getFallbackY(Minecraft minecraft) {
         //? if >= 1.21.11 {
-        BlockPos defaultPos = minecraft.gameRenderer.getMainCamera().blockPosition();
+        BlockPos defaultPos = MinecraftClientHelper.getMainCamera(minecraft).blockPosition();
         //?} else {
-        /*BlockPos defaultPos = minecraft.gameRenderer.getMainCamera().getBlockPosition();
+        /*BlockPos defaultPos = MinecraftClientHelper.getMainCamera(minecraft).getBlockPosition();
         *///?}
         if (minecraft.getCameraEntity() != null) {
             defaultPos = minecraft.getCameraEntity().blockPosition();
