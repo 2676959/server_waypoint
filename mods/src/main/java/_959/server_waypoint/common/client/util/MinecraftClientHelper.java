@@ -15,10 +15,10 @@ public final class MinecraftClientHelper {
 
     public static void setScreen(Minecraft minecraft, @Nullable Screen screen) {
         //? if >= 26.2 {
-        minecraft.gui.setScreen(screen);
-        //?} else {
-        /*minecraft.setScreen(screen);
-        *///?}
+        /*minecraft.gui.setScreen(screen);
+        *///?} else {
+        minecraft.setScreen(screen);
+        //?}
     }
 
     public static Camera getMainCamera() {
@@ -27,9 +27,9 @@ public final class MinecraftClientHelper {
 
     public static Camera getMainCamera(Minecraft minecraft) {
         //? if >= 26.2 {
-        return minecraft.gameRenderer.mainCamera();
-        //?} else {
-        /*return minecraft.gameRenderer.getMainCamera();
-        *///?}
+        /*return minecraft.gameRenderer.mainCamera();
+        *///?} else {
+        return minecraft.gameRenderer.getMainCamera();
+        //?}
     }
 }

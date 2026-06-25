@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.Mixin;
 public class GameRendererMixin {
     //? if >= 26.1 {
     //? if < 26.2 {
-    /*@Inject(
+    @Inject(
             method = "extractGui",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;extractRenderState(Lnet/minecraft/client/gui/GuiGraphicsExtractor;Lnet/minecraft/client/DeltaTracker;)V"),
             remap = false
@@ -41,6 +41,6 @@ public class GameRendererMixin {
         OptimizedWaypointRenderer.updateCameraSnapshot(cameraState.pos, cameraState.viewRotationMatrix, projectionMatrix);
         OptimizedWaypointRenderer.render(graphics);
     }
-    *///?}
+    //?}
     //?}
 }

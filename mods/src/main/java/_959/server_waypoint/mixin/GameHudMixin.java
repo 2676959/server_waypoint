@@ -1,7 +1,7 @@
 package _959.server_waypoint.mixin;
 
 //? if >= 26.2 {
-import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
+/*import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import _959.server_waypoint.common.client.util.GameRendererProjectionHelper;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.DeltaTracker;
@@ -13,7 +13,7 @@ import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-//?}
+*///?}
 //? if < 26.1 {
 /*//? if > 1.20.6
 import net.minecraft.client.DeltaTracker;
@@ -48,7 +48,7 @@ public class GameHudMixin {
     }
     *///?}
     //? if >= 26.2 {
-    @Inject(
+    /*@Inject(
             method = "extractRenderState",
             at = @At(
                     value = "INVOKE",
@@ -80,5 +80,5 @@ public class GameHudMixin {
         );
         OptimizedWaypointRenderer.render(graphics);
     }
-    //?}
+    *///?}
 }
