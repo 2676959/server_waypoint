@@ -3,7 +3,9 @@ package _959.server_waypoint.common.util;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SyncedWaypointNameTest {
     @Test
@@ -34,6 +36,14 @@ class SyncedWaypointNameTest {
     }
 
     @Test
+    void identifiesSingleSyncedNames() {
+        assertTrue(SyncedWaypointName.isSyncedName("sw\u241FBases"));
+        assertFalse(SyncedWaypointName.isSyncedName("Bases"));
+        assertFalse(SyncedWaypointName.isSyncedName("sw\u241FBases\u241FSpawn"));
+        assertFalse(SyncedWaypointName.isSyncedName(null));
+    }
+
+    @Test
     void rejectsAmbiguousSingleSyncedName() {
         assertNull(SyncedWaypointName.formatSyncedName("Bad\u241FName"));
         assertNull(SyncedWaypointName.parseSyncedName("Bases"));
@@ -44,6 +54,15 @@ class SyncedWaypointNameTest {
     void displaysSyncedWaypointNamesWithoutMarker() {
         assertEquals("Spawn", SyncedWaypointName.toDisplayWaypointName("sw\u241FSpawn"));
         assertEquals("Spawn", SyncedWaypointName.toDisplayVoxelMapWaypointName("sw\u241FBases\u241FSpawn"));
+    }
+
+    @Test
+    void reportsSyncedStateBeforeDisplayNameIsCleaned() {
+        SyncedWaypointName.DisplayName displayName = SyncedWaypointName.toWaypointDisplayName("sw\u241FBases");
+
+        assertEquals("Bases", displayName.name());
+        assertTrue(displayName.synced());
+        assertFalse(SyncedWaypointName.isSyncedName(displayName.name()));
     }
 
     @Test

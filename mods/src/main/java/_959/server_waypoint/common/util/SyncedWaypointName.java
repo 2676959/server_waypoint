@@ -48,9 +48,18 @@ public final class SyncedWaypointName {
         return parsedName;
     }
 
+    public static boolean isSyncedName(String name) {
+        return parseSyncedName(name) != null;
+    }
+
     public static String toDisplayWaypointName(String name) {
         String parsedName = parseSyncedName(name);
         return parsedName == null ? name : parsedName;
+    }
+
+    public static DisplayName toWaypointDisplayName(String name) {
+        String parsedName = parseSyncedName(name);
+        return parsedName == null ? new DisplayName(name, false) : new DisplayName(parsedName, true);
     }
 
     public static String toDisplayXaerosWorldMapName(String name) {
@@ -63,5 +72,8 @@ public final class SyncedWaypointName {
     }
 
     public record ParsedName(String listName, String waypointName) {
+    }
+
+    public record DisplayName(String name, boolean synced) {
     }
 }
