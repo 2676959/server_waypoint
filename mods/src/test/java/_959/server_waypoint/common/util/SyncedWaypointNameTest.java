@@ -37,10 +37,18 @@ class SyncedWaypointNameTest {
 
     @Test
     void identifiesSingleSyncedNames() {
-        assertTrue(SyncedWaypointName.isSyncedName("sw\u241FBases"));
-        assertFalse(SyncedWaypointName.isSyncedName("Bases"));
-        assertFalse(SyncedWaypointName.isSyncedName("sw\u241FBases\u241FSpawn"));
-        assertFalse(SyncedWaypointName.isSyncedName(null));
+        assertTrue(SyncedWaypointName.isSinglePartSyncedName("sw\u241FBases"));
+        assertFalse(SyncedWaypointName.isSinglePartSyncedName("Bases"));
+        assertFalse(SyncedWaypointName.isSinglePartSyncedName("sw\u241FBases\u241FSpawn"));
+        assertFalse(SyncedWaypointName.isSinglePartSyncedName(null));
+    }
+
+    @Test
+    void identifiesVoxelMapSyncedWaypointNames() {
+        assertTrue(SyncedWaypointName.isVoxelMapSyncedWaypointName("sw\u241FBases\u241FSpawn"));
+        assertFalse(SyncedWaypointName.isVoxelMapSyncedWaypointName("sw\u241FBases"));
+        assertFalse(SyncedWaypointName.isVoxelMapSyncedWaypointName("Bases"));
+        assertFalse(SyncedWaypointName.isVoxelMapSyncedWaypointName(null));
     }
 
     @Test
@@ -62,7 +70,7 @@ class SyncedWaypointNameTest {
 
         assertEquals("Bases", displayName.name());
         assertTrue(displayName.synced());
-        assertFalse(SyncedWaypointName.isSyncedName(displayName.name()));
+        assertFalse(SyncedWaypointName.isSinglePartSyncedName(displayName.name()));
     }
 
     @Test

@@ -48,8 +48,12 @@ public final class SyncedWaypointName {
         return parsedName;
     }
 
-    public static boolean isSyncedName(String name) {
+    public static boolean isSinglePartSyncedName(String name) {
         return parseSyncedName(name) != null;
+    }
+
+    public static boolean isVoxelMapSyncedWaypointName(String waypointName) {
+        return parse(waypointName) != null;
     }
 
     public static String toDisplayWaypointName(String name) {

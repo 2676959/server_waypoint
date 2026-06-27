@@ -22,7 +22,7 @@ public class XaerosMinimapGuiWaypointsListMixin {
             int y,
             CallbackInfo ci
     ) {
-        if (waypoint == null || !SyncedWaypointName.isSyncedName(waypoint.getName())) {
+        if (waypoint == null || !SyncedWaypointName.isSinglePartSyncedName(waypoint.getName())) {
             return;
         }
         DrawContextHelper.nextLayer(context);
