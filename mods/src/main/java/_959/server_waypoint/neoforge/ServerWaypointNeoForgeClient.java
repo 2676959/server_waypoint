@@ -9,7 +9,6 @@ import _959.server_waypoint.common.client.handlers.S2CPayloadHandler;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.network.payload.s2c.*;
-import _959.server_waypoint.common.util.ResourceLocationHelper;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.neoforged.bus.api.IEventBus;
@@ -36,6 +35,8 @@ import net.neoforged.neoforge.network.simple.SimpleChannel;
 ^///?}
 import org.lwjgl.glfw.GLFW;
 
+import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
+
 public class ServerWaypointNeoForgeClient {
     private static KeyMapping keyBinding;
     private static boolean clientInitialized;
@@ -57,7 +58,7 @@ public class ServerWaypointNeoForgeClient {
     private static KeyMapping createKeyBinding() {
         try {
             Class<?> categoryClass = Class.forName("net.minecraft.client.KeyMapping$Category");
-            Object categoryId = ResourceLocationHelper.id("server_waypoint", "mod_name");
+            Object categoryId = modId("mod_name");
             Object category = categoryClass
                     .getMethod("register", categoryId.getClass())
                     .invoke(null, categoryId);

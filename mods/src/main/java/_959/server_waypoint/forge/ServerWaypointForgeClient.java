@@ -43,6 +43,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
+
 public class ServerWaypointForgeClient {
     private static KeyMapping keyBinding;
     private static boolean clientInitialized;
@@ -72,7 +74,7 @@ public class ServerWaypointForgeClient {
                 "server_waypoint.waypoint_manager_gui.keybind",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT_SHIFT,
-                /*? if >= 1.21.9 {*/ KeyMapping.Category.register(_959.server_waypoint.common.util.ResourceLocationHelper.id("server_waypoint", "mod_name")) /*?} else {*/ /*"key.category.server_waypoint.mod_name" *//*?}*/
+                /*? if >= 1.21.9 {*/ KeyMapping.Category.register(modId("mod_name")) /*?} else {*/ /*"key.category.server_waypoint.mod_name" *//*?}*/
         );
         event.register(keyBinding);
     }

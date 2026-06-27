@@ -1,7 +1,6 @@
 //~ resource_location_import
 package _959.server_waypoint.common.network.payload.s2c;
 
-import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.core.network.buffer.WaypointListBuffer;
 import _959.server_waypoint.core.network.codec.WaypointListBufferCodec;
@@ -17,13 +16,14 @@ import net.minecraft.network.FriendlyByteBuf;
 /*import net.minecraft.network.FriendlyByteBuf;
 *///?}
 
+import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
 import static _959.server_waypoint.core.network.PayloadID.WAYPOINT_LIST;
 
 public record WaypointListS2CPayload(WaypointListBuffer waypointListBuffer) implements ModPayload {
     public static final
     //$ resource_location_type_swap
     Identifier
-    WAYPOINT_LIST_PAYLOAD_ID = _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, WAYPOINT_LIST);
+    WAYPOINT_LIST_PAYLOAD_ID = modId(WAYPOINT_LIST);
 //? if >= 1.20.5 {
 
     public static final CustomPacketPayload.Type<WaypointListS2CPayload> ID = new CustomPacketPayload.Type<>(WAYPOINT_LIST_PAYLOAD_ID);

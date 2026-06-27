@@ -1,7 +1,6 @@
 //~ resource_location_import
 package _959.server_waypoint.common.network.payload.c2s;
 
-import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.core.network.buffer.ClientUpdateRequestBuffer;
 import _959.server_waypoint.core.network.codec.ClientUpdateRequestBufferCodec;
@@ -18,13 +17,14 @@ import net.minecraft.network.FriendlyByteBuf;
 *///?}
 
 
+import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
 import static _959.server_waypoint.core.network.PayloadID.CLIENT_UPDATE_REQUEST;
 
 public record UpdateRequestC2SPayload(ClientUpdateRequestBuffer clientUpdateRequestBuffer) implements ModPayload {
     public static final
     //$ resource_location_type_swap
     Identifier
-    CLIENT_UPDATE_REQUEST_PAYLOAD = _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, CLIENT_UPDATE_REQUEST);
+    CLIENT_UPDATE_REQUEST_PAYLOAD = modId(CLIENT_UPDATE_REQUEST);
 //? if >= 1.20.5 {
     public static final CustomPacketPayload.Type<UpdateRequestC2SPayload> ID = new CustomPacketPayload.Type<>(CLIENT_UPDATE_REQUEST_PAYLOAD);
     public static final StreamCodec<ByteBuf, UpdateRequestC2SPayload> PACKET_CODEC = new StreamCodec<>() {

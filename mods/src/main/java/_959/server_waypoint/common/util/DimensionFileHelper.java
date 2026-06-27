@@ -5,6 +5,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
+import static _959.server_waypoint.common.util.ResourceLocationHelper.mcId;
+
 public class DimensionFileHelper {
     @Nullable
     public static ResourceKey<Level> getDimensionKey(String dimensionName) {
@@ -12,6 +14,6 @@ public class DimensionFileHelper {
         if (idParts.length != 2) {
             return null;
         }
-        return ResourceKey.create(Registries.DIMENSION, _959.server_waypoint.common.util.ResourceLocationHelper.id(idParts[0], idParts[1]));
+        return ResourceKey.create(Registries.DIMENSION, mcId(idParts[0], idParts[1]));
     }
 }

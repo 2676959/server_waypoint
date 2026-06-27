@@ -58,6 +58,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
 import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
@@ -66,14 +67,14 @@ public class ServerWaypointForge implements IPlatformConfigPath {
     private static final String NETWORK_PROTOCOL_VERSION = "1";
 //? if <= 1.20.1 {
     /*public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
-            _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, "main"),
+            modId("main"),
             () -> NETWORK_PROTOCOL_VERSION,
             NETWORK_PROTOCOL_VERSION::equals,
             NETWORK_PROTOCOL_VERSION::equals
     );
 *///?} else {
     public static final SimpleChannel PACKET_CHANNEL = ChannelBuilder
-            .named(_959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, "main"))
+            .named(modId("main"))
             .networkProtocolVersion(Integer.parseInt(NETWORK_PROTOCOL_VERSION))
             .simpleChannel();
     //?}

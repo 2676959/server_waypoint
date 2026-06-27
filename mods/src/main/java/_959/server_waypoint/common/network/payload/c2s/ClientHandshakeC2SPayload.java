@@ -1,7 +1,6 @@
 //~ resource_location_import
 package _959.server_waypoint.common.network.payload.c2s;
 
-import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.core.network.buffer.ClientHandshakeBuffer;
 import _959.server_waypoint.core.network.codec.ClientHandshakeCodec;
@@ -18,13 +17,14 @@ import net.minecraft.network.FriendlyByteBuf;
 *///?}
 
 
+import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
 import static _959.server_waypoint.core.network.PayloadID.CLIENT_HANDSHAKE;
 
 public record ClientHandshakeC2SPayload(ClientHandshakeBuffer clientHandshakeBuffer) implements ModPayload {
     public static final
     //$ resource_location_type_swap
     Identifier
-    CLIENT_HANDSHAKE_PAYLOAD = _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, CLIENT_HANDSHAKE);
+    CLIENT_HANDSHAKE_PAYLOAD = modId(CLIENT_HANDSHAKE);
 //? if >= 1.20.5 {
     public static final CustomPacketPayload.Type<ClientHandshakeC2SPayload> ID = new CustomPacketPayload.Type<>(CLIENT_HANDSHAKE_PAYLOAD);
     public static final StreamCodec<ByteBuf, ClientHandshakeC2SPayload> PACKET_CODEC = new StreamCodec<>() {

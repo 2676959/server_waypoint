@@ -41,6 +41,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.nio.file.Path;
 
+import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
 import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
@@ -49,7 +50,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
     private static final String NETWORK_PROTOCOL_VERSION = "1";
 //? if = 1.20.2 {
     /^public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
-            _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, "main"),
+            modId("main"),
             () -> NETWORK_PROTOCOL_VERSION,
             NETWORK_PROTOCOL_VERSION::equals,
             NETWORK_PROTOCOL_VERSION::equals

@@ -22,6 +22,8 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import org.lwjgl.glfw.GLFW;
 
+import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
+
 public class ServerWaypointFabricClient implements ClientModInitializer {
     private static KeyMapping keyBinding;
 
@@ -34,7 +36,7 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT_SHIFT,
                 //? if >= 1.21.9 {
-                KeyMapping.Category.register(_959.server_waypoint.common.util.ResourceLocationHelper.id("server_waypoint", "mod_name"))
+                KeyMapping.Category.register(modId("mod_name"))
                 //?} else {
                 /*"key.categories.server_waypoint.mod_name"
                 *///?}

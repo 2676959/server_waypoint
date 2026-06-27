@@ -24,7 +24,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-import static _959.server_waypoint.ModInfo.MOD_ID;
+import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
@@ -45,39 +45,39 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
     public static final
     //$ resource_location_type_swap
     Identifier
-    SHOW_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/show.png");
+    SHOW_ICON = modId("textures/gui/show.png");
     public static final
     //$ resource_location_type_swap
     Identifier
-    HIDE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/hide.png");
+    HIDE_ICON = modId("textures/gui/hide.png");
     public static final
     //$ resource_location_type_swap
     Identifier
-    ADD_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/add.png");
+    ADD_ICON = modId("textures/gui/add.png");
     public static final
     //$ resource_location_type_swap
     Identifier
-    EDIT_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/edit.png");
+    EDIT_ICON = modId("textures/gui/edit.png");
     public static final
     //$ resource_location_type_swap
     Identifier
-    REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/delete.png");
+    REMOVE_ICON = modId("textures/gui/delete.png");
     public static final
     //$ resource_location_type_swap
     Identifier
-    CONFIRM_REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/confirm_delete.png");
+    CONFIRM_REMOVE_ICON = modId("textures/gui/confirm_delete.png");
     public static final
     //$ resource_location_type_swap
     Identifier
-    LIST_EMPTY = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_empty.png");
+    LIST_EMPTY = modId("textures/gui/list_empty.png");
     public static final
     //$ resource_location_type_swap
     Identifier
-    LIST_EXPAND_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_expand.png");
+    LIST_EXPAND_ICON = modId("textures/gui/list_expand.png");
     public static final
     //$ resource_location_type_swap
     Identifier
-    LIST_COLLAPSE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_collapse.png");
+    LIST_COLLAPSE_ICON = modId("textures/gui/list_collapse.png");
     private static final int listIconSize = 16;
     private static final int buttonIconSize = 12;
     private static double SCROLLED_POSITION = 0.0D;

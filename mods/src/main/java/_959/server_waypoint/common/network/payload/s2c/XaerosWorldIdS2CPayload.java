@@ -21,7 +21,7 @@ public record XaerosWorldIdS2CPayload(XaerosWorldIdBuffer worldIdBuffer) impleme
     public static final
     //$ resource_location_type_swap
     Identifier
-    XAEROS_WORLD_ID_PAYLOAD_ID = _959.server_waypoint.common.util.ResourceLocationHelper.id("xaerominimap", "main");
+    XAEROS_WORLD_ID_PAYLOAD_ID = _959.server_waypoint.common.util.ResourceLocationHelper.mcId("xaerominimap", "main");
 //? if >= 1.20.5 {
     public static final CustomPacketPayload.Type<XaerosWorldIdS2CPayload> ID = new CustomPacketPayload.Type<>(XAEROS_WORLD_ID_PAYLOAD_ID);
     public static final StreamCodec<ByteBuf, XaerosWorldIdS2CPayload> PACKET_CODEC = new StreamCodec<>() {
