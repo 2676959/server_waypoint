@@ -1,9 +1,9 @@
-//~ resource_location_import
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.Expandable;
 import _959.server_waypoint.common.client.gui.Padding;
+import _959.server_waypoint.common.client.gui.WaypointTextures;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
@@ -22,9 +22,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 
-import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
@@ -42,42 +40,6 @@ import static java.util.Collections.binarySearch;
 public class WaypointListWidget extends ShiftableScrollableWidget implements Padding, Expandable {
     public static int TELEPORT_KEY = 84;
     public static final Component EMPTY_INFO_TEXT = Component.translatable("waypoint.empty_mark");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    SHOW_ICON = modId("textures/gui/show.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    HIDE_ICON = modId("textures/gui/hide.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    ADD_ICON = modId("textures/gui/add.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    EDIT_ICON = modId("textures/gui/edit.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    REMOVE_ICON = modId("textures/gui/delete.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    CONFIRM_REMOVE_ICON = modId("textures/gui/confirm_delete.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    LIST_EMPTY = modId("textures/gui/list_empty.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    LIST_EXPAND_ICON = modId("textures/gui/list_expand.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    LIST_COLLAPSE_ICON = modId("textures/gui/list_collapse.png");
     private static final int listIconSize = 16;
     private static final int buttonIconSize = 12;
     private static double SCROLLED_POSITION = 0.0D;
@@ -427,33 +389,33 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
             // render hover buttons on list
             if (hoverOnList) {
                 if (isListEmpty) {
-                    texture(context, ADD_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    texture(context, WaypointTextures.ADD_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                     if (removeClickedPos == hoverPos) {
-                        texture(context, CONFIRM_REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                        texture(context, WaypointTextures.CONFIRM_REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                     } else {
-                        texture(context, REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                        texture(context, WaypointTextures.REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                         removeClickedPos = -1;
                     }
                 } else {
                     if (isListShow) {
-                        texture(context, SHOW_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                        texture(context, WaypointTextures.SHOW_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                     } else {
-                        texture(context, HIDE_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                        texture(context, WaypointTextures.HIDE_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                     }
-                    texture(context, ADD_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    texture(context, WaypointTextures.ADD_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                 }
             }
             // waypoint list name
             drawText(context, textRenderer, waypointList.name(), 18, y1 + textVertOffset, textColor, true);
             // render list expand icon
             if (isListEmpty) {
-                texture(context, LIST_EMPTY, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
+                texture(context, WaypointTextures.LIST_EMPTY, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
                 continue;
             }
             if (waypointList.isExpand()) {
-                texture(context, LIST_EXPAND_ICON, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
+                texture(context, WaypointTextures.LIST_EXPAND_ICON, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
             } else {
-                texture(context, LIST_COLLAPSE_ICON, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
+                texture(context, WaypointTextures.LIST_COLLAPSE_ICON, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
                 continue;
             }
             List<SimpleWaypoint> waypoints = waypointList.simpleWaypoints();
@@ -476,17 +438,17 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
                     int wpCenteredBtnY = y1 + buttonIconVertOffset;
                     // show button
                     if (wpRendered) {
-                        texture(context, SHOW_ICON, firstBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                        texture(context, WaypointTextures.SHOW_ICON, firstBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                     } else {
-                        texture(context, HIDE_ICON, firstBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                        texture(context, WaypointTextures.HIDE_ICON, firstBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                     }
                     // edit button
-                    texture(context, EDIT_ICON, secondBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    texture(context, WaypointTextures.EDIT_ICON, secondBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                     // remove button
                     if (removeClickedPos == hoverPos) {
-                        texture(context, CONFIRM_REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                        texture(context, WaypointTextures.CONFIRM_REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                     } else {
-                        texture(context, REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                        texture(context, WaypointTextures.REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                         removeClickedPos = -1;
                     }
                     // border

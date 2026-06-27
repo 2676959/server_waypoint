@@ -4,6 +4,7 @@ package _959.server_waypoint.common.client.gui.widgets;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.Expandable;
 import _959.server_waypoint.common.client.gui.Padding;
+import _959.server_waypoint.common.client.gui.WaypointTextures;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.util.MathHelper;
@@ -42,7 +43,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     private @Unmodifiable List<String> dimensionNames = List.of();
     private final Font textRenderer;
     private final PaddingBackground paddingBackground = new PaddingBackground(this, 7, 0, 10, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
-    private final IconButton addBtn = new IconButton(0, 0, 10, 10, Component.translatable("waypoint.add.button"), WaypointListWidget.ADD_ICON, this::openAddScreen);
+    private final IconButton addBtn = new IconButton(0, 0, 10, 10, Component.translatable("waypoint.add.button"), WaypointTextures.ADD_ICON, this::openAddScreen);
     private final float itemIconScale;
     private final int textHeight;
     private final int iconSize;
