@@ -166,6 +166,7 @@ val minecraftExtension = extensions.getByType<net.minecraftforge.gradle.Minecraf
 
 minecraft {
     mappings("official", minecraftVersion)
+    accessTransformer = files(rootProject.file("mods/src/main/resources/META-INF/accesstransformer.cfg"))
 
     if (stonecutter.eval(minecraftVersion, ">=1.20.6")) {
         javaClass.methods

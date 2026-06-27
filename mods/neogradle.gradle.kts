@@ -48,7 +48,7 @@ sourceSets.main {
     }
     resources {
         exclude("fabric.mod.json")
-        exclude("META-INF/neoforge.mods.toml")
+        exclude("META-INF/mods.toml")
         exclude("pack.mcmeta")
     }
 }
@@ -81,8 +81,11 @@ dependencies {
     add(shadedDependencies.name, adventureSerializer)
 
     val xaeros_minimap_neoforge: String by project
+    val xaeros_world_map_neoforge: String by project
     compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
+    compileOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_neoforge")
     runtimeOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
+    runtimeOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_neoforge")
 }
 
 runs {
@@ -132,6 +135,7 @@ tasks.processResources {
             .replace(Regex("""type\s*=\s*"required""""), "mandatory=true")
             .replace(Regex("""type\s*=\s*"optional""""), "mandatory=false")
         metaInf.resolve("mods.toml").writeText(legacyMetadata)
+        metaInf.resolve("neoforge.mods.toml").delete()
     }
 }
 

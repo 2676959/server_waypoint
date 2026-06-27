@@ -1,40 +1,41 @@
 {
-	"schemaVersion": 1,
-	"id": "server_waypoint",
-	"version": "${version}",
-	"name": "Server Waypoint",
-	"description": "Manage waypoints and sync them to other player's client automatically. Compatible with Xaero's minimap.",
-	"authors": [
-		"2676959"
-	],
-	"contact": {
-		"homepage": "https://github.com/2676959/server_waypoint",
-		"sources": "https://github.com/2676959/server_waypoint"
-	},
-	"license": "MIT",
-	"icon": "assets/server_waypoint/icon.png",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			"_959.server_waypoint.fabric.ServerWaypointFabricServer"
-		],
-		"client": [
-			"_959.server_waypoint.fabric.ServerWaypointFabricClient"
-		]
-	},
-	"mixins": [
-		"server_waypoint-common.mixins.json",
-		"server_waypoint-voxelmap.mixins.json"
-	],
-	"depends": {
-		"fabricloader": "${fabricloader_dependency}",
-		"minecraft": "${minecraft_dependency}",
-		"java": ">=${java_version}",
-		"fabric-api": "*"
-	},
-	"suggests": {
-		"xaerominimap": "~25.2.6",
-		"xaeroworldmap": "*",
-		"voxelmap": "*"
-	}
+    "schemaVersion": 1,
+    "id": "server_waypoint",
+    "version": "${version}",
+    "name": "Server Waypoint",
+    "description": "Manage waypoints and sync them to other player's client automatically. Compatible with Xaero's minimap.",
+    "authors": [
+        "2676959"
+    ],
+    "contact": {
+        "homepage": "https://github.com/2676959/server_waypoint",
+        "sources": "https://github.com/2676959/server_waypoint"
+    },
+    "license": "MIT",
+    "icon": "assets/server_waypoint/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "_959.server_waypoint.fabric.ServerWaypointFabricServer"
+        ],
+        "client": [
+            "_959.server_waypoint.fabric.ServerWaypointFabricClient"
+        ]
+    },
+    "mixins": [
+        "server_waypoint-common.mixins.json",
+        "server_waypoint-voxelmap.mixins.json"
+    ],
+    "accessWidener": "server_waypoint.accesswidener",
+    "depends": {
+        "fabricloader": "${fabricloader_dependency}",
+        "minecraft": "${minecraft_dependency}",
+        "java": ">=${java_version}",
+        "fabric-api": "*"
+    },
+    "suggests": {
+        "xaerominimap": "~25.2.6",
+        "xaeroworldmap": "*",
+        "voxelmap": "*"
+    }
 }

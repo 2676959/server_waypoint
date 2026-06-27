@@ -18,6 +18,10 @@ base {
     archivesName.set("$mod_id-$mod_version-$loader-mc$mcVersionRange")
 }
 
+loom {
+    accessWidenerPath.set(rootProject.file("mods/src/fabric-unobfuscated/server_waypoint.accesswidener"))
+}
+
 stonecutter {
     constants.match(loader, "fabric", "neoforge", "forge")
     val usesTwentySixApi = eval(current.version, ">=26")
@@ -117,6 +121,12 @@ tasks.processResources {
         expand("java_version" to targetJavaVersion)
         filter { line: String ->
             if (line.trim() == "\"refmap\": \"server_waypoint-common.refmap.json\",") "" else line
+        }
+    }
+
+    filesMatching("server_waypoint.accesswidener") {
+        filter { line: String ->
+            if (line == "accessWidener v2 named") "accessWidener v2 official" else line
         }
     }
 

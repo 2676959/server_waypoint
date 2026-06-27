@@ -303,7 +303,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
 
         Vec3 start = mc.player.getEyePosition(1.0F);
         double reach;
-        //? if >= 1.21.5 {
+        //? if >= 1.20.5 {
         reach = mc.player.blockInteractionRange();
         //?} else {
         /*reach = mc.gameMode == null ? 4.5D : mc.gameMode.getPickRange();

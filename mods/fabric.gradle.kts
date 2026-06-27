@@ -18,6 +18,10 @@ base {
     archivesName.set("$mod_id-$mod_version-$loader-mc$mcVersionRange")
 }
 
+loom {
+    accessWidenerPath.set(rootProject.file("mods/src/main/resources/server_waypoint.accesswidener"))
+}
+
 stonecutter {
     constants.match(loader, "fabric", "neoforge", "forge")
     val usesTwentySixApi = eval(current.version, ">=26")
