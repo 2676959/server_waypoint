@@ -8,6 +8,7 @@ import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
 import _959.server_waypoint.common.client.gui.widgets.WaypointListWidget;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import net.minecraft.client.gui.screens.Screen;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
@@ -24,19 +25,25 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private static boolean isRendering = false;
     private static WaypointListWidget waypointListWidget;
     private static DimensionListWidget dimensionListWidget;
+    private final Screen parentScreen;
     private final WaypointClientMod waypointClientMod;
     private final float relativeHeight = 0.9F;
     private boolean hasInitialized = false;
     private final WidgetStack mainLayout = new WidgetStack(0, 0, 0, true, false);
 
-    public WaypointManagerScreen(WaypointClientMod waypointClientMod) {
+    public WaypointManagerScreen(WaypointClientMod waypointClientMod, Screen parentScreen) {
         super(Component.nullToEmpty("Server Waypoints"));
+        this.parentScreen = parentScreen;
         this.waypointClientMod = waypointClientMod;
         int widgetWidth = 240;
         dimensionListWidget = new DimensionListWidget(0, 0, widgetWidth, this, this.font, this::onSelectDimension);
         waypointListWidget = new WaypointListWidget(0, 0, widgetWidth, 200, this, this.font);
         mainLayout.addPaddedClickable(dimensionListWidget, 0);
         mainLayout.addPaddedClickable(waypointListWidget, 0);
+    }
+
+    public WaypointManagerScreen(WaypointClientMod waypointClientMod) {
+        this(waypointClientMod, null);
     }
 
     public static void resetWidgetStates() {
@@ -187,6 +194,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         isRendering = false;
         waypointListWidget = null;
         dimensionListWidget = null;
-        super.onClose();
+        if (parentScreen == null) super.onClose();
+        else MinecraftClientHelper.setScreen(this.parentScreen);
     }
 }
