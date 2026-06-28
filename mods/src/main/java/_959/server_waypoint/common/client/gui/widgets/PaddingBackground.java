@@ -66,6 +66,14 @@ public class PaddingBackground implements Renderable, Padding {
         return rightPadding;
     }
 
+    public int getPaddedHeight() {
+        return topPadding + bottomPadding;
+    }
+
+    public int getPaddedWidth() {
+        return leftPadding + rightPadding;
+    }
+
     @Override
     public int getVisualHeight() {
         return this.widget.getHeight() + this.topPadding + this.bottomPadding;

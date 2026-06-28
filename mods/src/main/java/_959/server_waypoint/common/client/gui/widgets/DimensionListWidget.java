@@ -249,12 +249,12 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
 
     @Override
     public void setVisualHeight(int height) {
-        setHeight(height - (this.paddingBackground.getVisualHeight() - getHeight()));
+        setHeight(height - (this.paddingBackground.getPaddedHeight()));
     }
 
     @Override
     public void setVisualWidth(int width) {
-        setWidth(width - (this.paddingBackground.getVisualWidth() - getWidth()));
+        setWidth(width - (this.paddingBackground.getPaddedWidth()));
     }
 
     @Override
