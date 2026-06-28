@@ -38,7 +38,7 @@ public abstract class XaeroWorldMapGuiMapMixin {
     private ResourceKey<Level> rightClickDim;
 
     @Inject(method = "getRightClickOptions", at = @At(value = "TAIL"), remap = false)
-    private void sw$addDropDownOption(CallbackInfoReturnable<ArrayList<RightClickOption>> cir, @Local(name = "options", ordinal = 0) ArrayList<RightClickOption> options) {
+    private void sw$addDropDownOption(CallbackInfoReturnable<ArrayList<RightClickOption>> cir, @Local(name = "options") ArrayList<RightClickOption> options) {
         GuiMap pointer = (GuiMap) (Object) this;
         options.add(new RightClickOption("Add waypoint to server", options.size(), pointer) {
                         {

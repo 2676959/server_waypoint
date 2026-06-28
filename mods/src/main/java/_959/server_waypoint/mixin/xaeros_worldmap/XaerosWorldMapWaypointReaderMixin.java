@@ -28,13 +28,13 @@ import static _959.server_waypoint.common.util.XaerosMapHelper.resolveWorldMapWa
 
 @Mixin(value = WaypointReader.class, remap = false)
 public class XaerosWorldMapWaypointReaderMixin {
-    @Inject(method = "getRightClickOptions", at = @At(value = "TAIL"), remap = false)
-    private void sw$addDropDownOption(final Waypoint element, IRightClickableElement target, CallbackInfoReturnable<ArrayList<RightClickOption>> cir, @Local(name = "options", ordinal = 0) ArrayList<RightClickOption> options) {
+    @Inject(method = "getRightClickOptions(Lxaero/map/mods/gui/Waypoint;Lxaero/map/gui/IRightClickableElement;)Ljava/util/ArrayList;", at = @At(value = "TAIL"), remap = false)
+    private void sw$addDropDownOption(final Waypoint element, IRightClickableElement target, CallbackInfoReturnable<ArrayList<RightClickOption>> cir, @Local(name = "rightClickOptions") ArrayList<RightClickOption> rightClickOptions) {
         WaypointReader pointer = (WaypointReader) (Object) this;
         XaerosWorldMapWaypointAccess waypointAccess = (XaerosWorldMapWaypointAccess) element;
         String syncedWaypointName = SyncedWaypointName.parseSyncedName(waypointAccess.sw$getRawName());
         boolean syncedWaypoint = syncedWaypointName != null;
-        options.add(new RightClickOption(syncedWaypoint ? "Edit on server" : "Add to server", options.size(), target) {
+        rightClickOptions.add(new RightClickOption(syncedWaypoint ? "Edit on server" : "Add to server", rightClickOptions.size(), target) {
                         {
                             Objects.requireNonNull(pointer);
                         }
