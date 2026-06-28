@@ -3,7 +3,7 @@ package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
-import _959.server_waypoint.common.client.gui.layout.WidgetStack;
+import _959.server_waypoint.common.client.gui.layout.ExpandableManager;
 import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
 import _959.server_waypoint.common.client.gui.widgets.WaypointListWidget;
 import _959.server_waypoint.common.server.WaypointServerMod;
@@ -29,7 +29,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private final WaypointClientMod waypointClientMod;
     private final float relativeHeight = 0.9F;
     private boolean hasInitialized = false;
-    private final WidgetStack mainLayout = new WidgetStack(0, 0, 0, true, false);
+    private final ExpandableManager mainLayout;
 
     public WaypointManagerScreen(WaypointClientMod waypointClientMod, Screen parentScreen) {
         super(Component.nullToEmpty("Server Waypoints"));
@@ -38,8 +38,14 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         int widgetWidth = 240;
         dimensionListWidget = new DimensionListWidget(0, 0, widgetWidth, this, this.font, this::onSelectDimension);
         waypointListWidget = new WaypointListWidget(0, 0, widgetWidth, 200, this, this.font);
-        mainLayout.addPaddedClickable(dimensionListWidget, 0);
-        mainLayout.addPaddedClickable(waypointListWidget, 0);
+        this.mainLayout = new ExpandableManager(
+                dimensionListWidget.getVisualWidth(),
+                dimensionListWidget.getVisualHeight() + waypointListWidget.getVisualHeight(),
+                ExpandableManager.Orientation.VERTICAL,
+                ExpandableManager.Direction.FORWARD
+        );
+        this.mainLayout.addChild(dimensionListWidget, 1, 0);
+        this.mainLayout.addChild(waypointListWidget, 1, 1);
     }
 
     public WaypointManagerScreen(WaypointClientMod waypointClientMod) {
@@ -100,13 +106,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     public void updateWidgetDimension() {
-        int contentHeight = (int) (this.height * relativeHeight);
-        waypointListWidget.setVisualHeight(contentHeight - dimensionListWidget.getVisualHeight());
+        this.mainLayout.setDimensions(this.getContentWidth(), this.getContentHeight());
     }
 
     @Override
     int getContentWidth() {
-        return dimensionListWidget.getVisualWidth();
+        return this.mainLayout.getWidth();
     }
 
     @Override
@@ -131,7 +136,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         updateWidgetDimension();
         int centeredX = getCenteredX();
         int centeredY = getCenteredY();
-        mainLayout.setOffsets(centeredX, centeredY);
+        mainLayout.setPosition(centeredX, centeredY);
 
         List<WaypointList> defaultWaypointLists;
         dimensionListWidget.updateDimensionNames(this.waypointClientMod.getDimensionNames());
