@@ -75,20 +75,15 @@ public final class WaypointQueryEngine {
     }
 
     private ListResult queryList(WaypointList waypointList, String filter, Query query) {
-        boolean listMatches = filter.isEmpty() || matchesText(waypointList.name(), filter);
+        boolean includeAll = filter.isEmpty();
         List<SimpleWaypoint> waypoints = new ArrayList<>();
         for (SimpleWaypoint waypoint : waypointList.simpleWaypoints()) {
-            if (listMatches || matchesWaypoint(waypoint, filter)) {
+            if (includeAll || matchesText(waypoint.name(), filter)) {
                 waypoints.add(waypoint);
             }
         }
         WaypointSorting.sort(waypoints, query.sortMode(), query.origin(), query.reversed());
-        return new ListResult(waypointList, Collections.unmodifiableList(waypoints), listMatches);
-    }
-
-    private static boolean matchesWaypoint(SimpleWaypoint waypoint, String filter) {
-        return matchesText(waypoint.name(), filter)
-                || matchesText(waypoint.initials(), filter);
+        return new ListResult(waypointList, Collections.unmodifiableList(waypoints), includeAll);
     }
 
     private static boolean matchesText(String text, String filter) {

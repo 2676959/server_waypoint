@@ -58,7 +58,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         dimensionListWidget = new DimensionListWidget(0, 0, widgetWidth, this, this.font, this::onSelectDimension);
         waypointListWidget = new WaypointListWidget(0, 0, widgetWidth, 200, this, new WaypointQueryEngine(getWaypointQuerySource()), this.font);
         searchField = new WaypointSearchBarWidget(0, 0, widgetWidth, Component.translatable("waypoint.search.entry"), this.font, waypointListWidget::setSearchQuery);
-        searchField.setSuggestionsProvider(waypointListWidget::getSearchSuggestions);
         defaultSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.default"), () -> {
             waypointListWidget.setSortMode(WaypointSorting.SortMode.DEFAULT);
             syncSortButtons();

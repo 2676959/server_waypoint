@@ -87,7 +87,7 @@ class WaypointQueryEngineTest {
     }
 
     @Test
-    void fuzzyFilterMatchesListNamesAndIncludesTheWholeList() {
+    void filterDoesNotMatchListNames() {
         WaypointFilesManagerCore filesManager = createFilesManager();
         addDimension(filesManager, "minecraft:overworld", list("homes", waypoint("storage", 0, 0, 0)));
 
@@ -96,9 +96,22 @@ class WaypointQueryEngineTest {
                 new WaypointQueryEngine.Query("hoems", WaypointSorting.SortMode.NAME, null)
         );
 
-        assertEquals(1, result.listCount());
-        assertEquals(List.of("homes"), listNames(result.dimensions().get(0)));
-        assertEquals(List.of("storage"), waypointNames(result.dimensions().get(0).lists().get(0)));
+        assertEquals(0, result.listCount());
+        assertEquals(0, result.waypointCount());
+    }
+
+    @Test
+    void filterDoesNotMatchWaypointInitials() {
+        WaypointFilesManagerCore filesManager = createFilesManager();
+        addDimension(filesManager, "minecraft:overworld", list("bases", waypoint("desert village", "dv", 0, 0, 0)));
+
+        WaypointQueryEngine.QueryResult result = new WaypointQueryEngine(filesManager).queryDimension(
+                "minecraft:overworld",
+                new WaypointQueryEngine.Query("dv", WaypointSorting.SortMode.NAME, null)
+        );
+
+        assertEquals(0, result.listCount());
+        assertEquals(0, result.waypointCount());
     }
 
     @Test
@@ -131,6 +144,10 @@ class WaypointQueryEngineTest {
 
     private static SimpleWaypoint waypoint(String name, int x, int y, int z) {
         return new SimpleWaypoint(name, name.substring(0, 1), x, y, z, 0xFFFFFF, 0, false);
+    }
+
+    private static SimpleWaypoint waypoint(String name, String initials, int x, int y, int z) {
+        return new SimpleWaypoint(name, initials, x, y, z, 0xFFFFFF, 0, false);
     }
 
     private static List<String> dimensionNames(WaypointQueryEngine.QueryResult result) {
