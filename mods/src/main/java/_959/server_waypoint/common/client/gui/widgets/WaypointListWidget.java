@@ -27,6 +27,7 @@ import net.minecraft.network.chat.Component;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.texture;
+import static _959.server_waypoint.common.client.gui.WidgetThemeColors.MUTED_FONT_COLOR;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
@@ -58,6 +59,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private String selectedDimensionName = "";
     private String searchQuery = "";
     private WaypointSorting.SortMode sortMode = WaypointSorting.SortMode.DEFAULT;
+    private boolean groupByLists = true;
 
     public WaypointListWidget(int x, int y, int width, int height, WaypointManagerScreen parent, WaypointQueryEngine queryEngine, Font textRenderer) {
         super(x, y, width, height, itemHeight, Component.literal("Waypoint lists"), 5, 7, 10, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
@@ -105,11 +107,27 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     public void setSortMode(WaypointSorting.SortMode sortMode) {
         this.sortMode = sortMode == null ? WaypointSorting.SortMode.DEFAULT : sortMode;
+        if (this.sortMode == WaypointSorting.SortMode.DEFAULT) {
+            this.groupByLists = true;
+        }
         applySearchAndSort();
     }
 
     public WaypointSorting.SortMode getSortMode() {
         return this.sortMode;
+    }
+
+    public void toggleGroupByLists() {
+        setGroupByLists(!isGroupByLists());
+    }
+
+    public void setGroupByLists(boolean groupByLists) {
+        this.groupByLists = this.sortMode == WaypointSorting.SortMode.DEFAULT || groupByLists;
+        applySearchAndSort();
+    }
+
+    public boolean isGroupByLists() {
+        return this.sortMode == WaypointSorting.SortMode.DEFAULT || this.groupByLists;
     }
 
     public void sortByName() {
@@ -133,18 +151,19 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 this.selectedDimensionName,
                 new WaypointQueryEngine.Query(this.searchQuery, this.sortMode, getPlayerWaypointPos())
         );
-        List<WaypointList> displayWaypointLists = createDisplayWaypointLists(result);
-        updateRoots(displayWaypointLists.stream().map(ListNode::new).map(RowNode.class::cast).toList());
-    }
-
-    private static List<WaypointList> createDisplayWaypointLists(WaypointQueryEngine.QueryResult result) {
-        List<WaypointList> displayWaypointLists = new ArrayList<>();
-        for (WaypointQueryEngine.DimensionResult dimensionResult : result.dimensions()) {
-            for (WaypointQueryEngine.ListResult listResult : dimensionResult.lists()) {
-                displayWaypointLists.add(new ViewWaypointList(listResult.sourceList(), listResult.waypoints()));
-            }
+        WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, isGroupByLists());
+        if (display.groupByLists()) {
+            updateRoots(display.lists().stream()
+                    .map(list -> new ViewWaypointList(list.sourceList(), list.waypoints()))
+                    .map(ListNode::new)
+                    .map(RowNode.class::cast)
+                    .toList());
+            return;
         }
-        return displayWaypointLists;
+        updateRoots(display.flatWaypoints().stream()
+                .map(waypoint -> new WaypointNode(waypoint.sourceList(), waypoint.waypoint(), true))
+                .map(RowNode.class::cast)
+                .toList());
     }
 
     private static WaypointPos getPlayerWaypointPos() {
@@ -167,7 +186,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     protected @NotNull List<RowNode> getChildren(RowNode value) {
         if (value instanceof ListNode listNode) {
             return listNode.waypointList().simpleWaypoints().stream()
-                    .map(waypoint -> new WaypointNode(listNode.waypointList(), waypoint))
+                    .map(waypoint -> new WaypointNode(listNode.waypointList(), waypoint, false))
                     .map(RowNode.class::cast)
                     .toList();
         }
@@ -307,7 +326,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         if (value instanceof ListNode listNode) {
             renderWaypointList(context, listNode.waypointList(), hovered, rowY, contentWidth);
         } else if (value instanceof WaypointNode waypointNode) {
-            renderWaypoint(context, waypointNode.waypoint(), hovered, rowY, contentWidth);
+            renderWaypoint(context, waypointNode, hovered, rowY, contentWidth);
         }
     }
 
@@ -350,7 +369,8 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         }
     }
 
-    private void renderWaypoint(GuiGraphicsExtractor context, SimpleWaypoint waypoint, boolean hovered, int rowY, int contentWidth) {
+    private void renderWaypoint(GuiGraphicsExtractor context, WaypointNode waypointNode, boolean hovered, int rowY, int contentWidth) {
+        SimpleWaypoint waypoint = waypointNode.waypoint();
         String name = waypoint.name();
         String initials = waypoint.initials();
         boolean wpRendered = waypoint.isRendered();
@@ -384,7 +404,13 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             drawText(context, textRenderer, "*", 6, finalY, textColor);
         }
         drawInitialsBox(context, initials, 15, finalY - 1, backgroundColor, getInitialsTextColor(rgb, wpRendered));
-        drawText(context, textRenderer, name, 55, finalY, textColor);
+        if (waypointNode.showListName()) {
+            String listPrefix = waypointNode.waypointList().name() + " / ";
+            drawText(context, textRenderer, listPrefix, 55, finalY, MUTED_FONT_COLOR);
+            drawText(context, textRenderer, name, 55 + textRenderer.width(listPrefix), finalY, textColor);
+        } else {
+            drawText(context, textRenderer, name, 55, finalY, textColor);
+        }
     }
 
     @Override
@@ -415,7 +441,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private record ListNode(WaypointList waypointList) implements RowNode {
     }
 
-    private record WaypointNode(WaypointList waypointList, SimpleWaypoint waypoint) implements RowNode {
+    private record WaypointNode(WaypointList waypointList, SimpleWaypoint waypoint, boolean showListName) implements RowNode {
     }
 
     private static class ViewWaypointList extends WaypointList {

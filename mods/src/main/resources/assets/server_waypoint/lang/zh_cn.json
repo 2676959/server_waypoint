@@ -28,6 +28,8 @@
   "waypoint.sort.name": "名称",
   "waypoint.sort.distance": "距离",
   "waypoint.sort.color": "颜色",
+  "waypoint.group.lists": "按列表分组",
+  "waypoint.group.flat": "平铺列表",
   "waypoint.add.screen.title": "添加新路径点",
   "waypoint.edit.screen.title": "编辑路径点：%1$s",
   "waypoint.edit.screen.name.entry": "名称：",

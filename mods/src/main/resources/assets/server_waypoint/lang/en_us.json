@@ -28,6 +28,8 @@
   "waypoint.sort.name": "Name",
   "waypoint.sort.distance": "Distance",
   "waypoint.sort.color": "Color",
+  "waypoint.group.lists": "Grouped by list",
+  "waypoint.group.flat": "Flat list",
   "waypoint.add.screen.title": "Add a new waypoint",
   "waypoint.edit.screen.title": "Edit waypoint: %1$s",
   "waypoint.edit.screen.name.entry": "Name: ",

@@ -5,6 +5,7 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.client.gui.layout.ExpandableManager;
 import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
+import _959.server_waypoint.common.client.gui.widgets.ToggleButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.gui.widgets.WaypointSearchBarWidget;
 import _959.server_waypoint.common.client.gui.widgets.WaypointListWidget;
@@ -40,12 +41,14 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private static TranslucentButton nameSortButton;
     private static TranslucentButton distanceSortButton;
     private static TranslucentButton colorSortButton;
+    private static ToggleButton groupByListsButton;
     private final Screen parentScreen;
     private final WaypointClientMod waypointClientMod;
     private final float relativeHeight = 0.9F;
     private boolean hasInitialized = false;
     private final ExpandableManager mainLayout;
     private final ExpandableManager sortButtonLayout;
+    private final ExpandableManager waypointControlLayout;
 
     public WaypointManagerScreen(WaypointClientMod waypointClientMod, Screen parentScreen) {
         super(Component.nullToEmpty("Server Waypoints"));
@@ -56,24 +59,54 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         waypointListWidget = new WaypointListWidget(0, 0, widgetWidth, 200, this, new WaypointQueryEngine(getWaypointQuerySource()), this.font);
         searchField = new WaypointSearchBarWidget(0, 0, widgetWidth, Component.translatable("waypoint.search.entry"), this.font, waypointListWidget::setSearchQuery);
         searchField.setSuggestionsProvider(waypointListWidget::getSearchSuggestions);
-        defaultSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.default"), () -> waypointListWidget.setSortMode(WaypointSorting.SortMode.DEFAULT));
-        nameSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.name"), waypointListWidget::sortByName);
-        distanceSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.distance"), waypointListWidget::sortByDistance);
-        colorSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.color"), waypointListWidget::sortByColor);
+        defaultSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.default"), () -> {
+            waypointListWidget.setSortMode(WaypointSorting.SortMode.DEFAULT);
+            syncGroupByListsButton();
+        });
+        nameSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.name"), () -> {
+            waypointListWidget.sortByName();
+            syncGroupByListsButton();
+        });
+        distanceSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.distance"), () -> {
+            waypointListWidget.sortByDistance();
+            syncGroupByListsButton();
+        });
+        colorSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.color"), () -> {
+            waypointListWidget.sortByColor();
+            syncGroupByListsButton();
+        });
+        groupByListsButton = new ToggleButton(
+                0,
+                0,
+                widgetWidth,
+                11,
+                Component.translatable("waypoint.group.flat"),
+                Component.translatable("waypoint.group.lists"),
+                0xFFAA0000,
+                0xFF00AA00,
+                groupByLists -> {
+                    waypointListWidget.setGroupByLists(groupByLists);
+                    syncGroupByListsButton();
+                }
+        );
+        groupByListsButton.setState(waypointListWidget.isGroupByLists());
         this.sortButtonLayout = new ExpandableManager(widgetWidth, defaultSortButton.getHeight(), ExpandableManager.Orientation.HORIZONTAL, ExpandableManager.Direction.FORWARD);
         this.sortButtonLayout.addChild(defaultSortButton, 1, 1);
         this.sortButtonLayout.addChild(nameSortButton, 1, 1);
         this.sortButtonLayout.addChild(distanceSortButton, 1, 1);
         this.sortButtonLayout.addChild(colorSortButton, 1, 1);
+        this.waypointControlLayout = new ExpandableManager(widgetWidth, sortButtonLayout.getHeight() + groupByListsButton.getHeight(), ExpandableManager.Orientation.VERTICAL, ExpandableManager.Direction.FORWARD);
+        this.waypointControlLayout.addChild(sortButtonLayout, 1, 0);
+        this.waypointControlLayout.addChild(groupByListsButton, 1, 0);
         this.mainLayout = new ExpandableManager(
                 dimensionListWidget.getVisualWidth(),
-                dimensionListWidget.getVisualHeight() + searchField.getVisualHeight() + sortButtonLayout.getHeight() + waypointListWidget.getVisualHeight(),
+                dimensionListWidget.getVisualHeight() + searchField.getVisualHeight() + waypointControlLayout.getHeight() + waypointListWidget.getVisualHeight(),
                 ExpandableManager.Orientation.VERTICAL,
                 ExpandableManager.Direction.FORWARD
         );
         this.mainLayout.addChild(dimensionListWidget, 1, 0);
         this.mainLayout.addChild(searchField, 1, 0);
-        this.mainLayout.addChild(sortButtonLayout, 1, 0);
+        this.mainLayout.addChild(waypointControlLayout, 1, 0);
         this.mainLayout.addChild(waypointListWidget, 1, 1);
     }
 
@@ -185,6 +218,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         this.addRenderableWidget(nameSortButton);
         this.addRenderableWidget(distanceSortButton);
         this.addRenderableWidget(colorSortButton);
+        this.addRenderableWidget(groupByListsButton);
     }
 
     @Override
@@ -265,6 +299,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         //$ render_widget_method_swap
         extractWidgetRenderState
                 (context, mouseX, mouseY, delta);
+        groupByListsButton.
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+                (context, mouseX, mouseY, delta);
         searchField.
         //$ render_widget_method_swap
         extractWidgetRenderState
@@ -286,8 +324,15 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         nameSortButton = null;
         distanceSortButton = null;
         colorSortButton = null;
+        groupByListsButton = null;
         if (parentScreen == null) super.onClose();
         else MinecraftClientHelper.setScreen(this.parentScreen);
+    }
+
+    private static void syncGroupByListsButton() {
+        if (waypointListWidget != null && groupByListsButton != null) {
+            groupByListsButton.setState(waypointListWidget.isGroupByLists());
+        }
     }
 
     private boolean mouseClickedSearchSuggestion(double mouseX, double mouseY) {
