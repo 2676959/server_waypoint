@@ -1,11 +1,34 @@
 package _959.server_waypoint.util;
 
-import org.jetbrains.annotations.Nullable;
-
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.ToIntFunction;
+import org.jetbrains.annotations.Nullable;
 
 public class ColorUtils {
+    private static final int OKLCH_HUE_SORT_REGIONS = 24;
+    private static final double OKLCH_GREYSCALE_TAIL_MAX_CHROMA = 0.005D;
+    private static final double OKLCH_IN_REGION_MAX_GREY_CHROMA = 0.080D;
+    private static final double OKLCH_IN_REGION_MIN_BRIGHT_LIGHTNESS = 0.86D;
+    private static final double OKLCH_IN_REGION_MAX_BRIGHT_CHROMA = 0.160D;
+    private static final double OKLCH_TWO_OPT_EPSILON = 0.0000000001D;
+    private static final int OKLCH_TWO_OPT_MAX_PASSES = 8;
+    private static final double OKLCH_GRADIENT_BACKWARD_LIGHTNESS_PENALTY = 16.0D;
+    private static final int OKLCH_GRADIENT_SMOOTHING_LOOKAHEAD = 8;
+    private static final int OKLCH_GRADIENT_TWO_OPT_MAX_PATH_SIZE = 160;
+    private static final double OKLCH_GRADIENT_BRIGHT_MIN_LIGHTNESS = 0.70D;
+    private static final double OKLCH_GRADIENT_DARK_MAX_LIGHTNESS = 0.50D;
+
+    private enum OklchGradientPhase {
+        PALE,
+        BRIGHT,
+        VIVID,
+        DARK
+    }
+
     public static final int RED     = 0xFFFF0000; // Hue = 0
     public static final int YELLOW  = 0xFFFFFF00; // Hue = 60
     public static final int GREEN   = 0xFF00FF00; // Hue = 120
@@ -427,6 +450,331 @@ public class ColorUtils {
         }
 
         return 0xFF000000 | (r << 16) | (g << 8) | b;
+    }
+
+    public static <T> void sortWaypointColors(
+            List<T> values,
+            ToIntFunction<T> rgbExtractor,
+            @Nullable Comparator<T> tieBreaker
+    ) {
+        List<List<OklchColorSortEntry<T>>> regionBuckets = new ArrayList<>(OKLCH_HUE_SORT_REGIONS);
+        for (int i = 0; i < OKLCH_HUE_SORT_REGIONS; i++) {
+            regionBuckets.add(new ArrayList<>());
+        }
+        List<OklchColorSortEntry<T>> greyTail = new ArrayList<>();
+
+        for (int i = 0; i < values.size(); i++) {
+            T value = values.get(i);
+            int rgb = rgbExtractor.applyAsInt(value) & 0xFFFFFF;
+            OklchColor color = rgbToOklch(rgb);
+            OklchColorSortEntry<T> entry = new OklchColorSortEntry<>(value, rgb, color, i);
+            if (isOklchGreyscaleTailColor(color)) {
+                greyTail.add(entry);
+            } else {
+                regionBuckets.get(oklchHueRegion(color)).add(entry);
+            }
+        }
+
+        List<T> sortedValues = new ArrayList<>(values.size());
+        for (List<OklchColorSortEntry<T>> region : regionBuckets) {
+            appendSmoothedOklchRegion(sortedValues, region, tieBreaker);
+        }
+
+        greyTail.sort((entry1, entry2) -> compareOklchGreyTailEntries(entry1, entry2, tieBreaker));
+        for (OklchColorSortEntry<T> entry : greyTail) {
+            sortedValues.add(entry.value());
+        }
+
+        values.clear();
+        values.addAll(sortedValues);
+    }
+
+    public static long oklchColorSortKey(int rgb) {
+        OklchColor color = rgbToOklch(rgb & 0xFFFFFF);
+        if (isOklchGreyscaleTailColor(color)) {
+            return packOklchColorSortKey(
+                    OKLCH_HUE_SORT_REGIONS,
+                    0,
+                    quantizeOklchComponent(color.lightness(), 1.0D),
+                    quantizeOklchComponent(color.chroma(), 0.5D),
+                    quantizeOklchComponent(color.hue(), 360.0D),
+                    rgb
+            );
+        }
+
+        OklchGradientPhase phase = oklchGradientPhase(color);
+        double primary = phase == OklchGradientPhase.PALE ? color.lightness() : 1.0D - color.lightness();
+        double secondary = switch (phase) {
+            case PALE, BRIGHT -> color.chroma();
+            case VIVID, DARK -> 0.5D - color.chroma();
+        };
+        return packOklchColorSortKey(
+                oklchHueRegion(color),
+                phase.ordinal(),
+                quantizeOklchComponent(primary, 1.0D),
+                quantizeOklchComponent(secondary, 0.5D),
+                quantizeOklchComponent(color.hue(), 360.0D),
+                rgb
+        );
+    }
+
+    private static <T> void appendSmoothedOklchRegion(
+            List<T> sortedValues,
+            List<OklchColorSortEntry<T>> region,
+            @Nullable Comparator<T> tieBreaker
+    ) {
+        List<List<OklchColorSortEntry<T>>> phaseBuckets = new ArrayList<>(OklchGradientPhase.values().length);
+        for (int i = 0; i < OklchGradientPhase.values().length; i++) {
+            phaseBuckets.add(new ArrayList<>());
+        }
+
+        for (OklchColorSortEntry<T> entry : region) {
+            phaseBuckets.get(oklchGradientPhase(entry.color()).ordinal()).add(entry);
+        }
+
+        for (OklchGradientPhase phase : OklchGradientPhase.values()) {
+            List<OklchColorSortEntry<T>> phaseEntries = new ArrayList<>(phaseBuckets.get(phase.ordinal()));
+            phaseEntries.sort((entry1, entry2) -> compareOklchPhaseEntries(entry1, entry2, phase, tieBreaker));
+            improveOklchPhasePathTwoOpt(phaseEntries, phase);
+            for (OklchColorSortEntry<T> entry : phaseEntries) {
+                sortedValues.add(entry.value());
+            }
+        }
+    }
+
+    private static void improveOklchPhasePathTwoOpt(
+            List<? extends OklchColorSortEntry<?>> path,
+            OklchGradientPhase phase
+    ) {
+        if (path.size() < 4 || path.size() > OKLCH_GRADIENT_TWO_OPT_MAX_PATH_SIZE) {
+            return;
+        }
+
+        for (int pass = 0; pass < OKLCH_TWO_OPT_MAX_PASSES; pass++) {
+            boolean improved = false;
+            for (int i = 1; i < path.size() - 2; i++) {
+                int maxEnd = Math.min(path.size() - 1, i + OKLCH_GRADIENT_SMOOTHING_LOOKAHEAD);
+                for (int k = i + 1; k < maxEnd; k++) {
+                    double oldCost = oklchPhaseTwoOptCost(path, phase, i, k, false);
+                    double newCost = oklchPhaseTwoOptCost(path, phase, i, k, true);
+                    if (newCost + OKLCH_TWO_OPT_EPSILON < oldCost) {
+                        reverseOklchPath(path, i, k);
+                        improved = true;
+                    }
+                }
+            }
+            if (!improved) {
+                return;
+            }
+        }
+    }
+
+    private static double oklchPhaseTwoOptCost(
+            List<? extends OklchColorSortEntry<?>> path,
+            OklchGradientPhase phase,
+            int start,
+            int end,
+            boolean reversed
+    ) {
+        double cost = 0.0D;
+        if (reversed) {
+            cost += oklchPhasePathConnectionCost(path, start - 1, end, phase);
+            for (int i = end; i > start; i--) {
+                cost += oklchPhasePathConnectionCost(path, i, i - 1, phase);
+            }
+            cost += oklchPhasePathConnectionCost(path, start, end + 1, phase);
+        } else {
+            cost += oklchPhasePathConnectionCost(path, start - 1, start, phase);
+            for (int i = start; i < end; i++) {
+                cost += oklchPhasePathConnectionCost(path, i, i + 1, phase);
+            }
+            cost += oklchPhasePathConnectionCost(path, end, end + 1, phase);
+        }
+        return cost;
+    }
+
+    private static double oklchPhasePathConnectionCost(
+            List<? extends OklchColorSortEntry<?>> path,
+            int index1,
+            int index2,
+            OklchGradientPhase phase
+    ) {
+        if (index1 < 0 || index2 >= path.size()) {
+            return 0.0D;
+        }
+        return oklchPhaseStepCost(path.get(index1), path.get(index2), phase);
+    }
+
+    private static double oklchPhaseStepCost(
+            OklchColorSortEntry<?> entry1,
+            OklchColorSortEntry<?> entry2,
+            OklchGradientPhase phase
+    ) {
+        double distance = cartesianOklchDistanceSquared(entry1.color(), entry2.color());
+        double lightnessDelta = entry2.color().lightness() - entry1.color().lightness();
+        double backwardLightnessDistance = switch (phase) {
+            case PALE -> Math.max(0.0D, -lightnessDelta);
+            case BRIGHT, VIVID, DARK -> Math.max(0.0D, lightnessDelta);
+        };
+        return distance + backwardLightnessDistance * backwardLightnessDistance * OKLCH_GRADIENT_BACKWARD_LIGHTNESS_PENALTY;
+    }
+
+    private static <T> int compareOklchPhaseEntries(
+            OklchColorSortEntry<T> entry1,
+            OklchColorSortEntry<T> entry2,
+            OklchGradientPhase phase,
+            @Nullable Comparator<T> tieBreaker
+    ) {
+        int lightnessCompare = switch (phase) {
+            case PALE -> Double.compare(entry1.color().lightness(), entry2.color().lightness());
+            case BRIGHT, VIVID, DARK -> Double.compare(entry2.color().lightness(), entry1.color().lightness());
+        };
+        if (lightnessCompare != 0) {
+            return lightnessCompare;
+        }
+
+        int chromaCompare = switch (phase) {
+            case PALE, BRIGHT -> Double.compare(entry1.color().chroma(), entry2.color().chroma());
+            case VIVID, DARK -> Double.compare(entry2.color().chroma(), entry1.color().chroma());
+        };
+        if (chromaCompare != 0) {
+            return chromaCompare;
+        }
+        return compareOklchTies(entry1, entry2, tieBreaker);
+    }
+
+    private static <T> int compareOklchGreyTailEntries(
+            OklchColorSortEntry<T> entry1,
+            OklchColorSortEntry<T> entry2,
+            @Nullable Comparator<T> tieBreaker
+    ) {
+        int lightnessCompare = Double.compare(entry1.color().lightness(), entry2.color().lightness());
+        if (lightnessCompare != 0) {
+            return lightnessCompare;
+        }
+        return compareOklchTies(entry1, entry2, tieBreaker);
+    }
+
+    private static <T> int compareOklchTies(
+            OklchColorSortEntry<T> entry1,
+            OklchColorSortEntry<T> entry2,
+            @Nullable Comparator<T> tieBreaker
+    ) {
+        int hueCompare = Double.compare(entry1.color().hue(), entry2.color().hue());
+        if (hueCompare != 0) {
+            return hueCompare;
+        }
+        int rgbCompare = Integer.compare(entry1.rgb(), entry2.rgb());
+        if (rgbCompare != 0) {
+            return rgbCompare;
+        }
+        if (tieBreaker != null) {
+            int tieBreakerCompare = tieBreaker.compare(entry1.value(), entry2.value());
+            if (tieBreakerCompare != 0) {
+                return tieBreakerCompare;
+            }
+        }
+        return Integer.compare(entry1.originalIndex(), entry2.originalIndex());
+    }
+
+    private static OklchGradientPhase oklchGradientPhase(OklchColor color) {
+        if (color.lightness() <= OKLCH_GRADIENT_DARK_MAX_LIGHTNESS) {
+            return OklchGradientPhase.DARK;
+        }
+        if (color.chroma() <= OKLCH_IN_REGION_MAX_GREY_CHROMA
+                || (color.lightness() >= OKLCH_IN_REGION_MIN_BRIGHT_LIGHTNESS
+                && color.chroma() <= OKLCH_IN_REGION_MAX_BRIGHT_CHROMA)) {
+            return OklchGradientPhase.PALE;
+        }
+        if (color.lightness() >= OKLCH_GRADIENT_BRIGHT_MIN_LIGHTNESS) {
+            return OklchGradientPhase.BRIGHT;
+        }
+        return OklchGradientPhase.VIVID;
+    }
+
+    private static boolean isOklchGreyscaleTailColor(OklchColor color) {
+        return color.chroma() <= OKLCH_GREYSCALE_TAIL_MAX_CHROMA;
+    }
+
+    private static int oklchHueRegion(OklchColor color) {
+        return Math.min((int) (color.hue() / (360.0D / OKLCH_HUE_SORT_REGIONS)), OKLCH_HUE_SORT_REGIONS - 1);
+    }
+
+    private static OklchColor rgbToOklch(int rgb) {
+        double r = linearizeSrgb((rgb >> 16) & 0xFF);
+        double g = linearizeSrgb((rgb >> 8) & 0xFF);
+        double b = linearizeSrgb(rgb & 0xFF);
+
+        double l = Math.cbrt(0.4122214708D * r + 0.5363325363D * g + 0.0514459929D * b);
+        double m = Math.cbrt(0.2119034982D * r + 0.6806995451D * g + 0.1073969566D * b);
+        double s = Math.cbrt(0.0883024619D * r + 0.2817188376D * g + 0.6299787005D * b);
+
+        double lightness = 0.2104542553D * l + 0.7936177850D * m - 0.0040720468D * s;
+        double a = 1.9779984951D * l - 2.4285922050D * m + 0.4505937099D * s;
+        double bOpponent = 0.0259040371D * l + 0.7827717662D * m - 0.8086757660D * s;
+        double hue = Math.toDegrees(Math.atan2(bOpponent, a));
+        if (hue < 0.0D) {
+            hue += 360.0D;
+        }
+        return new OklchColor(lightness, Math.hypot(a, bOpponent), hue);
+    }
+
+    private static double linearizeSrgb(int value) {
+        double channel = value / 255.0D;
+        if (channel <= 0.04045D) {
+            return channel / 12.92D;
+        }
+        return Math.pow((channel + 0.055D) / 1.055D, 2.4D);
+    }
+
+    private static double cartesianOklchDistanceSquared(OklchColor color1, OklchColor color2) {
+        double lightnessDistance = color1.lightness() - color2.lightness();
+        double hue1 = Math.toRadians(color1.hue());
+        double hue2 = Math.toRadians(color2.hue());
+        double aDistance = color1.chroma() * Math.cos(hue1) - color2.chroma() * Math.cos(hue2);
+        double bDistance = color1.chroma() * Math.sin(hue1) - color2.chroma() * Math.sin(hue2);
+        return lightnessDistance * lightnessDistance + aDistance * aDistance + bDistance * bDistance;
+    }
+
+    private static void reverseOklchPath(List<? extends OklchColorSortEntry<?>> path, int start, int end) {
+        while (start < end) {
+            swapOklchPathEntries(path, start, end);
+            start++;
+            end--;
+        }
+    }
+
+    private static <T extends OklchColorSortEntry<?>> void swapOklchPathEntries(List<T> path, int index1, int index2) {
+        T entry = path.get(index1);
+        path.set(index1, path.get(index2));
+        path.set(index2, entry);
+    }
+
+    private static long packOklchColorSortKey(
+            int region,
+            int phase,
+            int primary,
+            int secondary,
+            int hue,
+            int rgb
+    ) {
+        return ((long) region & 0x1FL) << 58
+                | ((long) phase & 0x3L) << 56
+                | ((long) primary & 0xFFFFL) << 40
+                | ((long) secondary & 0xFFFFL) << 24
+                | ((long) hue & 0xFFFFL) << 8
+                | (rgb & 0xFFL);
+    }
+
+    private static int quantizeOklchComponent(double value, double maxValue) {
+        double clampedValue = Math.max(0.0D, Math.min(maxValue, value));
+        return (int) Math.round(clampedValue * 65535.0D / maxValue);
+    }
+
+    private record OklchColor(double lightness, double chroma, double hue) {
+    }
+
+    private record OklchColorSortEntry<T>(T value, int rgb, OklchColor color, int originalIndex) {
     }
 
     public static int getPureHue(int hue) {
