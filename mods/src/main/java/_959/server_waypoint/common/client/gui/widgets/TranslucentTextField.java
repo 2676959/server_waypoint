@@ -129,6 +129,15 @@ public class TranslucentTextField extends EditBox implements Shiftable, Expandab
     public void setVisualHeight(int height) {
     }
 
+    @Override
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    @Override
+    public void setHeight(int height) {
+    }
+
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (this.handleSuggestionKey(keyCode, modifiers)) {
             return true;

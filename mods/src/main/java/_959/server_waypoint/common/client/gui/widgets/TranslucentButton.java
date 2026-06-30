@@ -34,6 +34,16 @@ public class TranslucentButton extends ShiftableClickableWidget implements Expan
     }
 
     @Override
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    @Override
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    @Override
     public void
     //$ render_widget_method_swap
     extractWidgetRenderState

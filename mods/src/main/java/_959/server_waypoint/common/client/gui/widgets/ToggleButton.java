@@ -1,6 +1,8 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.Expandable;
+
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
@@ -12,7 +14,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public class ToggleButton extends ShiftableClickableWidget {
+public class ToggleButton extends ShiftableClickableWidget implements Expandable {
     protected final Font textRenderer = Minecraft.getInstance().font;
     private final ToggleButtonCallback callback;
     private boolean state;
@@ -37,6 +39,17 @@ public class ToggleButton extends ShiftableClickableWidget {
         this.state = !this.state;
         this.callback.onToggle(this.state);
     }
+
+    @Override
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    @Override
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
     @Override
     public void
     //$ render_widget_method_swap
