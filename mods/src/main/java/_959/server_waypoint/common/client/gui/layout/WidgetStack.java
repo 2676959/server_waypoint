@@ -2,6 +2,8 @@
 package _959.server_waypoint.common.client.gui.layout;
 
 import _959.server_waypoint.common.client.gui.Padding;
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import _959.server_waypoint.common.client.gui.widgets.ShiftableWidget;
 import _959.server_waypoint.util.Pair;
 import java.util.ArrayList;
@@ -21,8 +23,8 @@ import net.minecraft.client.input.MouseButtonInfo;
  * */
 public class WidgetStack extends ShiftableWidget {
     private final int defaultPdx;
-    private final boolean toPositive;
-    private final boolean isHorizontal;
+    private final Direction direction;
+    private final Orientation orientation;
     private final List<AbstractWidget> clickable = new ArrayList<>();
     private final List<Pair<LayoutElement, Integer>> children = new ArrayList<>();
     private final List<Renderable> drawables = new ArrayList<>();
@@ -38,10 +40,14 @@ public class WidgetStack extends ShiftableWidget {
     }
 
     public WidgetStack(int x, int y, int defaultPdx, boolean toPositive, boolean isHorizontal) {
+        this(x, y, defaultPdx, orientationFromBoolean(isHorizontal), directionFromBoolean(toPositive));
+    }
+
+    public WidgetStack(int x, int y, int defaultPdx, Orientation orientation, Direction direction) {
         super(x, y, 0, 0);
         this.defaultPdx = defaultPdx;
-        this.toPositive = toPositive;
-        this.isHorizontal = isHorizontal;
+        this.direction = direction;
+        this.orientation = orientation;
     }
 
     public <W extends AbstractWidget & Padding> void addPaddedClickable(W child, int pdx) {
@@ -51,15 +57,15 @@ public class WidgetStack extends ShiftableWidget {
 
     public <W extends LayoutElement & Padding & Renderable> void addPadded(W child, int pdx) {
         int widgetSpan, relativePos, widgetPerpSpan;
-        if (isHorizontal) {
+        if (this.orientation == Orientation.HORIZONTAL) {
             widgetSpan = child.getVisualWidth();
             widgetPerpSpan = child.getVisualHeight();
-            relativePos = this.toPositive ? this.mainAxisSize + pdx : -(this.mainAxisSize + pdx + widgetSpan);
+            relativePos = this.direction == Direction.FORWARD ? this.mainAxisSize + pdx : -(this.mainAxisSize + pdx + widgetSpan);
             child.setPaddedPosition(this.getShiftedX() + relativePos, this.getShiftedY());
         } else {
             widgetSpan = child.getVisualHeight();
             widgetPerpSpan = child.getVisualWidth();
-            relativePos = this.toPositive ? this.mainAxisSize + pdx : -(this.mainAxisSize + pdx + widgetSpan);
+            relativePos = this.direction == Direction.FORWARD ? this.mainAxisSize + pdx : -(this.mainAxisSize + pdx + widgetSpan);
             child.setPaddedPosition(this.getShiftedX(), this.getShiftedY() + relativePos);
         }
         if (widgetPerpSpan > offAxisSize) {
@@ -86,15 +92,15 @@ public class WidgetStack extends ShiftableWidget {
 
     public <W extends LayoutElement & Renderable> void addChild(W child, int pdx) {
         int widgetSpan, relativePos, widgetPerpSpan;
-        if (isHorizontal) {
+        if (this.orientation == Orientation.HORIZONTAL) {
             widgetSpan = child.getWidth();
             widgetPerpSpan = child.getHeight();
-            relativePos = this.toPositive ? this.mainAxisSize + pdx : -(this.mainAxisSize + pdx + widgetSpan);
+            relativePos = this.direction == Direction.FORWARD ? this.mainAxisSize + pdx : -(this.mainAxisSize + pdx + widgetSpan);
             child.setPosition(this.getShiftedX() + relativePos, this.getShiftedY());
         } else {
             widgetSpan = child.getHeight();
             widgetPerpSpan = child.getWidth();
-            relativePos = this.toPositive ? this.mainAxisSize + pdx : -(this.mainAxisSize + pdx + widgetSpan);
+            relativePos = this.direction == Direction.FORWARD ? this.mainAxisSize + pdx : -(this.mainAxisSize + pdx + widgetSpan);
             child.setPosition(this.getShiftedX(), this.getShiftedY() + relativePos);
         }
         if (widgetPerpSpan > offAxisSize) {
@@ -138,7 +144,7 @@ public class WidgetStack extends ShiftableWidget {
 
     private void updateX() {
         int shiftedX = this.getShiftedX();
-        if (isHorizontal) {
+        if (this.orientation == Orientation.HORIZONTAL) {
             for (Pair<? extends LayoutElement, Integer> child : children) {
                 LayoutElement widget = child.left();
                 Integer relativePos = child.right();
@@ -162,7 +168,7 @@ public class WidgetStack extends ShiftableWidget {
 
     private void updateY() {
         int shiftedY = this.getShiftedY();
-        if (isHorizontal) {
+        if (this.orientation == Orientation.HORIZONTAL) {
             for (Pair<? extends LayoutElement, Integer> child : children) {
                 LayoutElement widget = child.left();
                 if (widget instanceof Padding) {
@@ -214,7 +220,7 @@ public class WidgetStack extends ShiftableWidget {
         super.setY(y);
         int shiftedX = this.getShiftedX();
         int shiftedY = this.getShiftedY();
-        if (isHorizontal) {
+        if (this.orientation == Orientation.HORIZONTAL) {
             for (Pair<? extends LayoutElement, Integer> child : children) {
                 LayoutElement widget = child.left();
                 if (widget instanceof Padding) {
@@ -237,16 +243,32 @@ public class WidgetStack extends ShiftableWidget {
 
     @Override
     public int getWidth() {
-        return isHorizontal ? mainAxisSize : offAxisSize;
+        return this.orientation == Orientation.HORIZONTAL ? mainAxisSize : offAxisSize;
     }
 
     @Override
     public int getHeight() {
-        return isHorizontal ? offAxisSize : mainAxisSize;
+        return this.orientation == Orientation.HORIZONTAL ? offAxisSize : mainAxisSize;
+    }
+
+    public Orientation getOrientation() {
+        return this.orientation;
+    }
+
+    public Direction getDirection() {
+        return this.direction;
     }
 
     @Override
     public void visitWidgets(Consumer<AbstractWidget> consumer) {
         this.clickable.forEach(consumer);
+    }
+
+    private static Direction directionFromBoolean(boolean toPositive) {
+        return toPositive ? Direction.FORWARD : Direction.REVERSE;
+    }
+
+    private static Orientation orientationFromBoolean(boolean isHorizontal) {
+        return isHorizontal ? Orientation.HORIZONTAL : Orientation.VERTICAL;
     }
 }

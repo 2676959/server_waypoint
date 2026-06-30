@@ -11,8 +11,30 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ExpandableManagerTest {
     @Test
+    void sharedLayoutFlowEnumsConstructExpandableManagerAndWidgetStack() {
+        ExpandableManager manager = new ExpandableManager(
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.REVERSE
+        );
+        WidgetStack stack = new WidgetStack(
+                0,
+                0,
+                4,
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.REVERSE
+        );
+
+        assertEquals(LayoutFlow.Orientation.VERTICAL, manager.getOrientation());
+        assertEquals(LayoutFlow.Direction.REVERSE, manager.getDirection());
+        assertEquals(LayoutFlow.Orientation.VERTICAL, stack.getOrientation());
+        assertEquals(LayoutFlow.Direction.REVERSE, stack.getDirection());
+        assertEquals(0, stack.getWidth());
+        assertEquals(0, stack.getHeight());
+    }
+
+    @Test
     void horizontalForwardLayoutResizesAndPositionsChildren() {
-        ExpandableManager manager = new ExpandableManager(10, 20, 120, 40, ExpandableManager.Orientation.HORIZONTAL, ExpandableManager.Direction.FORWARD);
+        ExpandableManager manager = new ExpandableManager(10, 20, 120, 40, LayoutFlow.Orientation.HORIZONTAL, LayoutFlow.Direction.FORWARD);
         TestElement fixed = new TestElement(0, 0, 20, 10);
         TestElement flexibleA = new TestElement(0, 0, 0, 8);
         TestElement flexibleB = new TestElement(0, 0, 0, 12);
@@ -34,7 +56,7 @@ class ExpandableManagerTest {
 
     @Test
     void verticalReverseLayoutStacksChildrenBottomToTop() {
-        ExpandableManager manager = new ExpandableManager(3, 4, 50, 100, ExpandableManager.Orientation.VERTICAL, ExpandableManager.Direction.REVERSE);
+        ExpandableManager manager = new ExpandableManager(3, 4, 50, 100, LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.REVERSE);
         TestElement bottom = new TestElement(0, 0, 14, 30);
         TestElement top = new TestElement(0, 0, 12, 0);
 
@@ -47,8 +69,8 @@ class ExpandableManagerTest {
 
     @Test
     void nestedManagersRelayoutTheirOwnChildrenWhenParentResizesThem() {
-        ExpandableManager parent = new ExpandableManager(0, 0, 100, 30, ExpandableManager.Orientation.HORIZONTAL, ExpandableManager.Direction.FORWARD);
-        ExpandableManager nested = new ExpandableManager(ExpandableManager.Orientation.VERTICAL, ExpandableManager.Direction.FORWARD);
+        ExpandableManager parent = new ExpandableManager(0, 0, 100, 30, LayoutFlow.Orientation.HORIZONTAL, LayoutFlow.Direction.FORWARD);
+        ExpandableManager nested = new ExpandableManager(LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD);
         TestElement nestedTop = new TestElement(0, 0, 0, 0);
         TestElement nestedBottom = new TestElement(0, 0, 0, 0);
         TestElement fixed = new TestElement(0, 0, 25, 12);
@@ -79,7 +101,7 @@ class ExpandableManagerTest {
 
     @Test
     void paddedChildrenUseVisualBoundsForLayout() {
-        ExpandableManager manager = new ExpandableManager(50, 60, 70, 30, ExpandableManager.Orientation.HORIZONTAL, ExpandableManager.Direction.FORWARD);
+        ExpandableManager manager = new ExpandableManager(50, 60, 70, 30, LayoutFlow.Orientation.HORIZONTAL, LayoutFlow.Direction.FORWARD);
         PaddedElement padded = new PaddedElement(10, 5, 4, 6);
         TestElement flexible = new TestElement(0, 0, 0, 0);
 

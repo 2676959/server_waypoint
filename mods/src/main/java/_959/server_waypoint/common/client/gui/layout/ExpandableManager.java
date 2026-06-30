@@ -2,6 +2,9 @@ package _959.server_waypoint.common.client.gui.layout;
 
 import _959.server_waypoint.common.client.gui.Expandable;
 import _959.server_waypoint.common.client.gui.Padding;
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Axis;
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -9,20 +12,6 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.layouts.LayoutElement;
 
 public class ExpandableManager implements LayoutElement, Expandable {
-    public enum Orientation {
-        HORIZONTAL,
-        VERTICAL;
-
-        private Axis axis() {
-            return this == HORIZONTAL ? Axis.HORIZONTAL : Axis.VERTICAL;
-        }
-    }
-
-    public enum Direction {
-        FORWARD,
-        REVERSE
-    }
-
     private int x;
     private int y;
     private int width;
@@ -284,11 +273,6 @@ public class ExpandableManager implements LayoutElement, Expandable {
         } else {
             entry.widget.setPosition(x, y);
         }
-    }
-
-    private enum Axis {
-        HORIZONTAL,
-        VERTICAL
     }
 
     private record Bounds(int width, int height) {

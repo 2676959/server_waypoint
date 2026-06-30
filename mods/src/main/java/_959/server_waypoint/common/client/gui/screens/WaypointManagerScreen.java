@@ -4,6 +4,7 @@ package _959.server_waypoint.common.client.gui.screens;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.client.gui.layout.ExpandableManager;
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
 import _959.server_waypoint.common.client.gui.widgets.ToggleButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
@@ -87,19 +88,19 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         );
         groupByListsButton.setState(waypointListWidget.isGroupByLists());
         syncSortButtons();
-        this.sortButtonLayout = new ExpandableManager(widgetWidth, defaultSortButton.getHeight(), ExpandableManager.Orientation.HORIZONTAL, ExpandableManager.Direction.FORWARD);
+        this.sortButtonLayout = new ExpandableManager(widgetWidth, defaultSortButton.getHeight(), LayoutFlow.Orientation.HORIZONTAL, LayoutFlow.Direction.FORWARD);
         this.sortButtonLayout.addChild(defaultSortButton, 1, 1);
         this.sortButtonLayout.addChild(nameSortButton, 1, 1);
         this.sortButtonLayout.addChild(distanceSortButton, 1, 1);
         this.sortButtonLayout.addChild(colorSortButton, 1, 1);
-        this.waypointControlLayout = new ExpandableManager(widgetWidth, sortButtonLayout.getHeight() + groupByListsButton.getHeight(), ExpandableManager.Orientation.VERTICAL, ExpandableManager.Direction.FORWARD);
+        this.waypointControlLayout = new ExpandableManager(widgetWidth, sortButtonLayout.getHeight() + groupByListsButton.getHeight(), LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD);
         this.waypointControlLayout.addChild(sortButtonLayout, 1, 0);
         this.waypointControlLayout.addChild(groupByListsButton, 1, 0);
         this.mainLayout = new ExpandableManager(
                 dimensionListWidget.getVisualWidth(),
                 dimensionListWidget.getVisualHeight() + searchField.getVisualHeight() + waypointControlLayout.getHeight() + waypointListWidget.getVisualHeight(),
-                ExpandableManager.Orientation.VERTICAL,
-                ExpandableManager.Direction.FORWARD
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.FORWARD
         );
         this.mainLayout.addChild(dimensionListWidget, 1, 0);
         this.mainLayout.addChild(searchField, 1, 0);
