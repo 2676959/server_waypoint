@@ -1,21 +1,16 @@
-package _959.server_waypoint.common.client.gui.widgets;
+package _959.server_waypoint.core.waypoint;
 
-import _959.server_waypoint.core.waypoint.SimpleWaypoint;
-import _959.server_waypoint.core.waypoint.WaypointList;
-import _959.server_waypoint.core.waypoint.WaypointPos;
-import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
-import _959.server_waypoint.core.waypoint.WaypointSorting;
 import _959.server_waypoint.util.ColorUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-final class WaypointListDisplayModel {
+public final class WaypointListDisplayModel {
     private WaypointListDisplayModel() {
     }
 
-    static Display build(WaypointQueryEngine.QueryResult result, boolean requestedGroupByLists) {
+    public static Display build(WaypointQueryEngine.QueryResult result, boolean requestedGroupByLists) {
         WaypointSorting.SortMode sortMode = result.query().sortMode();
         boolean groupByLists = sortMode == WaypointSorting.SortMode.DEFAULT || requestedGroupByLists;
         List<DisplayList> lists = createDisplayLists(result, sortMode);
@@ -67,10 +62,10 @@ final class WaypointListDisplayModel {
         }
     }
 
-    record Display(boolean groupByLists, List<DisplayList> lists, List<DisplayWaypoint> flatWaypoints) {
+    public record Display(boolean groupByLists, List<DisplayList> lists, List<DisplayWaypoint> flatWaypoints) {
     }
 
-    record DisplayList(WaypointList sourceList, List<SimpleWaypoint> waypoints) {
+    public record DisplayList(WaypointList sourceList, List<SimpleWaypoint> waypoints) {
         private static final Comparator<DisplayList> BY_LIST_NAME = Comparator.comparing(
                         (DisplayList list) -> list.sourceList().name(),
                         String.CASE_INSENSITIVE_ORDER
@@ -78,8 +73,8 @@ final class WaypointListDisplayModel {
                 .thenComparing(list -> list.sourceList().name());
     }
 
-    record DisplayWaypoint(WaypointList sourceList, SimpleWaypoint waypoint) {
-        static final Comparator<DisplayWaypoint> BY_WAYPOINT_NAME = Comparator.comparing(
+    public record DisplayWaypoint(WaypointList sourceList, SimpleWaypoint waypoint) {
+        public static final Comparator<DisplayWaypoint> BY_WAYPOINT_NAME = Comparator.comparing(
                         (DisplayWaypoint row) -> row.waypoint().name(),
                         String.CASE_INSENSITIVE_ORDER
                 )

@@ -1,10 +1,5 @@
-package _959.server_waypoint.common.client.gui.widgets;
+package _959.server_waypoint.core.waypoint;
 
-import _959.server_waypoint.core.waypoint.SimpleWaypoint;
-import _959.server_waypoint.core.waypoint.WaypointList;
-import _959.server_waypoint.core.waypoint.WaypointPos;
-import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
-import _959.server_waypoint.core.waypoint.WaypointSorting;
 import _959.server_waypoint.util.ColorUtils;
 import java.util.ArrayList;
 import java.util.List;
