@@ -5,14 +5,24 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.client.gui.layout.ExpandableManager;
 import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
+import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
+import _959.server_waypoint.common.client.gui.widgets.WaypointSearchBarWidget;
 import _959.server_waypoint.common.client.gui.widgets.WaypointListWidget;
 import _959.server_waypoint.common.server.WaypointServerMod;
+import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
+import _959.server_waypoint.core.waypoint.WaypointSorting;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.*;
+import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+//? if >= 1.21.9 {
+import net.minecraft.client.input.MouseButtonEvent;
+//?}
 import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.ClientNetworkState.INCOMPATIBLE_PROTOCOL;
@@ -25,11 +35,17 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private static boolean isRendering = false;
     private static WaypointListWidget waypointListWidget;
     private static DimensionListWidget dimensionListWidget;
+    private static WaypointSearchBarWidget searchField;
+    private static TranslucentButton defaultSortButton;
+    private static TranslucentButton nameSortButton;
+    private static TranslucentButton distanceSortButton;
+    private static TranslucentButton colorSortButton;
     private final Screen parentScreen;
     private final WaypointClientMod waypointClientMod;
     private final float relativeHeight = 0.9F;
     private boolean hasInitialized = false;
     private final ExpandableManager mainLayout;
+    private final ExpandableManager sortButtonLayout;
 
     public WaypointManagerScreen(WaypointClientMod waypointClientMod, Screen parentScreen) {
         super(Component.nullToEmpty("Server Waypoints"));
@@ -37,14 +53,27 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         this.waypointClientMod = waypointClientMod;
         int widgetWidth = 240;
         dimensionListWidget = new DimensionListWidget(0, 0, widgetWidth, this, this.font, this::onSelectDimension);
-        waypointListWidget = new WaypointListWidget(0, 0, widgetWidth, 200, this, this.font);
+        waypointListWidget = new WaypointListWidget(0, 0, widgetWidth, 200, this, new WaypointQueryEngine(getWaypointQuerySource()), this.font);
+        searchField = new WaypointSearchBarWidget(0, 0, widgetWidth, Component.translatable("waypoint.search.entry"), this.font, waypointListWidget::setSearchQuery);
+        searchField.setSuggestionsProvider(waypointListWidget::getSearchSuggestions);
+        defaultSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.default"), () -> waypointListWidget.setSortMode(WaypointSorting.SortMode.DEFAULT));
+        nameSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.name"), waypointListWidget::sortByName);
+        distanceSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.distance"), waypointListWidget::sortByDistance);
+        colorSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.color"), waypointListWidget::sortByColor);
+        this.sortButtonLayout = new ExpandableManager(widgetWidth, defaultSortButton.getHeight(), ExpandableManager.Orientation.HORIZONTAL, ExpandableManager.Direction.FORWARD);
+        this.sortButtonLayout.addChild(defaultSortButton, 1, 1);
+        this.sortButtonLayout.addChild(nameSortButton, 1, 1);
+        this.sortButtonLayout.addChild(distanceSortButton, 1, 1);
+        this.sortButtonLayout.addChild(colorSortButton, 1, 1);
         this.mainLayout = new ExpandableManager(
                 dimensionListWidget.getVisualWidth(),
-                dimensionListWidget.getVisualHeight() + waypointListWidget.getVisualHeight(),
+                dimensionListWidget.getVisualHeight() + searchField.getVisualHeight() + sortButtonLayout.getHeight() + waypointListWidget.getVisualHeight(),
                 ExpandableManager.Orientation.VERTICAL,
                 ExpandableManager.Direction.FORWARD
         );
         this.mainLayout.addChild(dimensionListWidget, 1, 0);
+        this.mainLayout.addChild(searchField, 1, 0);
+        this.mainLayout.addChild(sortButtonLayout, 1, 0);
         this.mainLayout.addChild(waypointListWidget, 1, 1);
     }
 
@@ -61,7 +90,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         if (isRendering) {
             WaypointClientMod waypointClient = WaypointClientMod.getInstance();
             dimensionListWidget.updateDimensionNames(waypointClient.getDimensionNames());
-            waypointListWidget.updateWaypointLists(waypointClient.getWaypointListsByDimensionName(dimensionListWidget.getSelectedDimensionName()));
+            waypointListWidget.setSelectedDimension(dimensionListWidget.getSelectedDimensionName());
         }
     }
 
@@ -73,25 +102,27 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             if (dimensionNames.contains(selectedDimensionName)) {
                 dimensionListWidget.updateDimensionNames(dimensionNames);
                 dimensionListWidget.setDimensionName(selectedDimensionName);
+                waypointListWidget.setSelectedDimension(selectedDimensionName);
             } else if (!dimensionNames.isEmpty()) {
                 dimensionListWidget.updateDimensionNames(dimensionNames);
                 dimensionListWidget.setDimensionName(WaypointClientMod.getCurrentDimensionName());
-                waypointListWidget.updateWaypointLists(waypointClient.getCurrentWaypointLists());
+                waypointListWidget.setSelectedDimension(WaypointClientMod.getCurrentDimensionName());
             } else {
                 dimensionListWidget.updateDimensionNames(dimensionNames);
+                waypointListWidget.setSelectedDimension(null);
             }
         }
     }
 
     public static void updateCurrentWaypointLists(List<WaypointList> waypointLists) {
         if (isRendering) {
-            waypointListWidget.updateWaypointLists(waypointLists);
+            waypointListWidget.refreshView();
         }
     }
 
     public static void updateWaypointLists(String dimensionName, List<WaypointList> waypointLists) {
         if (isRendering && dimensionName.equals(dimensionListWidget.getSelectedDimensionName())) {
-            waypointListWidget.updateWaypointLists(waypointLists);
+            waypointListWidget.refreshView();
         }
     }
 
@@ -138,19 +169,22 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         int centeredY = getCenteredY();
         mainLayout.setPosition(centeredX, centeredY);
 
-        List<WaypointList> defaultWaypointLists;
         dimensionListWidget.updateDimensionNames(this.waypointClientMod.getDimensionNames());
         if (hasInitialized) {
-            defaultWaypointLists = this.waypointClientMod.getWaypointListsByDimensionName(getSelectedDimension());
+            waypointListWidget.setSelectedDimension(getSelectedDimension());
         } else {
-            defaultWaypointLists = this.waypointClientMod.getCurrentWaypointLists();
             dimensionListWidget.setDimensionName(getCurrentDimensionName());
+            waypointListWidget.setSelectedDimension(getCurrentDimensionName());
             hasInitialized = true;
         }
 
-        waypointListWidget.updateWaypointLists(defaultWaypointLists);
         this.addRenderableWidget(waypointListWidget);
         this.addRenderableWidget(dimensionListWidget);
+        this.addRenderableWidget(searchField);
+        this.addRenderableWidget(defaultSortButton);
+        this.addRenderableWidget(nameSortButton);
+        this.addRenderableWidget(distanceSortButton);
+        this.addRenderableWidget(colorSortButton);
     }
 
     @Override
@@ -159,12 +193,39 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             MinecraftClientHelper.setScreen(this.minecraft, new ClientConfigScreen(this));
             return true;
         }
+        GuiEventListener focused = this.getFocused();
+        this.acceptMovementKeys(!(focused instanceof EditBox));
         return waypointListWidget.keyPressed(keyCode, scanCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers);
     }
 
+    //? if >= 1.21.9 {
+    @Override
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClicked) {
+        if (this.mouseClickedSearchSuggestion(mouseButtonEvent.x(), mouseButtonEvent.y())) {
+            return true;
+        }
+        return super.mouseClicked(mouseButtonEvent, doubleClicked);
+    }
+    //?} else {
+    /*@Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.mouseClickedSearchSuggestion(mouseX, mouseY)) {
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+    *///?}
+
     private void onSelectDimension(String dimensionName) {
         waypointListWidget.setHideButtonEnabled(dimensionName.equals(getCurrentDimensionName()));
-        waypointListWidget.updateWaypointLists(this.waypointClientMod.getWaypointListsByDimensionName(dimensionName));
+        waypointListWidget.setSelectedDimension(dimensionName);
+    }
+
+    private WaypointFilesManagerCore getWaypointQuerySource() {
+        if (WaypointServerMod.runsWithClient() && WaypointServerMod.getInstance() != null) {
+            return WaypointServerMod.getInstance();
+        }
+        return this.waypointClientMod;
     }
 
     @Override
@@ -188,6 +249,27 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         //$ render_widget_method_swap
         extractWidgetRenderState
                 (context, mouseX, mouseY, delta);
+        defaultSortButton.
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+                (context, mouseX, mouseY, delta);
+        nameSortButton.
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+                (context, mouseX, mouseY, delta);
+        distanceSortButton.
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+                (context, mouseX, mouseY, delta);
+        colorSortButton.
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+                (context, mouseX, mouseY, delta);
+        searchField.
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+                (context, mouseX, mouseY, delta);
+        searchField.renderSuggestions(context, mouseX, mouseY);
         dimensionListWidget.
         //$ render_widget_method_swap
         extractWidgetRenderState
@@ -199,7 +281,17 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         isRendering = false;
         waypointListWidget = null;
         dimensionListWidget = null;
+        searchField = null;
+        defaultSortButton = null;
+        nameSortButton = null;
+        distanceSortButton = null;
+        colorSortButton = null;
         if (parentScreen == null) super.onClose();
         else MinecraftClientHelper.setScreen(this.parentScreen);
+    }
+
+    private boolean mouseClickedSearchSuggestion(double mouseX, double mouseY) {
+        GuiEventListener focused = this.getFocused();
+        return focused == searchField && searchField.mouseClickedSuggestion(mouseX, mouseY);
     }
 }
