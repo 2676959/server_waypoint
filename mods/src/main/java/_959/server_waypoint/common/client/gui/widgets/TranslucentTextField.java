@@ -1,6 +1,8 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.Expandable;
+
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
@@ -27,7 +29,7 @@ import net.minecraft.client.input.MouseButtonInfo;
 //?}
 import net.minecraft.network.chat.Component;
 
-public class TranslucentTextField extends EditBox implements Shiftable {
+public class TranslucentTextField extends EditBox implements Shiftable, Expandable {
     private static final int SUGGESTION_LINE_HEIGHT = 12;
     private static final int MAX_VISIBLE_SUGGESTIONS = 5;
 
@@ -116,6 +118,15 @@ public class TranslucentTextField extends EditBox implements Shiftable {
 
     public int getVisualHeight() {
         return this.backgroundHeight;
+    }
+
+    @Override
+    public int getHeight() {
+        return this.backgroundHeight;
+    }
+
+    @Override
+    public void setVisualHeight(int height) {
     }
 
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {

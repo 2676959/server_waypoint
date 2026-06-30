@@ -1,6 +1,8 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.Expandable;
+
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
@@ -12,7 +14,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public class TranslucentButton extends ShiftableClickableWidget {
+public class TranslucentButton extends ShiftableClickableWidget implements Expandable {
     private final ButtonClickCallback callback;
     protected final Component text;
     protected final Font textRenderer = Minecraft.getInstance().font;
