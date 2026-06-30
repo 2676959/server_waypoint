@@ -82,7 +82,7 @@ public final class WaypointQueryEngine {
                 waypoints.add(waypoint);
             }
         }
-        WaypointSorting.sort(waypoints, query.sortMode(), query.origin());
+        WaypointSorting.sort(waypoints, query.sortMode(), query.origin(), query.reversed());
         return new ListResult(waypointList, Collections.unmodifiableList(waypoints), listMatches);
     }
 
@@ -217,14 +217,19 @@ public final class WaypointQueryEngine {
         return query == null ? Query.empty() : query;
     }
 
-    public record Query(String filterText, WaypointSorting.SortMode sortMode, @Nullable WaypointPos origin) {
+    public record Query(String filterText, WaypointSorting.SortMode sortMode, @Nullable WaypointPos origin, boolean reversed) {
         public Query {
             filterText = filterText == null ? "" : filterText;
             sortMode = sortMode == null ? WaypointSorting.SortMode.DEFAULT : sortMode;
+            reversed = sortMode != WaypointSorting.SortMode.DEFAULT && reversed;
+        }
+
+        public Query(String filterText, WaypointSorting.SortMode sortMode, @Nullable WaypointPos origin) {
+            this(filterText, sortMode, origin, false);
         }
 
         public static Query empty() {
-            return new Query("", WaypointSorting.SortMode.DEFAULT, null);
+            return new Query("", WaypointSorting.SortMode.DEFAULT, null, false);
         }
 
         private String normalizedFilter() {

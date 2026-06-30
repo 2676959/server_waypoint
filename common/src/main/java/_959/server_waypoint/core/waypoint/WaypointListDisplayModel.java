@@ -17,12 +17,18 @@ public final class WaypointListDisplayModel {
         if (groupByLists) {
             if (sortMode == WaypointSorting.SortMode.NAME) {
                 lists.sort(DisplayList.BY_LIST_NAME);
+                if (result.query().reversed()) {
+                    Collections.reverse(lists);
+                }
             }
             return new Display(true, Collections.unmodifiableList(lists), List.of());
         }
 
         List<DisplayWaypoint> flatWaypoints = createFlatWaypoints(lists);
         sortDisplayWaypoints(flatWaypoints, sortMode, result.query().origin());
+        if (result.query().reversed()) {
+            Collections.reverse(flatWaypoints);
+        }
         return new Display(false, List.of(), Collections.unmodifiableList(flatWaypoints));
     }
 
@@ -31,7 +37,7 @@ public final class WaypointListDisplayModel {
         for (WaypointQueryEngine.DimensionResult dimension : result.dimensions()) {
             for (WaypointQueryEngine.ListResult listResult : dimension.lists()) {
                 List<SimpleWaypoint> waypoints = new ArrayList<>(listResult.waypoints());
-                WaypointSorting.sort(waypoints, sortMode, result.query().origin());
+                WaypointSorting.sort(waypoints, sortMode, result.query().origin(), result.query().reversed());
                 lists.add(new DisplayList(listResult.sourceList(), Collections.unmodifiableList(waypoints)));
             }
         }

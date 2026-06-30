@@ -16,9 +16,9 @@ import net.minecraft.network.chat.Component;
 
 public class TranslucentButton extends ShiftableClickableWidget implements Expandable {
     private final ButtonClickCallback callback;
-    protected final Component text;
+    protected Component text;
     protected final Font textRenderer = Minecraft.getInstance().font;
-    protected final int textWidth;
+    protected int textWidth;
 
     public TranslucentButton(int x, int y, int width, int height, Component text, ButtonClickCallback callback) {
         super(x, y, width, height, text);
@@ -26,6 +26,12 @@ public class TranslucentButton extends ShiftableClickableWidget implements Expan
         this.callback = callback;
         this.textWidth = textRenderer.width(text);
         this.setYOffset(-1);
+    }
+
+    public void setText(Component text) {
+        this.text = text;
+        this.textWidth = textRenderer.width(text);
+        this.setMessage(text);
     }
 
     @Override

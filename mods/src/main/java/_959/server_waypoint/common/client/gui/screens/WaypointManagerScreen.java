@@ -61,19 +61,16 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         searchField.setSuggestionsProvider(waypointListWidget::getSearchSuggestions);
         defaultSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.default"), () -> {
             waypointListWidget.setSortMode(WaypointSorting.SortMode.DEFAULT);
-            syncGroupByListsButton();
+            syncSortButtons();
         });
         nameSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.name"), () -> {
-            waypointListWidget.sortByName();
-            syncGroupByListsButton();
+            toggleSortMode(WaypointSorting.SortMode.NAME);
         });
         distanceSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.distance"), () -> {
-            waypointListWidget.sortByDistance();
-            syncGroupByListsButton();
+            toggleSortMode(WaypointSorting.SortMode.DISTANCE);
         });
         colorSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.color"), () -> {
-            waypointListWidget.sortByColor();
-            syncGroupByListsButton();
+            toggleSortMode(WaypointSorting.SortMode.COLOR);
         });
         groupByListsButton = new ToggleButton(
                 0,
@@ -90,6 +87,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 }
         );
         groupByListsButton.setState(waypointListWidget.isGroupByLists());
+        syncSortButtons();
         this.sortButtonLayout = new ExpandableManager(widgetWidth, defaultSortButton.getHeight(), ExpandableManager.Orientation.HORIZONTAL, ExpandableManager.Direction.FORWARD);
         this.sortButtonLayout.addChild(defaultSortButton, 1, 1);
         this.sortButtonLayout.addChild(nameSortButton, 1, 1);
@@ -333,6 +331,38 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         if (waypointListWidget != null && groupByListsButton != null) {
             groupByListsButton.setState(waypointListWidget.isGroupByLists());
         }
+    }
+
+    private static void syncSortButtons() {
+        syncGroupByListsButton();
+        if (waypointListWidget == null) {
+            return;
+        }
+        WaypointSorting.SortMode activeMode = waypointListWidget.getSortMode();
+        boolean reversed = waypointListWidget.isSortReversed();
+        updateSortButton(defaultSortButton, "waypoint.sort.default", WaypointSorting.SortMode.DEFAULT, activeMode, reversed);
+        updateSortButton(nameSortButton, "waypoint.sort.name", WaypointSorting.SortMode.NAME, activeMode, reversed);
+        updateSortButton(distanceSortButton, "waypoint.sort.distance", WaypointSorting.SortMode.DISTANCE, activeMode, reversed);
+        updateSortButton(colorSortButton, "waypoint.sort.color", WaypointSorting.SortMode.COLOR, activeMode, reversed);
+    }
+
+    private static void updateSortButton(
+            TranslucentButton button,
+            String translationKey,
+            WaypointSorting.SortMode buttonMode,
+            WaypointSorting.SortMode activeMode,
+            boolean reversed
+    ) {
+        if (button == null) {
+            return;
+        }
+        button.setText(Component.translatable(translationKey)
+                .append(WaypointSortButtonLabel.directionSuffix(buttonMode, activeMode, reversed)));
+    }
+
+    private static void toggleSortMode(WaypointSorting.SortMode sortMode) {
+        waypointListWidget.toggleSortMode(sortMode);
+        syncSortButtons();
     }
 
     private boolean mouseClickedSearchSuggestion(double mouseX, double mouseY) {

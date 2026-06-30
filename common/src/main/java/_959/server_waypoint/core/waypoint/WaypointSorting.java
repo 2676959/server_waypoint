@@ -1,6 +1,7 @@
 package _959.server_waypoint.core.waypoint;
 
 import _959.server_waypoint.util.ColorUtils;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
@@ -32,6 +33,10 @@ public final class WaypointSorting {
     }
 
     public static void sort(List<SimpleWaypoint> waypoints, SortMode sortMode, @Nullable WaypointPos origin) {
+        sort(waypoints, sortMode, origin, false);
+    }
+
+    public static void sort(List<SimpleWaypoint> waypoints, SortMode sortMode, @Nullable WaypointPos origin, boolean reversed) {
         SortMode resolvedSortMode = sortMode == null ? SortMode.DEFAULT : sortMode;
         switch (resolvedSortMode) {
             case DEFAULT -> {
@@ -39,6 +44,9 @@ public final class WaypointSorting {
             case NAME -> waypoints.sort(byName());
             case DISTANCE -> waypoints.sort(byDistanceFrom(origin));
             case COLOR -> sortByColor(waypoints);
+        }
+        if (resolvedSortMode != SortMode.DEFAULT && reversed) {
+            Collections.reverse(waypoints);
         }
     }
 

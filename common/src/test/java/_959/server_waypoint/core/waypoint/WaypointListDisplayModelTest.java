@@ -59,6 +59,24 @@ class WaypointListDisplayModelTest {
     }
 
     @Test
+    void nameSortFlatCanReverseAllWaypoints() {
+        WaypointList mines = list("mines", waypoint("zeta", 0, 0, 0), waypoint("Alpha", 0, 0, 0));
+        WaypointList bases = list("bases", waypoint("mid", 0, 0, 0));
+        WaypointQueryEngine.QueryResult result = result(
+                WaypointSorting.SortMode.NAME,
+                null,
+                true,
+                listResult(mines),
+                listResult(bases)
+        );
+
+        WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, false);
+
+        assertEquals(List.of("zeta", "mid", "Alpha"), flatWaypointNames(display));
+        assertEquals(List.of("mines", "bases", "mines"), flatListNames(display));
+    }
+
+    @Test
     void distanceSortGroupedPreservesListOrderAndSortsWaypointsInsideEachList() {
         WaypointList first = list("first", waypoint("far", 10, 0, 0), waypoint("near", 1, 0, 0));
         WaypointList second = list("second", waypoint("middle", 5, 0, 0));
@@ -119,9 +137,18 @@ class WaypointListDisplayModelTest {
             WaypointPos origin,
             WaypointQueryEngine.ListResult... lists
     ) {
+        return result(sortMode, origin, false, lists);
+    }
+
+    private static WaypointQueryEngine.QueryResult result(
+            WaypointSorting.SortMode sortMode,
+            WaypointPos origin,
+            boolean reversed,
+            WaypointQueryEngine.ListResult... lists
+    ) {
         return new WaypointQueryEngine.QueryResult(
                 List.of(new WaypointQueryEngine.DimensionResult("minecraft:overworld", List.of(lists))),
-                new WaypointQueryEngine.Query("", sortMode, origin)
+                new WaypointQueryEngine.Query("", sortMode, origin, reversed)
         );
     }
 

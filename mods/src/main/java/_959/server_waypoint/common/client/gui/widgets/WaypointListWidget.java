@@ -60,6 +60,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private String selectedDimensionName = "";
     private String searchQuery = "";
     private WaypointSorting.SortMode sortMode = WaypointSorting.SortMode.DEFAULT;
+    private boolean sortReversed = false;
     private boolean groupByLists = true;
 
     public WaypointListWidget(int x, int y, int width, int height, WaypointManagerScreen parent, WaypointQueryEngine queryEngine, Font textRenderer) {
@@ -108,6 +109,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     public void setSortMode(WaypointSorting.SortMode sortMode) {
         this.sortMode = sortMode == null ? WaypointSorting.SortMode.DEFAULT : sortMode;
+        this.sortReversed = false;
         if (this.sortMode == WaypointSorting.SortMode.DEFAULT) {
             this.groupByLists = true;
         }
@@ -116,6 +118,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     public WaypointSorting.SortMode getSortMode() {
         return this.sortMode;
+    }
+
+    public boolean isSortReversed() {
+        return this.sortReversed;
     }
 
     public void toggleGroupByLists() {
@@ -132,15 +138,15 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     }
 
     public void sortByName() {
-        this.setSortMode(WaypointSorting.SortMode.NAME);
+        this.toggleSortMode(WaypointSorting.SortMode.NAME);
     }
 
     public void sortByDistance() {
-        this.setSortMode(WaypointSorting.SortMode.DISTANCE);
+        this.toggleSortMode(WaypointSorting.SortMode.DISTANCE);
     }
 
     public void sortByColor() {
-        this.setSortMode(WaypointSorting.SortMode.COLOR);
+        this.toggleSortMode(WaypointSorting.SortMode.COLOR);
     }
 
     public List<String> getSearchSuggestions() {
@@ -150,7 +156,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private void applySearchAndSort() {
         WaypointQueryEngine.QueryResult result = this.queryEngine.queryDimension(
                 this.selectedDimensionName,
-                new WaypointQueryEngine.Query(this.searchQuery, this.sortMode, getPlayerWaypointPos())
+                new WaypointQueryEngine.Query(this.searchQuery, this.sortMode, getPlayerWaypointPos(), this.sortReversed)
         );
         WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, isGroupByLists());
         if (display.groupByLists()) {
@@ -165,6 +171,21 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 .map(waypoint -> new WaypointNode(waypoint.sourceList(), waypoint.waypoint(), true))
                 .map(RowNode.class::cast)
                 .toList());
+    }
+
+    public void toggleSortMode(WaypointSorting.SortMode sortMode) {
+        WaypointSorting.SortMode resolvedSortMode = sortMode == null ? WaypointSorting.SortMode.DEFAULT : sortMode;
+        if (resolvedSortMode == WaypointSorting.SortMode.DEFAULT) {
+            setSortMode(resolvedSortMode);
+            return;
+        }
+        if (this.sortMode == resolvedSortMode) {
+            this.sortReversed = !this.sortReversed;
+        } else {
+            this.sortMode = resolvedSortMode;
+            this.sortReversed = false;
+        }
+        applySearchAndSort();
     }
 
     private static WaypointPos getPlayerWaypointPos() {
