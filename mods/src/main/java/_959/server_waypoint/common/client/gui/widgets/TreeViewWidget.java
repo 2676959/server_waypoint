@@ -222,7 +222,9 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
 
         translate(context, 0.0F, (float)-scrollY);
 
-        for (TreeEntry<T> entry : this.visibleEntries) {
+        VisibleRowRange renderRange = getVisibleRenderRange(scrollY);
+        for (int row = renderRange.startRow(); row < renderRange.endRow(); row++) {
+            TreeEntry<T> entry = this.visibleEntries.get(row);
             int rowY = entry.row() * this.rowHeight;
             renderEntry(context, entry, this.hoveredRow == entry.row(), rowY, contentWidth, mouseX, mouseY, deltaTicks);
         }
@@ -230,6 +232,25 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
         pop(context);
         context.disableScissor();
         this.drawScrollbar(context);
+    }
+
+    protected VisibleRowRange getVisibleRenderRange(double scrollY) {
+        if (this.visibleEntries.isEmpty()) {
+            return new VisibleRowRange(0, 0);
+        }
+
+        double viewportTop = Math.max(0.0D, scrollY);
+        double viewportBottom = Math.min(this.contentHeight, viewportTop + Math.max(0, this.height));
+        if (viewportBottom <= viewportTop) {
+            int clampedStart = Math.min(this.visibleEntries.size(), (int)(viewportTop / this.rowHeight));
+            return new VisibleRowRange(clampedStart, clampedStart);
+        }
+
+        int startRow = (int)(viewportTop / this.rowHeight);
+        int endRow = (int)Math.ceil(viewportBottom / this.rowHeight);
+        startRow = Math.min(startRow, this.visibleEntries.size());
+        endRow = Math.min(Math.max(endRow, startRow), this.visibleEntries.size());
+        return new VisibleRowRange(startRow, endRow);
     }
 
     private int getRowAt(int mouseX, int mouseY, int contentWidth, double scrollY) {
@@ -307,5 +328,8 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
     }
 
     public record TreeEntry<T>(T value, int depth, int row) {
+    }
+
+    protected record VisibleRowRange(int startRow, int endRow) {
     }
 }

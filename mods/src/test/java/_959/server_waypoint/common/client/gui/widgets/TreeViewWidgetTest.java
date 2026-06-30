@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -67,6 +68,23 @@ class TreeViewWidgetTest {
         assertEquals(10, tree.getContentHeight());
     }
 
+    @Test
+    void visibleRenderRangeOnlyIncludesRowsIntersectingViewport() {
+        List<Node> nodes = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            nodes.add(new Node("node-" + i));
+        }
+
+        TestTreeView tree = new TestTreeView(20);
+        tree.updateRoots(nodes);
+        tree.setScrollY(25);
+
+        TreeViewWidget.VisibleRowRange range = tree.visibleRenderRange();
+
+        assertEquals(1, range.startRow());
+        assertEquals(5, range.endRow());
+    }
+
     private static void assertRow(TestTreeView tree, int index, Node node, int depth) {
         TreeViewWidget.TreeEntry<Node> entry = tree.visibleEntry(index);
         assertEquals(node, entry.value());
@@ -87,8 +105,12 @@ class TreeViewWidgetTest {
             return getVisibleEntry(index);
         }
 
+        private VisibleRowRange visibleRenderRange() {
+            return getVisibleRenderRange(getScrollY());
+        }
+
         @Override
-        protected List<Node> getChildren(Node value) {
+        protected @NonNull List<Node> getChildren(Node value) {
             return value.children;
         }
 
