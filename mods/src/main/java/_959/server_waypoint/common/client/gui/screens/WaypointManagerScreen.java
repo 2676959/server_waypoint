@@ -221,12 +221,13 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_C) {
+        GuiEventListener focused = this.getFocused();
+        boolean notTyping = !(focused instanceof EditBox);
+        this.acceptMovementKeys(notTyping);
+        if (notTyping && keyCode == GLFW.GLFW_KEY_C) {
             MinecraftClientHelper.setScreen(this.minecraft, new ClientConfigScreen(this));
             return true;
         }
-        GuiEventListener focused = this.getFocused();
-        this.acceptMovementKeys(!(focused instanceof EditBox));
         return waypointListWidget.keyPressed(keyCode, scanCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers);
     }
 
