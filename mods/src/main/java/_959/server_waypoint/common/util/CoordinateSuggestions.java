@@ -21,6 +21,10 @@ public final class CoordinateSuggestions {
         return suggestions;
     }
 
+    public static List<String> forYaw(float yaw) {
+        return List.of(Integer.toString(Math.round(yaw)));
+    }
+
     public enum Axis {
         X {
             @Override

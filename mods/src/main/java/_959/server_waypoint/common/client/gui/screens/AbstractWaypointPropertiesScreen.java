@@ -34,6 +34,7 @@ import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARE
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.util.ColorUtils.*;
+import static _959.server_waypoint.util.WaypointInitials.getDefaultInitials;
 
 public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedScreen {
     protected final Screen previousScreen;
@@ -128,6 +129,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             this.globalToggle.setState(this.global);
         }
         this.swatchWidget.visible = false;
+        this.configureInitialsAutoUpdate();
         this.configureCoordinateModeEnforcement();
         this.configureCoordinateSuggestions();
 
@@ -205,6 +207,13 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         );
     }
 
+    private void configureInitialsAutoUpdate() {
+        this.nameEditBox.setResponder(
+                waypointName ->
+                    this.initialsEditBox.setValue(getDefaultInitials(waypointName))
+        );
+    }
+
     private void configureCoordinateModeEnforcement() {
         this.xEditBox.setValueChangedCallback(this::enforceCoordinateMode);
         this.yEditBox.setValueChangedCallback(this::enforceCoordinateMode);
@@ -215,10 +224,15 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.xEditBox.setSuggestionsProvider(() -> getCoordinateSuggestions(CoordinateSuggestions.Axis.X));
         this.yEditBox.setSuggestionsProvider(() -> getCoordinateSuggestions(CoordinateSuggestions.Axis.Y));
         this.zEditBox.setSuggestionsProvider(() -> getCoordinateSuggestions(CoordinateSuggestions.Axis.Z));
+        this.yawEditBox.setSuggestionsProvider(this::getYawSuggestions);
     }
 
     private List<String> getCoordinateSuggestions(CoordinateSuggestions.Axis axis) {
         return CoordinateSuggestions.forAxis(axis, getLookedAtBlockPos());
+    }
+
+    private List<String> getYawSuggestions() {
+        return CoordinateSuggestions.forYaw(getPlayerCoordinates().yaw());
     }
 
     private void enforceCoordinateMode(CoordinateField editedField) {
@@ -472,6 +486,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.xEditBox.renderSuggestions(context, mouseX, mouseY);
         this.yEditBox.renderSuggestions(context, mouseX, mouseY);
         this.zEditBox.renderSuggestions(context, mouseX, mouseY);
+        this.yawEditBox.renderSuggestions(context, mouseX, mouseY);
     }
 
     private boolean mouseClickedTextFieldSuggestion(double mouseX, double mouseY) {

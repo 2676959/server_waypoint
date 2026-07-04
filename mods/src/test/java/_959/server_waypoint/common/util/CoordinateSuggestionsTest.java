@@ -21,4 +21,9 @@ class CoordinateSuggestionsTest {
         assertEquals(List.of("63", "~", "^"), CoordinateSuggestions.forAxis(CoordinateSuggestions.Axis.Y, targetedBlock));
         assertEquals(List.of("-8", "~", "^"), CoordinateSuggestions.forAxis(CoordinateSuggestions.Axis.Z, targetedBlock));
     }
+
+    @Test
+    void suggestsRoundedYaw() {
+        assertEquals(List.of("-91"), CoordinateSuggestions.forYaw(-90.6F));
+    }
 }
