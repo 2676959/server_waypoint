@@ -2,14 +2,10 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.client.gui.layout.ExpandableManager;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
-import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
-import _959.server_waypoint.common.client.gui.widgets.ToggleButton;
-import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
-import _959.server_waypoint.common.client.gui.widgets.WaypointSearchBarWidget;
-import _959.server_waypoint.common.client.gui.widgets.WaypointListWidget;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.waypoint.WaypointList;
@@ -62,16 +58,16 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         defaultSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.default"), () -> {
             waypointListWidget.setSortMode(WaypointSorting.SortMode.DEFAULT);
             syncSortButtons();
-        });
+        }, AnchorMode.OUTLINE);
         nameSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.name"), () -> {
             toggleSortMode(WaypointSorting.SortMode.NAME);
-        });
+        }, AnchorMode.OUTLINE);
         distanceSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.distance"), () -> {
             toggleSortMode(WaypointSorting.SortMode.DISTANCE);
-        });
+        }, AnchorMode.OUTLINE);
         colorSortButton = new TranslucentButton(0, 0, 60, 11, Component.translatable("waypoint.sort.color"), () -> {
             toggleSortMode(WaypointSorting.SortMode.COLOR);
-        });
+        }, AnchorMode.OUTLINE);
         groupByListsButton = new ToggleButton(
                 0,
                 0,
@@ -84,7 +80,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 groupByLists -> {
                     waypointListWidget.setGroupByLists(groupByLists);
                     syncGroupByListsButton();
-                }
+                },
+                AnchorMode.OUTLINE
         );
         groupByListsButton.setState(waypointListWidget.isGroupByLists());
         syncSortButtons();

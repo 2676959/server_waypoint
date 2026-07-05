@@ -9,7 +9,7 @@ public class WaypointSearchBarWidget extends TranslucentTextField {
     private final Consumer<String> searchQueryConsumer;
 
     public WaypointSearchBarWidget(int x, int y, int width, Component text, Font textRenderer, Consumer<String> searchQueryConsumer) {
-        super(x, y, width, text, textRenderer);
+        super(x, y, width, text, textRenderer, AnchorMode.OUTLINE);
         this.searchQueryConsumer = Objects.requireNonNull(searchQueryConsumer);
         this.setMaxLength(64);
         this.setResponder(this.searchQueryConsumer);

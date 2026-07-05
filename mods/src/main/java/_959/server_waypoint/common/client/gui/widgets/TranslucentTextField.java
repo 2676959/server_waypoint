@@ -30,10 +30,12 @@ import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.network.chat.Component;
 
 public class TranslucentTextField extends EditBox implements Shiftable, Expandable {
+    static final int OUTLINE_PADDING = 2;
     private static final int SUGGESTION_LINE_HEIGHT = 12;
     private static final int MAX_VISIBLE_SUGGESTIONS = 5;
 
     private final Font textRenderer;
+    private final AnchorMode anchorMode;
     private int shiftedX;
     private int shiftedY;
     private int xOffset;
@@ -54,8 +56,21 @@ public class TranslucentTextField extends EditBox implements Shiftable, Expandab
     private String inlineSuggestion;
 
     public TranslucentTextField(int x, int y, int width, Component text, Font textRenderer) {
-        super(textRenderer, x, y, width, textRenderer.lineHeight, null, text);
+        this(x, y, width, text, textRenderer, AnchorMode.CONTENT);
+    }
+
+    public TranslucentTextField(int x, int y, int width, Component text, Font textRenderer, AnchorMode anchorMode) {
+        super(
+                textRenderer,
+                AnchorMode.normalize(anchorMode).getContentX(x, OUTLINE_PADDING),
+                AnchorMode.normalize(anchorMode).getContentY(y, OUTLINE_PADDING),
+                width,
+                textRenderer.lineHeight,
+                null,
+                text
+        );
         this.textRenderer = textRenderer;
+        this.anchorMode = AnchorMode.normalize(anchorMode);
         this.setTextColor(0xFFFFFFFF);
         this.setBordered(false);
         this.backgroundHeight = this.height + 2;
@@ -240,27 +255,29 @@ public class TranslucentTextField extends EditBox implements Shiftable, Expandab
 
     @Override
     public void setX(int x) {
-        this.shiftedX = x + this.xOffset;
-        super.setX(x);
+        this.shiftedX = this.anchorMode.getContentX(x + this.xOffset, OUTLINE_PADDING);
+        super.setX(this.anchorMode.getContentX(x, OUTLINE_PADDING));
     }
 
     @Override
     public void setY(int y) {
-        this.shiftedY = y + this.yOffset;
-        super.setY(y);
+        this.shiftedY = this.anchorMode.getContentY(y + this.yOffset, OUTLINE_PADDING);
+        super.setY(this.anchorMode.getContentY(y, OUTLINE_PADDING));
     }
 
     @Override
     public void setXOffset(int x) {
         this.xOffset = x;
-        this.shiftedX = super.getX() + x;
+        int anchorX = this.anchorMode.getAnchorX(super.getX(), OUTLINE_PADDING);
+        this.shiftedX = this.anchorMode.getContentX(anchorX + x, OUTLINE_PADDING);
         super.setX(super.getX());
     }
 
     @Override
     public void setYOffset(int y) {
         this.yOffset = y;
-        this.shiftedY = super.getY() + y;
+        int anchorY = this.anchorMode.getAnchorY(super.getY(), OUTLINE_PADDING);
+        this.shiftedY = this.anchorMode.getContentY(anchorY + y, OUTLINE_PADDING);
         super.setY(super.getY());
     }
 
