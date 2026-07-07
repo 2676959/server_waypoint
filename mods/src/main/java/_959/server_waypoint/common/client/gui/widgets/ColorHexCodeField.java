@@ -34,6 +34,21 @@ public class ColorHexCodeField extends TranslucentTextField implements Colorable
     }
 
     @Override
+    public void setVisualWidth(int width) {
+        this.setWidth(width - 6);
+    }
+
+    @Override
+    public int getVisualWidth() {
+        return this.width + 6;
+    }
+
+    @Override
+    public int getVisualX() {
+        return getX() - 8;
+    }
+
+    @Override
     public void insertText(String text) {
         if (text.isEmpty()) super.insertText(text);
         else if (text.matches("[0-9a-fA-F]+")) super.insertText(text);

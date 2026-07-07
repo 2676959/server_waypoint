@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.Padding;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -17,7 +18,7 @@ import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARE
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.util.ColorUtils.VANILLA_COLORS;
 
-public class SwatchWidget extends ShiftableClickableWidget implements Colorable {
+public class SwatchWidget extends ShiftableClickableWidget implements Colorable, Padding {
     private ColorPickerCallBack confirmCallback;
     private static final int BG_PADDING_X = 10;
     private static final int BG_PADDING_Y = 6;
@@ -43,7 +44,7 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
         WidgetStack slidersRow = new WidgetStack(0, 0, 0);
         WidgetStack labelCol = new WidgetStack(0, 0, 2, true, false);
         WidgetStack pickerCol = new WidgetStack(0, 0, 0, true, false);
-        WidgetStack integerFieldCol = new WidgetStack(0, 0, 2, true, false);
+        WidgetStack integerFieldCol = new WidgetStack(0, 0, 0, true, false);
 
         ScalableText hLabel = new ScalableText(0, 0, Component.nullToEmpty("H"), 0xFFFFFFFF, textRenderer);
         ScalableText sLabel = new ScalableText(0, 0, Component.nullToEmpty("S"), 0xFFFFFFFF, textRenderer);
@@ -83,7 +84,7 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
         pickerCol.addChild(this.hsvColorPicker);
         pickerCol.addChild(this.rgbColorPicker);
 
-        integerFieldCol.addChild(this.hEntry);
+        integerFieldCol.addChild(this.hEntry, 2);
         integerFieldCol.addChild(this.sEntry);
         integerFieldCol.addChild(this.vEntry);
         integerFieldCol.addChild(this.rEntry);
@@ -310,6 +311,26 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
     @Override
     public int getHeight() {
         return this.mainLayout.getHeight();
+    }
+
+    @Override
+    public int getVisualHeight() {
+        return this.height + (BG_PADDING_Y << 1);
+    }
+
+    @Override
+    public int getVisualWidth() {
+        return this.width + (BG_PADDING_X << 1);
+    }
+
+    @Override
+    public int getVisualX() {
+        return getX() - BG_PADDING_X;
+    }
+
+    @Override
+    public int getVisualY() {
+        return getY() - BG_PADDING_Y;
     }
 
     @Override

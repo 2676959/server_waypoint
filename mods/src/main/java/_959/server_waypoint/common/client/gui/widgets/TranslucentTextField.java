@@ -2,6 +2,7 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.Expandable;
+import _959.server_waypoint.common.client.gui.Padding;
 
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
@@ -29,7 +30,7 @@ import net.minecraft.client.input.MouseButtonInfo;
 //?}
 import net.minecraft.network.chat.Component;
 
-public class TranslucentTextField extends EditBox implements Shiftable, Expandable {
+public class TranslucentTextField extends EditBox implements Shiftable, Expandable, Padding {
     static final int OUTLINE_PADDING = 2;
     private static final int SUGGESTION_LINE_HEIGHT = 12;
     private static final int MAX_VISIBLE_SUGGESTIONS = 5;
@@ -131,8 +132,24 @@ public class TranslucentTextField extends EditBox implements Shiftable, Expandab
         return this.handleSuggestionMouseClicked(mouseX, mouseY);
     }
 
+    @Override
     public int getVisualHeight() {
         return this.backgroundHeight;
+    }
+
+    @Override
+    public int getVisualWidth() {
+        return this.width;
+    }
+
+    @Override
+    public int getVisualX() {
+        return getX() - OUTLINE_PADDING;
+    }
+
+    @Override
+    public int getVisualY() {
+        return getY() - OUTLINE_PADDING;
     }
 
     @Override

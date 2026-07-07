@@ -93,14 +93,4 @@ public class PaddingBackground implements Renderable, Padding {
     public int getVisualY() {
         return this.widget.getY() - this.topPadding;
     }
-
-    @Override
-    public void setPaddedX(int x) {
-        this.widget.setX(x + this.leftPadding);
-    }
-
-    @Override
-    public void setPaddedY(int y) {
-        this.widget.setY(y + this.topPadding);
-    }
 }

@@ -317,16 +317,6 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
         return this.paddingBackground.getVisualY();
     }
 
-    @Override
-    public void setPaddedX(int x) {
-        this.paddingBackground.setPaddedX(x);
-    }
-
-    @Override
-    public void setPaddedY(int y) {
-        this.paddingBackground.setPaddedY(y);
-    }
-
     public record TreeEntry<T>(T value, int depth, int row) {
     }
 

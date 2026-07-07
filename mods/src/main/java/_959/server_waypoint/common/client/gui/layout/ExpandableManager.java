@@ -11,6 +11,8 @@ import java.util.function.Consumer;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.layouts.LayoutElement;
 
+import static _959.server_waypoint.common.client.gui.layout.VisualPositioning.setVisualPosition;
+
 public class ExpandableManager implements LayoutElement, Expandable {
     private int x;
     private int y;
@@ -268,11 +270,7 @@ public class ExpandableManager implements LayoutElement, Expandable {
     }
 
     private void setChildVisualPosition(Entry entry, int x, int y) {
-        if (entry.widget instanceof Padding padding) {
-            padding.setPaddedPosition(x, y);
-        } else {
-            entry.widget.setPosition(x, y);
-        }
+        setVisualPosition(entry.widget, x, y);
     }
 
     private record Bounds(int width, int height) {

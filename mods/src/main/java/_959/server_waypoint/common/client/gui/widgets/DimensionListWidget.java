@@ -276,14 +276,4 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     public int getVisualY() {
         return this.paddingBackground.getVisualY();
     }
-
-    @Override
-    public void setPaddedX(int x) {
-        this.paddingBackground.setPaddedX(x);
-    }
-
-    @Override
-    public void setPaddedY(int y) {
-        this.paddingBackground.setPaddedY(y);
-    }
 }

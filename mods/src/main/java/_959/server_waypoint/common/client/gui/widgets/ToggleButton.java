@@ -2,6 +2,7 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.Expandable;
+import _959.server_waypoint.common.client.gui.Padding;
 
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
@@ -14,7 +15,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public class ToggleButton extends ShiftableClickableWidget implements Expandable {
+public class ToggleButton extends ShiftableClickableWidget implements Expandable, Padding {
     private static final int DEFAULT_Y_OFFSET = -1;
     static final int OUTLINE_LEFT_PADDING = 1;
     static final int OUTLINE_TOP_PADDING = 2;
@@ -99,6 +100,36 @@ public class ToggleButton extends ShiftableClickableWidget implements Expandable
     @Override
     public void setHeight(int height) {
         this.height = height;
+    }
+
+    @Override
+    public void setVisualWidth(int width) {
+        this.setWidth(width - (OUTLINE_LEFT_PADDING << 1));
+    }
+
+    @Override
+    public void setVisualHeight(int height) {
+        this.setHeight(height - (OUTLINE_TOP_PADDING << 1));
+    }
+
+    @Override
+    public int getVisualHeight() {
+        return this.height + (OUTLINE_TOP_PADDING << 1);
+    }
+
+    @Override
+    public int getVisualWidth() {
+        return this.width + (OUTLINE_LEFT_PADDING << 1);
+    }
+
+    @Override
+    public int getVisualX() {
+        return getX() - OUTLINE_LEFT_PADDING;
+    }
+
+    @Override
+    public int getVisualY() {
+        return getY() - OUTLINE_TOP_PADDING;
     }
 
     @Override

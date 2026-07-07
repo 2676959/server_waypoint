@@ -1,9 +1,15 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.layout;
 
 import _959.server_waypoint.common.client.gui.Expandable;
 import _959.server_waypoint.common.client.gui.Padding;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import org.junit.jupiter.api.Test;
 
@@ -115,6 +121,82 @@ class ExpandableManagerTest {
         assertElement(flexible, 64, 60, 56, 30);
     }
 
+    @Test
+    void paddedChildrenWithVisualAnchoredPositionSettersUseVisualBoundsForLayout() {
+        ExpandableManager manager = new ExpandableManager(50, 60, 70, 30, LayoutFlow.Orientation.HORIZONTAL, LayoutFlow.Direction.FORWARD);
+        VisualAnchoredPaddedElement padded = new VisualAnchoredPaddedElement(10, 5, 4, 6);
+        TestElement flexible = new TestElement(0, 0, 0, 0);
+
+        manager.addChild(padded, 0, 0);
+        manager.addChild(flexible, 1, 1);
+
+        assertEquals(50, padded.getVisualX());
+        assertEquals(60, padded.getVisualY());
+        assertEquals(54, padded.getX());
+        assertEquals(66, padded.getY());
+        assertElement(flexible, 64, 60, 56, 30);
+    }
+
+    @Test
+    void widgetStackAddChildIgnoresPaddedVisualBoundsByDefault() {
+        WidgetStack stack = new WidgetStack(10, 20, 3, LayoutFlow.Orientation.HORIZONTAL, LayoutFlow.Direction.FORWARD);
+        RenderablePaddedElement padded = new RenderablePaddedElement(10, 5, 4, 6);
+        RenderableTestElement second = new RenderableTestElement(0, 0, 7, 5);
+
+        stack.addChild(padded, 0);
+        stack.addChild(second, 3);
+
+        assertEquals(20, stack.getWidth());
+        assertEquals(5, stack.getHeight());
+        assertEquals(6, padded.getVisualX());
+        assertEquals(14, padded.getVisualY());
+        assertEquals(23, second.getX());
+        assertEquals(20, second.getY());
+    }
+
+    @Test
+    void widgetStackCanUsePaddedVisualBoundsWhenRequested() {
+        WidgetStack stack = new WidgetStack(10, 20, 3, LayoutFlow.Orientation.HORIZONTAL, LayoutFlow.Direction.FORWARD, true);
+        RenderablePaddedElement padded = new RenderablePaddedElement(10, 5, 4, 6);
+        RenderableTestElement second = new RenderableTestElement(0, 0, 7, 5);
+
+        stack.addChild(padded, 0);
+        stack.addChild(second, 3);
+
+        assertEquals(24, stack.getWidth());
+        assertEquals(11, stack.getHeight());
+        assertEquals(10, padded.getVisualX());
+        assertEquals(20, padded.getVisualY());
+        assertEquals(27, second.getX());
+        assertEquals(20, second.getY());
+    }
+
+    @Test
+    void widgetStackAddPaddedUsesVisualBoundsRegardlessOfDefaultMode() {
+        WidgetStack stack = new WidgetStack(10, 20, 3, LayoutFlow.Orientation.HORIZONTAL, LayoutFlow.Direction.FORWARD);
+        RenderablePaddedElement padded = new RenderablePaddedElement(10, 5, 4, 6);
+        RenderableTestElement second = new RenderableTestElement(0, 0, 7, 5);
+
+        stack.addPadded(padded, 0);
+        stack.addChild(second, 3);
+
+        assertEquals(24, stack.getWidth());
+        assertEquals(11, stack.getHeight());
+        assertEquals(10, padded.getVisualX());
+        assertEquals(20, padded.getVisualY());
+        assertEquals(27, second.getX());
+        assertEquals(20, second.getY());
+    }
+
+    @Test
+    void paddingOnlyExposesVisualBounds() {
+        Set<String> methods = Arrays.stream(Padding.class.getDeclaredMethods())
+                .map(method -> method.getName())
+                .collect(Collectors.toSet());
+
+        assertEquals(Set.of("getVisualHeight", "getVisualWidth", "getVisualX", "getVisualY"), methods);
+    }
+
     private static void assertElement(TestElement element, int x, int y, int width, int height) {
         assertEquals(x, element.getX());
         assertEquals(y, element.getY());
@@ -180,6 +262,19 @@ class ExpandableManagerTest {
         }
     }
 
+    private static class RenderableTestElement extends TestElement implements Renderable {
+        private RenderableTestElement(int x, int y, int width, int height) {
+            super(x, y, width, height);
+        }
+
+        @Override
+        public void
+        //$ render_method_swap
+        extractRenderState
+                (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        }
+    }
+
     private static final class PaddedElement extends TestElement implements Padding {
         private final int leftPadding;
         private final int topPadding;
@@ -211,13 +306,85 @@ class ExpandableManagerTest {
         }
 
         @Override
-        public void setPaddedX(int x) {
-            setX(x + this.leftPadding);
+        public void setVisualWidth(int width) {
+            setWidth(width - this.leftPadding);
         }
 
         @Override
-        public void setPaddedY(int y) {
-            setY(y + this.topPadding);
+        public void setVisualHeight(int height) {
+            setHeight(height - this.topPadding);
+        }
+    }
+
+    private static final class RenderablePaddedElement extends RenderableTestElement implements Padding {
+        private final int leftPadding;
+        private final int topPadding;
+
+        private RenderablePaddedElement(int width, int height, int leftPadding, int topPadding) {
+            super(0, 0, width, height);
+            this.leftPadding = leftPadding;
+            this.topPadding = topPadding;
+        }
+
+        @Override
+        public int getVisualHeight() {
+            return getHeight() + this.topPadding;
+        }
+
+        @Override
+        public int getVisualWidth() {
+            return getWidth() + this.leftPadding;
+        }
+
+        @Override
+        public int getVisualX() {
+            return getX() - this.leftPadding;
+        }
+
+        @Override
+        public int getVisualY() {
+            return getY() - this.topPadding;
+        }
+    }
+
+    private static final class VisualAnchoredPaddedElement extends TestElement implements Padding {
+        private final int leftPadding;
+        private final int topPadding;
+
+        private VisualAnchoredPaddedElement(int width, int height, int leftPadding, int topPadding) {
+            super(0, 0, width, height);
+            this.leftPadding = leftPadding;
+            this.topPadding = topPadding;
+        }
+
+        @Override
+        public void setX(int x) {
+            super.setX(x + this.leftPadding);
+        }
+
+        @Override
+        public void setY(int y) {
+            super.setY(y + this.topPadding);
+        }
+
+        @Override
+        public int getVisualHeight() {
+            return getHeight() + this.topPadding;
+        }
+
+        @Override
+        public int getVisualWidth() {
+            return getWidth() + this.leftPadding;
+        }
+
+        @Override
+        public int getVisualX() {
+            return getX() - this.leftPadding;
+        }
+
+        @Override
+        public int getVisualY() {
+            return getY() - this.topPadding;
         }
 
         @Override

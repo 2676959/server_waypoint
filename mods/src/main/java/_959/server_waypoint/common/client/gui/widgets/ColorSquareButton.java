@@ -1,6 +1,8 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.Padding;
+
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.BORDER_COLOR;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.BORDER_FOCUS_COLOR;
@@ -9,7 +11,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public class ColorSquareButton extends ShiftableClickableWidget implements Colorable {
+public class ColorSquareButton extends ShiftableClickableWidget implements Colorable, Padding {
     protected Runnable callback;
     protected int color;
     protected boolean renderBorder;
@@ -58,5 +60,25 @@ public class ColorSquareButton extends ShiftableClickableWidget implements Color
     @Override
     public void setColor(int rgb) {
         this.color = 0xFF000000 | rgb;
+    }
+
+    @Override
+    public int getVisualHeight() {
+        return this.height + 2;
+    }
+
+    @Override
+    public int getVisualWidth() {
+        return this.width + 2;
+    }
+
+    @Override
+    public int getVisualX() {
+        return getX() - 1;
+    }
+
+    @Override
+    public int getVisualY() {
+        return getY() - 1;
     }
 }

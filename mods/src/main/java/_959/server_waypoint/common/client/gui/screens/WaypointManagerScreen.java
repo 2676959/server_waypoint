@@ -85,12 +85,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         );
         groupByListsButton.setState(waypointListWidget.isGroupByLists());
         syncSortButtons();
-        this.sortButtonLayout = new ExpandableManager(widgetWidth, defaultSortButton.getHeight(), LayoutFlow.Orientation.HORIZONTAL, LayoutFlow.Direction.FORWARD);
+        this.sortButtonLayout = new ExpandableManager(widgetWidth, defaultSortButton.getVisualHeight(), LayoutFlow.Orientation.HORIZONTAL, LayoutFlow.Direction.FORWARD);
         this.sortButtonLayout.addChild(defaultSortButton, 1, 1);
         this.sortButtonLayout.addChild(nameSortButton, 1, 1);
         this.sortButtonLayout.addChild(distanceSortButton, 1, 1);
         this.sortButtonLayout.addChild(colorSortButton, 1, 1);
-        this.waypointControlLayout = new ExpandableManager(widgetWidth, sortButtonLayout.getHeight() + groupByListsButton.getHeight(), LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD);
+        this.waypointControlLayout = new ExpandableManager(widgetWidth, sortButtonLayout.getHeight() + groupByListsButton.getVisualHeight(), LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD);
         this.waypointControlLayout.addChild(sortButtonLayout, 1, 0);
         this.waypointControlLayout.addChild(groupByListsButton, 1, 0);
         this.mainLayout = new ExpandableManager(

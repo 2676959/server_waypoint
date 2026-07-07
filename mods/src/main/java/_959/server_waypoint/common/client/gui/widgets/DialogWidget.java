@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.Padding;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -15,7 +16,7 @@ import net.minecraft.network.chat.Component;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.FONT_COLOR;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 
-public abstract class DialogWidget extends ShiftableClickableWidget {
+public abstract class DialogWidget extends ShiftableClickableWidget implements Padding {
     protected final Font textRenderer;
     protected final WidgetStack content;
     protected final Component title;
@@ -51,6 +52,26 @@ public abstract class DialogWidget extends ShiftableClickableWidget {
     @Override
     public int getHeight() {
         return this.mainLayout.getHeight();
+    }
+
+    @Override
+    public int getVisualHeight() {
+        return this.paddingBackground.getVisualHeight();
+    }
+
+    @Override
+    public int getVisualWidth() {
+        return this.paddingBackground.getVisualWidth();
+    }
+
+    @Override
+    public int getVisualX() {
+        return this.paddingBackground.getVisualX();
+    }
+
+    @Override
+    public int getVisualY() {
+        return this.paddingBackground.getVisualY();
     }
 
     @Override
