@@ -2,10 +2,13 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
-import _959.server_waypoint.common.client.gui.Expandable;
-import _959.server_waypoint.common.client.gui.Padding;
+import _959.server_waypoint.common.client.gui.api.DimensionListCallback;
+import _959.server_waypoint.common.client.gui.layout.DimensionIconLayout;
+import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
+import _959.server_waypoint.common.client.gui.layout.Padding;
+import _959.server_waypoint.common.client.gui.render.PaddingBackground;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -19,13 +22,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawItem;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.scale;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawItem;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pop;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.push;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scale;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 
 public class DimensionListWidget extends ShiftableClickableWidget implements Padding, Expandable {

@@ -1,6 +1,7 @@
-package _959.server_waypoint.common.client.gui.widgets;
+package _959.server_waypoint.common.client.gui.layout;
 
-import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
+import _959.server_waypoint.common.client.gui.api.DimensionListCallback;
+import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import org.junit.jupiter.api.Test;

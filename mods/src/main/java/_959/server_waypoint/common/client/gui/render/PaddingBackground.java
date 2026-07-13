@@ -1,12 +1,12 @@
 //~ gui_graphics_26
-package _959.server_waypoint.common.client.gui.widgets;
+package _959.server_waypoint.common.client.gui.render;
 
-import _959.server_waypoint.common.client.gui.Padding;
+import _959.server_waypoint.common.client.gui.layout.Padding;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.layouts.LayoutElement;
 
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 
 public class PaddingBackground implements Renderable, Padding {
     private final LayoutElement widget;

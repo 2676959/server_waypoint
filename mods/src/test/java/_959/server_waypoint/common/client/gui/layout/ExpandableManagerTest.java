@@ -1,8 +1,6 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.layout;
 
-import _959.server_waypoint.common.client.gui.Expandable;
-import _959.server_waypoint.common.client.gui.Padding;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.function.Consumer;

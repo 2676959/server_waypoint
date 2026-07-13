@@ -1,4 +1,4 @@
-package _959.server_waypoint.common.client.gui.widgets;
+package _959.server_waypoint.common.client.gui.layout;
 
 public interface Shiftable {
     void setXOffset(int x);

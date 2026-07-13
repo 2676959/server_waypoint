@@ -1,7 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
-import _959.server_waypoint.common.client.gui.WaypointTextures;
+import _959.server_waypoint.common.client.gui.render.WaypointTextures;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
@@ -25,11 +25,11 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.texture;
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.MUTED_FONT_COLOR;
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.texture;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.MUTED_FONT_COLOR;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;

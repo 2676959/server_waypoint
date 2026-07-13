@@ -1,7 +1,9 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
-import _959.server_waypoint.common.client.gui.Padding;
+import _959.server_waypoint.common.client.gui.api.ColorPickerCallback;
+import _959.server_waypoint.common.client.gui.api.Colorable;
+import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -14,12 +16,12 @@ import net.minecraft.client.input.KeyEvent;
 //?}
 import net.minecraft.network.chat.Component;
 
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.util.ColorUtils.VANILLA_COLORS;
 
 public class SwatchWidget extends ShiftableClickableWidget implements Colorable, Padding {
-    private ColorPickerCallBack confirmCallback;
+    private ColorPickerCallback confirmCallback;
     private static final int BG_PADDING_X = 10;
     private static final int BG_PADDING_Y = 6;
     private final WidgetStack colorRow0 = new WidgetStack(0, 0, 1);
@@ -38,7 +40,7 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable,
     private final ColorSquareButton previousColorButton = new ColorSquareButton(0, 0, 21, 0, false, () -> {});
     private GuiEventListener focused = this.currentColorButton;
 
-    public SwatchWidget(int x, int y, Font textRenderer, ColorPickerCallBack confirmCallback) {
+    public SwatchWidget(int x, int y, Font textRenderer, ColorPickerCallback confirmCallback) {
         super(x, y, 0, 0, Component.nullToEmpty("Swatch"));
         this.confirmCallback = confirmCallback;
         WidgetStack slidersRow = new WidgetStack(0, 0, 0);

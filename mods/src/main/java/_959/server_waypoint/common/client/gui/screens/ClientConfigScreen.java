@@ -3,7 +3,7 @@ package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.client.WaypointClientMod;
-import _959.server_waypoint.common.client.gui.WidgetThemeColors;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeColors;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
@@ -14,10 +14,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 import static _959.server_waypoint.common.client.ClientConfig.isXaerosMinimapLoaded;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.nextLayer;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.previousLayer;
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.FONT_COLOR;
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.MUTED_FONT_COLOR;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.FONT_COLOR;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.MUTED_FONT_COLOR;
 import static _959.server_waypoint.util.ColorUtils.GREEN;
 import static _959.server_waypoint.util.ColorUtils.RED;
 

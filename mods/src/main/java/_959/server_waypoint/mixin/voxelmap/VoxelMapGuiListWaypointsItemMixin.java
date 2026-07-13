@@ -2,8 +2,8 @@
 //? if fabric {
 package _959.server_waypoint.mixin.voxelmap;
 
-import _959.server_waypoint.common.client.gui.DrawContextHelper;
-import _959.server_waypoint.common.client.gui.WaypointTextures;
+import _959.server_waypoint.common.client.gui.render.DrawContextHelper;
+import _959.server_waypoint.common.client.gui.render.WaypointTextures;
 import _959.server_waypoint.common.util.SyncedWaypointName;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

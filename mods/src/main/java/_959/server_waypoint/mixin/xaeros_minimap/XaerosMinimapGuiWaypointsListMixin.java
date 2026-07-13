@@ -1,7 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.mixin.xaeros_minimap;
 
-import _959.server_waypoint.common.client.gui.DrawContextHelper;
+import _959.server_waypoint.common.client.gui.render.DrawContextHelper;
 import _959.server_waypoint.common.util.SyncedWaypointName;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.spongepowered.asm.mixin.Mixin;

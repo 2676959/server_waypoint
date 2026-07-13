@@ -1,5 +1,7 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.api.ToggleButtonCallback;
+
 import net.minecraft.network.chat.Component;
 
 public class TrueFalseToggleButton extends ToggleButton {

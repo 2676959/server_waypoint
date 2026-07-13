@@ -1,14 +1,16 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.api.Colorable;
+
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.*;
 import static _959.server_waypoint.common.network.ModMessageSender.toVanillaText;
 import static _959.server_waypoint.util.ColorUtils.hexCodeToRgb;
 import static _959.server_waypoint.util.ColorUtils.rgbToHexCode;

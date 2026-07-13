@@ -1,7 +1,5 @@
 package _959.server_waypoint.common.client.gui.layout;
 
-import _959.server_waypoint.common.client.gui.Expandable;
-import _959.server_waypoint.common.client.gui.Padding;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Axis;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;

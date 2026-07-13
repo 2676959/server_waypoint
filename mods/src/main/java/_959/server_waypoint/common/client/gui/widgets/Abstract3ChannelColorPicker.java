@@ -1,12 +1,15 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.api.ColorPickerCallback;
+import _959.server_waypoint.common.client.gui.api.Colorable;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
 public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlider> extends ShiftableClickableWidget implements Colorable {
-    protected final ColorPickerCallBack callback;
+    protected final ColorPickerCallback callback;
     private final int slotHeight;
     private final int slotWidth;
     protected final T slider0;
@@ -14,7 +17,7 @@ public abstract class Abstract3ChannelColorPicker<T extends AbstractColorBgSlide
     protected final T slider2;
     private int focusedIndex = 0;
 
-    protected Abstract3ChannelColorPicker(int x, int y, int slotWidth, int slotHeight, Component message, T slider0, T slider1, T slider2, ColorPickerCallBack callback) {
+    protected Abstract3ChannelColorPicker(int x, int y, int slotWidth, int slotHeight, Component message, T slider0, T slider1, T slider2, ColorPickerCallback callback) {
         super(x, y, slotWidth, slotHeight * 3, message);
         this.slotHeight = slotHeight;
         this.slotWidth = slotWidth;

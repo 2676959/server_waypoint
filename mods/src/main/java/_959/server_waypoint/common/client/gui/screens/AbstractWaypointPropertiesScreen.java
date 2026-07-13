@@ -30,9 +30,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.nextLayer;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.previousLayer;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.util.ColorUtils.*;
 import static _959.server_waypoint.util.WaypointInitials.getDefaultInitials;
 

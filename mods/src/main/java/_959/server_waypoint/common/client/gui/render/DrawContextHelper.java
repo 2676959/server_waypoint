@@ -1,7 +1,7 @@
 //~ resource_location_import
 //~ gui_render_state_26
 //~ gui_graphics_26
-package _959.server_waypoint.common.client.gui;
+package _959.server_waypoint.common.client.gui.render;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.function.Consumer;

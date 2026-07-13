@@ -2,11 +2,12 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
-import _959.server_waypoint.common.client.gui.Expandable;
+import _959.server_waypoint.common.client.gui.api.ButtonClickCallback;
+import _959.server_waypoint.common.client.gui.layout.Expandable;
 
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.texture;
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.texture;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.*;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;

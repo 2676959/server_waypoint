@@ -1,5 +1,5 @@
 //~ resource_location_import
-package _959.server_waypoint.common.client.gui;
+package _959.server_waypoint.common.client.gui.render;
 
 import net.minecraft.resources.Identifier;
 

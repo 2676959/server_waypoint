@@ -1,11 +1,12 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
-import _959.server_waypoint.common.client.gui.Padding;
+import _959.server_waypoint.common.client.gui.api.Colorable;
+import _959.server_waypoint.common.client.gui.layout.Padding;
 
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.BORDER_COLOR;
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.BORDER_FOCUS_COLOR;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.BORDER_COLOR;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.BORDER_FOCUS_COLOR;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;

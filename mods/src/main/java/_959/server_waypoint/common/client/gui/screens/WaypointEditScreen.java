@@ -13,7 +13,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.MUTED_FONT_COLOR;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.MUTED_FONT_COLOR;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import static _959.server_waypoint.util.CommandGenerator.editCmd;

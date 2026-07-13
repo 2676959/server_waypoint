@@ -2,11 +2,13 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
-import _959.server_waypoint.common.client.gui.WaypointTextures;
-import _959.server_waypoint.common.client.gui.widgets.*;
-import _959.server_waypoint.common.client.util.MinecraftClientHelper;
+import _959.server_waypoint.common.client.gui.layout.AnchorMode;
 import _959.server_waypoint.common.client.gui.layout.ExpandableManager;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
+import _959.server_waypoint.common.client.gui.render.WaypointSortButtonLabel;
+import _959.server_waypoint.common.client.gui.render.WaypointTextures;
+import _959.server_waypoint.common.client.gui.widgets.*;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.waypoint.WaypointList;
@@ -28,7 +30,7 @@ import static _959.server_waypoint.common.client.WaypointClientMod.ClientNetwork
 import static _959.server_waypoint.common.client.WaypointClientMod.ClientNetworkState.NO_SERVERSIDE_SUPPORT;
 import static _959.server_waypoint.common.client.WaypointClientMod.getCurrentDimensionName;
 import static _959.server_waypoint.common.client.WaypointClientMod.getNetworkState;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
 
 public class WaypointManagerScreen extends MovementAllowedScreen {
     private static boolean isRendering = false;

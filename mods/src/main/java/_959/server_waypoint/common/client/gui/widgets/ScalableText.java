@@ -1,18 +1,18 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
-import _959.server_waypoint.common.client.gui.Expandable;
+import _959.server_waypoint.common.client.gui.layout.Expandable;
 import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.scale;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pop;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.push;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scale;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
 
 public class ScalableText extends ShiftableWidget implements Expandable {
     private final Font textRenderer;

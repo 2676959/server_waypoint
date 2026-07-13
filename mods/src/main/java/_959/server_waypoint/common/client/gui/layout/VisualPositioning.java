@@ -1,6 +1,5 @@
 package _959.server_waypoint.common.client.gui.layout;
 
-import _959.server_waypoint.common.client.gui.Padding;
 import net.minecraft.client.gui.layouts.LayoutElement;
 
 final class VisualPositioning {

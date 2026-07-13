@@ -1,4 +1,4 @@
-package _959.server_waypoint.common.client.gui.screens;
+package _959.server_waypoint.common.client.gui.render;
 
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import org.junit.jupiter.api.Test;

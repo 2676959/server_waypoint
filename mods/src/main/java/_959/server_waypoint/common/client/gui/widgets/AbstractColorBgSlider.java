@@ -11,11 +11,11 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawColorGradient;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawHorizontalGradient;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawColorGradient;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawHorizontalGradient;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pop;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.push;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
 
 /**
  * A discrete slider with a color gradient background.

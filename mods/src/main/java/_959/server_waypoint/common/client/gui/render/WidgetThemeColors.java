@@ -1,4 +1,4 @@
-package _959.server_waypoint.common.client.gui;
+package _959.server_waypoint.common.client.gui.render;
 
 public final class WidgetThemeColors {
     public static final int FONT_COLOR = 0xFFFFFFFF;

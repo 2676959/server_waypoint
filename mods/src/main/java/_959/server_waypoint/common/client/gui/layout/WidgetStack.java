@@ -1,7 +1,6 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.layout;
 
-import _959.server_waypoint.common.client.gui.Padding;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import _959.server_waypoint.common.client.gui.widgets.ShiftableWidget;

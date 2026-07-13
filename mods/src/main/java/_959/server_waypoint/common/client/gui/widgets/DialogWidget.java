@@ -1,8 +1,9 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
-import _959.server_waypoint.common.client.gui.Padding;
+import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
+import _959.server_waypoint.common.client.gui.render.PaddingBackground;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
@@ -13,8 +14,8 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.FONT_COLOR;
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.FONT_COLOR;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 
 public abstract class DialogWidget extends ShiftableClickableWidget implements Padding {
     protected final Font textRenderer;

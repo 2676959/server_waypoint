@@ -1,5 +1,7 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.layout.AnchorMode;
+
 import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.Font;

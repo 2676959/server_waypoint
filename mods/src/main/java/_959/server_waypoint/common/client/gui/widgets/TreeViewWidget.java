@@ -1,8 +1,9 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
-import _959.server_waypoint.common.client.gui.Expandable;
-import _959.server_waypoint.common.client.gui.Padding;
+import _959.server_waypoint.common.client.gui.layout.Expandable;
+import _959.server_waypoint.common.client.gui.layout.Padding;
+import _959.server_waypoint.common.client.gui.render.PaddingBackground;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,10 +12,10 @@ import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pop;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.push;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 
 public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implements Padding, Expandable {
     private final int rowHeight;

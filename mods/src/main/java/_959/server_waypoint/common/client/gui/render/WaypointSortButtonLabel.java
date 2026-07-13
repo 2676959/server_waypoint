@@ -1,12 +1,12 @@
-package _959.server_waypoint.common.client.gui.screens;
+package _959.server_waypoint.common.client.gui.render;
 
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 
-final class WaypointSortButtonLabel {
+public final class WaypointSortButtonLabel {
     private WaypointSortButtonLabel() {
     }
 
-    static String directionSuffix(
+    public static String directionSuffix(
             WaypointSorting.SortMode buttonMode,
             WaypointSorting.SortMode activeMode,
             boolean reversed
