@@ -4,11 +4,8 @@ package _959.server_waypoint.common.client.gui.widgets;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.Expandable;
 import _959.server_waypoint.common.client.gui.Padding;
-import _959.server_waypoint.common.client.gui.WaypointTextures;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
-import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
-import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -24,7 +21,6 @@ import net.minecraft.world.level.block.Blocks;
 
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawItem;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
@@ -40,42 +36,32 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     private static float scrolledPosition;
     private static int index;
     private final DimensionListCallback callback;
-    private final Screen parentScreen;
     private @Unmodifiable List<String> dimensionNames = List.of();
-    private final Font textRenderer;
     private final PaddingBackground paddingBackground = new PaddingBackground(this, 7, 0, 10, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
-    private final IconButton addBtn = new IconButton(0, 0, 10, 10, Component.translatable("waypoint.add.button"), WaypointTextures.ADD_ICON, this::openAddScreen);
     private final float itemIconScale;
-    private final int textHeight;
     private final int iconSize;
     private final DimensionIconLayout iconLayout;
     private boolean empty = true;
 
     public DimensionListWidget(int x, int y, int width, int iconSize, Screen parentScreen, Font textRenderer, DimensionListCallback callback) {
-        this(x, y, width, textRenderer.lineHeight + 2 + iconSize, iconSize, parentScreen, textRenderer, callback, Orientation.HORIZONTAL, Direction.FORWARD);
+        this(x, y, width, iconSize, iconSize, parentScreen, textRenderer, callback, Orientation.HORIZONTAL, Direction.FORWARD);
     }
 
     public DimensionListWidget(int x, int y, int width, int iconSize, Screen parentScreen, Font textRenderer, DimensionListCallback callback, Orientation orientation, Direction direction) {
-        this(x, y, width, textRenderer.lineHeight + 2 + iconSize, iconSize, parentScreen, textRenderer, callback, orientation, direction);
+        this(x, y, width, iconSize, iconSize, parentScreen, textRenderer, callback, orientation, direction);
     }
 
     /**
      * Creates a dimension list whose icon strip follows the supplied layout flow.
-     * The height includes the selected-dimension label and the icon viewport.
      */
     public DimensionListWidget(int x, int y, int width, int height, int iconSize, Screen parentScreen, Font textRenderer, DimensionListCallback callback, Orientation orientation, Direction direction) {
-        super(x, y, width, Math.max(height, textRenderer.lineHeight + 2 + iconSize), Component.literal("Dimensions list"));
-        this.parentScreen = parentScreen;
-        this.textRenderer = textRenderer;
-        this.textHeight = textRenderer.lineHeight;
+        super(x, y, width, Math.max(height, iconSize), Component.literal("Dimensions list"));
         this.callback = callback;
         this.iconSize = iconSize;
         this.itemIconScale = iconSize / 16F;
         this.iconLayout = new DimensionIconLayout(iconSize, orientation, direction);
         scrolledPosition = 0;
         index = 0;
-        this.addBtn.setPosition(x, y);
-        this.addBtn.setXOffset(this.width - this.addBtn.getWidth());
     }
 
     public DimensionListWidget(int x, int y, int width, Screen parentScreen, Font textRenderer, DimensionListCallback callback) {
@@ -94,20 +80,15 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
         index = 0;
     }
 
-    private void openAddScreen() {
-        MinecraftClientHelper.setScreen(new WaypointAddScreen(parentScreen, getSelectedDimensionName(), ""));
-    }
-
     @Override
     public void setHeight(int height) {
-        this.height = Math.max(height, this.textHeight + 2 + this.iconSize);
+        this.height = Math.max(height, this.iconSize);
         this.clampScrollPosition();
     }
 
     @Override
     public void setWidth(int width) {
         super.setWidth(width);
-        this.addBtn.setXOffset(this.width - this.addBtn.getWidth());
         this.clampScrollPosition();
     }
 
@@ -154,7 +135,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (empty) return addBtn.mouseClicked(mouseX, mouseY, button);
+        if (empty) return false;
         int clickedIndex = this.iconLayout.iconIndexAt(
                 mouseX - this.getX(),
                 mouseY - this.getY(),
@@ -168,7 +149,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
             this.playDownSound(Minecraft.getInstance().getSoundManager());
             return true;
         }
-        return addBtn.mouseClicked(mouseX, mouseY, button);
+        return false;
     }
 
     @Override
@@ -183,23 +164,6 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
-        addBtn.
-        //$ render_method_swap
-        extractRenderState
-                (context, mouseX, mouseY, deltaTicks);
-
-        context.enableScissor(x, y, x + width, y + height);
-        push(context);
-        translate(context, x, y);
-
-        // render dimension name
-        if (this.empty) {
-            drawText(context, textRenderer, WaypointListWidget.EMPTY_INFO_TEXT, 0, 0, 0xFFFFFFFF, true);
-        } else {
-            drawText(context, textRenderer, dimensionNames.get(index), 0, 0, 0xFFFFFFFF, true);
-        }
-        pop(context);
-        context.disableScissor();
 
         if (this.empty) {
             return;
@@ -270,35 +234,11 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     }
 
     private DimensionIconLayout.Bounds getIconViewport() {
-        return this.iconLayout.viewport(this.width, this.height, this.textHeight + 2);
+        return this.iconLayout.viewport(this.width, this.height, 0);
     }
 
     private void clampScrollPosition() {
         scrolledPosition = this.iconLayout.clampScroll(scrolledPosition, this.dimensionNames.size(), this.getIconViewport());
-    }
-
-    @Override
-    public void setX(int x) {
-        super.setX(x);
-        addBtn.setX(x);
-    }
-
-    @Override
-    public void setY(int y) {
-        super.setY(y);
-        addBtn.setY(y);
-    }
-
-    @Override
-    public void setXOffset(int xOffest) {
-        super.setXOffset(xOffest);
-        addBtn.setXOffset(xOffest);
-    }
-
-    @Override
-    public void setYOffset(int yOffest) {
-        super.setYOffset(yOffest);
-        addBtn.setYOffset(yOffest);
     }
 
     @Override
