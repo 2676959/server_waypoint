@@ -5,9 +5,10 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.Expandable;
 import _959.server_waypoint.common.client.gui.Padding;
 import _959.server_waypoint.common.client.gui.WaypointTextures;
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
-import _959.server_waypoint.common.util.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -47,16 +48,30 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     private final float itemIconScale;
     private final int textHeight;
     private final int iconSize;
+    private final DimensionIconLayout iconLayout;
     private boolean empty = true;
 
-    public DimensionListWidget(int x, int y, int width, int iconSize, Screen parentScreen,Font textRenderer, DimensionListCallback callback) {
-        super(x, y, width, textRenderer.lineHeight + 2 + iconSize, Component.literal("Dimensions list"));
+    public DimensionListWidget(int x, int y, int width, int iconSize, Screen parentScreen, Font textRenderer, DimensionListCallback callback) {
+        this(x, y, width, textRenderer.lineHeight + 2 + iconSize, iconSize, parentScreen, textRenderer, callback, Orientation.HORIZONTAL, Direction.FORWARD);
+    }
+
+    public DimensionListWidget(int x, int y, int width, int iconSize, Screen parentScreen, Font textRenderer, DimensionListCallback callback, Orientation orientation, Direction direction) {
+        this(x, y, width, textRenderer.lineHeight + 2 + iconSize, iconSize, parentScreen, textRenderer, callback, orientation, direction);
+    }
+
+    /**
+     * Creates a dimension list whose icon strip follows the supplied layout flow.
+     * The height includes the selected-dimension label and the icon viewport.
+     */
+    public DimensionListWidget(int x, int y, int width, int height, int iconSize, Screen parentScreen, Font textRenderer, DimensionListCallback callback, Orientation orientation, Direction direction) {
+        super(x, y, width, Math.max(height, textRenderer.lineHeight + 2 + iconSize), Component.literal("Dimensions list"));
         this.parentScreen = parentScreen;
         this.textRenderer = textRenderer;
         this.textHeight = textRenderer.lineHeight;
         this.callback = callback;
         this.iconSize = iconSize;
         this.itemIconScale = iconSize / 16F;
+        this.iconLayout = new DimensionIconLayout(iconSize, orientation, direction);
         scrolledPosition = 0;
         index = 0;
         this.addBtn.setPosition(x, y);
@@ -65,6 +80,10 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
 
     public DimensionListWidget(int x, int y, int width, Screen parentScreen, Font textRenderer, DimensionListCallback callback) {
         this(x, y, width, 20, parentScreen, textRenderer, callback);
+    }
+
+    public DimensionListWidget(int x, int y, int width, Screen parentScreen, Font textRenderer, DimensionListCallback callback, Orientation orientation, Direction direction) {
+        this(x, y, width, 20, parentScreen, textRenderer, callback, orientation, direction);
     }
 
     /**
@@ -80,7 +99,17 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     }
 
     @Override
-    public void setHeight(int height) {}
+    public void setHeight(int height) {
+        this.height = Math.max(height, this.textHeight + 2 + this.iconSize);
+        this.clampScrollPosition();
+    }
+
+    @Override
+    public void setWidth(int width) {
+        super.setWidth(width);
+        this.addBtn.setXOffset(this.width - this.addBtn.getWidth());
+        this.clampScrollPosition();
+    }
 
     /**
      * updates the reference of {@link #dimensionNames}, if newDimensionNames is empty only clears the current list
@@ -97,6 +126,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
             }
         }
         this.dimensionNames = newDimensionNames;
+        this.clampScrollPosition();
     }
 
     public void setDimensionName(String dimensionName) {
@@ -117,37 +147,28 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        int size = dimensionNames.size();
-        // max 12 icons in the row
-        if (size > 12) {
-            float nextPosition = (float) (scrolledPosition + verticalAmount * 5);
-            int minScroll = -(size - 12) * iconSize;
-            scrolledPosition = MathHelper.clamp(nextPosition, minScroll, 0);
-        }
+        DimensionIconLayout.Bounds viewport = this.getIconViewport();
+        scrolledPosition = this.iconLayout.scrollBy(scrolledPosition, verticalAmount * 5, this.dimensionNames.size(), viewport);
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (empty) return addBtn.mouseClicked(mouseX, mouseY, button);
-        int x = getX();
-        int y = getY();
-        int x2 = x + this.width;
-        int y1 = y + textHeight;
-        int y2 = y1 + this.iconSize;
-        if (mouseX > x && mouseX < x2 && mouseY > y1 && mouseY < y2) {
-            float relativePos = (float) (mouseX - (x + scrolledPosition));
-            int clickedIndex = (int) Math.floor(relativePos / iconSize);
-            if (clickedIndex >= 0 && clickedIndex < dimensionNames.size()) {
-                index = clickedIndex;
-                callback.onSelected(dimensionNames.get(index));
-                this.playDownSound(Minecraft.getInstance().getSoundManager());
-                return true;
-            }
-        } else {
-            return addBtn.mouseClicked(mouseX, mouseY, button);
+        int clickedIndex = this.iconLayout.iconIndexAt(
+                mouseX - this.getX(),
+                mouseY - this.getY(),
+                scrolledPosition,
+                this.dimensionNames.size(),
+                this.getIconViewport()
+        );
+        if (clickedIndex >= 0) {
+            index = clickedIndex;
+            callback.onSelected(dimensionNames.get(index));
+            this.playDownSound(Minecraft.getInstance().getSoundManager());
+            return true;
         }
-        return false;
+        return addBtn.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
@@ -157,8 +178,6 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
-        int x2 = x + width;
-        int y2 = y + height;
         // render background
         paddingBackground.
         //$ render_method_swap
@@ -169,7 +188,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
 
-        context.enableScissor(x, y, x2, y2);
+        context.enableScissor(x, y, x + width, y + height);
         push(context);
         translate(context, x, y);
 
@@ -178,44 +197,84 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
             drawText(context, textRenderer, WaypointListWidget.EMPTY_INFO_TEXT, 0, 0, 0xFFFFFFFF, true);
         } else {
             drawText(context, textRenderer, dimensionNames.get(index), 0, 0, 0xFFFFFFFF, true);
-            translate(context, 0, textHeight + 2);
-            int size = dimensionNames.size();
-            int y1 = y + textHeight;
-            // render hover highlight background
-            if ((mouseY < y1 + this.iconSize) && (mouseY > y1) && (mouseX < x + width) && (mouseX > x)) {
-                float relativePos = mouseX - x - scrolledPosition;
-                int hoverIndex = (int) (relativePos / iconSize);
-                if (hoverIndex >= 0 && hoverIndex < size) {
-                    float highlightPos = scrolledPosition + hoverIndex * iconSize;
-                    translate(context, highlightPos, 0);
-                    context.fill(0, 0, iconSize, iconSize, 0x99FFFFFF);
-                    translate(context, -highlightPos, 0);
-                }
-            }
-            // render selected border
-            translate(context, scrolledPosition, 0);
-            renderOutline(context, index * iconSize, 0, iconSize, iconSize, 0xFFFFFFFF);
-            // render dimension icons
-            scale(context, itemIconScale, itemIconScale);
-            for (int i = 0; i < size; i++) {
-                String dimensionName = dimensionNames.get(i);
-                switch (dimensionName) {
-                    case MINECRAFT_OVERWORLD:
-                        drawItem(context, OVERWORLD_ICON, i * 16, 0);
-                        break;
-                    case MINECRAFT_THE_NETHER:
-                        drawItem(context, THE_NETHER_ICON, i * 16, 0);
-                        break;
-                    case MINECRAFT_THE_END:
-                        drawItem(context, THE_END_ICON, i * 16, 0);
-                        break;
-                    default:
-                        drawItem(context, CUSTOM_DIMENSION_ICON, i * 16, 0);
-                }
-            }
         }
         pop(context);
         context.disableScissor();
+
+        if (this.empty) {
+            return;
+        }
+
+        DimensionIconLayout.Bounds viewport = this.getIconViewport();
+        if (viewport.width() <= 0 || viewport.height() <= 0) {
+            return;
+        }
+
+        context.enableScissor(x + viewport.x(), y + viewport.y(), x + viewport.x() + viewport.width(), y + viewport.y() + viewport.height());
+        push(context);
+        translate(context, x, y);
+
+        int hoverIndex = this.iconLayout.iconIndexAt(mouseX - x, mouseY - y, scrolledPosition, this.dimensionNames.size(), viewport);
+        if (hoverIndex >= 0) {
+            this.renderIconBackground(context, hoverIndex, viewport, 0x99FFFFFF, false);
+        }
+        this.renderIconBackground(context, index, viewport, 0xFFFFFFFF, true);
+
+        for (int i = 0; i < this.dimensionNames.size(); i++) {
+            DimensionIconLayout.Position position = this.iconLayout.iconPosition(i, scrolledPosition, viewport);
+            push(context);
+            translate(context, position.x(), position.y());
+            scale(context, itemIconScale, itemIconScale);
+            this.drawDimensionIcon(context, this.dimensionNames.get(i));
+            pop(context);
+        }
+
+        pop(context);
+        context.disableScissor();
+    }
+
+    public Orientation getOrientation() {
+        return this.iconLayout.orientation();
+    }
+
+    public Direction getDirection() {
+        return this.iconLayout.direction();
+    }
+
+    private void renderIconBackground(GuiGraphicsExtractor context, int iconIndex, DimensionIconLayout.Bounds viewport, int color, boolean outline) {
+        DimensionIconLayout.Position position = this.iconLayout.iconPosition(iconIndex, scrolledPosition, viewport);
+        push(context);
+        translate(context, position.x(), position.y());
+        if (outline) {
+            renderOutline(context, 0, 0, this.iconSize, this.iconSize, color);
+        } else {
+            context.fill(0, 0, this.iconSize, this.iconSize, color);
+        }
+        pop(context);
+    }
+
+    private void drawDimensionIcon(GuiGraphicsExtractor context, String dimensionName) {
+        switch (dimensionName) {
+            case MINECRAFT_OVERWORLD:
+                drawItem(context, OVERWORLD_ICON, 0, 0);
+                break;
+            case MINECRAFT_THE_NETHER:
+                drawItem(context, THE_NETHER_ICON, 0, 0);
+                break;
+            case MINECRAFT_THE_END:
+                drawItem(context, THE_END_ICON, 0, 0);
+                break;
+            default:
+                drawItem(context, CUSTOM_DIMENSION_ICON, 0, 0);
+        }
+    }
+
+    private DimensionIconLayout.Bounds getIconViewport() {
+        return this.iconLayout.viewport(this.width, this.height, this.textHeight + 2);
+    }
+
+    private void clampScrollPosition() {
+        scrolledPosition = this.iconLayout.clampScroll(scrolledPosition, this.dimensionNames.size(), this.getIconViewport());
     }
 
     @Override
