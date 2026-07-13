@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Component;
 
 public class ToggleButton extends ShiftableClickableWidget implements Expandable, Padding {
     private static final int DEFAULT_Y_OFFSET = -1;
+    private static final VisualBounds VISUAL_BOUNDS = new VisualBounds(0, 1, 0, -1);
     static final int OUTLINE_LEFT_PADDING = 1;
     static final int OUTLINE_TOP_PADDING = 2;
 
@@ -104,32 +105,32 @@ public class ToggleButton extends ShiftableClickableWidget implements Expandable
 
     @Override
     public void setVisualWidth(int width) {
-        this.setWidth(width - (OUTLINE_LEFT_PADDING << 1));
+        this.setWidth(VISUAL_BOUNDS.contentWidth(width));
     }
 
     @Override
     public void setVisualHeight(int height) {
-        this.setHeight(height - (OUTLINE_TOP_PADDING << 1));
+        this.setHeight(VISUAL_BOUNDS.contentHeight(height));
     }
 
     @Override
     public int getVisualHeight() {
-        return this.height + (OUTLINE_TOP_PADDING << 1);
+        return VISUAL_BOUNDS.height(this.height);
     }
 
     @Override
     public int getVisualWidth() {
-        return this.width + (OUTLINE_LEFT_PADDING << 1);
+        return VISUAL_BOUNDS.width(this.width);
     }
 
     @Override
     public int getVisualX() {
-        return getX() - OUTLINE_LEFT_PADDING;
+        return VISUAL_BOUNDS.x(getX());
     }
 
     @Override
     public int getVisualY() {
-        return getY() - OUTLINE_TOP_PADDING;
+        return VISUAL_BOUNDS.y(getY());
     }
 
     @Override
@@ -139,14 +140,15 @@ public class ToggleButton extends ShiftableClickableWidget implements Expandable
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
-        if (isFocused() || isHovered()) {
-            renderOutline(context, x - 1, y - 2, width + 2, height + 2, BORDER_FOCUS_COLOR);
-        }
+        boolean drawFocusOutline = isFocused() || isHovered();
         int bgColor = isHovered() ? BUTTON_BG_HOVER_COLOR : BUTTON_BG_COLOR;
-        int fixedY = y - 1;
+        int fixedY = VISUAL_BOUNDS.y(y);
         context.fill(x, fixedY, x + width, fixedY + height, bgColor);
         int color = this.state ? state1color : state0color;
         context.fill(x, fixedY, x + width, fixedY + height, color);
+        if (drawFocusOutline) {
+            renderOutline(context, x, fixedY, width, height, BORDER_FOCUS_COLOR);
+        }
         Component text = this.state ? state1Text : state0Text;
         int textWidth = textRenderer.width(text);
         int centerX = centered(this.width, textWidth);

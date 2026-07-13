@@ -19,6 +19,7 @@ public class TranslucentButton extends ShiftableClickableWidget implements Expan
     private static final int DEFAULT_Y_OFFSET = -1;
     static final int OUTLINE_LEFT_PADDING = 1;
     static final int OUTLINE_TOP_PADDING = 2;
+    private static final VisualBounds VISUAL_BOUNDS = new VisualBounds(OUTLINE_LEFT_PADDING, OUTLINE_TOP_PADDING, OUTLINE_LEFT_PADDING, 0);
 
     private final ButtonClickCallback callback;
     private final AnchorMode anchorMode;
@@ -100,32 +101,32 @@ public class TranslucentButton extends ShiftableClickableWidget implements Expan
 
     @Override
     public void setVisualWidth(int width) {
-        this.setWidth(width - (OUTLINE_LEFT_PADDING << 1));
+        this.setWidth(VISUAL_BOUNDS.contentWidth(width));
     }
 
     @Override
     public void setVisualHeight(int height) {
-        this.setHeight(height - (OUTLINE_TOP_PADDING << 1));
+        this.setHeight(VISUAL_BOUNDS.contentHeight(height));
     }
 
     @Override
     public int getVisualHeight() {
-        return this.height + (OUTLINE_TOP_PADDING << 1);
+        return VISUAL_BOUNDS.height(this.height);
     }
 
     @Override
     public int getVisualWidth() {
-        return this.width + (OUTLINE_LEFT_PADDING << 1);
+        return VISUAL_BOUNDS.width(this.width);
     }
 
     @Override
     public int getVisualX() {
-        return getX() - OUTLINE_LEFT_PADDING;
+        return VISUAL_BOUNDS.x(getX());
     }
 
     @Override
     public int getVisualY() {
-        return getY() - OUTLINE_TOP_PADDING;
+        return VISUAL_BOUNDS.y(getY());
     }
 
     @Override
