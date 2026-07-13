@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.Expandable;
 import java.util.List;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -13,12 +14,12 @@ import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.scale;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
 
-public class ScalableText extends ShiftableWidget {
+public class ScalableText extends ShiftableWidget implements Expandable {
     private final Font textRenderer;
     private Component text;
     private float scale;
     private int color;
-    private final int maxWidth;
+    private int maxWidth;
     private volatile List<FormattedCharSequence> warpLines = List.of();
 
     public ScalableText(int x, int y, Component text, int color, Font textRenderer) {
@@ -42,8 +43,17 @@ public class ScalableText extends ShiftableWidget {
     }
 
     public void setMaxWidth(int width) {
-        if (maxWidth == -1) return;
-        this.warpLines = this.textRenderer.split(this.text, width);
+        this.maxWidth = Math.max(0, width);
+        this.warpLines = this.textRenderer.split(this.text, this.maxWidth);
+    }
+
+    @Override
+    public void setWidth(int width) {
+        this.setMaxWidth(Math.round(width / this.scale));
+    }
+
+    @Override
+    public void setHeight(int height) {
     }
 
     @Override
@@ -53,15 +63,19 @@ public class ScalableText extends ShiftableWidget {
 
     @Override
     public int getHeight() {
-        return Math.round((this.maxWidth == -1 ? 1 : this.warpLines.size()) * this.textRenderer.lineHeight * this.scale);
+        int lineCount = this.maxWidth == -1 ? 1 : Math.max(1, this.warpLines.size());
+        return Math.round(lineCount * this.textRenderer.lineHeight * this.scale);
     }
 
     public void setText(Component text) {
         this.text = text;
+        if (this.maxWidth != -1) {
+            this.warpLines = this.textRenderer.split(this.text, this.maxWidth);
+        }
     }
 
     public void setText(String text) {
-        this.text = Component.nullToEmpty(text);
+        this.setText(Component.nullToEmpty(text));
     }
 
     public void setScale(int scale) {

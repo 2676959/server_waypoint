@@ -2,6 +2,8 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.Expandable;
+
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.DrawContextHelper.texture;
 import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
@@ -11,7 +13,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-public class IconButton extends ShiftableClickableWidget {
+public class IconButton extends ShiftableClickableWidget implements Expandable {
     private final
     //$ resource_location_type_swap
     Identifier
@@ -30,6 +32,16 @@ public class IconButton extends ShiftableClickableWidget {
     @Override
     public void onClick(double mouseX, double mouseY) {
         this.callback.onClick();
+    }
+
+    @Override
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    @Override
+    public void setHeight(int height) {
+        this.height = height;
     }
 
     @Override
