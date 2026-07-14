@@ -2,6 +2,8 @@ package _959.server_waypoint.common.client;
 
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeJson;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.handlers.BufferHandler;
 import _959.server_waypoint.common.client.integrations.ClientWaypointSyncEvent;
 import _959.server_waypoint.common.client.integrations.MapModIntegrations;
@@ -20,6 +22,7 @@ import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.util.VanillaDimensionNames;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import org.jetbrains.annotations.NotNull;
@@ -54,12 +57,14 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
 //    private final WaypointFilesManagerCore localManager;
     private final Path gameRoot;
     private final Path configPath;
+    private final Path widgetThemePath;
     private final Minecraft mc;
 
     public static void createInstance(Minecraft mc, Path gameRoot, Path configDir) {
         if (INSTANCE == null) {
             INSTANCE = new WaypointClientMod(mc, gameRoot, configDir);
             INSTANCE.loadConfig();
+            INSTANCE.loadWidgetTheme();
             LOGGER.info("server_waypoint client initialized");
         }
     }
@@ -78,6 +83,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         this.mc = mc;
         this.gameRoot = gameRoot;
         this.configPath = configDir.resolve(MOD_ID).resolve("client-config.json");
+        this.widgetThemePath = configDir.resolve(MOD_ID).resolve("widget-theme.json");
         INSTANCE = this;
     }
 
@@ -119,6 +125,23 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         } catch (IOException e) {
             LOGGER.error("Failed to save client config", e);
         }
+    }
+
+    private void loadWidgetTheme() {
+        WidgetThemeManager.resetTheme();
+        if (!Files.exists(this.widgetThemePath)) {
+            return;
+        }
+        try {
+            WidgetThemeJson.loadAndApply(this.widgetThemePath);
+        } catch (IOException | JsonParseException exception) {
+            LOGGER.error("Failed to load widget theme from {}", this.widgetThemePath, exception);
+            WidgetThemeManager.resetTheme();
+        }
+    }
+
+    public Path getWidgetThemePath() {
+        return this.widgetThemePath;
     }
 
     public static ClientConfig getClientConfig() {

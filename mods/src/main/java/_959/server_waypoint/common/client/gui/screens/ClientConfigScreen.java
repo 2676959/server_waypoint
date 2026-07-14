@@ -27,6 +27,14 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     private final IntegerSlider renderDistanceSlider = new IntegerSlider(0, 0, 0, 1024, WaypointClientMod.getClientConfig().getViewDistance(), WaypointClientMod.getClientConfig()::setViewDistance, font);
     private final ToggleButton xaerosAutoSyncToggle = new TrueFalseToggleButton(0, 0, WaypointClientMod.getClientConfig()::setAutoSyncToXaerosMinimap);
     private final TranslucentButton syncToXaerosButton = new TranslucentButton(0, 0, 50, 11, Component.translatable("server_waypoint.config.confirm_sync"), this::openXaerosSyncConfirmationDialog);
+    private final TranslucentButton themeButton = new TranslucentButton(
+            0,
+            0,
+            70,
+            11,
+            Component.translatable("server_waypoint.config.theme.open"),
+            this::openThemeConfigScreen
+    );
     private final ConfirmationDialog xaerosSyncConfirmationDialog;
 
     public ClientConfigScreen(Screen parentScreen) {
@@ -42,6 +50,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         WidgetStack row5 = new WidgetStack(0, 0, 8);
         WidgetStack row6 = new WidgetStack(0, 0, 8);
         WidgetStack row7 = new WidgetStack(0, 0, 8);
+        WidgetStack row8 = new WidgetStack(0, 0, 8);
         row1.addChild(new ScalableText(0, 0,
                 Component.translatable("server_waypoint.config.enable_waypoint_render"),
                 WidgetThemeVariable.TEXT_PRIMARY, font));
@@ -77,6 +86,11 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         row7.addChild(new ScalableText(0, 0, xaerosSyncDialogTitle, xaerosSyncFontColor, font));
         row7.addChild(syncToXaerosButton);
 
+        row8.addChild(new ScalableText(0, 0,
+                Component.translatable("server_waypoint.config.theme"),
+                WidgetThemeVariable.TEXT_PRIMARY, font));
+        row8.addChild(this.themeButton);
+
         if (!isXaerosMinimapLoaded) {
             this.xaerosAutoSyncToggle.active = false;
             this.syncToXaerosButton.active = false;
@@ -93,9 +107,8 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         mainLayout.addChild(row5);
         mainLayout.addChild(row6);
         mainLayout.addChild(row7);
+        mainLayout.addChild(row8);
         renderDistanceSlider.setYOffset(-2);
-        this.width = mainLayout.getWidth();
-        this.height = mainLayout.getHeight();
 
         WidgetStack xaerosSyncWarningContent = new WidgetStack(0, 0, 5, true, false);
         int warnMaxWidth = Math.round(font.width(xaerosSyncDialogTitle) * 1.2F);
@@ -125,6 +138,10 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         this.closeXaerosSyncConfirmationDialog();
     }
 
+    private void openThemeConfigScreen() {
+        MinecraftClientHelper.setScreen(this.minecraft, new WidgetThemeConfigScreen(this));
+    }
+
     private void openXaerosSyncConfirmationDialog() {
         this.xaerosSyncConfirmationDialog.visible = true;
         this.xaerosSyncConfirmationDialog.visitWidgets(button -> button.active = true);
@@ -136,6 +153,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         this.renderDistanceSlider.active = false;
         this.xaerosAutoSyncToggle.active = false;
         this.syncToXaerosButton.active = false;
+        this.themeButton.active = false;
     }
 
     private void closeXaerosSyncConfirmationDialog() {
@@ -149,6 +167,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         this.renderDistanceSlider.active = true;
         this.xaerosAutoSyncToggle.active = true;
         this.syncToXaerosButton.active = true;
+        this.themeButton.active = true;
     }
 
     @Override
@@ -161,12 +180,14 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         this.addRenderableWidget(renderDistanceSlider);
         this.addRenderableWidget(xaerosAutoSyncToggle);
         this.addRenderableWidget(syncToXaerosButton);
+        this.addRenderableWidget(this.themeButton);
         this.xaerosSyncConfirmationDialog.visitWidgets(this::addRenderableWidget);
     }
 
     @Override
     protected void renderScreenContents
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        this.mainLayout.setPosition(this.getCenteredX(), this.getCenteredY());
         this.mainLayout.
         //$ render_method_swap
         extractRenderState
@@ -184,12 +205,12 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
     @Override
     int getContentWidth() {
-        return this.width;
+        return this.mainLayout.getWidth();
     }
 
     @Override
     int getContentHeight() {
-        return this.height;
+        return this.mainLayout.getHeight();
     }
 
     @Override
@@ -197,6 +218,4 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         WaypointClientMod.getInstance().saveConfig();
         MinecraftClientHelper.setScreen(this.minecraft, parentScreen);
     }
-
-    // TODO: implement a scrollable widget to contain the configuration options
 }
