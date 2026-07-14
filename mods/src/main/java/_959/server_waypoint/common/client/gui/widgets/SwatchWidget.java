@@ -5,6 +5,7 @@ import _959.server_waypoint.common.client.gui.api.ColorPickerCallback;
 import _959.server_waypoint.common.client.gui.api.Colorable;
 import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
@@ -16,8 +17,10 @@ import net.minecraft.client.input.KeyEvent;
 //?}
 import net.minecraft.network.chat.Component;
 
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.POPUP_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 import static _959.server_waypoint.util.ColorUtils.VANILLA_COLORS;
 
 public class SwatchWidget extends ShiftableClickableWidget implements Colorable, Padding {
@@ -48,9 +51,9 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable,
         WidgetStack pickerCol = new WidgetStack(0, 0, 0, true, false);
         WidgetStack integerFieldCol = new WidgetStack(0, 0, 0, true, false);
 
-        ScalableText hLabel = new ScalableText(0, 0, Component.nullToEmpty("H"), 0xFFFFFFFF, textRenderer);
-        ScalableText sLabel = new ScalableText(0, 0, Component.nullToEmpty("S"), 0xFFFFFFFF, textRenderer);
-        ScalableText vLabel = new ScalableText(0, 0, Component.nullToEmpty("V"), 0xFFFFFFFF, textRenderer);
+        ScalableText hLabel = new ScalableText(0, 0, Component.nullToEmpty("H"), TEXT_PRIMARY, textRenderer);
+        ScalableText sLabel = new ScalableText(0, 0, Component.nullToEmpty("S"), TEXT_PRIMARY, textRenderer);
+        ScalableText vLabel = new ScalableText(0, 0, Component.nullToEmpty("V"), TEXT_PRIMARY, textRenderer);
         ScalableText rLabel = new ScalableText(0, 0, Component.nullToEmpty("R"), 0xFFFF0000, textRenderer);
         ScalableText gLabel = new ScalableText(0, 0, Component.nullToEmpty("G"), 0xFF00FF00, textRenderer);
         ScalableText bLabel = new ScalableText(0, 0, Component.nullToEmpty("B"), 0xFF0000FF, textRenderer);
@@ -469,8 +472,10 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable,
             int y = getY() - BG_PADDING_Y;
             int paddingWidth = BG_PADDING_X << 1;
             int paddingHeight = BG_PADDING_Y << 1;
-            context.fill(x, y, x + this.width + paddingWidth, y + this.height + paddingHeight, TRANSPARENT_BG_COLOR);
-            renderOutline(context, x, y, this.width + paddingWidth, this.height + paddingHeight, 0xFFFFFFFF);
+            context.fill(x, y, x + this.width + paddingWidth, y + this.height + paddingHeight,
+                    WidgetThemeManager.getColor(POPUP_BACKGROUND));
+            renderOutline(context, x, y, this.width + paddingWidth, this.height + paddingHeight,
+                    WidgetThemeManager.getColor(BORDER));
             this.mainLayout.
             //$ render_method_swap
             extractRenderState

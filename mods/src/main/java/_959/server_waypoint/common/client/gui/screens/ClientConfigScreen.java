@@ -3,8 +3,8 @@ package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.client.WaypointClientMod;
-import _959.server_waypoint.common.client.gui.render.WidgetThemeColors;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.client.integrations.MapModIntegrations;
@@ -16,10 +16,6 @@ import net.minecraft.network.chat.MutableComponent;
 import static _959.server_waypoint.common.client.ClientConfig.isXaerosMinimapLoaded;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.FONT_COLOR;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.MUTED_FONT_COLOR;
-import static _959.server_waypoint.util.ColorUtils.GREEN;
-import static _959.server_waypoint.util.ColorUtils.RED;
 
 public class ClientConfigScreen extends MovementAllowedScreen {
     private final Screen parentScreen;
@@ -36,7 +32,8 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     public ClientConfigScreen(Screen parentScreen) {
         super(Component.translatable("server_waypoint.config.screen.title", ModInfo.MOD_VERSION));
         this.parentScreen = parentScreen;
-        ScalableText title = new ScalableText(0, 0, this.title, 1.2F, FONT_COLOR, font);
+        ScalableText title = new ScalableText(
+                0, 0, this.title, 1.2F, WidgetThemeVariable.TEXT_PRIMARY, font);
         title.setXOffset(5);
         WidgetStack row1 = new WidgetStack(0, 0, 8);
         WidgetStack row2 = new WidgetStack(0, 0, 8);
@@ -45,22 +42,34 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         WidgetStack row5 = new WidgetStack(0, 0, 8);
         WidgetStack row6 = new WidgetStack(0, 0, 8);
         WidgetStack row7 = new WidgetStack(0, 0, 8);
-        row1.addChild(new ScalableText(0, 0, Component.translatable("server_waypoint.config.enable_waypoint_render"), FONT_COLOR, font));
+        row1.addChild(new ScalableText(0, 0,
+                Component.translatable("server_waypoint.config.enable_waypoint_render"),
+                WidgetThemeVariable.TEXT_PRIMARY, font));
         row1.addChild(renderToggle);
 
-        row2.addChild(new ScalableText(0, 0, Component.translatable("server_waypoint.config.waypoint_scale_factor"), FONT_COLOR, font));
+        row2.addChild(new ScalableText(0, 0,
+                Component.translatable("server_waypoint.config.waypoint_scale_factor"),
+                WidgetThemeVariable.TEXT_PRIMARY, font));
         row2.addChild(scaleSlider);
 
-        row3.addChild(new ScalableText(0, 0, Component.translatable("server_waypoint.config.waypoint_vertical_offset"), FONT_COLOR, font));
+        row3.addChild(new ScalableText(0, 0,
+                Component.translatable("server_waypoint.config.waypoint_vertical_offset"),
+                WidgetThemeVariable.TEXT_PRIMARY, font));
         row3.addChild(vertOffsetSlider);
 
-        row4.addChild(new ScalableText(0, 0, Component.translatable("server_waypoint.config.waypoint_bg_alpha"), FONT_COLOR, font));
+        row4.addChild(new ScalableText(0, 0,
+                Component.translatable("server_waypoint.config.waypoint_bg_alpha"),
+                WidgetThemeVariable.TEXT_PRIMARY, font));
         row4.addChild(alphaSlider);
 
-        row5.addChild(new ScalableText(0, 0, Component.translatable("server_waypoint.config.local_waypoint_view_distance"), FONT_COLOR, font));
+        row5.addChild(new ScalableText(0, 0,
+                Component.translatable("server_waypoint.config.local_waypoint_view_distance"),
+                WidgetThemeVariable.TEXT_PRIMARY, font));
         row5.addChild(renderDistanceSlider);
 
-        int xaerosSyncFontColor = isXaerosMinimapLoaded ? FONT_COLOR : MUTED_FONT_COLOR;
+        WidgetThemeVariable xaerosSyncFontColor = isXaerosMinimapLoaded
+                ? WidgetThemeVariable.TEXT_PRIMARY
+                : WidgetThemeVariable.TEXT_DISABLED;
         row6.addChild(new ScalableText(0, 0, Component.translatable("server_waypoint.config.auto_sync_to_xaeros"), xaerosSyncFontColor, font));
         row6.addChild(xaerosAutoSyncToggle);
 
@@ -90,11 +99,21 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
         WidgetStack xaerosSyncWarningContent = new WidgetStack(0, 0, 5, true, false);
         int warnMaxWidth = Math.round(font.width(xaerosSyncDialogTitle) * 1.2F);
-        xaerosSyncWarningContent.addChild(new ScalableText(0, 0, Component.translatable("server_waypoint.config.sync_to_xaeros.warn.1"), 1F, FONT_COLOR, warnMaxWidth, font), 0);
-        xaerosSyncWarningContent.addChild(new ScalableText(0, 0, Component.translatable("server_waypoint.config.sync_to_xaeros.warn.2"), 1F, GREEN, warnMaxWidth, font));
-        xaerosSyncWarningContent.addChild(new ScalableText(0, 0, Component.translatable("server_waypoint.config.sync_to_xaeros.warn.3"), 1F, FONT_COLOR, warnMaxWidth, font));
-        xaerosSyncWarningContent.addChild(new ScalableText(0, 0, Component.translatable("server_waypoint.config.sync_to_xaeros.warn.4"), 1F, RED, warnMaxWidth, font));
-        xaerosSyncWarningContent.addChild(new ScalableText(0, 0, Component.translatable("server_waypoint.config.sync_to_xaeros.warn.5"), 1F, FONT_COLOR, warnMaxWidth, font));
+        xaerosSyncWarningContent.addChild(new ScalableText(0, 0,
+                Component.translatable("server_waypoint.config.sync_to_xaeros.warn.1"),
+                1F, WidgetThemeVariable.TEXT_PRIMARY, warnMaxWidth, font), 0);
+        xaerosSyncWarningContent.addChild(new ScalableText(0, 0,
+                Component.translatable("server_waypoint.config.sync_to_xaeros.warn.2"),
+                1F, WidgetThemeVariable.SUCCESS, warnMaxWidth, font));
+        xaerosSyncWarningContent.addChild(new ScalableText(0, 0,
+                Component.translatable("server_waypoint.config.sync_to_xaeros.warn.3"),
+                1F, WidgetThemeVariable.TEXT_PRIMARY, warnMaxWidth, font));
+        xaerosSyncWarningContent.addChild(new ScalableText(0, 0,
+                Component.translatable("server_waypoint.config.sync_to_xaeros.warn.4"),
+                1F, WidgetThemeVariable.DANGER, warnMaxWidth, font));
+        xaerosSyncWarningContent.addChild(new ScalableText(0, 0,
+                Component.translatable("server_waypoint.config.sync_to_xaeros.warn.5"),
+                1F, WidgetThemeVariable.TEXT_PRIMARY, warnMaxWidth, font));
         this.xaerosSyncConfirmationDialog = new ConfirmationDialog(0, 0, xaerosSyncDialogTitle, xaerosSyncWarningContent, this::runXaerosSync, this::closeXaerosSyncConfirmationDialog, font);
         this.xaerosSyncConfirmationDialog.visible = false;
     }
@@ -146,11 +165,8 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     }
 
     @Override
-    public void
-    //$ render_method_swap
-    extractRenderState
+    protected void renderScreenContents
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-        context.fill(0, 0, this.width, this.height, WidgetThemeColors.TRANSPARENT_BG_COLOR);
         this.mainLayout.
         //$ render_method_swap
         extractRenderState

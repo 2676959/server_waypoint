@@ -1,8 +1,6 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
-import _959.server_waypoint.common.client.gui.render.WidgetThemeColors;
-
 import java.util.function.Consumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -56,6 +54,11 @@ public class IntegerSlider extends ShiftableClickableWidget {
         this.slider.setSliderLevel(value - this.integerField.minValue);
     }
 
+    private void syncActiveState() {
+        this.integerField.active = this.active;
+        this.slider.setActive(this.active);
+    }
+
     @Override
     public void setFocused(boolean focused) {
         super.setFocused(focused);
@@ -96,6 +99,9 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (!this.active) {
+            return false;
+        }
         if (this.integerField.mouseClicked(mouseX, mouseY, button)) {
             updateFocused(this.integerField);
             return true;
@@ -111,6 +117,9 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (!this.active) {
+            return false;
+        }
         if (this.focused == this.slider) {
             this.slider.mouseClickedOrDragged(mouseX);
             return true;
@@ -120,6 +129,9 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (!this.active) {
+            return false;
+        }
         if (mouseX >= this.slider.getX() && mouseX <= this.slider.getX() + this.slider.getWidth() &&
             mouseY >= this.slider.getY() && mouseY <= this.slider.getY() + this.slider.getHeight()) {
             this.slider.mouseScrolled(verticalAmount);
@@ -130,12 +142,12 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        return this.integerField.keyPressed(keyCode, scanCode, modifiers);
+        return this.active && this.integerField.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        return this.integerField.charTyped(chr, modifiers);
+        return this.active && this.integerField.charTyped(chr, modifiers);
     }
 
     @Override
@@ -143,6 +155,7 @@ public class IntegerSlider extends ShiftableClickableWidget {
     //$ render_widget_method_swap
     extractWidgetRenderState
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        this.syncActiveState();
         this.slider.
         //$ render_method_swap
         extractRenderState
@@ -181,7 +194,7 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
         @Override
         public void drawSlotBackground(GuiGraphicsExtractor context) {
-            drawSolidColor(context, WidgetThemeColors.TRANSPARENT_BG_COLOR);
+            drawSolidColor(context, WidgetThemeState.controlBackground(this.isActive(), false));
         }
 
         @Override

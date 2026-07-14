@@ -9,7 +9,6 @@ import _959.server_waypoint.common.client.gui.layout.VisualBounds;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.*;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 
 import net.minecraft.client.Minecraft;
@@ -139,14 +138,14 @@ public class TranslucentButton extends ShiftableClickableWidget implements Expan
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
-        int bdColor = isFocused() || isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
+        int bdColor = WidgetThemeState.border(this.active, isFocused(), isHovered());
         renderOutline(context, x - 1, y - 2, width + 2, height + 2, bdColor);
-        int bgColor = isHovered() ? BUTTON_BG_HOVER_COLOR : BUTTON_BG_COLOR;
+        int bgColor = WidgetThemeState.controlBackground(this.active, isHovered());
         int fixedY = y - 1;
         context.fill(x, fixedY, x + width, fixedY + height, bgColor);
         int centerX = centered(this.width, textWidth);
         int centerY = centered(this.height, textRenderer.lineHeight);
-        drawText(context, textRenderer, this.text, x + centerX, y + centerY, 0xFFFFFFFF, true);
+        drawText(context, textRenderer, this.text, x + centerX, y + centerY, WidgetThemeState.text(this.active), true);
     }
 
     @Override

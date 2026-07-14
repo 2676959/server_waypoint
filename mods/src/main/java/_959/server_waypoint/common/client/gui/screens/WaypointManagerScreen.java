@@ -7,6 +7,8 @@ import _959.server_waypoint.common.client.gui.layout.ExpandableManager;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.render.WaypointSortButtonLabel;
 import _959.server_waypoint.common.client.gui.render.WaypointTextures;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.server.WaypointServerMod;
@@ -72,7 +74,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 LayoutFlow.Direction.FORWARD
         );
         waypointListWidget = new WaypointListWidget(0, 0, widgetWidth, 200, this, new WaypointQueryEngine(getWaypointQuerySource()), this.font);
-        dimensionNameText = new ScalableText(0, 0, Component.empty(), 1.2F, 0xFFFFFFFF, this.font);
+        dimensionNameText = new ScalableText(
+                0, 0, Component.empty(), 1.2F, WidgetThemeVariable.TEXT_PRIMARY, this.font);
         addWaypointButton = new IconButton(
                 0,
                 0,
@@ -103,8 +106,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 11,
                 Component.translatable("waypoint.group.flat"),
                 Component.translatable("waypoint.group.lists"),
-                0xFFAA0000,
-                0xFF00AA00,
+                WidgetThemeVariable.CONTROL_BACKGROUND,
+                WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND,
                 groupByLists -> {
                     waypointListWidget.setGroupByLists(groupByLists);
                     syncGroupByListsButton();
@@ -317,20 +320,20 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     @Override
-    public void
-    //$ render_method_swap
-    extractRenderState
+    protected void renderScreenContents
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         WaypointClientMod.ClientNetworkState networkState = getNetworkState();
         if (networkState == NO_SERVERSIDE_SUPPORT) {
             Component info = Component.translatable("server_waypoint.no_serverside_support");
             int infoWidth = font.width(info);
-            drawText(context, this.font, info, centered(this.width, infoWidth), this.height / 2, 0xFFFFFFFF);
+            drawText(context, this.font, info, centered(this.width, infoWidth), this.height / 2,
+                    WidgetThemeManager.getColor(WidgetThemeVariable.TEXT_PRIMARY));
             return;
         } else if (networkState == INCOMPATIBLE_PROTOCOL) {
             Component info = Component.translatable("server_waypoint.incompatible_protocol_version");
             int infoWidth = font.width(info);
-            drawText(context, this.font, info, centered(this.width, infoWidth), this.height / 2, 0xFFFFFFFF);
+            drawText(context, this.font, info, centered(this.width, infoWidth), this.height / 2,
+                    WidgetThemeManager.getColor(WidgetThemeVariable.TEXT_PRIMARY));
             return;
         }
         dimensionNameText.

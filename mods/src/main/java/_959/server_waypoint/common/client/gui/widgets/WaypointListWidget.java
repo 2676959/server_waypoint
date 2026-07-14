@@ -28,8 +28,14 @@ import net.minecraft.network.chat.Component;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.texture;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.MUTED_FONT_COLOR;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.FOCUS_RING;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.PANEL_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.ROW_HOVER_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_DISABLED;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_MUTED;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
@@ -64,7 +70,8 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private boolean groupByLists = true;
 
     public WaypointListWidget(int x, int y, int width, int height, WaypointManagerScreen parent, WaypointQueryEngine queryEngine, Font textRenderer) {
-        super(x, y, width, height, itemHeight, Component.literal("Waypoint lists"), 5, 7, 10, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
+        super(x, y, width, height, itemHeight, Component.literal("Waypoint lists"), 5, 7, 10, 10,
+                PANEL_BACKGROUND, BORDER, false);
         this.parentScreen = parent;
         this.queryEngine = queryEngine;
         this.textRenderer = textRenderer;
@@ -332,7 +339,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     @Override
     protected void renderEmpty(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-        drawText(context, textRenderer, EMPTY_INFO_TEXT, 5, textVertOffset, 0x55FFFFFF, true);
+        drawText(context, textRenderer, EMPTY_INFO_TEXT, 5, textVertOffset, getColor(TEXT_DISABLED), true);
     }
 
     @Override
@@ -354,10 +361,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     private void renderWaypointList(GuiGraphicsExtractor context, WaypointList waypointList, boolean hovered, int rowY, int contentWidth) {
         boolean isListShow = waypointList.isShow();
-        int textColor = isListShow ? 0xFFFFFFFF : 0x80FFFFFF;
+        int textColor = getColor(isListShow ? TEXT_PRIMARY : TEXT_DISABLED);
         if (hovered) {
-            context.fill(0, rowY, contentWidth, rowY + itemHeight, 0x30FFFFFF);
-            renderOutline(context, 0, rowY, contentWidth, itemHeight, 0xFFFFFFFF);
+            context.fill(0, rowY, contentWidth, rowY + itemHeight, getColor(ROW_HOVER_BACKGROUND));
+            renderOutline(context, 0, rowY, contentWidth, itemHeight, getColor(FOCUS_RING));
         }
 
         int centeredBtnY = rowY + buttonIconVertOffset;
@@ -397,7 +404,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         String initials = waypoint.initials();
         boolean wpRendered = waypoint.isRendered();
         int bgAlpha = wpRendered ? 0xFF000000 : 0x80000000;
-        int textColor = wpRendered ? 0xFFFFFFFF : 0x80FFFFFF;
+        int textColor = getColor(wpRendered ? TEXT_PRIMARY : TEXT_DISABLED);
         int rgb = waypoint.rgb();
         int y2 = rowY + itemHeight;
         if (hovered) {
@@ -428,7 +435,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         drawInitialsBox(context, initials, 15, finalY - 1, backgroundColor, getInitialsTextColor(rgb, wpRendered));
         if (waypointNode.showListName()) {
             String listPrefix = waypointNode.waypointList().name() + " / ";
-            drawText(context, textRenderer, listPrefix, 55, finalY, MUTED_FONT_COLOR);
+            drawText(context, textRenderer, listPrefix, 55, finalY, getColor(TEXT_MUTED));
             drawText(context, textRenderer, name, 55 + textRenderer.width(listPrefix), finalY, textColor);
         } else {
             drawText(context, textRenderer, name, 55, finalY, textColor);

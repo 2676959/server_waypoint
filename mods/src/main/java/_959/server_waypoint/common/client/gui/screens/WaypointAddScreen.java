@@ -2,6 +2,7 @@ package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.ScalableText;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
@@ -77,14 +78,17 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         MutableComponent listNameLabelText = Component.translatable("waypoint.list_name.info", "");
         // title row
         WidgetStack titleRow = new WidgetStack(0, 0, 10, true, false);
-        ScalableText titleLabel = new ScalableText(0, 0, this.getTitle(), 0xFFFFFFFF, font);
+        ScalableText titleLabel = new ScalableText(
+                0, 0, this.getTitle(), WidgetThemeVariable.TEXT_PRIMARY, font);
         WidgetStack dimensionRow = new WidgetStack(0, 0, 0);
-        ScalableText dimensionLabel = new ScalableText(0, 0, dimensionLabelText, 0xFFFFFFFF, font);
+        ScalableText dimensionLabel = new ScalableText(
+                0, 0, dimensionLabelText, WidgetThemeVariable.TEXT_PRIMARY, font);
         dimensionField = new TranslucentTextField(0, 0, 155, dimensionLabelText, font);
         dimensionRow.addChild(dimensionLabel, 0);
         dimensionRow.addChild(dimensionField);
         WidgetStack listNameRow = new WidgetStack(0, 0, 0);
-        ScalableText listNameLabel = new ScalableText(0, 0, listNameLabelText, 0xFFFFFFFF, font);
+        ScalableText listNameLabel = new ScalableText(
+                0, 0, listNameLabelText, WidgetThemeVariable.TEXT_PRIMARY, font);
         listNameField = new TranslucentTextField(0, 0, 90, listNameLabelText, font);
         listNameRow.addChild(listNameLabel, 0);
         listNameRow.addChild(listNameField);

@@ -5,8 +5,6 @@ import _959.server_waypoint.common.client.gui.api.Colorable;
 import _959.server_waypoint.common.client.gui.layout.Padding;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.BORDER_COLOR;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.BORDER_FOCUS_COLOR;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -45,9 +43,15 @@ public class ColorSquareButton extends ShiftableClickableWidget implements Color
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
-        int bdColor = isFocused() || isHovered() ? BORDER_FOCUS_COLOR : renderBorder ? BORDER_COLOR : 0;
+        boolean focusedOrHovered = this.active && (isFocused() || isHovered());
+        int bdColor = this.renderBorder || focusedOrHovered
+                ? WidgetThemeState.border(this.active, isFocused(), isHovered())
+                : 0;
         renderOutline(context, x - 1, y - 1, width + 2, width + 2, bdColor);
         context.fill(x, y, x + width, y + width, color);
+        if (!this.active) {
+            context.fill(x, y, x + width, y + width, WidgetThemeState.disabledOverlay());
+        }
     }
 
     @Override

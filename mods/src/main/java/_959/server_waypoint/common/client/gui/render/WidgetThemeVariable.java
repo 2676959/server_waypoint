@@ -30,9 +30,14 @@ public enum WidgetThemeVariable {
     SCROLLBAR_TRACK("scrollbar.track"),
     SCROLLBAR_THUMB("scrollbar.thumb"),
     SCROLLBAR_THUMB_ACTIVE("scrollbar.thumbActive"),
+    SCROLLBAR_THUMB_DISABLED("scrollbar.thumbDisabled"),
+    SLIDER_THUMB_DISABLED("slider.thumbDisabled"),
     SUCCESS("status.success"),
     WARNING("status.warning"),
-    DANGER("status.danger");
+    DANGER("status.danger"),
+    SUCCESS_BACKGROUND("status.successBackground"),
+    WARNING_BACKGROUND("status.warningBackground"),
+    DANGER_BACKGROUND("status.dangerBackground");
 
     private static final Map<String, WidgetThemeVariable> BY_JSON_NAME = createJsonNameLookup();
 

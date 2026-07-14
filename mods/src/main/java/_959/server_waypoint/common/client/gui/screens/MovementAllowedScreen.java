@@ -1,10 +1,14 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.mixin.BoundKeyAccessor;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 //? if >= 1.21.9 {
 import net.minecraft.client.input.KeyEvent;
@@ -40,6 +44,54 @@ public abstract class MovementAllowedScreen extends Screen {
     protected MovementAllowedScreen(Component title) {
         super(title);
     }
+
+    @Override
+    public final void
+    //$ render_method_swap
+    extractRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        //? if < 1.21.6 {
+        /*this.renderThemedBackground(context);
+        *///?}
+        this.renderScreenContents(context, mouseX, mouseY, deltaTicks);
+    }
+
+    protected abstract void renderScreenContents(
+            GuiGraphicsExtractor context,
+            int mouseX,
+            int mouseY,
+            float deltaTicks
+    );
+
+    private void renderThemedBackground(GuiGraphicsExtractor context) {
+        context.fill(0, 0, this.width, this.height,
+                WidgetThemeManager.getColor(WidgetThemeVariable.SCREEN_BACKGROUND));
+    }
+
+    //? if = 1.21.6 {
+    /*@Override
+    public void renderBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        this.renderThemedBackground(context);
+    }
+    *///?} elif >= 1.21.9 && < 26 {
+    /*@Override
+    public void renderBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        this.renderThemedBackground(context);
+        this.minecraft.gui.renderDeferredSubtitles();
+    }
+    *///?} elif >= 26 && < 26.2 {
+    @Override
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        this.renderThemedBackground(context);
+        this.minecraft.gui.extractDeferredSubtitles();
+    }
+    //?} elif >= 26.2 {
+    /*@Override
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        this.renderThemedBackground(context);
+        this.minecraft.gui.hud.extractDeferredSubtitles();
+    }
+    *///?}
 
     abstract int getContentWidth();
     abstract int getContentHeight();

@@ -2,6 +2,8 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
@@ -30,7 +32,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.util.ColorUtils.*;
@@ -51,7 +52,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected final ColorHexCodeField colorEditBox = new ColorHexCodeField(0, 0, Component.translatable("waypoint.edit.screen.color"), font);
     protected final ColorSquareButton colorPickerButton = new ColorSquareButton(0, 0, 9, this::openSwatch);
     // coords label
-    ScalableText coordsLabel = new ScalableText(0, 0, Component.translatable("waypoint.edit.screen.coords_yaw"), 0xFFFFFFFF, font);
+    ScalableText coordsLabel = new ScalableText(0, 0,
+            Component.translatable("waypoint.edit.screen.coords_yaw"),
+            WidgetThemeVariable.TEXT_PRIMARY, font);
     protected final ScalableText xLabel = new ScalableText(0, 0, Component.nullToEmpty("X"), RED, font);
     protected final ScalableText yLabel = new ScalableText(0, 0, Component.nullToEmpty("Y"), GREEN, font);
     protected final ScalableText zLabel = new ScalableText(0, 0, Component.nullToEmpty("Z"), BLUE, font);
@@ -59,7 +62,18 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected final CoordinateField yEditBox = new CoordinateField(0, 0, 44, Component.nullToEmpty("Y"), font);
     protected final CoordinateField zEditBox = new CoordinateField(0, 0, 44, Component.nullToEmpty("Z"), font);
     protected final IntegerField yawEditBox = new IntegerField(0, 0, 27, Component.nullToEmpty("Yaw"), font);
-    protected final ToggleButton globalToggle = new ToggleButton(0, 0, 40, 11, Component.translatable("waypoint.local"), Component.translatable("waypoint.global"), 0x04E500,0x005AE5, (state) -> {});
+    protected final ToggleButton globalToggle = new ToggleButton(
+            0,
+            0,
+            40,
+            11,
+            Component.translatable("waypoint.local"),
+            Component.translatable("waypoint.global"),
+            WidgetThemeVariable.CONTROL_BACKGROUND,
+            WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND,
+            state -> {
+            }
+    );
     protected final SwatchWidget swatchWidget = new SwatchWidget(0, 0, font, (color) -> {this.closeSwatch(); this.colorEditBox.setColor(color); this.colorPickerButton.setColor(color);});
     protected final TranslucentButton cancelButton = new TranslucentButton(0, 0, 50, 11, Component.translatable("server_waypoint.cancel.button"), this::onClose);
     protected final String dimensionName;
@@ -137,8 +151,12 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.titleRow = createTitleRow();
         // name & initials row
         WidgetStack nameInitialsRow = new WidgetStack(0, 0, 0);
-        ScalableText wpNameLabel = new ScalableText(0, 0, Component.translatable("waypoint.edit.screen.name.entry"), 0xFFFFFFFF, font);
-        ScalableText initialsLabel = new ScalableText(0, 0, Component.translatable("waypoint.edit.screen.initials.entry"), 0xFFFFFFFF, font);
+        ScalableText wpNameLabel = new ScalableText(0, 0,
+                Component.translatable("waypoint.edit.screen.name.entry"),
+                WidgetThemeVariable.TEXT_PRIMARY, font);
+        ScalableText initialsLabel = new ScalableText(0, 0,
+                Component.translatable("waypoint.edit.screen.initials.entry"),
+                WidgetThemeVariable.TEXT_PRIMARY, font);
         nameInitialsRow.addChild(wpNameLabel, 0);
         nameInitialsRow.addChild(this.nameEditBox);
         nameInitialsRow.addChild(initialsLabel, 10);
@@ -146,14 +164,17 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
 
         // color row
         WidgetStack colorRow = new WidgetStack(0, 0, 0);
-        ScalableText colorLabel = new ScalableText(0, 0, Component.translatable("waypoint.edit.screen.color"), 0xFFFFFFFF, font);
+        ScalableText colorLabel = new ScalableText(0, 0,
+                Component.translatable("waypoint.edit.screen.color"),
+                WidgetThemeVariable.TEXT_PRIMARY, font);
         colorRow.addChild(colorLabel, 0);
         colorRow.addChild(this.colorEditBox, 6);
         colorRow.addChild(this.colorPickerButton);
 
         // coords row
         WidgetStack coordsRow = new WidgetStack(0, 0, 5);
-        ScalableText yawLabel = new ScalableText(0, 0, Component.nullToEmpty("Yaw"), 0xFFFFFFFF, font);
+        ScalableText yawLabel = new ScalableText(
+                0, 0, Component.nullToEmpty("Yaw"), WidgetThemeVariable.TEXT_PRIMARY, font);
         this.yawEditBox.setMaxLength(4);
         coordsRow.addChild(this.xLabel, 0);
         coordsRow.addChild(this.xEditBox, 4);
@@ -166,7 +187,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
 
         // visibility row
         WidgetStack visibilityRow = new WidgetStack(0, 0, 0);
-        ScalableText visibilityLabel = new ScalableText(0, 0, Component.translatable("waypoint.edit.screen.visibility"), 0xFFFFFFFF, font);
+        ScalableText visibilityLabel = new ScalableText(0, 0,
+                Component.translatable("waypoint.edit.screen.visibility"),
+                WidgetThemeVariable.TEXT_PRIMARY, font);
         visibilityRow.addChild(visibilityLabel, 0);
         visibilityRow.addChild(this.globalToggle);
 
@@ -443,9 +466,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     @Override
-    public void
-    //$ render_method_swap
-    extractRenderState
+    protected void renderScreenContents
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         int centeredX = getCenteredX();
         int centeredY = getCenteredY();
@@ -472,7 +493,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         int bgHeight = (BG_PADDING_Y << 1) + CONTENT_HEIGHT;
         int bgCenteredX = centered(this.width, bgWidth);
         int bgCenteredY = centered(this.height, bgHeight);
-        context.fill(bgCenteredX, bgCenteredY, bgCenteredX + bgWidth, bgCenteredY + bgHeight, TRANSPARENT_BG_COLOR);
+        context.fill(bgCenteredX, bgCenteredY, bgCenteredX + bgWidth, bgCenteredY + bgHeight,
+                WidgetThemeManager.getColor(WidgetThemeVariable.PANEL_BACKGROUND));
     }
 
     private void renderTextFieldSuggestions(GuiGraphicsExtractor context, int mouseX, int mouseY) {

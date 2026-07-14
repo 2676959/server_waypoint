@@ -4,6 +4,7 @@ package _959.server_waypoint.common.client.gui.widgets;
 import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.render.PaddingBackground;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,7 +16,8 @@ import net.minecraft.network.chat.Component;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.PANEL_BACKGROUND;
 
 public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implements Padding, Expandable {
     private final int rowHeight;
@@ -26,7 +28,7 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
     private int hoveredRow = -1;
 
     protected TreeViewWidget(int x, int y, int width, int height, int rowHeight, Component text) {
-        this(x, y, width, height, rowHeight, text, 0, 0, 0, 0, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
+        this(x, y, width, height, rowHeight, text, 0, 0, 0, 0, PANEL_BACKGROUND, BORDER, false);
     }
 
     protected TreeViewWidget(int x, int y, int width, int height, int rowHeight, Component text,
@@ -35,6 +37,15 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
         super(x, y, width, height, text);
         this.rowHeight = rowHeight;
         this.paddingBackground = new PaddingBackground(this, topPadding, bottomPadding, leftPadding, rightPadding, backgroundColor, borderColor, border);
+    }
+
+    protected TreeViewWidget(int x, int y, int width, int height, int rowHeight, Component text,
+                             int topPadding, int bottomPadding, int leftPadding, int rightPadding,
+                             WidgetThemeVariable backgroundColor, WidgetThemeVariable borderColor, boolean border) {
+        super(x, y, width, height, text);
+        this.rowHeight = rowHeight;
+        this.paddingBackground = new PaddingBackground(this, topPadding, bottomPadding, leftPadding, rightPadding,
+                backgroundColor, borderColor, border);
     }
 
     public void updateRoots(List<T> roots) {
@@ -145,7 +156,7 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (isEmpty()) {
+        if (!this.active || isEmpty()) {
             return false;
         }
         if (overflows() && this.checkScrollbarDragged(mouseX, mouseY, button)) {
@@ -218,7 +229,7 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
         }
 
         double scrollY = getScrollY();
-        updateHoveredRow(getRowAt(mouseX, mouseY, contentWidth, scrollY));
+        updateHoveredRow(this.active ? getRowAt(mouseX, mouseY, contentWidth, scrollY) : -1);
         beforeRenderEntries(context, contentWidth, mouseX, mouseY, deltaTicks);
 
         translate(context, 0.0F, (float)-scrollY);

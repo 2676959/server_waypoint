@@ -57,19 +57,62 @@ class WidgetThemeTest {
 
         assertContrastAtLeast(foreground,
                 theme.getColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND), 4.5D);
-        assertContrastAtLeast(foreground, theme.getColor(WidgetThemeVariable.SUCCESS), 4.5D);
-        assertContrastAtLeast(foreground, theme.getColor(WidgetThemeVariable.WARNING), 4.5D);
-        assertContrastAtLeast(foreground, theme.getColor(WidgetThemeVariable.DANGER), 4.5D);
+        assertContrastAtLeast(foreground, theme.getColor(WidgetThemeVariable.SUCCESS_BACKGROUND), 4.5D);
+        assertContrastAtLeast(foreground, theme.getColor(WidgetThemeVariable.WARNING_BACKGROUND), 4.5D);
+        assertContrastAtLeast(foreground, theme.getColor(WidgetThemeVariable.DANGER_BACKGROUND), 4.5D);
+    }
+
+    @Test
+    void disabledControlTextRemainsReadable() {
+        WidgetTheme theme = WidgetThemes.MODERN_DARK;
+
+        assertContrastAtLeast(
+                theme.getColor(WidgetThemeVariable.TEXT_DISABLED),
+                theme.getColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND),
+                theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND),
+                3.0D
+        );
+    }
+
+    @Test
+    void placeholderTextRemainsReadableAcrossControlStates() {
+        WidgetTheme theme = WidgetThemes.MODERN_DARK;
+        int placeholder = theme.getColor(WidgetThemeVariable.TEXT_PLACEHOLDER);
+        int panel = theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND);
+
+        assertContrastAtLeast(placeholder,
+                theme.getColor(WidgetThemeVariable.CONTROL_BACKGROUND), panel, 4.5D);
+        assertContrastAtLeast(placeholder,
+                theme.getColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND), panel, 4.5D);
     }
 
     private static void assertContrastAtLeast(int foreground, int background, double minimum) {
-        double foregroundLuminance = relativeLuminance(foreground);
-        double backgroundLuminance = relativeLuminance(background);
+        assertContrastAtLeast(foreground, background, 0xFF000000, minimum);
+    }
+
+    private static void assertContrastAtLeast(int foreground, int background, int parent, double minimum) {
+        int opaqueParent = compositeOver(parent, 0xFF000000);
+        int composedBackground = compositeOver(background, opaqueParent);
+        int composedForeground = compositeOver(foreground, composedBackground);
+        double foregroundLuminance = relativeLuminance(composedForeground);
+        double backgroundLuminance = relativeLuminance(composedBackground);
         double lighter = Math.max(foregroundLuminance, backgroundLuminance);
         double darker = Math.min(foregroundLuminance, backgroundLuminance);
         double contrast = (lighter + 0.05D) / (darker + 0.05D);
 
         assertTrue(contrast >= minimum, () -> "Expected contrast >= " + minimum + ", got " + contrast);
+    }
+
+    private static int compositeOver(int foreground, int background) {
+        double alpha = (foreground >>> 24) / 255.0D;
+        int red = compositeChannel(foreground >> 16 & 0xFF, background >> 16 & 0xFF, alpha);
+        int green = compositeChannel(foreground >> 8 & 0xFF, background >> 8 & 0xFF, alpha);
+        int blue = compositeChannel(foreground & 0xFF, background & 0xFF, alpha);
+        return 0xFF000000 | (red << 16) | (green << 8) | blue;
+    }
+
+    private static int compositeChannel(int foreground, int background, double alpha) {
+        return (int)Math.round(foreground * alpha + background * (1.0D - alpha));
     }
 
     private static double relativeLuminance(int color) {

@@ -2,6 +2,8 @@
 package _959.server_waypoint.common.client.gui.render;
 
 import _959.server_waypoint.common.client.gui.layout.Padding;
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.layouts.LayoutElement;
@@ -15,21 +17,47 @@ public class PaddingBackground implements Renderable, Padding {
     private final int leftPadding;
     private final int rightPadding;
     private final boolean border;
-    private final int bgColor;
-    private final int bdColor;
+    private final IntSupplier backgroundColor;
+    private final IntSupplier borderColor;
 
     public PaddingBackground(LayoutElement widget, int topBottomPadding, int leftRightPadding, int bgColor, int bdColor, boolean border) {
         this(widget, topBottomPadding, topBottomPadding, leftRightPadding, leftRightPadding, bgColor, bdColor, border);
     }
 
+    public PaddingBackground(LayoutElement widget, int topBottomPadding, int leftRightPadding,
+                             WidgetThemeVariable backgroundColor, WidgetThemeVariable borderColor, boolean border) {
+        this(widget, topBottomPadding, topBottomPadding, leftRightPadding, leftRightPadding,
+                backgroundColor, borderColor, border);
+    }
+
+    public PaddingBackground(LayoutElement widget, int topBottomPadding, int leftRightPadding,
+                             IntSupplier backgroundColor, IntSupplier borderColor, boolean border) {
+        this(widget, topBottomPadding, topBottomPadding, leftRightPadding, leftRightPadding,
+                backgroundColor, borderColor, border);
+    }
+
     public PaddingBackground(LayoutElement widget, int topPadding, int bottomPadding, int leftPadding, int rightPadding, int bgColor, int bdColor, boolean border) {
+        this(widget, topPadding, bottomPadding, leftPadding, rightPadding,
+                () -> bgColor, () -> bdColor, border);
+    }
+
+    public PaddingBackground(LayoutElement widget, int topPadding, int bottomPadding, int leftPadding, int rightPadding,
+                             WidgetThemeVariable backgroundColor, WidgetThemeVariable borderColor, boolean border) {
+        this(widget, topPadding, bottomPadding, leftPadding, rightPadding,
+                WidgetThemeColors.getColorSupplier(backgroundColor),
+                WidgetThemeColors.getColorSupplier(borderColor),
+                border);
+    }
+
+    public PaddingBackground(LayoutElement widget, int topPadding, int bottomPadding, int leftPadding, int rightPadding,
+                             IntSupplier backgroundColor, IntSupplier borderColor, boolean border) {
         this.widget = widget;
         this.topPadding = topPadding;
         this.bottomPadding = bottomPadding;
         this.leftPadding = leftPadding;
         this.rightPadding = rightPadding;
-        this.bgColor = bgColor;
-        this.bdColor = bdColor;
+        this.backgroundColor = Objects.requireNonNull(backgroundColor, "backgroundColor");
+        this.borderColor = Objects.requireNonNull(borderColor, "borderColor");
         this.border = border;
     }
 
@@ -44,9 +72,10 @@ public class PaddingBackground implements Renderable, Padding {
         int height = this.widget.getHeight();
         int x1 = x - this.leftPadding;
         int y1 = y - this.topPadding;
-        context.fill(x1, y1, x + width + this.rightPadding, y + height + this.bottomPadding, bgColor);
+        context.fill(x1, y1, x + width + this.rightPadding, y + height + this.bottomPadding,
+                this.backgroundColor.getAsInt());
         if (border) {
-            renderOutline(context, x1, y1, getVisualWidth(), getVisualHeight(), bdColor);
+            renderOutline(context, x1, y1, getVisualWidth(), getVisualHeight(), this.borderColor.getAsInt());
         }
     }
 

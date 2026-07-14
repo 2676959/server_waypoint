@@ -2,6 +2,7 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.api.Colorable;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
@@ -10,19 +11,22 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.*;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_DISABLED;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PLACEHOLDER;
 import static _959.server_waypoint.common.network.ModMessageSender.toVanillaText;
 import static _959.server_waypoint.util.ColorUtils.hexCodeToRgb;
 import static _959.server_waypoint.util.ColorUtils.rgbToHexCode;
 
 public class ColorHexCodeField extends TranslucentTextField implements Colorable {
     private final Font textRenderer;
+    private int hintColor;
+    private boolean hintColorInitialized;
 
     public ColorHexCodeField(int x, int y, net.minecraft.network.chat.Component text, Font textRenderer) {
         super(x, y, 39, text, textRenderer);
         this.textRenderer = textRenderer;
         this.setMaxLength(6);
-        this.setHint(toVanillaText(Component.text("RRGGBB").color(TextColor.color(MUTED_FONT_COLOR))));
+        this.updateThemeHint();
     }
 
     @Override
@@ -82,12 +86,24 @@ public class ColorHexCodeField extends TranslucentTextField implements Colorable
         int x1 = x - 6;
         int right = x - 1 + this.width;
         int bottom = y - 1 + this.backgroundHeight;
-        context.fill(x1 + 1, y + 1, right, bottom, BUTTON_BG_COLOR);
-        drawText(context, textRenderer, "#", x - 4, y + 2, 0xFFFFFFFF, true);
+        this.updateThemeTextColors();
+        this.updateThemeHint();
         this.isHovered = mouseX >= x1 && mouseY >= y && mouseX <= right && mouseY <= bottom;
-        int bdColor = isFocused() || isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
+        context.fill(x1 + 1, y + 1, right, bottom, WidgetThemeState.controlBackground(this.active, isHovered()));
+        drawText(context, textRenderer, "#", x - 4, y + 2, WidgetThemeState.text(this.active), true);
+        int bdColor = WidgetThemeState.border(this.active, isFocused(), isHovered());
         renderOutline(context, x1, y, this.width + 6, this.backgroundHeight, bdColor);
         this.renderTextField(context, mouseX, mouseY, deltaTicks);
+    }
+
+    private void updateThemeHint() {
+        int color = WidgetThemeManager.getColor(this.active ? TEXT_PLACEHOLDER : TEXT_DISABLED);
+        if (this.hintColorInitialized && this.hintColor == color) {
+            return;
+        }
+        this.hintColor = color;
+        this.hintColorInitialized = true;
+        this.setHint(toVanillaText(Component.text("RRGGBB").color(TextColor.color(color & 0x00FFFFFF))));
     }
 
     @Override

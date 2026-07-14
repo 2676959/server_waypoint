@@ -1,10 +1,15 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
-import _959.server_waypoint.common.client.gui.render.WidgetThemeColors;
 import _959.server_waypoint.common.util.MathHelper;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
+
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SCROLLBAR_THUMB;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SCROLLBAR_THUMB_ACTIVE;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SCROLLBAR_THUMB_DISABLED;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SCROLLBAR_TRACK;
 
 public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget {
     public final int SCROLLBAR_WIDTH = 6;
@@ -36,7 +41,7 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
     }
 
     public boolean checkScrollbarDragged(double mouseX, double mouseY, int button) {
-        if (button != 0) {
+        if (!this.active || button != 0) {
             return false;
         }
         int x = this.getX();
@@ -63,10 +68,11 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
         }
         
         // Background
-        context.fill(right - SCROLLBAR_WIDTH, y, right, bottom, WidgetThemeColors.TRANSPARENT_BG_COLOR);
+        int trackColor = getColor(SCROLLBAR_TRACK);
+        context.fill(right - SCROLLBAR_WIDTH, y, right, bottom, trackColor);
         
         // Handle
-        int handleColor = this.scrolling ? WidgetThemeColors.BORDER_FOCUS_COLOR : WidgetThemeColors.BORDER_COLOR;
+        int handleColor = getColor(!this.active ? SCROLLBAR_THUMB_DISABLED : this.scrolling ? SCROLLBAR_THUMB_ACTIVE : SCROLLBAR_THUMB);
         context.fill(right - SCROLLBAR_WIDTH, handleY, right, handleY + handleHeight, handleColor);
     }
 
@@ -76,7 +82,7 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        if (!this.overflows()) {
+        if (!this.active || !this.overflows()) {
             return false;
         }
         this.setScrollY(this.scrollY - verticalAmount * this.getDeltaYPerScroll());
@@ -85,7 +91,7 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!this.overflows()) {
+        if (!this.active || !this.overflows()) {
             return false;
         }
         if (this.checkScrollbarDragged(mouseX, mouseY, button)) {
@@ -97,6 +103,10 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (!this.active) {
+            this.scrolling = false;
+            return false;
+        }
         if (this.scrolling) {
             if (mouseY < (double)this.getY()) {
                 this.setScrollY(0.0);

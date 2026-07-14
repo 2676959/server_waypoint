@@ -22,13 +22,17 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.TRANSPARENT_BG_COLOR;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawItem;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scale;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.FOCUS_RING;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.PANEL_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.ROW_HOVER_BACKGROUND;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 
 public class DimensionListWidget extends ShiftableClickableWidget implements Padding, Expandable {
@@ -40,7 +44,8 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     private static int index;
     private final DimensionListCallback callback;
     private @Unmodifiable List<String> dimensionNames = List.of();
-    private final PaddingBackground paddingBackground = new PaddingBackground(this, 7, 0, 10, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
+    private final PaddingBackground paddingBackground = new PaddingBackground(this, 7, 0, 10, 10,
+            PANEL_BACKGROUND, BORDER, false);
     private final float itemIconScale;
     private final int iconSize;
     private final DimensionIconLayout iconLayout;
@@ -131,6 +136,9 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (!this.active) {
+            return false;
+        }
         DimensionIconLayout.Bounds viewport = this.getIconViewport();
         scrolledPosition = this.iconLayout.scrollBy(scrolledPosition, verticalAmount * 5, this.dimensionNames.size(), viewport);
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
@@ -138,7 +146,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (empty) return false;
+        if (!this.active || empty) return false;
         int clickedIndex = this.iconLayout.iconIndexAt(
                 mouseX - this.getX(),
                 mouseY - this.getY(),
@@ -181,11 +189,13 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
         push(context);
         translate(context, x, y);
 
-        int hoverIndex = this.iconLayout.iconIndexAt(mouseX - x, mouseY - y, scrolledPosition, this.dimensionNames.size(), viewport);
+        int hoverIndex = this.active
+                ? this.iconLayout.iconIndexAt(mouseX - x, mouseY - y, scrolledPosition, this.dimensionNames.size(), viewport)
+                : -1;
         if (hoverIndex >= 0) {
-            this.renderIconBackground(context, hoverIndex, viewport, 0x99FFFFFF, false);
+            this.renderIconBackground(context, hoverIndex, viewport, getColor(ROW_HOVER_BACKGROUND), false);
         }
-        this.renderIconBackground(context, index, viewport, 0xFFFFFFFF, true);
+        this.renderIconBackground(context, index, viewport, getColor(this.active ? FOCUS_RING : BORDER), true);
 
         for (int i = 0; i < this.dimensionNames.size(); i++) {
             DimensionIconLayout.Position position = this.iconLayout.iconPosition(i, scrolledPosition, viewport);

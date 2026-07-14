@@ -2,7 +2,11 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.layout.Expandable;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeColors;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -18,7 +22,7 @@ public class ScalableText extends ShiftableWidget implements Expandable {
     private final Font textRenderer;
     private Component text;
     private float scale;
-    private int color;
+    private IntSupplier colorSupplier;
     private int maxWidth;
     private volatile List<FormattedCharSequence> warpLines = List.of();
 
@@ -26,15 +30,39 @@ public class ScalableText extends ShiftableWidget implements Expandable {
         this(x, y, text, 1, color, textRenderer);
     }
 
+    public ScalableText(int x, int y, Component text, WidgetThemeVariable color, Font textRenderer) {
+        this(x, y, text, 1, color, textRenderer);
+    }
+
+    public ScalableText(int x, int y, Component text, IntSupplier color, Font textRenderer) {
+        this(x, y, text, 1, color, textRenderer);
+    }
+
     public ScalableText(int x, int y, Component text, float scale, int color, Font textRenderer) {
         this(x, y, text, scale, color, -1, textRenderer);
     }
 
+    public ScalableText(int x, int y, Component text, float scale, WidgetThemeVariable color, Font textRenderer) {
+        this(x, y, text, scale, color, -1, textRenderer);
+    }
+
+    public ScalableText(int x, int y, Component text, float scale, IntSupplier color, Font textRenderer) {
+        this(x, y, text, scale, color, -1, textRenderer);
+    }
+
     public ScalableText(int x, int y, Component text, float scale, int color, int maxWidth, Font textRenderer) {
+        this(x, y, text, scale, () -> color, maxWidth, textRenderer);
+    }
+
+    public ScalableText(int x, int y, Component text, float scale, WidgetThemeVariable color, int maxWidth, Font textRenderer) {
+        this(x, y, text, scale, WidgetThemeColors.getColorSupplier(color), maxWidth, textRenderer);
+    }
+
+    public ScalableText(int x, int y, Component text, float scale, IntSupplier color, int maxWidth, Font textRenderer) {
         super(x, y, Math.round(textRenderer.width(text) * scale), Math.round(textRenderer.lineHeight * scale));
         this.text = text;
         this.scale = scale;
-        this.color = color;
+        this.colorSupplier = Objects.requireNonNull(color, "color");
         this.maxWidth = maxWidth;
         this.textRenderer = textRenderer;
         if (maxWidth != -1) {
@@ -83,7 +111,15 @@ public class ScalableText extends ShiftableWidget implements Expandable {
     }
 
     public void setColor(int color) {
-        this.color = color;
+        this.colorSupplier = () -> color;
+    }
+
+    public void setColor(WidgetThemeVariable color) {
+        this.setColor(WidgetThemeColors.getColorSupplier(color));
+    }
+
+    public void setColor(IntSupplier color) {
+        this.colorSupplier = Objects.requireNonNull(color, "color");
     }
 
     @Override
@@ -94,11 +130,12 @@ public class ScalableText extends ShiftableWidget implements Expandable {
         push(context);
         translate(context, this.getShiftedX(), this.getShiftedY());
         scale(context, this.scale, this.scale);
+        int color = this.colorSupplier.getAsInt();
         if (this.maxWidth == -1) {
-            drawText(context, this.textRenderer, this.text, 0, 0, this.color, true);
+            drawText(context, this.textRenderer, this.text, 0, 0, color, true);
         } else {
             for (int i = 0; i < this.warpLines.size(); i++) {
-                drawText(context, this.textRenderer, this.warpLines.get(i), 0, i * this.textRenderer.lineHeight, this.color, true);
+                drawText(context, this.textRenderer, this.warpLines.get(i), 0, i * this.textRenderer.lineHeight, color, true);
             }
         }
         pop(context);

@@ -16,6 +16,9 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.dr
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.ACCENT;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SLIDER_THUMB_DISABLED;
 
 /**
  * A discrete slider with a color gradient background.
@@ -37,6 +40,7 @@ public abstract class AbstractColorBgSlider implements LayoutElement, Renderable
     protected int endY;
     protected int startColor;
     protected int endColor;
+    private boolean active = true;
 
     public AbstractColorBgSlider(int x, int y, int slotWidth, int slotHeight, int sliderWidth, int maxLevel) {
         this.x = x;
@@ -97,14 +101,23 @@ public abstract class AbstractColorBgSlider implements LayoutElement, Renderable
     }
 
     public void mouseClickedOrDragged(double mouseX) {
+        if (!this.active) {
+            return;
+        }
         updateSliderCenter(MathHelper.clamp((float) mouseX, this.x, this.endX) - this.x);
     }
 
     public void mouseScrolled(double verticalAmount) {
+        if (!this.active) {
+            return;
+        }
         updateSliderCenter(MathHelper.clamp((float) verticalAmount + this.sliderCenter, 0, slotWidth));
     }
 
     public boolean keyPressed(int keyCode) {
+        if (!this.active) {
+            return false;
+        }
         if (keyCode == 262) {
             // right key
             this.sliderLevel = Math.min(this.sliderLevel + 1, this.maxLevel);
@@ -141,6 +154,14 @@ public abstract class AbstractColorBgSlider implements LayoutElement, Renderable
 
     public int getSliderLevel() {
         return this.sliderLevel;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public boolean isActive() {
+        return this.active;
     }
 
     @Override
@@ -182,12 +203,13 @@ public abstract class AbstractColorBgSlider implements LayoutElement, Renderable
     }
 
     protected void drawSlider(GuiGraphicsExtractor context) {
+        int sliderColor = getColor(this.active ? ACCENT : SLIDER_THUMB_DISABLED);
         //? if = 26.1.2 {
         int sliderX = MathHelper.clamp((int) this.sliderCenter, 0, this.slotWidth - 1);
-        drawSolidColor(context, sliderX, sliderX + 1, 0xFFFFFFFF);
+        drawSolidColor(context, sliderX, sliderX + 1, sliderColor);
         //?} else {
         
-        /*drawSolidColor(context, this.sliderLeft, this.sliderRight, 0xFFFFFFFF);
+        /*drawSolidColor(context, this.sliderLeft, this.sliderRight, sliderColor);
         *///?}
     }
 

@@ -55,6 +55,32 @@ class WidgetThemeJsonTest {
     }
 
     @Test
+    void phaseOneStatusColorsRemainBackwardCompatible() {
+        String json = """
+                {
+                  "formatVersion": 1,
+                  "colors": {
+                    "status.success": "#FF010203",
+                    "status.warning": "#FF040506",
+                    "status.danger": "#FF070809"
+                  }
+                }
+                """;
+
+        WidgetTheme theme = WidgetThemeJson.fromJson(json);
+
+        assertEquals(0xFF010203, theme.getColor(WidgetThemeVariable.SUCCESS));
+        assertEquals(0xFF040506, theme.getColor(WidgetThemeVariable.WARNING));
+        assertEquals(0xFF070809, theme.getColor(WidgetThemeVariable.DANGER));
+        assertEquals(WidgetThemes.MODERN_DARK.getColor(WidgetThemeVariable.SUCCESS_BACKGROUND),
+                theme.getColor(WidgetThemeVariable.SUCCESS_BACKGROUND));
+        assertEquals(WidgetThemes.MODERN_DARK.getColor(WidgetThemeVariable.WARNING_BACKGROUND),
+                theme.getColor(WidgetThemeVariable.WARNING_BACKGROUND));
+        assertEquals(WidgetThemes.MODERN_DARK.getColor(WidgetThemeVariable.DANGER_BACKGROUND),
+                theme.getColor(WidgetThemeVariable.DANGER_BACKGROUND));
+    }
+
+    @Test
     void rejectsInvalidColorSyntax() {
         String json = """
                 {

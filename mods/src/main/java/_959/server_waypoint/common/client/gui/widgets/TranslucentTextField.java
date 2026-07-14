@@ -8,7 +8,13 @@ import _959.server_waypoint.common.client.gui.layout.Shiftable;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.*;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.POPUP_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SELECTION_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_DISABLED;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_MUTED;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PLACEHOLDER;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_TAB;
@@ -74,7 +80,7 @@ public class TranslucentTextField extends EditBox implements Shiftable, Expandab
         );
         this.textRenderer = textRenderer;
         this.anchorMode = AnchorMode.normalize(anchorMode);
-        this.setTextColor(0xFFFFFFFF);
+        this.updateThemeTextColors();
         this.setBordered(false);
         this.backgroundHeight = this.height + 2;
         this.setX(x);
@@ -97,9 +103,10 @@ public class TranslucentTextField extends EditBox implements Shiftable, Expandab
         int y = getShiftedY() - 2;
         int right = x - 1 + this.width;
         int bottom = y - 1 + this.backgroundHeight;
-        context.fill(x + 1, y + 1, right, bottom, BUTTON_BG_COLOR);
+        this.updateThemeTextColors();
         this.isHovered = mouseX >= x && mouseY >= y && mouseX <= right && mouseY <= bottom;
-        int bdColor = isFocused() | isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
+        context.fill(x + 1, y + 1, right, bottom, WidgetThemeState.controlBackground(this.active, isHovered()));
+        int bdColor = WidgetThemeState.border(this.active, isFocused(), isHovered());
         renderOutline(context, x, y, this.width, this.backgroundHeight, bdColor);
         this.renderTextField(context, mouseX, mouseY, deltaTicks);
     }
@@ -120,13 +127,45 @@ public class TranslucentTextField extends EditBox implements Shiftable, Expandab
         this.updateHoveredSuggestion(mouseX, mouseY);
 
         int visibleSuggestions = Math.min(this.suggestions.size(), MAX_VISIBLE_SUGGESTIONS);
-        context.fill(this.suggestionsX, this.suggestionsY, this.suggestionsX + this.suggestionsWidth, this.suggestionsY + this.suggestionsHeight, BUTTON_BG_COLOR);
+        context.fill(
+                this.suggestionsX,
+                this.suggestionsY,
+                this.suggestionsX + this.suggestionsWidth,
+                this.suggestionsY + this.suggestionsHeight,
+                getColor(POPUP_BACKGROUND)
+        );
+        renderOutline(
+                context,
+                this.suggestionsX,
+                this.suggestionsY,
+                this.suggestionsWidth,
+                this.suggestionsHeight,
+                getColor(BORDER)
+        );
         for (int i = 0; i < visibleSuggestions; i++) {
             int suggestionIndex = i + this.suggestionOffset;
             String suggestion = this.suggestions.get(suggestionIndex);
             int y = this.suggestionsY + i * SUGGESTION_LINE_HEIGHT;
-            int color = suggestionIndex == this.selectedSuggestion ? 0xFFFFFF00 : 0xFFAAAAAA;
-            drawText(context, this.textRenderer, this.textRenderer.plainSubstrByWidth(suggestion, this.suggestionsWidth - 2), this.getTextAnchorX(), y + 2, color, true);
+            boolean selected = suggestionIndex == this.selectedSuggestion;
+            if (selected) {
+                context.fill(
+                        this.suggestionsX + 1,
+                        y,
+                        this.suggestionsX + this.suggestionsWidth - 1,
+                        y + SUGGESTION_LINE_HEIGHT,
+                        getColor(SELECTION_BACKGROUND)
+                );
+            }
+            int color = selected ? WidgetThemeState.text(this.active) : getColor(this.active ? TEXT_MUTED : TEXT_DISABLED);
+            drawText(
+                    context,
+                    this.textRenderer,
+                    this.textRenderer.plainSubstrByWidth(suggestion, this.suggestionsWidth - 2),
+                    this.getTextAnchorX(),
+                    y + 2,
+                    color,
+                    true
+            );
         }
     }
 
@@ -480,7 +519,20 @@ public class TranslucentTextField extends EditBox implements Shiftable, Expandab
         if (this.inlineSuggestion == null || this.inlineSuggestion.isEmpty() || !this.isFocused() || this.getCursorPosition() != this.getValue().length()) {
             return;
         }
-        drawText(context, this.textRenderer, this.inlineSuggestion, this.getInlineSuggestionX(), this.getShiftedY(), 0xFF808080, true);
+        drawText(
+                context,
+                this.textRenderer,
+                this.inlineSuggestion,
+                this.getInlineSuggestionX(),
+                this.getShiftedY(),
+                getColor(this.active ? TEXT_PLACEHOLDER : TEXT_DISABLED),
+                true
+        );
+    }
+
+    protected void updateThemeTextColors() {
+        this.setTextColor(WidgetThemeState.text(this.active));
+        this.setTextColorUneditable(getColor(TEXT_DISABLED));
     }
 
     private int getTextAnchorX() {

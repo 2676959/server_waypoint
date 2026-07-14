@@ -7,7 +7,6 @@ import _959.server_waypoint.common.client.gui.layout.Expandable;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.texture;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.*;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -52,11 +51,9 @@ public class IconButton extends ShiftableClickableWidget implements Expandable {
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
-        if (isFocused() || isHovered()) {
-            renderOutline(context, x, y, width, height, BORDER_FOCUS_COLOR);
-        }
-        int bgColor = isHovered() ? BUTTON_BG_HOVER_COLOR : 0;
+        int bgColor = WidgetThemeState.controlBackground(this.active, isHovered());
         context.fill(x, y, x + width, y + height, bgColor);
+        renderOutline(context, x, y, width, height, WidgetThemeState.border(this.active, isFocused(), isHovered()));
         texture(context, icon, x, y, 0, 0, width, height, width, height);
     }
 
