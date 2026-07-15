@@ -55,6 +55,12 @@ public final class WaypointTextures {
     //$ resource_location_type_swap
     Identifier
     SYNCED_ICON = modId("textures/gui/synced.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    PLACEHOLDER_ICON = modId("textures/gui/placeholder.png");
+
     private WaypointTextures() {
     }
 }

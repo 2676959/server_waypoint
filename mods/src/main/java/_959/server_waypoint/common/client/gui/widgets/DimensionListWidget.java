@@ -40,12 +40,13 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     public static final ItemStack THE_NETHER_ICON = new ItemStack(Blocks.RED_NETHER_BRICKS);
     public static final ItemStack THE_END_ICON = new ItemStack(Blocks.END_STONE);
     public static final ItemStack CUSTOM_DIMENSION_ICON = new ItemStack(Blocks.STRUCTURE_BLOCK);
+    private static final int DEFAULT_VERTICAL_PADDING = 3;
+    private static final int DEFAULT_HORIZONTAL_PADDING = 4;
     private static float scrolledPosition;
     private static int index;
     private final DimensionListCallback callback;
     private @Unmodifiable List<String> dimensionNames = List.of();
-    private final PaddingBackground paddingBackground = new PaddingBackground(this, 3, 3, 4, 4,
-            PANEL_BACKGROUND, BORDER, false);
+    private final PaddingBackground paddingBackground;
     private final float itemIconScale;
     private final int iconSize;
     private final DimensionIconLayout iconLayout;
@@ -60,14 +61,80 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     }
 
     /**
-     * Creates a dimension list whose icon strip follows the supplied layout flow.
+     * Creates a zero-gap dimension list whose icon strip follows the supplied layout flow.
      */
     public DimensionListWidget(int x, int y, int width, int height, int iconSize, Screen parentScreen, Font textRenderer, DimensionListCallback callback, Orientation orientation, Direction direction) {
+        this(x, y, width, height, iconSize, parentScreen, textRenderer, callback, orientation, direction, 0);
+    }
+
+    /**
+     * Creates a dimension list whose icon strip follows the supplied layout flow and uses the
+     * given non-negative spacing between adjacent icons.
+     */
+    public DimensionListWidget(
+            int x,
+            int y,
+            int width,
+            int height,
+            int iconSize,
+            Screen parentScreen,
+            Font textRenderer,
+            DimensionListCallback callback,
+            Orientation orientation,
+            Direction direction,
+            int iconSpacing
+    ) {
+        this(
+                x,
+                y,
+                width,
+                height,
+                iconSize,
+                parentScreen,
+                textRenderer,
+                callback,
+                orientation,
+                direction,
+                iconSpacing,
+                DEFAULT_VERTICAL_PADDING,
+                DEFAULT_HORIZONTAL_PADDING
+        );
+    }
+
+    /**
+     * Creates a dimension list with custom non-negative symmetric padding around its icon strip.
+     */
+    public DimensionListWidget(
+            int x,
+            int y,
+            int width,
+            int height,
+            int iconSize,
+            Screen parentScreen,
+            Font textRenderer,
+            DimensionListCallback callback,
+            Orientation orientation,
+            Direction direction,
+            int iconSpacing,
+            int verticalPadding,
+            int horizontalPadding
+    ) {
         super(x, y, width, Math.max(height, iconSize), Component.literal("Dimensions list"));
+        if (verticalPadding < 0 || horizontalPadding < 0) {
+            throw new IllegalArgumentException("Dimension list padding cannot be negative");
+        }
         this.callback = callback;
         this.iconSize = iconSize;
         this.itemIconScale = iconSize / 16F;
-        this.iconLayout = new DimensionIconLayout(iconSize, orientation, direction);
+        this.iconLayout = new DimensionIconLayout(iconSize, orientation, direction, iconSpacing);
+        this.paddingBackground = new PaddingBackground(
+                this,
+                verticalPadding,
+                horizontalPadding,
+                PANEL_BACKGROUND,
+                BORDER,
+                false
+        );
         scrolledPosition = 0;
         index = 0;
     }
@@ -216,6 +283,10 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
 
     public Direction getDirection() {
         return this.iconLayout.direction();
+    }
+
+    public int getIconSpacing() {
+        return this.iconLayout.iconSpacing();
     }
 
     private void renderIconBackground(GuiGraphicsExtractor context, int iconIndex, DimensionIconLayout.Bounds viewport, int color, boolean outline) {

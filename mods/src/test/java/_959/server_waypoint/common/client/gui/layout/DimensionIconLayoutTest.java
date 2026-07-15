@@ -7,6 +7,7 @@ import net.minecraft.client.gui.screens.Screen;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DimensionIconLayoutTest {
     @Test
@@ -24,6 +25,34 @@ class DimensionIconLayoutTest {
                 DimensionListCallback.class,
                 LayoutFlow.Orientation.class,
                 LayoutFlow.Direction.class
+        );
+        DimensionListWidget.class.getConstructor(
+                int.class,
+                int.class,
+                int.class,
+                int.class,
+                int.class,
+                Screen.class,
+                Font.class,
+                DimensionListCallback.class,
+                LayoutFlow.Orientation.class,
+                LayoutFlow.Direction.class,
+                int.class
+        );
+        DimensionListWidget.class.getConstructor(
+                int.class,
+                int.class,
+                int.class,
+                int.class,
+                int.class,
+                Screen.class,
+                Font.class,
+                DimensionListCallback.class,
+                LayoutFlow.Orientation.class,
+                LayoutFlow.Direction.class,
+                int.class,
+                int.class,
+                int.class
         );
     }
 
@@ -74,5 +103,56 @@ class DimensionIconLayoutTest {
 
         assertEquals(0, layout.clampScroll(-80, 12, viewport));
         assertEquals(0, layout.clampScroll(10, 20, viewport));
+    }
+
+    @Test
+    void verticalSpacingCreatesNonInteractiveGapsInBothDirections() {
+        DimensionIconLayout forward = new DimensionIconLayout(
+                18,
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.FORWARD,
+                2
+        );
+        DimensionIconLayout reverse = new DimensionIconLayout(
+                18,
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.REVERSE,
+                2
+        );
+        DimensionIconLayout.Bounds viewport = forward.viewport(18, 58, 0);
+
+        assertEquals(new DimensionIconLayout.Position(0, 0), forward.iconPosition(0, 0, viewport));
+        assertEquals(new DimensionIconLayout.Position(0, 20), forward.iconPosition(1, 0, viewport));
+        assertEquals(0, forward.iconIndexAt(5, 17, 0, 3, viewport));
+        assertEquals(-1, forward.iconIndexAt(5, 18, 0, 3, viewport));
+        assertEquals(-1, forward.iconIndexAt(5, 19, 0, 3, viewport));
+        assertEquals(1, forward.iconIndexAt(5, 20, 0, 3, viewport));
+
+        assertEquals(new DimensionIconLayout.Position(0, 40), reverse.iconPosition(0, 0, viewport));
+        assertEquals(new DimensionIconLayout.Position(0, 20), reverse.iconPosition(1, 0, viewport));
+        assertEquals(1, reverse.iconIndexAt(5, 37, 0, 3, viewport));
+        assertEquals(-1, reverse.iconIndexAt(5, 38, 0, 3, viewport));
+        assertEquals(-1, reverse.iconIndexAt(5, 39, 0, 3, viewport));
+        assertEquals(0, reverse.iconIndexAt(5, 40, 0, 3, viewport));
+    }
+
+    @Test
+    void spacingParticipatesInScrollExtentAndRejectsNegativeValues() {
+        DimensionIconLayout layout = new DimensionIconLayout(
+                20,
+                LayoutFlow.Orientation.HORIZONTAL,
+                LayoutFlow.Direction.FORWARD,
+                4
+        );
+        DimensionIconLayout.Bounds viewport = layout.viewport(100, 20, 0);
+
+        assertEquals(4, layout.iconSpacing());
+        assertEquals(-16, layout.clampScroll(-100, 5, viewport));
+        assertThrows(IllegalArgumentException.class, () -> new DimensionIconLayout(
+                20,
+                LayoutFlow.Orientation.HORIZONTAL,
+                LayoutFlow.Direction.FORWARD,
+                -1
+        ));
     }
 }
