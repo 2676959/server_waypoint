@@ -33,11 +33,29 @@ import static _959.server_waypoint.common.client.WaypointClientMod.ClientNetwork
 import static _959.server_waypoint.common.client.WaypointClientMod.getCurrentDimensionName;
 import static _959.server_waypoint.common.client.WaypointClientMod.getNetworkState;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 
 public class WaypointManagerScreen extends MovementAllowedScreen {
+    private static final int INITIAL_CONTENT_WIDTH = 280;
+    private static final int MIN_CONTENT_WIDTH = 240;
+    private static final int MAX_CONTENT_WIDTH = 300;
+    private static final int MIN_CONTENT_HEIGHT = 120;
+    private static final int MAX_CONTENT_HEIGHT = 260;
+    private static final int SCREEN_MARGIN = 12;
+    private static final int PANEL_PADDING = 8;
+    private static final int HEADER_HEIGHT = 25;
+    private static final int SECTION_GAP = 5;
+    private static final int CONTROL_GAP = 4;
+    private static final int GROUP_BUTTON_WIDTH = 88;
+    private static final int DIMENSION_ICON_SIZE = 18;
+    private static final int DIMENSION_SELECTOR_WIDTH = 60;
+    private static final float RELATIVE_HEIGHT = 0.82F;
     private static boolean isRendering = false;
     private static WaypointListWidget waypointListWidget;
     private static DimensionListWidget dimensionListWidget;
+    private static ScalableText screenTitleText;
     private static ScalableText dimensionNameText;
     private static IconButton addWaypointButton;
     private static WaypointSearchBarWidget searchField;
@@ -48,10 +66,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private static ToggleButton groupByListsButton;
     private final Screen parentScreen;
     private final WaypointClientMod waypointClientMod;
-    private final float relativeHeight = 0.9F;
     private boolean hasInitialized = false;
     private final ExpandableManager mainLayout;
     private final ExpandableManager sortButtonLayout;
+    private final ExpandableManager headerTextLayout;
     private final ExpandableManager dimensionHeaderLayout;
     private final ExpandableManager waypointControlLayout;
     private final ExpandableManager waypointLayout;
@@ -60,27 +78,28 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         super(Component.nullToEmpty("Server Waypoints"));
         this.parentScreen = parentScreen;
         this.waypointClientMod = waypointClientMod;
-        int widgetWidth = 240;
-        int dimensionIconSize = 20;
+        int widgetWidth = INITIAL_CONTENT_WIDTH;
         dimensionListWidget = new DimensionListWidget(
                 0,
                 0,
-                dimensionIconSize,
-                dimensionIconSize,
+                DIMENSION_SELECTOR_WIDTH,
+                DIMENSION_ICON_SIZE,
                 this,
                 this.font,
                 this::onSelectDimension,
-                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Orientation.HORIZONTAL,
                 LayoutFlow.Direction.FORWARD
         );
         waypointListWidget = new WaypointListWidget(0, 0, widgetWidth, 200, this, new WaypointQueryEngine(getWaypointQuerySource()), this.font);
+        screenTitleText = new ScalableText(
+                0, 0, this.title, 1.2F, WidgetThemeVariable.TEXT_PRIMARY, this.font);
         dimensionNameText = new ScalableText(
-                0, 0, Component.empty(), 1.2F, WidgetThemeVariable.TEXT_PRIMARY, this.font);
+                0, 0, Component.empty(), 0.85F, WidgetThemeVariable.TEXT_MUTED, this.font);
         addWaypointButton = new IconButton(
                 0,
                 0,
-                10,
-                10,
+                16,
+                16,
                 Component.translatable("waypoint.add.button"),
                 WaypointTextures.ADD_ICON,
                 this::openAddWaypointScreen
@@ -102,7 +121,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         groupByListsButton = new ToggleButton(
                 0,
                 0,
-                widgetWidth,
+                GROUP_BUTTON_WIDTH,
                 11,
                 Component.translatable("waypoint.group.flat"),
                 Component.translatable("waypoint.group.lists"),
@@ -121,34 +140,54 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         this.sortButtonLayout.addChild(nameSortButton, 1, 1);
         this.sortButtonLayout.addChild(distanceSortButton, 1, 1);
         this.sortButtonLayout.addChild(colorSortButton, 1, 1);
-        this.waypointControlLayout = new ExpandableManager(widgetWidth, sortButtonLayout.getHeight() + groupByListsButton.getVisualHeight(), LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD);
-        this.waypointControlLayout.addChild(sortButtonLayout, 1, 0);
-        this.waypointControlLayout.addChild(groupByListsButton, 1, 0);
-        this.dimensionHeaderLayout = new ExpandableManager(
-                waypointListWidget.getVisualWidth(),
-                Math.max(dimensionNameText.getHeight(), addWaypointButton.getHeight()),
+        this.waypointControlLayout = new ExpandableManager(
+                widgetWidth,
+                Math.max(searchField.getVisualHeight(), groupByListsButton.getVisualHeight()),
                 LayoutFlow.Orientation.HORIZONTAL,
                 LayoutFlow.Direction.FORWARD
         );
-        this.dimensionHeaderLayout.addChild(dimensionNameText, 1, 0);
-        this.dimensionHeaderLayout.addChild(addWaypointButton, 0, 0);
-        this.waypointLayout = new ExpandableManager(
-                waypointListWidget.getVisualWidth(),
-                dimensionHeaderLayout.getHeight() + waypointControlLayout.getHeight() + waypointListWidget.getVisualHeight() + searchField.getVisualHeight(),
+        this.waypointControlLayout.addChild(searchField, 1, 1);
+        this.waypointControlLayout.addChild(createSpacer(CONTROL_GAP, 0), 0, 1);
+        this.waypointControlLayout.addChild(groupByListsButton, 0, 1);
+        this.headerTextLayout = new ExpandableManager(
+                widgetWidth - addWaypointButton.getWidth(),
+                HEADER_HEIGHT,
                 LayoutFlow.Orientation.VERTICAL,
                 LayoutFlow.Direction.FORWARD
         );
-        this.waypointLayout.addChild(dimensionHeaderLayout, 1, 0);
-        this.waypointLayout.addChild(waypointControlLayout, 1, 0);
-        this.waypointLayout.addChild(waypointListWidget, 1, 1);
-        this.waypointLayout.addChild(searchField, 1, 0);
-        this.mainLayout = new ExpandableManager(
-                dimensionListWidget.getVisualWidth() + waypointLayout.getWidth(),
-                waypointLayout.getHeight(),
+        this.headerTextLayout.addChild(screenTitleText, 1, 0);
+        this.headerTextLayout.addChild(dimensionNameText, 1, 0);
+        this.dimensionHeaderLayout = new ExpandableManager(
+                widgetWidth,
+                HEADER_HEIGHT,
                 LayoutFlow.Orientation.HORIZONTAL,
                 LayoutFlow.Direction.FORWARD
         );
-        this.mainLayout.addChild(dimensionListWidget, 0, 1);
+        this.dimensionHeaderLayout.addChild(headerTextLayout, 1, 1);
+        this.dimensionHeaderLayout.addChild(createSpacer(CONTROL_GAP, 0), 0, 1);
+        this.dimensionHeaderLayout.addChild(dimensionListWidget, 0, 0);
+        this.dimensionHeaderLayout.addChild(createSpacer(CONTROL_GAP, 0), 0, 1);
+        this.dimensionHeaderLayout.addChild(addWaypointButton, 0, 0);
+        this.waypointLayout = new ExpandableManager(
+                widgetWidth,
+                waypointControlLayout.getHeight() + CONTROL_GAP + sortButtonLayout.getHeight()
+                        + SECTION_GAP + waypointListWidget.getVisualHeight(),
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.FORWARD
+        );
+        this.waypointLayout.addChild(waypointControlLayout, 1, 0);
+        this.waypointLayout.addChild(createSpacer(0, CONTROL_GAP), 1, 0);
+        this.waypointLayout.addChild(sortButtonLayout, 1, 0);
+        this.waypointLayout.addChild(createSpacer(0, SECTION_GAP), 1, 0);
+        this.waypointLayout.addChild(waypointListWidget, 1, 1);
+        this.mainLayout = new ExpandableManager(
+                widgetWidth,
+                dimensionHeaderLayout.getHeight() + SECTION_GAP + waypointLayout.getHeight(),
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.FORWARD
+        );
+        this.mainLayout.addChild(dimensionHeaderLayout, 1, 0);
+        this.mainLayout.addChild(createSpacer(0, SECTION_GAP), 1, 0);
         this.mainLayout.addChild(waypointLayout, 1, 1);
     }
 
@@ -213,19 +252,23 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
     public void updateWidgetDimension() {
         this.mainLayout.setDimensions(
-                dimensionListWidget.getVisualWidth() + this.getContentWidth(),
-                this.getContentHeight()
+                Math.max(0, this.getContentWidth() - PANEL_PADDING * 2),
+                Math.max(0, this.getContentHeight() - PANEL_PADDING * 2)
         );
     }
 
     @Override
     int getContentWidth() {
-        return this.waypointLayout.getWidth();
+        int availableWidth = Math.max(0, this.width - SCREEN_MARGIN * 2);
+        int preferredWidth = Math.max(MIN_CONTENT_WIDTH, this.width - SCREEN_MARGIN * 4);
+        return Math.min(availableWidth, Math.min(MAX_CONTENT_WIDTH, preferredWidth) + PANEL_PADDING * 2);
     }
 
     @Override
     int getContentHeight() {
-        return (int) (this.height * relativeHeight);
+        int availableHeight = Math.max(0, this.height - SCREEN_MARGIN * 2);
+        int preferredHeight = Math.max(MIN_CONTENT_HEIGHT, Math.round(this.height * RELATIVE_HEIGHT));
+        return Math.min(availableHeight, Math.min(MAX_CONTENT_HEIGHT, preferredHeight) + PANEL_PADDING * 2);
     }
 
     @Override
@@ -245,8 +288,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         updateWidgetDimension();
         int centeredX = getCenteredX();
         int centeredY = getCenteredY();
-        // Keep the waypoint column centered while the dimension rail extends from its left side.
-        mainLayout.setPosition(centeredX - dimensionListWidget.getVisualWidth(), centeredY);
+        mainLayout.setPosition(centeredX + PANEL_PADDING, centeredY + PANEL_PADDING);
+        addWaypointButton.setY(
+                dimensionHeaderLayout.getY() + centered(dimensionHeaderLayout.getHeight(), addWaypointButton.getHeight())
+        );
 
         dimensionListWidget.updateDimensionNames(this.waypointClientMod.getDimensionNames());
         if (hasInitialized) {
@@ -336,6 +381,11 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                     WidgetThemeManager.getColor(WidgetThemeVariable.TEXT_PRIMARY));
             return;
         }
+        this.renderManagerPanel(context);
+        screenTitleText.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
         dimensionNameText.
         //$ render_method_swap
         extractRenderState
@@ -344,9 +394,17 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, delta);
-        waypointListWidget.
-        //$ render_widget_method_swap
-        extractWidgetRenderState
+        dimensionListWidget.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
+        searchField.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
+        groupByListsButton.
+        //$ render_method_swap
+        extractRenderState
                 (context, mouseX, mouseY, delta);
         defaultSortButton.
         //$ render_method_swap
@@ -364,19 +422,13 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, delta);
-        groupByListsButton.
+        waypointListWidget.
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, delta);
-        searchField.
-        //$ render_widget_method_swap
-        extractWidgetRenderState
-                (context, mouseX, mouseY, delta);
+        nextLayer(context);
         searchField.renderSuggestions(context, mouseX, mouseY);
-        dimensionListWidget.
-        //$ render_widget_method_swap
-        extractWidgetRenderState
-                (context, mouseX, mouseY, delta);
+        previousLayer(context);
     }
 
     @Override
@@ -384,6 +436,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         isRendering = false;
         waypointListWidget = null;
         dimensionListWidget = null;
+        screenTitleText = null;
         dimensionNameText = null;
         addWaypointButton = null;
         searchField = null;
@@ -437,5 +490,39 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private boolean mouseClickedSearchSuggestion(double mouseX, double mouseY) {
         GuiEventListener focused = this.getFocused();
         return focused == searchField && searchField.mouseClickedSuggestion(mouseX, mouseY);
+    }
+
+    private void renderManagerPanel(GuiGraphicsExtractor context) {
+        int x = this.mainLayout.getX() - PANEL_PADDING;
+        int y = this.mainLayout.getY() - PANEL_PADDING;
+        int width = this.mainLayout.getWidth() + PANEL_PADDING * 2;
+        int height = this.mainLayout.getHeight() + PANEL_PADDING * 2;
+        context.fill(
+                x,
+                y,
+                x + width,
+                y + height,
+                WidgetThemeManager.getColor(WidgetThemeVariable.PANEL_BACKGROUND)
+        );
+        renderOutline(
+                context,
+                x,
+                y,
+                width,
+                height,
+                WidgetThemeManager.getColor(WidgetThemeVariable.BORDER)
+        );
+        int dividerY = this.dimensionHeaderLayout.getY() + this.dimensionHeaderLayout.getHeight() + SECTION_GAP / 2;
+        context.fill(
+                this.mainLayout.getX(),
+                dividerY,
+                this.mainLayout.getX() + this.mainLayout.getWidth(),
+                dividerY + 1,
+                WidgetThemeManager.getColor(WidgetThemeVariable.CONTROL_BACKGROUND)
+        );
+    }
+
+    private static ExpandableManager createSpacer(int width, int height) {
+        return new ExpandableManager(width, height);
     }
 }
