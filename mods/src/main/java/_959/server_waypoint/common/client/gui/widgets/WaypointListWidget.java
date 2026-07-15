@@ -70,8 +70,8 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private boolean groupByLists = true;
 
     public WaypointListWidget(int x, int y, int width, int height, WaypointManagerScreen parent, WaypointQueryEngine queryEngine, Font textRenderer) {
-        super(x, y, width, height, itemHeight, Component.literal("Waypoint lists"), 5, 7, 10, 10,
-                PANEL_BACKGROUND, BORDER, false);
+        super(x, y, width, height, itemHeight, Component.literal("Waypoint lists"), 4, 4, 4, 4,
+                PANEL_BACKGROUND, BORDER, true);
         this.parentScreen = parent;
         this.queryEngine = queryEngine;
         this.textRenderer = textRenderer;

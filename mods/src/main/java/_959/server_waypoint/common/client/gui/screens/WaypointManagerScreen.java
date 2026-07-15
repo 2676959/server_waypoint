@@ -38,16 +38,18 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pr
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 
 public class WaypointManagerScreen extends MovementAllowedScreen {
-    private static final int INITIAL_CONTENT_WIDTH = 280;
-    private static final int MIN_CONTENT_WIDTH = 240;
-    private static final int MAX_CONTENT_WIDTH = 300;
+    private static final int INITIAL_CONTENT_WIDTH = 320;
+    private static final int MIN_CONTENT_WIDTH = 260;
+    private static final int MAX_CONTENT_WIDTH = 320;
     private static final int MIN_CONTENT_HEIGHT = 120;
     private static final int MAX_CONTENT_HEIGHT = 260;
     private static final int SCREEN_MARGIN = 12;
-    private static final int PANEL_PADDING = 8;
-    private static final int HEADER_HEIGHT = 25;
-    private static final int SECTION_GAP = 5;
+    private static final int PANEL_PADDING = 10;
+    private static final int HEADER_HEIGHT = 24;
+    private static final int HEADER_TEXT_GAP = 2;
+    private static final int SECTION_GAP = 6;
     private static final int CONTROL_GAP = 4;
+    private static final int SORT_BUTTON_GAP = 2;
     private static final int GROUP_BUTTON_WIDTH = 88;
     private static final int DIMENSION_ICON_SIZE = 18;
     private static final int DIMENSION_SELECTOR_WIDTH = 60;
@@ -137,8 +139,11 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         syncSortButtons();
         this.sortButtonLayout = new ExpandableManager(widgetWidth, defaultSortButton.getVisualHeight(), LayoutFlow.Orientation.HORIZONTAL, LayoutFlow.Direction.FORWARD);
         this.sortButtonLayout.addChild(defaultSortButton, 1, 1);
+        this.sortButtonLayout.addChild(createSpacer(SORT_BUTTON_GAP, 0), 0, 1);
         this.sortButtonLayout.addChild(nameSortButton, 1, 1);
+        this.sortButtonLayout.addChild(createSpacer(SORT_BUTTON_GAP, 0), 0, 1);
         this.sortButtonLayout.addChild(distanceSortButton, 1, 1);
+        this.sortButtonLayout.addChild(createSpacer(SORT_BUTTON_GAP, 0), 0, 1);
         this.sortButtonLayout.addChild(colorSortButton, 1, 1);
         this.waypointControlLayout = new ExpandableManager(
                 widgetWidth,
@@ -156,6 +161,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 LayoutFlow.Direction.FORWARD
         );
         this.headerTextLayout.addChild(screenTitleText, 1, 0);
+        this.headerTextLayout.addChild(createSpacer(0, HEADER_TEXT_GAP), 1, 0);
         this.headerTextLayout.addChild(dimensionNameText, 1, 0);
         this.dimensionHeaderLayout = new ExpandableManager(
                 widgetWidth,
@@ -518,7 +524,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 dividerY,
                 this.mainLayout.getX() + this.mainLayout.getWidth(),
                 dividerY + 1,
-                WidgetThemeManager.getColor(WidgetThemeVariable.CONTROL_BACKGROUND)
+                WidgetThemeManager.getColor(WidgetThemeVariable.BORDER)
         );
     }
 

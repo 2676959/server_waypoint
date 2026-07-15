@@ -44,7 +44,7 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     private static int index;
     private final DimensionListCallback callback;
     private @Unmodifiable List<String> dimensionNames = List.of();
-    private final PaddingBackground paddingBackground = new PaddingBackground(this, 7, 0, 10, 10,
+    private final PaddingBackground paddingBackground = new PaddingBackground(this, 3, 3, 4, 4,
             PANEL_BACKGROUND, BORDER, false);
     private final float itemIconScale;
     private final int iconSize;

@@ -13,10 +13,10 @@ class WidgetThemeTest {
         WidgetTheme theme = WidgetTheme.modernDark();
 
         assertEquals(WidgetThemeVariable.values().length, theme.getColors().size());
-        assertEquals(0xFFF8FAFC, theme.getColor(WidgetThemeVariable.TEXT_PRIMARY));
-        assertEquals(0xE60F172A, theme.getColor(WidgetThemeVariable.SCREEN_BACKGROUND));
-        assertEquals(0xFF2563EB, theme.getColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND));
-        assertEquals(0xFF60A5FA, theme.getColor(WidgetThemeVariable.FOCUS_RING));
+        assertEquals(0xFFE8F0F7, theme.getColor(WidgetThemeVariable.TEXT_PRIMARY));
+        assertEquals(0xFF0B1016, theme.getColor(WidgetThemeVariable.SCREEN_BACKGROUND));
+        assertEquals(0xFF236B87, theme.getColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND));
+        assertEquals(0xFF5BC3DF, theme.getColor(WidgetThemeVariable.FOCUS_RING));
     }
 
     @Test
@@ -84,6 +84,46 @@ class WidgetThemeTest {
                 theme.getColor(WidgetThemeVariable.CONTROL_BACKGROUND), panel, 4.5D);
         assertContrastAtLeast(placeholder,
                 theme.getColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND), panel, 4.5D);
+    }
+
+    @Test
+    void textHierarchyRemainsReadableOnCoreSurfaces() {
+        WidgetTheme theme = WidgetThemes.MODERN_DARK;
+
+        assertContrastAtLeast(
+                theme.getColor(WidgetThemeVariable.TEXT_PRIMARY),
+                theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND),
+                4.5D
+        );
+        assertContrastAtLeast(
+                theme.getColor(WidgetThemeVariable.TEXT_MUTED),
+                theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND),
+                4.5D
+        );
+        assertContrastAtLeast(
+                theme.getColor(WidgetThemeVariable.TEXT_PRIMARY),
+                theme.getColor(WidgetThemeVariable.CONTROL_BACKGROUND),
+                4.5D
+        );
+    }
+
+    @Test
+    void focusRingRemainsVisibleOnCoreSurfaces() {
+        WidgetTheme theme = WidgetThemes.MODERN_DARK;
+        int focusRing = theme.getColor(WidgetThemeVariable.FOCUS_RING);
+
+        assertContrastAtLeast(focusRing, theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND), 3.0D);
+        assertContrastAtLeast(focusRing, theme.getColor(WidgetThemeVariable.CONTROL_BACKGROUND), 3.0D);
+    }
+
+    @Test
+    void scrollbarThumbRemainsVisibleAgainstTrack() {
+        WidgetTheme theme = WidgetThemes.MODERN_DARK;
+        int track = theme.getColor(WidgetThemeVariable.SCROLLBAR_TRACK);
+        int panel = theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND);
+
+        assertContrastAtLeast(theme.getColor(WidgetThemeVariable.SCROLLBAR_THUMB), track, panel, 3.0D);
+        assertContrastAtLeast(theme.getColor(WidgetThemeVariable.SCROLLBAR_THUMB_ACTIVE), track, panel, 3.0D);
     }
 
     private static void assertContrastAtLeast(int foreground, int background, double minimum) {
