@@ -102,7 +102,7 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
             return;
         }
         this.expanded = resolvedExpanded;
-        this.setHighlightedItemIndex(this.expanded ? this.findSelectableItem(0, 1) : -1);
+        this.setHighlightedItemIndex(this.expanded ? this.findInitialHighlightedItem() : -1);
         this.onExpandedChanged(this.expanded);
     }
 
@@ -271,6 +271,14 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
     protected void onExpandedChanged(boolean expanded) {
     }
 
+    /**
+     * Returns the item index that keyboard navigation should highlight when the menu opens.
+     * Subclasses with a selected value may override this to start from that value.
+     */
+    protected int getInitialHighlightedItemIndex() {
+        return 0;
+    }
+
     @Override
     protected void updateWidgetNarration(NarrationElementOutput builder) {
         this.defaultButtonNarrationText(builder);
@@ -348,6 +356,14 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
             }
         }
         return -1;
+    }
+
+    private int findInitialHighlightedItem() {
+        int initialIndex = this.getInitialHighlightedItemIndex();
+        if (initialIndex < 0 || initialIndex >= this.menuItems.size()) {
+            initialIndex = 0;
+        }
+        return this.findSelectableItem(initialIndex, 1);
     }
 
     private void setHighlightedItemIndex(int highlightedItemIndex) {

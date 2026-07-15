@@ -224,6 +224,56 @@ class AbstractDropdownMenuWidgetTest {
     }
 
     @Test
+    void openingHighlightsTheSubclassPreferredSelectableItem() {
+        TestDropdown dropdown = new TestDropdown(
+                10,
+                20,
+                16,
+                16,
+                LayoutFlow.Orientation.HORIZONTAL,
+                LayoutFlow.Direction.REVERSE,
+                2
+        );
+        dropdown.addItem(16, 16, () -> {
+        });
+        TestMenuItem preferred = dropdown.addItem(16, 16, () -> {
+        });
+        dropdown.addItem(16, 16, () -> {
+        });
+        dropdown.initialHighlightedItemIndex = 1;
+
+        dropdown.setExpanded(true);
+
+        assertEquals(1, dropdown.getHighlightedItemIndex());
+        assertTrue(preferred.isFocused());
+    }
+
+    @Test
+    void openingSkipsAnInactivePreferredItem() {
+        TestDropdown dropdown = new TestDropdown(
+                10,
+                20,
+                16,
+                16,
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.FORWARD,
+                2
+        );
+        dropdown.addItem(16, 16, () -> {
+        });
+        TestMenuItem inactive = dropdown.addItem(16, 16, () -> {
+        });
+        dropdown.addItem(16, 16, () -> {
+        });
+        inactive.active = false;
+        dropdown.initialHighlightedItemIndex = 1;
+
+        dropdown.setExpanded(true);
+
+        assertEquals(2, dropdown.getHighlightedItemIndex());
+    }
+
+    @Test
     void resizingRelayoutsForwardItemsAndRecentersTheCrossAxis() {
         TestDropdown horizontal = new TestDropdown(
                 10,
@@ -289,6 +339,7 @@ class AbstractDropdownMenuWidgetTest {
 
     private static final class TestDropdown extends AbstractDropdownMenuWidget {
         private int expandedChangeCount;
+        private int initialHighlightedItemIndex;
 
         private TestDropdown(
                 int x,
@@ -318,6 +369,11 @@ class AbstractDropdownMenuWidgetTest {
         @Override
         protected void onExpandedChanged(boolean expanded) {
             this.expandedChangeCount++;
+        }
+
+        @Override
+        protected int getInitialHighlightedItemIndex() {
+            return this.initialHighlightedItemIndex;
         }
     }
 
