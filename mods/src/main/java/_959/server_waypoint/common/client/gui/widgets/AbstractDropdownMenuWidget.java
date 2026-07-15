@@ -1,0 +1,448 @@
+//~ gui_graphics_26
+package _959.server_waypoint.common.client.gui.widgets;
+
+import _959.server_waypoint.common.client.gui.layout.Expandable;
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.network.chat.Component;
+import org.lwjgl.glfw.GLFW;
+
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
+
+/**
+ * Base for a clickable control that expands a sequence of custom-rendered menu choices.
+ *
+ * <p>The expansion axis and direction use {@link LayoutFlow}: horizontal/forward expands right,
+ * horizontal/reverse expands left, vertical/forward expands down, and vertical/reverse expands up.
+ * The dropdown owns item rendering and click routing, so the owning screen registers only this
+ * widget.
+ */
+public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidget implements Expandable {
+    private final List<AbstractMenuItem> menuItems = new ArrayList<>();
+    private final LayoutFlow.Orientation expansionOrientation;
+    private final LayoutFlow.Direction expansionDirection;
+    private final int itemSpacing;
+    private boolean expanded;
+    private int highlightedItemIndex = -1;
+
+    protected AbstractDropdownMenuWidget(
+            int x,
+            int y,
+            int width,
+            int height,
+            Component message,
+            LayoutFlow.Orientation expansionOrientation,
+            LayoutFlow.Direction expansionDirection
+    ) {
+        this(x, y, width, height, message, expansionOrientation, expansionDirection, 0);
+    }
+
+    protected AbstractDropdownMenuWidget(
+            int x,
+            int y,
+            int width,
+            int height,
+            Component message,
+            LayoutFlow.Orientation expansionOrientation,
+            LayoutFlow.Direction expansionDirection,
+            int itemSpacing
+    ) {
+        super(x, y, width, height, message);
+        this.expansionOrientation = Objects.requireNonNull(expansionOrientation);
+        this.expansionDirection = Objects.requireNonNull(expansionDirection);
+        if (itemSpacing < 0) {
+            throw new IllegalArgumentException("itemSpacing must be non-negative");
+        }
+        this.itemSpacing = itemSpacing;
+        this.setPosition(x, y);
+    }
+
+    /**
+     * Adds an item in logical menu order and returns it for optional caller configuration.
+     */
+    protected final <T extends AbstractMenuItem> T addMenuItem(T menuItem) {
+        this.menuItems.add(Objects.requireNonNull(menuItem));
+        this.layoutMenuItems();
+        return menuItem;
+    }
+
+    public final List<AbstractMenuItem> getMenuItems() {
+        return List.copyOf(this.menuItems);
+    }
+
+    public final LayoutFlow.Orientation getExpansionOrientation() {
+        return this.expansionOrientation;
+    }
+
+    public final LayoutFlow.Direction getExpansionDirection() {
+        return this.expansionDirection;
+    }
+
+    public final int getItemSpacing() {
+        return this.itemSpacing;
+    }
+
+    public final boolean isExpanded() {
+        return this.expanded;
+    }
+
+    public final int getHighlightedItemIndex() {
+        return this.highlightedItemIndex;
+    }
+
+    public final void setExpanded(boolean expanded) {
+        boolean resolvedExpanded = expanded && !this.menuItems.isEmpty();
+        if (this.expanded == resolvedExpanded) {
+            return;
+        }
+        this.expanded = resolvedExpanded;
+        this.setHighlightedItemIndex(this.expanded ? this.findSelectableItem(0, 1) : -1);
+        this.onExpandedChanged(this.expanded);
+    }
+
+    public final void toggleMenu() {
+        this.setExpanded(!this.expanded);
+    }
+
+    public final boolean closeMenuIfOpen() {
+        if (!this.expanded) {
+            return false;
+        }
+        this.setExpanded(false);
+        return true;
+    }
+
+    public final boolean closeMenuIfOutside(double mouseX, double mouseY) {
+        if (!this.expanded || this.isMouseOver(mouseX, mouseY)) {
+            return false;
+        }
+        this.setExpanded(false);
+        return true;
+    }
+
+    @Override
+    public void setX(int x) {
+        super.setX(x);
+        this.layoutMenuItems();
+    }
+
+    @Override
+    public void setY(int y) {
+        super.setY(y);
+        this.layoutMenuItems();
+    }
+
+    @Override
+    public void setXOffset(int xOffset) {
+        super.setXOffset(xOffset);
+        this.layoutMenuItems();
+    }
+
+    @Override
+    public void setYOffset(int yOffset) {
+        super.setYOffset(yOffset);
+        this.layoutMenuItems();
+    }
+
+    @Override
+    public void setWidth(int width) {
+        this.width = width;
+        this.layoutMenuItems();
+    }
+
+    @Override
+    public void setHeight(int height) {
+        this.height = height;
+        this.layoutMenuItems();
+    }
+
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        if (!this.isActive()) {
+            return false;
+        }
+        if (contains(this, mouseX, mouseY)) {
+            return true;
+        }
+        if (!this.expanded) {
+            return false;
+        }
+        for (AbstractMenuItem menuItem : this.menuItems) {
+            if (menuItem.visible && contains(menuItem, mouseX, mouseY)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (!this.isActive() || button != GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+            return false;
+        }
+        if (contains(this, mouseX, mouseY)) {
+            this.playClickSound();
+            this.toggleMenu();
+            return true;
+        }
+        if (!this.expanded) {
+            return false;
+        }
+        for (AbstractMenuItem menuItem : this.menuItems) {
+            if (!menuItem.visible || !contains(menuItem, mouseX, mouseY)) {
+                continue;
+            }
+            if (menuItem.isActive()) {
+                this.activateMenuItem(menuItem, mouseX, mouseY);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (!this.isActive()) {
+            return false;
+        }
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            return this.closeMenuIfOpen();
+        }
+        int navigationStep = this.navigationStep(keyCode);
+        if (this.expanded && navigationStep != 0) {
+            return this.moveHighlight(navigationStep);
+        }
+        if (keyCode == GLFW.GLFW_KEY_ENTER
+                || keyCode == GLFW.GLFW_KEY_KP_ENTER
+                || keyCode == GLFW.GLFW_KEY_SPACE) {
+            if (!this.expanded) {
+                this.playClickSound();
+                this.setExpanded(true);
+                return true;
+            }
+            if (this.highlightedItemIndex < 0) {
+                return false;
+            }
+            AbstractMenuItem highlightedItem = this.menuItems.get(this.highlightedItemIndex);
+            return this.activateMenuItem(
+                    highlightedItem,
+                    highlightedItem.getX() + highlightedItem.getWidth() / 2.0,
+                    highlightedItem.getY() + highlightedItem.getHeight() / 2.0
+            );
+        }
+        return false;
+    }
+
+    @Override
+    public final void
+    //$ render_widget_method_swap
+    extractWidgetRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        this.renderDropdownControl(context, mouseX, mouseY, deltaTicks);
+        if (!this.expanded) {
+            return;
+        }
+        nextLayer(context);
+        try {
+            for (AbstractMenuItem menuItem : this.menuItems) {
+                menuItem.
+                //$ render_method_swap
+                extractRenderState
+                        (context, mouseX, mouseY, deltaTicks);
+            }
+        } finally {
+            previousLayer(context);
+        }
+    }
+
+    protected abstract void renderDropdownControl(
+            GuiGraphicsExtractor context,
+            int mouseX,
+            int mouseY,
+            float deltaTicks
+    );
+
+    protected void onExpandedChanged(boolean expanded) {
+    }
+
+    @Override
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
+        this.defaultButtonNarrationText(builder);
+    }
+
+    private void layoutMenuItems() {
+        if (this.expansionOrientation == LayoutFlow.Orientation.HORIZONTAL) {
+            this.layoutHorizontalMenuItems();
+        } else {
+            this.layoutVerticalMenuItems();
+        }
+    }
+
+    private boolean activateMenuItem(AbstractMenuItem menuItem, double mouseX, double mouseY) {
+        if (!menuItem.isActive()) {
+            return false;
+        }
+        this.playClickSound();
+        menuItem.onClick(mouseX, mouseY);
+        this.setExpanded(false);
+        return true;
+    }
+
+    private void playClickSound() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft != null) {
+            this.playDownSound(minecraft.getSoundManager());
+        }
+    }
+
+    private int navigationStep(int keyCode) {
+        int positiveKey;
+        int negativeKey;
+        if (this.expansionOrientation == LayoutFlow.Orientation.HORIZONTAL) {
+            positiveKey = GLFW.GLFW_KEY_RIGHT;
+            negativeKey = GLFW.GLFW_KEY_LEFT;
+        } else {
+            positiveKey = GLFW.GLFW_KEY_DOWN;
+            negativeKey = GLFW.GLFW_KEY_UP;
+        }
+        int directionMultiplier = this.expansionDirection == LayoutFlow.Direction.FORWARD ? 1 : -1;
+        if (keyCode == positiveKey) {
+            return directionMultiplier;
+        }
+        if (keyCode == negativeKey) {
+            return -directionMultiplier;
+        }
+        return 0;
+    }
+
+    private boolean moveHighlight(int step) {
+        if (this.menuItems.isEmpty()) {
+            return false;
+        }
+        int startIndex = this.highlightedItemIndex < 0
+                ? (step > 0 ? 0 : this.menuItems.size() - 1)
+                : Math.floorMod(this.highlightedItemIndex + step, this.menuItems.size());
+        int nextIndex = this.findSelectableItem(startIndex, step);
+        if (nextIndex < 0) {
+            return false;
+        }
+        this.setHighlightedItemIndex(nextIndex);
+        return true;
+    }
+
+    private int findSelectableItem(int startIndex, int step) {
+        if (this.menuItems.isEmpty()) {
+            return -1;
+        }
+        for (int offset = 0; offset < this.menuItems.size(); offset++) {
+            int index = Math.floorMod(startIndex + offset * step, this.menuItems.size());
+            AbstractMenuItem menuItem = this.menuItems.get(index);
+            if (menuItem.visible && menuItem.active) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    private void setHighlightedItemIndex(int highlightedItemIndex) {
+        if (this.highlightedItemIndex >= 0 && this.highlightedItemIndex < this.menuItems.size()) {
+            this.menuItems.get(this.highlightedItemIndex).setFocused(false);
+        }
+        this.highlightedItemIndex = highlightedItemIndex;
+        if (this.highlightedItemIndex >= 0) {
+            this.menuItems.get(this.highlightedItemIndex).setFocused(true);
+        }
+    }
+
+    private void layoutHorizontalMenuItems() {
+        int cursor = this.expansionDirection == LayoutFlow.Direction.FORWARD
+                ? this.getX() + this.getWidth()
+                : this.getX();
+        for (AbstractMenuItem menuItem : this.menuItems) {
+            int itemX;
+            if (this.expansionDirection == LayoutFlow.Direction.FORWARD) {
+                cursor += this.itemSpacing;
+                itemX = cursor;
+                cursor += menuItem.getWidth();
+            } else {
+                cursor -= this.itemSpacing + menuItem.getWidth();
+                itemX = cursor;
+            }
+            int itemY = this.getY() + (this.getHeight() - menuItem.getHeight()) / 2;
+            menuItem.setPosition(itemX, itemY);
+        }
+    }
+
+    private void layoutVerticalMenuItems() {
+        int cursor = this.expansionDirection == LayoutFlow.Direction.FORWARD
+                ? this.getY() + this.getHeight()
+                : this.getY();
+        for (AbstractMenuItem menuItem : this.menuItems) {
+            int itemY;
+            if (this.expansionDirection == LayoutFlow.Direction.FORWARD) {
+                cursor += this.itemSpacing;
+                itemY = cursor;
+                cursor += menuItem.getHeight();
+            } else {
+                cursor -= this.itemSpacing + menuItem.getHeight();
+                itemY = cursor;
+            }
+            int itemX = this.getX() + (this.getWidth() - menuItem.getWidth()) / 2;
+            menuItem.setPosition(itemX, itemY);
+        }
+    }
+
+    private static boolean contains(
+            ShiftableClickableWidget widget,
+            double mouseX,
+            double mouseY
+    ) {
+        return mouseX >= widget.getX()
+                && mouseY >= widget.getY()
+                && mouseX < widget.getX() + widget.getWidth()
+                && mouseY < widget.getY() + widget.getHeight();
+    }
+
+    /**
+     * Base menu item whose renderer may draw text, an icon, or any other content.
+     */
+    public abstract static class AbstractMenuItem extends ShiftableClickableWidget {
+        protected AbstractMenuItem(int width, int height, Component message) {
+            super(0, 0, width, height, message);
+            this.setPosition(0, 0);
+        }
+
+        @Override
+        public final void onClick(double mouseX, double mouseY) {
+            this.onSelected();
+        }
+
+        protected abstract void onSelected();
+
+        @Override
+        public final void
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+                (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+            this.renderMenuItem(context, mouseX, mouseY, deltaTicks);
+        }
+
+        protected abstract void renderMenuItem(
+                GuiGraphicsExtractor context,
+                int mouseX,
+                int mouseY,
+                float deltaTicks
+        );
+
+        @Override
+        protected void updateWidgetNarration(NarrationElementOutput builder) {
+            this.defaultButtonNarrationText(builder);
+        }
+    }
+}
