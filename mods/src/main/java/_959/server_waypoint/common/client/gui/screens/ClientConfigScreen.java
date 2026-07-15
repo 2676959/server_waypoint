@@ -5,14 +5,19 @@ import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
+import _959.server_waypoint.common.client.gui.layout.Padding;
+import _959.server_waypoint.common.client.gui.layout.WidgetPack;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.client.integrations.MapModIntegrations;
 import java.util.List;
+import java.util.function.Consumer;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -56,53 +61,57 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         this.titleText = new ScalableText(
                 0, 0, this.title, 1.2F, WidgetThemeVariable.TEXT_PRIMARY, font);
         this.titleText.setXOffset(5);
-        WidgetStack row1 = createConfigRow();
-        WidgetStack row2 = createConfigRow();
-        WidgetStack row3 = createConfigRow();
-        WidgetStack row4 = createConfigRow();
-        WidgetStack row5 = createConfigRow();
-        WidgetStack row6 = createConfigRow();
-        WidgetStack row7 = createConfigRow();
-        WidgetStack row8 = createConfigRow();
-        row1.addChild(new ScalableText(0, 0,
+        ConfigRow row1 = this.createConfigRow(
                 Component.translatable("server_waypoint.config.enable_waypoint_render"),
-                WidgetThemeVariable.TEXT_PRIMARY, font));
-        row1.addChild(renderToggle);
+                WidgetThemeVariable.TEXT_PRIMARY,
+                this.renderToggle
+        );
 
-        row2.addChild(new ScalableText(0, 0,
+        ConfigRow row2 = this.createConfigRow(
                 Component.translatable("server_waypoint.config.waypoint_scale_factor"),
-                WidgetThemeVariable.TEXT_PRIMARY, font));
-        row2.addChild(scaleSlider);
+                WidgetThemeVariable.TEXT_PRIMARY,
+                this.scaleSlider
+        );
 
-        row3.addChild(new ScalableText(0, 0,
+        ConfigRow row3 = this.createConfigRow(
                 Component.translatable("server_waypoint.config.waypoint_vertical_offset"),
-                WidgetThemeVariable.TEXT_PRIMARY, font));
-        row3.addChild(vertOffsetSlider);
+                WidgetThemeVariable.TEXT_PRIMARY,
+                this.vertOffsetSlider
+        );
 
-        row4.addChild(new ScalableText(0, 0,
+        ConfigRow row4 = this.createConfigRow(
                 Component.translatable("server_waypoint.config.waypoint_bg_alpha"),
-                WidgetThemeVariable.TEXT_PRIMARY, font));
-        row4.addChild(alphaSlider);
+                WidgetThemeVariable.TEXT_PRIMARY,
+                this.alphaSlider
+        );
 
-        row5.addChild(new ScalableText(0, 0,
+        ConfigRow row5 = this.createConfigRow(
                 Component.translatable("server_waypoint.config.local_waypoint_view_distance"),
-                WidgetThemeVariable.TEXT_PRIMARY, font));
-        row5.addChild(renderDistanceSlider);
+                WidgetThemeVariable.TEXT_PRIMARY,
+                this.renderDistanceSlider
+        );
 
         WidgetThemeVariable xaerosSyncFontColor = isXaerosMinimapLoaded
                 ? WidgetThemeVariable.TEXT_PRIMARY
                 : WidgetThemeVariable.TEXT_DISABLED;
-        row6.addChild(new ScalableText(0, 0, Component.translatable("server_waypoint.config.auto_sync_to_xaeros"), xaerosSyncFontColor, font));
-        row6.addChild(xaerosAutoSyncToggle);
+        ConfigRow row6 = this.createConfigRow(
+                Component.translatable("server_waypoint.config.auto_sync_to_xaeros"),
+                xaerosSyncFontColor,
+                this.xaerosAutoSyncToggle
+        );
 
         MutableComponent xaerosSyncDialogTitle = Component.translatable("server_waypoint.config.sync_to_xaeros");
-        row7.addChild(new ScalableText(0, 0, xaerosSyncDialogTitle, xaerosSyncFontColor, font));
-        row7.addChild(syncToXaerosButton);
+        ConfigRow row7 = this.createConfigRow(
+                xaerosSyncDialogTitle,
+                xaerosSyncFontColor,
+                this.syncToXaerosButton
+        );
 
-        row8.addChild(new ScalableText(0, 0,
+        ConfigRow row8 = this.createConfigRow(
                 Component.translatable("server_waypoint.config.theme"),
-                WidgetThemeVariable.TEXT_PRIMARY, font));
-        row8.addChild(this.themeButton);
+                WidgetThemeVariable.TEXT_PRIMARY,
+                this.themeButton
+        );
 
         if (!isXaerosMinimapLoaded) {
             this.xaerosAutoSyncToggle.active = false;
@@ -112,7 +121,9 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         renderToggle.setState(WaypointClientMod.getClientConfig().isEnableWaypointRender());
         xaerosAutoSyncToggle.setState(WaypointClientMod.getClientConfig().isAutoSyncToXaerosMinimap());
 
-        List<WidgetStack> configRows = List.of(row1, row2, row3, row4, row5, row6, row7, row8);
+        List<ConfigRow> configRows = List.of(row1, row2, row3, row4, row5, row6, row7, row8);
+        int configRowWidth = configRows.stream().mapToInt(ConfigRow::getMinimumWidth).max().orElse(0);
+        configRows.forEach(row -> row.setWidth(configRowWidth));
         this.configTree = new ConfigTreeView(configRows);
         this.configTree.updateRoots(configRows);
         renderDistanceSlider.setYOffset(-2);
@@ -138,8 +149,12 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         this.xaerosSyncConfirmationDialog.visible = false;
     }
 
-    private static WidgetStack createConfigRow() {
-        return new WidgetStack(0, 0, 8, Orientation.HORIZONTAL, Direction.FORWARD, true);
+    private ConfigRow createConfigRow(
+            Component label,
+            WidgetThemeVariable labelColor,
+            AbstractWidget control
+    ) {
+        return new ConfigRow(new ScalableText(0, 0, label, labelColor, this.font), control);
     }
 
     private void runXaerosSync() {
@@ -286,10 +301,10 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         MinecraftClientHelper.setScreen(this.minecraft, parentScreen);
     }
 
-    private static final class ConfigTreeView extends TreeViewWidget<WidgetStack> {
+    private static final class ConfigTreeView extends TreeViewWidget<ConfigRow> {
         private static final int ROW_GAP = 10;
 
-        private ConfigTreeView(List<WidgetStack> rows) {
+        private ConfigTreeView(List<ConfigRow> rows) {
             super(
                     0,
                     0,
@@ -308,26 +323,26 @@ public class ClientConfigScreen extends MovementAllowedScreen {
             this.setWidth(this.getWidth() + this.SCROLLBAR_WIDTH);
         }
 
-        private static int getContentWidth(List<WidgetStack> rows) {
-            return rows.stream().mapToInt(WidgetStack::getWidth).max().orElse(0);
+        private static int getContentWidth(List<ConfigRow> rows) {
+            return rows.stream().mapToInt(ConfigRow::getWidth).max().orElse(0);
         }
 
-        private static int getRowHeight(List<WidgetStack> rows) {
-            return rows.stream().mapToInt(WidgetStack::getHeight).max().orElse(0) + ROW_GAP;
+        private static int getRowHeight(List<ConfigRow> rows) {
+            return rows.stream().mapToInt(ConfigRow::getHeight).max().orElse(0) + ROW_GAP;
         }
 
         @Override
-        protected @NotNull List<WidgetStack> getChildren(WidgetStack value) {
+        protected @NotNull List<ConfigRow> getChildren(ConfigRow value) {
             return List.of();
         }
 
         @Override
-        protected boolean isExpanded(WidgetStack value) {
+        protected boolean isExpanded(ConfigRow value) {
             return false;
         }
 
         @Override
-        protected void setExpanded(WidgetStack value, boolean expanded) {
+        protected void setExpanded(ConfigRow value, boolean expanded) {
         }
 
         @Override
@@ -342,7 +357,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         @Override
         protected void renderEntry(
                 GuiGraphicsExtractor context,
-                TreeEntry<WidgetStack> entry,
+                TreeEntry<ConfigRow> entry,
                 boolean hovered,
                 int rowY,
                 int contentWidth,
@@ -350,7 +365,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
                 int mouseY,
                 float deltaTicks
         ) {
-            WidgetStack row = entry.value();
+            ConfigRow row = entry.value();
             this.positionRow(entry);
             row.visitWidgets(widget -> widget.visible = true);
             push(context);
@@ -374,9 +389,9 @@ public class ClientConfigScreen extends MovementAllowedScreen {
             }
         }
 
-        private void positionRow(TreeEntry<WidgetStack> entry) {
+        private void positionRow(TreeEntry<ConfigRow> entry) {
             int rowY = this.getY() + entry.row() * this.getRowHeight() - (int)this.getScrollY();
-            WidgetStack row = entry.value();
+            ConfigRow row = entry.value();
             row.setPosition(this.getX(), rowY);
             boolean fullyVisible = rowY >= this.getY()
                     && rowY + this.getRowHeight() <= this.getY() + this.getHeight();
@@ -385,6 +400,96 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
         @Override
         protected void updateWidgetNarration(NarrationElementOutput output) {
+        }
+    }
+
+    private static final class ConfigRow implements LayoutElement, Renderable {
+        private static final int CONTROL_GAP = 8;
+
+        private final WidgetPack layout;
+        private final ScalableText label;
+        private final AbstractWidget control;
+        private final int minimumWidth;
+
+        private ConfigRow(ScalableText label, AbstractWidget control) {
+            this.label = label;
+            this.control = control;
+            this.minimumWidth = getVisualWidth(label) + CONTROL_GAP + getVisualWidth(control);
+            int height = Math.max(getVisualHeight(label), getVisualHeight(control));
+            this.layout = new WidgetPack(0, 0, this.minimumWidth, height, Orientation.HORIZONTAL);
+            this.layout.addChild(label, Direction.FORWARD);
+            this.layout.addChild(control, Direction.REVERSE);
+        }
+
+        private int getMinimumWidth() {
+            return this.minimumWidth;
+        }
+
+        private void setWidth(int width) {
+            this.layout.setWidth(Math.max(this.minimumWidth, width));
+        }
+
+        @Override
+        public void setX(int x) {
+            this.layout.setX(x);
+        }
+
+        @Override
+        public void setY(int y) {
+            this.layout.setY(y);
+        }
+
+        @Override
+        public int getX() {
+            return this.layout.getX();
+        }
+
+        @Override
+        public int getY() {
+            return this.layout.getY();
+        }
+
+        @Override
+        public int getWidth() {
+            return this.layout.getWidth();
+        }
+
+        @Override
+        public int getHeight() {
+            return this.layout.getHeight();
+        }
+
+        @Override
+        public void setPosition(int x, int y) {
+            this.layout.setPosition(x, y);
+        }
+
+        @Override
+        public void visitWidgets(Consumer<AbstractWidget> consumer) {
+            this.layout.visitWidgets(consumer);
+        }
+
+        @Override
+        public void
+        //$ render_method_swap
+        extractRenderState
+                (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+            this.label.
+            //$ render_method_swap
+            extractRenderState
+                    (context, mouseX, mouseY, deltaTicks);
+            this.control.
+            //$ render_method_swap
+            extractRenderState
+                    (context, mouseX, mouseY, deltaTicks);
+        }
+
+        private static int getVisualWidth(LayoutElement element) {
+            return element instanceof Padding padding ? padding.getVisualWidth() : element.getWidth();
+        }
+
+        private static int getVisualHeight(LayoutElement element) {
+            return element instanceof Padding padding ? padding.getVisualHeight() : element.getHeight();
         }
     }
 }
