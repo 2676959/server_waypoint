@@ -17,6 +17,7 @@ import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.Screen;
 import org.lwjgl.glfw.GLFW;
 
@@ -175,7 +176,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 LayoutFlow.Orientation.VERTICAL
         );
         this.middleLayout.addChild(searchField, LayoutFlow.Direction.FORWARD);
-        this.middleLayout.addChild(new WidgetPack(0, SEARCH_GAP), LayoutFlow.Direction.FORWARD);
+        this.middleLayout.addChild(SpacerElement.height(SEARCH_GAP), LayoutFlow.Direction.FORWARD);
         this.middleLayout.addChild(waypointListWidget, LayoutFlow.Direction.FORWARD);
 
         WidgetPack controlColumn = new WidgetPack(
@@ -184,9 +185,9 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 LayoutFlow.Orientation.VERTICAL
         );
         controlColumn.addChild(groupModeDropdown, LayoutFlow.Direction.FORWARD);
-        controlColumn.addChild(new WidgetPack(0, CONTROL_GAP), LayoutFlow.Direction.FORWARD);
+        controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
         controlColumn.addChild(sortingModeDropdown, LayoutFlow.Direction.FORWARD);
-        controlColumn.addChild(new WidgetPack(0, CONTROL_GAP), LayoutFlow.Direction.FORWARD);
+        controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
         controlColumn.addChild(addWaypointButton, LayoutFlow.Direction.FORWARD);
         this.controlAnchor = new WidgetPack(
                 LEFT_PART_WIDTH,
