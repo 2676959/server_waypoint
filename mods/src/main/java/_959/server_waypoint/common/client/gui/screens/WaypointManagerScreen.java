@@ -1,4 +1,5 @@
 //~ gui_graphics_26
+//~ resource_location_import
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
@@ -27,6 +28,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.input.MouseButtonEvent;
 //?}
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.ClientNetworkState.INCOMPATIBLE_PROTOCOL;
 import static _959.server_waypoint.common.client.WaypointClientMod.ClientNetworkState.NO_SERVERSIDE_SUPPORT;
@@ -56,6 +58,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private static final int DIMENSION_HORIZONTAL_PADDING = 0;
     private static final int LEFT_PART_WIDTH = DIMENSION_ICON_SIZE + DIMENSION_HORIZONTAL_PADDING * 2;
     private static final int CONTROL_BUTTON_SIZE = 16;
+    private static final int CONTROL_ICON_PADDING = 2;
     private static final int CONTROL_COLUMN_X_OFFSET =
             (LEFT_PART_WIDTH - CONTROL_BUTTON_SIZE) / 2;
     private static final int CONTROL_COLUMN_HEIGHT = CONTROL_BUTTON_SIZE * 3 + CONTROL_GAP * 2;
@@ -125,30 +128,42 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         groupModeDropdown = new IconDropdownMenu(
                 Component.translatable("waypoint.group.lists")
         );
-        groupModeDropdown.addIconItem(Component.translatable("waypoint.group.flat"), () -> {
-            waypointListWidget.setGroupByLists(false);
-            syncControlDropdowns();
-        });
-        groupModeDropdown.addIconItem(Component.translatable("waypoint.group.lists"), () -> {
-            waypointListWidget.setGroupByLists(true);
-            syncControlDropdowns();
-        });
+        groupModeDropdown.addIconItem(
+                Component.translatable("waypoint.group.flat"),
+                WaypointTextures.FLAT_LIST_MODE_ICON,
+                () -> setGroupMode(false)
+        );
+        groupModeDropdown.addIconItem(
+                Component.translatable("waypoint.group.lists"),
+                WaypointTextures.GROUPED_LIST_MODE_ICON,
+                () -> setGroupMode(true)
+        );
         sortingModeDropdown = new IconDropdownMenu(
                 Component.translatable("waypoint.sort.default")
         );
-        sortingModeDropdown.addIconItem(Component.translatable("waypoint.sort.default"), () -> {
-            waypointListWidget.setSortMode(WaypointSorting.SortMode.DEFAULT);
-            syncControlDropdowns();
-        });
-        sortingModeDropdown.addIconItem(Component.translatable("waypoint.sort.name"), () -> {
-            toggleSortMode(WaypointSorting.SortMode.NAME);
-        });
-        sortingModeDropdown.addIconItem(Component.translatable("waypoint.sort.distance"), () -> {
-            toggleSortMode(WaypointSorting.SortMode.DISTANCE);
-        });
-        sortingModeDropdown.addIconItem(Component.translatable("waypoint.sort.color"), () -> {
-            toggleSortMode(WaypointSorting.SortMode.COLOR);
-        });
+        sortingModeDropdown.addIconItem(
+                Component.translatable("waypoint.sort.default"),
+                WaypointTextures.SORT_DEFAULT_ICON,
+                () -> {
+                    waypointListWidget.setSortMode(WaypointSorting.SortMode.DEFAULT);
+                    syncControlDropdowns();
+                }
+        );
+        sortingModeDropdown.addIconItem(
+                Component.translatable("waypoint.sort.name"),
+                WaypointTextures.SORT_NAME_ICON,
+                () -> toggleSortMode(WaypointSorting.SortMode.NAME)
+        );
+        sortingModeDropdown.addIconItem(
+                Component.translatable("waypoint.sort.distance"),
+                WaypointTextures.SORT_DISTANCE_ICON,
+                () -> toggleSortMode(WaypointSorting.SortMode.DISTANCE)
+        );
+        sortingModeDropdown.addIconItem(
+                Component.translatable("waypoint.sort.color"),
+                WaypointTextures.SORT_COLOR_ICON,
+                () -> toggleSortMode(WaypointSorting.SortMode.COLOR)
+        );
         groupModeDropdown.setMenuOpenedCallback(sortingModeDropdown::closeMenuIfOpen);
         sortingModeDropdown.setMenuOpenedCallback(groupModeDropdown::closeMenuIfOpen);
         syncControlDropdowns();
@@ -250,10 +265,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         closeOpenDropdownMenus();
         this.layoutGeometry = calculateLayoutGeometry(this.width, this.height);
         groupModeDropdown.setPopupXOffset(this.layoutGeometry.dropdownXOffset(
-                groupModeDropdown.getMenuItems().size()
+                groupModeDropdown.getPopupItemCount()
         ));
         sortingModeDropdown.setPopupXOffset(this.layoutGeometry.dropdownXOffset(
-                sortingModeDropdown.getMenuItems().size()
+                sortingModeDropdown.getPopupItemCount()
         ));
 
         int waypointListHeight = this.layoutGeometry.waypointListHeight(searchField.getVisualHeight());
@@ -473,7 +488,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         boolean reversed = waypointListWidget.isSortReversed();
         boolean groupByLists = waypointListWidget.isGroupByLists();
         groupModeDropdown.setSelectedIndex(groupByLists ? 1 : 0);
-        groupModeDropdown.setItemActive(0, activeMode != WaypointSorting.SortMode.DEFAULT);
         groupModeDropdown.setMessage(Component.translatable(
                 groupByLists ? "waypoint.group.lists" : "waypoint.group.flat"
         ));
@@ -493,6 +507,28 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         sortingModeDropdown.setSelectedIndex(sortIndex);
         sortingModeDropdown.setMessage(Component.translatable(sortTranslationKey)
                 .append(WaypointSortButtonLabel.directionSuffix(activeMode, activeMode, reversed)));
+    }
+
+    private static void setGroupMode(boolean groupByLists) {
+        WaypointSorting.SortMode currentSortMode = waypointListWidget.getSortMode();
+        WaypointSorting.SortMode resolvedSortMode = resolveSortModeForGroupMode(
+                currentSortMode,
+                groupByLists
+        );
+        if (resolvedSortMode != currentSortMode) {
+            waypointListWidget.setSortMode(resolvedSortMode);
+        }
+        waypointListWidget.setGroupByLists(groupByLists);
+        syncControlDropdowns();
+    }
+
+    static WaypointSorting.SortMode resolveSortModeForGroupMode(
+            WaypointSorting.SortMode currentSortMode,
+            boolean groupByLists
+    ) {
+        return !groupByLists && currentSortMode == WaypointSorting.SortMode.DEFAULT
+                ? WaypointSorting.SortMode.NAME
+                : currentSortMode;
     }
 
     private static void toggleSortMode(WaypointSorting.SortMode sortMode) {
@@ -640,7 +676,11 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private static void renderIconControl(
             GuiGraphicsExtractor context,
             ShiftableClickableWidget widget,
-            boolean selected
+            //$ resource_location_type_swap
+            Identifier
+            icon,
+            boolean selected,
+            boolean focusVisible
     ) {
         int backgroundColor;
         if (!widget.active) {
@@ -652,27 +692,43 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                     ? WidgetThemeVariable.CONTROL_HOVER_BACKGROUND
                     : WidgetThemeVariable.CONTROL_BACKGROUND);
         }
-        int borderColor = WidgetThemeManager.getColor(
-                widget.active && (widget.isFocused() || widget.isHovered())
-                        ? WidgetThemeVariable.FOCUS_RING
-                        : WidgetThemeVariable.BORDER
-        );
+        int borderColor = WidgetThemeManager.getColor(resolveIconControlBorder(
+                widget.active,
+                widget.isFocused(),
+                widget.isHovered(),
+                focusVisible
+        ));
         int x = widget.getX();
         int y = widget.getY();
         context.fill(x, y, x + widget.getWidth(), y + widget.getHeight(), backgroundColor);
         renderOutline(context, x, y, widget.getWidth(), widget.getHeight(), borderColor);
-        texture(
-                context,
-                WaypointTextures.PLACEHOLDER_ICON,
-                x,
-                y,
-                0,
-                0,
-                widget.getWidth(),
-                widget.getHeight(),
-                widget.getWidth(),
-                widget.getHeight()
-        );
+        int iconWidth = Math.max(0, widget.getWidth() - CONTROL_ICON_PADDING * 2);
+        int iconHeight = Math.max(0, widget.getHeight() - CONTROL_ICON_PADDING * 2);
+        if (iconWidth > 0 && iconHeight > 0) {
+            texture(
+                    context,
+                    icon,
+                    x + CONTROL_ICON_PADDING,
+                    y + CONTROL_ICON_PADDING,
+                    0,
+                    0,
+                    iconWidth,
+                    iconHeight,
+                    iconWidth,
+                    iconHeight
+            );
+        }
+    }
+
+    static WidgetThemeVariable resolveIconControlBorder(
+            boolean active,
+            boolean focused,
+            boolean hovered,
+            boolean focusVisible
+    ) {
+        return active && (hovered || (focused && focusVisible))
+                ? WidgetThemeVariable.FOCUS_RING
+                : WidgetThemeVariable.BORDER;
     }
 
     private static final class IconDropdownMenu extends AbstractDropdownMenuWidget {
@@ -697,8 +753,14 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             );
         }
 
-        private void addIconItem(Component message, Runnable callback) {
-            IconMenuItem menuItem = this.addMenuItem(new IconMenuItem(message, callback));
+        private void addIconItem(
+                Component message,
+                //$ resource_location_type_swap
+                Identifier
+                icon,
+                Runnable callback
+        ) {
+            IconMenuItem menuItem = this.addMenuItem(new IconMenuItem(message, icon, callback));
             this.iconItems.add(menuItem);
         }
 
@@ -706,12 +768,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             this.selectedIndex = selectedIndex;
             for (int i = 0; i < this.iconItems.size(); i++) {
                 this.iconItems.get(i).selected = i == selectedIndex;
-            }
-        }
-
-        private void setItemActive(int itemIndex, boolean active) {
-            if (itemIndex >= 0 && itemIndex < this.iconItems.size()) {
-                this.iconItems.get(itemIndex).active = active;
             }
         }
 
@@ -730,11 +786,20 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 int mouseY,
                 float deltaTicks
         ) {
-            renderIconControl(context, this, false);
+            renderIconControl(context, this, this.getSelectedIcon(), false, this.isExpanded());
+        }
+
+        private
+        //$ resource_location_type_swap
+        Identifier
+        getSelectedIcon() {
+            return this.selectedIndex >= 0 && this.selectedIndex < this.iconItems.size()
+                    ? this.iconItems.get(this.selectedIndex).icon
+                    : WaypointTextures.PLACEHOLDER_ICON;
         }
 
         @Override
-        protected int getInitialHighlightedItemIndex() {
+        protected int getSelectedMenuItemIndex() {
             return this.selectedIndex;
         }
 
@@ -772,11 +837,22 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     private static final class IconMenuItem extends AbstractDropdownMenuWidget.AbstractMenuItem {
+        private final
+        //$ resource_location_type_swap
+        Identifier
+        icon;
         private final Runnable callback;
         private boolean selected;
 
-        private IconMenuItem(Component message, Runnable callback) {
+        private IconMenuItem(
+                Component message,
+                //$ resource_location_type_swap
+                Identifier
+                icon,
+                Runnable callback
+        ) {
             super(CONTROL_BUTTON_SIZE, CONTROL_BUTTON_SIZE, message);
+            this.icon = icon;
             this.callback = callback;
         }
 
@@ -792,7 +868,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 int mouseY,
                 float deltaTicks
         ) {
-            renderIconControl(context, this, this.selected);
+            renderIconControl(context, this, this.icon, this.selected, true);
         }
     }
 

@@ -38,6 +38,32 @@ class AbstractDropdownMenuWidgetTest {
     }
 
     @ParameterizedTest
+    @MethodSource("expansionCases")
+    void selectedMiddleItemIsOmittedWithoutLeavingALayoutGap(
+            LayoutFlow.Orientation orientation,
+            LayoutFlow.Direction direction,
+            int firstX,
+            int firstY,
+            int secondX,
+            int secondY
+    ) {
+        TestDropdown dropdown = new TestDropdown(100, 100, 20, 20, orientation, direction, 3);
+        TestMenuItem first = dropdown.addItem(10, 8, () -> {
+        });
+        dropdown.addItem(30, 30, () -> {
+        });
+        TestMenuItem remaining = dropdown.addItem(12, 6, () -> {
+        });
+        dropdown.selectedMenuItemIndex = 1;
+
+        dropdown.setExpanded(true);
+
+        assertEquals(2, dropdown.getPopupItemCount());
+        assertPosition(first, firstX, firstY);
+        assertPosition(remaining, secondX, secondY);
+    }
+
+    @ParameterizedTest
     @MethodSource("flowDirections")
     void expandedItemBoundsParticipateInHitTesting(
             LayoutFlow.Orientation orientation,
@@ -78,10 +104,41 @@ class AbstractDropdownMenuWidgetTest {
 
         assertTrue(dropdown.mouseClicked(18, 28, 0));
         assertTrue(dropdown.isExpanded());
+        assertEquals(-1, dropdown.getHighlightedItemIndex());
+        assertFalse(item.isFocused());
 
         assertTrue(dropdown.mouseClicked(centerX(item), centerY(item), 0));
         assertEquals(1, selections.get());
         assertFalse(dropdown.isExpanded());
+    }
+
+    @Test
+    void mouseOpeningDoesNotPreHighlightAnyRemainingItem() {
+        AtomicInteger selections = new AtomicInteger();
+        TestDropdown dropdown = new TestDropdown(
+                10,
+                20,
+                16,
+                16,
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.FORWARD,
+                2
+        );
+        TestMenuItem first = dropdown.addItem(16, 16, selections::incrementAndGet);
+        TestMenuItem selected = dropdown.addItem(16, 16, selections::incrementAndGet);
+        TestMenuItem last = dropdown.addItem(16, 16, selections::incrementAndGet);
+        dropdown.selectedMenuItemIndex = 1;
+
+        assertTrue(dropdown.mouseClicked(18, 28, 0));
+
+        assertTrue(dropdown.isExpanded());
+        assertEquals(-1, dropdown.getHighlightedItemIndex());
+        assertFalse(first.isFocused());
+        assertFalse(selected.isFocused());
+        assertFalse(last.isFocused());
+        assertFalse(dropdown.keyPressed(GLFW.GLFW_KEY_ENTER, 0, 0));
+        assertEquals(0, selections.get());
+        assertTrue(dropdown.isExpanded());
     }
 
     @Test
@@ -149,6 +206,28 @@ class AbstractDropdownMenuWidgetTest {
     }
 
     @Test
+    void dropdownWithOnlyTheSelectedItemCannotOpen() {
+        TestDropdown dropdown = new TestDropdown(
+                0,
+                0,
+                16,
+                16,
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.FORWARD,
+                0
+        );
+        dropdown.addItem(16, 16, () -> {
+        });
+        dropdown.selectedMenuItemIndex = 0;
+
+        dropdown.setExpanded(true);
+
+        assertEquals(0, dropdown.getPopupItemCount());
+        assertFalse(dropdown.isExpanded());
+        assertEquals(0, dropdown.expandedChangeCount);
+    }
+
+    @Test
     void closeMenuIfOutsideKeepsInsideClicksAndClosesForOutsideClicks() {
         TestDropdown dropdown = new TestDropdown(
                 10,
@@ -186,10 +265,12 @@ class AbstractDropdownMenuWidgetTest {
 
         assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_ENTER, 0, 0));
         assertTrue(dropdown.isExpanded());
+        assertEquals(0, dropdown.getHighlightedItemIndex());
         assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_ESCAPE, 0, 0));
         assertFalse(dropdown.isExpanded());
         assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_SPACE, 0, 0));
         assertTrue(dropdown.isExpanded());
+        assertEquals(0, dropdown.getHighlightedItemIndex());
         assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_KP_ENTER, 0, 0));
         assertFalse(dropdown.isExpanded());
         assertEquals(4, dropdown.expandedChangeCount);
@@ -205,7 +286,7 @@ class AbstractDropdownMenuWidgetTest {
         TestDropdown dropdown = new TestDropdown(10, 20, 16, 16, orientation, direction, 2);
         dropdown.addItem(16, 16, () -> selectedItem.set(0));
         dropdown.addItem(16, 16, () -> selectedItem.set(1));
-        dropdown.setExpanded(true);
+        assertTrue(dropdown.mouseClicked(18, 28, 0));
 
         int forwardKey = switch (orientation) {
             case HORIZONTAL -> direction == LayoutFlow.Direction.FORWARD
@@ -215,6 +296,18 @@ class AbstractDropdownMenuWidgetTest {
                     ? GLFW.GLFW_KEY_DOWN
                     : GLFW.GLFW_KEY_UP;
         };
+        int backwardKey = switch (orientation) {
+            case HORIZONTAL -> forwardKey == GLFW.GLFW_KEY_RIGHT
+                    ? GLFW.GLFW_KEY_LEFT
+                    : GLFW.GLFW_KEY_RIGHT;
+            case VERTICAL -> forwardKey == GLFW.GLFW_KEY_DOWN
+                    ? GLFW.GLFW_KEY_UP
+                    : GLFW.GLFW_KEY_DOWN;
+        };
+        assertEquals(-1, dropdown.getHighlightedItemIndex());
+        assertTrue(dropdown.keyPressed(backwardKey, 0, 0));
+        assertEquals(1, dropdown.getHighlightedItemIndex());
+        assertTrue(dropdown.keyPressed(forwardKey, 0, 0));
         assertEquals(0, dropdown.getHighlightedItemIndex());
         assertTrue(dropdown.keyPressed(forwardKey, 0, 0));
         assertEquals(1, dropdown.getHighlightedItemIndex());
@@ -224,7 +317,30 @@ class AbstractDropdownMenuWidgetTest {
     }
 
     @Test
-    void openingHighlightsTheSubclassPreferredSelectableItem() {
+    void popupItemCountExcludesSelectedAndHiddenItems() {
+        TestDropdown dropdown = new TestDropdown(
+                10,
+                20,
+                16,
+                16,
+                LayoutFlow.Orientation.HORIZONTAL,
+                LayoutFlow.Direction.REVERSE,
+                2
+        );
+        dropdown.addItem(16, 16, () -> {
+        });
+        dropdown.addItem(16, 16, () -> {
+        });
+        TestMenuItem hidden = dropdown.addItem(16, 16, () -> {
+        });
+        dropdown.selectedMenuItemIndex = 1;
+        hidden.visible = false;
+
+        assertEquals(1, dropdown.getPopupItemCount());
+    }
+
+    @Test
+    void keyboardOpeningHighlightsTheSubclassPreferredSelectableItem() {
         TestDropdown dropdown = new TestDropdown(
                 10,
                 20,
@@ -242,14 +358,14 @@ class AbstractDropdownMenuWidgetTest {
         });
         dropdown.initialHighlightedItemIndex = 1;
 
-        dropdown.setExpanded(true);
+        assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_ENTER, 0, 0));
 
         assertEquals(1, dropdown.getHighlightedItemIndex());
         assertTrue(preferred.isFocused());
     }
 
     @Test
-    void openingSkipsAnInactivePreferredItem() {
+    void keyboardOpeningSkipsAnInactivePreferredItem() {
         TestDropdown dropdown = new TestDropdown(
                 10,
                 20,
@@ -268,9 +384,71 @@ class AbstractDropdownMenuWidgetTest {
         inactive.active = false;
         dropdown.initialHighlightedItemIndex = 1;
 
-        dropdown.setExpanded(true);
+        assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_ENTER, 0, 0));
 
         assertEquals(2, dropdown.getHighlightedItemIndex());
+    }
+
+    @ParameterizedTest
+    @MethodSource("flowDirections")
+    void keyboardFocusAndNavigationSkipTheSelectedItem(
+            LayoutFlow.Orientation orientation,
+            LayoutFlow.Direction direction
+    ) {
+        TestDropdown dropdown = new TestDropdown(10, 20, 16, 16, orientation, direction, 2);
+        TestMenuItem first = dropdown.addItem(16, 16, () -> {
+        });
+        TestMenuItem selected = dropdown.addItem(16, 16, () -> {
+        });
+        TestMenuItem last = dropdown.addItem(16, 16, () -> {
+        });
+        dropdown.selectedMenuItemIndex = 1;
+
+        assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_ENTER, 0, 0));
+
+        assertEquals(0, dropdown.getHighlightedItemIndex());
+        assertFalse(selected.isFocused());
+        assertTrue(first.isFocused());
+
+        int forwardKey = switch (orientation) {
+            case HORIZONTAL -> direction == LayoutFlow.Direction.FORWARD
+                    ? GLFW.GLFW_KEY_RIGHT
+                    : GLFW.GLFW_KEY_LEFT;
+            case VERTICAL -> direction == LayoutFlow.Direction.FORWARD
+                    ? GLFW.GLFW_KEY_DOWN
+                    : GLFW.GLFW_KEY_UP;
+        };
+        assertTrue(dropdown.keyPressed(forwardKey, 0, 0));
+        assertEquals(2, dropdown.getHighlightedItemIndex());
+        assertTrue(last.isFocused());
+        assertFalse(selected.isFocused());
+    }
+
+    @Test
+    void selectedItemDoesNotParticipateInMouseInteraction() {
+        AtomicInteger selectedActivations = new AtomicInteger();
+        TestDropdown dropdown = new TestDropdown(
+                10,
+                20,
+                16,
+                16,
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.FORWARD,
+                2
+        );
+        dropdown.addItem(16, 16, () -> {
+        });
+        TestMenuItem selected = dropdown.addItem(16, 16, selectedActivations::incrementAndGet);
+        dropdown.addItem(16, 16, () -> {
+        });
+        dropdown.selectedMenuItemIndex = 1;
+        dropdown.setExpanded(true);
+        selected.setPosition(200, 200);
+
+        assertFalse(dropdown.isMouseOver(centerX(selected), centerY(selected)));
+        assertFalse(dropdown.mouseClicked(centerX(selected), centerY(selected), 0));
+        assertEquals(0, selectedActivations.get());
+        assertTrue(dropdown.isExpanded());
     }
 
     @Test
@@ -340,6 +518,7 @@ class AbstractDropdownMenuWidgetTest {
     private static final class TestDropdown extends AbstractDropdownMenuWidget {
         private int expandedChangeCount;
         private int initialHighlightedItemIndex;
+        private int selectedMenuItemIndex = -1;
 
         private TestDropdown(
                 int x,
@@ -374,6 +553,11 @@ class AbstractDropdownMenuWidgetTest {
         @Override
         protected int getInitialHighlightedItemIndex() {
             return this.initialHighlightedItemIndex;
+        }
+
+        @Override
+        protected int getSelectedMenuItemIndex() {
+            return this.selectedMenuItemIndex;
         }
     }
 

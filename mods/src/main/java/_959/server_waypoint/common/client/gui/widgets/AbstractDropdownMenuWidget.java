@@ -29,6 +29,7 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
     private final LayoutFlow.Direction expansionDirection;
     private final int itemSpacing;
     private boolean expanded;
+    private int selectedMenuItemIndex = -1;
     private int highlightedItemIndex = -1;
 
     protected AbstractDropdownMenuWidget(
@@ -76,6 +77,16 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         return List.copyOf(this.menuItems);
     }
 
+    /**
+     * Returns the number of visible choices that the expanded popup will show.
+     */
+    public final int getPopupItemCount() {
+        int selectedMenuItemIndex = this.expanded
+                ? this.selectedMenuItemIndex
+                : this.resolveSelectedMenuItemIndex();
+        return this.countDisplayedMenuItems(selectedMenuItemIndex);
+    }
+
     public final LayoutFlow.Orientation getExpansionOrientation() {
         return this.expansionOrientation;
     }
@@ -97,13 +108,25 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
     }
 
     public final void setExpanded(boolean expanded) {
-        boolean resolvedExpanded = expanded && !this.menuItems.isEmpty();
+        int selectedMenuItemIndex = expanded ? this.resolveSelectedMenuItemIndex() : -1;
+        boolean resolvedExpanded = expanded
+                && this.countDisplayedMenuItems(selectedMenuItemIndex) > 0;
         if (this.expanded == resolvedExpanded) {
             return;
         }
-        this.expanded = resolvedExpanded;
-        this.setHighlightedItemIndex(this.expanded ? this.findInitialHighlightedItem() : -1);
-        this.onExpandedChanged(this.expanded);
+        if (resolvedExpanded) {
+            this.selectedMenuItemIndex = selectedMenuItemIndex;
+            this.layoutMenuItems();
+            this.expanded = true;
+            this.setHighlightedItemIndex(-1);
+            this.onExpandedChanged(true);
+            return;
+        }
+        this.expanded = false;
+        this.setHighlightedItemIndex(-1);
+        this.onExpandedChanged(false);
+        this.selectedMenuItemIndex = -1;
+        this.layoutMenuItems();
     }
 
     public final void toggleMenu() {
@@ -173,8 +196,9 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         if (!this.expanded) {
             return false;
         }
-        for (AbstractMenuItem menuItem : this.menuItems) {
-            if (menuItem.visible && contains(menuItem, mouseX, mouseY)) {
+        for (int i = 0; i < this.menuItems.size(); i++) {
+            AbstractMenuItem menuItem = this.menuItems.get(i);
+            if (this.isMenuItemDisplayed(i) && contains(menuItem, mouseX, mouseY)) {
                 return true;
             }
         }
@@ -194,8 +218,9 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         if (!this.expanded) {
             return false;
         }
-        for (AbstractMenuItem menuItem : this.menuItems) {
-            if (!menuItem.visible || !contains(menuItem, mouseX, mouseY)) {
+        for (int i = 0; i < this.menuItems.size(); i++) {
+            AbstractMenuItem menuItem = this.menuItems.get(i);
+            if (!this.isMenuItemDisplayed(i) || !contains(menuItem, mouseX, mouseY)) {
                 continue;
             }
             if (menuItem.isActive()) {
@@ -224,6 +249,9 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
             if (!this.expanded) {
                 this.playClickSound();
                 this.setExpanded(true);
+                if (this.expanded) {
+                    this.setHighlightedItemIndex(this.findInitialHighlightedItem());
+                }
                 return true;
             }
             if (this.highlightedItemIndex < 0) {
@@ -250,7 +278,11 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         }
         nextLayer(context);
         try {
-            for (AbstractMenuItem menuItem : this.menuItems) {
+            for (int i = 0; i < this.menuItems.size(); i++) {
+                AbstractMenuItem menuItem = this.menuItems.get(i);
+                if (!this.isMenuItemDisplayed(i)) {
+                    continue;
+                }
                 menuItem.
                 //$ render_method_swap
                 extractRenderState
@@ -272,8 +304,16 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
     }
 
     /**
-     * Returns the item index that keyboard navigation should highlight when the menu opens.
-     * Subclasses with a selected value may override this to start from that value.
+     * Returns the logical index of the item represented by the collapsed control, or {@code -1}
+     * when the dropdown has no selected item. A valid selected item is omitted from the popup.
+     */
+    protected int getSelectedMenuItemIndex() {
+        return -1;
+    }
+
+    /**
+     * Returns the logical item index where focus should start when the menu is opened from the
+     * keyboard. Hidden, inactive, and selected items are skipped.
      */
     protected int getInitialHighlightedItemIndex() {
         return 0;
@@ -351,7 +391,7 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         for (int offset = 0; offset < this.menuItems.size(); offset++) {
             int index = Math.floorMod(startIndex + offset * step, this.menuItems.size());
             AbstractMenuItem menuItem = this.menuItems.get(index);
-            if (menuItem.visible && menuItem.active) {
+            if (this.isMenuItemDisplayed(index) && menuItem.active) {
                 return index;
             }
         }
@@ -380,7 +420,11 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         int cursor = this.expansionDirection == LayoutFlow.Direction.FORWARD
                 ? this.getX() + this.getWidth()
                 : this.getX();
-        for (AbstractMenuItem menuItem : this.menuItems) {
+        for (int i = 0; i < this.menuItems.size(); i++) {
+            AbstractMenuItem menuItem = this.menuItems.get(i);
+            if (!this.isMenuItemDisplayed(i)) {
+                continue;
+            }
             int itemX;
             if (this.expansionDirection == LayoutFlow.Direction.FORWARD) {
                 cursor += this.itemSpacing;
@@ -399,7 +443,11 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         int cursor = this.expansionDirection == LayoutFlow.Direction.FORWARD
                 ? this.getY() + this.getHeight()
                 : this.getY();
-        for (AbstractMenuItem menuItem : this.menuItems) {
+        for (int i = 0; i < this.menuItems.size(); i++) {
+            AbstractMenuItem menuItem = this.menuItems.get(i);
+            if (!this.isMenuItemDisplayed(i)) {
+                continue;
+            }
             int itemY;
             if (this.expansionDirection == LayoutFlow.Direction.FORWARD) {
                 cursor += this.itemSpacing;
@@ -412,6 +460,27 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
             int itemX = this.getX() + (this.getWidth() - menuItem.getWidth()) / 2;
             menuItem.setPosition(itemX, itemY);
         }
+    }
+
+    private int resolveSelectedMenuItemIndex() {
+        int selectedMenuItemIndex = this.getSelectedMenuItemIndex();
+        return selectedMenuItemIndex >= 0 && selectedMenuItemIndex < this.menuItems.size()
+                ? selectedMenuItemIndex
+                : -1;
+    }
+
+    private int countDisplayedMenuItems(int selectedMenuItemIndex) {
+        int count = 0;
+        for (int i = 0; i < this.menuItems.size(); i++) {
+            if (i != selectedMenuItemIndex && this.menuItems.get(i).visible) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private boolean isMenuItemDisplayed(int itemIndex) {
+        return itemIndex != this.selectedMenuItemIndex && this.menuItems.get(itemIndex).visible;
     }
 
     private static boolean contains(

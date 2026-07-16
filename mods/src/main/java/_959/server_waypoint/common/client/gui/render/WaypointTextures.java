@@ -61,6 +61,36 @@ public final class WaypointTextures {
     Identifier
     PLACEHOLDER_ICON = modId("textures/gui/placeholder.png");
 
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    FLAT_LIST_MODE_ICON = modId("textures/gui/menu.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    GROUPED_LIST_MODE_ICON = modId("textures/gui/segment.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    SORT_COLOR_ICON = modId("textures/gui/palette.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    SORT_DISTANCE_ICON = modId("textures/gui/navigation.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    SORT_DEFAULT_ICON = modId("textures/gui/list_arrow.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    SORT_NAME_ICON = modId("textures/gui/sort_by_alpha.png");
+
     private WaypointTextures() {
     }
 }

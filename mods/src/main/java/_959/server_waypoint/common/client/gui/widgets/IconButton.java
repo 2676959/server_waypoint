@@ -14,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
 public class IconButton extends ShiftableClickableWidget implements Expandable {
+    private static final int ICON_PADDING = 2;
     private final
     //$ resource_location_type_swap
     Identifier
@@ -54,7 +55,22 @@ public class IconButton extends ShiftableClickableWidget implements Expandable {
         int bgColor = WidgetThemeState.controlBackground(this.active, isHovered());
         context.fill(x, y, x + width, y + height, bgColor);
         renderOutline(context, x, y, width, height, WidgetThemeState.border(this.active, isFocused(), isHovered()));
-        texture(context, icon, x, y, 0, 0, width, height, width, height);
+        int iconWidth = Math.max(0, width - ICON_PADDING * 2);
+        int iconHeight = Math.max(0, height - ICON_PADDING * 2);
+        if (iconWidth > 0 && iconHeight > 0) {
+            texture(
+                    context,
+                    icon,
+                    x + ICON_PADDING,
+                    y + ICON_PADDING,
+                    0,
+                    0,
+                    iconWidth,
+                    iconHeight,
+                    iconWidth,
+                    iconHeight
+            );
+        }
     }
 
     @Override
