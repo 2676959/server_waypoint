@@ -23,6 +23,7 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 //? if >= 1.21.9 {
 import net.minecraft.client.input.MouseButtonEvent;
@@ -751,6 +752,13 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                     LayoutFlow.Direction.REVERSE,
                     DROPDOWN_ITEM_GAP
             );
+            this.setTooltip(Tooltip.create(message));
+        }
+
+        @Override
+        public void setMessage(Component message) {
+            super.setMessage(message);
+            this.setTooltip(Tooltip.create(message));
         }
 
         private void addIconItem(
@@ -854,6 +862,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             super(CONTROL_BUTTON_SIZE, CONTROL_BUTTON_SIZE, message);
             this.icon = icon;
             this.callback = callback;
+            this.setTooltip(Tooltip.create(message));
         }
 
         @Override
