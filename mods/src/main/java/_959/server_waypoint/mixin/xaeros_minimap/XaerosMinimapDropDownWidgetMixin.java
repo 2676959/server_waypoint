@@ -68,7 +68,7 @@ public class XaerosMinimapDropDownWidgetMixin {
     //?} else {
     /*@ModifyArg(
             method = "drawSlot",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;fill(IIIII)V", remap = true),
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;fill(IIIII)V", remap = true),
             index = 4
     )
     private int sw$useSyncedWaypointSetBackground(int color) {

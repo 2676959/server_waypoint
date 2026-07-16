@@ -132,6 +132,77 @@ class WaypointListDisplayModelTest {
         assertEquals(expected.stream().map(row -> row.sourceList().name()).toList(), flatListNames(display));
     }
 
+    @Test
+    void groupedAllDimensionsRetainsDimensionRootsAndTheirLists() {
+        WaypointList overworldZeta = list("zeta", waypoint("overworld", 0, 0, 0));
+        WaypointList overworldAlpha = list("alpha", waypoint("home", 0, 0, 0));
+        WaypointList netherBases = list("bases", waypoint("portal", 0, 0, 0));
+        WaypointQueryEngine.QueryResult result = new WaypointQueryEngine.QueryResult(
+                List.of(
+                        new WaypointQueryEngine.DimensionResult(
+                                "minecraft:overworld",
+                                List.of(listResult(overworldZeta), listResult(overworldAlpha))
+                        ),
+                        new WaypointQueryEngine.DimensionResult(
+                                "minecraft:the_nether",
+                                List.of(listResult(netherBases))
+                        )
+                ),
+                new WaypointQueryEngine.Query("", WaypointSorting.SortMode.NAME, null)
+        );
+
+        WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, true);
+
+        assertEquals(
+                List.of("minecraft:overworld", "minecraft:the_nether"),
+                display.dimensions().stream()
+                        .map(WaypointListDisplayModel.DisplayDimension::dimensionName)
+                        .toList()
+        );
+        assertEquals(
+                List.of("alpha", "zeta"),
+                display.dimensions().get(0).lists().stream()
+                        .map(row -> row.sourceList().name())
+                        .toList()
+        );
+        assertEquals(
+                List.of("bases"),
+                display.dimensions().get(1).lists().stream()
+                        .map(row -> row.sourceList().name())
+                        .toList()
+        );
+    }
+
+    @Test
+    void flatAllDimensionsRetainsDimensionAndListNames() {
+        WaypointList overworldBases = list("bases", waypoint("zeta", 0, 0, 0));
+        WaypointList netherBases = list("bases", waypoint("Alpha", 0, 0, 0));
+        WaypointQueryEngine.QueryResult result = new WaypointQueryEngine.QueryResult(
+                List.of(
+                        new WaypointQueryEngine.DimensionResult(
+                                "minecraft:overworld",
+                                List.of(listResult(overworldBases))
+                        ),
+                        new WaypointQueryEngine.DimensionResult(
+                                "minecraft:the_nether",
+                                List.of(listResult(netherBases))
+                        )
+                ),
+                new WaypointQueryEngine.Query("", WaypointSorting.SortMode.NAME, null)
+        );
+
+        WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, false);
+
+        assertEquals(List.of("Alpha", "zeta"), flatWaypointNames(display));
+        assertEquals(List.of("bases", "bases"), flatListNames(display));
+        assertEquals(
+                List.of("minecraft:the_nether", "minecraft:overworld"),
+                display.flatWaypoints().stream()
+                        .map(WaypointListDisplayModel.DisplayWaypoint::dimensionName)
+                        .toList()
+        );
+    }
+
     private static WaypointQueryEngine.QueryResult result(
             WaypointSorting.SortMode sortMode,
             WaypointPos origin,

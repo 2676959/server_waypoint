@@ -22,12 +22,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawItem;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pop;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.push;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scale;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.*;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.FOCUS_RING;
