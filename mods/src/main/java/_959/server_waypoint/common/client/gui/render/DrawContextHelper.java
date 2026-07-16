@@ -44,9 +44,9 @@ public final class DrawContextHelper {
 
     public static void drawItem(GuiGraphicsExtractor context, ItemStack itemStack, int x, int y) {
         //? if >= 26 {
-        context.item(itemStack, x, y);
+        context.fakeItem(itemStack, x, y);
         //?} else {
-        /*context.renderItem(itemStack, x, y);
+        /*context.renderFakeItem(itemStack, x, y);
         *///?}
     }
 
