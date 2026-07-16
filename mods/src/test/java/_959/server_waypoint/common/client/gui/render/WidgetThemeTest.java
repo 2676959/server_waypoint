@@ -20,6 +20,92 @@ class WidgetThemeTest {
     }
 
     @Test
+    void translucentDarkThemeDefinesEveryVariableAndSurfaceDepth() {
+        WidgetTheme theme = WidgetThemes.TRANSLUCENT_DARK;
+
+        assertEquals(WidgetThemeVariable.values().length, theme.getColors().size());
+        assertEquals(0xFFE8E8E8, theme.getColor(WidgetThemeVariable.TEXT_PRIMARY));
+        assertEquals(0x4D000000, theme.getColor(WidgetThemeVariable.SCREEN_BACKGROUND));
+        assertEquals(0x59080808, theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND));
+        assertEquals(0x73101010, theme.getColor(WidgetThemeVariable.POPUP_BACKGROUND));
+        assertEquals(0xB3000000, theme.getColor(WidgetThemeVariable.DIALOG_BACKGROUND));
+        assertEquals(0x4D0C0C0C, theme.getColor(WidgetThemeVariable.CONTROL_BACKGROUND));
+        assertEquals(0x66484848, theme.getColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND));
+        assertEquals(0x33484848, theme.getColor(WidgetThemeVariable.ROW_HOVER_BACKGROUND));
+        theme.getColors().forEach((variable, color) -> {
+            if (variable != WidgetThemeVariable.SUCCESS_BACKGROUND
+                    && variable != WidgetThemeVariable.DANGER_BACKGROUND) {
+                assertGrayscale(color);
+            }
+        });
+        assertMutedNonGrayscale(theme.getColor(WidgetThemeVariable.SUCCESS_BACKGROUND));
+        assertMutedNonGrayscale(theme.getColor(WidgetThemeVariable.DANGER_BACKGROUND));
+        assertTrue(alpha(theme.getColor(WidgetThemeVariable.SCREEN_BACKGROUND))
+                < alpha(theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND)));
+        assertTrue(alpha(theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND))
+                < alpha(theme.getColor(WidgetThemeVariable.POPUP_BACKGROUND)));
+    }
+
+    @Test
+    void translucentDarkThemeRetainsReadableContrastAcrossLayeredSurfaces() {
+        WidgetTheme theme = WidgetThemes.TRANSLUCENT_DARK;
+        int panel = theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND);
+
+        assertContrastAtLeast(
+                theme.getColor(WidgetThemeVariable.TEXT_PRIMARY), panel, 4.5D);
+        assertContrastAtLeast(
+                theme.getColor(WidgetThemeVariable.TEXT_PLACEHOLDER),
+                theme.getColor(WidgetThemeVariable.CONTROL_BACKGROUND),
+                panel,
+                4.5D
+        );
+        assertContrastAtLeast(
+                theme.getColor(WidgetThemeVariable.TEXT_ON_ACCENT),
+                theme.getColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND),
+                panel,
+                4.5D
+        );
+        assertContrastAtLeast(
+                theme.getColor(WidgetThemeVariable.TEXT_ON_ACCENT),
+                theme.getColor(WidgetThemeVariable.SUCCESS_BACKGROUND),
+                panel,
+                4.5D
+        );
+        assertContrastAtLeast(
+                theme.getColor(WidgetThemeVariable.TEXT_ON_ACCENT),
+                theme.getColor(WidgetThemeVariable.DANGER_BACKGROUND),
+                panel,
+                4.5D
+        );
+        assertDarkerThan(
+                theme.getColor(WidgetThemeVariable.BORDER),
+                theme.getColor(WidgetThemeVariable.CONTROL_BACKGROUND),
+                panel
+        );
+        assertDarkerThan(
+                theme.getColor(WidgetThemeVariable.FOCUS_RING),
+                theme.getColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND),
+                panel
+        );
+        assertDarkerThan(
+                theme.getColor(WidgetThemeVariable.DIALOG_BACKGROUND),
+                theme.getColor(WidgetThemeVariable.POPUP_BACKGROUND),
+                panel
+        );
+        assertDarkerThan(
+                theme.getColor(WidgetThemeVariable.CONTROL_BACKGROUND),
+                theme.getColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND),
+                panel
+        );
+        assertContrastAtLeast(
+                theme.getColor(WidgetThemeVariable.SCROLLBAR_THUMB),
+                theme.getColor(WidgetThemeVariable.SCROLLBAR_TRACK),
+                panel,
+                3.0D
+        );
+    }
+
+    @Test
     void customColorDoesNotMutateBaseTheme() {
         WidgetTheme baseTheme = WidgetTheme.modernDark();
         WidgetTheme customTheme = baseTheme.withColor(WidgetThemeVariable.ACCENT, 0xFF123456);
@@ -141,6 +227,35 @@ class WidgetThemeTest {
         double contrast = (lighter + 0.05D) / (darker + 0.05D);
 
         assertTrue(contrast >= minimum, () -> "Expected contrast >= " + minimum + ", got " + contrast);
+    }
+
+    private static void assertDarkerThan(int foreground, int background, int parent) {
+        int opaqueParent = compositeOver(parent, 0xFF000000);
+        int composedForeground = compositeOver(foreground, opaqueParent);
+        int composedBackground = compositeOver(background, opaqueParent);
+
+        assertTrue(relativeLuminance(composedForeground) < relativeLuminance(composedBackground));
+    }
+
+    private static int alpha(int color) {
+        return color >>> 24;
+    }
+
+    private static void assertGrayscale(int color) {
+        int red = color >> 16 & 0xFF;
+        assertEquals(red, color >> 8 & 0xFF);
+        assertEquals(red, color & 0xFF);
+    }
+
+    private static void assertMutedNonGrayscale(int color) {
+        int red = color >> 16 & 0xFF;
+        int green = color >> 8 & 0xFF;
+        int blue = color & 0xFF;
+        int maximum = Math.max(red, Math.max(green, blue));
+        int minimum = Math.min(red, Math.min(green, blue));
+
+        assertTrue(maximum > minimum);
+        assertTrue((maximum - minimum) * 100 <= maximum * 35);
     }
 
     private static int compositeOver(int foreground, int background) {

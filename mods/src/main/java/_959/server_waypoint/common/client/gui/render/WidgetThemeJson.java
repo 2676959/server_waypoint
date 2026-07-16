@@ -45,7 +45,7 @@ public final class WidgetThemeJson {
     }
 
     public static WidgetTheme fromJson(String json) {
-        return fromJson(json, WidgetThemes.MODERN_DARK);
+        return fromJson(json, WidgetThemes.DEFAULT);
     }
 
     public static WidgetTheme fromJson(String json, WidgetTheme fallbackTheme) {
@@ -102,7 +102,7 @@ public final class WidgetThemeJson {
     }
 
     public static WidgetTheme load(Path path) throws IOException {
-        return load(path, WidgetThemes.MODERN_DARK);
+        return load(path, WidgetThemes.DEFAULT);
     }
 
     public static WidgetTheme load(Path path, WidgetTheme fallbackTheme) throws IOException {

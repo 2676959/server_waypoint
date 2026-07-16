@@ -17,6 +17,7 @@ public enum WidgetThemeVariable {
     SCREEN_BACKGROUND("background.screen"),
     PANEL_BACKGROUND("background.panel"),
     POPUP_BACKGROUND("background.popup"),
+    DIALOG_BACKGROUND("background.dialog"),
     CONTROL_BACKGROUND("control.background"),
     CONTROL_HOVER_BACKGROUND("control.hoverBackground"),
     CONTROL_DISABLED_BACKGROUND("control.disabledBackground"),

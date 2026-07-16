@@ -10,7 +10,7 @@ import java.util.function.UnaryOperator;
  */
 public final class WidgetThemeManager {
     private static final AtomicReference<WidgetTheme> ACTIVE_THEME =
-            new AtomicReference<>(WidgetThemes.MODERN_DARK);
+            new AtomicReference<>(WidgetThemes.DEFAULT);
 
     private WidgetThemeManager() {
     }
@@ -43,6 +43,6 @@ public final class WidgetThemeManager {
     }
 
     public static void resetTheme() {
-        setTheme(WidgetThemes.MODERN_DARK);
+        setTheme(WidgetThemes.DEFAULT);
     }
 }

@@ -15,7 +15,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.POPUP_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DIALOG_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 
 public abstract class DialogWidget extends ShiftableClickableWidget implements Padding {
@@ -24,7 +24,7 @@ public abstract class DialogWidget extends ShiftableClickableWidget implements P
     protected final Component title;
     protected final WidgetStack mainLayout = new WidgetStack(0, 0, 10, true, false);
     protected final PaddingBackground paddingBackground = new PaddingBackground(this.mainLayout, 6, 8,
-            POPUP_BACKGROUND, BORDER, true);
+            DIALOG_BACKGROUND, BORDER, true);
     protected final WidgetStack buttonRow = new WidgetStack(0, 0, 10, false);
 
     public DialogWidget(int x, int y, Component title, WidgetStack content, Font textRenderer) {

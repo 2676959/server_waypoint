@@ -37,7 +37,7 @@ final class WidgetThemeEditorSession {
 
     void reset() {
         this.ensureOpen();
-        this.draftTheme = WidgetThemes.MODERN_DARK;
+        this.draftTheme = WidgetThemes.DEFAULT;
         WidgetThemeManager.setTheme(this.draftTheme);
     }
 

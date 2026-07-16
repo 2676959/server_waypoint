@@ -35,6 +35,16 @@ class WidgetThemeManagerTest {
     }
 
     @Test
+    void resetThemeRestoresTheBuiltInDefault() {
+        WidgetThemeManager.setTheme(WidgetThemes.MODERN_DARK);
+
+        WidgetThemeManager.resetTheme();
+
+        assertSame(WidgetThemes.DEFAULT, WidgetThemeManager.getTheme());
+        assertSame(WidgetThemes.TRANSLUCENT_DARK, WidgetThemeManager.getTheme());
+    }
+
+    @Test
     void updateThemeCanChangeVariablesAtomically() {
         WidgetTheme updatedTheme = WidgetThemeManager.updateTheme(theme -> WidgetTheme.builder(theme)
                 .setColor(WidgetThemeVariable.SUCCESS, 0xFF010203)

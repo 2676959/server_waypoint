@@ -50,7 +50,7 @@ class WidgetThemeJsonTest {
         WidgetTheme theme = WidgetThemeJson.fromJson(json);
 
         assertEquals(0xFF123456, theme.getColor(WidgetThemeVariable.ACCENT));
-        assertEquals(WidgetThemes.MODERN_DARK.getColor(WidgetThemeVariable.TEXT_PRIMARY),
+        assertEquals(WidgetThemes.DEFAULT.getColor(WidgetThemeVariable.TEXT_PRIMARY),
                 theme.getColor(WidgetThemeVariable.TEXT_PRIMARY));
     }
 
@@ -72,11 +72,11 @@ class WidgetThemeJsonTest {
         assertEquals(0xFF010203, theme.getColor(WidgetThemeVariable.SUCCESS));
         assertEquals(0xFF040506, theme.getColor(WidgetThemeVariable.WARNING));
         assertEquals(0xFF070809, theme.getColor(WidgetThemeVariable.DANGER));
-        assertEquals(WidgetThemes.MODERN_DARK.getColor(WidgetThemeVariable.SUCCESS_BACKGROUND),
+        assertEquals(WidgetThemes.DEFAULT.getColor(WidgetThemeVariable.SUCCESS_BACKGROUND),
                 theme.getColor(WidgetThemeVariable.SUCCESS_BACKGROUND));
-        assertEquals(WidgetThemes.MODERN_DARK.getColor(WidgetThemeVariable.WARNING_BACKGROUND),
+        assertEquals(WidgetThemes.DEFAULT.getColor(WidgetThemeVariable.WARNING_BACKGROUND),
                 theme.getColor(WidgetThemeVariable.WARNING_BACKGROUND));
-        assertEquals(WidgetThemes.MODERN_DARK.getColor(WidgetThemeVariable.DANGER_BACKGROUND),
+        assertEquals(WidgetThemes.DEFAULT.getColor(WidgetThemeVariable.DANGER_BACKGROUND),
                 theme.getColor(WidgetThemeVariable.DANGER_BACKGROUND));
     }
 

@@ -55,7 +55,7 @@ class WidgetThemeEditorSessionTest {
         );
 
         session.reset();
-        assertEquals(WidgetThemes.MODERN_DARK, WidgetThemeManager.getTheme());
+        assertEquals(WidgetThemes.DEFAULT, WidgetThemeManager.getTheme());
 
         session.cancel();
         session.cancel();

@@ -82,6 +82,7 @@
   "server_waypoint.theme.variable.background.screen": "屏幕背景",
   "server_waypoint.theme.variable.background.panel": "面板背景",
   "server_waypoint.theme.variable.background.popup": "弹出层背景",
+  "server_waypoint.theme.variable.background.dialog": "对话框背景",
   "server_waypoint.theme.variable.control.background": "控件背景",
   "server_waypoint.theme.variable.control.hoverBackground": "悬停控件背景",
   "server_waypoint.theme.variable.control.disabledBackground": "禁用控件背景",

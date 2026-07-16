@@ -82,6 +82,7 @@
   "server_waypoint.theme.variable.background.screen": "Screen background",
   "server_waypoint.theme.variable.background.panel": "Panel background",
   "server_waypoint.theme.variable.background.popup": "Popup background",
+  "server_waypoint.theme.variable.background.dialog": "Dialog background",
   "server_waypoint.theme.variable.control.background": "Control background",
   "server_waypoint.theme.variable.control.hoverBackground": "Hovered control",
   "server_waypoint.theme.variable.control.disabledBackground": "Disabled control",
