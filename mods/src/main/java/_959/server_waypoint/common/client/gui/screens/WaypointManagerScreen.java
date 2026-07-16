@@ -6,7 +6,7 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.layout.WidgetPack;
 import _959.server_waypoint.common.client.gui.render.WaypointSortButtonLabel;
-import _959.server_waypoint.common.client.gui.render.WaypointTextures;
+import _959.server_waypoint.common.client.gui.render.WidgetTextures;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.*;
@@ -116,7 +116,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 16,
                 16,
                 Component.translatable("waypoint.add.button"),
-                WaypointTextures.ADD_ICON,
+                WidgetTextures.ADD_ICON,
                 this::openAddWaypointScreen
         );
         searchField = new WaypointSearchBarWidget(
@@ -132,12 +132,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         );
         groupModeDropdown.addIconItem(
                 Component.translatable("waypoint.group.flat"),
-                WaypointTextures.FLAT_LIST_MODE_ICON,
+                WidgetTextures.FLAT_LIST_MODE_ICON,
                 () -> setGroupMode(false)
         );
         groupModeDropdown.addIconItem(
                 Component.translatable("waypoint.group.lists"),
-                WaypointTextures.GROUPED_LIST_MODE_ICON,
+                WidgetTextures.GROUPED_LIST_MODE_ICON,
                 () -> setGroupMode(true)
         );
         sortingModeDropdown = new IconDropdownMenu(
@@ -145,7 +145,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         );
         sortingModeDropdown.addIconItem(
                 Component.translatable("waypoint.sort.default"),
-                WaypointTextures.SORT_DEFAULT_ICON,
+                WidgetTextures.SORT_DEFAULT_ICON,
                 () -> {
                     waypointListWidget.setSortMode(WaypointSorting.SortMode.DEFAULT);
                     syncControlDropdowns();
@@ -153,17 +153,17 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         );
         sortingModeDropdown.addIconItem(
                 Component.translatable("waypoint.sort.name"),
-                WaypointTextures.SORT_NAME_ICON,
+                WidgetTextures.SORT_NAME_ICON,
                 () -> toggleSortMode(WaypointSorting.SortMode.NAME)
         );
         sortingModeDropdown.addIconItem(
                 Component.translatable("waypoint.sort.distance"),
-                WaypointTextures.SORT_DISTANCE_ICON,
+                WidgetTextures.SORT_DISTANCE_ICON,
                 () -> toggleSortMode(WaypointSorting.SortMode.DISTANCE)
         );
         sortingModeDropdown.addIconItem(
                 Component.translatable("waypoint.sort.color"),
-                WaypointTextures.SORT_COLOR_ICON,
+                WidgetTextures.SORT_COLOR_ICON,
                 () -> toggleSortMode(WaypointSorting.SortMode.COLOR)
         );
         groupModeDropdown.setMenuOpenedCallback(sortingModeDropdown::closeMenuIfOpen);
@@ -804,7 +804,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         getSelectedIcon() {
             return this.selectedIndex >= 0 && this.selectedIndex < this.iconItems.size()
                     ? this.iconItems.get(this.selectedIndex).icon
-                    : WaypointTextures.PLACEHOLDER_ICON;
+                    : WidgetTextures.PLACEHOLDER_ICON;
         }
 
         @Override

@@ -3,7 +3,7 @@
 package _959.server_waypoint.mixin.voxelmap;
 
 import _959.server_waypoint.common.client.gui.render.DrawContextHelper;
-import _959.server_waypoint.common.client.gui.render.WaypointTextures;
+import _959.server_waypoint.common.client.gui.render.WidgetTextures;
 import _959.server_waypoint.common.util.SyncedWaypointName;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -80,7 +80,7 @@ public abstract class VoxelMapGuiListWaypointsItemMixin extends AbstractSelectio
     @Unique
     private static void sw$drawSyncedWaypointIcon(GuiGraphicsExtractor context, String waypointName, int x, int y) {
         if (isVoxelMapSyncedWaypointName(waypointName)) {
-            DrawContextHelper.texture(context, WaypointTextures.SYNCED_ICON, x, y, 0, 0, iconSize, iconSize, iconSize, iconSize);
+            DrawContextHelper.texture(context, WidgetTextures.SYNCED_ICON, x, y, 0, 0, iconSize, iconSize, iconSize, iconSize);
         }
     }
 }

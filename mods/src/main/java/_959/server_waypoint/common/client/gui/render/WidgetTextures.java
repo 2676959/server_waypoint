@@ -5,7 +5,7 @@ import net.minecraft.resources.Identifier;
 
 import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
 
-public final class WaypointTextures {
+public final class WidgetTextures {
     public static final
     //$ resource_location_type_swap
     Identifier
@@ -91,6 +91,6 @@ public final class WaypointTextures {
     Identifier
     SORT_NAME_ICON = modId("textures/gui/sort_by_alpha.png");
 
-    private WaypointTextures() {
+    private WidgetTextures() {
     }
 }
