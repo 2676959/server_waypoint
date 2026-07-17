@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -84,6 +85,8 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private boolean sortReversed = false;
     private boolean groupByLists = true;
     private boolean showAllDimensions = false;
+    private WaypointPos lastQueryPlayerPosition;
+    private String lastQueryPlayerDimension;
     private WaypointPos renderedPlayerPosition;
     private final Map<String, Boolean> dimensionExpansionStates = new HashMap<>();
 
@@ -184,11 +187,20 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     }
 
     private void applySearchAndSort() {
+        applySearchAndSort(
+                getPlayerWaypointPos(),
+                this.showAllDimensions ? getCurrentDimensionName() : null
+        );
+    }
+
+    private void applySearchAndSort(WaypointPos playerPosition, String playerDimension) {
+        this.lastQueryPlayerPosition = playerPosition;
+        this.lastQueryPlayerDimension = playerDimension;
         WaypointQueryEngine.Query query = new WaypointQueryEngine.Query(
                 this.searchQuery,
                 this.sortMode,
-                getPlayerWaypointPos(),
-                this.showAllDimensions ? getCurrentDimensionName() : null,
+                playerPosition,
+                playerDimension,
                 this.sortReversed
         );
         WaypointQueryEngine.QueryResult result = this.showAllDimensions
@@ -219,6 +231,32 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 ))
                 .map(RowNode.class::cast)
                 .toList());
+    }
+
+    public void refreshDistanceSortIfPlayerMoved() {
+        WaypointPos playerPosition = getPlayerWaypointPos();
+        String playerDimension = this.showAllDimensions ? getCurrentDimensionName() : null;
+        if (shouldRefreshDistanceSort(
+                this.sortMode,
+                this.lastQueryPlayerPosition,
+                playerPosition,
+                this.lastQueryPlayerDimension,
+                playerDimension
+        )) {
+            applySearchAndSort(playerPosition, playerDimension);
+        }
+    }
+
+    static boolean shouldRefreshDistanceSort(
+            WaypointSorting.SortMode sortMode,
+            WaypointPos previousPosition,
+            WaypointPos currentPosition,
+            String previousDimension,
+            String currentDimension
+    ) {
+        return sortMode == WaypointSorting.SortMode.DISTANCE
+                && (!Objects.equals(previousPosition, currentPosition)
+                || !Objects.equals(previousDimension, currentDimension));
     }
 
     private DimensionNode createDimensionNode(WaypointListDisplayModel.DisplayDimension dimension) {

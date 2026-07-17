@@ -354,6 +354,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     @Override
+    public void tick() {
+        super.tick();
+        waypointListWidget.refreshDistanceSortIfPlayerMoved();
+    }
+
+    @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_ESCAPE && closeOpenDropdownMenus()) {
             return true;
