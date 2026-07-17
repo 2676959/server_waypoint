@@ -62,6 +62,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private static final int labelTextGap = 3;
     private static final int labelLineGap = 1;
     private static final float metadataTextScale = 0.75F;
+    private static final int metersPerKilometer = 1000;
     private static final String minecraftNamespace = "minecraft:";
     private static double SCROLLED_POSITION = 0.0D;
     private final WaypointManagerScreen parentScreen;
@@ -75,6 +76,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private int thirdBtnXPos = width - btnWidth;
     private int secondBtnXPos = thirdBtnXPos - btnWidth;
     private int firstBtnXPos = secondBtnXPos - btnWidth;
+    private int distanceColumnX = firstBtnXPos;
     private int removeClickedPos = -1;
     private String selectedDimensionName = "";
     private String searchQuery = "";
@@ -82,6 +84,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private boolean sortReversed = false;
     private boolean groupByLists = true;
     private boolean showAllDimensions = false;
+    private WaypointPos renderedPlayerPosition;
     private final Map<String, Boolean> dimensionExpansionStates = new HashMap<>();
 
     public WaypointListWidget(int x, int y, int width, int height, WaypointManagerScreen parent, WaypointQueryEngine queryEngine, Font textRenderer) {
@@ -185,6 +188,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 this.searchQuery,
                 this.sortMode,
                 getPlayerWaypointPos(),
+                this.showAllDimensions ? getCurrentDimensionName() : null,
                 this.sortReversed
         );
         WaypointQueryEngine.QueryResult result = this.showAllDimensions
@@ -460,6 +464,18 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         thirdBtnXPos = contentWidth - btnWidth;
         secondBtnXPos = thirdBtnXPos - btnWidth;
         firstBtnXPos = secondBtnXPos - btnWidth;
+        renderedPlayerPosition = getPlayerWaypointPos();
+        int maxDistanceWidth = 0;
+        for (int index = 0; index < visibleEntryCount(); index++) {
+            if (getVisibleEntry(index).value() instanceof WaypointNode waypointNode) {
+                String distanceLabel = getDistanceLabel(waypointNode.waypoint(), waypointNode.dimensionName());
+                maxDistanceWidth = Math.max(
+                        maxDistanceWidth,
+                        (int)Math.ceil(textRenderer.width(distanceLabel) * metadataTextScale)
+                );
+            }
+        }
+        distanceColumnX = Math.max(0, firstBtnXPos - labelTextGap - maxDistanceWidth);
     }
 
     @Override
@@ -627,9 +643,9 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 dimensionLine,
                 listName,
                 name,
+                getDistanceLabel(waypoint, waypointNode.dimensionName()),
                 indent + 55,
                 rowY,
-                contentWidth,
                 dimensionColor,
                 textColor
         );
@@ -640,13 +656,13 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             String dimensionLine,
             String listName,
             String waypointName,
+            String distanceLabel,
             int x,
             int rowY,
-            int contentWidth,
             int dimensionColor,
             int nameColor
     ) {
-        int availableWidth = Math.max(0, contentWidth - x - 2);
+        int availableWidth = Math.max(0, distanceColumnX - x - labelTextGap);
         int metadataLineHeight = Math.round(textRenderer.lineHeight * metadataTextScale);
         int listWidth = (int)Math.ceil(textRenderer.width(listName) * metadataTextScale);
         int waypointX = listName.isEmpty() ? 0 : listWidth + labelTextGap;
@@ -683,6 +699,46 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         }
         drawText(context, textRenderer, waypointName, waypointX, detailY, nameColor);
         pop(context);
+
+        if (!distanceLabel.isEmpty()) {
+            push(context);
+            translate(context, distanceColumnX, y);
+            scale(context, labelScale, labelScale);
+            renderMetadataText(
+                    context,
+                    distanceLabel,
+                    0,
+                    detailY + textRenderer.lineHeight - metadataLineHeight,
+                    getColor(TEXT_MUTED)
+            );
+            pop(context);
+        }
+    }
+
+    private String getDistanceLabel(SimpleWaypoint waypoint, String waypointDimension) {
+        if (renderedPlayerPosition == null) {
+            return "";
+        }
+        double distanceSquared = WaypointSorting.distanceSquared(
+                waypoint,
+                renderedPlayerPosition,
+                this.showAllDimensions ? getCurrentDimensionName() : null,
+                this.showAllDimensions ? waypointDimension : null
+        );
+        return formatDistance(Math.sqrt(distanceSquared));
+    }
+
+    static String formatDistance(double meters) {
+        long roundedMeters = Math.max(0L, Math.round(meters));
+        if (roundedMeters < metersPerKilometer) {
+            return roundedMeters + " m";
+        }
+        long tenthsOfKilometer = Math.round(meters / 100.0D);
+        long kilometers = tenthsOfKilometer / 10L;
+        long tenths = tenthsOfKilometer % 10L;
+        return tenths == 0L
+                ? kilometers + " km"
+                : kilometers + "." + tenths + " km";
     }
 
     private void renderMetadataText(GuiGraphicsExtractor context, String text, int x, int y, int color) {

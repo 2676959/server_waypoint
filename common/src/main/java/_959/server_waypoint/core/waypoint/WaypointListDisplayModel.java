@@ -21,7 +21,12 @@ public final class WaypointListDisplayModel {
         }
 
         List<DisplayWaypoint> flatWaypoints = createFlatWaypoints(lists);
-        sortDisplayWaypoints(flatWaypoints, sortMode, result.query().origin());
+        sortDisplayWaypoints(
+                flatWaypoints,
+                sortMode,
+                result.query().origin(),
+                result.query().originDimension()
+        );
         if (result.query().reversed()) {
             Collections.reverse(flatWaypoints);
         }
@@ -37,7 +42,14 @@ public final class WaypointListDisplayModel {
             List<DisplayList> dimensionLists = new ArrayList<>();
             for (WaypointQueryEngine.ListResult listResult : dimension.lists()) {
                 List<SimpleWaypoint> waypoints = new ArrayList<>(listResult.waypoints());
-                WaypointSorting.sort(waypoints, sortMode, result.query().origin(), result.query().reversed());
+                WaypointSorting.sort(
+                        waypoints,
+                        sortMode,
+                        result.query().origin(),
+                        result.query().originDimension(),
+                        dimension.dimensionName(),
+                        result.query().reversed()
+                );
                 dimensionLists.add(new DisplayList(
                         dimension.dimensionName(),
                         listResult.sourceList(),
@@ -69,12 +81,17 @@ public final class WaypointListDisplayModel {
         return flatWaypoints;
     }
 
-    private static void sortDisplayWaypoints(List<DisplayWaypoint> waypoints, WaypointSorting.SortMode sortMode, WaypointPos origin) {
+    private static void sortDisplayWaypoints(
+            List<DisplayWaypoint> waypoints,
+            WaypointSorting.SortMode sortMode,
+            WaypointPos origin,
+            String originDimension
+    ) {
         switch (sortMode) {
             case DEFAULT -> {
             }
             case NAME -> waypoints.sort(DisplayWaypoint.BY_WAYPOINT_NAME);
-            case DISTANCE -> waypoints.sort(DisplayWaypoint.byDistanceFrom(origin));
+            case DISTANCE -> waypoints.sort(DisplayWaypoint.byDistanceFrom(origin, originDimension));
             case COLOR -> ColorUtils.sortWaypointColors(
                     waypoints,
                     waypoint -> waypoint.waypoint().rgb(),
@@ -128,8 +145,13 @@ public final class WaypointListDisplayModel {
                 .thenComparing(row -> row.sourceList().name(), String.CASE_INSENSITIVE_ORDER)
                 .thenComparing(row -> row.sourceList().name());
 
-        private static Comparator<DisplayWaypoint> byDistanceFrom(WaypointPos origin) {
-            return Comparator.comparingLong((DisplayWaypoint row) -> WaypointSorting.distanceSquared(row.waypoint(), origin))
+        private static Comparator<DisplayWaypoint> byDistanceFrom(WaypointPos origin, String originDimension) {
+            return Comparator.comparingDouble((DisplayWaypoint row) -> WaypointSorting.distanceSquared(
+                            row.waypoint(),
+                            origin,
+                            originDimension,
+                            row.dimensionName()
+                    ))
                     .thenComparing(BY_WAYPOINT_NAME);
         }
     }

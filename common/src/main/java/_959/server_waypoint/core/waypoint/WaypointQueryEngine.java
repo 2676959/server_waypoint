@@ -66,7 +66,7 @@ public final class WaypointQueryEngine {
     private DimensionResult queryDimension(String dimensionName, WaypointFileManager fileManager, String filter, Query query) {
         List<ListResult> listResults = new ArrayList<>();
         for (WaypointList waypointList : fileManager.getWaypointLists()) {
-            ListResult listResult = queryList(waypointList, filter, query);
+            ListResult listResult = queryList(dimensionName, waypointList, filter, query);
             if (listResult.include()) {
                 listResults.add(listResult);
             }
@@ -74,7 +74,7 @@ public final class WaypointQueryEngine {
         return new DimensionResult(dimensionName, Collections.unmodifiableList(listResults));
     }
 
-    private ListResult queryList(WaypointList waypointList, String filter, Query query) {
+    private ListResult queryList(String dimensionName, WaypointList waypointList, String filter, Query query) {
         boolean includeAll = filter.isEmpty();
         List<SimpleWaypoint> waypoints = new ArrayList<>();
         for (SimpleWaypoint waypoint : waypointList.simpleWaypoints()) {
@@ -82,7 +82,14 @@ public final class WaypointQueryEngine {
                 waypoints.add(waypoint);
             }
         }
-        WaypointSorting.sort(waypoints, query.sortMode(), query.origin(), query.reversed());
+        WaypointSorting.sort(
+                waypoints,
+                query.sortMode(),
+                query.origin(),
+                query.originDimension(),
+                dimensionName,
+                query.reversed()
+        );
         return new ListResult(waypointList, Collections.unmodifiableList(waypoints), includeAll);
     }
 
@@ -212,19 +219,29 @@ public final class WaypointQueryEngine {
         return query == null ? Query.empty() : query;
     }
 
-    public record Query(String filterText, WaypointSorting.SortMode sortMode, @Nullable WaypointPos origin, boolean reversed) {
+    public record Query(
+            String filterText,
+            WaypointSorting.SortMode sortMode,
+            @Nullable WaypointPos origin,
+            @Nullable String originDimension,
+            boolean reversed
+    ) {
         public Query {
             filterText = filterText == null ? "" : filterText;
             sortMode = sortMode == null ? WaypointSorting.SortMode.DEFAULT : sortMode;
             reversed = sortMode != WaypointSorting.SortMode.DEFAULT && reversed;
         }
 
+        public Query(String filterText, WaypointSorting.SortMode sortMode, @Nullable WaypointPos origin, boolean reversed) {
+            this(filterText, sortMode, origin, null, reversed);
+        }
+
         public Query(String filterText, WaypointSorting.SortMode sortMode, @Nullable WaypointPos origin) {
-            this(filterText, sortMode, origin, false);
+            this(filterText, sortMode, origin, null, false);
         }
 
         public static Query empty() {
-            return new Query("", WaypointSorting.SortMode.DEFAULT, null, false);
+            return new Query("", WaypointSorting.SortMode.DEFAULT, null, null, false);
         }
 
         private String normalizedFilter() {

@@ -6,6 +6,11 @@ import java.util.Comparator;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
+import static _959.server_waypoint.util.BlockPosConverter.netherToOverWorld;
+import static _959.server_waypoint.util.BlockPosConverter.overWorldToNether;
+import static _959.server_waypoint.util.VanillaDimensionNames.MINECRAFT_OVERWORLD;
+import static _959.server_waypoint.util.VanillaDimensionNames.MINECRAFT_THE_NETHER;
+
 public final class WaypointSorting {
     public enum SortMode {
         DEFAULT,
@@ -27,6 +32,20 @@ public final class WaypointSorting {
                 .thenComparing(byName());
     }
 
+    public static Comparator<SimpleWaypoint> byDistanceFrom(
+            @Nullable WaypointPos origin,
+            @Nullable String originDimension,
+            @Nullable String waypointDimension
+    ) {
+        return Comparator.comparingDouble((SimpleWaypoint waypoint) -> distanceSquared(
+                        waypoint,
+                        origin,
+                        originDimension,
+                        waypointDimension
+                ))
+                .thenComparing(byName());
+    }
+
     public static Comparator<SimpleWaypoint> byColor() {
         return Comparator.comparingLong((SimpleWaypoint waypoint) -> ColorUtils.oklchColorSortKey(waypoint.rgb()))
                 .thenComparing(byName());
@@ -37,12 +56,23 @@ public final class WaypointSorting {
     }
 
     public static void sort(List<SimpleWaypoint> waypoints, SortMode sortMode, @Nullable WaypointPos origin, boolean reversed) {
+        sort(waypoints, sortMode, origin, null, null, reversed);
+    }
+
+    public static void sort(
+            List<SimpleWaypoint> waypoints,
+            SortMode sortMode,
+            @Nullable WaypointPos origin,
+            @Nullable String originDimension,
+            @Nullable String waypointDimension,
+            boolean reversed
+    ) {
         SortMode resolvedSortMode = sortMode == null ? SortMode.DEFAULT : sortMode;
         switch (resolvedSortMode) {
             case DEFAULT -> {
             }
             case NAME -> waypoints.sort(byName());
-            case DISTANCE -> waypoints.sort(byDistanceFrom(origin));
+            case DISTANCE -> waypoints.sort(byDistanceFrom(origin, originDimension, waypointDimension));
             case COLOR -> sortByColor(waypoints);
         }
         if (resolvedSortMode != SortMode.DEFAULT && reversed) {
@@ -76,5 +106,35 @@ public final class WaypointSorting {
         long dy = waypoint.y() - origin.y();
         long dz = waypoint.z() - origin.z();
         return dx * dx + dy * dy + dz * dz;
+    }
+
+    public static double distanceSquared(
+            SimpleWaypoint waypoint,
+            @Nullable WaypointPos origin,
+            @Nullable String originDimension,
+            @Nullable String waypointDimension
+    ) {
+        if (origin == null) {
+            return Double.MAX_VALUE;
+        }
+        WaypointPos convertedPosition = convertPosition(waypoint.pos(), waypointDimension, originDimension);
+        double dx = convertedPosition.x() - origin.x();
+        double dy = convertedPosition.y() - origin.y();
+        double dz = convertedPosition.z() - origin.z();
+        return dx * dx + dy * dy + dz * dz;
+    }
+
+    private static WaypointPos convertPosition(
+            WaypointPos position,
+            @Nullable String fromDimension,
+            @Nullable String toDimension
+    ) {
+        if (MINECRAFT_THE_NETHER.equals(fromDimension) && MINECRAFT_OVERWORLD.equals(toDimension)) {
+            return netherToOverWorld(position);
+        }
+        if (MINECRAFT_OVERWORLD.equals(fromDimension) && MINECRAFT_THE_NETHER.equals(toDimension)) {
+            return overWorldToNether(position);
+        }
+        return position;
     }
 }

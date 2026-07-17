@@ -35,6 +35,43 @@ class WaypointSortingTest {
     }
 
     @Test
+    void convertsOnlyOverworldAndNetherCoordinatesForDistance() {
+        WaypointPos overworldOrigin = new WaypointPos(64, 70, 64);
+        SimpleWaypoint netherWaypoint = waypoint("nether", 8, 70, 8, 0xFFFFFF);
+
+        assertEquals(0.0D, WaypointSorting.distanceSquared(
+                netherWaypoint,
+                overworldOrigin,
+                "minecraft:overworld",
+                "minecraft:the_nether"
+        ));
+        assertEquals(0.0D, WaypointSorting.distanceSquared(
+                waypoint("overworld", 64, 70, 64, 0xFFFFFF),
+                new WaypointPos(8, 70, 8),
+                "minecraft:the_nether",
+                "minecraft:overworld"
+        ));
+        assertEquals(0.0D, WaypointSorting.distanceSquared(
+                waypoint("overworld", 7, 70, 7, 0xFFFFFF),
+                new WaypointPos(0, 70, 0),
+                "minecraft:the_nether",
+                "minecraft:overworld"
+        ));
+        assertEquals(2.0D, WaypointSorting.distanceSquared(
+                waypoint("overworld", -1, 70, -1, 0xFFFFFF),
+                new WaypointPos(0, 70, 0),
+                "minecraft:the_nether",
+                "minecraft:overworld"
+        ));
+        assertEquals(6272.0D, WaypointSorting.distanceSquared(
+                netherWaypoint,
+                overworldOrigin,
+                "minecraft:overworld",
+                "minecraft:the_end"
+        ));
+    }
+
+    @Test
     void sortsColorsByOklchHueRegionsBeforeGreyTail() {
         List<SimpleWaypoint> waypoints = new ArrayList<>(List.of(
                 waypoint("white", 0, 0, 0, 0xFFFFFF),

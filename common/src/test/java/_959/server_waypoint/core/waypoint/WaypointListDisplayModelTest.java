@@ -203,6 +203,90 @@ class WaypointListDisplayModelTest {
         );
     }
 
+    @Test
+    void flatAllDimensionsDistanceSortConvertsWaypointsToTheCurrentDimension() {
+        WaypointList overworldBases = list("overworld", waypoint("overworld", 10, 0, 0));
+        WaypointList netherBases = list("nether", waypoint("nether", 2, 0, 0));
+        WaypointQueryEngine.QueryResult result = new WaypointQueryEngine.QueryResult(
+                List.of(
+                        new WaypointQueryEngine.DimensionResult(
+                                "minecraft:overworld",
+                                List.of(listResult(overworldBases))
+                        ),
+                        new WaypointQueryEngine.DimensionResult(
+                                "minecraft:the_nether",
+                                List.of(listResult(netherBases))
+                        )
+                ),
+                new WaypointQueryEngine.Query(
+                        "",
+                        WaypointSorting.SortMode.DISTANCE,
+                        new WaypointPos(0, 0, 0),
+                        "minecraft:overworld",
+                        false
+                )
+        );
+
+        WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, false);
+
+        assertEquals(List.of("overworld", "nether"), flatWaypointNames(display));
+    }
+
+    @Test
+    void groupedAllDimensionsDistanceSortConvertsWaypointCoordinates() {
+        WaypointList netherBases = list(
+                "nether",
+                waypoint("horizontal", 10, 100, 0),
+                waypoint("vertical", 1, 80, 0)
+        );
+        WaypointQueryEngine.QueryResult result = new WaypointQueryEngine.QueryResult(
+                List.of(new WaypointQueryEngine.DimensionResult(
+                        "minecraft:the_nether",
+                        List.of(listResult(netherBases))
+                )),
+                new WaypointQueryEngine.Query(
+                        "",
+                        WaypointSorting.SortMode.DISTANCE,
+                        new WaypointPos(0, 100, 0),
+                        "minecraft:overworld",
+                        false
+                )
+        );
+
+        WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, true);
+
+        assertEquals(List.of("vertical", "horizontal"), waypointNames(display.lists().get(0)));
+    }
+
+    @Test
+    void flatAllDimensionsDistanceSortConvertsOverworldWaypointsToTheNether() {
+        WaypointList overworldBases = list("overworld", waypoint("overworld", 16, 0, 0));
+        WaypointList netherBases = list("nether", waypoint("nether", 10, 0, 0));
+        WaypointQueryEngine.QueryResult result = new WaypointQueryEngine.QueryResult(
+                List.of(
+                        new WaypointQueryEngine.DimensionResult(
+                                "minecraft:overworld",
+                                List.of(listResult(overworldBases))
+                        ),
+                        new WaypointQueryEngine.DimensionResult(
+                                "minecraft:the_nether",
+                                List.of(listResult(netherBases))
+                        )
+                ),
+                new WaypointQueryEngine.Query(
+                        "",
+                        WaypointSorting.SortMode.DISTANCE,
+                        new WaypointPos(0, 0, 0),
+                        "minecraft:the_nether",
+                        false
+                )
+        );
+
+        WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, false);
+
+        assertEquals(List.of("overworld", "nether"), flatWaypointNames(display));
+    }
+
     private static WaypointQueryEngine.QueryResult result(
             WaypointSorting.SortMode sortMode,
             WaypointPos origin,
