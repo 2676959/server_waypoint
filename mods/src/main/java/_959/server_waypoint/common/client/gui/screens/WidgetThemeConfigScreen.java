@@ -2,6 +2,8 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
+import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.ColorHexCodeField;
@@ -9,8 +11,11 @@ import _959.server_waypoint.common.client.gui.widgets.ColorSquareButton;
 import _959.server_waypoint.common.client.gui.widgets.IntegerSlider;
 import _959.server_waypoint.common.client.gui.widgets.ScalableText;
 import _959.server_waypoint.common.client.gui.widgets.SwatchWidget;
+import _959.server_waypoint.common.client.gui.widgets.ToggleButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
+import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
 import _959.server_waypoint.common.client.gui.widgets.TreeViewWidget;
+import _959.server_waypoint.common.client.gui.widgets.TrueFalseToggleButton;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -33,25 +38,51 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.ne
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.ACCENT;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.ACCENT_HOVER;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.CONTROL_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DANGER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DANGER_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DIALOG_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.PANEL_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.POPUP_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.ROW_HOVER_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SELECTION_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SUCCESS;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SUCCESS_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_MUTED;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_ON_ACCENT;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.WARNING;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.WARNING_BACKGROUND;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 
 public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
-    private static final int CONTENT_WIDTH = 292;
-    private static final int CONTENT_HEIGHT = 160;
+    private static final int CONTENT_WIDTH = 392;
     private static final int PANEL_PADDING = 8;
-    private static final int LIST_WIDTH = 122;
-    private static final int LIST_HEIGHT = 108;
-    private static final int EDITOR_GAP = 10;
+    private static final int BODY_Y_OFFSET = 18;
+    private static final int BODY_HEIGHT = 152;
+    private static final int LIST_WIDTH = 142;
+    private static final int LIST_HEIGHT = 78;
+    private static final int LIST_DECORATION_PADDING = 2;
+    private static final int SECTION_GAP = 0;
+    private static final int EDITOR_CONTROLS_HEIGHT = BODY_HEIGHT - LIST_HEIGHT - SECTION_GAP;
+    private static final int COLUMN_GAP = PANEL_PADDING;
+    private static final int GALLERY_WIDTH = CONTENT_WIDTH - LIST_WIDTH - COLUMN_GAP;
+    private static final int GALLERY_PADDING = 7;
+    private static final int GALLERY_SAMPLE_X_OFFSET = 136;
+    private static final int GALLERY_SAMPLE_WIDTH = GALLERY_WIDTH - GALLERY_SAMPLE_X_OFFSET - GALLERY_PADDING;
+    private static final float STATUS_SCALE = 0.7F;
+    private static final int STATUS_WRAP_WIDTH = Math.round(
+            (GALLERY_WIDTH - GALLERY_PADDING * 2) / STATUS_SCALE);
+    private static final int SELECTED_TEXT_WRAP_WIDTH = 144;
+    private static final int SELECTED_KEY_WRAP_WIDTH = 185;
     private static final int BUTTON_WIDTH = 60;
     private static final int BUTTON_HEIGHT = 11;
+    private static final int OPACITY_SLIDER_Y_OFFSET = 55;
+    private static final int FOOTER_Y_OFFSET = BODY_Y_OFFSET + BODY_HEIGHT + PANEL_PADDING;
 
     private final Screen parentScreen;
     private final WidgetThemeEditorSession session;
@@ -67,18 +98,18 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
             0,
             0,
             Component.empty(),
-            1.0F,
+            0.9F,
             TEXT_PRIMARY,
-            CONTENT_WIDTH - LIST_WIDTH - EDITOR_GAP,
+            SELECTED_TEXT_WRAP_WIDTH,
             font
     );
     private final ScalableText selectedKeyText = new ScalableText(
             0,
             0,
             Component.empty(),
-            0.8F,
+            0.7F,
             TEXT_MUTED,
-            CONTENT_WIDTH - LIST_WIDTH - EDITOR_GAP,
+            SELECTED_KEY_WRAP_WIDTH,
             font
     );
     private final ScalableText rgbLabel = new ScalableText(
@@ -89,17 +120,23 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
             0,
             0,
             Component.empty(),
-            0.8F,
+            STATUS_SCALE,
             SUCCESS,
-            CONTENT_WIDTH,
+            STATUS_WRAP_WIDTH,
             font
     );
     private final ThemeVariableListWidget variableList = new ThemeVariableListWidget(
-            0, 0, LIST_WIDTH, LIST_HEIGHT, font, this::selectVariable);
+            0,
+            0,
+            LIST_WIDTH - LIST_DECORATION_PADDING * 2,
+            LIST_HEIGHT - LIST_DECORATION_PADDING * 2,
+            font,
+            this::selectVariable
+    );
     private final ColorHexCodeField rgbField = new ColorHexCodeField(
             0, 0, Component.translatable("server_waypoint.theme.rgb"), font);
     private final ColorSquareButton colorPickerButton = new ColorSquareButton(
-            0, 0, 11, this::openSwatch);
+            0, 0, font.lineHeight, this::openSwatch);
     private final IntegerSlider opacitySlider = new IntegerSlider(
             0, 0, 84, 28, 0, 255, 255, this::updateOpacity, font);
     private final TranslucentButton resetButton = new TranslucentButton(
@@ -126,6 +163,123 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
             Component.translatable("server_waypoint.theme.save"),
             this::saveAndClose
     );
+    private final ScalableText galleryTitleText = new ScalableText(
+            0,
+            0,
+            Component.translatable("server_waypoint.theme.preview.title"),
+            TEXT_PRIMARY,
+            font
+    );
+    private final ScalableText galleryPrimaryText = new ScalableText(
+            0,
+            0,
+            Component.translatable("server_waypoint.theme.preview.primary"),
+            TEXT_PRIMARY,
+            font
+    );
+    private final ScalableText galleryMutedText = new ScalableText(
+            0,
+            0,
+            Component.translatable("server_waypoint.theme.preview.muted"),
+            0.8F,
+            TEXT_MUTED,
+            font
+    );
+    private final TranslucentTextField galleryTextField = new TranslucentTextField(
+            0,
+            0,
+            118,
+            Component.translatable("server_waypoint.theme.preview.placeholder"),
+            font
+    );
+    private final TranslucentButton galleryButton = new TranslucentButton(
+            0,
+            0,
+            54,
+            BUTTON_HEIGHT,
+            Component.translatable("server_waypoint.theme.preview.button"),
+            () -> {
+            }
+    );
+    private final TranslucentButton galleryDisabledButton = new TranslucentButton(
+            0,
+            0,
+            60,
+            BUTTON_HEIGHT,
+            Component.translatable("server_waypoint.theme.preview.disabled"),
+            () -> {
+            }
+    );
+    private final ToggleButton gallerySelectionToggle = new ToggleButton(
+            0,
+            0,
+            64,
+            BUTTON_HEIGHT,
+            Component.translatable("server_waypoint.theme.preview.normal"),
+            Component.translatable("server_waypoint.theme.preview.selected"),
+            CONTROL_BACKGROUND,
+            CONTROL_SELECTED_BACKGROUND,
+            ignored -> {
+            }
+    );
+    private final TrueFalseToggleButton galleryBooleanToggle = new TrueFalseToggleButton(
+            0,
+            0,
+            ignored -> {
+            }
+    );
+    private final IntegerSlider gallerySlider = new IntegerSlider(
+            0,
+            0,
+            84,
+            28,
+            0,
+            100,
+            65,
+            ignored -> {
+            },
+            font
+    );
+    private final WidgetStack rgbInputRow = new WidgetStack(
+            0,
+            0,
+            1,
+            LayoutFlow.Orientation.HORIZONTAL,
+            LayoutFlow.Direction.FORWARD,
+            true
+    );
+    private final WidgetStack footerLayout = new WidgetStack(
+            0,
+            0,
+            8,
+            LayoutFlow.Orientation.HORIZONTAL,
+            LayoutFlow.Direction.FORWARD,
+            true
+    );
+    private final WidgetStack galleryButtonRow = new WidgetStack(
+            0,
+            0,
+            6,
+            LayoutFlow.Orientation.HORIZONTAL,
+            LayoutFlow.Direction.FORWARD,
+            true
+    );
+    private final WidgetStack galleryToggleRow = new WidgetStack(
+            0,
+            0,
+            6,
+            LayoutFlow.Orientation.HORIZONTAL,
+            LayoutFlow.Direction.FORWARD,
+            true
+    );
+    private final WidgetStack galleryLayout = new WidgetStack(
+            0,
+            0,
+            0,
+            LayoutFlow.Orientation.VERTICAL,
+            LayoutFlow.Direction.FORWARD,
+            true
+    );
     private final SwatchWidget swatchWidget = new SwatchWidget(0, 0, font, this::applySwatchColor);
     private WidgetThemeVariable selectedVariable = WidgetThemeVariable.TEXT_PRIMARY;
     private boolean updatingControls;
@@ -141,6 +295,28 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         this.rgbField.setResponder(this::updateRgb);
         this.colorPickerButton.setTooltip(Tooltip.create(
                 Component.translatable("server_waypoint.theme.color_picker")));
+        this.galleryTextField.setHint(Component.translatable("server_waypoint.theme.preview.placeholder"));
+        this.galleryDisabledButton.active = false;
+        this.gallerySelectionToggle.setState(true);
+        this.galleryBooleanToggle.setState(true);
+
+        this.rgbInputRow.addPadded(this.rgbField, 0);
+        this.rgbInputRow.addPadded(this.colorPickerButton, 1);
+        this.footerLayout.addPadded(this.resetButton, 0);
+        this.footerLayout.addPadded(this.cancelButton, 8);
+        this.footerLayout.addPadded(this.saveButton, 8);
+        this.galleryButtonRow.addPadded(this.galleryButton, 0);
+        this.galleryButtonRow.addPadded(this.galleryDisabledButton, 6);
+        this.galleryToggleRow.addPadded(this.gallerySelectionToggle, 0);
+        this.galleryToggleRow.addPadded(this.galleryBooleanToggle, 6);
+        this.galleryLayout.addChild(this.galleryTitleText, 0);
+        this.galleryLayout.addChild(this.galleryPrimaryText, 7);
+        this.galleryLayout.addChild(this.galleryMutedText, 2);
+        this.galleryLayout.addChild(this.galleryTextField, 5);
+        this.galleryLayout.addChild(this.galleryButtonRow, 6);
+        this.galleryLayout.addChild(this.galleryToggleRow, 6);
+        this.galleryLayout.addChild(this.gallerySlider, 6);
+
         this.swatchWidget.visible = false;
         this.syncControls();
     }
@@ -156,6 +332,12 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         this.addRenderableWidget(this.resetButton);
         this.addRenderableWidget(this.cancelButton);
         this.addRenderableWidget(this.saveButton);
+        this.addRenderableWidget(this.galleryTextField);
+        this.addRenderableWidget(this.galleryButton);
+        this.addRenderableWidget(this.galleryDisabledButton);
+        this.addRenderableWidget(this.gallerySelectionToggle);
+        this.addRenderableWidget(this.galleryBooleanToggle);
+        this.addRenderableWidget(this.gallerySlider);
         this.addRenderableWidget(this.swatchWidget);
         this.positionContent();
     }
@@ -240,6 +422,12 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         this.resetButton.active = active;
         this.cancelButton.active = active;
         this.saveButton.active = active;
+        this.galleryTextField.active = active;
+        this.galleryButton.active = active;
+        this.galleryDisabledButton.active = false;
+        this.gallerySelectionToggle.active = active;
+        this.galleryBooleanToggle.active = active;
+        this.gallerySlider.active = active;
     }
 
     private void resetTheme() {
@@ -321,14 +509,35 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
             float deltaTicks
     ) {
         this.positionContent();
-        int contentX = this.getCenteredX();
-        int contentY = this.getCenteredY();
-        int panelX = contentX - PANEL_PADDING;
-        int panelY = contentY - PANEL_PADDING;
-        int panelWidth = CONTENT_WIDTH + PANEL_PADDING * 2;
-        int panelHeight = CONTENT_HEIGHT + PANEL_PADDING * 2;
-        context.fill(panelX, panelY, panelX + panelWidth, panelY + panelHeight, getColor(PANEL_BACKGROUND));
-        renderOutline(context, panelX, panelY, panelWidth, panelHeight, getColor(BORDER));
+        ThemeEditorLayoutGeometry geometry = this.calculateLayoutGeometry();
+        LayoutRectangle panel = geometry.panel();
+        LayoutRectangle editorControls = geometry.editorControls();
+        LayoutRectangle gallery = geometry.gallery();
+        context.fill(panel.x(), panel.y(), panel.right(), panel.bottom(), getColor(PANEL_BACKGROUND));
+        renderOutline(context, panel.x(), panel.y(), panel.width(), panel.height(), getColor(BORDER));
+        context.fill(
+                editorControls.x(),
+                editorControls.y(),
+                editorControls.right(),
+                editorControls.bottom(),
+                getColor(PANEL_BACKGROUND)
+        );
+        renderOutline(
+                context,
+                editorControls.x(),
+                editorControls.y(),
+                editorControls.width(),
+                editorControls.height(),
+                getColor(BORDER)
+        );
+        context.fill(
+                gallery.x(),
+                gallery.y(),
+                gallery.right(),
+                gallery.bottom(),
+                getColor(PANEL_BACKGROUND)
+        );
+        renderOutline(context, gallery.x(), gallery.y(), gallery.width(), gallery.height(), getColor(BORDER));
 
         this.titleText.
         //$ render_method_swap
@@ -350,11 +559,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
-        this.rgbField.
-        //$ render_method_swap
-        extractRenderState
-                (context, mouseX, mouseY, deltaTicks);
-        this.colorPickerButton.
+        this.rgbInputRow.
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
@@ -366,19 +571,16 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
+        this.galleryLayout.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, deltaTicks);
+        this.renderGallerySamples(context, gallery.x(), gallery.y());
         this.statusText.
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
-        this.resetButton.
-        //$ render_method_swap
-        extractRenderState
-                (context, mouseX, mouseY, deltaTicks);
-        this.cancelButton.
-        //$ render_method_swap
-        extractRenderState
-                (context, mouseX, mouseY, deltaTicks);
-        this.saveButton.
+        this.footerLayout.
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
@@ -391,29 +593,178 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         previousLayer(context);
     }
 
-    private void positionContent() {
-        int x = this.getCenteredX();
-        int y = this.getCenteredY();
-        int editorX = x + LIST_WIDTH + EDITOR_GAP;
-        int footerWidth = BUTTON_WIDTH * 3 + 16;
-        int footerX = x + centered(CONTENT_WIDTH, footerWidth);
+    private void renderGallerySamples(GuiGraphicsExtractor context, int galleryX, int galleryY) {
+        int sampleX = galleryX + GALLERY_SAMPLE_X_OFFSET;
+        this.renderPreviewChip(
+                context,
+                sampleX,
+                galleryY + 23,
+                GALLERY_SAMPLE_WIDTH,
+                18,
+                "server_waypoint.theme.preview.popup",
+                POPUP_BACKGROUND,
+                TEXT_PRIMARY
+        );
+        this.renderPreviewChip(
+                context,
+                sampleX,
+                galleryY + 45,
+                GALLERY_SAMPLE_WIDTH,
+                18,
+                "server_waypoint.theme.preview.dialog",
+                DIALOG_BACKGROUND,
+                TEXT_PRIMARY
+        );
 
-        this.titleText.setPosition(x + centered(CONTENT_WIDTH, this.titleText.getWidth()), y);
-        this.variableList.setPosition(x, y + 22);
-        this.selectedVariableText.setPosition(editorX, y + 22);
-        this.selectedKeyText.setPosition(editorX, y + 35);
-        this.rgbLabel.setPosition(editorX, y + 58);
-        this.rgbField.setPosition(editorX + 34, y + 58);
-        this.colorPickerButton.setPosition(editorX + 84, y + 59);
-        this.opacityLabel.setPosition(editorX, y + 84);
-        this.opacitySlider.setPosition(editorX, y + 99);
-        this.statusText.setPosition(x, y + 134);
-        this.resetButton.setPosition(footerX, y + 149);
-        this.cancelButton.setPosition(footerX + BUTTON_WIDTH + 8, y + 149);
-        this.saveButton.setPosition(footerX + (BUTTON_WIDTH + 8) * 2, y + 149);
+        int accentGap = 3;
+        int accentWidth = (GALLERY_SAMPLE_WIDTH - accentGap) / 2;
+        this.renderPreviewChip(
+                context,
+                sampleX,
+                galleryY + 67,
+                accentWidth,
+                13,
+                "server_waypoint.theme.preview.accent",
+                ACCENT,
+                TEXT_ON_ACCENT
+        );
+        this.renderPreviewChip(
+                context,
+                sampleX + accentWidth + accentGap,
+                galleryY + 67,
+                GALLERY_SAMPLE_WIDTH - accentWidth - accentGap,
+                13,
+                "server_waypoint.theme.preview.hover",
+                ACCENT_HOVER,
+                TEXT_ON_ACCENT
+        );
+
+        this.renderPreviewChip(
+                context,
+                sampleX,
+                galleryY + 86,
+                GALLERY_SAMPLE_WIDTH,
+                14,
+                "server_waypoint.theme.preview.success",
+                SUCCESS_BACKGROUND,
+                SUCCESS
+        );
+        this.renderPreviewChip(
+                context,
+                sampleX,
+                galleryY + 104,
+                GALLERY_SAMPLE_WIDTH,
+                14,
+                "server_waypoint.theme.preview.warning",
+                WARNING_BACKGROUND,
+                WARNING
+        );
+        this.renderPreviewChip(
+                context,
+                sampleX,
+                galleryY + 122,
+                GALLERY_SAMPLE_WIDTH,
+                14,
+                "server_waypoint.theme.preview.danger",
+                DANGER_BACKGROUND,
+                DANGER
+        );
+    }
+
+    private void renderPreviewChip(
+            GuiGraphicsExtractor context,
+            int x,
+            int y,
+            int width,
+            int height,
+            String translationKey,
+            WidgetThemeVariable background,
+            WidgetThemeVariable textColor
+    ) {
+        Component label = Component.translatable(translationKey);
+        context.fill(x, y, x + width, y + height, getColor(background));
+        renderOutline(context, x, y, width, height, getColor(BORDER));
+        drawText(
+                context,
+                this.font,
+                label,
+                x + centered(width, this.font.width(label)),
+                y + centered(height, this.font.lineHeight),
+                getColor(textColor),
+                true
+        );
+    }
+
+    private void positionContent() {
+        ThemeEditorLayoutGeometry geometry = this.calculateLayoutGeometry();
+        LayoutRectangle list = geometry.variableList();
+        LayoutRectangle listContent = list.inset(LIST_DECORATION_PADDING);
+        LayoutRectangle editorControls = geometry.editorControls();
+        LayoutRectangle gallery = geometry.gallery();
+        LayoutRectangle status = geometry.status(this.statusText.getHeight());
+
+        this.titleText.setPosition(
+                geometry.contentX() + centered(CONTENT_WIDTH, this.titleText.getWidth()),
+                geometry.contentY()
+        );
+        this.variableList.setPosition(listContent.x(), listContent.y());
+        this.selectedVariableText.setPosition(editorControls.x() + 6, editorControls.y() + 4);
+        this.selectedKeyText.setPosition(editorControls.x() + 6, editorControls.y() + 15);
+        this.rgbLabel.setPosition(editorControls.x() + 6, editorControls.y() + 30);
+        this.rgbInputRow.setPosition(editorControls.x() + 38, editorControls.y() + 28);
+        this.opacityLabel.setPosition(editorControls.x() + 6, editorControls.y() + 45);
+        this.opacitySlider.setPosition(editorControls.x() + 6, geometry.opacitySliderY());
+        this.galleryLayout.setPosition(gallery.x() + GALLERY_PADDING, gallery.y() + GALLERY_PADDING);
+        this.statusText.setPosition(status.x(), status.y());
+        this.footerLayout.setPosition(geometry.footer().x(), geometry.footer().y());
         this.swatchWidget.setPosition(
-                x + centered(CONTENT_WIDTH, this.swatchWidget.getWidth()),
-                y + centered(CONTENT_HEIGHT, this.swatchWidget.getHeight())
+                geometry.contentX() + centered(CONTENT_WIDTH, this.swatchWidget.getWidth()),
+                geometry.contentY() + centered(this.getContentHeight(), this.swatchWidget.getHeight())
+        );
+    }
+
+    private ThemeEditorLayoutGeometry calculateLayoutGeometry() {
+        return calculateLayoutGeometry(
+                this.getCenteredX(),
+                this.getCenteredY(),
+                this.footerLayout.getWidth(),
+                this.footerLayout.getHeight()
+        );
+    }
+
+    static ThemeEditorLayoutGeometry calculateLayoutGeometry(
+            int contentX,
+            int contentY,
+            int footerWidth,
+            int footerHeight
+    ) {
+        int contentHeight = FOOTER_Y_OFFSET + footerHeight;
+        int bodyY = contentY + BODY_Y_OFFSET;
+        int editorControlsY = bodyY + LIST_HEIGHT + SECTION_GAP;
+        int galleryX = contentX + LIST_WIDTH + COLUMN_GAP;
+        return new ThemeEditorLayoutGeometry(
+                contentX,
+                contentY,
+                new LayoutRectangle(
+                        contentX - PANEL_PADDING,
+                        contentY - PANEL_PADDING,
+                        CONTENT_WIDTH + PANEL_PADDING * 2,
+                        contentHeight + PANEL_PADDING * 2
+                ),
+                new LayoutRectangle(contentX, bodyY, LIST_WIDTH, LIST_HEIGHT),
+                new LayoutRectangle(
+                        contentX,
+                        editorControlsY,
+                        LIST_WIDTH,
+                        EDITOR_CONTROLS_HEIGHT
+                ),
+                new LayoutRectangle(galleryX, bodyY, GALLERY_WIDTH, BODY_HEIGHT),
+                new LayoutRectangle(
+                        contentX + centered(CONTENT_WIDTH, footerWidth),
+                        contentY + FOOTER_Y_OFFSET,
+                        footerWidth,
+                        footerHeight
+                )
         );
     }
 
@@ -424,7 +775,49 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
 
     @Override
     int getContentHeight() {
-        return CONTENT_HEIGHT;
+        return FOOTER_Y_OFFSET + this.footerLayout.getHeight();
+    }
+
+    record LayoutRectangle(int x, int y, int width, int height) {
+        int right() {
+            return this.x + this.width;
+        }
+
+        int bottom() {
+            return this.y + this.height;
+        }
+
+        LayoutRectangle inset(int padding) {
+            return new LayoutRectangle(
+                    this.x + padding,
+                    this.y + padding,
+                    this.width - padding * 2,
+                    this.height - padding * 2
+            );
+        }
+    }
+
+    record ThemeEditorLayoutGeometry(
+            int contentX,
+            int contentY,
+            LayoutRectangle panel,
+            LayoutRectangle variableList,
+            LayoutRectangle editorControls,
+            LayoutRectangle gallery,
+            LayoutRectangle footer
+    ) {
+        int opacitySliderY() {
+            return this.editorControls.y() + OPACITY_SLIDER_Y_OFFSET;
+        }
+
+        LayoutRectangle status(int statusHeight) {
+            return new LayoutRectangle(
+                    this.gallery.x() + GALLERY_PADDING,
+                    this.gallery.bottom() - GALLERY_PADDING - statusHeight,
+                    this.gallery.width() - GALLERY_PADDING * 2,
+                    statusHeight
+            );
+        }
     }
 
     private static String variableTranslationKey(WidgetThemeVariable variable) {
@@ -453,10 +846,10 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
                     height,
                     ROW_HEIGHT,
                     Component.translatable("server_waypoint.theme.variables"),
-                    2,
-                    2,
-                    2,
-                    2,
+                    LIST_DECORATION_PADDING,
+                    LIST_DECORATION_PADDING,
+                    LIST_DECORATION_PADDING,
+                    LIST_DECORATION_PADDING,
                     PANEL_BACKGROUND,
                     BORDER,
                     true
