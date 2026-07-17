@@ -6,6 +6,7 @@ import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
+import _959.server_waypoint.common.client.util.ColorHelper;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
@@ -29,8 +30,12 @@ import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.getCurrentDimensionName;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pop;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.push;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scale;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.texture;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.FOCUS_RING;
@@ -41,6 +46,7 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
+import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
 import static _959.server_waypoint.util.CommandGenerator.removeCmd;
 import static _959.server_waypoint.util.CommandGenerator.removeListCmd;
@@ -53,6 +59,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private static final int buttonIconSize = 12;
     private static final int itemHeight = 20;
     private static final int treeIndent = 10;
+    private static final int labelTextGap = 3;
+    private static final int labelLineGap = 1;
+    private static final float metadataTextScale = 0.75F;
+    private static final String minecraftNamespace = "minecraft:";
     private static double SCROLLED_POSITION = 0.0D;
     private final WaypointManagerScreen parentScreen;
     private final WaypointQueryEngine queryEngine;
@@ -490,7 +500,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 dimensionNode.dimensionName(),
                 18,
                 rowY + textVertOffset,
-                getColor(TEXT_PRIMARY),
+                getDisplayDimensionColor(dimensionNode.dimensionName()),
                 true
         );
         texture(
@@ -602,15 +612,99 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             drawText(context, textRenderer, "*", indent + 6, finalY, textColor);
         }
         drawInitialsBox(context, initials, indent + 15, finalY - 1, backgroundColor, getInitialsTextColor(rgb, wpRendered));
+        String dimensionLine = "";
+        String listName = "";
+        int dimensionColor = getColor(TEXT_MUTED);
         if (waypointNode.showListName()) {
-            String listPrefix = waypointNode.showDimensionName()
-                    ? waypointNode.dimensionName() + " / " + waypointNode.waypointList().name() + " / "
-                    : waypointNode.waypointList().name() + " / ";
-            drawText(context, textRenderer, listPrefix, indent + 55, finalY, getColor(TEXT_MUTED));
-            drawText(context, textRenderer, name, indent + 55 + textRenderer.width(listPrefix), finalY, textColor);
-        } else {
-            drawText(context, textRenderer, name, indent + 55, finalY, textColor);
+            if (waypointNode.showDimensionName()) {
+                dimensionLine = toDisplayDimensionName(waypointNode.dimensionName());
+                dimensionColor = getDisplayDimensionColor(waypointNode.dimensionName());
+            }
+            listName = waypointNode.waypointList().name();
         }
+        renderWaypointLabel(
+                context,
+                dimensionLine,
+                listName,
+                name,
+                indent + 55,
+                rowY,
+                contentWidth,
+                dimensionColor,
+                textColor
+        );
+    }
+
+    private void renderWaypointLabel(
+            GuiGraphicsExtractor context,
+            String dimensionLine,
+            String listName,
+            String waypointName,
+            int x,
+            int rowY,
+            int contentWidth,
+            int dimensionColor,
+            int nameColor
+    ) {
+        int availableWidth = Math.max(0, contentWidth - x - 2);
+        int metadataLineHeight = Math.round(textRenderer.lineHeight * metadataTextScale);
+        int listWidth = (int)Math.ceil(textRenderer.width(listName) * metadataTextScale);
+        int waypointX = listName.isEmpty() ? 0 : listWidth + labelTextGap;
+        int detailWidth = waypointX + textRenderer.width(waypointName);
+        int dimensionWidth = (int)Math.ceil(textRenderer.width(dimensionLine) * metadataTextScale);
+        int labelWidth = Math.max(dimensionWidth, detailWidth);
+        if (availableWidth == 0 || labelWidth == 0) {
+            return;
+        }
+
+        boolean twoLines = !dimensionLine.isEmpty();
+        float labelScale = Math.min(1.0F, (float)availableWidth / labelWidth);
+        int textHeight = twoLines
+                ? metadataLineHeight + labelLineGap + textRenderer.lineHeight
+                : textRenderer.lineHeight;
+        int scaledTextHeight = Math.round(textHeight * labelScale);
+        int y = rowY + centered(itemHeight, scaledTextHeight) + (twoLines ? 0 : 1);
+        int detailY = twoLines ? metadataLineHeight + labelLineGap : 0;
+
+        push(context);
+        translate(context, x, y);
+        scale(context, labelScale, labelScale);
+        if (twoLines) {
+            renderMetadataText(context, dimensionLine, 0, 0, dimensionColor);
+        }
+        if (!listName.isEmpty()) {
+            renderMetadataText(
+                    context,
+                    listName,
+                    0,
+                    detailY + textRenderer.lineHeight - metadataLineHeight,
+                    getColor(TEXT_MUTED)
+            );
+        }
+        drawText(context, textRenderer, waypointName, waypointX, detailY, nameColor);
+        pop(context);
+    }
+
+    private void renderMetadataText(GuiGraphicsExtractor context, String text, int x, int y, int color) {
+        push(context);
+        translate(context, x, y);
+        scale(context, metadataTextScale, metadataTextScale);
+        drawText(context, textRenderer, text, 0, 0, color);
+        pop(context);
+    }
+
+    private static String toDisplayDimensionName(String dimensionName) {
+        if (dimensionName.startsWith(minecraftNamespace)) {
+            return dimensionName.substring(minecraftNamespace.length());
+        }
+        return dimensionName;
+    }
+
+    private static int getDisplayDimensionColor(String dimensionName) {
+        return ColorHelper.scaleRgb(
+                0xFF000000 | getDimensionColor(dimensionName).value(),
+                0.8F
+        );
     }
 
     @Override

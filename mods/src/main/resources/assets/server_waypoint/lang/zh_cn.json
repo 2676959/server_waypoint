@@ -25,6 +25,7 @@
   "waypoint.dimension.show_all": "显示所有维度",
   "waypoint.list_name.info": "列表：%1$s",
   "waypoint.search.entry": "搜索：",
+  "waypoint.search.hint": "按名称搜索路径点……",
   "waypoint.sort.default": "默认",
   "waypoint.sort.name": "名称",
   "waypoint.sort.distance": "距离",

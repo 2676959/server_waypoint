@@ -64,6 +64,16 @@ public final class WidgetTextures {
     public static final
     //$ resource_location_type_swap
     Identifier
+    CUBE_ICON = modId("textures/gui/cube.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    STACKS_ICON = modId("textures/gui/stacks.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
     FLAT_LIST_MODE_ICON = modId("textures/gui/menu.png");
 
     public static final
