@@ -1,6 +1,7 @@
 package _959.server_waypoint.common.client;
 
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
+import _959.server_waypoint.core.waypoint.WaypointSorting;
 import com.google.gson.annotations.Expose;
 
 public class ClientConfig {
@@ -11,6 +12,10 @@ public class ClientConfig {
     @Expose private int viewDistance = 12;
     @Expose private boolean autoSyncToXaerosMinimap = true;
     @Expose private boolean autoSyncToVoxelMap = true;
+    @Expose private WaypointSorting.SortMode waypointManagerSortMode = WaypointSorting.SortMode.DEFAULT;
+    @Expose private boolean waypointManagerSortReversed = false;
+    @Expose private boolean waypointManagerGroupByLists = true;
+    @Expose private boolean waypointManagerShowAllDimensions = false;
     public static boolean isXaerosMinimapLoaded = false;
     public static boolean isVoxelMapLoaded = false;
 
@@ -75,5 +80,49 @@ public class ClientConfig {
     public void setWaypointBackgroundAlpha(int waypointBackgroundAlpha) {
         this.waypointBackgroundAlpha = waypointBackgroundAlpha;
         OptimizedWaypointRenderer.setWaypointBgAlpha(waypointBackgroundAlpha);
+    }
+
+    public WaypointSorting.SortMode getWaypointManagerSortMode() {
+        return waypointManagerSortMode == null
+                ? WaypointSorting.SortMode.DEFAULT
+                : waypointManagerSortMode;
+    }
+
+    public void setWaypointManagerSortMode(WaypointSorting.SortMode waypointManagerSortMode) {
+        this.waypointManagerSortMode = waypointManagerSortMode == null
+                ? WaypointSorting.SortMode.DEFAULT
+                : waypointManagerSortMode;
+        if (this.waypointManagerSortMode == WaypointSorting.SortMode.DEFAULT) {
+            this.waypointManagerSortReversed = false;
+            this.waypointManagerGroupByLists = true;
+        }
+    }
+
+    public boolean isWaypointManagerSortReversed() {
+        return getWaypointManagerSortMode() != WaypointSorting.SortMode.DEFAULT
+                && waypointManagerSortReversed;
+    }
+
+    public void setWaypointManagerSortReversed(boolean waypointManagerSortReversed) {
+        this.waypointManagerSortReversed = getWaypointManagerSortMode()
+                != WaypointSorting.SortMode.DEFAULT && waypointManagerSortReversed;
+    }
+
+    public boolean isWaypointManagerGroupByLists() {
+        return getWaypointManagerSortMode() == WaypointSorting.SortMode.DEFAULT
+                || waypointManagerGroupByLists;
+    }
+
+    public void setWaypointManagerGroupByLists(boolean waypointManagerGroupByLists) {
+        this.waypointManagerGroupByLists = getWaypointManagerSortMode()
+                == WaypointSorting.SortMode.DEFAULT || waypointManagerGroupByLists;
+    }
+
+    public boolean isWaypointManagerShowAllDimensions() {
+        return waypointManagerShowAllDimensions;
+    }
+
+    public void setWaypointManagerShowAllDimensions(boolean waypointManagerShowAllDimensions) {
+        this.waypointManagerShowAllDimensions = waypointManagerShowAllDimensions;
     }
 }

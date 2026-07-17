@@ -2,6 +2,7 @@
 //~ resource_location_import
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.layout.WidgetPack;
@@ -151,10 +152,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         sortingModeDropdown.addIconItem(
                 Component.translatable("waypoint.sort.default"),
                 WidgetTextures.SORT_DEFAULT_ICON,
-                () -> {
-                    waypointListWidget.setSortMode(WaypointSorting.SortMode.DEFAULT);
-                    syncControlStates();
-                }
+                () -> setSortMode(WaypointSorting.SortMode.DEFAULT)
         );
         sortingModeDropdown.addIconItem(
                 Component.translatable("waypoint.sort.name"),
@@ -171,6 +169,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 WidgetTextures.SORT_COLOR_ICON,
                 () -> toggleSortMode(WaypointSorting.SortMode.COLOR)
         );
+        restorePersistentState();
         syncControlStates();
 
         this.middleLayout = new WidgetPack(
@@ -412,6 +411,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private void setShowAllDimensions(boolean showAllDimensions) {
         waypointListWidget.setShowAllDimensions(showAllDimensions);
         dimensionListWidget.active = resolveDimensionListActive(dimensionListWidget.visible);
+        persistManagerState();
     }
 
     static boolean resolveDimensionListActive(boolean dimensionListVisible) {
@@ -521,6 +521,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         WaypointSorting.SortMode activeMode = waypointListWidget.getSortMode();
         boolean reversed = waypointListWidget.isSortReversed();
         boolean groupByLists = waypointListWidget.isGroupByLists();
+        allDimensionsToggle.setState(waypointListWidget.isShowingAllDimensions());
         groupModeToggle.setState(groupByLists);
 
         int sortIndex = switch (activeMode) {
@@ -550,6 +551,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             waypointListWidget.setSortMode(resolvedSortMode);
         }
         waypointListWidget.setGroupByLists(groupByLists);
+        persistManagerState();
         syncControlStates();
     }
 
@@ -564,7 +566,34 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
     private void toggleSortMode(WaypointSorting.SortMode sortMode) {
         waypointListWidget.toggleSortMode(sortMode);
+        persistManagerState();
         syncControlStates();
+    }
+
+    private void setSortMode(WaypointSorting.SortMode sortMode) {
+        waypointListWidget.setSortMode(sortMode);
+        persistManagerState();
+        syncControlStates();
+    }
+
+    private void restorePersistentState() {
+        ClientConfig config = WaypointClientMod.getClientConfig();
+        WaypointSorting.SortMode sortMode = config.getWaypointManagerSortMode();
+        waypointListWidget.setSortMode(sortMode);
+        if (config.isWaypointManagerSortReversed()) {
+            waypointListWidget.toggleSortMode(sortMode);
+        }
+        waypointListWidget.setGroupByLists(config.isWaypointManagerGroupByLists());
+        waypointListWidget.setShowAllDimensions(config.isWaypointManagerShowAllDimensions());
+    }
+
+    private void persistManagerState() {
+        ClientConfig config = WaypointClientMod.getClientConfig();
+        config.setWaypointManagerSortMode(waypointListWidget.getSortMode());
+        config.setWaypointManagerSortReversed(waypointListWidget.isSortReversed());
+        config.setWaypointManagerGroupByLists(waypointListWidget.isGroupByLists());
+        config.setWaypointManagerShowAllDimensions(waypointListWidget.isShowingAllDimensions());
+        this.waypointClientMod.saveConfig();
     }
 
     private boolean mouseClickedSearchSuggestion(double mouseX, double mouseY) {
