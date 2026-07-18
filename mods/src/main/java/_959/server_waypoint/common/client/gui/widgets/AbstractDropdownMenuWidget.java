@@ -244,8 +244,7 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
             return this.moveHighlight(navigationStep);
         }
         if (keyCode == GLFW.GLFW_KEY_ENTER
-                || keyCode == GLFW.GLFW_KEY_KP_ENTER
-                || keyCode == GLFW.GLFW_KEY_SPACE) {
+                || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
             if (!this.expanded) {
                 this.playClickSound();
                 this.setExpanded(true);
