@@ -19,7 +19,7 @@ base {
 }
 
 loom {
-    accessWidenerPath.set(rootProject.file("mods/src/fabric-unobfuscated/server_waypoint.accesswidener"))
+    accessWidenerPath.set(rootProject.file("mods/src/main/resources/server_waypoint-official.accesswidener"))
 }
 
 stonecutter {
@@ -49,6 +49,7 @@ sourceSets.main {
     resources {
         exclude("META-INF")
         exclude("pack.mcmeta")
+        exclude("server_waypoint-official.accesswidener")
     }
 }
 

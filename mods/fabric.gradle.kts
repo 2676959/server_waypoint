@@ -63,6 +63,7 @@ sourceSets.main {
     resources {
         exclude("META-INF")
         exclude("pack.mcmeta")
+        exclude("server_waypoint-official.accesswidener")
     }
 }
 

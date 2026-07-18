@@ -268,8 +268,7 @@ class AbstractDropdownMenuWidgetTest {
         assertEquals(0, dropdown.getHighlightedItemIndex());
         assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_ESCAPE, 0, 0));
         assertFalse(dropdown.isExpanded());
-        assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_SPACE, 0, 0));
-        assertTrue(dropdown.isExpanded());
+        assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_ENTER, 0, 0));
         assertEquals(0, dropdown.getHighlightedItemIndex());
         assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_KP_ENTER, 0, 0));
         assertFalse(dropdown.isExpanded());

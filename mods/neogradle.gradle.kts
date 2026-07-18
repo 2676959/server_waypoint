@@ -50,6 +50,7 @@ sourceSets.main {
         exclude("fabric.mod.json")
         exclude("META-INF/mods.toml")
         exclude("pack.mcmeta")
+        exclude("server_waypoint-official.accesswidener")
     }
 }
 

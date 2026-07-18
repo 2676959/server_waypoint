@@ -132,6 +132,7 @@ sourceSets.main {
         exclude("fabric.mod.json")
         exclude("META-INF/neoforge.mods.toml")
         exclude("server_waypoint-fabric.mixins.json")
+        exclude("server_waypoint-official.accesswidener")
     }
 }
 
