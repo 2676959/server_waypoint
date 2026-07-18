@@ -30,6 +30,8 @@
   "waypoint.sort.name": "名称",
   "waypoint.sort.distance": "距离",
   "waypoint.sort.color": "颜色",
+  "waypoint.sort.ascending": "升序",
+  "waypoint.sort.descending": "降序",
   "waypoint.group.lists": "按列表分组",
   "waypoint.group.flat": "平铺列表",
   "waypoint.add.screen.title": "添加新路径点",

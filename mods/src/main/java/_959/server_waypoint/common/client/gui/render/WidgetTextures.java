@@ -101,6 +101,16 @@ public final class WidgetTextures {
     Identifier
     SORT_NAME_ICON = modId("textures/gui/sort_by_alpha.png");
 
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    SORT_ASCENDING_ICON = modId("textures/gui/arrow_upward.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    SORT_DESCENDING_ICON = modId("textures/gui/arrow_downward.png");
+
     private WidgetTextures() {
     }
 }

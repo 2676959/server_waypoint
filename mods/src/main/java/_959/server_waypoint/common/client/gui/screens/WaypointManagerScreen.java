@@ -66,7 +66,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private static final int CONTROL_ICON_PADDING = 2;
     private static final int CONTROL_COLUMN_X_OFFSET =
             (LEFT_PART_WIDTH - CONTROL_BUTTON_SIZE) / 2;
-    private static final int CONTROL_COLUMN_HEIGHT = CONTROL_BUTTON_SIZE * 4 + CONTROL_GAP * 3;
+    private static final int CONTROL_COLUMN_HEIGHT = CONTROL_BUTTON_SIZE * 5 + CONTROL_GAP * 4;
     private static final int MIN_DIMENSION_LIST_HEIGHT = DIMENSION_ICON_SIZE + DIMENSION_VERTICAL_PADDING * 2;
     private static final int MIN_WAYPOINT_LIST_HEIGHT = 28;
     private static final float RELATIVE_HEIGHT = 0.82F;
@@ -76,6 +76,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private final IconButton addWaypointButton;
     private final WaypointSearchBarWidget searchField;
     private final IconToggleButton groupModeToggle;
+    private final IconToggleButton sortOrderToggle;
     private final IconDropdownMenu sortingModeDropdown;
     private final IconToggleButton allDimensionsToggle;
     private final Screen parentScreen;
@@ -146,6 +147,13 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 WidgetTextures.GROUPED_LIST_MODE_ICON,
                 this::setGroupMode
         );
+        sortOrderToggle = new IconToggleButton(
+                Component.translatable("waypoint.sort.ascending"),
+                Component.translatable("waypoint.sort.descending"),
+                WidgetTextures.SORT_ASCENDING_ICON,
+                WidgetTextures.SORT_DESCENDING_ICON,
+                this::setSortReversed
+        );
         sortingModeDropdown = new IconDropdownMenu(
                 Component.translatable("waypoint.sort.default")
         );
@@ -189,6 +197,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         controlColumn.addChild(allDimensionsToggle, LayoutFlow.Direction.FORWARD);
         controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
         controlColumn.addChild(groupModeToggle, LayoutFlow.Direction.FORWARD);
+        controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
+        controlColumn.addChild(sortOrderToggle, LayoutFlow.Direction.FORWARD);
         controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
         controlColumn.addChild(sortingModeDropdown, LayoutFlow.Direction.FORWARD);
         controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
@@ -492,6 +502,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, delta);
+        sortOrderToggle.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
         sortingModeDropdown.
         //$ render_method_swap
         extractRenderState
@@ -523,6 +537,9 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         boolean groupByLists = waypointListWidget.isGroupByLists();
         allDimensionsToggle.setState(waypointListWidget.isShowingAllDimensions());
         groupModeToggle.setState(groupByLists);
+        sortOrderToggle.setState(reversed);
+        sortOrderToggle.active = sortOrderToggle.visible
+                && activeMode != WaypointSorting.SortMode.DEFAULT;
 
         int sortIndex = switch (activeMode) {
             case DEFAULT -> 0;
@@ -576,6 +593,16 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         syncControlStates();
     }
 
+    private void setSortReversed(boolean reversed) {
+        WaypointSorting.SortMode activeMode = waypointListWidget.getSortMode();
+        if (activeMode != WaypointSorting.SortMode.DEFAULT
+                && waypointListWidget.isSortReversed() != reversed) {
+            waypointListWidget.toggleSortMode(activeMode);
+        }
+        persistManagerState();
+        syncControlStates();
+    }
+
     private void restorePersistentState() {
         ClientConfig config = WaypointClientMod.getClientConfig();
         WaypointSorting.SortMode sortMode = config.getWaypointManagerSortMode();
@@ -619,6 +646,9 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         addWaypointButton.active = visible;
         groupModeToggle.visible = visible;
         groupModeToggle.active = visible;
+        sortOrderToggle.visible = visible;
+        sortOrderToggle.active = visible
+                && waypointListWidget.getSortMode() != WaypointSorting.SortMode.DEFAULT;
         sortingModeDropdown.visible = visible;
         sortingModeDropdown.active = visible;
         allDimensionsToggle.visible = visible;
@@ -988,7 +1018,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                     context,
                     this,
                     this.state ? this.state1Icon : this.state0Icon,
-                    this.state,
+                    false,
                     true
             );
         }
