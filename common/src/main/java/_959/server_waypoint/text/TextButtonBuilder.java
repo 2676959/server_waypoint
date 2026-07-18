@@ -2,36 +2,77 @@ package _959.server_waypoint.text;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
-import _959.server_waypoint.util.CommandGenerator.ListOptions;
-import _959.server_waypoint.util.CommandGenerator.ListTarget;
+import _959.server_waypoint.util.StringCommandBuilder.ListOptions;
+import _959.server_waypoint.util.StringCommandBuilder.ListTarget;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-import static _959.server_waypoint.util.CommandGenerator.*;
+import static _959.server_waypoint.util.StringCommandBuilder.*;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
-public class TextButton {
+public class TextButtonBuilder {
     private static final String REPLACE_SYMBOL = "⇄";
     private static final String RESTORE_SYMBOL = "↓";
     private static final String REMOVE_SYMBOL = "❌";
     private static final String EDIT_SYMBOL = "📝";
     private static final String ADD_SYMBOL = "+";
+    public static final String PREVIOUS_PAGE = "←";
+    public static final String NEXT_PAGE = "→";
 
-    private static Component buildButton(NamedTextColor color, String command, String symbol, Component hoverText) {
-        Style btnStyle = Style.style()
-                .decoration(TextDecoration.BOLD, TextDecoration.State.TRUE)
+    private static Component buildButton(
+            Component label,
+            NamedTextColor color,
+            TextDecoration.State bold,
+            TextDecoration.State italic,
+            @Nullable ClickEvent clickEvent,
+            @Nullable Component hoverText
+    ) {
+        Style.Builder style = Style.style()
                 .color(color)
-                .clickEvent(ClickEvent.suggestCommand(command))
-                .hoverEvent(HoverEvent.showText(hoverText))
-                .build();
-        return text("["+symbol+"]").style(btnStyle);
+                .decoration(TextDecoration.BOLD, bold)
+                .decoration(TextDecoration.ITALIC, italic);
+        if (clickEvent != null) {
+            style.clickEvent(clickEvent);
+        }
+        if (hoverText != null) {
+            style.hoverEvent(HoverEvent.showText(hoverText));
+        }
+        return text("[").append(label).append(text("]")).style(style.build());
+    }
+
+    private static Component buildSuggestButton(
+            NamedTextColor color,
+            String command,
+            String symbol,
+            Component hoverText
+    ) {
+        return buildButton(
+                text(symbol),
+                color,
+                TextDecoration.State.TRUE,
+                TextDecoration.State.NOT_SET,
+                ClickEvent.suggestCommand(command),
+                hoverText
+        );
+    }
+
+    private static Component buildInactiveButton(String symbol) {
+        return buildButton(
+                text(symbol),
+                NamedTextColor.DARK_GRAY,
+                TextDecoration.State.NOT_SET,
+                TextDecoration.State.NOT_SET,
+                null,
+                null
+        );
     }
 
     public static Component getListSortControls(ListTarget target, ListOptions options) {
@@ -76,23 +117,31 @@ public class TextButton {
             boolean enabled,
             String hoverTranslationKey
     ) {
-        NamedTextColor color = !enabled
-                ? NamedTextColor.DARK_GRAY
-                : selected ? NamedTextColor.GOLD : NamedTextColor.AQUA;
-        Component button = text("[")
-                .append(label)
-                .append(text("]"))
-                .color(color)
-                .decoration(TextDecoration.BOLD, selected)
-                .decoration(TextDecoration.ITALIC, false);
+        NamedTextColor color;
+        TextDecoration.State bold;
+        ClickEvent clickEvent = null;
+        Component hoverText = null;
         if (!enabled) {
-            return button.hoverEvent(HoverEvent.showText(translatable("button.sort.order.unavailable")));
+            color = NamedTextColor.DARK_GRAY;
+            bold = TextDecoration.State.FALSE;
+            hoverText = translatable("button.sort.order.unavailable");
+        } else if (selected) {
+            color = NamedTextColor.GOLD;
+            bold = TextDecoration.State.TRUE;
+        } else {
+            color = NamedTextColor.AQUA;
+            bold = TextDecoration.State.FALSE;
+            clickEvent = ClickEvent.runCommand(command);
+            hoverText = translatable(hoverTranslationKey);
         }
-        if (selected) {
-            return button;
-        }
-        return button.clickEvent(ClickEvent.runCommand(command))
-                .hoverEvent(HoverEvent.showText(translatable(hoverTranslationKey)));
+        return buildButton(
+                label,
+                color,
+                bold,
+                TextDecoration.State.FALSE,
+                clickEvent,
+                hoverText
+        );
     }
 
     private static String sortModeTranslationKey(WaypointSorting.SortMode sortMode) {
@@ -112,18 +161,18 @@ public class TextButton {
     ) {
         Component previous = options.pageNumber() > 1
                 ? pageButton(
-                        "←",
+                PREVIOUS_PAGE,
                         listPageCmd(target, options, options.pageNumber() - 1),
                         "button.page.previous"
                 )
-                : text("[←]", NamedTextColor.DARK_GRAY);
+                : buildInactiveButton(PREVIOUS_PAGE);
         Component next = options.pageNumber() < totalPages
                 ? pageButton(
-                        "→",
+                NEXT_PAGE,
                         listPageCmd(target, options, options.pageNumber() + 1),
                         "button.page.next"
                 )
-                : text("[→]", NamedTextColor.DARK_GRAY);
+                : buildInactiveButton(NEXT_PAGE);
         Component pageText = translatable(
                 "waypoint.list.page",
                 text(options.pageNumber()),
@@ -136,13 +185,18 @@ public class TextButton {
     }
 
     private static Component pageButton(String symbol, String command, String hoverTranslationKey) {
-        return text("[" + symbol + "]", NamedTextColor.AQUA)
-                .clickEvent(ClickEvent.runCommand(command))
-                .hoverEvent(HoverEvent.showText(translatable(hoverTranslationKey)));
+        return buildButton(
+                text(symbol),
+                NamedTextColor.AQUA,
+                TextDecoration.State.NOT_SET,
+                TextDecoration.State.NOT_SET,
+                ClickEvent.runCommand(command),
+                translatable(hoverTranslationKey)
+        );
     }
 
     public static Component replaceButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
-        return buildButton(
+        return buildSuggestButton(
                 NamedTextColor.AQUA,
                 editCmd(dimensionName, listName, waypoint.name(), waypoint),
                 REPLACE_SYMBOL,
@@ -151,7 +205,7 @@ public class TextButton {
     }
 
     public static Component restoreButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
-        return buildButton(
+        return buildSuggestButton(
                 NamedTextColor.LIGHT_PURPLE,
                 addCmd(dimensionName, listName, waypoint),
                 RESTORE_SYMBOL,
@@ -160,7 +214,7 @@ public class TextButton {
     }
 
     public static Component removeButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
-        return buildButton(
+        return buildSuggestButton(
                 NamedTextColor.RED,
                 removeCmd(dimensionName, listName, waypoint),
                 REMOVE_SYMBOL,
@@ -169,7 +223,7 @@ public class TextButton {
     }
 
     public static Component editButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
-        return buildButton(
+        return buildSuggestButton(
                 NamedTextColor.YELLOW,
                 editCmd(dimensionName, listName, waypoint.name(), waypoint),
                 EDIT_SYMBOL,
@@ -178,7 +232,7 @@ public class TextButton {
     }
 
     public static Component addWaypointButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
-        return buildButton(
+        return buildSuggestButton(
                 NamedTextColor.GREEN,
                 addCmd(dimensionName, listName, waypoint),
                 ADD_SYMBOL,
@@ -187,7 +241,7 @@ public class TextButton {
     }
 
     public static Component addListButton(String dimensionName, String listName) {
-        return buildButton(
+        return buildSuggestButton(
                 NamedTextColor.GREEN,
                 addListCmd(dimensionName, listName),
                 ADD_SYMBOL,

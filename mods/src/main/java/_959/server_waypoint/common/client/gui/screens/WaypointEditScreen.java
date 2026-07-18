@@ -16,7 +16,7 @@ import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
-import static _959.server_waypoint.util.CommandGenerator.editCmd;
+import static _959.server_waypoint.util.StringCommandBuilder.editCmd;
 
 public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     private TranslucentButton updateButton;

@@ -2,35 +2,16 @@ package _959.server_waypoint.util;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
-import com.mojang.brigadier.Command;
-import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.ArgumentBuilder;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
-import java.util.function.Supplier;
 
 import static _959.server_waypoint.command.CoreWaypointCommand.*;
 import static _959.server_waypoint.util.ColorUtils.rgbToNameOrHexCode;
-import static com.mojang.brigadier.arguments.IntegerArgumentType.integer;
-import static com.mojang.brigadier.arguments.StringArgumentType.string;
-import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
-import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
 
-public class CommandGenerator {
+public class StringCommandBuilder {
     public static final String WAYPOINT_COMMAND_WITH_SLASH = "/" + WAYPOINT_COMMAND;
-
-    public enum ListScope {
-        CURRENT_DIMENSION,
-        ALL_DIMENSIONS,
-        DIMENSION,
-        WAYPOINT_LIST
-    }
 
     public record ListTarget(
             boolean allDimensions,
@@ -46,177 +27,6 @@ public class CommandGenerator {
             int pageNumber,
             int pageLimit
     ) {
-    }
-
-    @FunctionalInterface
-    public interface ListCommandExecutor<S> {
-        void execute(
-                CommandContext<S> context,
-                ListScope scope,
-                WaypointSorting.SortMode sortMode,
-                boolean reversed,
-                @Nullable String fixedListName
-        );
-    }
-
-    public static <S, D> LiteralArgumentBuilder<S> listCommandNode(
-            Supplier<ArgumentType<D>> dimensionArgumentProvider,
-            SuggestionProvider<S> waypointListSuggestion,
-            ListCommandExecutor<S> executor
-    ) {
-        LiteralArgumentBuilder<S> listNode = literal(LIST_COMMAND);
-        configureListTarget(listNode, ListScope.CURRENT_DIMENSION, executor);
-
-        LiteralArgumentBuilder<S> allNode = literal("all");
-        configureListTarget(allNode, ListScope.ALL_DIMENSIONS, executor);
-        listNode.then(allNode);
-
-        RequiredArgumentBuilder<S, D> dimensionNode = argument(DIMENSION_ARG, dimensionArgumentProvider.get());
-        configureListTarget(dimensionNode, ListScope.DIMENSION, executor);
-
-        RequiredArgumentBuilder<S, String> listNameNode = argument(LIST_NAME_ARG, string());
-        listNameNode.suggests(waypointListSuggestion);
-        configureListTarget(listNameNode, ListScope.WAYPOINT_LIST, executor);
-        dimensionNode.then(listNameNode);
-        listNode.then(dimensionNode);
-        return listNode;
-    }
-
-    private static <S> void configureListTarget(
-            ArgumentBuilder<S, ?> targetNode,
-            ListScope scope,
-            ListCommandExecutor<S> executor
-    ) {
-        targetNode.executes(listCommand(scope, WaypointSorting.SortMode.DEFAULT, false, executor));
-        LiteralArgumentBuilder<S> searchNode = listSearchNode(scope, executor);
-        LiteralArgumentBuilder<S> sortNode = listSortNode(scope, executor);
-        LiteralArgumentBuilder<S> pageNode = listPageNode(
-                scope,
-                WaypointSorting.SortMode.DEFAULT,
-                false,
-                executor
-        );
-        LiteralArgumentBuilder<S> limitNode = listLimitNode(
-                scope,
-                WaypointSorting.SortMode.DEFAULT,
-                false,
-                executor
-        );
-        if (scope == ListScope.DIMENSION) {
-            searchNode.executes(reservedListCommand(SEARCH_COMMAND, executor));
-            sortNode.executes(reservedListCommand(SORT_COMMAND, executor));
-            pageNode.executes(reservedListCommand(PAGE_COMMAND, executor));
-            limitNode.executes(reservedListCommand(LIMIT_COMMAND, executor));
-        }
-        targetNode.then(searchNode);
-        targetNode.then(sortNode);
-        targetNode.then(pageNode);
-        targetNode.then(limitNode);
-    }
-
-    private static <S> LiteralArgumentBuilder<S> listSearchNode(
-            ListScope scope,
-            ListCommandExecutor<S> executor
-    ) {
-        RequiredArgumentBuilder<S, String> queryNode = argument(SEARCH_QUERY_ARG, string());
-        queryNode.executes(listCommand(scope, WaypointSorting.SortMode.DEFAULT, false, executor));
-        queryNode.then(listSortNode(scope, executor));
-        queryNode.then(listPageNode(scope, WaypointSorting.SortMode.DEFAULT, false, executor));
-        queryNode.then(listLimitNode(scope, WaypointSorting.SortMode.DEFAULT, false, executor));
-        LiteralArgumentBuilder<S> searchNode = literal(SEARCH_COMMAND);
-        return searchNode.then(queryNode);
-    }
-
-    private static <S> LiteralArgumentBuilder<S> listSortNode(
-            ListScope scope,
-            ListCommandExecutor<S> executor
-    ) {
-        LiteralArgumentBuilder<S> sortNode = literal(SORT_COMMAND);
-        for (WaypointSorting.SortMode sortMode : WaypointSorting.SortMode.values()) {
-            LiteralArgumentBuilder<S> modeNode = literal(sortMode.name().toLowerCase(Locale.ROOT));
-            modeNode.executes(listCommand(scope, sortMode, false, executor));
-            if (sortMode != WaypointSorting.SortMode.DEFAULT) {
-                modeNode.then(listOrderNode(scope, sortMode, executor));
-            }
-            modeNode.then(listPageNode(scope, sortMode, false, executor));
-            modeNode.then(listLimitNode(scope, sortMode, false, executor));
-            sortNode.then(modeNode);
-        }
-        return sortNode;
-    }
-
-    private static <S> LiteralArgumentBuilder<S> listOrderNode(
-            ListScope scope,
-            WaypointSorting.SortMode sortMode,
-            ListCommandExecutor<S> executor
-    ) {
-        LiteralArgumentBuilder<S> orderNode = literal(ORDER_COMMAND);
-
-        LiteralArgumentBuilder<S> ascendingNode = literal("ascending");
-        ascendingNode.executes(listCommand(scope, sortMode, false, executor));
-        ascendingNode.then(listPageNode(scope, sortMode, false, executor));
-        ascendingNode.then(listLimitNode(scope, sortMode, false, executor));
-        orderNode.then(ascendingNode);
-
-        LiteralArgumentBuilder<S> descendingNode = literal("descending");
-        descendingNode.executes(listCommand(scope, sortMode, true, executor));
-        descendingNode.then(listPageNode(scope, sortMode, true, executor));
-        descendingNode.then(listLimitNode(scope, sortMode, true, executor));
-        orderNode.then(descendingNode);
-        return orderNode;
-    }
-
-    private static <S> LiteralArgumentBuilder<S> listPageNode(
-            ListScope scope,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed,
-            ListCommandExecutor<S> executor
-    ) {
-        RequiredArgumentBuilder<S, Integer> pageNode = argument(PAGE_NUMBER_ARG, integer(1));
-        pageNode.executes(listCommand(scope, sortMode, reversed, executor));
-        pageNode.then(listLimitNode(scope, sortMode, reversed, executor));
-        LiteralArgumentBuilder<S> pageLiteral = literal(PAGE_COMMAND);
-        return pageLiteral.then(pageNode);
-    }
-
-    private static <S> LiteralArgumentBuilder<S> listLimitNode(
-            ListScope scope,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed,
-            ListCommandExecutor<S> executor
-    ) {
-        RequiredArgumentBuilder<S, Integer> limitNode = argument(PAGE_LIMIT_ARG, integer(1, MAX_PAGE_LIMIT));
-        limitNode.executes(listCommand(scope, sortMode, reversed, executor));
-        LiteralArgumentBuilder<S> limitLiteral = literal(LIMIT_COMMAND);
-        return limitLiteral.then(limitNode);
-    }
-
-    private static <S> Command<S> listCommand(
-            ListScope scope,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed,
-            ListCommandExecutor<S> executor
-    ) {
-        return context -> {
-            executor.execute(context, scope, sortMode, reversed, null);
-            return Command.SINGLE_SUCCESS;
-        };
-    }
-
-    private static <S> Command<S> reservedListCommand(
-            String listName,
-            ListCommandExecutor<S> executor
-    ) {
-        return context -> {
-            executor.execute(
-                    context,
-                    ListScope.WAYPOINT_LIST,
-                    WaypointSorting.SortMode.DEFAULT,
-                    false,
-                    listName
-            );
-            return Command.SINGLE_SUCCESS;
-        };
     }
 
     public static String tpCmd(String dimensionName, String waypointList, String waypointName) {

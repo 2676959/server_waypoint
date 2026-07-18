@@ -16,11 +16,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 
-import static _959.server_waypoint.text.TextButton.editButton;
-import static _959.server_waypoint.text.TextButton.removeButton;
+import static _959.server_waypoint.text.TextButtonBuilder.editButton;
+import static _959.server_waypoint.text.TextButtonBuilder.removeButton;
 import static _959.server_waypoint.util.BlockPosConverter.netherToOverWorld;
 import static _959.server_waypoint.util.BlockPosConverter.overWorldToNether;
-import static _959.server_waypoint.util.CommandGenerator.tpCmd;
+import static _959.server_waypoint.util.StringCommandBuilder.tpCmd;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;

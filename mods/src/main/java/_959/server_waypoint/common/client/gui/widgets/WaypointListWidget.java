@@ -49,9 +49,9 @@ import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScre
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
-import static _959.server_waypoint.util.CommandGenerator.removeCmd;
-import static _959.server_waypoint.util.CommandGenerator.removeListCmd;
-import static _959.server_waypoint.util.CommandGenerator.tpCmd;
+import static _959.server_waypoint.util.StringCommandBuilder.removeCmd;
+import static _959.server_waypoint.util.StringCommandBuilder.removeListCmd;
+import static _959.server_waypoint.util.StringCommandBuilder.tpCmd;
 
 public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNode> {
     public static int TELEPORT_KEY = 84;

@@ -12,8 +12,8 @@ import java.util.Set;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
-import static _959.server_waypoint.text.TextButton.addListButton;
-import static _959.server_waypoint.text.TextButton.addWaypointButton;
+import static _959.server_waypoint.text.TextButtonBuilder.addListButton;
+import static _959.server_waypoint.text.TextButtonBuilder.addWaypointButton;
 import static _959.server_waypoint.text.WaypointTextHelper.*;
 import static _959.server_waypoint.util.XaerosMapHelper.*;
 

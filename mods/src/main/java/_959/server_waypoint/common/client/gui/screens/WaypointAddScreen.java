@@ -23,7 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
-import static _959.server_waypoint.util.CommandGenerator.addCmd;
+import static _959.server_waypoint.util.StringCommandBuilder.addCmd;
 
 public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     private TranslucentTextField listNameField;
