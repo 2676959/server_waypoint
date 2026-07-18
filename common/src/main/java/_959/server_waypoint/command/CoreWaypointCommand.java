@@ -17,6 +17,9 @@ import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import _959.server_waypoint.text.TextButton;
+import _959.server_waypoint.util.CommandGenerator.ListOptions;
+import _959.server_waypoint.util.CommandGenerator.ListScope;
+import _959.server_waypoint.util.CommandGenerator.ListTarget;
 import _959.server_waypoint.util.TriConsumer;
 import _959.server_waypoint.util.WaypointInitials;
 import com.mojang.brigadier.Command;
@@ -24,8 +27,6 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -33,16 +34,12 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -57,7 +54,7 @@ import static _959.server_waypoint.text.WaypointTextHelper.*;
 import static _959.server_waypoint.translation.LanguageFilesManager.getExternalLoadedLanguages;
 import static _959.server_waypoint.util.ColorUtils.*;
 import static _959.server_waypoint.util.CommandGenerator.escapeListName;
-import static _959.server_waypoint.util.CommandGenerator.listPageCmd;
+import static _959.server_waypoint.util.CommandGenerator.listCommandNode;
 import static _959.server_waypoint.util.WaypointInitials.SINGLE_WORD_REGEX;
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
@@ -209,132 +206,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     @SuppressWarnings("unchecked")
     private ArgumentBuilder<S, ?> waypointNameNode() {
         return (ArgumentBuilder<S, ?>) argument(WAYPOINT_NAME_ARG, string()).suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION);
-    }
-
-    private LiteralArgumentBuilder<S> listCommandNode() {
-        LiteralArgumentBuilder<S> listNode = literal(LIST_COMMAND);
-        configureListTarget(listNode, ListScope.CURRENT_DIMENSION);
-
-        LiteralArgumentBuilder<S> allNode = literal("all");
-        configureListTarget(allNode, ListScope.ALL_DIMENSIONS);
-        listNode.then(allNode);
-
-        RequiredArgumentBuilder<S, D> dimensionNode = argument(DIMENSION_ARG, this.dimensionArgumentProvider.get());
-        configureListTarget(dimensionNode, ListScope.DIMENSION);
-
-        RequiredArgumentBuilder<S, String> listNameNode = argument(LIST_NAME_ARG, string());
-        listNameNode.suggests(this.WAYPOINT_LIST_SUGGESTION);
-        configureListTarget(listNameNode, ListScope.WAYPOINT_LIST);
-        dimensionNode.then(listNameNode);
-        listNode.then(dimensionNode);
-        return listNode;
-    }
-
-    private void configureListTarget(ArgumentBuilder<S, ?> targetNode, ListScope scope) {
-        targetNode.executes(listCommand(scope, WaypointSorting.SortMode.DEFAULT, false));
-        LiteralArgumentBuilder<S> searchNode = listSearchNode(scope);
-        LiteralArgumentBuilder<S> sortNode = listSortNode(scope);
-        LiteralArgumentBuilder<S> pageNode = listPageNode(scope, WaypointSorting.SortMode.DEFAULT, false);
-        LiteralArgumentBuilder<S> limitNode = listLimitNode(scope, WaypointSorting.SortMode.DEFAULT, false);
-        if (scope == ListScope.DIMENSION) {
-            searchNode.executes(reservedListCommand(SEARCH_COMMAND));
-            sortNode.executes(reservedListCommand(SORT_COMMAND));
-            pageNode.executes(reservedListCommand(PAGE_COMMAND));
-            limitNode.executes(reservedListCommand(LIMIT_COMMAND));
-        }
-        targetNode.then(searchNode);
-        targetNode.then(sortNode);
-        targetNode.then(pageNode);
-        targetNode.then(limitNode);
-    }
-
-    private LiteralArgumentBuilder<S> listSearchNode(ListScope scope) {
-        RequiredArgumentBuilder<S, String> queryNode = argument(SEARCH_QUERY_ARG, string());
-        queryNode.executes(listCommand(scope, WaypointSorting.SortMode.DEFAULT, false));
-        queryNode.then(listSortNode(scope));
-        queryNode.then(listPageNode(scope, WaypointSorting.SortMode.DEFAULT, false));
-        queryNode.then(listLimitNode(scope, WaypointSorting.SortMode.DEFAULT, false));
-        LiteralArgumentBuilder<S> searchNode = literal(SEARCH_COMMAND);
-        return searchNode.then(queryNode);
-    }
-
-    private LiteralArgumentBuilder<S> listSortNode(ListScope scope) {
-        LiteralArgumentBuilder<S> sortNode = literal(SORT_COMMAND);
-        for (WaypointSorting.SortMode sortMode : WaypointSorting.SortMode.values()) {
-            LiteralArgumentBuilder<S> modeNode = literal(sortMode.name().toLowerCase(Locale.ROOT));
-            modeNode.executes(listCommand(scope, sortMode, false));
-            if (sortMode != WaypointSorting.SortMode.DEFAULT) {
-                modeNode.then(listOrderNode(scope, sortMode));
-            }
-            modeNode.then(listPageNode(scope, sortMode, false));
-            modeNode.then(listLimitNode(scope, sortMode, false));
-            sortNode.then(modeNode);
-        }
-        return sortNode;
-    }
-
-    private LiteralArgumentBuilder<S> listOrderNode(ListScope scope, WaypointSorting.SortMode sortMode) {
-        LiteralArgumentBuilder<S> orderNode = literal(ORDER_COMMAND);
-
-        LiteralArgumentBuilder<S> ascendingNode = literal("ascending");
-        ascendingNode.executes(listCommand(scope, sortMode, false));
-        ascendingNode.then(listPageNode(scope, sortMode, false));
-        ascendingNode.then(listLimitNode(scope, sortMode, false));
-        orderNode.then(ascendingNode);
-
-        LiteralArgumentBuilder<S> descendingNode = literal("descending");
-        descendingNode.executes(listCommand(scope, sortMode, true));
-        descendingNode.then(listPageNode(scope, sortMode, true));
-        descendingNode.then(listLimitNode(scope, sortMode, true));
-        orderNode.then(descendingNode);
-        return orderNode;
-    }
-
-    private LiteralArgumentBuilder<S> listPageNode(
-            ListScope scope,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed
-    ) {
-        RequiredArgumentBuilder<S, Integer> pageNode = argument(PAGE_NUMBER_ARG, integer(1));
-        pageNode.executes(listCommand(scope, sortMode, reversed));
-        pageNode.then(listLimitNode(scope, sortMode, reversed));
-        LiteralArgumentBuilder<S> pageLiteral = literal(PAGE_COMMAND);
-        return pageLiteral.then(pageNode);
-    }
-
-    private LiteralArgumentBuilder<S> listLimitNode(
-            ListScope scope,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed
-    ) {
-        RequiredArgumentBuilder<S, Integer> limitNode = argument(PAGE_LIMIT_ARG, integer(1, MAX_PAGE_LIMIT));
-        limitNode.executes(listCommand(scope, sortMode, reversed));
-        LiteralArgumentBuilder<S> limitLiteral = literal(LIMIT_COMMAND);
-        return limitLiteral.then(limitNode);
-    }
-
-    private Command<S> listCommand(
-            ListScope scope,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed
-    ) {
-        return context -> {
-            executeList(context, scope, sortMode, reversed, null);
-            return Command.SINGLE_SUCCESS;
-        };
-    }
-
-    private Command<S> reservedListCommand(String listName) {
-        return context -> {
-            executeList(
-                    context,
-                    ListScope.WAYPOINT_LIST,
-                    WaypointSorting.SortMode.DEFAULT,
-                    false,
-                    listName
-            );
-            return Command.SINGLE_SUCCESS;
-        };
     }
 
     @SuppressWarnings("unchecked")
@@ -548,7 +419,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                 )
                         )
                 )
-                .then((ArgumentBuilder<Object, ?>) listCommandNode())
+                .then((ArgumentBuilder<Object, ?>) listCommandNode(
+                        this.dimensionArgumentProvider,
+                        this.WAYPOINT_LIST_SUGGESTION,
+                        this::executeList
+                ))
                 .then(literal(RELOAD_COMMAND)
                         .requires(source -> hasReloadPermission((S) source))
                         .executes(
@@ -942,7 +817,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         Component listText = getListDisplayText(source, page.display(), target.listName() != null);
         listText = listText.append(getListSortControls(target, options));
         if (page.totalPages() > 1) {
-            listText = listText.append(getPageNavigation(target, options, page));
+            listText = listText.append(getPageNavigation(
+                    target,
+                    options,
+                    page.totalPages(),
+                    page.totalWaypoints()
+            ));
         }
         this.sender.sendMessage(source, listText);
     }
@@ -986,176 +866,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             }
         }
         return listText;
-    }
-
-    private Component getListSortControls(ListTarget target, ListOptions options) {
-        Component controls = translatable("waypoint.list.sort.label", NamedTextColor.GRAY);
-        for (WaypointSorting.SortMode sortMode : WaypointSorting.SortMode.values()) {
-            boolean selected = options.sortMode() == sortMode;
-            controls = controls.appendSpace().append(listSortButton(
-                    translatable(sortModeTranslationKey(sortMode)),
-                    listPageCmd(
-                            target.allDimensions(),
-                            target.dimensionName(),
-                            target.listName(),
-                            options.filterText(),
-                            sortMode,
-                            false,
-                            1,
-                            options.pageLimit()
-                    ),
-                    selected,
-                    true,
-                    "button.sort." + sortMode.name().toLowerCase(Locale.ROOT)
-            ));
-        }
-
-        boolean orderEnabled = options.sortMode() != WaypointSorting.SortMode.DEFAULT;
-        controls = controls.appendSpace().append(text("·", NamedTextColor.GRAY)).appendSpace()
-                .append(listSortButton(
-                        text("↑"),
-                        listPageCmd(
-                                target.allDimensions(),
-                                target.dimensionName(),
-                                target.listName(),
-                                options.filterText(),
-                                options.sortMode(),
-                                false,
-                                1,
-                                options.pageLimit()
-                        ),
-                        orderEnabled && !options.reversed(),
-                        orderEnabled,
-                        "button.sort.ascending"
-                ))
-                .appendSpace()
-                .append(listSortButton(
-                        text("↓"),
-                        listPageCmd(
-                                target.allDimensions(),
-                                target.dimensionName(),
-                                target.listName(),
-                                options.filterText(),
-                                options.sortMode(),
-                                true,
-                                1,
-                                options.pageLimit()
-                        ),
-                        orderEnabled && options.reversed(),
-                        orderEnabled,
-                        "button.sort.descending"
-                ));
-        return controls.appendNewline()
-                .decoration(TextDecoration.BOLD, false)
-                .decoration(TextDecoration.ITALIC, false);
-    }
-
-    private Component listSortButton(
-            Component label,
-            String command,
-            boolean selected,
-            boolean enabled,
-            String hoverTranslationKey
-    ) {
-        NamedTextColor color = !enabled
-                ? NamedTextColor.DARK_GRAY
-                : selected ? NamedTextColor.GOLD : NamedTextColor.AQUA;
-        Component button = text("[")
-                .append(label)
-                .append(text("]"))
-                .color(color)
-                .decoration(TextDecoration.BOLD, selected)
-                .decoration(TextDecoration.ITALIC, false);
-        if (!enabled) {
-            return button.hoverEvent(HoverEvent.showText(translatable("button.sort.order.unavailable")));
-        }
-        if (selected) {
-            return button;
-        }
-        return button.clickEvent(ClickEvent.runCommand(command))
-                .hoverEvent(HoverEvent.showText(translatable(hoverTranslationKey)));
-    }
-
-    private static String sortModeTranslationKey(WaypointSorting.SortMode sortMode) {
-        return switch (sortMode) {
-            case DEFAULT -> "waypoint.sort.default";
-            case NAME -> "waypoint.sort.name";
-            case DISTANCE -> "waypoint.sort.distance";
-            case COLOR -> "waypoint.sort.color";
-        };
-    }
-
-    private Component getPageNavigation(
-            ListTarget target,
-            ListOptions options,
-            WaypointListPage.Page page
-    ) {
-        Component previous = page.hasPrevious()
-                ? pageButton(
-                        "←",
-                        listPageCmd(
-                                target.allDimensions(),
-                                target.dimensionName(),
-                                target.listName(),
-                                options.filterText(),
-                                options.sortMode(),
-                                options.reversed(),
-                                page.pageNumber() - 1,
-                                options.pageLimit()
-                        ),
-                        "button.page.previous"
-                )
-                : text("[←]", NamedTextColor.DARK_GRAY);
-        Component next = page.hasNext()
-                ? pageButton(
-                        "→",
-                        listPageCmd(
-                                target.allDimensions(),
-                                target.dimensionName(),
-                                target.listName(),
-                                options.filterText(),
-                                options.sortMode(),
-                                options.reversed(),
-                                page.pageNumber() + 1,
-                                options.pageLimit()
-                        ),
-                        "button.page.next"
-                )
-                : text("[→]", NamedTextColor.DARK_GRAY);
-        Component pageText = translatable(
-                "waypoint.list.page",
-                text(page.pageNumber()),
-                text(page.totalPages()),
-                text(page.limit()),
-                text(page.totalWaypoints())
-        ).color(NamedTextColor.GRAY);
-        return previous.appendSpace().append(pageText).appendSpace().append(next)
-                .decoration(TextDecoration.BOLD, false);
-    }
-
-    private Component pageButton(String symbol, String command, String hoverTranslationKey) {
-        return text("[" + symbol + "]", NamedTextColor.AQUA)
-                .clickEvent(ClickEvent.runCommand(command))
-                .hoverEvent(HoverEvent.showText(translatable(hoverTranslationKey)));
-    }
-
-    private enum ListScope {
-        CURRENT_DIMENSION,
-        ALL_DIMENSIONS,
-        DIMENSION,
-        WAYPOINT_LIST
-    }
-
-    private record ListTarget(boolean allDimensions, String dimensionName, String listName) {
-    }
-
-    private record ListOptions(
-            String filterText,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed,
-            int pageNumber,
-            int pageLimit
-    ) {
     }
 
     private void executeReload(S source) {
