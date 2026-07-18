@@ -125,7 +125,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 this::openAddWaypointScreen
         );
         allDimensionsToggle = new IconToggleButton(
-                Component.translatable("waypoint.dimension.show_all"),
+                Component.translatable("waypoint.dimension.show_selected"),
                 Component.translatable("waypoint.dimension.show_all"),
                 WidgetTextures.CUBE_ICON,
                 WidgetTextures.STACKS_ICON,

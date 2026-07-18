@@ -189,7 +189,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private void applySearchAndSort() {
         applySearchAndSort(
                 getPlayerWaypointPos(),
-                this.showAllDimensions ? getCurrentDimensionName() : null
+                getCurrentDimensionName()
         );
     }
 
@@ -235,7 +235,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     public void refreshDistanceSortIfPlayerMoved() {
         WaypointPos playerPosition = getPlayerWaypointPos();
-        String playerDimension = this.showAllDimensions ? getCurrentDimensionName() : null;
+        String playerDimension = getCurrentDimensionName();
         if (shouldRefreshDistanceSort(
                 this.sortMode,
                 this.lastQueryPlayerPosition,
@@ -506,10 +506,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         int maxDistanceWidth = 0;
         for (int index = 0; index < visibleEntryCount(); index++) {
             if (getVisibleEntry(index).value() instanceof WaypointNode waypointNode) {
-                String distanceLabel = getDistanceLabel(waypointNode.waypoint(), waypointNode.dimensionName());
+                DistanceLabel distanceLabel = getDistanceLabel(waypointNode.waypoint(), waypointNode.dimensionName());
                 maxDistanceWidth = Math.max(
                         maxDistanceWidth,
-                        (int)Math.ceil(textRenderer.width(distanceLabel) * metadataTextScale)
+                        (int)Math.ceil(textRenderer.width(distanceLabel.text()) * metadataTextScale)
                 );
             }
         }
@@ -694,7 +694,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             String dimensionLine,
             String listName,
             String waypointName,
-            String distanceLabel,
+            DistanceLabel distanceLabel,
             int x,
             int rowY,
             int dimensionColor,
@@ -744,26 +744,41 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             scale(context, labelScale, labelScale);
             renderMetadataText(
                     context,
-                    distanceLabel,
+                    distanceLabel.text(),
                     0,
                     detailY + textRenderer.lineHeight - metadataLineHeight,
-                    getColor(TEXT_MUTED)
+                    distanceLabel.color()
             );
             pop(context);
         }
     }
 
-    private String getDistanceLabel(SimpleWaypoint waypoint, String waypointDimension) {
+    private DistanceLabel getDistanceLabel(SimpleWaypoint waypoint, String waypointDimension) {
         if (renderedPlayerPosition == null) {
-            return "";
+            return DistanceLabel.EMPTY;
+        }
+        String playerDimension = getCurrentDimensionName();
+        if (!shouldShowDistanceLabel(playerDimension, waypointDimension)) {
+            return DistanceLabel.EMPTY;
         }
         double distanceSquared = WaypointSorting.distanceSquared(
                 waypoint,
                 renderedPlayerPosition,
-                this.showAllDimensions ? getCurrentDimensionName() : null,
-                this.showAllDimensions ? waypointDimension : null
+                playerDimension,
+                waypointDimension
         );
-        return formatDistance(Math.sqrt(distanceSquared));
+        int color = Objects.equals(playerDimension, waypointDimension)
+                ? getColor(TEXT_MUTED)
+                : getDisplayDimensionColor(waypointDimension);
+        return new DistanceLabel(formatDistance(Math.sqrt(distanceSquared)), color);
+    }
+
+    static boolean shouldShowDistanceLabel(
+            String playerDimension,
+            String waypointDimension
+    ) {
+        return playerDimension != null
+                && WaypointSorting.canCompareDistance(playerDimension, waypointDimension);
     }
 
     static String formatDistance(double meters) {
@@ -777,6 +792,14 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         return tenths == 0L
                 ? kilometers + " km"
                 : kilometers + "." + tenths + " km";
+    }
+
+    private record DistanceLabel(String text, int color) {
+        private static final DistanceLabel EMPTY = new DistanceLabel("", 0);
+
+        private boolean isEmpty() {
+            return this.text.isEmpty();
+        }
     }
 
     private void renderMetadataText(GuiGraphicsExtractor context, String text, int x, int y, int color) {

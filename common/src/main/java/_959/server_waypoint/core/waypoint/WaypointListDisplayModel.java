@@ -8,6 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static _959.server_waypoint.util.VanillaDimensionNames.dimensionNameComparator;
+
 public final class WaypointListDisplayModel {
     private WaypointListDisplayModel() {
     }
@@ -25,11 +27,9 @@ public final class WaypointListDisplayModel {
                 flatWaypoints,
                 sortMode,
                 result.query().origin(),
-                result.query().originDimension()
+                result.query().originDimension(),
+                result.query().reversed()
         );
-        if (result.query().reversed()) {
-            Collections.reverse(flatWaypoints);
-        }
         return new Display(false, List.of(), Collections.unmodifiableList(flatWaypoints));
     }
 
@@ -42,9 +42,17 @@ public final class WaypointListDisplayModel {
             List<DisplayList> dimensionLists = new ArrayList<>();
             for (WaypointQueryEngine.ListResult listResult : dimension.lists()) {
                 List<SimpleWaypoint> waypoints = new ArrayList<>(listResult.waypoints());
+                WaypointSorting.SortMode dimensionSortMode = sortMode;
+                if (dimensionSortMode == WaypointSorting.SortMode.DISTANCE
+                        && !WaypointSorting.canCompareDistance(
+                                result.query().originDimension(),
+                                dimension.dimensionName()
+                        )) {
+                    dimensionSortMode = WaypointSorting.SortMode.DEFAULT;
+                }
                 WaypointSorting.sort(
                         waypoints,
-                        sortMode,
+                        dimensionSortMode,
                         result.query().origin(),
                         result.query().originDimension(),
                         dimension.dimensionName(),
@@ -85,19 +93,54 @@ public final class WaypointListDisplayModel {
             List<DisplayWaypoint> waypoints,
             WaypointSorting.SortMode sortMode,
             WaypointPos origin,
-            String originDimension
+            String originDimension,
+            boolean reversed
     ) {
         switch (sortMode) {
             case DEFAULT -> {
             }
             case NAME -> waypoints.sort(DisplayWaypoint.BY_WAYPOINT_NAME);
-            case DISTANCE -> waypoints.sort(DisplayWaypoint.byDistanceFrom(origin, originDimension));
+            case DISTANCE -> {
+                sortDisplayWaypointsByDistance(waypoints, origin, originDimension, reversed);
+                return;
+            }
             case COLOR -> ColorUtils.sortWaypointColors(
                     waypoints,
                     waypoint -> waypoint.waypoint().rgb(),
                     DisplayWaypoint.BY_WAYPOINT_NAME
             );
         }
+        if (sortMode != WaypointSorting.SortMode.DEFAULT && reversed) {
+            Collections.reverse(waypoints);
+        }
+    }
+
+    private static void sortDisplayWaypointsByDistance(
+            List<DisplayWaypoint> waypoints,
+            WaypointPos origin,
+            String originDimension,
+            boolean reversed
+    ) {
+        List<DisplayWaypoint> comparableWaypoints = new ArrayList<>();
+        List<DisplayWaypoint> otherWaypoints = new ArrayList<>();
+        for (DisplayWaypoint waypoint : waypoints) {
+            if (WaypointSorting.canCompareDistance(originDimension, waypoint.dimensionName())) {
+                comparableWaypoints.add(waypoint);
+            } else {
+                otherWaypoints.add(waypoint);
+            }
+        }
+        comparableWaypoints.sort(DisplayWaypoint.byDistanceFrom(origin, originDimension));
+        if (reversed) {
+            Collections.reverse(comparableWaypoints);
+        }
+        otherWaypoints.sort((left, right) -> dimensionNameComparator(
+                left.dimensionName(),
+                right.dimensionName()
+        ));
+        waypoints.clear();
+        waypoints.addAll(comparableWaypoints);
+        waypoints.addAll(otherWaypoints);
     }
 
     public record Display(boolean groupByLists, List<DisplayList> lists, List<DisplayWaypoint> flatWaypoints) {

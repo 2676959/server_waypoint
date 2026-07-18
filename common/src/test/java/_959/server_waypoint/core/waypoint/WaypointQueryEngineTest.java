@@ -49,6 +49,40 @@ class WaypointQueryEngineTest {
     }
 
     @Test
+    void distanceQuerySortsOnlyCurrentAndConvertibleDimensions() {
+        WaypointFilesManagerCore filesManager = createFilesManager();
+        addDimension(filesManager, "minecraft:the_nether", list(
+                "nether",
+                waypoint("nether far", 10, 0, 0),
+                waypoint("nether near", 1, 0, 0)
+        ));
+        addDimension(filesManager, "minecraft:the_end", list(
+                "end",
+                waypoint("end default first", 100, 0, 0),
+                waypoint("end default second", 1, 0, 0)
+        ));
+
+        WaypointQueryEngine.QueryResult result = new WaypointQueryEngine(filesManager).queryAll(
+                new WaypointQueryEngine.Query(
+                        "",
+                        WaypointSorting.SortMode.DISTANCE,
+                        new WaypointPos(0, 0, 0),
+                        "minecraft:overworld",
+                        false
+                )
+        );
+
+        assertEquals(
+                List.of("nether near", "nether far"),
+                waypointNames(result.dimensions().get(0).lists().get(0))
+        );
+        assertEquals(
+                List.of("end default first", "end default second"),
+                waypointNames(result.dimensions().get(1).lists().get(0))
+        );
+    }
+
+    @Test
     void emptyFilterWithSortIncludesAllWaypoints() {
         WaypointFilesManagerCore filesManager = createFilesManager();
         addDimension(filesManager, "minecraft:overworld", list("bases", waypoint("zeta", 0, 0, 0), waypoint("Alpha", 0, 0, 0)));

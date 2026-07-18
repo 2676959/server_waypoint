@@ -287,6 +287,71 @@ class WaypointListDisplayModelTest {
         assertEquals(List.of("overworld", "nether"), flatWaypointNames(display));
     }
 
+    @Test
+    void flatDistanceSortAppendsOtherDimensionsInDefaultDimensionAndWaypointOrder() {
+        WaypointList customZ = list("custom-z", waypoint("custom z", 1, 0, 0));
+        WaypointList nether = list("nether", waypoint("nether", 1, 0, 0));
+        WaypointList customA = list("custom-a", waypoint("custom a", 1, 0, 0));
+        WaypointList overworld = list("overworld", waypoint("overworld", 10, 0, 0));
+        WaypointList end = list(
+                "end",
+                waypoint("end default first", 100, 0, 0),
+                waypoint("end default second", 1, 0, 0)
+        );
+        List<WaypointQueryEngine.DimensionResult> dimensions = List.of(
+                dimensionResult("example:z", customZ),
+                dimensionResult("minecraft:the_nether", nether),
+                dimensionResult("example:a", customA),
+                dimensionResult("minecraft:overworld", overworld),
+                dimensionResult("minecraft:the_end", end)
+        );
+
+        WaypointListDisplayModel.Display forward = WaypointListDisplayModel.build(
+                distanceResult(dimensions, false),
+                false
+        );
+        WaypointListDisplayModel.Display reversed = WaypointListDisplayModel.build(
+                distanceResult(dimensions, true),
+                false
+        );
+
+        assertEquals(
+                List.of(
+                        "nether",
+                        "overworld",
+                        "end default first",
+                        "end default second",
+                        "custom a",
+                        "custom z"
+                ),
+                flatWaypointNames(forward)
+        );
+        assertEquals(
+                List.of(
+                        "overworld",
+                        "nether",
+                        "end default first",
+                        "end default second",
+                        "custom a",
+                        "custom z"
+                ),
+                flatWaypointNames(reversed)
+        );
+        assertEquals(
+                List.of(
+                        "minecraft:the_nether",
+                        "minecraft:overworld",
+                        "minecraft:the_end",
+                        "minecraft:the_end",
+                        "example:a",
+                        "example:z"
+                ),
+                forward.flatWaypoints().stream()
+                        .map(WaypointListDisplayModel.DisplayWaypoint::dimensionName)
+                        .toList()
+        );
+    }
+
     private static WaypointQueryEngine.QueryResult result(
             WaypointSorting.SortMode sortMode,
             WaypointPos origin,
@@ -309,6 +374,26 @@ class WaypointListDisplayModelTest {
 
     private static WaypointQueryEngine.ListResult listResult(WaypointList list) {
         return new WaypointQueryEngine.ListResult(list, list.simpleWaypoints(), true);
+    }
+
+    private static WaypointQueryEngine.DimensionResult dimensionResult(String dimensionName, WaypointList list) {
+        return new WaypointQueryEngine.DimensionResult(dimensionName, List.of(listResult(list)));
+    }
+
+    private static WaypointQueryEngine.QueryResult distanceResult(
+            List<WaypointQueryEngine.DimensionResult> dimensions,
+            boolean reversed
+    ) {
+        return new WaypointQueryEngine.QueryResult(
+                dimensions,
+                new WaypointQueryEngine.Query(
+                        "",
+                        WaypointSorting.SortMode.DISTANCE,
+                        new WaypointPos(0, 0, 0),
+                        "minecraft:overworld",
+                        reversed
+                )
+        );
     }
 
     private static WaypointList list(String name, SimpleWaypoint... waypoints) {

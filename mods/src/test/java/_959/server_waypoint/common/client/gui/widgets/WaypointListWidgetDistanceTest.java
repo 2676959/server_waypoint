@@ -23,6 +23,46 @@ class WaypointListWidgetDistanceTest {
     }
 
     @Test
+    void showsDistanceForWaypointsInThePlayersCurrentDimension() {
+        assertTrue(WaypointListWidget.shouldShowDistanceLabel(
+                "minecraft:the_end",
+                "minecraft:the_end"
+        ));
+        assertTrue(WaypointListWidget.shouldShowDistanceLabel(
+                "example:custom",
+                "example:custom"
+        ));
+    }
+
+    @Test
+    void showsCrossDimensionDistanceOnlyForOverworldAndNether() {
+        assertTrue(WaypointListWidget.shouldShowDistanceLabel(
+                "minecraft:overworld",
+                "minecraft:the_nether"
+        ));
+        assertTrue(WaypointListWidget.shouldShowDistanceLabel(
+                "minecraft:the_nether",
+                "minecraft:overworld"
+        ));
+    }
+
+    @Test
+    void hidesDistanceForOtherCrossDimensionPairs() {
+        assertFalse(WaypointListWidget.shouldShowDistanceLabel(
+                "minecraft:overworld",
+                "minecraft:the_end"
+        ));
+        assertFalse(WaypointListWidget.shouldShowDistanceLabel(
+                "minecraft:the_end",
+                "minecraft:overworld"
+        ));
+        assertFalse(WaypointListWidget.shouldShowDistanceLabel(
+                "example:one",
+                "example:two"
+        ));
+    }
+
+    @Test
     void distanceSortRefreshesWhenPlayerMovesToAnotherBlock() {
         assertTrue(WaypointListWidget.shouldRefreshDistanceSort(
                 WaypointSorting.SortMode.DISTANCE,

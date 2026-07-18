@@ -4,6 +4,7 @@ import _959.server_waypoint.util.ColorUtils;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import org.jetbrains.annotations.Nullable;
 
 import static _959.server_waypoint.util.BlockPosConverter.netherToOverWorld;
@@ -106,6 +107,23 @@ public final class WaypointSorting {
         long dy = waypoint.y() - origin.y();
         long dz = waypoint.z() - origin.z();
         return dx * dx + dy * dy + dz * dz;
+    }
+
+    public static boolean canCompareDistance(
+            @Nullable String originDimension,
+            @Nullable String waypointDimension
+    ) {
+        if (originDimension == null) {
+            return true;
+        }
+        if (Objects.equals(originDimension, waypointDimension)) {
+            return true;
+        }
+        boolean overworldToNether = MINECRAFT_OVERWORLD.equals(originDimension)
+                && MINECRAFT_THE_NETHER.equals(waypointDimension);
+        boolean netherToOverworld = MINECRAFT_THE_NETHER.equals(originDimension)
+                && MINECRAFT_OVERWORLD.equals(waypointDimension);
+        return overworldToNether || netherToOverworld;
     }
 
     public static double distanceSquared(

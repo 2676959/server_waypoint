@@ -22,6 +22,7 @@
   "waypoint.global": "全局",
   "waypoint.local": "局部",
   "waypoint.dimension.info": "维度：%1$s",
+  "waypoint.dimension.show_selected": "显示所选维度",
   "waypoint.dimension.show_all": "显示所有维度",
   "waypoint.list_name.info": "列表：%1$s",
   "waypoint.search.entry": "搜索：",

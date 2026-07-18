@@ -82,9 +82,14 @@ public final class WaypointQueryEngine {
                 waypoints.add(waypoint);
             }
         }
+        WaypointSorting.SortMode dimensionSortMode = query.sortMode();
+        if (dimensionSortMode == WaypointSorting.SortMode.DISTANCE
+                && !WaypointSorting.canCompareDistance(query.originDimension(), dimensionName)) {
+            dimensionSortMode = WaypointSorting.SortMode.DEFAULT;
+        }
         WaypointSorting.sort(
                 waypoints,
-                query.sortMode(),
+                dimensionSortMode,
                 query.origin(),
                 query.originDimension(),
                 dimensionName,
