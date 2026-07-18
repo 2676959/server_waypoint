@@ -83,6 +83,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private final SuggestionProvider<S> PLAYER_YAW_SUGGESTION = new PlayerYawSuggestion();
     private final SuggestionProvider<S> HEX_COLOR_CODE_SUGGESTION = new HexColorCodeSuggestion();
     public static final String WAYPOINT_COMMAND = "wp";
+    public static final String HELP_COMMAND = "help";
     public static final String ADD_COMMAND = "add";
     public static final String EDIT_COMMAND = "edit";
     public static final String REMOVE_COMMAND = "remove";
@@ -212,6 +213,32 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     @SuppressWarnings("unchecked")
     public @NotNull LiteralCommandNode<S> build() {
         return (LiteralCommandNode<S>) literal(WAYPOINT_COMMAND)
+                .then(literal(HELP_COMMAND)
+                        .executes(context -> {
+                            executeHelp((S) context.getSource());
+                            return Command.SINGLE_SUCCESS;
+                        })
+                        .then(literal(ADD_COMMAND)
+                                .requires(source -> hasAddPermission((S) source))
+                                .executes(context -> {
+                                    executeAddHelp((S) context.getSource());
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                        )
+                        .then(literal(EDIT_COMMAND)
+                                .requires(source -> hasEditPermission((S) source))
+                                .executes(context -> {
+                                    executeEditHelp((S) context.getSource());
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                        )
+                        .then(literal(LIST_COMMAND)
+                                .executes(context -> {
+                                    executeListHelp((S) context.getSource());
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                        )
+                )
                 .then(literal(ADD_COMMAND)
                         .requires(source -> hasAddPermission((S) source))
                         .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
@@ -431,6 +458,28 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                         )
                 )
                 .build();
+    }
+
+    private void executeHelp(S source) {
+        this.sender.sendMessage(source, WaypointCommandHelp.mainMenu(
+                hasAddPermission(source),
+                hasEditPermission(source),
+                hasRemovePermission(source),
+                hasTpPermission(source),
+                hasReloadPermission(source)
+        ));
+    }
+
+    private void executeAddHelp(S source) {
+        this.sender.sendMessage(source, WaypointCommandHelp.addHelp());
+    }
+
+    private void executeEditHelp(S source) {
+        this.sender.sendMessage(source, WaypointCommandHelp.editHelp());
+    }
+
+    private void executeListHelp(S source) {
+        this.sender.sendMessage(source, WaypointCommandHelp.listHelp());
     }
 
     private void runIfPlayerExists(S source, Consumer<P> playerAction) {

@@ -1,0 +1,427 @@
+package _959.server_waypoint.command;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+
+import static net.kyori.adventure.text.Component.newline;
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+
+final class WaypointCommandHelp {
+    private static final String MAIN_HELP_COMMAND = "/wp help";
+    private static final String ADD_COMMAND_PREFIX = "/wp add ";
+    private static final String EDIT_COMMAND_PREFIX = "/wp edit ";
+    private static final String LIST_COMMAND_PREFIX = "/wp list ";
+    private static final TextColor DIMENSION_COLOR = TextColor.color(0x55FF55);
+    private static final TextColor LIST_COLOR = TextColor.color(0xFFAA00);
+    private static final TextColor POSITION_COLOR = TextColor.color(0x55AAFF);
+    private static final TextColor WAYPOINT_COLOR = TextColor.color(0xFFFF55);
+    private static final TextColor NEW_NAME_COLOR = TextColor.color(0xFF55FF);
+    private static final TextColor INITIALS_COLOR = TextColor.color(0xAAAAFF);
+    private static final TextColor COLOR_COLOR = TextColor.color(0xFF5555);
+    private static final TextColor YAW_COLOR = TextColor.color(0x00D5A0);
+    private static final TextColor GLOBAL_COLOR = TextColor.color(0xC77DFF);
+    private static final TextColor QUERY_COLOR = TextColor.color(0xFF79C6);
+    private static final TextColor MODE_COLOR = TextColor.color(0xF1FA8C);
+    private static final TextColor DIRECTION_COLOR = TextColor.color(0x8BE9FD);
+    private static final TextColor NUMBER_COLOR = TextColor.color(0x50FA7B);
+
+    private WaypointCommandHelp() {
+    }
+
+    static Component mainMenu(
+            boolean withAdd,
+            boolean withEdit,
+            boolean withRemove,
+            boolean withTp,
+            boolean withReload
+    ) {
+        Component help = translatable("waypoint.help.title", NamedTextColor.GOLD)
+                .decorate(TextDecoration.BOLD)
+                .append(topicEntry(
+                        "/wp list",
+                        LIST_COMMAND_PREFIX,
+                        "/wp help list",
+                        "waypoint.help.list"
+                ))
+                .append(commandEntry(
+                        "/wp download [<dimension> [<list> [<waypoint>]]]",
+                        "/wp download ",
+                        "waypoint.help.download"
+                ));
+        if (withAdd) {
+            help = help.append(topicEntry(
+                    "/wp add",
+                    ADD_COMMAND_PREFIX,
+                    "/wp help add",
+                    "waypoint.help.add"
+            ));
+        }
+        if (withEdit) {
+            help = help.append(topicEntry(
+                    "/wp edit",
+                    EDIT_COMMAND_PREFIX,
+                    "/wp help edit",
+                    "waypoint.help.edit"
+            ));
+        }
+        if (withRemove) {
+            help = help.append(commandEntry(
+                    "/wp remove <dimension> <list> [<waypoint>]",
+                    "/wp remove ",
+                    "waypoint.help.remove"
+            ));
+        }
+        if (withTp) {
+            help = help.append(commandEntry(
+                    "/wp tp <dimension> <list> <waypoint>",
+                    "/wp tp ",
+                    "waypoint.help.tp"
+            ));
+        }
+        if (withReload) {
+            help = help.append(commandEntry(
+                    "/wp reload",
+                    "/wp reload",
+                    "waypoint.help.reload"
+            ));
+        }
+        return help;
+    }
+
+    static Component addHelp() {
+        return topicHeader("waypoint.help.add.title", "waypoint.help.add.summary")
+                .append(section("waypoint.help.section.usage"))
+                .append(usageEntry(
+                        "/wp add <dimension> <list>",
+                        ADD_COMMAND_PREFIX,
+                        "waypoint.help.add.usage.list"
+                ))
+                .append(usageEntry(
+                        "/wp add <position> <list> <waypoint>",
+                        ADD_COMMAND_PREFIX,
+                        "waypoint.help.add.usage.quick"
+                ))
+                .append(usageEntry(
+                        "/wp add <position> <list> <waypoint> <initials> <color> <yaw> <global>",
+                        ADD_COMMAND_PREFIX,
+                        "waypoint.help.add.usage.current"
+                ))
+                .append(usageEntry(
+                        "/wp add <dimension> <list> <position> <waypoint> <initials> <color> <yaw> <global>",
+                        ADD_COMMAND_PREFIX,
+                        "waypoint.help.add.usage.dimension"
+                ))
+                .append(section("waypoint.help.section.arguments"))
+                .append(argumentEntry("<dimension>", "waypoint.help.argument.dimension"))
+                .append(argumentEntry("<position>", "waypoint.help.argument.position"))
+                .append(argumentEntry("<list> / <waypoint>", "waypoint.help.argument.names"))
+                .append(argumentEntry("<initials>", "waypoint.help.argument.initials"))
+                .append(argumentEntry("<color>", "waypoint.help.argument.color"))
+                .append(argumentEntry("<yaw>", "waypoint.help.argument.yaw"))
+                .append(argumentEntry("<global>", "waypoint.help.argument.global"))
+                .append(section("waypoint.help.section.examples"))
+                .append(exampleEntry(
+                        "/wp add minecraft:overworld \"Home Bases\"",
+                        "waypoint.help.add.example.list",
+                        exampleArgument("minecraft:overworld", DIMENSION_COLOR),
+                        exampleArgument("\"Home Bases\"", LIST_COLOR)
+                ))
+                .append(exampleEntry(
+                        "/wp add ~ ~ ~ \"Home Bases\" \"Main Home\"",
+                        "waypoint.help.add.example.quick",
+                        exampleArgument("~ ~ ~", POSITION_COLOR),
+                        exampleArgument("\"Home Bases\"", LIST_COLOR),
+                        exampleArgument("\"Main Home\"", WAYPOINT_COLOR)
+                ))
+                .append(exampleEntry(
+                        "/wp add minecraft:overworld \"Home Bases\" ~ ~ ~ \"Main Home\" MH gold 0 true",
+                        "waypoint.help.add.example.full",
+                        exampleArgument("minecraft:overworld", DIMENSION_COLOR),
+                        exampleArgument("\"Home Bases\"", LIST_COLOR),
+                        exampleArgument("~ ~ ~", POSITION_COLOR),
+                        exampleArgument("\"Main Home\"", WAYPOINT_COLOR),
+                        exampleArgument("MH", INITIALS_COLOR),
+                        exampleArgument("gold", COLOR_COLOR),
+                        exampleArgument("0", YAW_COLOR),
+                        exampleArgument("true", GLOBAL_COLOR)
+                ))
+                .append(backButton());
+    }
+
+    static Component editHelp() {
+        return topicHeader("waypoint.help.edit.title", "waypoint.help.edit.summary")
+                .append(section("waypoint.help.section.usage"))
+                .append(usageEntry(
+                        "/wp edit <dimension> <list> <waypoint> <new name> <initials> <position> <color> <yaw> <global>",
+                        EDIT_COMMAND_PREFIX,
+                        "waypoint.help.edit.usage"
+                ))
+                .append(section("waypoint.help.section.arguments"))
+                .append(argumentEntry("<dimension>", "waypoint.help.argument.dimension"))
+                .append(argumentEntry(
+                        "<list> / <waypoint> / <new name>",
+                        "waypoint.help.argument.names"
+                ))
+                .append(argumentEntry("<initials>", "waypoint.help.argument.initials"))
+                .append(argumentEntry("<position>", "waypoint.help.argument.position"))
+                .append(argumentEntry("<color>", "waypoint.help.argument.color"))
+                .append(argumentEntry("<yaw>", "waypoint.help.argument.yaw"))
+                .append(argumentEntry("<global>", "waypoint.help.argument.global"))
+                .append(section("waypoint.help.section.examples"))
+                .append(exampleEntry(
+                        "/wp edit minecraft:overworld \"Home Bases\" \"Main Home\" \"Mountain Home\" MH ~ ~ ~ 39C5BB 90 true",
+                        "waypoint.help.edit.example.full",
+                        exampleArgument("minecraft:overworld", DIMENSION_COLOR),
+                        exampleArgument("\"Home Bases\"", LIST_COLOR),
+                        exampleArgument("\"Main Home\"", WAYPOINT_COLOR),
+                        exampleArgument("\"Mountain Home\"", NEW_NAME_COLOR),
+                        exampleArgument("MH", INITIALS_COLOR),
+                        exampleArgument("~ ~ ~", POSITION_COLOR),
+                        exampleArgument("39C5BB", COLOR_COLOR),
+                        exampleArgument("90", YAW_COLOR),
+                        exampleArgument("true", GLOBAL_COLOR)
+                ))
+                .append(backButton());
+    }
+
+    static Component listHelp() {
+        return topicHeader("waypoint.help.list.title", "waypoint.help.list.summary")
+                .append(section("waypoint.help.section.usage"))
+                .append(usageEntry(
+                        "/wp list",
+                        LIST_COMMAND_PREFIX,
+                        "waypoint.help.list.usage.current"
+                ))
+                .append(usageEntry(
+                        "/wp list all",
+                        LIST_COMMAND_PREFIX,
+                        "waypoint.help.list.usage.all"
+                ))
+                .append(usageEntry(
+                        "/wp list <dimension>",
+                        LIST_COMMAND_PREFIX,
+                        "waypoint.help.list.usage.dimension"
+                ))
+                .append(usageEntry(
+                        "/wp list <dimension> <list>",
+                        LIST_COMMAND_PREFIX,
+                        "waypoint.help.list.usage.list"
+                ))
+                .append(usageEntry(
+                        "[search <query>] [sort <mode> [order <direction>]] [page <number>] [limit <number>]",
+                        LIST_COMMAND_PREFIX,
+                        "waypoint.help.list.usage.options"
+                ))
+                .append(section("waypoint.help.section.arguments"))
+                .append(argumentEntry("<query>", "waypoint.help.list.argument.query"))
+                .append(argumentEntry("<mode>", "waypoint.help.list.argument.mode"))
+                .append(argumentEntry("<direction>", "waypoint.help.list.argument.direction"))
+                .append(argumentEntry("<number>", "waypoint.help.list.argument.number"))
+                .append(argumentEntry(
+                        "search → sort → order → page → limit",
+                        "waypoint.help.list.argument.order"
+                ))
+                .append(section("waypoint.help.section.examples"))
+                .append(exampleEntry(
+                        "/wp list",
+                        "waypoint.help.list.example.current"
+                ))
+                .append(exampleEntry(
+                        "/wp list all search home sort distance order ascending page 1 limit 10",
+                        "waypoint.help.list.example.all",
+                        exampleArgument("home", QUERY_COLOR),
+                        exampleArgument("distance", MODE_COLOR),
+                        exampleArgument("ascending", DIRECTION_COLOR),
+                        exampleArgument("1", NUMBER_COLOR),
+                        exampleArgument("10", NUMBER_COLOR)
+                ))
+                .append(exampleEntry(
+                        "/wp list minecraft:overworld \"Home Bases\" sort name order descending limit 20",
+                        "waypoint.help.list.example.list",
+                        exampleArgument("minecraft:overworld", DIMENSION_COLOR),
+                        exampleArgument("\"Home Bases\"", LIST_COLOR),
+                        exampleArgument("name", MODE_COLOR),
+                        exampleArgument("descending", DIRECTION_COLOR),
+                        exampleArgument("20", NUMBER_COLOR)
+                ))
+                .append(backButton());
+    }
+
+    private static Component topicHeader(String titleKey, String summaryKey) {
+        return translatable(titleKey, NamedTextColor.GOLD)
+                .decorate(TextDecoration.BOLD)
+                .append(newline())
+                .append(translatable(summaryKey, NamedTextColor.GRAY)
+                        .decoration(TextDecoration.BOLD, false));
+    }
+
+    private static Component section(String translationKey) {
+        return newline()
+                .append(newline())
+                .append(translatable(translationKey, NamedTextColor.YELLOW)
+                        .decorate(TextDecoration.BOLD));
+    }
+
+    private static Component topicEntry(
+            String usage,
+            String suggestion,
+            String helpCommand,
+            String descriptionKey
+    ) {
+        Component label = text("")
+                .append(suggestCommand(usage, suggestion))
+                .appendSpace()
+                .append(detailButton(helpCommand));
+        return describedLine(label, descriptionKey);
+    }
+
+    private static Component commandEntry(String usage, String suggestion, String descriptionKey) {
+        return describedLine(suggestCommand(usage, suggestion), descriptionKey);
+    }
+
+    private static Component usageEntry(String usage, String suggestion, String descriptionKey) {
+        return describedLine(suggestCommand(usage, suggestion), descriptionKey);
+    }
+
+    private static Component argumentEntry(String argument, String descriptionKey) {
+        return describedLine(colorArguments(argument), descriptionKey);
+    }
+
+    private static Component exampleEntry(
+            String command,
+            String descriptionKey,
+            ExampleArgument... arguments
+    ) {
+        return describedLine(
+                suggestCommand(colorExampleArguments(command, arguments), command),
+                descriptionKey
+        );
+    }
+
+    private static Component describedLine(Component label, String descriptionKey) {
+        return newline()
+                .append(text("  "))
+                .append(label.decoration(TextDecoration.BOLD, false))
+                .append(text(" - ", NamedTextColor.DARK_GRAY)
+                        .decoration(TextDecoration.BOLD, false))
+                .append(translatable(descriptionKey, NamedTextColor.WHITE)
+                        .decoration(TextDecoration.BOLD, false));
+    }
+
+    private static Component suggestCommand(String label, String command) {
+        return suggestCommand(colorArguments(label), command);
+    }
+
+    private static Component suggestCommand(Component label, String command) {
+        return label
+                .decoration(TextDecoration.BOLD, false)
+                .clickEvent(ClickEvent.suggestCommand(command))
+                .hoverEvent(HoverEvent.showText(translatable("waypoint.help.click_to_suggest")));
+    }
+
+    private static ExampleArgument exampleArgument(String value, TextColor color) {
+        return new ExampleArgument(value, color);
+    }
+
+    private static Component colorExampleArguments(
+            String command,
+            ExampleArgument... arguments
+    ) {
+        Component result = text("");
+        int offset = 0;
+        for (ExampleArgument argument : arguments) {
+            int argumentStart = command.indexOf(argument.value(), offset);
+            if (argumentStart < 0) {
+                throw new IllegalArgumentException(
+                        "Example argument not found in command: " + argument.value()
+                );
+            }
+            if (argumentStart > offset) {
+                result = result.append(text(
+                        command.substring(offset, argumentStart),
+                        NamedTextColor.AQUA
+                ));
+            }
+            result = result.append(text(argument.value(), argument.color()));
+            offset = argumentStart + argument.value().length();
+        }
+        if (offset < command.length()) {
+            result = result.append(text(command.substring(offset), NamedTextColor.AQUA));
+        }
+        return result;
+    }
+
+    private static Component colorArguments(String command) {
+        Component result = text("");
+        int offset = 0;
+        while (offset < command.length()) {
+            int argumentStart = command.indexOf('<', offset);
+            if (argumentStart < 0) {
+                return result.append(text(command.substring(offset), NamedTextColor.AQUA));
+            }
+            if (argumentStart > offset) {
+                result = result.append(text(
+                        command.substring(offset, argumentStart),
+                        NamedTextColor.AQUA
+                ));
+            }
+            int argumentEnd = command.indexOf('>', argumentStart + 1);
+            if (argumentEnd < 0) {
+                return result.append(text(command.substring(argumentStart), NamedTextColor.AQUA));
+            }
+            String argumentName = command.substring(argumentStart + 1, argumentEnd);
+            result = result.append(text(
+                    command.substring(argumentStart, argumentEnd + 1),
+                    argumentColor(argumentName)
+            ));
+            offset = argumentEnd + 1;
+        }
+        return result;
+    }
+
+    private static TextColor argumentColor(String argumentName) {
+        return switch (argumentName) {
+            case "dimension" -> DIMENSION_COLOR;
+            case "list" -> LIST_COLOR;
+            case "position" -> POSITION_COLOR;
+            case "waypoint" -> WAYPOINT_COLOR;
+            case "new name" -> NEW_NAME_COLOR;
+            case "initials" -> INITIALS_COLOR;
+            case "color" -> COLOR_COLOR;
+            case "yaw" -> YAW_COLOR;
+            case "global" -> GLOBAL_COLOR;
+            case "query" -> QUERY_COLOR;
+            case "mode" -> MODE_COLOR;
+            case "direction" -> DIRECTION_COLOR;
+            case "number" -> NUMBER_COLOR;
+            default -> NamedTextColor.WHITE;
+        };
+    }
+
+    private static Component detailButton(String helpCommand) {
+        return text("[?]", NamedTextColor.YELLOW)
+                .decorate(TextDecoration.BOLD)
+                .clickEvent(ClickEvent.runCommand(helpCommand))
+                .hoverEvent(HoverEvent.showText(translatable("waypoint.help.click_for_details")));
+    }
+
+    private static Component backButton() {
+        return newline()
+                .append(newline())
+                .append(text("[←]", NamedTextColor.YELLOW)
+                        .decorate(TextDecoration.BOLD)
+                        .clickEvent(ClickEvent.runCommand(MAIN_HELP_COMMAND))
+                        .hoverEvent(HoverEvent.showText(translatable("waypoint.help.back.hover"))))
+                .appendSpace()
+                .append(translatable("waypoint.help.back", NamedTextColor.GRAY)
+                        .decoration(TextDecoration.BOLD, false));
+    }
+
+    private record ExampleArgument(String value, TextColor color) {
+    }
+}

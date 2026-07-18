@@ -16,7 +16,9 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.TextColor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -100,6 +102,177 @@ class CoreWaypointCommandListTest {
         assertThrows(
                 CommandSyntaxException.class,
                 () -> this.dispatcher.execute("wp list all limit 101", this.source)
+        );
+    }
+
+    @Test
+    void helpLinksDetailedTopicsAndSuggestsCommandPrefixes() throws CommandSyntaxException {
+        this.dispatcher.execute("wp help", this.source);
+
+        Component help = lastMessage();
+        String helpText = plainText(help);
+        assertTrue(helpText.contains("/wp list"));
+        assertTrue(helpText.contains("/wp download [<dimension> [<list> [<waypoint>]]]"));
+        assertTrue(helpText.contains("/wp add"));
+        assertTrue(helpText.contains("/wp edit"));
+        assertTrue(helpText.contains("/wp remove <dimension> <list> [<waypoint>]"));
+        assertTrue(helpText.contains("/wp tp <dimension> <list> <waypoint>"));
+        assertTrue(helpText.contains("/wp reload"));
+        assertTrue(translationKeys(help).containsAll(List.of(
+                "waypoint.help.title",
+                "waypoint.help.list",
+                "waypoint.help.download",
+                "waypoint.help.add",
+                "waypoint.help.edit",
+                "waypoint.help.remove",
+                "waypoint.help.tp",
+                "waypoint.help.reload",
+                "waypoint.help.click_to_suggest",
+                "waypoint.help.click_for_details"
+        )));
+        assertEquals(List.of(
+                "/wp list ",
+                "/wp download ",
+                "/wp add ",
+                "/wp edit ",
+                "/wp remove ",
+                "/wp tp ",
+                "/wp reload"
+        ), suggestedCommands(help));
+        assertEquals(List.of(
+                "/wp help list",
+                "/wp help add",
+                "/wp help edit"
+        ), runCommands(help));
+    }
+
+    @Test
+    void addHelpShowsAllFormsArgumentsAndExamples() throws CommandSyntaxException {
+        this.dispatcher.execute("wp help add", this.source);
+
+        Component help = lastMessage();
+        String helpText = plainText(help);
+        assertTrue(helpText.contains("/wp add <dimension> <list>"));
+        assertTrue(helpText.contains("/wp add <position> <list> <waypoint>"));
+        assertTrue(helpText.contains(
+                "/wp add <position> <list> <waypoint> <initials> <color> <yaw> <global>"
+        ));
+        assertTrue(helpText.contains(
+                "/wp add <dimension> <list> <position> <waypoint> <initials> <color> <yaw> <global>"
+        ));
+        assertTrue(suggestedCommands(help).contains(
+                "/wp add minecraft:overworld \"Home Bases\" ~ ~ ~ \"Main Home\" MH gold 0 true"
+        ));
+        assertTrue(translationKeys(help).containsAll(List.of(
+                "waypoint.help.add.title",
+                "waypoint.help.add.summary",
+                "waypoint.help.section.usage",
+                "waypoint.help.section.arguments",
+                "waypoint.help.section.examples"
+        )));
+        assertEquals(TextColor.color(0x55FF55), textColor(help, "<dimension>"));
+        assertEquals(TextColor.color(0xFFAA00), textColor(help, "<list>"));
+        assertEquals(TextColor.color(0x55AAFF), textColor(help, "<position>"));
+        assertEquals(TextColor.color(0xFFFF55), textColor(help, "<waypoint>"));
+        assertEquals(TextColor.color(0xAAAAFF), textColor(help, "<initials>"));
+        assertEquals(TextColor.color(0xFF5555), textColor(help, "<color>"));
+        assertEquals(TextColor.color(0x00D5A0), textColor(help, "<yaw>"));
+        assertEquals(TextColor.color(0xC77DFF), textColor(help, "<global>"));
+        assertEquals(TextColor.color(0x55FF55), textColor(help, "minecraft:overworld"));
+        assertEquals(TextColor.color(0xFFAA00), textColor(help, "\"Home Bases\""));
+        assertEquals(TextColor.color(0x55AAFF), textColor(help, "~ ~ ~"));
+        assertEquals(TextColor.color(0xFFFF55), textColor(help, "\"Main Home\""));
+        assertEquals(TextColor.color(0xAAAAFF), textColor(help, "MH"));
+        assertEquals(TextColor.color(0xFF5555), textColor(help, "gold"));
+        assertEquals(TextColor.color(0x00D5A0), textColor(help, "0"));
+        assertEquals(TextColor.color(0xC77DFF), textColor(help, "true"));
+        assertEquals(List.of("/wp help"), runCommands(help));
+    }
+
+    @Test
+    void editHelpShowsFullFormArgumentsAndExample() throws CommandSyntaxException {
+        this.dispatcher.execute("wp help edit", this.source);
+
+        Component help = lastMessage();
+        String helpText = plainText(help);
+        assertTrue(helpText.contains(
+                "/wp edit <dimension> <list> <waypoint> <new name> <initials> <position> <color> <yaw> <global>"
+        ));
+        assertTrue(suggestedCommands(help).contains(
+                "/wp edit minecraft:overworld \"Home Bases\" \"Main Home\" "
+                        + "\"Mountain Home\" MH ~ ~ ~ 39C5BB 90 true"
+        ));
+        assertTrue(translationKeys(help).containsAll(List.of(
+                "waypoint.help.edit.title",
+                "waypoint.help.edit.summary",
+                "waypoint.help.edit.usage",
+                "waypoint.help.edit.example.full"
+        )));
+        assertEquals(TextColor.color(0xFF55FF), textColor(help, "<new name>"));
+        assertEquals(TextColor.color(0xFF55FF), textColor(help, "\"Mountain Home\""));
+        assertEquals(TextColor.color(0xFF5555), textColor(help, "39C5BB"));
+        assertEquals(TextColor.color(0x00D5A0), textColor(help, "90"));
+        assertEquals(List.of("/wp help"), runCommands(help));
+    }
+
+    @Test
+    void listHelpShowsScopesOrderedOptionsAndExamples() throws CommandSyntaxException {
+        this.dispatcher.execute("wp help list", this.source);
+
+        Component help = lastMessage();
+        String helpText = plainText(help);
+        assertTrue(helpText.contains("/wp list all"));
+        assertTrue(helpText.contains("/wp list <dimension> <list>"));
+        assertTrue(helpText.contains(
+                "[search <query>] [sort <mode> [order <direction>]] [page <number>] [limit <number>]"
+        ));
+        assertTrue(helpText.contains("search → sort → order → page → limit"));
+        assertTrue(suggestedCommands(help).contains(
+                "/wp list all search home sort distance order ascending page 1 limit 10"
+        ));
+        assertTrue(suggestedCommands(help).contains(
+                "/wp list minecraft:overworld \"Home Bases\" sort name order descending limit 20"
+        ));
+        assertTrue(translationKeys(help).containsAll(List.of(
+                "waypoint.help.list.title",
+                "waypoint.help.list.summary",
+                "waypoint.help.list.usage.options",
+                "waypoint.help.list.argument.order"
+        )));
+        assertEquals(TextColor.color(0xFF79C6), textColor(help, "<query>"));
+        assertEquals(TextColor.color(0xF1FA8C), textColor(help, "<mode>"));
+        assertEquals(TextColor.color(0x8BE9FD), textColor(help, "<direction>"));
+        assertEquals(TextColor.color(0x50FA7B), textColor(help, "<number>"));
+        assertEquals(TextColor.color(0xFF79C6), textColor(help, "home"));
+        assertEquals(TextColor.color(0xF1FA8C), textColor(help, "distance"));
+        assertEquals(TextColor.color(0x8BE9FD), textColor(help, "ascending"));
+        assertEquals(TextColor.color(0x50FA7B), textColor(help, "10"));
+        assertEquals(List.of("/wp help"), runCommands(help));
+    }
+
+    @Test
+    void helpOmitsCommandsTheSourceCannotUse() throws CommandSyntaxException {
+        TestMessageSender restrictedSender = new TestMessageSender();
+        CommandDispatcher<TestSource> restrictedDispatcher = new CommandDispatcher<>();
+        new TestWaypointCommand(
+                this.server,
+                restrictedSender,
+                TestWaypointCommand.permissionManager(false)
+        ).register(restrictedDispatcher);
+
+        restrictedDispatcher.execute("wp help", this.source);
+
+        Component help = restrictedSender.messages.get(0);
+        assertEquals(List.of("/wp list ", "/wp download "), suggestedCommands(help));
+        assertEquals(List.of("/wp help list"), runCommands(help));
+        assertDoesNotThrow(() -> restrictedDispatcher.execute("wp help list", this.source));
+        assertThrows(
+                CommandSyntaxException.class,
+                () -> restrictedDispatcher.execute("wp help add", this.source)
+        );
+        assertThrows(
+                CommandSyntaxException.class,
+                () -> restrictedDispatcher.execute("wp help edit", this.source)
         );
     }
 
@@ -252,10 +425,62 @@ class CoreWaypointCommandListTest {
         }
     }
 
+    private static TextColor textColor(Component component, String content) {
+        if (component instanceof TextComponent textComponent
+                && textComponent.content().equals(content)) {
+            return component.color();
+        }
+        for (Component child : component.children()) {
+            TextColor color = textColor(child, content);
+            if (color != null) {
+                return color;
+            }
+        }
+        return null;
+    }
+
     private static List<String> runCommands(Component component) {
         List<String> commands = new ArrayList<>();
         collectRunCommands(component, commands);
         return commands;
+    }
+
+    private static List<String> suggestedCommands(Component component) {
+        List<String> commands = new ArrayList<>();
+        collectSuggestedCommands(component, commands);
+        return commands;
+    }
+
+    private static void collectSuggestedCommands(Component component, List<String> commands) {
+        ClickEvent clickEvent = component.clickEvent();
+        if (clickEvent != null && clickEvent.action() == ClickEvent.Action.SUGGEST_COMMAND) {
+            commands.add(clickEvent.value());
+        }
+        for (Component child : component.children()) {
+            collectSuggestedCommands(child, commands);
+        }
+    }
+
+    private static List<String> translationKeys(Component component) {
+        List<String> keys = new ArrayList<>();
+        collectTranslationKeys(component, keys);
+        return keys;
+    }
+
+    private static void collectTranslationKeys(Component component, List<String> keys) {
+        if (component instanceof TranslatableComponent translatableComponent) {
+            keys.add(translatableComponent.key());
+        }
+        if (component.hoverEvent() != null
+                && component.hoverEvent().action() == net.kyori.adventure.text.event.HoverEvent.Action.SHOW_TEXT) {
+            Object hoverValue = component.hoverEvent().value();
+            if (hoverValue instanceof Component hoverComponent) {
+                collectTranslationKeys(hoverComponent, keys);
+            }
+        }
+        for (Component child : component.children()) {
+            collectTranslationKeys(child, keys);
+        }
     }
 
     private static void collectRunCommands(Component component, List<String> commands) {
@@ -274,10 +499,18 @@ class CoreWaypointCommandListTest {
     private static final class TestWaypointCommand
             extends CoreWaypointCommand<TestSource, String, Object, String, String> {
         private TestWaypointCommand(WaypointServerCore server, TestMessageSender sender) {
+            this(server, sender, permissionManager(true));
+        }
+
+        private TestWaypointCommand(
+                WaypointServerCore server,
+                TestMessageSender sender,
+                PermissionManager<TestSource, String, Object> permissionManager
+        ) {
             super(
                     server,
                     sender,
-                    permissionManager(),
+                    permissionManager,
                     StringArgumentType::string,
                     StringArgumentType::string
             );
@@ -343,7 +576,9 @@ class CoreWaypointCommandListTest {
             return component::toString;
         }
 
-        private static PermissionManager<TestSource, String, Object> permissionManager() {
+        private static PermissionManager<TestSource, String, Object> permissionManager(
+                boolean allowPrivilegedCommands
+        ) {
             PermissionKeys<String> keys = new PermissionKeys<>() {
                 @Override
                 protected PermissionKey createAddPermissionKey() {
@@ -377,7 +612,7 @@ class CoreWaypointCommandListTest {
                         PermissionKeys<String>.PermissionKey key,
                         int defaultLevel
                 ) {
-                    return true;
+                    return allowPrivilegedCommands;
                 }
 
                 @Override
@@ -386,7 +621,7 @@ class CoreWaypointCommandListTest {
                         PermissionKeys<String>.PermissionKey key,
                         int defaultLevel
                 ) {
-                    return true;
+                    return allowPrivilegedCommands;
                 }
             };
         }
