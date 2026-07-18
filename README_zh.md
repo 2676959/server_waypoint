@@ -44,7 +44,10 @@
   - `/wp add <维度> <列表>` 添加一个路径点列表。
 - `/wp download` 下载路径点并添加到 Xaero 小地图（需客户端安装本模组才生效）。
 - `/wp edit` 编辑路径点。
-- `/wp list` 列出所有路径点。以树状层级显示所有路径点。允许用户点击以传送、编辑或删除路径点。
+- `/wp list` 列出当前维度中的路径点。可使用 `all`、维度，或维度加列表名称来更改范围。结果按照服务端配置的每页数量分页（默认 10 个），并提供可点击的翻页按钮。
+  - 添加 `search <查询内容>` 可按路径点名称筛选。
+  - 添加 `sort <default|name|distance|color>`；使用非默认排序时，还可选用 `order <ascending|descending>` 对结果排序。
+  - 添加 `page <页码>` 和/或 `limit <1-100>` 可选择页码或更改每页数量。选项顺序为 `search`、`sort`、`order`、`page`、`limit`；包含空格的值，以及与选项名称相同的列表名称，需要加引号。
 - `/wp reload` 重载 `config.json` 和 `\config\server_waypoint\lang` 目录下的翻译文件。`sendXaerosWorldId` 特性需要重启服务器才能生效。
 - `/wp remove` 按名称删除路径点。显示已删除的路径点，点击该消息可恢复该路径点。
   - `/wp remove <维度> <列表>` 删除一个空的路径点列表。
@@ -93,6 +96,14 @@
 
 部分对 `config.json` 的更改将在服务器重启后生效。
 
+- ### 默认每页数量 Default Page Limit
+  设置 `/wp list` 命令未指定 `limit` 时每页显示的路径点数量。有效范围为 `1-100`，默认值为 `10`。使用 `/wp reload` 后此设置即可生效。
+
+  ```json5
+  {
+    "defaultPageLimit": 10
+  }
+  ```
 - ### 命令权限 Command Permission
   修改执行命令所需的[原版权限等级](https://minecraft.wiki/w/Permission_level)。
   

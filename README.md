@@ -44,7 +44,10 @@ Optional:
   - `/wp add <dimension> <list>` add a waypoint list.
 - `/wp download` download waypoints and add to Xaero's Minimap (will not work without client installation).
 - `/wp edit` edit a waypoint.
-- `/wp list` list all waypoints. Shows all waypoints in a tree hierarchy. Allowing user to click to teleport, edit and remove the waypoint.
+- `/wp list` lists waypoints in the current dimension. Use `all`, a dimension, or a dimension plus list name to change the scope. Results are split using the server's configured page limit (10 by default), with clickable page controls.
+  - Add `search <query>` to filter by waypoint name.
+  - Add `sort <default|name|distance|color>` and, for non-default sorts, optionally `order <ascending|descending>` to sort the result.
+  - Add `page <number>` and/or `limit <1-100>` to choose a page or change its size. Options follow the order `search`, `sort`, `order`, `page`, `limit`; quote multi-word values and list names that match an option word.
 - `/wp reload` reload `config.json` and translation files in `/config/server_waypoint/lang`, feature `sendXaerosWorldId` requires restarting to take effect.
 - `/wp remove` remove a waypoint by name. Shows the removed waypoint and click it to restore that waypoint.
   - `/wp remove <dimension> <list>` remove an empty waypoint list.
@@ -106,6 +109,14 @@ Paper, Purpur:
 
 Some changes made in `config.json` may take effects after server restarts.
 
+- ### Default Page Limit
+  Sets the number of waypoints shown on each `/wp list` page when the command does not include `limit`. Values are constrained to `1-100`, and the default is `10`. This setting takes effect after `/wp reload`.
+
+  ```json5
+  {
+    "defaultPageLimit": 10
+  }
+  ```
 - ### Command Permission
   Changes the vanilla [permission level](https://minecraft.wiki/w/Permission_level) required to execute the command.
   

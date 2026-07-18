@@ -1,4 +1,5 @@
 {
+  "defaultPageLimit": 10,
   "CommandPermission": {
     "add": 0,
     "edit": 0,

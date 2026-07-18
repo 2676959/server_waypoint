@@ -84,6 +84,12 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     }
 
     @Override
+    protected WaypointPos getSourcePosition(CommandSourceStack source) {
+        BlockPos blockPos = BlockPos.containing(source.getPosition());
+        return new WaypointPos(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+    }
+
+    @Override
     protected float getSourceYaw(CommandSourceStack source) {
         Entity entity;
         if ((entity = source.getEntity()) != null) {

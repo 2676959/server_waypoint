@@ -13,6 +13,7 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
 
 import static _959.server_waypoint.text.TextButton.editButton;
@@ -98,6 +99,28 @@ public class WaypointTextHelper {
     }
     
     public static Component getWaypointListText(WaypointList waypointList, String dimensionName, int indentLevel, boolean isPart, boolean withEdit, boolean withRemove, boolean withTp) {
+        return getWaypointListText(
+                waypointList,
+                waypointList.simpleWaypoints(),
+                dimensionName,
+                indentLevel,
+                isPart,
+                withEdit,
+                withRemove,
+                withTp
+        );
+    }
+
+    public static Component getWaypointListText(
+            WaypointList waypointList,
+            List<SimpleWaypoint> waypoints,
+            String dimensionName,
+            int indentLevel,
+            boolean isPart,
+            boolean withEdit,
+            boolean withRemove,
+            boolean withTp
+    ) {
         String listName = waypointList.name();
         Component listText = isPart ?
                 text("  ".repeat(indentLevel) + listName, NamedTextColor.WHITE) :
@@ -108,13 +131,13 @@ public class WaypointTextHelper {
         listText = listText.decoration(TextDecoration.BOLD, true);
         listText = listText.appendNewline();
         int secondLevel = indentLevel + 1;
-        if (waypointList.isEmpty()) {
+        if (waypoints.isEmpty()) {
             listText = listText.append(text("  ".repeat(secondLevel)))
                     .append(translatable("waypoint.empty.list.placeholder", NamedTextColor.GRAY)
                             .decoration(TextDecoration.BOLD, false).decoration(TextDecoration.ITALIC, true).appendNewline());
             return listText;
         }
-        for (SimpleWaypoint waypoint : waypointList.simpleWaypoints()) {
+        for (SimpleWaypoint waypoint : waypoints) {
             Component waypointText = text("  ".repeat(secondLevel)).decoration(TextDecoration.BOLD, false);
             if (withEdit) {
                 waypointText = waypointText.append(editButton(dimensionName, listName, waypoint)).appendSpace();

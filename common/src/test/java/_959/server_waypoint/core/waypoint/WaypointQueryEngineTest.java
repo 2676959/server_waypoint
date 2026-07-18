@@ -9,8 +9,48 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WaypointQueryEngineTest {
+    @Test
+    void selectedListUsesTheSameNameFilterAndSortingPipeline() {
+        WaypointFilesManagerCore filesManager = createFilesManager();
+        addDimension(filesManager, "minecraft:overworld",
+                list("bases", waypoint("far base", 10, 0, 0), waypoint("near base", 1, 0, 0)),
+                list("villages", waypoint("desert village", 5, 0, 0)));
+
+        WaypointQueryEngine.QueryResult result = new WaypointQueryEngine(filesManager).queryList(
+                "minecraft:overworld",
+                "bases",
+                new WaypointQueryEngine.Query(
+                        "base",
+                        WaypointSorting.SortMode.DISTANCE,
+                        new WaypointPos(0, 0, 0)
+                )
+        );
+
+        assertEquals(1, result.listCount());
+        assertEquals(List.of("bases"), listNames(result.dimensions().get(0)));
+        assertEquals(List.of("near base", "far base"), waypointNames(result.dimensions().get(0).lists().get(0)));
+    }
+
+    @Test
+    void selectedListReturnsNoResultWhenItsWaypointsDoNotMatch() {
+        WaypointFilesManagerCore filesManager = createFilesManager();
+        addDimension(filesManager, "minecraft:overworld",
+                list("bases", waypoint("home", 0, 0, 0)),
+                list("villages", waypoint("desert village", 0, 0, 0)));
+
+        WaypointQueryEngine.QueryResult result = new WaypointQueryEngine(filesManager).queryList(
+                "minecraft:overworld",
+                "bases",
+                new WaypointQueryEngine.Query("village", WaypointSorting.SortMode.NAME, null)
+        );
+
+        assertTrue(result.isEmpty());
+        assertEquals(0, result.waypointCount());
+    }
+
     @TempDir
     private Path tempDir;
 

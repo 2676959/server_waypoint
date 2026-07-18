@@ -24,6 +24,9 @@
   "waypoint.remove.list.nonempty": "无法移除非空列表“{0}”",
 
   "waypoint.no.waypoints": "该服务器上没有任何路径点",
+  "waypoint.search.no_results": "没有与“{0}”匹配的路径点",
+  "waypoint.list.page.invalid": "第{0}页不存在，最后一页是第{1}页",
+  "waypoint.list.page": "第{0}/{1}页 · 每页{2}个 · 共{3}个结果",
 
   "waypoint.download.all": "已向你的客户端发送服务器上所有路径点",
   "waypoint.download.dimension": "已向你的客户端发送维度“{0}”中的所有路径点",
@@ -53,6 +56,8 @@
   "button.edit": "编辑路径点",
   "button.add.waypoint": "点击添加路径点",
   "button.add.list": "点击创建路径点列表",
+  "button.page.previous": "上一页",
+  "button.page.next": "下一页",
 
   "hex_color_code.invalid": "无效的十六进制颜色码：{0}"
 }

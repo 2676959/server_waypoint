@@ -24,6 +24,9 @@
   "waypoint.remove.list.nonempty": "Cannot remove non-empty waypoint list: \"{0}\"",
 
   "waypoint.no.waypoints": "No waypoints on this server",
+  "waypoint.search.no_results": "No waypoints match \"{0}\"",
+  "waypoint.list.page.invalid": "Page {0} does not exist. The last page is {1}",
+  "waypoint.list.page": "Page {0}/{1} · {2} per page · {3} results",
 
   "waypoint.download.all": "Sent all waypoints on this server to your client",
   "waypoint.download.dimension": "Sent all waypoints in dimension {0} to your client",
@@ -53,6 +56,8 @@
   "button.edit": "edit",
   "button.add.waypoint": "click to add waypoint",
   "button.add.list": "click to add waypoint list",
+  "button.page.previous": "previous page",
+  "button.page.next": "next page",
 
   "hex_color_code.invalid": "Invalid hex color code: {0}"
 }

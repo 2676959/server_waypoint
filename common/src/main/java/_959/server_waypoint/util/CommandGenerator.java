@@ -1,6 +1,10 @@
 package _959.server_waypoint.util;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointSorting;
+import com.mojang.brigadier.arguments.StringArgumentType;
+
+import java.util.Locale;
 
 import static _959.server_waypoint.command.CoreWaypointCommand.*;
 import static _959.server_waypoint.util.ColorUtils.rgbToNameOrHexCode;
@@ -99,5 +103,60 @@ public class CommandGenerator {
         sb.append(' ').append(dimensionName);
         sb.append(" \"").append(listName).append('"');
         return sb.toString();
+    }
+
+    public static String listPageCmd(
+            boolean allDimensions,
+            String dimensionName,
+            String listName,
+            String filterText,
+            WaypointSorting.SortMode sortMode,
+            boolean reversed,
+            int pageNumber,
+            int pageLimit
+    ) {
+        StringBuilder command = new StringBuilder(WAYPOINT_COMMAND_WITH_SLASH)
+                .append(' ').append(LIST_COMMAND);
+        if (allDimensions) {
+            command.append(" all");
+        } else {
+            command.append(' ').append(dimensionName);
+            if (listName != null) {
+                command.append(' ').append(escapeListName(listName));
+            }
+        }
+        if (!filterText.trim().isEmpty()) {
+            command.append(' ').append(SEARCH_COMMAND).append(' ')
+                    .append(StringArgumentType.escapeIfRequired(filterText));
+        }
+        if (sortMode != WaypointSorting.SortMode.DEFAULT) {
+            command.append(' ').append(SORT_COMMAND).append(' ')
+                    .append(sortMode.name().toLowerCase(Locale.ROOT));
+            if (reversed) {
+                command.append(' ').append(ORDER_COMMAND).append(" descending");
+            }
+        }
+        return command.append(' ').append(PAGE_COMMAND).append(' ').append(pageNumber)
+                .append(' ').append(LIMIT_COMMAND).append(' ').append(pageLimit)
+                .toString();
+    }
+
+    public static String escapeListName(String listName) {
+        if (listName.isEmpty()) {
+            return "\"\"";
+        }
+        String escaped = StringArgumentType.escapeIfRequired(listName);
+        if (!escaped.equals(listName) || !isListOptionLiteral(listName)) {
+            return escaped;
+        }
+        return "\"" + listName.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+    }
+
+    private static boolean isListOptionLiteral(String listName) {
+        return SEARCH_COMMAND.equals(listName)
+                || SORT_COMMAND.equals(listName)
+                || ORDER_COMMAND.equals(listName)
+                || PAGE_COMMAND.equals(listName)
+                || LIMIT_COMMAND.equals(listName);
     }
 }

@@ -35,6 +35,29 @@ public final class WaypointQueryEngine {
         return queryManagers(List.of(Map.entry(dimensionName, fileManager)), resolvedQuery);
     }
 
+    public QueryResult queryList(String dimensionName, String listName, Query query) {
+        Query resolvedQuery = resolveQuery(query);
+        WaypointFileManager fileManager = this.filesManager.getWaypointFileManager(dimensionName);
+        if (fileManager == null) {
+            return QueryResult.empty(resolvedQuery);
+        }
+        WaypointList waypointList = fileManager.getWaypointListByName(listName);
+        if (waypointList == null) {
+            return QueryResult.empty(resolvedQuery);
+        }
+        ListResult listResult = queryList(
+                dimensionName,
+                waypointList,
+                resolvedQuery.normalizedFilter(),
+                resolvedQuery
+        );
+        if (!listResult.include()) {
+            return QueryResult.empty(resolvedQuery);
+        }
+        DimensionResult dimensionResult = new DimensionResult(dimensionName, List.of(listResult));
+        return new QueryResult(List.of(dimensionResult), resolvedQuery);
+    }
+
     public @Unmodifiable List<String> getSearchSuggestions(String dimensionName) {
         WaypointFileManager fileManager = this.filesManager.getWaypointFileManager(dimensionName);
         if (fileManager == null) {

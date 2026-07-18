@@ -2,6 +2,7 @@ package _959.server_waypoint.command;
 
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
+import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
@@ -10,8 +11,11 @@ import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
 import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.core.waypoint.WaypointListDisplayModel;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
+import _959.server_waypoint.core.waypoint.WaypointSorting;
 import _959.server_waypoint.text.TextButton;
 import _959.server_waypoint.util.TriConsumer;
 import _959.server_waypoint.util.WaypointInitials;
@@ -20,6 +24,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -27,13 +33,16 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -47,6 +56,8 @@ import static _959.server_waypoint.text.TextButton.*;
 import static _959.server_waypoint.text.WaypointTextHelper.*;
 import static _959.server_waypoint.translation.LanguageFilesManager.getExternalLoadedLanguages;
 import static _959.server_waypoint.util.ColorUtils.*;
+import static _959.server_waypoint.util.CommandGenerator.escapeListName;
+import static _959.server_waypoint.util.CommandGenerator.listPageCmd;
 import static _959.server_waypoint.util.WaypointInitials.SINGLE_WORD_REGEX;
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
@@ -62,6 +73,7 @@ import static net.kyori.adventure.text.Component.translatable;
 public abstract class CoreWaypointCommand<S, K, P, D, B> {
     protected final PlatformMessageSender<S, P> sender;
     private final WaypointServerCore waypointServer;
+    private final WaypointQueryEngine waypointQueryEngine;
     private final PermissionKeys<K> permissionKeys;
     private final PermissionManager<S, K, P> permissionManager;
     private final Supplier<ArgumentType<D>> dimensionArgumentProvider;
@@ -80,6 +92,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String DOWNLOAD_COMMAND = "download";
     public static final String TP_COMMAND = "tp";
     public static final String RELOAD_COMMAND = "reload";
+    public static final String SEARCH_COMMAND = "search";
+    public static final String SORT_COMMAND = "sort";
+    public static final String ORDER_COMMAND = "order";
+    public static final String PAGE_COMMAND = "page";
+    public static final String LIMIT_COMMAND = "limit";
     public static final String DIMENSION_ARG = "dimension";
     public static final String LIST_NAME_ARG = "list name";
     public static final String WAYPOINT_NAME_ARG = "waypoint name";
@@ -89,10 +106,15 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String YAW_ARG = "yaw";
     public static final String COLOR_ARG = "color";
     public static final String VISIBILITY_ARG = "global";
+    public static final String SEARCH_QUERY_ARG = "search query";
+    public static final String PAGE_NUMBER_ARG = "page number";
+    public static final String PAGE_LIMIT_ARG = "page limit";
     public static final String RANDOM_COLOR = "random";
+    public static final int MAX_PAGE_LIMIT = Config.MAX_PAGE_LIMIT;
 
     public CoreWaypointCommand(WaypointServerCore waypointServer, PlatformMessageSender<S, P> sender, PermissionManager<S, K, P> permissionManager, Supplier<ArgumentType<D>> dimensionArgument, Supplier<ArgumentType<B>> blockPositionArgument) {
         this.waypointServer = waypointServer;
+        this.waypointQueryEngine = new WaypointQueryEngine(waypointServer);
         this.sender = sender;
         this.permissionManager = permissionManager;
         this.dimensionArgumentProvider = dimensionArgument;
@@ -105,6 +127,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     protected abstract boolean isDimensionValid(S source, D dimensionArgument);
     protected abstract void executeByServer(S source, Runnable task);
     protected abstract D getSourceDimension(S source);
+    protected abstract WaypointPos getSourcePosition(S source);
     protected abstract float getSourceYaw(S source);
     protected abstract P getPlayer(S source);
     protected abstract String getPlayerName(P player);
@@ -186,6 +209,132 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     @SuppressWarnings("unchecked")
     private ArgumentBuilder<S, ?> waypointNameNode() {
         return (ArgumentBuilder<S, ?>) argument(WAYPOINT_NAME_ARG, string()).suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION);
+    }
+
+    private LiteralArgumentBuilder<S> listCommandNode() {
+        LiteralArgumentBuilder<S> listNode = literal(LIST_COMMAND);
+        configureListTarget(listNode, ListScope.CURRENT_DIMENSION);
+
+        LiteralArgumentBuilder<S> allNode = literal("all");
+        configureListTarget(allNode, ListScope.ALL_DIMENSIONS);
+        listNode.then(allNode);
+
+        RequiredArgumentBuilder<S, D> dimensionNode = argument(DIMENSION_ARG, this.dimensionArgumentProvider.get());
+        configureListTarget(dimensionNode, ListScope.DIMENSION);
+
+        RequiredArgumentBuilder<S, String> listNameNode = argument(LIST_NAME_ARG, string());
+        listNameNode.suggests(this.WAYPOINT_LIST_SUGGESTION);
+        configureListTarget(listNameNode, ListScope.WAYPOINT_LIST);
+        dimensionNode.then(listNameNode);
+        listNode.then(dimensionNode);
+        return listNode;
+    }
+
+    private void configureListTarget(ArgumentBuilder<S, ?> targetNode, ListScope scope) {
+        targetNode.executes(listCommand(scope, WaypointSorting.SortMode.DEFAULT, false));
+        LiteralArgumentBuilder<S> searchNode = listSearchNode(scope);
+        LiteralArgumentBuilder<S> sortNode = listSortNode(scope);
+        LiteralArgumentBuilder<S> pageNode = listPageNode(scope, WaypointSorting.SortMode.DEFAULT, false);
+        LiteralArgumentBuilder<S> limitNode = listLimitNode(scope, WaypointSorting.SortMode.DEFAULT, false);
+        if (scope == ListScope.DIMENSION) {
+            searchNode.executes(reservedListCommand(SEARCH_COMMAND));
+            sortNode.executes(reservedListCommand(SORT_COMMAND));
+            pageNode.executes(reservedListCommand(PAGE_COMMAND));
+            limitNode.executes(reservedListCommand(LIMIT_COMMAND));
+        }
+        targetNode.then(searchNode);
+        targetNode.then(sortNode);
+        targetNode.then(pageNode);
+        targetNode.then(limitNode);
+    }
+
+    private LiteralArgumentBuilder<S> listSearchNode(ListScope scope) {
+        RequiredArgumentBuilder<S, String> queryNode = argument(SEARCH_QUERY_ARG, string());
+        queryNode.executes(listCommand(scope, WaypointSorting.SortMode.DEFAULT, false));
+        queryNode.then(listSortNode(scope));
+        queryNode.then(listPageNode(scope, WaypointSorting.SortMode.DEFAULT, false));
+        queryNode.then(listLimitNode(scope, WaypointSorting.SortMode.DEFAULT, false));
+        LiteralArgumentBuilder<S> searchNode = literal(SEARCH_COMMAND);
+        return searchNode.then(queryNode);
+    }
+
+    private LiteralArgumentBuilder<S> listSortNode(ListScope scope) {
+        LiteralArgumentBuilder<S> sortNode = literal(SORT_COMMAND);
+        for (WaypointSorting.SortMode sortMode : WaypointSorting.SortMode.values()) {
+            LiteralArgumentBuilder<S> modeNode = literal(sortMode.name().toLowerCase(Locale.ROOT));
+            modeNode.executes(listCommand(scope, sortMode, false));
+            if (sortMode != WaypointSorting.SortMode.DEFAULT) {
+                modeNode.then(listOrderNode(scope, sortMode));
+            }
+            modeNode.then(listPageNode(scope, sortMode, false));
+            modeNode.then(listLimitNode(scope, sortMode, false));
+            sortNode.then(modeNode);
+        }
+        return sortNode;
+    }
+
+    private LiteralArgumentBuilder<S> listOrderNode(ListScope scope, WaypointSorting.SortMode sortMode) {
+        LiteralArgumentBuilder<S> orderNode = literal(ORDER_COMMAND);
+
+        LiteralArgumentBuilder<S> ascendingNode = literal("ascending");
+        ascendingNode.executes(listCommand(scope, sortMode, false));
+        ascendingNode.then(listPageNode(scope, sortMode, false));
+        ascendingNode.then(listLimitNode(scope, sortMode, false));
+        orderNode.then(ascendingNode);
+
+        LiteralArgumentBuilder<S> descendingNode = literal("descending");
+        descendingNode.executes(listCommand(scope, sortMode, true));
+        descendingNode.then(listPageNode(scope, sortMode, true));
+        descendingNode.then(listLimitNode(scope, sortMode, true));
+        orderNode.then(descendingNode);
+        return orderNode;
+    }
+
+    private LiteralArgumentBuilder<S> listPageNode(
+            ListScope scope,
+            WaypointSorting.SortMode sortMode,
+            boolean reversed
+    ) {
+        RequiredArgumentBuilder<S, Integer> pageNode = argument(PAGE_NUMBER_ARG, integer(1));
+        pageNode.executes(listCommand(scope, sortMode, reversed));
+        pageNode.then(listLimitNode(scope, sortMode, reversed));
+        LiteralArgumentBuilder<S> pageLiteral = literal(PAGE_COMMAND);
+        return pageLiteral.then(pageNode);
+    }
+
+    private LiteralArgumentBuilder<S> listLimitNode(
+            ListScope scope,
+            WaypointSorting.SortMode sortMode,
+            boolean reversed
+    ) {
+        RequiredArgumentBuilder<S, Integer> limitNode = argument(PAGE_LIMIT_ARG, integer(1, MAX_PAGE_LIMIT));
+        limitNode.executes(listCommand(scope, sortMode, reversed));
+        LiteralArgumentBuilder<S> limitLiteral = literal(LIMIT_COMMAND);
+        return limitLiteral.then(limitNode);
+    }
+
+    private Command<S> listCommand(
+            ListScope scope,
+            WaypointSorting.SortMode sortMode,
+            boolean reversed
+    ) {
+        return context -> {
+            executeList(context, scope, sortMode, reversed, null);
+            return Command.SINGLE_SUCCESS;
+        };
+    }
+
+    private Command<S> reservedListCommand(String listName) {
+        return context -> {
+            executeList(
+                    context,
+                    ListScope.WAYPOINT_LIST,
+                    WaypointSorting.SortMode.DEFAULT,
+                    false,
+                    listName
+            );
+            return Command.SINGLE_SUCCESS;
+        };
     }
 
     @SuppressWarnings("unchecked")
@@ -399,46 +548,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                 )
                         )
                 )
-                .then(literal(LIST_COMMAND)
-                        .then(literal("all")
-                                .executes(
-                                        context -> {
-                                            executeListAll((S) context.getSource());
-                                            return Command.SINGLE_SUCCESS;
-                                        }
-                                )
-                        )
-                        .then((ArgumentBuilder<Object, ?>) dimensionNode(
-                                )
-                                .then(listNameNode()
-                                        .executes(
-                                                context -> {
-                                                    executeListWaypointList(
-                                                            context.getSource(),
-                                                            getArgument(context, DIMENSION_ARG),
-                                                            getString(context, LIST_NAME_ARG)
-                                                    );
-                                                    return Command.SINGLE_SUCCESS;
-                                                }
-                                        )
-                                )
-                                .executes(
-                                        context -> {
-                                            executeListDimension(
-                                                    context.getSource(),
-                                                    getArgument(context, DIMENSION_ARG)
-                                            );
-                                            return Command.SINGLE_SUCCESS;
-                                        }
-                                )
-                        )
-                        .executes(
-                                context -> {
-                                    executeListCurrentDimension((S) context.getSource());
-                                    return Command.SINGLE_SUCCESS;
-                                }
-                        )
-                )
+                .then((ArgumentBuilder<Object, ?>) listCommandNode())
                 .then(literal(RELOAD_COMMAND)
                         .requires(source -> hasReloadPermission((S) source))
                         .executes(
@@ -696,63 +806,258 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         });
     }
 
-    private void executeListAll(S source) {
-        List<Map.Entry<String, WaypointFileManager>> fileManagerMap = this.waypointServer.getSortedMap();
-        Component listMsg = text("");
-        listMsg = listMsg.appendNewline();
-        boolean empty = true;
-        boolean withEdit = hasEditPermission(source);
-        boolean withRemove = hasRemovePermission(source);
-        boolean withTp = hasTpPermission(source);
-        for (Map.Entry<String, WaypointFileManager> entry : fileManagerMap) {
-            // Dimension header
-            WaypointFileManager waypointFileManager = entry.getValue();
-            if (waypointFileManager == null) {
-                continue;
-            }
-            if (waypointFileManager.isEmpty()) {
-                continue;
-            }
-            listMsg = listMsg.append(getDimensionListText(waypointFileManager, true, withEdit, withRemove, withTp));
-            empty = false;
+    private void executeList(
+            CommandContext<S> context,
+            ListScope scope,
+            WaypointSorting.SortMode sortMode,
+            boolean reversed,
+            String fixedListName
+    ) {
+        S source = context.getSource();
+        ListOptions options = new ListOptions(
+                getOptionalString(context, SEARCH_QUERY_ARG, ""),
+                sortMode,
+                reversed,
+                getOptionalInteger(context, PAGE_NUMBER_ARG, 1),
+                getOptionalInteger(context, PAGE_LIMIT_ARG, CONFIG.defaultPageLimit())
+        );
+        if (scope == ListScope.ALL_DIMENSIONS) {
+            WaypointQueryEngine.Query query = createListQuery(source, options);
+            sendListQueryResult(
+                    source,
+                    new ListTarget(true, null, null),
+                    options,
+                    this.waypointQueryEngine.queryAll(query)
+            );
+            return;
         }
-        if (empty) {
-            this.sender.sendMessage(source, translatable("waypoint.no.waypoints"));
-        } else {
-            this.sender.sendMessage(source, listMsg);
+
+        D dimensionArgument = scope == ListScope.CURRENT_DIMENSION
+                ? getSourceDimension(source)
+                : getArgument(context, DIMENSION_ARG);
+        String listName = fixedListName != null
+                ? fixedListName
+                : scope == ListScope.WAYPOINT_LIST ? getString(context, LIST_NAME_ARG) : null;
+        executeListDimension(source, dimensionArgument, listName, options);
+    }
+
+    private String getOptionalString(CommandContext<S> context, String name, String defaultValue) {
+        try {
+            return getString(context, name);
+        } catch (IllegalArgumentException ignored) {
+            return defaultValue;
         }
     }
 
-    private void executeListCurrentDimension(S source) {
-         executeListDimension(source, getSourceDimension(source));
+    private int getOptionalInteger(CommandContext<S> context, String name, int defaultValue) {
+        try {
+            return getInteger(context, name);
+        } catch (IllegalArgumentException ignored) {
+            return defaultValue;
+        }
     }
 
-    private void executeListDimension(S source, D dimensionArgument) {
-        runWithSelectorTarget(source, dimensionArgument, (fileManager) -> {
+    private WaypointQueryEngine.Query createListQuery(S source, ListOptions options) {
+        return new WaypointQueryEngine.Query(
+                options.filterText(),
+                options.sortMode(),
+                getSourcePosition(source),
+                toDimensionName(getSourceDimension(source)),
+                options.reversed()
+        );
+    }
+
+    private void executeListDimension(
+            S source,
+            D dimensionArgument,
+            String listName,
+            ListOptions options
+    ) {
+        runWithSelectorTarget(source, dimensionArgument, fileManager -> {
             String dimensionName = fileManager.getDimensionName();
-            if (fileManager.hasNoWaypoints()) {
-                this.sender.sendMessage(source, translatable("waypoint.empty.dimension", dimensionNameWithColor(dimensionName)));
-            } else {
-                this.sender.sendMessage(source,
-                        getDimensionListText(fileManager,
-                                false, hasEditPermission(source), hasRemovePermission(source), hasTpPermission(source)));
+            if (listName != null && fileManager.getWaypointListByName(listName) == null) {
+                this.sender.sendError(source, translatable("waypoint.nonexist.list", text(listName)));
+                return;
             }
+            WaypointQueryEngine.Query query = createListQuery(source, options);
+            WaypointQueryEngine.QueryResult result = listName == null
+                    ? this.waypointQueryEngine.queryDimension(dimensionName, query)
+                    : this.waypointQueryEngine.queryList(dimensionName, listName, query);
+            sendListQueryResult(
+                    source,
+                    new ListTarget(false, dimensionName, listName),
+                    options,
+                    result
+            );
         });
     }
 
-    private void executeListWaypointList(S source, D dimensionArgument, String listName) {
-        runWithSelectorTarget(source, dimensionArgument, listName,
-                (fileManager, waypointList) -> {
-                    String dimensionName = fileManager.getDimensionName();
-                    this.sender.sendMessage(source,
-                            getWaypointListText(waypointList, dimensionName, 0, false,
-                                    hasEditPermission(source),
-                                    hasRemovePermission(source),
-                                    hasTpPermission(source)));
-                },
-                (fileManager, waypointList) ->
-                    this.sender.sendMessage(source, translatable("waypoint.empty.list", text(listName)))
+    private void sendListQueryResult(
+            S source,
+            ListTarget target,
+            ListOptions options,
+            WaypointQueryEngine.QueryResult result
+    ) {
+        WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, true);
+        if (result.waypointCount() == 0) {
+            if (!options.filterText().trim().isEmpty()) {
+                this.sender.sendMessage(
+                        source,
+                        translatable("waypoint.search.no_results", text(options.filterText()))
                 );
+                return;
+            }
+            if (target.listName() != null) {
+                this.sender.sendMessage(source, translatable("waypoint.empty.list", text(target.listName())));
+                return;
+            }
+            if (target.allDimensions() && result.listCount() > 0) {
+                this.sender.sendMessage(source, getListDisplayText(source, display, false));
+                return;
+            }
+            if (target.allDimensions()) {
+                this.sender.sendMessage(source, translatable("waypoint.no.waypoints"));
+                return;
+            }
+            this.sender.sendMessage(
+                    source,
+                    translatable("waypoint.empty.dimension", dimensionNameWithColor(target.dimensionName()))
+            );
+            return;
+        }
+
+        WaypointListPage.Page page = WaypointListPage.paginate(display, options.pageNumber(), options.pageLimit());
+        if (page.pageNumber() != options.pageNumber()) {
+            this.sender.sendError(
+                    source,
+                    translatable(
+                            "waypoint.list.page.invalid",
+                            text(options.pageNumber()),
+                            text(page.totalPages())
+                    )
+            );
+            return;
+        }
+
+        Component listText = getListDisplayText(source, page.display(), target.listName() != null);
+        if (page.totalPages() > 1) {
+            listText = listText.append(getPageNavigation(target, options, page));
+        }
+        this.sender.sendMessage(source, listText);
+    }
+
+    private Component getListDisplayText(
+            S source,
+            WaypointListDisplayModel.Display display,
+            boolean listOnly
+    ) {
+        boolean withEdit = hasEditPermission(source);
+        boolean withRemove = hasRemovePermission(source);
+        boolean withTp = hasTpPermission(source);
+        if (listOnly) {
+            WaypointListDisplayModel.DisplayList list = display.lists().get(0);
+            return getWaypointListText(
+                    list.sourceList(),
+                    list.waypoints(),
+                    list.dimensionName(),
+                    0,
+                    false,
+                    withEdit,
+                    withRemove,
+                    withTp
+            );
+        }
+
+        Component listText = text("").appendNewline();
+        for (WaypointListDisplayModel.DisplayDimension dimension : display.dimensions()) {
+            listText = listText.append(dimensionNameWithColor(dimension.dimensionName())).appendNewline();
+            for (WaypointListDisplayModel.DisplayList list : dimension.lists()) {
+                listText = listText.append(getWaypointListText(
+                        list.sourceList(),
+                        list.waypoints(),
+                        dimension.dimensionName(),
+                        1,
+                        true,
+                        withEdit,
+                        withRemove,
+                        withTp
+                ));
+            }
+        }
+        return listText;
+    }
+
+    private Component getPageNavigation(
+            ListTarget target,
+            ListOptions options,
+            WaypointListPage.Page page
+    ) {
+        Component previous = page.hasPrevious()
+                ? pageButton(
+                        "←",
+                        listPageCmd(
+                                target.allDimensions(),
+                                target.dimensionName(),
+                                target.listName(),
+                                options.filterText(),
+                                options.sortMode(),
+                                options.reversed(),
+                                page.pageNumber() - 1,
+                                options.pageLimit()
+                        ),
+                        "button.page.previous"
+                )
+                : text("[←]", NamedTextColor.DARK_GRAY);
+        Component next = page.hasNext()
+                ? pageButton(
+                        "→",
+                        listPageCmd(
+                                target.allDimensions(),
+                                target.dimensionName(),
+                                target.listName(),
+                                options.filterText(),
+                                options.sortMode(),
+                                options.reversed(),
+                                page.pageNumber() + 1,
+                                options.pageLimit()
+                        ),
+                        "button.page.next"
+                )
+                : text("[→]", NamedTextColor.DARK_GRAY);
+        Component pageText = translatable(
+                "waypoint.list.page",
+                text(page.pageNumber()),
+                text(page.totalPages()),
+                text(page.limit()),
+                text(page.totalWaypoints())
+        ).color(NamedTextColor.GRAY);
+        return previous.appendSpace().append(pageText).appendSpace().append(next)
+                .decoration(TextDecoration.BOLD, false);
+    }
+
+    private Component pageButton(String symbol, String command, String hoverTranslationKey) {
+        return text("[" + symbol + "]", NamedTextColor.AQUA)
+                .clickEvent(ClickEvent.runCommand(command))
+                .hoverEvent(HoverEvent.showText(translatable(hoverTranslationKey)));
+    }
+
+    private enum ListScope {
+        CURRENT_DIMENSION,
+        ALL_DIMENSIONS,
+        DIMENSION,
+        WAYPOINT_LIST
+    }
+
+    private record ListTarget(boolean allDimensions, String dimensionName, String listName) {
+    }
+
+    private record ListOptions(
+            String filterText,
+            WaypointSorting.SortMode sortMode,
+            boolean reversed,
+            int pageNumber,
+            int pageLimit
+    ) {
     }
 
     private void executeReload(S source) {
@@ -813,11 +1118,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 String currentInput = stripOuterQuotes(builder.getRemaining());
                 for (String listName : fileManager.getWaypointListMap().keySet()) {
                     if (listName.startsWith(currentInput)) {
-                        if (listName.matches(SINGLE_WORD_REGEX)) {
-                            builder.suggest(listName);
-                        } else {
-                            builder.suggest("\"%s\"".formatted(listName));
-                        }
+                        builder.suggest(escapeListName(listName));
                     }
                 }
             }

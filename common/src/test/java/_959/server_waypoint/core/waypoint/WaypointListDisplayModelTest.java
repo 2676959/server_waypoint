@@ -42,6 +42,24 @@ class WaypointListDisplayModelTest {
     }
 
     @Test
+    void nameSortGroupedCanReverseListsAndWaypoints() {
+        WaypointList alpha = list("alpha", waypoint("zeta", 0, 0, 0), waypoint("Beta", 0, 0, 0));
+        WaypointList gamma = list("gamma", waypoint("delta", 0, 0, 0));
+        WaypointQueryEngine.QueryResult result = result(
+                WaypointSorting.SortMode.NAME,
+                null,
+                true,
+                listResult(gamma),
+                listResult(alpha)
+        );
+
+        WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, true);
+
+        assertEquals(List.of("gamma", "alpha"), listNames(display));
+        assertEquals(List.of("zeta", "Beta"), waypointNames(display.lists().get(1)));
+    }
+
+    @Test
     void nameSortFlatSortsAllWaypointsAndKeepsSourceListNames() {
         WaypointList mines = list("mines", waypoint("zeta", 0, 0, 0), waypoint("Alpha", 0, 0, 0));
         WaypointList bases = list("bases", waypoint("mid", 0, 0, 0));
