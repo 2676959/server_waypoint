@@ -51,7 +51,9 @@ class WaypointListPageTest {
         assertEquals(List.of("bases", "portals"), listNames(first));
         assertEquals(List.of("portals"), listNames(second));
         assertEquals(List.of("minecraft:overworld", "minecraft:the_nether"), dimensionNames(first));
-        assertEquals(List.of("minecraft:the_nether"), dimensionNames(second));
+        assertEquals(List.of("minecraft:overworld", "minecraft:the_nether"), dimensionNames(second));
+        assertTrue(second.dimensions().get(0).lists().isEmpty());
+        assertFalse(second.dimensions().get(1).lists().isEmpty());
     }
 
     @Test
@@ -87,6 +89,55 @@ class WaypointListPageTest {
         assertEquals(10, page.totalWaypoints());
         assertEquals(List.of("leading empty", "bases", "trailing empty"), listNames(page));
         assertEquals(names("base", 10), waypointNames(page));
+    }
+
+    @Test
+    void flatWaypointsArePaginatedWithoutLosingTheirSourceMetadata() {
+        WaypointList sourceList = new WaypointList("bases", 1, waypoints("base", 12));
+        List<WaypointListDisplayModel.DisplayWaypoint> flatWaypoints = sourceList.simpleWaypoints().stream()
+                .map(waypoint -> new WaypointListDisplayModel.DisplayWaypoint(
+                        "minecraft:overworld",
+                        sourceList,
+                        waypoint
+                ))
+                .toList();
+        WaypointListDisplayModel.Display display = new WaypointListDisplayModel.Display(
+                false,
+                List.of(),
+                flatWaypoints
+        );
+
+        WaypointListPage.Page page = WaypointListPage.paginate(display, 2, PAGE_LIMIT);
+
+        assertFalse(page.groupByLists());
+        assertEquals(2, page.pageNumber());
+        assertEquals(2, page.totalPages());
+        assertEquals(12, page.totalWaypoints());
+        assertEquals(List.of("base 11", "base 12"), page.flatWaypoints().stream()
+                .map(row -> row.waypoint().name())
+                .toList());
+        assertEquals(List.of("bases", "bases"), page.flatWaypoints().stream()
+                .map(row -> row.sourceList().name())
+                .toList());
+        assertFalse(page.display().groupByLists());
+    }
+
+    @Test
+    void treePagesKeepEveryDimensionInTheOriginalOrder() {
+        WaypointListDisplayModel.Display display = display(
+                displayList("dim0", "list0", waypoints("wp0", 1)),
+                displayList("dim1", "list1", waypoints("wp1", 1)),
+                displayList("dim2", "list2", waypoints("wp2", 1)),
+                displayList("dim3", "list3", waypoints("wp3", 1))
+        );
+
+        WaypointListPage.Page page = WaypointListPage.paginate(display, 2, 1);
+
+        assertEquals(List.of("dim0", "dim1", "dim2", "dim3"), dimensionNames(page));
+        assertEquals(List.of(true, false, true, true), page.dimensions().stream()
+                .map(dimension -> dimension.lists().isEmpty())
+                .toList());
+        assertEquals(List.of("wp1 1"), waypointNames(page));
     }
 
     @Test
@@ -150,7 +201,7 @@ class WaypointListPageTest {
     }
 
     private static List<String> dimensionNames(WaypointListPage.Page page) {
-        return page.display().dimensions().stream()
+        return page.dimensions().stream()
                 .map(WaypointListDisplayModel.DisplayDimension::dimensionName)
                 .toList();
     }

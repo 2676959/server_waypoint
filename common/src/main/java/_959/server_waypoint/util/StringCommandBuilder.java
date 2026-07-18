@@ -25,8 +25,18 @@ public class StringCommandBuilder {
             WaypointSorting.SortMode sortMode,
             boolean reversed,
             int pageNumber,
-            int pageLimit
+            int pageLimit,
+            boolean groupByLists
     ) {
+        public ListOptions(
+                String filterText,
+                WaypointSorting.SortMode sortMode,
+                boolean reversed,
+                int pageNumber,
+                int pageLimit
+        ) {
+            this(filterText, sortMode, reversed, pageNumber, pageLimit, true);
+        }
     }
 
     public static String tpCmd(String dimensionName, String waypointList, String waypointName) {
@@ -132,6 +142,30 @@ public class StringCommandBuilder {
             int pageNumber,
             int pageLimit
     ) {
+        return listPageCmd(
+                allDimensions,
+                dimensionName,
+                listName,
+                filterText,
+                sortMode,
+                reversed,
+                pageNumber,
+                pageLimit,
+                true
+        );
+    }
+
+    public static String listPageCmd(
+            boolean allDimensions,
+            String dimensionName,
+            String listName,
+            String filterText,
+            WaypointSorting.SortMode sortMode,
+            boolean reversed,
+            int pageNumber,
+            int pageLimit,
+            boolean groupByLists
+    ) {
         StringBuilder command = new StringBuilder(WAYPOINT_COMMAND_WITH_SLASH)
                 .append(' ').append(LIST_COMMAND);
         if (allDimensions) {
@@ -153,9 +187,12 @@ public class StringCommandBuilder {
                 command.append(' ').append(ORDER_COMMAND).append(" descending");
             }
         }
-        return command.append(' ').append(PAGE_COMMAND).append(' ').append(pageNumber)
-                .append(' ').append(LIMIT_COMMAND).append(' ').append(pageLimit)
-                .toString();
+        command.append(' ').append(PAGE_COMMAND).append(' ').append(pageNumber)
+                .append(' ').append(LIMIT_COMMAND).append(' ').append(pageLimit);
+        if (!groupByLists) {
+            command.append(' ').append(VIEW_COMMAND).append(' ').append(FLAT_VIEW);
+        }
+        return command.toString();
     }
 
     public static String listPageCmd(ListTarget target, ListOptions options, int pageNumber) {
@@ -167,7 +204,82 @@ public class StringCommandBuilder {
                 options.sortMode(),
                 options.reversed(),
                 pageNumber,
-                options.pageLimit()
+                options.pageLimit(),
+                options.groupByLists()
+        );
+    }
+
+    public static String listSearchCmd(ListTarget target, ListOptions options) {
+        StringBuilder command = new StringBuilder(WAYPOINT_COMMAND_WITH_SLASH)
+                .append(' ').append(LIST_COMMAND);
+        if (target.allDimensions()) {
+            command.append(" all");
+        } else {
+            command.append(' ').append(target.dimensionName());
+            if (target.listName() != null) {
+                command.append(' ').append(escapeListName(target.listName()));
+            }
+        }
+        if (options.sortMode() != WaypointSorting.SortMode.DEFAULT) {
+            command.append(' ').append(SORT_COMMAND).append(' ')
+                    .append(options.sortMode().name().toLowerCase(Locale.ROOT));
+            if (options.reversed()) {
+                command.append(' ').append(ORDER_COMMAND).append(" descending");
+            }
+        }
+        if (!options.groupByLists()) {
+            command.append(' ').append(VIEW_COMMAND).append(' ').append(FLAT_VIEW);
+        }
+        return command.append(' ').append(SEARCH_COMMAND).append(' ').toString();
+    }
+
+    public static String listViewCmd(
+            ListTarget target,
+            ListOptions options,
+            boolean groupByLists
+    ) {
+        String command = listPageCmd(
+                target.allDimensions(),
+                target.dimensionName(),
+                target.listName(),
+                options.filterText(),
+                options.sortMode(),
+                options.reversed(),
+                options.pageNumber(),
+                options.pageLimit(),
+                groupByLists
+        );
+        if (groupByLists) {
+            return command + ' ' + VIEW_COMMAND + ' ' + TREE_VIEW;
+        }
+        return command;
+    }
+
+    public static String listDimensionCmd(String dimensionName, ListOptions options) {
+        return listTargetCmd(new ListTarget(false, dimensionName, null), options);
+    }
+
+    public static String listWaypointListCmd(
+            String dimensionName,
+            String listName,
+            ListOptions options
+    ) {
+        return listTargetCmd(new ListTarget(false, dimensionName, listName), options);
+    }
+
+    private static String listTargetCmd(ListTarget target, ListOptions options) {
+        ListOptions firstPageOptions = new ListOptions(
+                options.filterText(),
+                options.sortMode(),
+                options.reversed(),
+                1,
+                options.pageLimit(),
+                options.groupByLists()
+        );
+        return listViewCmd(
+                target,
+                firstPageOptions,
+                options.groupByLists()
         );
     }
 
@@ -184,7 +296,8 @@ public class StringCommandBuilder {
                 sortMode,
                 false,
                 1,
-                options.pageLimit()
+                options.pageLimit(),
+                options.groupByLists()
         );
     }
 
@@ -197,7 +310,8 @@ public class StringCommandBuilder {
                 options.sortMode(),
                 reversed,
                 1,
-                options.pageLimit()
+                options.pageLimit(),
+                options.groupByLists()
         );
     }
 
@@ -217,6 +331,7 @@ public class StringCommandBuilder {
                 || SORT_COMMAND.equals(listName)
                 || ORDER_COMMAND.equals(listName)
                 || PAGE_COMMAND.equals(listName)
-                || LIMIT_COMMAND.equals(listName);
+                || LIMIT_COMMAND.equals(listName)
+                || VIEW_COMMAND.equals(listName);
     }
 }

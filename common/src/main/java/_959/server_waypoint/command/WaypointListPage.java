@@ -10,14 +10,14 @@ final class WaypointListPage {
     }
 
     static Page paginate(WaypointListDisplayModel.Display display, int requestedPage, int limit) {
-        if (!display.groupByLists()) {
-            throw new IllegalArgumentException("Waypoint command pages require grouped display data");
-        }
         if (requestedPage < 1) {
             throw new IllegalArgumentException("Page must be positive");
         }
         if (limit < 1) {
             throw new IllegalArgumentException("Page limit must be positive");
+        }
+        if (!display.groupByLists()) {
+            return paginateFlat(display, requestedPage, limit);
         }
 
         int totalWaypoints = display.lists().stream()
@@ -57,18 +57,76 @@ final class WaypointListPage {
             listStart = listEnd;
         }
 
-        return new Page(pageNumber, totalPages, limit, totalWaypoints, pageLists);
+        return new Page(
+                true,
+                pageNumber,
+                totalPages,
+                limit,
+                totalWaypoints,
+                pageLists,
+                List.of(),
+                pageDimensions(display, pageLists)
+        );
+    }
+
+    private static List<WaypointListDisplayModel.DisplayDimension> pageDimensions(
+            WaypointListDisplayModel.Display display,
+            List<WaypointListDisplayModel.DisplayList> pageLists
+    ) {
+        List<WaypointListDisplayModel.DisplayDimension> dimensions = new ArrayList<>();
+        for (WaypointListDisplayModel.DisplayDimension dimension : display.dimensions()) {
+            List<WaypointListDisplayModel.DisplayList> dimensionLists = pageLists.stream()
+                    .filter(list -> list.dimensionName().equals(dimension.dimensionName()))
+                    .toList();
+            dimensions.add(new WaypointListDisplayModel.DisplayDimension(
+                    dimension.dimensionName(),
+                    dimensionLists
+            ));
+        }
+        return dimensions;
+    }
+
+    private static Page paginateFlat(
+            WaypointListDisplayModel.Display display,
+            int requestedPage,
+            int limit
+    ) {
+        int totalWaypoints = display.flatWaypoints().size();
+        int totalPages = totalWaypoints == 0 ? 1 : ((totalWaypoints - 1) / limit) + 1;
+        int pageNumber = Math.min(requestedPage, totalPages);
+        int start = Math.min((pageNumber - 1) * limit, totalWaypoints);
+        int end = Math.min(start + limit, totalWaypoints);
+        return new Page(
+                false,
+                pageNumber,
+                totalPages,
+                limit,
+                totalWaypoints,
+                List.of(),
+                List.copyOf(display.flatWaypoints().subList(start, end)),
+                List.of()
+        );
     }
 
     record Page(
+            boolean groupByLists,
             int pageNumber,
             int totalPages,
             int limit,
             int totalWaypoints,
-            List<WaypointListDisplayModel.DisplayList> lists
+            List<WaypointListDisplayModel.DisplayList> lists,
+            List<WaypointListDisplayModel.DisplayWaypoint> flatWaypoints,
+            List<WaypointListDisplayModel.DisplayDimension> dimensions
     ) {
         Page {
             lists = List.copyOf(lists);
+            flatWaypoints = List.copyOf(flatWaypoints);
+            dimensions = dimensions.stream()
+                    .map(dimension -> new WaypointListDisplayModel.DisplayDimension(
+                            dimension.dimensionName(),
+                            List.copyOf(dimension.lists())
+                    ))
+                    .toList();
         }
 
         boolean hasPrevious() {
@@ -80,7 +138,11 @@ final class WaypointListPage {
         }
 
         WaypointListDisplayModel.Display display() {
-            return new WaypointListDisplayModel.Display(true, this.lists, List.of());
+            return new WaypointListDisplayModel.Display(
+                    this.groupByLists,
+                    this.lists,
+                    this.flatWaypoints
+            );
         }
     }
 }

@@ -24,8 +24,9 @@ public class TextButtonBuilder {
     private static final String REMOVE_SYMBOL = "❌";
     private static final String EDIT_SYMBOL = "📝";
     private static final String ADD_SYMBOL = "+";
-    public static final String PREVIOUS_PAGE = "←";
-    public static final String NEXT_PAGE = "→";
+    private static final String PREVIOUS_PAGE = "←";
+    private static final String NEXT_PAGE = "→";
+    private static final String SEARCH_SYMBOL = "🔍";
 
     private static Component buildButton(
             Component label,
@@ -72,6 +73,30 @@ public class TextButtonBuilder {
                 TextDecoration.State.NOT_SET,
                 null,
                 null
+        );
+    }
+
+    public static Component getListSearchButton(ListTarget target, ListOptions options) {
+        return buildButton(
+                text(SEARCH_SYMBOL),
+                NamedTextColor.AQUA,
+                TextDecoration.State.FALSE,
+                TextDecoration.State.FALSE,
+                ClickEvent.suggestCommand(listSearchCmd(target, options)),
+                translatable("button.list.search")
+        );
+    }
+
+    public static Component getListViewToggleButton(ListTarget target, ListOptions options) {
+        boolean nextGroupByLists = !options.groupByLists();
+        String view = nextGroupByLists ? "tree" : "flat";
+        return buildButton(
+                translatable("waypoint.list.view." + view),
+                NamedTextColor.AQUA,
+                TextDecoration.State.FALSE,
+                TextDecoration.State.FALSE,
+                ClickEvent.runCommand(listViewCmd(target, options, nextGroupByLists)),
+                translatable("button.list.view." + view)
         );
     }
 

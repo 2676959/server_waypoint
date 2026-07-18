@@ -121,15 +121,52 @@ public class WaypointTextHelper {
             boolean withRemove,
             boolean withTp
     ) {
+        return getWaypointListText(
+                waypointList,
+                waypoints,
+                dimensionName,
+                indentLevel,
+                isPart,
+                withEdit,
+                withRemove,
+                withTp,
+                null
+        );
+    }
+
+    public static Component getWaypointListText(
+            WaypointList waypointList,
+            List<SimpleWaypoint> waypoints,
+            String dimensionName,
+            int indentLevel,
+            boolean isPart,
+            boolean withEdit,
+            boolean withRemove,
+            boolean withTp,
+            @Nullable String listCommand
+    ) {
         String listName = waypointList.name();
-        Component listText = isPart ?
-                text("  ".repeat(indentLevel) + listName, NamedTextColor.WHITE) :
-                text("")
-                        .appendNewline()
-                        .append(text("  ".repeat(indentLevel) + listName, NamedTextColor.WHITE))
-                        .appendSpace().append(text("⬅")).appendSpace().append(dimensionNameWithColor(dimensionName));
-        listText = listText.decoration(TextDecoration.BOLD, true);
-        listText = listText.appendNewline();
+        Component listTitle = text("  ".repeat(indentLevel) + listName, NamedTextColor.WHITE);
+        if (listCommand != null) {
+            listTitle = listTitle
+                    .clickEvent(ClickEvent.runCommand(listCommand))
+                    .hoverEvent(HoverEvent.showText(translatable(
+                            "button.list.waypoint_list",
+                            text(listName)
+                    )));
+        }
+        Component listHeader = text("").append(listTitle);
+        if (!isPart) {
+            listHeader = listHeader.appendSpace().append(text("⬅")).appendSpace()
+                    .append(dimensionNameWithColor(dimensionName));
+        }
+        listHeader = listHeader.decoration(TextDecoration.BOLD, true);
+
+        Component listText = text("");
+        if (!isPart) {
+            listText = listText.appendNewline();
+        }
+        listText = listText.append(listHeader).appendNewline();
         int secondLevel = indentLevel + 1;
         if (waypoints.isEmpty()) {
             listText = listText.append(text("  ".repeat(secondLevel)))
@@ -138,20 +175,38 @@ public class WaypointTextHelper {
             return listText;
         }
         for (SimpleWaypoint waypoint : waypoints) {
-            Component waypointText = text("  ".repeat(secondLevel)).decoration(TextDecoration.BOLD, false);
-            if (withEdit) {
-                waypointText = waypointText.append(editButton(dimensionName, listName, waypoint)).appendSpace();
-            }
-            if (withRemove) {
-                waypointText = waypointText.append(removeButton(dimensionName, listName, waypoint)).appendSpace();
-            }
-            if (withTp) {
-                waypointText = waypointText.append(waypointTextWithTp(waypoint, dimensionName, listName));
-            } else {
-                waypointText = waypointText.append(waypointTextNoTp(waypoint, dimensionName));
-            }
-            listText = listText.append(waypointText).appendNewline();
+            listText = listText.append(getWaypointText(
+                    waypoint,
+                    dimensionName,
+                    listName,
+                    secondLevel,
+                    withEdit,
+                    withRemove,
+                    withTp
+            )).appendNewline();
         }
         return listText;
+    }
+
+    public static Component getWaypointText(
+            SimpleWaypoint waypoint,
+            String dimensionName,
+            String listName,
+            int indentLevel,
+            boolean withEdit,
+            boolean withRemove,
+            boolean withTp
+    ) {
+        Component waypointText = text("  ".repeat(indentLevel)).decoration(TextDecoration.BOLD, false);
+        if (withEdit) {
+            waypointText = waypointText.append(editButton(dimensionName, listName, waypoint)).appendSpace();
+        }
+        if (withRemove) {
+            waypointText = waypointText.append(removeButton(dimensionName, listName, waypoint)).appendSpace();
+        }
+        if (withTp) {
+            return waypointText.append(waypointTextWithTp(waypoint, dimensionName, listName));
+        }
+        return waypointText.append(waypointTextNoTp(waypoint, dimensionName));
     }
 }

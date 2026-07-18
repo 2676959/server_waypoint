@@ -213,7 +213,7 @@ final class WaypointCommandHelp {
                         "waypoint.help.list.usage.list"
                 ))
                 .append(usageEntry(
-                        "[search <query>] [sort <mode> [order <direction>]] [page <number>] [limit <number>]",
+                        "[search <query>] [sort <mode> [order <direction>]] [page <number>] [limit <number>] [view <view>]",
                         LIST_COMMAND_PREFIX,
                         "waypoint.help.list.usage.options"
                 ))
@@ -222,8 +222,9 @@ final class WaypointCommandHelp {
                 .append(argumentEntry("<mode>", "waypoint.help.list.argument.mode"))
                 .append(argumentEntry("<direction>", "waypoint.help.list.argument.direction"))
                 .append(argumentEntry("<number>", "waypoint.help.list.argument.number"))
+                .append(argumentEntry("<view>", "waypoint.help.list.argument.view"))
                 .append(argumentEntry(
-                        "search → sort → order → page → limit",
+                        "search → sort → order → page → limit → view, or sort → order → page → limit → view → search",
                         "waypoint.help.list.argument.order"
                 ))
                 .append(section("waypoint.help.section.examples"))
@@ -232,13 +233,14 @@ final class WaypointCommandHelp {
                         "waypoint.help.list.example.current"
                 ))
                 .append(exampleEntry(
-                        "/wp list all search home sort distance order ascending page 1 limit 10",
+                        "/wp list all search home sort distance order ascending page 1 limit 10 view flat",
                         "waypoint.help.list.example.all",
                         exampleArgument("home", QUERY_COLOR),
                         exampleArgument("distance", MODE_COLOR),
                         exampleArgument("ascending", DIRECTION_COLOR),
                         exampleArgument("1", NUMBER_COLOR),
-                        exampleArgument("10", NUMBER_COLOR)
+                        exampleArgument("10", NUMBER_COLOR),
+                        exampleArgument("flat", MODE_COLOR)
                 ))
                 .append(exampleEntry(
                         "/wp list minecraft:overworld \"Home Bases\" sort name order descending limit 20",
