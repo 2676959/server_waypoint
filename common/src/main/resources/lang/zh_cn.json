@@ -27,6 +27,11 @@
   "waypoint.search.no_results": "没有与“{0}”匹配的路径点",
   "waypoint.list.page.invalid": "第{0}页不存在，最后一页是第{1}页",
   "waypoint.list.page": "第{0}/{1}页 · 每页{2}个 · 共{3}个结果",
+  "waypoint.list.sort.label": "排序：",
+  "waypoint.sort.default": "默认",
+  "waypoint.sort.name": "名称",
+  "waypoint.sort.distance": "距离",
+  "waypoint.sort.color": "颜色",
 
   "waypoint.download.all": "已向你的客户端发送服务器上所有路径点",
   "waypoint.download.dimension": "已向你的客户端发送维度“{0}”中的所有路径点",
@@ -58,6 +63,13 @@
   "button.add.list": "点击创建路径点列表",
   "button.page.previous": "上一页",
   "button.page.next": "下一页",
+  "button.sort.default": "点击恢复列表中的保存顺序",
+  "button.sort.name": "点击按路径点名称排序",
+  "button.sort.distance": "点击按与当前位置的距离排序",
+  "button.sort.color": "点击按路径点颜色排序",
+  "button.sort.ascending": "点击切换为升序",
+  "button.sort.descending": "点击切换为降序",
+  "button.sort.order.unavailable": "请先选择排序方式",
 
   "hex_color_code.invalid": "无效的十六进制颜色码：{0}"
 }

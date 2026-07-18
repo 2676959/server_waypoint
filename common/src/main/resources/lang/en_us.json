@@ -27,6 +27,11 @@
   "waypoint.search.no_results": "No waypoints match \"{0}\"",
   "waypoint.list.page.invalid": "Page {0} does not exist. The last page is {1}",
   "waypoint.list.page": "Page {0}/{1} · {2} per page · {3} results",
+  "waypoint.list.sort.label": "Sort:",
+  "waypoint.sort.default": "Default",
+  "waypoint.sort.name": "Name",
+  "waypoint.sort.distance": "Distance",
+  "waypoint.sort.color": "Color",
 
   "waypoint.download.all": "Sent all waypoints on this server to your client",
   "waypoint.download.dimension": "Sent all waypoints in dimension {0} to your client",
@@ -58,6 +63,13 @@
   "button.add.list": "click to add waypoint list",
   "button.page.previous": "previous page",
   "button.page.next": "next page",
+  "button.sort.default": "click to restore the saved list order",
+  "button.sort.name": "click to sort by waypoint name",
+  "button.sort.distance": "click to sort by distance from your position",
+  "button.sort.color": "click to sort by waypoint color",
+  "button.sort.ascending": "click to use ascending order",
+  "button.sort.descending": "click to use descending order",
+  "button.sort.order.unavailable": "select a sort mode first",
 
   "hex_color_code.invalid": "Invalid hex color code: {0}"
 }

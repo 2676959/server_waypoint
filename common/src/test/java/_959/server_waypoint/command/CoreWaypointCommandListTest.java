@@ -185,6 +185,42 @@ class CoreWaypointCommandListTest {
         ));
     }
 
+    @Test
+    void sortControlsPreserveTheQueryAndResetThePage() throws CommandSyntaxException {
+        this.dispatcher.execute(
+                "wp list all search base sort name order descending page 2 limit 5",
+                this.source
+        );
+
+        List<String> runCommands = runCommands(lastMessage());
+        assertTrue(runCommands.contains(
+                "/wp list all search base page 1 limit 5"
+        ));
+        assertTrue(runCommands.contains(
+                "/wp list all search base sort distance page 1 limit 5"
+        ));
+        assertTrue(runCommands.contains(
+                "/wp list all search base sort color page 1 limit 5"
+        ));
+        assertTrue(runCommands.contains(
+                "/wp list all search base sort name page 1 limit 5"
+        ));
+    }
+
+    @Test
+    void sortControlsAreAvailableOnOnePageAndDefaultOrderIsDisabled() throws CommandSyntaxException {
+        this.dispatcher.execute("wp list overworld bases limit 20", this.source);
+
+        List<String> listCommands = runCommands(lastMessage()).stream()
+                .filter(command -> command.startsWith("/wp list"))
+                .toList();
+        assertEquals(List.of(
+                "/wp list overworld bases sort name page 1 limit 20",
+                "/wp list overworld bases sort distance page 1 limit 20",
+                "/wp list overworld bases sort color page 1 limit 20"
+        ), listCommands);
+    }
+
     private Component lastMessage() {
         return this.sender.messages.get(this.sender.messages.size() - 1);
     }

@@ -44,7 +44,7 @@ Optional:
   - `/wp add <dimension> <list>` add a waypoint list.
 - `/wp download` download waypoints and add to Xaero's Minimap (will not work without client installation).
 - `/wp edit` edit a waypoint.
-- `/wp list` lists waypoints in the current dimension. Use `all`, a dimension, or a dimension plus list name to change the scope. Results are split using the server's configured page limit (10 by default), with clickable page controls.
+- `/wp list` lists waypoints in the current dimension. Use `all`, a dimension, or a dimension plus list name to change the scope. Results are split using the server's configured page limit (10 by default), with clickable sorting and page controls.
   - Add `search <query>` to filter by waypoint name.
   - Add `sort <default|name|distance|color>` and, for non-default sorts, optionally `order <ascending|descending>` to sort the result.
   - Add `page <number>` and/or `limit <1-100>` to choose a page or change its size. Options follow the order `search`, `sort`, `order`, `page`, `limit`; quote multi-word values and list names that match an option word.

@@ -940,6 +940,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         }
 
         Component listText = getListDisplayText(source, page.display(), target.listName() != null);
+        listText = listText.append(getListSortControls(target, options));
         if (page.totalPages() > 1) {
             listText = listText.append(getPageNavigation(target, options, page));
         }
@@ -985,6 +986,103 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             }
         }
         return listText;
+    }
+
+    private Component getListSortControls(ListTarget target, ListOptions options) {
+        Component controls = translatable("waypoint.list.sort.label", NamedTextColor.GRAY);
+        for (WaypointSorting.SortMode sortMode : WaypointSorting.SortMode.values()) {
+            boolean selected = options.sortMode() == sortMode;
+            controls = controls.appendSpace().append(listSortButton(
+                    translatable(sortModeTranslationKey(sortMode)),
+                    listPageCmd(
+                            target.allDimensions(),
+                            target.dimensionName(),
+                            target.listName(),
+                            options.filterText(),
+                            sortMode,
+                            false,
+                            1,
+                            options.pageLimit()
+                    ),
+                    selected,
+                    true,
+                    "button.sort." + sortMode.name().toLowerCase(Locale.ROOT)
+            ));
+        }
+
+        boolean orderEnabled = options.sortMode() != WaypointSorting.SortMode.DEFAULT;
+        controls = controls.appendSpace().append(text("·", NamedTextColor.GRAY)).appendSpace()
+                .append(listSortButton(
+                        text("↑"),
+                        listPageCmd(
+                                target.allDimensions(),
+                                target.dimensionName(),
+                                target.listName(),
+                                options.filterText(),
+                                options.sortMode(),
+                                false,
+                                1,
+                                options.pageLimit()
+                        ),
+                        orderEnabled && !options.reversed(),
+                        orderEnabled,
+                        "button.sort.ascending"
+                ))
+                .appendSpace()
+                .append(listSortButton(
+                        text("↓"),
+                        listPageCmd(
+                                target.allDimensions(),
+                                target.dimensionName(),
+                                target.listName(),
+                                options.filterText(),
+                                options.sortMode(),
+                                true,
+                                1,
+                                options.pageLimit()
+                        ),
+                        orderEnabled && options.reversed(),
+                        orderEnabled,
+                        "button.sort.descending"
+                ));
+        return controls.appendNewline()
+                .decoration(TextDecoration.BOLD, false)
+                .decoration(TextDecoration.ITALIC, false);
+    }
+
+    private Component listSortButton(
+            Component label,
+            String command,
+            boolean selected,
+            boolean enabled,
+            String hoverTranslationKey
+    ) {
+        NamedTextColor color = !enabled
+                ? NamedTextColor.DARK_GRAY
+                : selected ? NamedTextColor.GOLD : NamedTextColor.AQUA;
+        Component button = text("[")
+                .append(label)
+                .append(text("]"))
+                .color(color)
+                .decoration(TextDecoration.BOLD, selected)
+                .decoration(TextDecoration.ITALIC, false);
+        if (!enabled) {
+            return button.hoverEvent(HoverEvent.showText(translatable("button.sort.order.unavailable")));
+        }
+        if (selected) {
+            return button;
+        }
+        return button.clickEvent(ClickEvent.runCommand(command))
+                .hoverEvent(HoverEvent.showText(translatable(hoverTranslationKey)));
+    }
+
+    private static String sortModeTranslationKey(WaypointSorting.SortMode sortMode) {
+        return switch (sortMode) {
+            case DEFAULT -> "waypoint.sort.default";
+            case NAME -> "waypoint.sort.name";
+            case DISTANCE -> "waypoint.sort.distance";
+            case COLOR -> "waypoint.sort.color";
+        };
     }
 
     private Component getPageNavigation(
