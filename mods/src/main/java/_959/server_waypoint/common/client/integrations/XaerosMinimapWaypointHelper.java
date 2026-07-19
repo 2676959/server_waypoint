@@ -117,7 +117,7 @@ public final class XaerosMinimapWaypointHelper {
             case ADD_LIST -> {
             }
             case REMOVE_LIST -> {
-                minimapWorld.removeWaypointSet(syncedListName);
+                removeSyncedWaypointSet(minimapWorld, syncedListName);
             }
         }
         saveMinimapWorldWithFeedback(session, minimapWorld, player);

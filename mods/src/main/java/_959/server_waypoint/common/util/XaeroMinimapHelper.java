@@ -121,7 +121,7 @@ public class XaeroMinimapHelper {
         for (WaypointSet waypointSet : getSyncedWaypointSets(minimapWorld)) {
             WaypointList waypointList = waypointListsBySyncedName.get(waypointSet.getName());
             if (waypointList == null) {
-                minimapWorld.removeWaypointSet(waypointSet.getName());
+                removeSyncedWaypointSet(minimapWorld, waypointSet.getName());
                 continue;
             }
             syncWaypointSetByWaypoints(waypointSet, waypointList);
@@ -134,6 +134,30 @@ public class XaeroMinimapHelper {
                 minimapWorld.addWaypointSet(waypointSet);
                 syncWaypointSetByWaypoints(waypointSet, entry.getValue());
             }
+        }
+    }
+
+    public static void removeSyncedWaypointSet(MinimapWorld minimapWorld, String waypointSetName) {
+        WaypointSet waypointSet = minimapWorld.getWaypointSet(waypointSetName);
+        if (waypointSet == null) {
+            removeWaypointSet(minimapWorld, waypointSetName);
+            return;
+        }
+        removeSyncedWaypoints(waypointSet);
+        if (waypointSet.isEmpty()) {
+            removeWaypointSet(minimapWorld, waypointSetName);
+        }
+    }
+
+    private static void removeWaypointSet(MinimapWorld minimapWorld, String waypointSetName) {
+        minimapWorld.removeWaypointSet(waypointSetName);
+        if (minimapWorld.getCurrentWaypointSet() != null) {
+            return;
+        }
+        // Xaero does not update the current set ID when the referenced set is removed.
+        for (WaypointSet waypointSet : minimapWorld.getIterableWaypointSets()) {
+            minimapWorld.setCurrentWaypointSetId(waypointSet.getName());
+            return;
         }
     }
 
