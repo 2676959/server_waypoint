@@ -65,7 +65,8 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private static final float metadataTextScale = 0.75F;
     private static final int metersPerKilometer = 1000;
     private static final String minecraftNamespace = "minecraft:";
-    private static double SCROLLED_POSITION = 0.0D;
+    private static final Map<String, Boolean> DIMENSION_EXPANSION_STATES = new HashMap<>();
+    private static double sessionScrollPosition;
     private final WaypointManagerScreen parentScreen;
     private final WaypointQueryEngine queryEngine;
     private final Font textRenderer;
@@ -88,7 +89,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private WaypointPos lastQueryPlayerPosition;
     private String lastQueryPlayerDimension;
     private WaypointPos renderedPlayerPosition;
-    private final Map<String, Boolean> dimensionExpansionStates = new HashMap<>();
+    private boolean sessionScrollRestorePending = true;
 
     public WaypointListWidget(int x, int y, int width, int height, WaypointManagerScreen parent, WaypointQueryEngine queryEngine, Font textRenderer) {
         super(x, y, width, height, itemHeight, Component.literal("Waypoint lists"), 4, 4, 4, 4,
@@ -96,15 +97,38 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         this.parentScreen = parent;
         this.queryEngine = queryEngine;
         this.textRenderer = textRenderer;
-        setScrollY(SCROLLED_POSITION);
         textVertOffset = centered(itemHeight, textRenderer.lineHeight) + 1;
         listIconVertOffset = centered(itemHeight, listIconSize);
         buttonIconVertOffset = centered(itemHeight, buttonIconSize);
         buttonIconHrzOffset = centered(btnWidth, buttonIconSize);
     }
 
-    public static void resetScroll() {
-        SCROLLED_POSITION = 0.0D;
+    /**
+     * Clears scroll and dimension-node expansion state at the start of a new server or local-world
+     * session. Dimension expansion survives manager reconstruction within the session; scroll does
+     * so only while all-dimensions mode is active.
+     */
+    public static void resetSessionStates() {
+        sessionScrollPosition = 0.0D;
+        DIMENSION_EXPANSION_STATES.clear();
+    }
+
+    static double getSessionScrollPosition() {
+        return sessionScrollPosition;
+    }
+
+    static void rememberSessionScrollPosition(boolean showAllDimensions, double scrollPosition) {
+        if (showAllDimensions) {
+            sessionScrollPosition = scrollPosition;
+        }
+    }
+
+    static boolean isDimensionExpanded(String dimensionName) {
+        return DIMENSION_EXPANSION_STATES.getOrDefault(dimensionName, true);
+    }
+
+    static void setDimensionExpanded(String dimensionName, boolean expanded) {
+        DIMENSION_EXPANSION_STATES.put(dimensionName, expanded);
     }
 
     /**
@@ -115,7 +139,11 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
      */
     public void setSelectedDimension(String dimensionName) {
         this.selectedDimensionName = dimensionName == null ? "" : dimensionName;
-        refreshView();
+        if (!this.showAllDimensions) {
+            resetScrollPosition();
+        }
+        applySearchAndSort();
+        restoreSessionScrollPositionIfPending();
     }
 
     /**
@@ -164,6 +192,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     public void setShowAllDimensions(boolean showAllDimensions) {
         this.showAllDimensions = showAllDimensions;
+        if (!showAllDimensions) {
+            resetScrollPosition();
+            this.sessionScrollRestorePending = false;
+        }
         applySearchAndSort();
     }
 
@@ -208,30 +240,46 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 ? this.queryEngine.queryAll(query)
                 : this.queryEngine.queryDimension(this.selectedDimensionName, query);
         WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, isGroupByLists());
+        List<RowNode> roots;
         if (display.groupByLists()) {
             if (this.showAllDimensions) {
-                updateRoots(display.dimensions().stream()
+                roots = display.dimensions().stream()
                         .map(this::createDimensionNode)
                         .map(RowNode.class::cast)
-                        .toList());
-                return;
+                        .toList();
+            } else {
+                roots = display.lists().stream()
+                        .map(this::createListNode)
+                        .map(RowNode.class::cast)
+                        .toList();
             }
-            updateRoots(display.lists().stream()
-                    .map(this::createListNode)
+        } else {
+            roots = display.flatWaypoints().stream()
+                    .map(waypoint -> new WaypointNode(
+                            waypoint.dimensionName(),
+                            waypoint.sourceList(),
+                            waypoint.waypoint(),
+                            true,
+                            this.showAllDimensions
+                    ))
                     .map(RowNode.class::cast)
-                    .toList());
+                    .toList();
+        }
+        updateRoots(roots);
+    }
+
+    private void restoreSessionScrollPositionIfPending() {
+        if (!this.sessionScrollRestorePending || !this.showAllDimensions) {
             return;
         }
-        updateRoots(display.flatWaypoints().stream()
-                .map(waypoint -> new WaypointNode(
-                        waypoint.dimensionName(),
-                        waypoint.sourceList(),
-                        waypoint.waypoint(),
-                        true,
-                        this.showAllDimensions
-                ))
-                .map(RowNode.class::cast)
-                .toList());
+        setScrollY(getSessionScrollPosition());
+        this.sessionScrollRestorePending = false;
+        rememberSessionScrollPosition(true, getScrollY());
+    }
+
+    private void resetScrollPosition() {
+        setScrollY(0.0D);
+        sessionScrollPosition = 0.0D;
     }
 
     public void refreshDistanceSortIfPlayerMoved() {
@@ -332,7 +380,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     @Override
     protected boolean isExpanded(RowNode value) {
         if (value instanceof DimensionNode dimensionNode) {
-            return this.dimensionExpansionStates.getOrDefault(dimensionNode.dimensionName(), true);
+            return isDimensionExpanded(dimensionNode.dimensionName());
         }
         return value instanceof ListNode listNode && listNode.waypointList().isExpand();
     }
@@ -340,7 +388,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     @Override
     protected void setExpanded(RowNode value, boolean expanded) {
         if (value instanceof DimensionNode dimensionNode) {
-            this.dimensionExpansionStates.put(dimensionNode.dimensionName(), expanded);
+            setDimensionExpanded(dimensionNode.dimensionName(), expanded);
         } else if (value instanceof ListNode listNode) {
             listNode.waypointList().setExpand(expanded);
         }
@@ -472,7 +520,9 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     @Override
     protected void onScrollChanged(double scrollY) {
-        SCROLLED_POSITION = scrollY;
+        if (!this.sessionScrollRestorePending) {
+            rememberSessionScrollPosition(this.showAllDimensions, scrollY);
+        }
     }
 
     @Override

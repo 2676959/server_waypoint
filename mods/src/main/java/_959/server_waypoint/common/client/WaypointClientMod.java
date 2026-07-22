@@ -270,6 +270,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
 
     public void onJoinServer() {
         LOGGER.info("join server");
+        WaypointManagerScreen.resetSessionWidgetStates();
         networkState = ClientNetworkState.NOT_READY;
         OptimizedWaypointRenderer.clearScene();
         if (WaypointServerMod.runsWithClient()) {

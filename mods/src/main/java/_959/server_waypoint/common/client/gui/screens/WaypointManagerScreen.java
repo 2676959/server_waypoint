@@ -223,9 +223,21 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         this(waypointClientMod, null);
     }
 
+    /**
+     * Resets dimension-rail navigation state after dimension travel while retaining all-dimensions
+     * waypoint-list scroll and dimension-node expansion choices for the current server or
+     * local-world session.
+     */
     public static void resetWidgetStates() {
-        WaypointListWidget.resetScroll();
         DimensionListWidget.resetStates();
+    }
+
+    /**
+     * Resets all session-scoped manager state when joining a server or opening a local world.
+     */
+    public static void resetSessionWidgetStates() {
+        resetWidgetStates();
+        WaypointListWidget.resetSessionStates();
     }
 
     /**
