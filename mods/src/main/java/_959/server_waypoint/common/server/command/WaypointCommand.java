@@ -32,7 +32,14 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     Identifier
     , Coordinates> {
     public WaypointCommand(WaypointServerMod waypointServer, PlatformMessageSender<CommandSourceStack, ServerPlayer> networkAdapter, PermissionManager<CommandSourceStack, String, ServerPlayer> permissionManager) {
-        super(waypointServer, networkAdapter, permissionManager, DimensionArgument::dimension, BlockPosArgument::blockPos);
+        super(
+                waypointServer,
+                networkAdapter,
+                permissionManager,
+                waypointServer.navigation().service(),
+                DimensionArgument::dimension,
+                BlockPosArgument::blockPos
+        );
     }
 
     @Nullable

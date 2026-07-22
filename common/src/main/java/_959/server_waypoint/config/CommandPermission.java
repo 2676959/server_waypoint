@@ -4,6 +4,7 @@ public class CommandPermission {
     int add = 0;
     int edit = 0;
     int remove = 0;
+    int navigate = 0;
     int tp = 2;
     int reload = 2;
 
@@ -22,6 +23,10 @@ public class CommandPermission {
         return this.remove;
     }
 
+    public int navigate() {
+        return this.navigate;
+    }
+
     public int tp() {
         return this.tp;
     }
@@ -36,6 +41,7 @@ public class CommandPermission {
               "add=" + add +
               ", edit=" + edit +
               ", remove=" + remove +
+              ", navigate=" + navigate +
               ", tp=" + tp +
               ", reload=" + reload +
               '}';

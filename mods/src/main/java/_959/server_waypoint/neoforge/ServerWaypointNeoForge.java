@@ -23,8 +23,14 @@ import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.ServerChatEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+//? if <= 1.20.4 {
+/^import net.neoforged.neoforge.event.TickEvent;
+^///?} else {
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+//?}
 //? if >= 1.20.5 {
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -83,6 +89,10 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         NeoForge.EVENT_BUS.addListener(this::onServerStopping);
         NeoForge.EVENT_BUS.addListener(this::listenChatMessages);
         NeoForge.EVENT_BUS.addListener(this::registerCommands);
+        NeoForge.EVENT_BUS.addListener(this::onServerTick);
+        NeoForge.EVENT_BUS.addListener(this::onPlayerLogin);
+        NeoForge.EVENT_BUS.addListener(this::onPlayerLogout);
+        NeoForge.EVENT_BUS.addListener(this::onPlayerRespawn);
     }
 
     private void configureLoadedMods() {
@@ -100,6 +110,36 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
 
     private void onServerStopping(ServerStoppingEvent event) {
         this.waypointServer.unload();
+    }
+
+//? if <= 1.20.4 {
+    /^private void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            this.waypointServer.navigation().tick();
+        }
+    }
+    ^///?} else {
+    private void onServerTick(ServerTickEvent.Post event) {
+        this.waypointServer.navigation().tick();
+    }
+//?}
+
+    private void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            this.waypointServer.navigation().onPlayerJoin(player);
+        }
+    }
+
+    private void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            this.waypointServer.navigation().onPlayerQuit(player);
+        }
+    }
+
+    private void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            this.waypointServer.navigation().onPlayerRespawn(player);
+        }
     }
 
     private void listenChatMessages(ServerChatEvent event) {

@@ -4,12 +4,14 @@ public abstract class PermissionKeys<K> {
     protected final PermissionKey add;
     protected final PermissionKey edit;
     protected final PermissionKey remove;
+    protected final PermissionKey navigate;
     protected final PermissionKey tp;
     protected final PermissionKey reload;
 
     protected abstract PermissionKey createAddPermissionKey();
     protected abstract PermissionKey createEditPermissionKey();
     protected abstract PermissionKey createRemovePermissionKey();
+    protected abstract PermissionKey createNavigatePermissionKey();
     protected abstract PermissionKey createTpPermissionKey();
     protected abstract PermissionKey createReloadPermissionKey();
 
@@ -17,6 +19,7 @@ public abstract class PermissionKeys<K> {
         this.add = createAddPermissionKey();
         this.edit = createEditPermissionKey();
         this.remove = createRemovePermissionKey();
+        this.navigate = createNavigatePermissionKey();
         this.tp = createTpPermissionKey();
         this.reload = createReloadPermissionKey();
     }
@@ -31,6 +34,10 @@ public abstract class PermissionKeys<K> {
 
     public PermissionKey remove() {
         return this.remove;
+    }
+
+    public PermissionKey navigate() {
+        return this.navigate;
     }
 
     public PermissionKey reload() {

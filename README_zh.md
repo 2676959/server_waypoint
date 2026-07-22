@@ -104,6 +104,14 @@
     "defaultPageLimit": 10
   }
   ```
+- ### 默认导航方式 Default Navigation Selection
+  设置新会话在使用 `/wp navigate <dimension> <list> <waypoint>` 且未指定 `using` 时启用的导航方式。可用值为 `compass`、`map`、`bossbar`、`actionbar` 和 `all`，默认值为 `actionbar`。
+
+  ```json5
+  {
+    "defaultNavigationSelection": "actionbar"
+  }
+  ```
 - ### 命令权限 Command Permission
   修改执行命令所需的[原版权限等级](https://minecraft.wiki/w/Permission_level)。
   
@@ -119,6 +127,8 @@
       "edit": 0,
       // /wp remove
       "remove": 0,
+      // /wp navigate
+      "navigate": 0,
       // /wp tp
       "tp": 2,
       // /wp reload

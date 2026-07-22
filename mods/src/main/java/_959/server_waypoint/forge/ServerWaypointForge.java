@@ -30,6 +30,8 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.ServerChatEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 //? if < 1.21.6
@@ -108,11 +110,19 @@ public class ServerWaypointForge implements IPlatformConfigPath {
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopping);
         MinecraftForge.EVENT_BUS.addListener(this::listenChatMessages);
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
+        MinecraftForge.EVENT_BUS.addListener(this::onServerTick);
+        MinecraftForge.EVENT_BUS.addListener(this::onPlayerLogin);
+        MinecraftForge.EVENT_BUS.addListener(this::onPlayerLogout);
+        MinecraftForge.EVENT_BUS.addListener(this::onPlayerRespawn);
         *///?} else {
         ServerStartingEvent.BUS.addListener(this::onServerStarting);
         ServerStoppingEvent.BUS.addListener(this::onServerStopping);
         ServerChatEvent.BUS.addListener(this::listenChatMessages);
         RegisterCommandsEvent.BUS.addListener(this::registerCommands);
+        TickEvent.ServerTickEvent.Post.BUS.addListener(this::onServerTick);
+        PlayerEvent.PlayerLoggedInEvent.BUS.addListener(this::onPlayerLogin);
+        PlayerEvent.PlayerLoggedOutEvent.BUS.addListener(this::onPlayerLogout);
+        PlayerEvent.PlayerRespawnEvent.BUS.addListener(this::onPlayerRespawn);
         //?}
     }
 
@@ -131,6 +141,36 @@ public class ServerWaypointForge implements IPlatformConfigPath {
 
     private void onServerStopping(ServerStoppingEvent event) {
         this.waypointServer.unload();
+    }
+
+    //? if < 1.20.6 {
+    /*private void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            this.waypointServer.navigation().tick();
+        }
+    }
+    *///?} else {
+    private void onServerTick(TickEvent.ServerTickEvent.Post event) {
+        this.waypointServer.navigation().tick();
+    }
+    //?}
+
+    private void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            this.waypointServer.navigation().onPlayerJoin(player);
+        }
+    }
+
+    private void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            this.waypointServer.navigation().onPlayerQuit(player);
+        }
+    }
+
+    private void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            this.waypointServer.navigation().onPlayerRespawn(player);
+        }
     }
 
     private void listenChatMessages(ServerChatEvent event) {

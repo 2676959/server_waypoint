@@ -6,6 +6,7 @@ import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.navigation.NavigationService;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -28,6 +29,22 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
 
     public WaypointCommand(WaypointServerCore waypointServer, PlatformMessageSender<CommandSourceStack, Player> sender, PermissionManager<CommandSourceStack, String, Player> permissionManager) {
         super(waypointServer, sender, permissionManager, ArgumentTypes::world, ArgumentTypes::blockPosition);
+    }
+
+    public WaypointCommand(
+            WaypointServerCore waypointServer,
+            PlatformMessageSender<CommandSourceStack, Player> sender,
+            PermissionManager<CommandSourceStack, String, Player> permissionManager,
+            NavigationService<Player> navigationService
+    ) {
+        super(
+                waypointServer,
+                sender,
+                permissionManager,
+                navigationService,
+                ArgumentTypes::world,
+                ArgumentTypes::blockPosition
+        );
     }
 
     @Override

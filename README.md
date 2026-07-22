@@ -117,6 +117,14 @@ Some changes made in `config.json` may take effects after server restarts.
     "defaultPageLimit": 10
   }
   ```
+- ### Default Navigation Selection
+  Sets the method enabled when `/wp navigate <dimension> <list> <waypoint>` starts a new session without `using`. Supported values are `compass`, `map`, `bossbar`, `actionbar`, and `all`. The default is `actionbar`.
+
+  ```json5
+  {
+    "defaultNavigationSelection": "actionbar"
+  }
+  ```
 - ### Command Permission
   Changes the vanilla [permission level](https://minecraft.wiki/w/Permission_level) required to execute the command.
   
@@ -132,6 +140,8 @@ Some changes made in `config.json` may take effects after server restarts.
       "edit": 0,
       // /wp remove
       "remove": 0,
+      // /wp navigate
+      "navigate": 0,
       // /wp tp
       "tp": 2,
       // /wp reload

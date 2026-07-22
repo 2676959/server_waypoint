@@ -790,6 +790,11 @@ class CoreWaypointCommandListTest {
                 }
 
                 @Override
+                protected PermissionKey createNavigatePermissionKey() {
+                    return new PermissionKey("navigate");
+                }
+
+                @Override
                 protected PermissionKey createTpPermissionKey() {
                     return new PermissionKey("tp");
                 }

@@ -43,6 +43,48 @@ public class StringCommandBuilder {
         return tpCmd(dimensionName, waypointList, waypointName, true);
     }
 
+    public static String navigateCmd(String dimensionName, String listName, String waypointName) {
+        return selectorCmd(NAVIGATE_COMMAND, dimensionName, listName, waypointName);
+    }
+
+    public static String navigateUsingCmd(
+            String dimensionName,
+            String listName,
+            String waypointName,
+            String selection
+    ) {
+        return navigateCmd(dimensionName, listName, waypointName)
+                + ' ' + USING_COMMAND + ' ' + selection;
+    }
+
+    public static String navigateUseCmd(String method) {
+        return WAYPOINT_COMMAND_WITH_SLASH + ' ' + NAVIGATE_COMMAND + ' ' + USE_COMMAND + ' ' + method;
+    }
+
+    public static String navigateDisableCmd() {
+        return WAYPOINT_COMMAND_WITH_SLASH + ' ' + NAVIGATE_COMMAND + ' ' + DISABLE_COMMAND;
+    }
+
+    public static String navigateDisableCmd(String method) {
+        return navigateDisableCmd() + ' ' + method;
+    }
+
+    public static String navigateStatusCmd() {
+        return WAYPOINT_COMMAND_WITH_SLASH + ' ' + NAVIGATE_COMMAND + ' ' + STATUS_COMMAND;
+    }
+
+    private static String selectorCmd(
+            String command,
+            String dimensionName,
+            String listName,
+            String waypointName
+    ) {
+        return WAYPOINT_COMMAND_WITH_SLASH + ' ' + command
+                + ' ' + dimensionName
+                + ' ' + StringArgumentType.escapeIfRequired(listName)
+                + ' ' + StringArgumentType.escapeIfRequired(waypointName);
+    }
+
     public static String tpCmd(String dimensionName, String waypointList, String waypointName, boolean withSlash) {
         StringBuilder sb = new StringBuilder();
         sb.append(withSlash ? WAYPOINT_COMMAND_WITH_SLASH : WAYPOINT_COMMAND);

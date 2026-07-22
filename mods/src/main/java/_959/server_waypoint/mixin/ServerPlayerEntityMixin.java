@@ -1,7 +1,9 @@
 package _959.server_waypoint.mixin;
 
 import _959.server_waypoint.access.PlayerLocaleAccessor;
+import _959.server_waypoint.common.server.navigation.ModNavigationHooks;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,6 +20,11 @@ public abstract class ServerPlayerEntityMixin
         /*implements PlayerLocaleAccessor
 *///?}
 {
+    @Inject(method = "die", at = @At("HEAD")/*? if >= 26 {*/, remap = false/*?}*/)
+    private void removeNavigationItemsBeforeDeath(DamageSource damageSource, CallbackInfo ci) {
+        ModNavigationHooks.onPlayerDeath((ServerPlayer) (Object) this);
+    }
+
 //? if <= 1.20.1 {
     /*@Unique
     private String sw$locale;

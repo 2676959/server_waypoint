@@ -27,6 +27,11 @@ public class PermissionStringKeys extends PermissionKeys<String> {
     }
 
     @Override
+    protected PermissionKeys<String>.PermissionKey createNavigatePermissionKey() {
+        return build("command.navigate");
+    }
+
+    @Override
     protected PermissionKeys<String>.PermissionKey createTpPermissionKey() {
         return build("command.tp");
     }

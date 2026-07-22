@@ -6,7 +6,18 @@ import _959.server_waypoint.core.network.PayloadID;
 import _959.server_waypoint.core.network.codec.ClientHandshakeCodec;
 import _959.server_waypoint.core.network.codec.ClientUpdateRequestBufferCodec;
 import _959.server_waypoint.listener.ChatMessageListenerPaperMC;
+import _959.server_waypoint.listener.NavigationProtectionListener;
 import _959.server_waypoint.listener.PlayerRegisterChannelListener;
+import _959.server_waypoint.navigation.NavigationMethodHandler;
+import _959.server_waypoint.navigation.NavigationService;
+import _959.server_waypoint.navigation.PaperActionbarNavigationHandler;
+import _959.server_waypoint.navigation.PaperBossbarNavigationHandler;
+import _959.server_waypoint.navigation.PaperCompassNavigationHandler;
+import _959.server_waypoint.navigation.PaperItemNavigationHandler;
+import _959.server_waypoint.navigation.PaperMapNavigationHandler;
+import _959.server_waypoint.navigation.PaperNavigationItemManager;
+import _959.server_waypoint.navigation.PaperNavigationMapCache;
+import _959.server_waypoint.navigation.PaperNavigationPlatform;
 import _959.server_waypoint.network.PaperChatMessageHandler;
 import _959.server_waypoint.network.PaperMessageSender;
 import _959.server_waypoint.server.WaypointServerPlugin;
@@ -25,16 +36,22 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
 import org.bukkit.plugin.messaging.PluginMessageListener;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 import static _959.server_waypoint.core.network.MessageChannelID.*;
 
 public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageListener, IPlatformConfigPath {
     private WaypointServerPlugin waypointServer;
     private WaypointCommand waypointCommand;
+    private NavigationService<Player> navigationService;
+    private PaperNavigationItemManager navigationItemManager;
+    private PaperNavigationMapCache navigationMapCache;
+    private BukkitTask navigationTickTask;
     private @SuppressWarnings("UnstableApiUsage") C2SPacketHandler<CommandSourceStack, Player> c2sPacketHandler;
 
     @Override
@@ -50,11 +67,53 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
 
         Server server = getServer();
         waypointServer = new WaypointServerPlugin(this.getAssignedConfigDirectory(), server.getWorldContainer().toPath());
+        try {
+            waypointServer.load();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         PaperMessageSender sender = new PaperMessageSender(this);
         PaperPermissionManager permissionManager = new PaperPermissionManager();
-        waypointCommand = new WaypointCommand(waypointServer, sender, permissionManager);
+        this.navigationItemManager = new PaperNavigationItemManager();
+        this.navigationMapCache = new PaperNavigationMapCache(this);
+        PaperNavigationPlatform navigationPlatform = new PaperNavigationPlatform(
+                server,
+                this.getLogger(),
+                this.navigationItemManager
+        );
+        PaperCompassNavigationHandler compassHandler = new PaperCompassNavigationHandler(
+                navigationPlatform,
+                this.navigationItemManager
+        );
+        PaperMapNavigationHandler mapHandler = new PaperMapNavigationHandler(
+                this.navigationItemManager,
+                this.navigationMapCache
+        );
+        PaperBossbarNavigationHandler bossbarHandler = new PaperBossbarNavigationHandler();
+        PaperActionbarNavigationHandler actionbarHandler = new PaperActionbarNavigationHandler();
+        List<NavigationMethodHandler<Player>> navigationHandlers = List.of(
+                compassHandler,
+                mapHandler,
+                bossbarHandler,
+                actionbarHandler
+        );
+        this.navigationService = new NavigationService<>(navigationPlatform, navigationHandlers);
+
+        waypointCommand = new WaypointCommand(
+                waypointServer,
+                sender,
+                permissionManager,
+                this.navigationService
+        );
         ChatMessageListenerPaperMC chatListener = new ChatMessageListenerPaperMC(new PaperChatMessageHandler(server, sender, permissionManager));
         PlayerRegisterChannelListener channelRegisterListener = new PlayerRegisterChannelListener();
+        NavigationProtectionListener navigationListener = new NavigationProtectionListener(
+                this,
+                this.navigationService,
+                this.navigationItemManager,
+                List.<PaperItemNavigationHandler>of(compassHandler, mapHandler)
+        );
         this.c2sPacketHandler = new C2SPacketHandler<>(sender, waypointServer);
         LiteralCommandNode<CommandSourceStack> command = waypointCommand.build();
         // register
@@ -64,17 +123,39 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         registerChannels();
         server.getPluginManager().registerEvents(chatListener, this);
         server.getPluginManager().registerEvents(channelRegisterListener, this);
-        try {
-            waypointServer.load();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        server.getPluginManager().registerEvents(navigationListener, this);
+        // NavigationService performs its own five-call throttling.
+        this.navigationTickTask = server.getScheduler().runTaskTimer(
+                this,
+                this.navigationService::tick,
+                1L,
+                1L
+        );
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
-        waypointServer.freeAllLoadedFiles();
+        if (this.navigationTickTask != null) {
+            this.navigationTickTask.cancel();
+            this.navigationTickTask = null;
+        }
+        if (this.navigationService != null) {
+            this.navigationService.shutdown();
+        }
+        if (this.navigationItemManager != null) {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                this.navigationItemManager.purgeAll(player);
+            }
+        }
+        if (this.navigationMapCache != null) {
+            this.navigationMapCache.close();
+        }
+        if (waypointServer != null) {
+            waypointServer.freeAllLoadedFiles();
+        }
+        this.navigationMapCache = null;
+        this.navigationItemManager = null;
+        this.navigationService = null;
         waypointCommand = null;
         waypointServer = null;
     }

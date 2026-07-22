@@ -15,6 +15,8 @@ import _959.server_waypoint.core.network.C2SPacketHandler;
 import _959.server_waypoint.fabric.permission.FabricPermissionManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.ChatType;
@@ -23,6 +25,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import java.nio.file.Path;
 
 //? if >= 1.20.5
@@ -73,6 +76,16 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, registrationEnvironment) -> waypointCommand.register(dispatcher));
         ServerLifecycleEvents.SERVER_STARTING.register(waypointServer::load);
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> waypointServer.unload());
+        ServerTickEvents.END_SERVER_TICK.register(server -> waypointServer.navigation().tick());
+        ServerPlayConnectionEvents.JOIN.register(
+                (listener, sender, server) -> waypointServer.navigation().onPlayerJoin(listener.player)
+        );
+        ServerPlayConnectionEvents.DISCONNECT.register(
+                (listener, server) -> waypointServer.navigation().onPlayerQuit(listener.player)
+        );
+        ServerPlayerEvents.AFTER_RESPAWN.register(
+                (oldPlayer, newPlayer, alive) -> waypointServer.navigation().onPlayerRespawn(newPlayer)
+        );
         // register chatMessageHandler
         ServerMessageEvents.CHAT_MESSAGE.register(handler::onChatMessage);
         registerPayloads();

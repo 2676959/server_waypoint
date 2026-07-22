@@ -16,6 +16,7 @@ final class WaypointCommandHelp {
     private static final String ADD_COMMAND_PREFIX = "/wp add ";
     private static final String EDIT_COMMAND_PREFIX = "/wp edit ";
     private static final String LIST_COMMAND_PREFIX = "/wp list ";
+    private static final String NAVIGATE_COMMAND_PREFIX = "/wp navigate ";
     private static final TextColor DIMENSION_COLOR = TextColor.color(0x55FF55);
     private static final TextColor LIST_COLOR = TextColor.color(0xFFAA00);
     private static final TextColor POSITION_COLOR = TextColor.color(0x55AAFF);
@@ -37,6 +38,7 @@ final class WaypointCommandHelp {
             boolean withAdd,
             boolean withEdit,
             boolean withRemove,
+            boolean withNavigate,
             boolean withTp,
             boolean withReload
     ) {
@@ -53,6 +55,14 @@ final class WaypointCommandHelp {
                         "/wp download ",
                         "waypoint.help.download"
                 ));
+        if (withNavigate) {
+            help = help.append(topicEntry(
+                    "/wp navigate",
+                    NAVIGATE_COMMAND_PREFIX,
+                    "/wp help navigate",
+                    "waypoint.help.navigate"
+            ));
+        }
         if (withAdd) {
             help = help.append(topicEntry(
                     "/wp add",
@@ -254,6 +264,68 @@ final class WaypointCommandHelp {
                 .append(backButton());
     }
 
+    static Component navigateHelp() {
+        return topicHeader("waypoint.help.navigate.title", "waypoint.help.navigate.summary")
+                .append(section("waypoint.help.section.usage"))
+                .append(usageEntry(
+                        "/wp navigate <dimension> <list> <waypoint>",
+                        NAVIGATE_COMMAND_PREFIX,
+                        "waypoint.help.navigate.usage.start"
+                ))
+                .append(usageEntry(
+                        "/wp navigate <dimension> <list> <waypoint> using <selection>",
+                        NAVIGATE_COMMAND_PREFIX,
+                        "waypoint.help.navigate.usage.using"
+                ))
+                .append(usageEntry(
+                        "/wp navigate use <method>",
+                        NAVIGATE_COMMAND_PREFIX + "use ",
+                        "waypoint.help.navigate.usage.use"
+                ))
+                .append(usageEntry(
+                        "/wp navigate disable [<method>]",
+                        NAVIGATE_COMMAND_PREFIX + "disable ",
+                        "waypoint.help.navigate.usage.disable"
+                ))
+                .append(usageEntry(
+                        "/wp navigate status",
+                        NAVIGATE_COMMAND_PREFIX + "status",
+                        "waypoint.help.navigate.usage.status"
+                ))
+                .append(section("waypoint.help.section.arguments"))
+                .append(argumentEntry("<selection>", "waypoint.help.navigate.argument.selection"))
+                .append(argumentEntry("<method>", "waypoint.help.navigate.argument.method"))
+                .append(section("waypoint.help.navigate.section.methods"))
+                .append(argumentEntry("compass", "waypoint.help.navigate.method.compass"))
+                .append(argumentEntry("map", "waypoint.help.navigate.method.map"))
+                .append(argumentEntry("bossbar", "waypoint.help.navigate.method.bossbar"))
+                .append(argumentEntry("actionbar", "waypoint.help.navigate.method.actionbar"))
+                .append(section("waypoint.help.navigate.section.inventory"))
+                .append(argumentEntry("compass / map", "waypoint.help.navigate.inventory"))
+                .append(section("waypoint.help.section.examples"))
+                .append(exampleEntry(
+                        "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\"",
+                        "waypoint.help.navigate.example.default",
+                        exampleArgument("minecraft:overworld", DIMENSION_COLOR),
+                        exampleArgument("\"Villages\"", LIST_COLOR),
+                        exampleArgument("\"Oak Village\"", WAYPOINT_COLOR)
+                ))
+                .append(exampleEntry(
+                        "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\" using all",
+                        "waypoint.help.navigate.example.all",
+                        exampleArgument("minecraft:overworld", DIMENSION_COLOR),
+                        exampleArgument("\"Villages\"", LIST_COLOR),
+                        exampleArgument("\"Oak Village\"", WAYPOINT_COLOR),
+                        exampleArgument("all", MODE_COLOR)
+                ))
+                .append(exampleEntry(
+                        "/wp navigate use bossbar",
+                        "waypoint.help.navigate.example.use",
+                        exampleArgument("bossbar", MODE_COLOR)
+                ))
+                .append(backButton());
+    }
+
     private static Component topicHeader(String titleKey, String summaryKey) {
         return translatable(titleKey, NamedTextColor.GOLD)
                 .decorate(TextDecoration.BOLD)
@@ -398,7 +470,7 @@ final class WaypointCommandHelp {
             case "yaw" -> YAW_COLOR;
             case "global" -> GLOBAL_COLOR;
             case "query" -> QUERY_COLOR;
-            case "mode" -> MODE_COLOR;
+            case "mode", "selection", "method" -> MODE_COLOR;
             case "direction" -> DIRECTION_COLOR;
             case "number" -> NUMBER_COLOR;
             default -> NamedTextColor.WHITE;

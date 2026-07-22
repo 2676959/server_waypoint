@@ -6,6 +6,7 @@ import _959.server_waypoint.common.client.integrations.ClientWaypointSyncEvent;
 import _959.server_waypoint.common.client.integrations.MapModIntegrations;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import _959.server_waypoint.common.network.ModChatMessageHandler;
+import _959.server_waypoint.common.server.navigation.ModNavigationRuntime;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
 
@@ -35,6 +36,7 @@ public class WaypointServerMod extends WaypointServerCore {
     public static MinecraftServer MINECRAFT_SERVER;
     public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_mod");
     public final ModChatMessageHandler<String> chatMessageHandler;
+    private final ModNavigationRuntime navigation = new ModNavigationRuntime();
     private boolean loaded = false;
 
     public WaypointServerMod(Path configDir, ModChatMessageHandler<String> handler) {
@@ -49,6 +51,10 @@ public class WaypointServerMod extends WaypointServerCore {
 
     public static WaypointServerMod getInstance() {
         return INSTANCE;
+    }
+
+    public ModNavigationRuntime navigation() {
+        return this.navigation;
     }
 
     @Override
@@ -186,6 +192,7 @@ public class WaypointServerMod extends WaypointServerCore {
     }
 
     public void unload() {
+        this.navigation.shutdown();
         freeAllLoadedFiles();
         setMinecraftServer(null);
         this.loaded = false;
@@ -193,9 +200,7 @@ public class WaypointServerMod extends WaypointServerCore {
     }
 
     public void setMinecraftServer(MinecraftServer server) {
-        if (MINECRAFT_SERVER == null) {
-            MINECRAFT_SERVER = server;
-            chatMessageHandler.setServer(server);
-        }
+        MINECRAFT_SERVER = server;
+        chatMessageHandler.setServer(server);
     }
 }

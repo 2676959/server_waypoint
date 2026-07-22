@@ -61,7 +61,7 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
         }
     }
 
-    private net.minecraft.network.chat.Component getTranslatedText(ServerPlayer player, Component component) {
+    public net.minecraft.network.chat.Component getTranslatedText(ServerPlayer player, Component component) {
         //? if <= 1.20.1 {
         /*String language = ((PlayerLocaleAccessor) player).sw$getLocale();
         *///?} else {

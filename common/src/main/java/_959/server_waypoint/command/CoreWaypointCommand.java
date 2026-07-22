@@ -16,6 +16,11 @@ import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
+import _959.server_waypoint.navigation.NavigationMethod;
+import _959.server_waypoint.navigation.NavigationResult;
+import _959.server_waypoint.navigation.NavigationService;
+import _959.server_waypoint.navigation.NavigationSession;
+import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.text.TextButtonBuilder;
 import _959.server_waypoint.util.StringCommandBuilder.ListOptions;
 import _959.server_waypoint.util.StringCommandBuilder.ListTarget;
@@ -40,10 +45,13 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -78,6 +86,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private final WaypointQueryEngine waypointQueryEngine;
     private final PermissionKeys<K> permissionKeys;
     private final PermissionManager<S, K, P> permissionManager;
+    private final @Nullable NavigationService<P> navigationService;
     private final Supplier<ArgumentType<D>> dimensionArgumentProvider;
     private final Supplier<ArgumentType<B>> blockPosArgumentProvider;
     private final SuggestionProvider<S> WAYPOINT_NAME_SUGGESTION = new WaypointNameSuggestion();
@@ -95,6 +104,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String DOWNLOAD_COMMAND = "download";
     public static final String TP_COMMAND = "tp";
     public static final String RELOAD_COMMAND = "reload";
+    public static final String NAVIGATE_COMMAND = "navigate";
+    public static final String USING_COMMAND = "using";
+    public static final String USE_COMMAND = "use";
+    public static final String DISABLE_COMMAND = "disable";
+    public static final String STATUS_COMMAND = "status";
     public static final String SEARCH_COMMAND = "search";
     public static final String SORT_COMMAND = "sort";
     public static final String ORDER_COMMAND = "order";
@@ -118,11 +132,36 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String RANDOM_COLOR = "random";
     public static final int MAX_PAGE_LIMIT = Config.MAX_PAGE_LIMIT;
 
-    public CoreWaypointCommand(WaypointServerCore waypointServer, PlatformMessageSender<S, P> sender, PermissionManager<S, K, P> permissionManager, Supplier<ArgumentType<D>> dimensionArgument, Supplier<ArgumentType<B>> blockPositionArgument) {
+    public CoreWaypointCommand(
+            WaypointServerCore waypointServer,
+            PlatformMessageSender<S, P> sender,
+            PermissionManager<S, K, P> permissionManager,
+            Supplier<ArgumentType<D>> dimensionArgument,
+            Supplier<ArgumentType<B>> blockPositionArgument
+    ) {
+        this(
+                waypointServer,
+                sender,
+                permissionManager,
+                null,
+                dimensionArgument,
+                blockPositionArgument
+        );
+    }
+
+    public CoreWaypointCommand(
+            WaypointServerCore waypointServer,
+            PlatformMessageSender<S, P> sender,
+            PermissionManager<S, K, P> permissionManager,
+            @Nullable NavigationService<P> navigationService,
+            Supplier<ArgumentType<D>> dimensionArgument,
+            Supplier<ArgumentType<B>> blockPositionArgument
+    ) {
         this.waypointServer = waypointServer;
         this.waypointQueryEngine = new WaypointQueryEngine(waypointServer);
         this.sender = sender;
         this.permissionManager = permissionManager;
+        this.navigationService = navigationService;
         this.dimensionArgumentProvider = dimensionArgument;
         this.blockPosArgumentProvider = blockPositionArgument;
         this.permissionKeys = permissionManager.keys;
@@ -158,6 +197,14 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     private boolean hasReloadPermission(S source) {
         return this.permissionManager.hasPermission(source, this.permissionKeys.reload(), CONFIG.CommandPermission().reload());
+    }
+
+    private boolean hasNavigatePermission(S source) {
+        return this.navigationService != null && this.permissionManager.hasPermission(
+                source,
+                this.permissionKeys.navigate(),
+                CONFIG.CommandPermission().navigate()
+        );
     }
 
     @SuppressWarnings("unchecked")
@@ -242,6 +289,13 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                         .then(literal(LIST_COMMAND)
                                 .executes(context -> {
                                     executeListHelp((S) context.getSource());
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                        )
+                        .then(literal(NAVIGATE_COMMAND)
+                                .requires(source -> hasNavigatePermission((S) source))
+                                .executes(context -> {
+                                    executeNavigateHelp((S) context.getSource());
                                     return Command.SINGLE_SUCCESS;
                                 })
                         )
@@ -455,6 +509,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                         )
                 )
                 .then((ArgumentBuilder<Object, ?>) listCommandNode())
+                .then((ArgumentBuilder<Object, ?>) navigationCommandNode())
                 .then(literal(RELOAD_COMMAND)
                         .requires(source -> hasReloadPermission((S) source))
                         .executes(
@@ -472,6 +527,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 hasAddPermission(source),
                 hasEditPermission(source),
                 hasRemovePermission(source),
+                hasNavigatePermission(source),
                 hasTpPermission(source),
                 hasReloadPermission(source)
         ));
@@ -487,6 +543,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     private void executeListHelp(S source) {
         this.sender.sendMessage(source, WaypointCommandHelp.listHelp());
+    }
+
+    private void executeNavigateHelp(S source) {
+        this.sender.sendMessage(source, WaypointCommandHelp.navigateHelp());
     }
 
     private void runIfPlayerExists(S source, Consumer<P> playerAction) {
@@ -694,6 +754,205 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 }));
     }
 
+    private void executeNavigate(
+            S source,
+            D dimensionArgument,
+            String listName,
+            String waypointName,
+            @Nullable String selection
+    ) {
+        P player = getNavigationPlayer(source);
+        if (player == null || this.navigationService == null) {
+            return;
+        }
+        runWithSelectorTarget(
+                source,
+                dimensionArgument,
+                listName,
+                waypointName,
+                (fileManager, waypointList, waypoint) -> {
+                    NavigationTarget target = new NavigationTarget(
+                            fileManager.getDimensionName(),
+                            listName,
+                            waypoint
+                    );
+                    NavigationResult result;
+                    if (selection == null) {
+                        NavigationResult status = this.navigationService.status(player);
+                        if (status.code() == NavigationResult.Code.NO_ACTIVE_SESSION) {
+                            result = this.navigationService.navigate(
+                                    player,
+                                    target,
+                                    resolveNavigationSelection("default")
+                            );
+                        } else {
+                            result = this.navigationService.retarget(player, target);
+                        }
+                    } else {
+                        result = this.navigationService.navigate(
+                                player,
+                                target,
+                                resolveNavigationSelection(selection)
+                        );
+                    }
+                    sendNavigationResult(source, result);
+                }
+        );
+    }
+
+    private void executeNavigateUse(S source, NavigationMethod method) {
+        P player = getNavigationPlayer(source);
+        if (player != null && this.navigationService != null) {
+            sendNavigationResult(source, this.navigationService.enableMethod(player, method));
+        }
+    }
+
+    private void executeNavigateDisable(S source) {
+        P player = getNavigationPlayer(source);
+        if (player != null && this.navigationService != null) {
+            sendNavigationResult(source, this.navigationService.disableAll(player));
+        }
+    }
+
+    private void executeNavigateDisable(S source, NavigationMethod method) {
+        P player = getNavigationPlayer(source);
+        if (player != null && this.navigationService != null) {
+            sendNavigationResult(source, this.navigationService.disableMethod(player, method));
+        }
+    }
+
+    private void executeNavigateStatus(S source) {
+        P player = getNavigationPlayer(source);
+        if (player != null && this.navigationService != null) {
+            sendNavigationResult(source, this.navigationService.status(player));
+        }
+    }
+
+    private @Nullable P getNavigationPlayer(S source) {
+        P player = getPlayer(source);
+        if (player == null) {
+            this.sender.sendError(source, translatable("waypoint.navigation.player_only"));
+        }
+        return player;
+    }
+
+    private Set<NavigationMethod> resolveNavigationSelection(String selection) {
+        String normalized = selection.toLowerCase(Locale.ROOT);
+        if ("default".equals(normalized)) {
+            normalized = CONFIG.defaultNavigationSelection().toLowerCase(Locale.ROOT);
+            if ("default".equals(normalized)) {
+                normalized = NavigationMethod.ACTIONBAR.id();
+            }
+        }
+        if ("all".equals(normalized)) {
+            return NavigationMethod.allMethods();
+        }
+        return NavigationMethod.fromId(normalized)
+                .<Set<NavigationMethod>>map(EnumSet::of)
+                .orElseGet(() -> EnumSet.of(NavigationMethod.ACTIONBAR));
+    }
+
+    private void sendNavigationResult(S source, NavigationResult result) {
+        NavigationSession session = result.session();
+        NavigationMethod method = result.method();
+        switch (result.code()) {
+            case NAVIGATION_STARTED -> this.sender.sendMessage(
+                    source,
+                    translatable(
+                            "waypoint.navigation.started",
+                            navigationTargetName(session.target()),
+                            navigationMethods(session.enabledMethods())
+                    )
+            );
+            case TARGET_CHANGED -> this.sender.sendMessage(
+                    source,
+                    translatable(
+                            "waypoint.navigation.target_changed",
+                            navigationTargetName(session.target()),
+                            navigationMethods(session.enabledMethods())
+                    )
+            );
+            case SELECTION_REPLACED -> this.sender.sendMessage(
+                    source,
+                    translatable(
+                            "waypoint.navigation.selection_replaced",
+                            navigationTargetName(session.target()),
+                            navigationMethods(session.enabledMethods())
+                    )
+            );
+            case METHOD_ENABLED -> this.sender.sendMessage(
+                    source,
+                    translatable("waypoint.navigation.method_enabled", text(method.id()))
+            );
+            case METHOD_ALREADY_ENABLED -> this.sender.sendMessage(
+                    source,
+                    translatable("waypoint.navigation.method_already_enabled", text(method.id()))
+            );
+            case METHOD_DISABLED -> this.sender.sendMessage(
+                    source,
+                    translatable("waypoint.navigation.method_disabled", text(method.id()))
+            );
+            case METHOD_ALREADY_DISABLED -> this.sender.sendMessage(
+                    source,
+                    translatable("waypoint.navigation.method_not_enabled", text(method.id()))
+            );
+            case NAVIGATION_DISABLED -> this.sender.sendMessage(
+                    source,
+                    translatable("waypoint.navigation.disabled")
+            );
+            case STATUS -> this.sender.sendMessage(
+                    source,
+                    translatable(
+                            "waypoint.navigation.status",
+                            navigationTargetName(session.target()),
+                            dimensionNameWithColor(session.target().dimensionName()),
+                            text(session.target().listName()),
+                            navigationMethods(session.enabledMethods())
+                    )
+            );
+            case NO_ACTIVE_SESSION -> this.sender.sendError(
+                    source,
+                    translatable("waypoint.navigation.no_active")
+            );
+            case INSUFFICIENT_INVENTORY -> this.sender.sendError(
+                    source,
+                    translatable(
+                            "waypoint.navigation.inventory.insufficient",
+                            text(result.requiredSlots()),
+                            text(result.availableSlots())
+                    )
+            );
+            case TARGET_UNAVAILABLE -> this.sender.sendError(
+                    source,
+                    translatable("waypoint.navigation.target_unavailable")
+            );
+            case INVALID_SELECTION -> this.sender.sendError(
+                    source,
+                    translatable("waypoint.navigation.invalid_selection")
+            );
+            case METHOD_UNAVAILABLE, HANDLER_FAILED, PLATFORM_REJECTED -> this.sender.sendError(
+                    source,
+                    translatable(
+                            "waypoint.navigation.method_failed",
+                            text(method == null ? "unknown" : method.id())
+                    )
+            );
+            case SUCCESS -> {
+            }
+        }
+    }
+
+    private Component navigationTargetName(NavigationTarget target) {
+        return text(target.waypointName(), TextColor.color(target.rgb()));
+    }
+
+    private Component navigationMethods(Set<NavigationMethod> methods) {
+        if (methods.isEmpty()) {
+            return translatable("waypoint.navigation.methods.none");
+        }
+        return text(methods.stream().map(NavigationMethod::id).sorted().collect(java.util.stream.Collectors.joining(", ")));
+    }
+
     private void executeDownload(S source) {
         WorldWaypointBuffer buffer = this.waypointServer.toWorldWaypointBuffer();
         if (buffer == null) {
@@ -732,6 +991,85 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             this.sender.sendMessage(source, translatable("waypoint.download.waypoint", waypointTextWithTp(waypoint, dimensionName, listName)));
             this.sender.sendPacket(source, new WaypointModificationBuffer(dimensionName, listName, name, waypoint, WaypointModificationType.ADD, waypointList.getSyncNum()));
         });
+    }
+
+    private LiteralArgumentBuilder<S> navigationCommandNode() {
+        LiteralArgumentBuilder<S> navigateNode = literal(NAVIGATE_COMMAND);
+        navigateNode.requires(this::hasNavigatePermission);
+
+        LiteralArgumentBuilder<S> useNode = literal(USE_COMMAND);
+        for (NavigationMethod method : NavigationMethod.values()) {
+            LiteralArgumentBuilder<S> methodNode = literal(method.id());
+            methodNode.executes(context -> {
+                executeNavigateUse(context.getSource(), method);
+                return Command.SINGLE_SUCCESS;
+            });
+            useNode.then(methodNode);
+        }
+        navigateNode.then(useNode);
+
+        LiteralArgumentBuilder<S> disableNode = literal(DISABLE_COMMAND);
+        disableNode.executes(context -> {
+            executeNavigateDisable(context.getSource());
+            return Command.SINGLE_SUCCESS;
+        });
+        for (NavigationMethod method : NavigationMethod.values()) {
+            LiteralArgumentBuilder<S> methodNode = literal(method.id());
+            methodNode.executes(context -> {
+                executeNavigateDisable(context.getSource(), method);
+                return Command.SINGLE_SUCCESS;
+            });
+            disableNode.then(methodNode);
+        }
+        navigateNode.then(disableNode);
+
+        LiteralArgumentBuilder<S> statusNode = literal(STATUS_COMMAND);
+        statusNode.executes(context -> {
+            executeNavigateStatus(context.getSource());
+            return Command.SINGLE_SUCCESS;
+        });
+        navigateNode.then(statusNode);
+
+        RequiredArgumentBuilder<S, D> dimensionNode = argument(
+                DIMENSION_ARG,
+                this.dimensionArgumentProvider.get()
+        );
+        RequiredArgumentBuilder<S, String> listNode = argument(LIST_NAME_ARG, string());
+        listNode.suggests(this.WAYPOINT_LIST_SUGGESTION);
+        RequiredArgumentBuilder<S, String> waypointNode = argument(WAYPOINT_NAME_ARG, string());
+        waypointNode.suggests(this.WAYPOINT_NAME_SUGGESTION);
+        waypointNode.executes(navigateTargetCommand(null));
+
+        LiteralArgumentBuilder<S> usingNode = literal(USING_COMMAND);
+        LiteralArgumentBuilder<S> defaultNode = literal("default");
+        defaultNode.executes(navigateTargetCommand("default"));
+        usingNode.then(defaultNode);
+        LiteralArgumentBuilder<S> allNode = literal("all");
+        allNode.executes(navigateTargetCommand("all"));
+        usingNode.then(allNode);
+        for (NavigationMethod method : NavigationMethod.values()) {
+            LiteralArgumentBuilder<S> methodNode = literal(method.id());
+            methodNode.executes(navigateTargetCommand(method.id()));
+            usingNode.then(methodNode);
+        }
+        waypointNode.then(usingNode);
+        listNode.then(waypointNode);
+        dimensionNode.then(listNode);
+        navigateNode.then(dimensionNode);
+        return navigateNode;
+    }
+
+    private Command<S> navigateTargetCommand(@Nullable String selection) {
+        return context -> {
+            executeNavigate(
+                    context.getSource(),
+                    getArgument(context, DIMENSION_ARG),
+                    getString(context, LIST_NAME_ARG),
+                    getString(context, WAYPOINT_NAME_ARG),
+                    selection
+            );
+            return Command.SINGLE_SUCCESS;
+        };
     }
 
     private LiteralArgumentBuilder<S> listCommandNode() {

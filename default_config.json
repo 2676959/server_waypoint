@@ -1,9 +1,11 @@
 {
   "defaultPageLimit": 10,
+  "defaultNavigationSelection": "actionbar",
   "CommandPermission": {
     "add": 0,
     "edit": 0,
-    "remove": 0
+    "remove": 0,
+    "navigate": 0
   },
   "AddWaypointFromChatSharing": {
     "enable": true
