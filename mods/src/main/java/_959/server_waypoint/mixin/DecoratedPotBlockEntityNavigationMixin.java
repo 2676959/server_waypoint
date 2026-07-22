@@ -3,8 +3,8 @@ package _959.server_waypoint.mixin;
 import _959.server_waypoint.common.server.navigation.ModNavigationHooks;
 import net.minecraft.nbt.CompoundTag;
 //? if >= 1.20.6 && < 1.21.6 {
-import net.minecraft.core.HolderLookup;
-//?}
+/*import net.minecraft.core.HolderLookup;
+*///?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 //? if >= 1.21.6 {
@@ -31,11 +31,11 @@ public abstract class DecoratedPotBlockEntityNavigationMixin {
     }
 
     //? if = 1.20.4 {
-    @Inject(method = "load", at = @At("TAIL"))
+    /*@Inject(method = "load", at = @At("TAIL"))
     private void sanitizeLoadedNavigationItem(CompoundTag tag, CallbackInfo ci) {
         removeLoadedNavigationItem();
     }
-    //?} elif >= 1.20.6 && < 1.21.6 {
+    *///?} elif >= 1.20.6 && < 1.21.6 {
     /*@Inject(method = "loadAdditional", at = @At("TAIL"))
     private void sanitizeLoadedNavigationItem(
             CompoundTag tag,
@@ -50,11 +50,11 @@ public abstract class DecoratedPotBlockEntityNavigationMixin {
         removeLoadedNavigationItem();
     }
     *///?} else {
-    /*@Inject(method = "loadAdditional", at = @At("TAIL"), remap = false)
+    @Inject(method = "loadAdditional", at = @At("TAIL"), remap = false)
     private void sanitizeLoadedNavigationItem(ValueInput input, CallbackInfo ci) {
         removeLoadedNavigationItem();
     }
-    *///?}
+    //?}
 
     @Unique
     private void removeLoadedNavigationItem() {

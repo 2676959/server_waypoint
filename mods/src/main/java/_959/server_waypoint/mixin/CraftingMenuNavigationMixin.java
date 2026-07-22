@@ -7,7 +7,7 @@ import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.item.ItemStack;
-//? if >= 1.21.11 {
+//? if >= 1.21.2 {
 import net.minecraft.server.level.ServerLevel;
 //?} else {
 /*import net.minecraft.world.level.Level;
@@ -27,7 +27,7 @@ public abstract class CraftingMenuNavigationMixin {
     @Inject(method = "slotChangedCraftingGrid", at = @At("HEAD"), cancellable = true/*? if >= 26 {*/, remap = false/*?}*/)
     private static void blockNavigationItemCrafting(
             AbstractContainerMenu menu,
-            //? if >= 1.21.11 {
+            //? if >= 1.21.2 {
             ServerLevel level,
             //?} else {
             /*Level level,
