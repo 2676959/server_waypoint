@@ -108,7 +108,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     }
 
     /**
-     * updates the displayed dimension, if dimensionName is empty only clears the current list
+     * Changes the selected-dimension scope and immediately rebuilds the displayed rows. A
+     * {@code null} dimension clears the selected scope.
+     *
+     * @param dimensionName the dimension to display in selected-dimension mode
      */
     public void setSelectedDimension(String dimensionName) {
         this.selectedDimensionName = dimensionName == null ? "" : dimensionName;
@@ -116,12 +119,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     }
 
     /**
-     * only recalculate rendering related data, do not change the content
+     * Requeries and rebuilds the displayed rows using the current dimension scope, search query,
+     * grouping mode, sort mode, and sort direction. This method does not alter any of those view
+     * settings and should be called only when data visible to the active scope may have changed.
      */
-    public void reCalculateRenderData() {
-        refreshView();
-    }
-
     public void refreshView() {
         applySearchAndSort();
     }

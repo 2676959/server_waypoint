@@ -163,7 +163,12 @@ public class DimensionListWidget extends ShiftableClickableWidget implements Pad
     }
 
     /**
-     * updates the reference of {@link #dimensionNames}, if newDimensionNames is empty only clears the current list
+     * Replaces the available-dimension catalog and clamps the selected index and scroll position to
+     * the new bounds. An empty catalog clears the widget state. Selection restoration by dimension
+     * name is the caller's responsibility, so this method should be used for full or structural
+     * dimension updates rather than ordinary waypoint mutations.
+     *
+     * @param newDimensionNames the complete, display-ordered dimension catalog
      */
     public void updateDimensionNames(@Unmodifiable List<String> newDimensionNames) {
         if (newDimensionNames.isEmpty()) {

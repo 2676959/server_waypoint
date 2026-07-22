@@ -53,6 +53,7 @@ public class WaypointServerMod extends WaypointServerCore {
 
     @Override
     public void addWaypoint(String dimensionName, String listName, SimpleWaypoint waypoint, BiConsumer<@NotNull WaypointFileManager, @NotNull WaypointList> successAction, Consumer<@NotNull SimpleWaypoint> duplicateAction) {
+        boolean dimensionListChanged = this.getWaypointFileManager(dimensionName) == null;
         super.addWaypoint(dimensionName, listName, waypoint, (fileManager, waypointList) -> {
             successAction.accept(fileManager, waypointList);
             if (runsWithClient) {
@@ -60,7 +61,7 @@ public class WaypointServerMod extends WaypointServerCore {
                     if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
                         OptimizedWaypointRenderer.add(waypoint);
                     }
-                    WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
+                    updateWaypointManagerView(dimensionName, dimensionListChanged);
                     syncWaypointModification(dimensionName, listName, WaypointModificationType.ADD, waypoint, waypoint.name());
                 });
             }
@@ -76,7 +77,7 @@ public class WaypointServerMod extends WaypointServerCore {
                 if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
                     OptimizedWaypointRenderer.remove(waypoint);
                 }
-                WaypointManagerScreen.refreshWaypointLists(dimensionName);
+                WaypointManagerScreen.updateWaypointWidget(dimensionName);
                 syncWaypointModification(dimensionName, waypointList.name(), WaypointModificationType.REMOVE, null, waypoint.name());
             });
         }
@@ -92,6 +93,7 @@ public class WaypointServerMod extends WaypointServerCore {
                     if (fileManager.getDimensionName().equals(WaypointClientMod.getCurrentDimensionName())) {
                         OptimizedWaypointRenderer.updateWaypoint(waypoint);
                     }
+                    WaypointManagerScreen.updateWaypointWidget(fileManager.getDimensionName());
                     syncWaypointModification(fileManager.getDimensionName(), waypointList.name(), WaypointModificationType.UPDATE, waypoint, oldName);
                 });
             }
@@ -100,11 +102,12 @@ public class WaypointServerMod extends WaypointServerCore {
 
     @Override
     public void addWaypointList(String dimensionName, String listName, Consumer<WaypointFileManager> successAction, Runnable listExistsAction) {
+        boolean dimensionListChanged = this.getWaypointFileManager(dimensionName) == null;
         super.addWaypointList(dimensionName, listName, (fileManager) -> {
             successAction.accept(fileManager);
             if (runsWithClient) {
                 runOnClientThread(() -> {
-                    WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
+                    updateWaypointManagerView(dimensionName, dimensionListChanged);
                     syncWaypointModification(dimensionName, listName, WaypointModificationType.ADD_LIST, null, null);
                 });
             }
@@ -117,12 +120,26 @@ public class WaypointServerMod extends WaypointServerCore {
             successAction.accept(fileManager1);
             if (runsWithClient) {
                 runOnClientThread(() -> {
-                    WaypointManagerScreen.updateWaypointLists(fileManager1.getDimensionName(), fileManager1.getWaypointLists());
+                    WaypointManagerScreen.updateWaypointWidget(fileManager1.getDimensionName());
                     syncWaypointModification(fileManager1.getDimensionName(), listName, WaypointModificationType.REMOVE_LIST, null, null);
                 });
             }
         }, listNotFoundAction, nonEmptyListAction);
 
+    }
+
+    /**
+     * Routes an integrated-server mutation to the smallest manager refresh that can represent it.
+     *
+     * @param dimensionName the dimension whose data changed
+     * @param dimensionListChanged whether the mutation created a new dimension manager
+     */
+    private static void updateWaypointManagerView(String dimensionName, boolean dimensionListChanged) {
+        if (dimensionListChanged) {
+            WaypointManagerScreen.updateWidgetsForDimensionListChange(dimensionName);
+        } else {
+            WaypointManagerScreen.updateWaypointWidget(dimensionName);
+        }
     }
 
     private static void runOnClientThread(Runnable task) {

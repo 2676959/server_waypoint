@@ -14,16 +14,17 @@ import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
-import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.Screen;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
@@ -227,58 +228,117 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         DimensionListWidget.resetStates();
     }
 
-    public static void updateCurrentView() {
-        if (isRendering) {
-            WaypointClientMod waypointClient = WaypointClientMod.getInstance();
-            dimensionListWidget.updateDimensionNames(waypointClient.getDimensionNames());
-            syncSelectedDimension(dimensionListWidget.getSelectedDimensionName());
+    /**
+     * Performs a full refresh after the available dimensions or the active player dimension may
+     * have changed. The dimension rail is rebuilt first and its selection is preserved when
+     * possible. The waypoint list is then refreshed exactly once; changing the selected dimension
+     * already performs that refresh, so a second query is skipped in that case.
+     */
+    public static void updateAllWidgets() {
+        if (!canUpdateWidgets()) {
+            return;
         }
-    }
-
-    public static void updateDimensionList() {
-        if (isRendering) {
-            WaypointClientMod waypointClient = WaypointClientMod.getInstance();
-            String selectedDimensionName =  dimensionListWidget.getSelectedDimensionName();
-            List<String> dimensionNames = waypointClient.getDimensionNames();
-            if (dimensionNames.contains(selectedDimensionName)) {
-                dimensionListWidget.updateDimensionNames(dimensionNames);
-                dimensionListWidget.setDimensionName(selectedDimensionName);
-                syncSelectedDimension(selectedDimensionName);
-            } else if (!dimensionNames.isEmpty()) {
-                dimensionListWidget.updateDimensionNames(dimensionNames);
-                dimensionListWidget.setDimensionName(WaypointClientMod.getCurrentDimensionName());
-                syncSelectedDimension(WaypointClientMod.getCurrentDimensionName());
-            } else {
-                dimensionListWidget.updateDimensionNames(dimensionNames);
-                syncSelectedDimension(null);
-            }
-        }
-    }
-
-    public static void updateCurrentWaypointLists(List<WaypointList> waypointLists) {
-        if (isRendering) {
+        if (!updateDimensionWidgetSelection()) {
             waypointListWidget.refreshView();
         }
     }
 
-    public static void updateWaypointLists(String dimensionName, List<WaypointList> waypointLists) {
-        if (isRendering && shouldRefreshDimension(
+    /**
+     * Refreshes the manager after an operation creates or removes an available dimension. The
+     * dimension rail is always rebuilt while the screen is active. The waypoint list is refreshed
+     * only when selection fallback changes its dimension, the changed dimension is selected, or
+     * all-dimensions mode makes the changed dimension part of the current view.
+     *
+     * @param changedDimension the dimension added to or removed from the available-dimension set
+     */
+    public static void updateWidgetsForDimensionListChange(String changedDimension) {
+        if (!canUpdateWidgets() || updateDimensionWidgetSelection()) {
+            return;
+        }
+        refreshWaypointWidgetIfAffected(changedDimension);
+    }
+
+    /**
+     * Refreshes waypoint content after a mutation inside an existing dimension. This path never
+     * rebuilds or sorts the dimension rail. In selected-dimension mode, mutations in other
+     * dimensions are ignored; in all-dimensions mode, every dimension is relevant.
+     *
+     * @param changedDimension the dimension whose waypoint content changed
+     */
+    public static void updateWaypointWidget(String changedDimension) {
+        if (!canUpdateWidgets()) {
+            return;
+        }
+        refreshWaypointWidgetIfAffected(changedDimension);
+    }
+
+    /**
+     * Requeries waypoint rows only when the changed dimension participates in the active view.
+     *
+     * @param changedDimension the dimension whose waypoint content changed
+     */
+    private static void refreshWaypointWidgetIfAffected(String changedDimension) {
+        if (shouldRefreshDimension(
                 waypointListWidget.isShowingAllDimensions(),
-                dimensionName,
+                changedDimension,
                 dimensionListWidget.getSelectedDimensionName()
         )) {
             waypointListWidget.refreshView();
         }
     }
 
-    public static void refreshWaypointLists(String dimensionName) {
-        if (isRendering && shouldRefreshDimension(
-                waypointListWidget.isShowingAllDimensions(),
-                dimensionName,
-                dimensionListWidget.getSelectedDimensionName()
-        )) {
-            waypointListWidget.reCalculateRenderData();
+    private static boolean canUpdateWidgets() {
+        return isRendering && dimensionListWidget != null && waypointListWidget != null;
+    }
+
+    /**
+     * Rebuilds the dimension rail and resolves its selection by name. Selection preference is the
+     * previous dimension, then the player's current dimension, then the first available dimension.
+     *
+     * @return {@code true} when changing the selection already refreshed the waypoint list;
+     *         {@code false} when the caller still needs to decide whether waypoint rows changed
+     */
+    private static boolean updateDimensionWidgetSelection() {
+        WaypointClientMod waypointClient = WaypointClientMod.getInstance();
+        String previousSelection = dimensionListWidget.getSelectedDimensionName();
+        List<String> dimensionNames = waypointClient.getDimensionNames();
+        String selectedDimension = resolveSelectedDimension(
+                previousSelection,
+                getCurrentDimensionName(),
+                dimensionNames
+        );
+
+        dimensionListWidget.updateDimensionNames(dimensionNames);
+        if (selectedDimension != null) {
+            dimensionListWidget.setDimensionName(selectedDimension);
         }
+        if (Objects.equals(previousSelection, selectedDimension)) {
+            return false;
+        }
+        syncSelectedDimension(selectedDimension);
+        return true;
+    }
+
+    /**
+     * Resolves the previous selection, then the current dimension, then the first available dimension.
+     *
+     * @param selectedDimension the dimension selected before the catalog update
+     * @param currentDimension the player's current dimension
+     * @param dimensionNames the complete updated dimension catalog
+     * @return the dimension to select, or {@code null} when the catalog is empty
+     */
+    static @Nullable String resolveSelectedDimension(
+            String selectedDimension,
+            String currentDimension,
+            List<String> dimensionNames
+    ) {
+        if (dimensionNames.contains(selectedDimension)) {
+            return selectedDimension;
+        }
+        if (dimensionNames.contains(currentDimension)) {
+            return currentDimension;
+        }
+        return dimensionNames.isEmpty() ? null : dimensionNames.get(0);
     }
 
     public String getSelectedDimension() {
@@ -428,12 +488,21 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         return dimensionListVisible;
     }
 
+    /**
+     * Determines whether a mutation in one dimension can affect the currently displayed rows.
+     *
+     * @param showAllDimensions whether rows from every dimension are displayed
+     * @param changedDimension the dimension whose waypoint content changed
+     * @param selectedDimension the dimension selected in the dimension rail
+     * @return {@code true} when the waypoint list must be requeried
+     */
     static boolean shouldRefreshDimension(
             boolean showAllDimensions,
             String changedDimension,
             String selectedDimension
     ) {
-        return showAllDimensions || changedDimension.equals(selectedDimension);
+        return showAllDimensions
+                || Objects.equals(changedDimension, selectedDimension);
     }
 
     private void openAddWaypointScreen() {
