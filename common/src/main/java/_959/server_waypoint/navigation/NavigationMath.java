@@ -42,8 +42,8 @@ public final class NavigationMath {
         }
 
         WaypointPos targetPosition = target.position();
-        double deltaX = targetPosition.x() - playerX;
-        double deltaZ = targetPosition.z() - playerZ;
+        double deltaX = targetPosition.X() - playerX;
+        double deltaZ = targetPosition.Z() - playerZ;
         double targetYaw = wrapDegrees(Math.toDegrees(Math.atan2(-deltaX, deltaZ)));
         double signedTurnAngle = wrapDegrees(targetYaw - playerYaw);
         double horizontalDistance = Math.hypot(deltaX, deltaZ);

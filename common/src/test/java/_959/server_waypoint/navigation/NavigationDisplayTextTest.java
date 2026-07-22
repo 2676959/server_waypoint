@@ -2,6 +2,7 @@ package _959.server_waypoint.navigation;
 
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
 import org.junit.jupiter.api.Test;
 
@@ -19,13 +20,12 @@ class NavigationDisplayTextTest {
 
     @Test
     void usesWrongDimensionMessageWithoutDirectionOrDistance() {
-        TranslatableComponent text = (TranslatableComponent) NavigationDisplayText.build(
+        TextComponent text = (TextComponent) NavigationDisplayText.build(
                 this.session,
                 NavigationSnapshot.wrongDimension()
         );
 
-        assertEquals("waypoint.navigation.display.wrong_dimension", text.key());
-        Component travelMessage = (Component) text.arguments().get(1).value();
+        Component travelMessage = text.children().get(2);
         assertEquals(
                 "waypoint.navigation.wrong_dimension",
                 ((TranslatableComponent) travelMessage).key()
@@ -33,22 +33,61 @@ class NavigationDisplayTextTest {
     }
 
     @Test
-    void choosesTurnDirectionFromSignedAngle() {
-        assertEquals("waypoint.navigation.turn.left", turnKey(-38.0D));
-        assertEquals("waypoint.navigation.turn.right", turnKey(38.0D));
+    void usesSymbolsForTurnDirectionAndAngle() {
+        assertEquals(NavigationDisplayText.SYMBOL_LEFT + "38°", turnIndicator(-38.0D));
+        assertEquals(NavigationDisplayText.SYMBOL_RIGHT + "38°", turnIndicator(38.0D));
+        assertEquals(NavigationDisplayText.SYMBOL_FORWARD, turnIndicator(0.0D));
     }
 
-    private String turnKey(double signedTurn) {
-        NavigationSnapshot snapshot = new NavigationSnapshot(
+    @Test
+    void reusesMeterUnitForHorizontalAndVerticalDistance() {
+        TextComponent display = display(12.6D, 38.0D);
+        assertMeters(display.children().get(4), 143L);
+
+        TextComponent vertical = (TextComponent) display.children().get(6);
+        assertEquals(NavigationDisplayText.SYMBOL_HIGH, vertical.content());
+        assertMeters(vertical.children().get(0), 13L);
+    }
+
+    @Test
+    void usesSymbolsForVerticalDirection() {
+        assertVerticalDifference(12.6D, NavigationDisplayText.SYMBOL_HIGH, 13L);
+        assertVerticalDifference(-12.6D, NavigationDisplayText.SYMBOL_LOW, 13L);
+        assertVerticalDifference(0.4D, NavigationDisplayText.SYMBOL_SAME_LEVEL, 0L);
+    }
+
+    private String turnIndicator(double signedTurn) {
+        return ((TextComponent) display(0.0D, signedTurn).children().get(2)).content();
+    }
+
+    private void assertVerticalDifference(double signedDifference, String expectedSymbol, long expectedDistance) {
+        TextComponent vertical = (TextComponent) display(signedDifference, 38.0D).children().get(6);
+        assertEquals(expectedSymbol, vertical.content());
+        assertMeters(vertical.children().get(0), expectedDistance);
+    }
+
+    private void assertMeters(Component component, long expectedDistance) {
+        TranslatableComponent meters = (TranslatableComponent) component;
+        assertEquals("waypoint.navigation.unit.meter", meters.key());
+        TextComponent distance = (TextComponent) meters.arguments().get(0).value();
+        assertEquals(Long.toString(expectedDistance), distance.content());
+    }
+
+    private TextComponent display(double verticalDifference, double signedTurn) {
+        return (TextComponent) NavigationDisplayText.build(
+                this.session,
+                snapshot(verticalDifference, signedTurn)
+        );
+    }
+
+    private NavigationSnapshot snapshot(double verticalDifference, double signedTurn) {
+        return new NavigationSnapshot(
                 true,
                 0.0D,
                 signedTurn,
                 143.0D,
-                0.0D,
+                verticalDifference,
                 NavigationMath.facingProgress(signedTurn)
         );
-        TranslatableComponent text = (TranslatableComponent) NavigationDisplayText.build(this.session, snapshot);
-        Component turnMessage = (Component) text.arguments().get(2).value();
-        return ((TranslatableComponent) turnMessage).key();
     }
 }

@@ -21,17 +21,17 @@ class NavigationMathTest {
     void signedTurnAngleUsesNegativeForLeftAndPositiveForRight() {
         NavigationSnapshot left = NavigationMath.snapshot(
                 "minecraft:overworld",
-                0.0D,
+                0.5D,
                 64.0D,
-                0.0D,
+                0.5D,
                 0.0D,
                 target("minecraft:overworld", 10, 64, 0)
         );
         NavigationSnapshot right = NavigationMath.snapshot(
                 "minecraft:overworld",
-                0.0D,
+                0.5D,
                 64.0D,
-                0.0D,
+                0.5D,
                 0.0D,
                 target("minecraft:overworld", -10, 64, 0)
         );
@@ -40,6 +40,21 @@ class NavigationMathTest {
         assertEquals(-90.0D, left.signedTurnAngle());
         assertEquals(90.0D, right.targetYaw());
         assertEquals(90.0D, right.signedTurnAngle());
+    }
+
+    @Test
+    void targetsCenterOfWaypointBlock() {
+        NavigationSnapshot snapshot = NavigationMath.snapshot(
+                "minecraft:overworld",
+                0.0D,
+                64.0D,
+                0.0D,
+                0.0D,
+                target("minecraft:overworld", 0, 64, 0)
+        );
+
+        assertEquals(-45.0D, snapshot.targetYaw());
+        assertEquals(Math.sqrt(0.5D), snapshot.horizontalDistance(), 1.0E-12D);
     }
 
     @Test
@@ -54,9 +69,9 @@ class NavigationMathTest {
     void snapshotIncludesHorizontalAndSignedVerticalDistance() {
         NavigationSnapshot snapshot = NavigationMath.snapshot(
                 "minecraft:overworld",
-                0.0D,
+                0.5D,
                 1.0D,
-                0.0D,
+                0.5D,
                 0.0D,
                 target("minecraft:overworld", 3, 5, 4)
         );
