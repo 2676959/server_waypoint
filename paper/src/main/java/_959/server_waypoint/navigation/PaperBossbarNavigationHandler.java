@@ -28,7 +28,7 @@ public final class PaperBossbarNavigationHandler implements NavigationMethodHand
         BossBar bossbar = BossBar.bossBar(
                 NavigationDisplayText.build(session, snapshot),
                 progress(snapshot),
-                BossBar.Color.WHITE,
+                color(snapshot),
                 BossBar.Overlay.PROGRESS
         );
         this.bossbars.put(player.getUniqueId(), bossbar);
@@ -49,6 +49,7 @@ public final class PaperBossbarNavigationHandler implements NavigationMethodHand
         }
         bossbar.name(NavigationDisplayText.build(session, snapshot));
         bossbar.progress(progress(snapshot));
+        bossbar.color(color(snapshot));
     }
 
     @Override
@@ -66,7 +67,11 @@ public final class PaperBossbarNavigationHandler implements NavigationMethodHand
 
     private static float progress(NavigationSnapshot snapshot) {
         return snapshot.inTargetDimension()
-                ? Math.max(0.0F, Math.min(1.0F, snapshot.facingProgress()))
+                ? Math.max(0.0F, Math.min(1.0F, snapshot.headingProgress()))
                 : 0.0F;
+    }
+
+    private static BossBar.Color color(NavigationSnapshot snapshot) {
+        return snapshot.waypointBehindPlayer() ? BossBar.Color.RED : BossBar.Color.WHITE;
     }
 }

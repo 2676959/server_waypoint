@@ -22,9 +22,13 @@ public final class NavigationMath {
         return wrapped;
     }
 
-    public static float facingProgress(double signedTurnAngle) {
-        double progress = 1.0D - Math.abs(wrapDegrees(signedTurnAngle)) / 180.0D;
+    public static float headingProgress(double signedTurnAngle) {
+        double progress = (wrapDegrees(signedTurnAngle) + 180.0D) / 360.0D;
         return (float) Math.max(0.0D, Math.min(1.0D, progress));
+    }
+
+    public static boolean isBehind(double signedTurnAngle) {
+        return Math.abs(wrapDegrees(signedTurnAngle)) > 90.0D;
     }
 
     public static NavigationSnapshot snapshot(
@@ -54,7 +58,7 @@ public final class NavigationMath {
                 signedTurnAngle,
                 horizontalDistance,
                 verticalDifference,
-                facingProgress(signedTurnAngle)
+                headingProgress(signedTurnAngle)
         );
     }
 }

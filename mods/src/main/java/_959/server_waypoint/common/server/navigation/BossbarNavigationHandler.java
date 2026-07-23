@@ -50,7 +50,10 @@ final class BossbarNavigationHandler implements NavigationMethodHandler<ServerPl
                 player,
                 NavigationDisplayText.build(session, snapshot)
         ));
-        bossbar.setProgress(snapshot.inTargetDimension() ? snapshot.facingProgress() : 0.0F);
+        bossbar.setProgress(snapshot.inTargetDimension() ? snapshot.headingProgress() : 0.0F);
+        bossbar.setColor(snapshot.waypointBehindPlayer()
+                ? BossEvent.BossBarColor.RED
+                : BossEvent.BossBarColor.WHITE);
         bossbar.setVisible(true);
     }
 

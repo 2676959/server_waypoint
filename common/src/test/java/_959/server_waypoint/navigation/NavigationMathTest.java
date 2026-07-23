@@ -58,11 +58,21 @@ class NavigationMathTest {
     }
 
     @Test
-    void facingProgressApproachesOneAsTurnAngleApproachesZero() {
-        assertEquals(1.0F, NavigationMath.facingProgress(0.0D));
-        assertEquals(0.5F, NavigationMath.facingProgress(-90.0D));
-        assertEquals(0.5F, NavigationMath.facingProgress(90.0D));
-        assertEquals(0.0F, NavigationMath.facingProgress(180.0D));
+    void headingProgressPlacesDirectionsAcrossTheBossbar() {
+        assertEquals(0.0F, NavigationMath.headingProgress(-180.0D));
+        assertEquals(0.25F, NavigationMath.headingProgress(-90.0D));
+        assertEquals(0.5F, NavigationMath.headingProgress(0.0D));
+        assertEquals(0.75F, NavigationMath.headingProgress(90.0D));
+        assertEquals(0.0F, NavigationMath.headingProgress(180.0D));
+    }
+
+    @Test
+    void detectsOnlyTheRearHemisphereAsBehind() {
+        assertTrue(NavigationMath.isBehind(-91.0D));
+        assertFalse(NavigationMath.isBehind(-90.0D));
+        assertFalse(NavigationMath.isBehind(0.0D));
+        assertFalse(NavigationMath.isBehind(90.0D));
+        assertTrue(NavigationMath.isBehind(91.0D));
     }
 
     @Test
@@ -97,7 +107,7 @@ class NavigationMathTest {
         assertTrue(Double.isNaN(snapshot.signedTurnAngle()));
         assertTrue(Double.isNaN(snapshot.horizontalDistance()));
         assertTrue(Double.isNaN(snapshot.verticalDifference()));
-        assertEquals(0.0F, snapshot.facingProgress());
+        assertEquals(0.0F, snapshot.headingProgress());
     }
 
     private static NavigationTarget target(String dimension, int x, int y, int z) {

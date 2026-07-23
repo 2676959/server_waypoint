@@ -11,8 +11,12 @@ public record NavigationSnapshot(
         double signedTurnAngle,
         double horizontalDistance,
         double verticalDifference,
-        float facingProgress
+        float headingProgress
 ) {
+    public boolean waypointBehindPlayer() {
+        return this.inTargetDimension && NavigationMath.isBehind(this.signedTurnAngle);
+    }
+
     public static NavigationSnapshot wrongDimension() {
         return new NavigationSnapshot(
                 false,

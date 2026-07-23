@@ -110,6 +110,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         PlayerRegisterChannelListener channelRegisterListener = new PlayerRegisterChannelListener();
         NavigationProtectionListener navigationListener = new NavigationProtectionListener(
                 this,
+                waypointServer,
                 this.navigationService,
                 this.navigationItemManager,
                 List.<PaperItemNavigationHandler>of(compassHandler, mapHandler)
@@ -124,6 +125,9 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         server.getPluginManager().registerEvents(chatListener, this);
         server.getPluginManager().registerEvents(channelRegisterListener, this);
         server.getPluginManager().registerEvents(navigationListener, this);
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            navigationListener.restorePlayer(player);
+        }
         // NavigationService performs its own five-call throttling.
         this.navigationTickTask = server.getScheduler().runTaskTimer(
                 this,

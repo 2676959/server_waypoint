@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.server.navigation;
 
+import _959.server_waypoint.access.PlayerNavigationSessionAccessor;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.navigation.NavigationMath;
 import _959.server_waypoint.navigation.NavigationMethod;
@@ -77,5 +78,38 @@ final class ModNavigationPlatform implements NavigationPlatform<ServerPlayer> {
                 playerUuid,
                 exception
         );
+    }
+
+    @Override
+    public Optional<String> loadPersistedSession(ServerPlayer player) {
+        return Optional.ofNullable(access(player).sw$getNavigationSession());
+    }
+
+    @Override
+    public void savePersistedSession(ServerPlayer player, String encodedSession) {
+        access(player).sw$setNavigationSession(encodedSession);
+    }
+
+    @Override
+    public void clearPersistedSession(ServerPlayer player) {
+        access(player).sw$setNavigationSession(null);
+    }
+
+    @Override
+    public void onPersistenceException(
+            UUID playerUuid,
+            String operation,
+            RuntimeException exception
+    ) {
+        WaypointServerMod.LOGGER.error(
+                "Could not {} persistent navigation session for player {}",
+                operation,
+                playerUuid,
+                exception
+        );
+    }
+
+    private static PlayerNavigationSessionAccessor access(ServerPlayer player) {
+        return (PlayerNavigationSessionAccessor) player;
     }
 }

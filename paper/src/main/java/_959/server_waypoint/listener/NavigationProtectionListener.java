@@ -5,6 +5,7 @@ import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationSession;
 import _959.server_waypoint.navigation.PaperItemNavigationHandler;
 import _959.server_waypoint.navigation.PaperNavigationItemManager;
+import _959.server_waypoint.server.WaypointServerPlugin;
 import com.destroystokyo.paper.event.inventory.PrepareResultEvent;
 import io.papermc.paper.event.player.CartographyItemEvent;
 import io.papermc.paper.event.player.PlayerInventorySlotChangeEvent;
@@ -63,6 +64,7 @@ public final class NavigationProtectionListener implements Listener {
     private static final int DENIAL_MESSAGE_INTERVAL_TICKS = 20;
 
     private final JavaPlugin plugin;
+    private final WaypointServerPlugin waypointServer;
     private final NavigationService<Player> navigationService;
     private final PaperNavigationItemManager itemManager;
     private final Map<NavigationMethod, PaperItemNavigationHandler> itemHandlers;
@@ -71,11 +73,13 @@ public final class NavigationProtectionListener implements Listener {
 
     public NavigationProtectionListener(
             JavaPlugin plugin,
+            WaypointServerPlugin waypointServer,
             NavigationService<Player> navigationService,
             PaperNavigationItemManager itemManager,
             List<? extends PaperItemNavigationHandler> itemHandlers
     ) {
         this.plugin = plugin;
+        this.waypointServer = waypointServer;
         this.navigationService = navigationService;
         this.itemManager = itemManager;
         this.itemHandlers = new EnumMap<>(NavigationMethod.class);
@@ -422,7 +426,12 @@ public final class NavigationProtectionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent event) {
-        this.reconcileNextTick(event.getPlayer(), false);
+        this.restorePlayer(event.getPlayer());
+    }
+
+    public void restorePlayer(Player player) {
+        this.navigationService.restorePersistedSession(player, this.waypointServer);
+        this.reconcileNextTick(player, false);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

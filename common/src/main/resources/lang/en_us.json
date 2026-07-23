@@ -149,7 +149,7 @@
   "waypoint.help.navigate.section.methods": "Methods",
   "waypoint.help.navigate.method.compass": "A temporary lodestone compass that points toward the waypoint in its dimension",
   "waypoint.help.navigate.method.map": "A temporary fixed-scale map centered near the waypoint with a target marker",
-  "waypoint.help.navigate.method.bossbar": "A private bossbar showing horizontal and vertical distance plus turn guidance; progress increases as you face the waypoint",
+  "waypoint.help.navigate.method.bossbar": "A private bossbar showing horizontal and vertical distance plus turn guidance; progress tracks left/right heading and turns red when the waypoint is behind you",
   "waypoint.help.navigate.method.actionbar": "A private actionbar showing horizontal and vertical distance, turn direction, and turn angle",
   "waypoint.help.navigate.section.inventory": "Inventory requirements",
   "waypoint.help.navigate.inventory": "Each missing item method needs one empty main-inventory or hotbar slot; existing owned navigation items are updated in place",

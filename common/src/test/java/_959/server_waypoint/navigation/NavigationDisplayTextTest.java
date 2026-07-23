@@ -87,7 +87,7 @@ class NavigationDisplayTextTest {
                 signedTurn,
                 143.0D,
                 verticalDifference,
-                NavigationMath.facingProgress(signedTurn)
+                NavigationMath.headingProgress(signedTurn)
         );
     }
 }

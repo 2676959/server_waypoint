@@ -43,4 +43,25 @@ public interface NavigationPlatform<P> {
             RuntimeException exception
     ) {
     }
+
+    /** Reads a serialized session from platform-owned player persistence. */
+    default Optional<String> loadPersistedSession(P player) {
+        return Optional.empty();
+    }
+
+    /** Replaces the serialized session in platform-owned player persistence. */
+    default void savePersistedSession(P player, String encodedSession) {
+    }
+
+    /** Removes the serialized session after navigation is explicitly ended. */
+    default void clearPersistedSession(P player) {
+    }
+
+    /** Receives isolated failures from platform persistence operations. */
+    default void onPersistenceException(
+            UUID playerUuid,
+            String operation,
+            RuntimeException exception
+    ) {
+    }
 }

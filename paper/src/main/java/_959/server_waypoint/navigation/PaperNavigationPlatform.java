@@ -1,11 +1,14 @@
 package _959.server_waypoint.navigation;
 
+import _959.server_waypoint.ModInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -14,6 +17,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class PaperNavigationPlatform implements NavigationPlatform<Player> {
+    private final NamespacedKey navigationSessionKey = new NamespacedKey(
+            ModInfo.MOD_ID,
+            "navigation_session"
+    );
     private final Server server;
     private final Logger logger;
     private final PaperNavigationItemManager itemManager;
@@ -90,6 +97,42 @@ public final class PaperNavigationPlatform implements NavigationPlatform<Player>
         this.logger.log(
                 Level.SEVERE,
                 "Navigation handler " + method.id() + " failed for player " + playerUuid,
+                exception
+        );
+    }
+
+    @Override
+    public Optional<String> loadPersistedSession(Player player) {
+        return Optional.ofNullable(player.getPersistentDataContainer().get(
+                this.navigationSessionKey,
+                PersistentDataType.STRING
+        ));
+    }
+
+    @Override
+    public void savePersistedSession(Player player, String encodedSession) {
+        player.getPersistentDataContainer().set(
+                this.navigationSessionKey,
+                PersistentDataType.STRING,
+                encodedSession
+        );
+    }
+
+    @Override
+    public void clearPersistedSession(Player player) {
+        PersistentDataContainer data = player.getPersistentDataContainer();
+        data.remove(this.navigationSessionKey);
+    }
+
+    @Override
+    public void onPersistenceException(
+            UUID playerUuid,
+            String operation,
+            RuntimeException exception
+    ) {
+        this.logger.log(
+                Level.SEVERE,
+                "Could not " + operation + " persistent navigation session for player " + playerUuid,
                 exception
         );
     }

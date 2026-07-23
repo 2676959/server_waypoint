@@ -1,10 +1,13 @@
 package _959.server_waypoint.navigation;
 
+import _959.server_waypoint.core.WaypointFilesManagerCore;
+import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -311,6 +314,105 @@ class NavigationServiceTest {
     }
 
     @Test
+    void successfulMutationsPersistAndDisconnectPreservesSessionRecord() {
+        this.service.navigate(this.firstPlayer, target("Old", 10, 64, 0));
+        this.service.enableMethod(this.firstPlayer, NavigationMethod.COMPASS);
+        NavigationTarget newTarget = target("New", 20, 70, 5);
+        this.service.retarget(this.firstPlayer, newTarget);
+        this.service.disableMethod(this.firstPlayer, NavigationMethod.ACTIONBAR);
+
+        StoredNavigationSession stored = NavigationSessionCodec.decode(
+                this.platform.persistedSessions.get(this.firstPlayer.uuid())
+        ).orElseThrow();
+        assertEquals("New", stored.waypointName());
+        assertEquals(Set.of(NavigationMethod.COMPASS), stored.enabledMethods());
+
+        this.service.removePlayer(this.firstPlayer);
+
+        assertTrue(this.service.findSession(this.firstPlayer.uuid()).isEmpty());
+        assertTrue(this.platform.persistedSessions.containsKey(this.firstPlayer.uuid()));
+    }
+
+    @Test
+    void restoreResolvesCurrentWaypointPropertiesAndRecreatesHandlers() {
+        this.service.navigate(
+                this.firstPlayer,
+                target("Target", 10, 64, 0),
+                Set.of(NavigationMethod.COMPASS, NavigationMethod.BOSSBAR)
+        );
+        this.service.removePlayer(this.firstPlayer);
+        TestWaypointServer waypointServer = waypointServer(
+                "Target",
+                new WaypointPos(80, 75, -40),
+                0xABCDEF
+        );
+
+        NavigationResult result = this.service.restorePersistedSession(
+                this.firstPlayer,
+                waypointServer
+        );
+
+        assertEquals(NavigationResult.Code.NAVIGATION_STARTED, result.code());
+        NavigationSession restored = this.service.findSession(this.firstPlayer.uuid()).orElseThrow();
+        assertEquals(new WaypointPos(80, 75, -40), restored.target().position());
+        assertEquals(0xABCDEF, restored.target().rgb());
+        assertEquals(
+                Set.of(NavigationMethod.COMPASS, NavigationMethod.BOSSBAR),
+                restored.enabledMethods()
+        );
+        assertEquals(2, this.handlers.get(NavigationMethod.COMPASS).enableCount);
+        assertEquals(2, this.handlers.get(NavigationMethod.BOSSBAR).enableCount);
+    }
+
+    @Test
+    void restoreRetainsTargetedSessionWithNoEnabledMethods() {
+        this.service.navigate(this.firstPlayer, target("Target", 10, 64, 0));
+        this.service.disableMethod(this.firstPlayer, NavigationMethod.ACTIONBAR);
+        this.service.removePlayer(this.firstPlayer);
+
+        NavigationResult result = this.service.restorePersistedSession(
+                this.firstPlayer,
+                waypointServer("Target", new WaypointPos(10, 64, 0), 0x39C5BB)
+        );
+
+        assertEquals(NavigationResult.Code.NAVIGATION_STARTED, result.code());
+        assertTrue(result.session().enabledMethods().isEmpty());
+    }
+
+    @Test
+    void invalidOrMissingPersistentTargetIsCleared() {
+        this.platform.persistedSessions.put(this.firstPlayer.uuid(), "invalid");
+
+        NavigationResult malformed = this.service.restorePersistedSession(
+                this.firstPlayer,
+                waypointServer("Target", new WaypointPos(10, 64, 0), 0x39C5BB)
+        );
+
+        assertEquals(NavigationResult.Code.TARGET_UNAVAILABLE, malformed.code());
+        assertFalse(this.platform.persistedSessions.containsKey(this.firstPlayer.uuid()));
+
+        this.service.navigate(this.firstPlayer, target("Missing", 10, 64, 0));
+        this.service.removePlayer(this.firstPlayer);
+        NavigationResult missing = this.service.restorePersistedSession(
+                this.firstPlayer,
+                waypointServer("Other", new WaypointPos(10, 64, 0), 0x39C5BB)
+        );
+
+        assertEquals(NavigationResult.Code.TARGET_UNAVAILABLE, missing.code());
+        assertFalse(this.platform.persistedSessions.containsKey(this.firstPlayer.uuid()));
+    }
+
+    @Test
+    void explicitDisableAllClearsPersistentSession() {
+        this.service.navigate(this.firstPlayer, target("Target", 10, 64, 0));
+        assertTrue(this.platform.persistedSessions.containsKey(this.firstPlayer.uuid()));
+
+        this.service.disableAll(this.firstPlayer);
+
+        assertFalse(this.platform.persistedSessions.containsKey(this.firstPlayer.uuid()));
+    }
+
+    @Test
     void operationsThatNeedATargetReportNoActiveSession() {
         assertEquals(
                 NavigationResult.Code.NO_ACTIVE_SESSION,
@@ -387,6 +489,8 @@ class NavigationServiceTest {
         this.service.shutdown();
 
         assertEquals(0, this.service.sessionCount());
+        assertTrue(this.platform.persistedSessions.containsKey(this.firstPlayer.uuid()));
+        assertTrue(this.platform.persistedSessions.containsKey(this.secondPlayer.uuid()));
         for (TestHandler handler : this.handlers.values()) {
             assertEquals(2, handler.disableCount);
             assertEquals(2, handler.cleanupCount);
@@ -462,11 +566,32 @@ class NavigationServiceTest {
         );
     }
 
+    private static TestWaypointServer waypointServer(String name, WaypointPos position, int rgb) {
+        TestWaypointServer waypointServer = new TestWaypointServer();
+        waypointServer.addWaypoint(
+                "minecraft:overworld",
+                "test-list",
+                new SimpleWaypoint(name, "T", position, rgb, 0, false),
+                (fileManager, waypointList) -> {
+                },
+                duplicate -> {
+                }
+        );
+        return waypointServer;
+    }
+
     private record TestPlayer(UUID uuid) {
+    }
+
+    private static final class TestWaypointServer extends WaypointFilesManagerCore {
+        private TestWaypointServer() {
+            super(Path.of("build", "navigation-test", "waypoints"));
+        }
     }
 
     private static final class TestPlatform implements NavigationPlatform<TestPlayer> {
         private final Map<UUID, TestPlayer> players = new HashMap<>();
+        private final Map<UUID, String> persistedSessions = new HashMap<>();
         private NavigationResult nextPreflightResult = NavigationResult.success();
         private @Nullable NavigationSession lastProposedSession;
         private int snapshotCount;
@@ -524,6 +649,21 @@ class NavigationServiceTest {
                 RuntimeException exception
         ) {
             this.handlerExceptionCount++;
+        }
+
+        @Override
+        public Optional<String> loadPersistedSession(TestPlayer player) {
+            return Optional.ofNullable(this.persistedSessions.get(player.uuid()));
+        }
+
+        @Override
+        public void savePersistedSession(TestPlayer player, String encodedSession) {
+            this.persistedSessions.put(player.uuid(), encodedSession);
+        }
+
+        @Override
+        public void clearPersistedSession(TestPlayer player) {
+            this.persistedSessions.remove(player.uuid());
         }
     }
 

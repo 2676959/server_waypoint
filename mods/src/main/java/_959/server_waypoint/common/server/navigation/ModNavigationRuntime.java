@@ -1,6 +1,7 @@
 package _959.server_waypoint.common.server.navigation;
 
 import _959.server_waypoint.common.network.ModMessageSender;
+import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.navigation.NavigationMethod;
 import _959.server_waypoint.navigation.NavigationResult;
 import _959.server_waypoint.navigation.NavigationService;
@@ -45,11 +46,13 @@ public final class ModNavigationRuntime {
     }
 
     public void onPlayerJoin(ServerPlayer player) {
+        WaypointServerMod waypointServer = WaypointServerMod.getInstance();
+        if (waypointServer != null) {
+            this.service.restorePersistedSession(player, waypointServer);
+        }
         if (this.itemManager.validateDirectInventory(player, this.enabledItemMethods(player))) {
             this.sendDeduplicatedMessage(player);
         }
-        // Sessions intentionally do not survive disconnects; any remaining tagged
-        // item on join is stale and must not become player-owned permanent state.
         if (this.service.findSession(player.getUUID()).isEmpty()) {
             this.itemManager.removeAllNavigationItems(player);
         }

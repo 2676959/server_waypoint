@@ -1,5 +1,6 @@
 package _959.server_waypoint.navigation;
 
+import _959.server_waypoint.core.WaypointFilesManagerCore;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -156,6 +157,7 @@ public final class NavigationService<P> {
         }
 
         this.sessions.put(playerUuid, proposedSession);
+        this.persistSession(player, proposedSession);
         return NavigationResult.result(
                 NavigationResult.Code.METHOD_ENABLED,
                 proposedSession,
@@ -197,6 +199,7 @@ public final class NavigationService<P> {
         enabledMethods.remove(method);
         NavigationSession updatedSession = currentSession.withEnabledMethods(enabledMethods);
         this.sessions.put(playerUuid, updatedSession);
+        this.persistSession(player, updatedSession);
         return NavigationResult.result(
                 NavigationResult.Code.METHOD_DISABLED,
                 updatedSession,
@@ -234,7 +237,53 @@ public final class NavigationService<P> {
             disabledHandlers.add(handler);
         }
         this.sessions.remove(playerUuid);
+        this.clearPersistedSession(player);
         return NavigationResult.result(NavigationResult.Code.NAVIGATION_DISABLED, null, null);
+    }
+
+    /**
+     * Restores a saved session after resolving its waypoint identity against
+     * the currently loaded waypoint files. Invalid or stale identities are
+     * removed so they cannot fail on every future login.
+     */
+    public NavigationResult restorePersistedSession(P player, WaypointFilesManagerCore waypointFiles) {
+        this.platform.assertServerThread();
+        Objects.requireNonNull(player, "player");
+        Objects.requireNonNull(waypointFiles, "waypointFiles");
+
+        Optional<String> encodedSession;
+        try {
+            encodedSession = Objects.requireNonNull(
+                    this.platform.loadPersistedSession(player),
+                    "NavigationPlatform.loadPersistedSession returned null"
+            );
+        } catch (RuntimeException exception) {
+            this.reportPersistenceException(player, "load", exception);
+            return NavigationResult.result(NavigationResult.Code.NO_ACTIVE_SESSION, null, null);
+        }
+        if (encodedSession.isEmpty()) {
+            return NavigationResult.result(NavigationResult.Code.NO_ACTIVE_SESSION, null, null);
+        }
+
+        Optional<StoredNavigationSession> storedSession = NavigationSessionCodec.decode(
+                encodedSession.get()
+        );
+        if (storedSession.isEmpty()) {
+            this.clearPersistedSession(player);
+            return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE);
+        }
+        Optional<NavigationTarget> target = storedSession.get().resolve(waypointFiles);
+        if (target.isEmpty()) {
+            this.clearPersistedSession(player);
+            return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE);
+        }
+        return this.replaceSelection(
+                player,
+                this.platform.playerUuid(player),
+                target.get(),
+                storedSession.get().enabledMethods(),
+                true
+        );
     }
 
     public NavigationResult status(P player) {
@@ -377,6 +426,7 @@ public final class NavigationService<P> {
             }
         }
         this.sessions.put(playerUuid, retargetedSession);
+        this.persistSession(player, retargetedSession);
         return NavigationResult.result(
                 NavigationResult.Code.TARGET_CHANGED,
                 retargetedSession,
@@ -390,8 +440,18 @@ public final class NavigationService<P> {
             NavigationTarget target,
             Set<NavigationMethod> selection
     ) {
+        return this.replaceSelection(player, playerUuid, target, selection, false);
+    }
+
+    private NavigationResult replaceSelection(
+            P player,
+            UUID playerUuid,
+            NavigationTarget target,
+            Set<NavigationMethod> selection,
+            boolean allowEmptySelection
+    ) {
         NavigationSession currentSession = this.sessions.get(playerUuid);
-        if (selection.isEmpty()) {
+        if (selection.isEmpty() && !allowEmptySelection) {
             return NavigationResult.result(
                     NavigationResult.Code.INVALID_SELECTION,
                     currentSession,
@@ -487,6 +547,7 @@ public final class NavigationService<P> {
         }
 
         this.sessions.put(playerUuid, proposedSession);
+        this.persistSession(player, proposedSession);
         NavigationResult.Code resultCode = currentSession == null
                 ? NavigationResult.Code.NAVIGATION_STARTED
                 : NavigationResult.Code.SELECTION_REPLACED;
@@ -647,6 +708,37 @@ public final class NavigationService<P> {
                 currentSession,
                 method
         );
+    }
+
+    private void persistSession(P player, NavigationSession session) {
+        try {
+            this.platform.savePersistedSession(player, NavigationSessionCodec.encode(session));
+        } catch (RuntimeException exception) {
+            this.reportPersistenceException(player, "save", exception);
+        }
+    }
+
+    private void clearPersistedSession(P player) {
+        try {
+            this.platform.clearPersistedSession(player);
+        } catch (RuntimeException exception) {
+            this.reportPersistenceException(player, "clear", exception);
+        }
+    }
+
+    private void reportPersistenceException(
+            P player,
+            String operation,
+            RuntimeException exception
+    ) {
+        try {
+            this.platform.onPersistenceException(
+                    this.platform.playerUuid(player),
+                    operation,
+                    exception
+            );
+        } catch (RuntimeException ignored) {
+        }
     }
 
     private static EnumSet<NavigationMethod> copyMethods(Set<NavigationMethod> methods) {
