@@ -18,27 +18,21 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 public final class PaperNavigationItemManager {
     private static final int OFFHAND_SLOT = 40;
     private static final int MAX_NESTING_DEPTH = 8;
 
     private final NamespacedKey navigationItemKey = new NamespacedKey(ModInfo.MOD_ID, "navigation_item");
-    private final NamespacedKey ownerKey = new NamespacedKey(ModInfo.MOD_ID, "owner");
-    private final NamespacedKey methodKey = new NamespacedKey(ModInfo.MOD_ID, "method");
 
-    public ItemStack tag(ItemStack item, UUID owner, NavigationMethod method) {
+    public ItemStack tag(ItemStack item) {
         item.setAmount(1);
         ItemMeta meta = item.getItemMeta();
         PersistentDataContainer data = meta.getPersistentDataContainer();
         data.set(this.navigationItemKey, PersistentDataType.BOOLEAN, true);
-        data.set(this.ownerKey, PersistentDataType.STRING, owner.toString());
-        data.set(this.methodKey, PersistentDataType.STRING, method.id());
         item.setItemMeta(meta);
         return item;
     }
@@ -69,37 +63,23 @@ public final class PaperNavigationItemManager {
         return false;
     }
 
-    public Optional<UUID> owner(@Nullable ItemStack item) {
-        if (!this.isNavigationItem(item)) {
-            return Optional.empty();
-        }
-        String value = item.getItemMeta().getPersistentDataContainer()
-                .get(this.ownerKey, PersistentDataType.STRING);
-        if (value == null) {
-            return Optional.empty();
-        }
-        try {
-            return Optional.of(UUID.fromString(value));
-        } catch (IllegalArgumentException exception) {
-            return Optional.empty();
-        }
-    }
-
     public Optional<NavigationMethod> method(@Nullable ItemStack item) {
         if (!this.isNavigationItem(item)) {
             return Optional.empty();
         }
-        String value = item.getItemMeta().getPersistentDataContainer()
-                .get(this.methodKey, PersistentDataType.STRING);
-        return NavigationMethod.fromId(value);
+        return switch (item.getType()) {
+            case COMPASS -> Optional.of(NavigationMethod.COMPASS);
+            case FILLED_MAP -> Optional.of(NavigationMethod.MAP);
+            default -> Optional.empty();
+        };
     }
 
     public boolean isMethod(@Nullable ItemStack item, NavigationMethod method) {
         return this.method(item).filter(method::equals).isPresent();
     }
 
-    public boolean hasOwnedItem(Player player, NavigationMethod method) {
-        return this.findOwnedLocations(player, method).size() > 0;
+    public boolean hasItem(Player player, NavigationMethod method) {
+        return !this.findLocations(player, method).isEmpty();
     }
 
     public int emptyStorageSlots(Player player) {
@@ -113,7 +93,7 @@ public final class PaperNavigationItemManager {
     }
 
     public boolean install(Player player, NavigationMethod method, ItemStack desiredItem) {
-        List<ItemLocation> locations = this.findOwnedLocations(player, method);
+        List<ItemLocation> locations = this.findLocations(player, method);
         if (!locations.isEmpty()) {
             ItemLocation retained = locations.get(0);
             retained.set(player, desiredItem);
@@ -135,7 +115,7 @@ public final class PaperNavigationItemManager {
     }
 
     public boolean updateExisting(Player player, NavigationMethod method, ItemStack desiredItem) {
-        List<ItemLocation> locations = this.findOwnedLocations(player, method);
+        List<ItemLocation> locations = this.findLocations(player, method);
         if (locations.isEmpty()) {
             return false;
         }
@@ -146,19 +126,18 @@ public final class PaperNavigationItemManager {
         return true;
     }
 
-    public void removeOwnedMethod(Player player, NavigationMethod method) {
-        UUID playerUuid = player.getUniqueId();
+    public void removeMethodItems(Player player, NavigationMethod method) {
         PlayerInventory inventory = player.getInventory();
         for (int slot = 0; slot < inventory.getSize(); slot++) {
             ItemStack item = inventory.getItem(slot);
-            if (this.isOwnedMethod(item, playerUuid, method)) {
+            if (this.isMethod(item, method)) {
                 inventory.clear(slot);
             } else if (this.removeNestedNavigationItems(item)) {
                 inventory.setItem(slot, item);
             }
         }
         ItemStack cursor = player.getItemOnCursor();
-        if (this.isOwnedMethod(cursor, playerUuid, method)) {
+        if (this.isMethod(cursor, method)) {
             player.setItemOnCursor(null);
         } else if (this.removeNestedNavigationItems(cursor)) {
             player.setItemOnCursor(cursor);
@@ -170,7 +149,6 @@ public final class PaperNavigationItemManager {
             Player player,
             @Nullable NavigationSession session
     ) {
-        UUID playerUuid = player.getUniqueId();
         Set<NavigationMethod> retained = EnumSet.noneOf(NavigationMethod.class);
         boolean changed = false;
         PlayerInventory inventory = player.getInventory();
@@ -185,11 +163,9 @@ public final class PaperNavigationItemManager {
                 continue;
             }
 
-            Optional<UUID> owner = this.owner(item);
             Optional<NavigationMethod> method = this.method(item);
             boolean allowedSlot = isAllowedDirectSlot(slot);
             boolean allowedSessionItem = session != null
-                    && owner.filter(playerUuid::equals).isPresent()
                     && method.filter(NavigationMethod::ownsItem).isPresent()
                     && method.filter(session::isEnabled).isPresent()
                     && allowedSlot
@@ -212,10 +188,8 @@ public final class PaperNavigationItemManager {
             changed = true;
         }
         if (this.isNavigationItem(cursor)) {
-            Optional<UUID> owner = this.owner(cursor);
             Optional<NavigationMethod> method = this.method(cursor);
             boolean allowedCursorItem = session != null
-                    && owner.filter(playerUuid::equals).isPresent()
                     && method.filter(NavigationMethod::ownsItem).isPresent()
                     && method.filter(session::isEnabled).isPresent()
                     && retained.add(method.orElseThrow());
@@ -273,12 +247,6 @@ public final class PaperNavigationItemManager {
         return this.removeNestedNavigationItems(item, 0);
     }
 
-    public Set<UUID> navigationOwners(@Nullable ItemStack item) {
-        Set<UUID> owners = new HashSet<>();
-        this.collectNavigationOwners(item, 0, owners);
-        return Set.copyOf(owners);
-    }
-
     public boolean sanitizeCursor(Player player) {
         ItemStack cursor = player.getItemOnCursor();
         if (this.isNavigationItem(cursor)) {
@@ -292,32 +260,22 @@ public final class PaperNavigationItemManager {
         return false;
     }
 
-    private List<ItemLocation> findOwnedLocations(Player player, NavigationMethod method) {
+    private List<ItemLocation> findLocations(Player player, NavigationMethod method) {
         List<ItemLocation> locations = new ArrayList<>();
-        UUID playerUuid = player.getUniqueId();
         PlayerInventory inventory = player.getInventory();
         ItemStack[] storage = inventory.getStorageContents();
         for (int slot = 0; slot < storage.length; slot++) {
-            if (this.isOwnedMethod(storage[slot], playerUuid, method)) {
+            if (this.isMethod(storage[slot], method)) {
                 locations.add(ItemLocation.storage(slot));
             }
         }
-        if (this.isOwnedMethod(inventory.getItemInOffHand(), playerUuid, method)) {
+        if (this.isMethod(inventory.getItemInOffHand(), method)) {
             locations.add(ItemLocation.offhandLocation());
         }
-        if (this.isOwnedMethod(player.getItemOnCursor(), playerUuid, method)) {
+        if (this.isMethod(player.getItemOnCursor(), method)) {
             locations.add(ItemLocation.cursorLocation());
         }
         return locations;
-    }
-
-    private boolean isOwnedMethod(
-            @Nullable ItemStack item,
-            UUID expectedOwner,
-            NavigationMethod expectedMethod
-    ) {
-        return this.owner(item).filter(expectedOwner::equals).isPresent()
-                && this.method(item).filter(expectedMethod::equals).isPresent();
     }
 
     private boolean containsNavigationItem(@Nullable ItemStack item, int depth) {
@@ -346,31 +304,6 @@ public final class PaperNavigationItemManager {
             }
         }
         return false;
-    }
-
-    private void collectNavigationOwners(
-            @Nullable ItemStack item,
-            int depth,
-            Set<UUID> owners
-    ) {
-        if (isEmpty(item) || depth > MAX_NESTING_DEPTH) {
-            return;
-        }
-        this.owner(item).ifPresent(owners::add);
-        ItemMeta meta = item.getItemMeta();
-        if (meta instanceof BundleMeta bundleMeta) {
-            for (ItemStack bundledItem : bundleMeta.getItems()) {
-                this.collectNavigationOwners(bundledItem, depth + 1, owners);
-            }
-        }
-        if (meta instanceof BlockStateMeta blockStateMeta) {
-            BlockState state = blockStateMeta.getBlockState();
-            if (state instanceof ShulkerBox shulkerBox) {
-                for (ItemStack storedItem : shulkerBox.getSnapshotInventory().getContents()) {
-                    this.collectNavigationOwners(storedItem, depth + 1, owners);
-                }
-            }
-        }
     }
 
     private boolean removeNestedNavigationItems(@Nullable ItemStack item, int depth) {

@@ -62,7 +62,7 @@ public final class PaperCompassNavigationHandler implements
 
     @Override
     public void disable(Player player, NavigationSession session) {
-        this.itemManager.removeOwnedMethod(player, this.method());
+        this.itemManager.removeMethodItems(player, this.method());
     }
 
     @Override
@@ -90,6 +90,6 @@ public final class PaperCompassNavigationHandler implements
                 TextColor.color(target.rgb())
         ));
         compass.setItemMeta(meta);
-        return this.itemManager.tag(compass, player.getUniqueId(), this.method());
+        return this.itemManager.tag(compass);
     }
 }

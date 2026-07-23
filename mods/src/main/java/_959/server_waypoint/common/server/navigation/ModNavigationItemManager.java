@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 //? if >= 1.20.5 {
 import net.minecraft.core.component.DataComponents;
@@ -38,7 +37,6 @@ public final class ModNavigationItemManager {
             NavigationSession proposedSession
     ) {
         Set<NavigationMethod> found = EnumSet.noneOf(NavigationMethod.class);
-        UUID owner = player.getUUID();
         Inventory inventory = player.getInventory();
         int availableSlots = 0;
 
@@ -46,16 +44,16 @@ public final class ModNavigationItemManager {
             ItemStack stack = inventory.getItem(slot);
             if (stack.isEmpty()) {
                 availableSlots++;
-            } else if (ModNavigationItemData.isOwnedBy(stack, owner)) {
+            } else if (ModNavigationItemData.isNavigationItem(stack)) {
                 ModNavigationItemData.method(stack).ifPresent(found::add);
             }
         }
         ItemStack offhand = inventory.getItem(Inventory.SLOT_OFFHAND);
-        if (ModNavigationItemData.isOwnedBy(offhand, owner)) {
+        if (ModNavigationItemData.isNavigationItem(offhand)) {
             ModNavigationItemData.method(offhand).ifPresent(found::add);
         }
         ItemStack carried = player.containerMenu.getCarried();
-        if (ModNavigationItemData.isOwnedBy(carried, owner)) {
+        if (ModNavigationItemData.isNavigationItem(carried)) {
             ModNavigationItemData.method(carried).ifPresent(found::add);
         }
 
@@ -76,9 +74,9 @@ public final class ModNavigationItemManager {
             ItemStack configuredStack
     ) {
         Inventory inventory = player.getInventory();
-        int existingSlot = findOwnedDirectItemSlot(player, method);
+        int existingSlot = findDirectItemSlot(player, method);
         ItemStack carried = player.containerMenu.getCarried();
-        ModNavigationItemData.tag(configuredStack, player.getUUID(), method);
+        ModNavigationItemData.tag(configuredStack);
         if (existingSlot >= 0) {
             ItemStack existing = inventory.getItem(existingSlot);
             if (!ItemStack.matches(existing, configuredStack)) {
@@ -90,7 +88,7 @@ public final class ModNavigationItemManager {
             inventory.setChanged();
             return NavigationResult.success();
         }
-        if (isOwnedMethod(carried, player.getUUID(), method)) {
+        if (isMethod(carried, method)) {
             player.containerMenu.setCarried(configuredStack);
             removeDuplicates(player, method, -1);
             inventory.setChanged();
@@ -108,21 +106,21 @@ public final class ModNavigationItemManager {
         return NavigationResult.insufficientInventory(1, 0);
     }
 
-    public boolean hasOwnedItem(ServerPlayer player, NavigationMethod method) {
-        return findOwnedDirectItemSlot(player, method) >= 0
-                || isOwnedMethod(player.containerMenu.getCarried(), player.getUUID(), method);
+    public boolean hasItem(ServerPlayer player, NavigationMethod method) {
+        return findDirectItemSlot(player, method) >= 0
+                || isMethod(player.containerMenu.getCarried(), method);
     }
 
     public void removeMethodItems(ServerPlayer player, NavigationMethod method) {
         Inventory inventory = player.getInventory();
         for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
             ItemStack stack = inventory.getItem(slot);
-            if (isOwnedMethod(stack, player.getUUID(), method)) {
+            if (isMethod(stack, method)) {
                 inventory.setItem(slot, ItemStack.EMPTY);
             }
         }
         ItemStack carried = player.containerMenu.getCarried();
-        if (isOwnedMethod(carried, player.getUUID(), method)) {
+        if (isMethod(carried, method)) {
             player.containerMenu.setCarried(ItemStack.EMPTY);
         }
         inventory.setChanged();
@@ -177,7 +175,6 @@ public final class ModNavigationItemManager {
             Set<NavigationMethod> enabledMethods
     ) {
         Inventory inventory = player.getInventory();
-        UUID owner = player.getUUID();
         Set<NavigationMethod> found = EnumSet.noneOf(NavigationMethod.class);
         boolean changed = false;
 
@@ -190,7 +187,6 @@ public final class ModNavigationItemManager {
             NavigationMethod method = ModNavigationItemData.method(stack).orElse(null);
             boolean allowedSlot = slot <= LAST_MAIN_SLOT || slot == Inventory.SLOT_OFFHAND;
             if (!allowedSlot
-                    || !ModNavigationItemData.isOwnedBy(stack, owner)
                     || method == null
                     || !method.ownsItem()
                     || !enabledMethods.contains(method)
@@ -208,8 +204,7 @@ public final class ModNavigationItemManager {
         ItemStack carried = player.containerMenu.getCarried();
         if (ModNavigationItemData.isNavigationItem(carried)) {
             NavigationMethod carriedMethod = ModNavigationItemData.method(carried).orElse(null);
-            if (!ModNavigationItemData.isOwnedBy(carried, owner)
-                    || carriedMethod == null
+            if (carriedMethod == null
                     || !enabledMethods.contains(carriedMethod)
                     || found.contains(carriedMethod)) {
                 player.containerMenu.setCarried(ItemStack.EMPTY);
@@ -226,14 +221,14 @@ public final class ModNavigationItemManager {
         return changed;
     }
 
-    private int findOwnedDirectItemSlot(ServerPlayer player, NavigationMethod method) {
+    private int findDirectItemSlot(ServerPlayer player, NavigationMethod method) {
         Inventory inventory = player.getInventory();
         for (int slot = FIRST_MAIN_SLOT; slot <= LAST_MAIN_SLOT; slot++) {
-            if (isOwnedMethod(inventory.getItem(slot), player.getUUID(), method)) {
+            if (isMethod(inventory.getItem(slot), method)) {
                 return slot;
             }
         }
-        return isOwnedMethod(inventory.getItem(Inventory.SLOT_OFFHAND), player.getUUID(), method)
+        return isMethod(inventory.getItem(Inventory.SLOT_OFFHAND), method)
                 ? Inventory.SLOT_OFFHAND
                 : -1;
     }
@@ -241,12 +236,12 @@ public final class ModNavigationItemManager {
     private void removeDuplicates(ServerPlayer player, NavigationMethod method, int retainedSlot) {
         Inventory inventory = player.getInventory();
         for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
-            if (slot != retainedSlot && isOwnedMethod(inventory.getItem(slot), player.getUUID(), method)) {
+            if (slot != retainedSlot && isMethod(inventory.getItem(slot), method)) {
                 inventory.setItem(slot, ItemStack.EMPTY);
             }
         }
         if (retainedSlot >= 0
-                && isOwnedMethod(player.containerMenu.getCarried(), player.getUUID(), method)) {
+                && isMethod(player.containerMenu.getCarried(), method)) {
             player.containerMenu.setCarried(ItemStack.EMPTY);
         }
     }
@@ -254,9 +249,8 @@ public final class ModNavigationItemManager {
     record InventoryState(List<ItemStack> contents, ItemStack carried) {
     }
 
-    private static boolean isOwnedMethod(ItemStack stack, UUID owner, NavigationMethod method) {
-        return ModNavigationItemData.isOwnedBy(stack, owner)
-                && ModNavigationItemData.method(stack).filter(method::equals).isPresent();
+    private static boolean isMethod(ItemStack stack, NavigationMethod method) {
+        return ModNavigationItemData.method(stack).filter(method::equals).isPresent();
     }
 
     static boolean cleanNestedNavigationItems(ItemStack containerStack) {

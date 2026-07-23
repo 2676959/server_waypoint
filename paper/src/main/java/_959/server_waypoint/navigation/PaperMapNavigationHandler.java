@@ -65,7 +65,7 @@ public final class PaperMapNavigationHandler implements
     @Override
     public void disable(Player player, NavigationSession session) {
         try {
-            this.itemManager.removeOwnedMethod(player, this.method());
+            this.itemManager.removeMethodItems(player, this.method());
         } finally {
             this.release(player.getUniqueId());
         }
@@ -124,7 +124,7 @@ public final class PaperMapNavigationHandler implements
                 TextColor.color(target.rgb())
         ));
         item.setItemMeta(meta);
-        return this.itemManager.tag(item, player.getUniqueId(), this.method());
+        return this.itemManager.tag(item);
     }
 
     private void release(UUID playerUuid) {

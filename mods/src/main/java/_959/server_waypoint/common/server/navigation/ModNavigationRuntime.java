@@ -104,11 +104,6 @@ public final class ModNavigationRuntime {
 
         ItemStack carried = menu.getCarried();
         changed |= ModNavigationItemManager.cleanNestedNavigationItems(carried);
-        if (ModNavigationItemData.isNavigationItem(carried)
-                && !ModNavigationItemData.isOwnedBy(carried, player.getUUID())) {
-            menu.setCarried(ItemStack.EMPTY);
-            changed = true;
-        }
         changed |= this.itemManager.validateDirectInventory(player, this.enabledItemMethods(player));
 
         if (restoreItems) {
@@ -148,9 +143,9 @@ public final class ModNavigationRuntime {
         }
         NavigationSession session = maybeSession.get();
         boolean missingCompass = session.isEnabled(NavigationMethod.COMPASS)
-                && !this.itemManager.hasOwnedItem(player, NavigationMethod.COMPASS);
+                && !this.itemManager.hasItem(player, NavigationMethod.COMPASS);
         boolean missingMap = session.isEnabled(NavigationMethod.MAP)
-                && !this.itemManager.hasOwnedItem(player, NavigationMethod.MAP);
+                && !this.itemManager.hasItem(player, NavigationMethod.MAP);
         if (!missingCompass && !missingMap) {
             return false;
         }

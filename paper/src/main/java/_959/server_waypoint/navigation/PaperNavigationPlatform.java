@@ -70,7 +70,7 @@ public final class PaperNavigationPlatform implements NavigationPlatform<Player>
 
         int requiredSlots = 0;
         for (NavigationMethod method : proposedSession.enabledMethods()) {
-            if (method.ownsItem() && !this.itemManager.hasOwnedItem(player, method)) {
+            if (method.ownsItem() && !this.itemManager.hasItem(player, method)) {
                 requiredSlots++;
             }
         }

@@ -242,13 +242,12 @@ public final class NavigationProtectionListener implements Listener {
         if (!this.itemManager.containsNavigationItem(item)) {
             return;
         }
-        Set<UUID> owners = this.itemManager.navigationOwners(item);
         if (this.itemManager.isNavigationItem(item)) {
             event.setCancelled(true);
         } else if (this.itemManager.removeNestedNavigationItems(item)) {
             event.getEntity().setItemStack(item);
         }
-        this.reconcileOwners(owners);
+        this.reconcileActivePlayers();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -257,7 +256,6 @@ public final class NavigationProtectionListener implements Listener {
         if (!this.itemManager.containsNavigationItem(item)) {
             return;
         }
-        Set<UUID> owners = this.itemManager.navigationOwners(item);
         if (this.itemManager.isNavigationItem(item)) {
             event.setCancelled(true);
             event.getItem().remove();
@@ -268,7 +266,7 @@ public final class NavigationProtectionListener implements Listener {
         } else if (this.itemManager.removeNestedNavigationItems(item)) {
             event.getItem().setItemStack(item);
         }
-        this.reconcileOwners(owners);
+        this.reconcileActivePlayers();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -277,26 +275,24 @@ public final class NavigationProtectionListener implements Listener {
         if (!this.itemManager.containsNavigationItem(item)) {
             return;
         }
-        Set<UUID> owners = this.itemManager.navigationOwners(item);
         if (this.itemManager.isNavigationItem(item)) {
             event.setCancelled(true);
             event.getItem().remove();
         } else if (this.itemManager.removeNestedNavigationItems(item)) {
             event.getItem().setItemStack(item);
         }
-        this.reconcileOwners(owners);
+        this.reconcileActivePlayers();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryMove(InventoryMoveItemEvent event) {
         if (this.itemManager.containsNavigationItem(event.getItem())) {
             event.setCancelled(true);
-            Set<UUID> owners = this.itemManager.navigationOwners(event.getItem());
             Bukkit.getScheduler().runTask(
                     this.plugin,
                     () -> {
                         this.itemManager.removeFromInvalidInventory(event.getSource());
-                        this.reconcileOwners(owners);
+                        this.reconcileActivePlayers();
                     }
             );
         }
@@ -371,7 +367,6 @@ public final class NavigationProtectionListener implements Listener {
         }
         event.setCancelled(true);
         if (event.getAction() != PlayerItemFrameChangeEvent.ItemFrameChangeAction.PLACE) {
-            Set<UUID> owners = this.itemManager.navigationOwners(item);
             if (this.itemManager.isNavigationItem(item)) {
                 event.getItemFrame().setItem(new ItemStack(Material.AIR), false);
             } else {
@@ -379,7 +374,7 @@ public final class NavigationProtectionListener implements Listener {
                 this.itemManager.removeNestedNavigationItems(sanitizedItem);
                 event.getItemFrame().setItem(sanitizedItem, false);
             }
-            this.reconcileOwners(owners);
+            this.reconcileActivePlayers();
         }
         this.sendMovementDenied(event.getPlayer());
         this.reconcileNextTick(event.getPlayer(), true);
@@ -501,7 +496,7 @@ public final class NavigationProtectionListener implements Listener {
                 PaperItemNavigationHandler handler = this.itemHandlers.get(method);
                 if (handler == null || !handler.restore(player, session.orElseThrow())) {
                     for (PaperItemNavigationHandler restored : restoredHandlers) {
-                        this.itemManager.removeOwnedMethod(player, restored.method());
+                        this.itemManager.removeMethodItems(player, restored.method());
                     }
                     return;
                 }
@@ -520,20 +515,18 @@ public final class NavigationProtectionListener implements Listener {
             EquipmentSlot slot,
             ItemStack item
     ) {
-        Set<UUID> owners = this.itemManager.navigationOwners(item);
         ItemStack sanitizedItem = null;
         if (!this.itemManager.isNavigationItem(item)) {
             sanitizedItem = item.clone();
             this.itemManager.removeNestedNavigationItems(sanitizedItem);
         }
         entity.getEquipment().setItem(slot, sanitizedItem, true);
-        this.reconcileOwners(owners);
+        this.reconcileActivePlayers();
     }
 
-    private void reconcileOwners(Set<UUID> owners) {
-        for (UUID owner : owners) {
-            Player player = Bukkit.getPlayer(owner);
-            if (player != null) {
+    private void reconcileActivePlayers() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (this.navigationService.findSession(player.getUniqueId()).isPresent()) {
                 this.reconcileNextTick(player, true);
             }
         }

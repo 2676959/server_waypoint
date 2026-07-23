@@ -51,8 +51,7 @@ public final class ModNavigationHooks {
 
         boolean blocked = false;
         if (carriedNavigationItem) {
-            blocked = !ModNavigationItemData.isOwnedBy(carried, serverPlayer.getUUID())
-                    || slot == null
+            blocked = slot == null
                     || slot.container != serverPlayer.getInventory()
                     || isNestedStorage(clicked)
                     || "THROW".equals(clickType)
@@ -60,8 +59,7 @@ public final class ModNavigationHooks {
                     || "PICKUP_ALL".equals(clickType);
         }
         if (clickedNavigationItem) {
-            blocked |= !ModNavigationItemData.isOwnedBy(clicked, serverPlayer.getUUID())
-                    || slot == null
+            blocked |= slot == null
                     || slot.container != serverPlayer.getInventory()
                     || isNestedStorage(carried)
                     || "THROW".equals(clickType)
@@ -70,8 +68,7 @@ public final class ModNavigationHooks {
                     || "QUICK_MOVE".equals(clickType) && menu != serverPlayer.inventoryMenu;
         }
         if (swappedNavigationItem) {
-            blocked |= !ModNavigationItemData.isOwnedBy(swapped, serverPlayer.getUUID())
-                    || slot == null
+            blocked |= slot == null
                     || slot.container != serverPlayer.getInventory();
         }
         if (blocked) {
