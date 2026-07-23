@@ -92,8 +92,15 @@ public final class ModNavigationHooks {
     }
 
     public static boolean shouldBlockSelectedDrop(Player player, ItemStack selectedItem) {
-        return player instanceof ServerPlayer
-                && ModNavigationItemData.isNavigationItem(selectedItem);
+        if (!(player instanceof ServerPlayer serverPlayer)
+                || !ModNavigationItemData.isNavigationItem(selectedItem)) {
+            return false;
+        }
+
+        // The client predicts Q-drops before the server handles the action. Since
+        // removeFromSelected is cancelled, vanilla has no changed slot to send back.
+        serverPlayer.containerMenu.sendAllDataToRemote();
+        return true;
     }
 
     public static void onPlayerDeath(ServerPlayer player) {
