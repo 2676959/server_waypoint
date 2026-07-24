@@ -17,7 +17,8 @@ public record StoredNavigationSession(
         String dimensionName,
         String listName,
         String waypointName,
-        Set<NavigationMethod> enabledMethods
+        Set<NavigationMethod> enabledMethods,
+        TextDisplayTransformation textDisplayTransformation
 ) {
     public StoredNavigationSession {
         Objects.requireNonNull(dimensionName, "dimensionName");
@@ -26,6 +27,7 @@ public record StoredNavigationSession(
         enabledMethods = NavigationMethod.immutableSet(
                 Objects.requireNonNull(enabledMethods, "enabledMethods")
         );
+        Objects.requireNonNull(textDisplayTransformation, "textDisplayTransformation");
     }
 
     public Optional<NavigationTarget> resolve(WaypointFilesManagerCore waypointFiles) {

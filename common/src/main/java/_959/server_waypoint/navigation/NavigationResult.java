@@ -87,6 +87,7 @@ public record NavigationResult(
         METHOD_ALREADY_ENABLED(true),
         METHOD_DISABLED(true),
         METHOD_ALREADY_DISABLED(true),
+        TEXT_DISPLAY_TRANSFORMATION_UPDATED(true),
         NAVIGATION_DISABLED(true),
         STATUS(true),
         NO_ACTIVE_SESSION(false),

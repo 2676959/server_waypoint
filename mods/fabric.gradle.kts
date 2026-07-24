@@ -59,6 +59,7 @@ sourceSets.main {
     java {
         exclude("_959/server_waypoint/forge")
         exclude("_959/server_waypoint/neoforge")
+        exclude("_959/server_waypoint/fabric/navigation/TextDisplayNavigationHandler.java")
     }
     resources {
         exclude("META-INF")

@@ -13,10 +13,16 @@ public enum NavigationMethod {
     COMPASS("compass", NavigationMethodKind.ITEM),
     MAP("map", NavigationMethodKind.ITEM),
     BOSSBAR("bossbar", NavigationMethodKind.LIVE_DISPLAY),
-    ACTIONBAR("actionbar", NavigationMethodKind.LIVE_DISPLAY);
+    ACTIONBAR("actionbar", NavigationMethodKind.LIVE_DISPLAY),
+    TEXT_DISPLAY("text_display", NavigationMethodKind.LIVE_DISPLAY);
 
     private static final Set<NavigationMethod> DEFAULT_SELECTION = immutableSet(EnumSet.of(ACTIONBAR));
-    private static final Set<NavigationMethod> ALL_METHODS = immutableSet(EnumSet.allOf(NavigationMethod.class));
+    private static final Set<NavigationMethod> ALL_METHODS = immutableSet(EnumSet.of(
+            COMPASS,
+            MAP,
+            BOSSBAR,
+            ACTIONBAR
+    ));
 
     private final String id;
     private final NavigationMethodKind kind;

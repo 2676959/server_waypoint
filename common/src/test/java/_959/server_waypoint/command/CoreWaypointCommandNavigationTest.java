@@ -12,13 +12,14 @@ import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.navigation.NavigationMath;
 import _959.server_waypoint.navigation.NavigationMethod;
-import _959.server_waypoint.navigation.NavigationMethodHandler;
 import _959.server_waypoint.navigation.NavigationPlatform;
 import _959.server_waypoint.navigation.NavigationResult;
 import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationSession;
 import _959.server_waypoint.navigation.NavigationSnapshot;
 import _959.server_waypoint.navigation.NavigationTarget;
+import _959.server_waypoint.navigation.TextDisplayTransformation;
+import _959.server_waypoint.navigation.TextDisplayTransformationHandler;
 import _959.server_waypoint.util.StringCommandBuilder;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
@@ -29,6 +30,8 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +49,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -57,6 +61,7 @@ class CoreWaypointCommandNavigationTest {
     private WaypointServerCore server;
     private TestMessageSender sender;
     private TestNavigationPlatform platform;
+    private List<TestNavigationHandler> handlers;
     private NavigationService<TestPlayer> navigationService;
     private TestPermissionManager permissionManager;
     private TestWaypointCommand command;
@@ -82,11 +87,11 @@ class CoreWaypointCommandNavigationTest {
 
         this.sender = new TestMessageSender();
         this.platform = new TestNavigationPlatform();
-        List<TestNavigationHandler> handlers = new ArrayList<>();
+        this.handlers = new ArrayList<>();
         for (NavigationMethod method : NavigationMethod.values()) {
-            handlers.add(new TestNavigationHandler(method));
+            this.handlers.add(new TestNavigationHandler(method));
         }
-        this.navigationService = new NavigationService<>(this.platform, handlers);
+        this.navigationService = new NavigationService<>(this.platform, this.handlers);
         this.permissionManager = new TestPermissionManager(true);
         this.player = this.platform.addPlayer();
         this.source = new TestSource(
@@ -202,6 +207,16 @@ class CoreWaypointCommandNavigationTest {
         assertTrue(helpText.contains("/wp navigate use <method>"));
         assertTrue(helpText.contains("/wp navigate disable [<method>]"));
         assertTrue(helpText.contains("/wp navigate status"));
+        assertTrue(helpText.contains(
+                "/wp navigate text_display transformation translation <x> <y> <z>"
+        ));
+        assertTrue(helpText.contains(
+                "/wp navigate text_display transformation rotation <x> <y> <z>"
+        ));
+        assertTrue(helpText.contains(
+                "/wp navigate text_display transformation scale <x> <y> <z>"
+        ));
+        assertTrue(helpText.contains("/wp navigate text_display transformation reset"));
         assertFalse(helpText.contains("/wp navigate methods"));
 
         assertTrue(translationKeys(help).containsAll(List.of(
@@ -213,20 +228,29 @@ class CoreWaypointCommandNavigationTest {
                 "waypoint.help.navigate.usage.use",
                 "waypoint.help.navigate.usage.disable",
                 "waypoint.help.navigate.usage.status",
+                "waypoint.help.navigate.usage.transformation.translation",
+                "waypoint.help.navigate.usage.transformation.rotation",
+                "waypoint.help.navigate.usage.transformation.scale",
+                "waypoint.help.navigate.usage.transformation.reset",
                 "waypoint.help.section.arguments",
                 "waypoint.help.navigate.argument.selection",
                 "waypoint.help.navigate.argument.method",
+                "waypoint.help.navigate.argument.transformation.vector",
                 "waypoint.help.navigate.section.methods",
                 "waypoint.help.navigate.method.compass",
                 "waypoint.help.navigate.method.map",
                 "waypoint.help.navigate.method.bossbar",
                 "waypoint.help.navigate.method.actionbar",
+                "waypoint.help.navigate.method.text_display",
                 "waypoint.help.navigate.section.inventory",
                 "waypoint.help.navigate.inventory",
                 "waypoint.help.section.examples",
                 "waypoint.help.navigate.example.default",
                 "waypoint.help.navigate.example.all",
-                "waypoint.help.navigate.example.use"
+                "waypoint.help.navigate.example.use",
+                "waypoint.help.navigate.example.transformation.translation",
+                "waypoint.help.navigate.example.transformation.rotation",
+                "waypoint.help.navigate.example.transformation.scale"
         )));
 
         List<String> suggestions = suggestedCommands(help);
@@ -237,6 +261,15 @@ class CoreWaypointCommandNavigationTest {
                 "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\" using all"
         ));
         assertTrue(suggestions.contains("/wp navigate use bossbar"));
+        assertTrue(suggestions.contains(
+                "/wp navigate text_display transformation translation 0 0.1 0"
+        ));
+        assertTrue(suggestions.contains(
+                "/wp navigate text_display transformation rotation 5 0 0"
+        ));
+        assertTrue(suggestions.contains(
+                "/wp navigate text_display transformation scale 1.35 1.35 1.35"
+        ));
         assertFalse(suggestions.contains("/wp navigate methods"));
         assertEquals(List.of("/wp help"), runCommands(help));
     }
@@ -290,6 +323,161 @@ class CoreWaypointCommandNavigationTest {
         );
         assertEquals(NavigationMethod.allMethods(), this.session().enabledMethods());
         assertEquals("Home", this.session().target().waypointName());
+    }
+
+    @Test
+    void experimentalMethodIsExplicitOptIn() throws CommandSyntaxException {
+        this.dispatcher.execute(
+                "wp navigate overworld bases Home using text_display",
+                this.source
+        );
+
+        assertEquals(Set.of(NavigationMethod.TEXT_DISPLAY), this.session().enabledMethods());
+
+        this.dispatcher.execute(
+                "wp navigate overworld bases Mine using all",
+                this.source
+        );
+
+        assertEquals(NavigationMethod.allMethods(), this.session().enabledMethods());
+        assertFalse(this.session().isEnabled(NavigationMethod.TEXT_DISPLAY));
+    }
+
+    @Test
+    void textDisplayTransformationCommandsUpdateStoredComponentsIndependentlyAndReset()
+            throws CommandSyntaxException {
+        this.dispatcher.execute(
+                "wp navigate overworld bases Home using text_display",
+                this.source
+        );
+        this.sender.clear();
+
+        this.dispatcher.execute(
+                "wp navigate text_display transformation translation 1 -2 3",
+                this.source
+        );
+
+        TestNavigationHandler handler = this.handlers.stream()
+                .filter(candidate -> candidate.method() == NavigationMethod.TEXT_DISPLAY)
+                .findFirst()
+                .orElseThrow();
+        assertEquals(new Vector3f(1.0F, -2.45F, 1.8F), handler.lastTranslation);
+        assertEquals(TextDisplayTransformation.baseScale(), handler.lastScale);
+
+        this.dispatcher.execute(
+                "wp navigate text_display transformation rotation 10 20 30",
+                this.source
+        );
+        this.dispatcher.execute(
+                "wp navigate text_display transformation scale 1 2 1",
+                this.source
+        );
+        TextDisplayTransformation transformation = this.session().textDisplayTransformation();
+        assertEquals(new Vector3f(1.0F, -2.0F, 3.0F), transformation.translation());
+        assertEquals(new Vector3f(10.0F, 20.0F, 30.0F), transformation.rotation());
+        assertEquals(new Vector3f(1.0F, 2.0F, 1.0F), transformation.scale());
+        assertEquals(transformation.rotationQuaternion(), handler.lastRotation);
+        assertEquals(new Vector3f(0.22F, 0.44F, 0.22F), handler.lastScale);
+        assertEquals(
+                "waypoint.navigation.text_display.transformation.updated",
+                this.sender.lastMessageKey()
+        );
+
+        this.dispatcher.execute(
+                "wp navigate text_display transformation scale 1 1 1",
+                this.source
+        );
+        assertEquals(TextDisplayTransformation.baseScale(), handler.lastScale);
+        assertEquals(
+                new Vector3f(1.0F, -2.0F, 3.0F),
+                this.session().textDisplayTransformation().translation()
+        );
+
+        var transformationNode = this.dispatcher.getRoot()
+                .getChild("wp")
+                .getChild("navigate")
+                .getChild("text_display")
+                .getChild("transformation");
+        assertNotNull(transformationNode.getChild("translation"));
+        assertNotNull(transformationNode.getChild("rotation"));
+        assertNotNull(transformationNode.getChild("scale"));
+        assertNull(transformationNode.getChild("left_rotation"));
+        assertNull(transformationNode.getChild("right_rotation"));
+        assertThrows(
+                CommandSyntaxException.class,
+                () -> this.dispatcher.execute(
+                        "wp navigate text_display transformation",
+                        this.source
+                )
+        );
+        assertThrows(
+                CommandSyntaxException.class,
+                () -> this.dispatcher.execute(
+                        "wp navigate text_display transformation translation 0 0 0 rotation 0 0 0 scale 1 1 1",
+                        this.source
+                )
+        );
+
+        this.dispatcher.execute(
+                "wp navigate text_display transformation reset",
+                this.source
+        );
+        assertEquals(TextDisplayTransformation.defaultValue(), this.session().textDisplayTransformation());
+        assertEquals(TextDisplayTransformation.baseTranslation(), handler.lastTranslation);
+        assertEquals(TextDisplayTransformation.baseScale(), handler.lastScale);
+        assertEquals(TextDisplayTransformation.defaultValue().rotationQuaternion(), handler.lastRotation);
+        assertEquals(5, handler.transformationCount);
+        assertEquals(
+                "waypoint.navigation.text_display.transformation.reset",
+                this.sender.lastMessageKey()
+        );
+    }
+
+    @Test
+    void textDisplayTransformationCommandsEnforceSafeRanges() throws CommandSyntaxException {
+        this.dispatcher.execute(
+                "wp navigate overworld bases Home using text_display",
+                this.source
+        );
+
+        assertThrows(
+                CommandSyntaxException.class,
+                () -> this.dispatcher.execute(
+                        "wp navigate text_display transformation translation 17 0 0",
+                        this.source
+                )
+        );
+        assertThrows(
+                CommandSyntaxException.class,
+                () -> this.dispatcher.execute(
+                        "wp navigate text_display transformation scale 5 1 1",
+                        this.source
+                )
+        );
+    }
+
+    @Test
+    void unsupportedExperimentalMethodIsNotRegisteredOrDocumented()
+            throws CommandSyntaxException {
+        List<TestNavigationHandler> handlers = NavigationMethod.allMethods().stream()
+                .map(TestNavigationHandler::new)
+                .toList();
+        this.navigationService = new NavigationService<>(this.platform, handlers);
+        this.registerCommand(this.permissionManager);
+
+        var navigateNode = this.dispatcher.getRoot()
+                .getChild("wp")
+                .getChild("navigate");
+        assertNull(navigateNode.getChild("use").getChild("text_display"));
+        assertNull(navigateNode.getChild("disable").getChild("text_display"));
+        assertNull(navigateNode.getChild("text_display"));
+
+        this.dispatcher.execute("wp help navigate", this.source);
+        Component help = this.sender.messages.get(this.sender.messages.size() - 1);
+        assertFalse(plainText(help).contains("text_display"));
+        assertFalse(translationKeys(help).contains(
+                "waypoint.help.navigate.usage.transformation.translation"
+        ));
     }
 
     @Test
@@ -633,8 +821,12 @@ class CoreWaypointCommandNavigationTest {
     }
 
     private static final class TestNavigationHandler
-            implements NavigationMethodHandler<TestPlayer> {
+            implements TextDisplayTransformationHandler<TestPlayer> {
         private final NavigationMethod method;
+        private @Nullable Vector3f lastTranslation;
+        private @Nullable Quaternionf lastRotation;
+        private @Nullable Vector3f lastScale;
+        private int transformationCount;
 
         private TestNavigationHandler(NavigationMethod method) {
             this.method = method;
@@ -664,6 +856,19 @@ class CoreWaypointCommandNavigationTest {
 
         @Override
         public void disable(TestPlayer player, NavigationSession session) {
+        }
+
+        @Override
+        public void applyTransformation(
+                TestPlayer player,
+                Vector3f translation,
+                Quaternionf rotation,
+                Vector3f scale
+        ) {
+            this.lastTranslation = new Vector3f(translation);
+            this.lastRotation = new Quaternionf(rotation);
+            this.lastScale = new Vector3f(scale);
+            this.transformationCount++;
         }
     }
 

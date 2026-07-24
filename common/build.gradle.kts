@@ -55,6 +55,7 @@ dependencies {
     api("net.kyori:adventure-api:4.16.0")
     api("net.kyori:adventure-text-serializer-gson:4.16.0")
     api("com.mojang:brigadier:1.0.18")
+    api("org.joml:joml:1.10.8")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

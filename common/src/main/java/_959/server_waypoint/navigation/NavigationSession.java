@@ -11,12 +11,14 @@ import java.util.UUID;
 public record NavigationSession(
         UUID playerUuid,
         NavigationTarget target,
-        Set<NavigationMethod> enabledMethods
+        Set<NavigationMethod> enabledMethods,
+        TextDisplayTransformation textDisplayTransformation
 ) {
     public NavigationSession {
         Objects.requireNonNull(playerUuid, "playerUuid");
         Objects.requireNonNull(target, "target");
         enabledMethods = NavigationMethod.immutableSet(Objects.requireNonNull(enabledMethods, "enabledMethods"));
+        Objects.requireNonNull(textDisplayTransformation, "textDisplayTransformation");
     }
 
     public boolean isEnabled(NavigationMethod method) {
@@ -24,10 +26,31 @@ public record NavigationSession(
     }
 
     public NavigationSession withTarget(NavigationTarget newTarget) {
-        return new NavigationSession(this.playerUuid, newTarget, this.enabledMethods);
+        return new NavigationSession(
+                this.playerUuid,
+                newTarget,
+                this.enabledMethods,
+                this.textDisplayTransformation
+        );
     }
 
     public NavigationSession withEnabledMethods(Set<NavigationMethod> methods) {
-        return new NavigationSession(this.playerUuid, this.target, methods);
+        return new NavigationSession(
+                this.playerUuid,
+                this.target,
+                methods,
+                this.textDisplayTransformation
+        );
+    }
+
+    public NavigationSession withTextDisplayTransformation(
+            TextDisplayTransformation transformation
+    ) {
+        return new NavigationSession(
+                this.playerUuid,
+                this.target,
+                this.enabledMethods,
+                transformation
+        );
     }
 }

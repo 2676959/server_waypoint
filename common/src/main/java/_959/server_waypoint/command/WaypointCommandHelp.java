@@ -264,8 +264,8 @@ final class WaypointCommandHelp {
                 .append(backButton());
     }
 
-    static Component navigateHelp() {
-        return topicHeader("waypoint.help.navigate.title", "waypoint.help.navigate.summary")
+    static Component navigateHelp(boolean withTextDisplay) {
+        Component help = topicHeader("waypoint.help.navigate.title", "waypoint.help.navigate.summary")
                 .append(section("waypoint.help.section.usage"))
                 .append(usageEntry(
                         "/wp navigate <dimension> <list> <waypoint>",
@@ -291,15 +291,52 @@ final class WaypointCommandHelp {
                         "/wp navigate status",
                         NAVIGATE_COMMAND_PREFIX + "status",
                         "waypoint.help.navigate.usage.status"
-                ))
+                ));
+        if (withTextDisplay) {
+            help = help.append(usageEntry(
+                            "/wp navigate text_display transformation translation <x> <y> <z>",
+                            NAVIGATE_COMMAND_PREFIX + "text_display transformation translation ",
+                            "waypoint.help.navigate.usage.transformation.translation"
+                    ))
+                    .append(usageEntry(
+                            "/wp navigate text_display transformation rotation <x> <y> <z>",
+                            NAVIGATE_COMMAND_PREFIX + "text_display transformation rotation ",
+                            "waypoint.help.navigate.usage.transformation.rotation"
+                    ))
+                    .append(usageEntry(
+                            "/wp navigate text_display transformation scale <x> <y> <z>",
+                            NAVIGATE_COMMAND_PREFIX + "text_display transformation scale ",
+                            "waypoint.help.navigate.usage.transformation.scale"
+                    ))
+                    .append(usageEntry(
+                            "/wp navigate text_display transformation reset",
+                            NAVIGATE_COMMAND_PREFIX + "text_display transformation reset",
+                            "waypoint.help.navigate.usage.transformation.reset"
+                    ));
+        }
+        help = help
                 .append(section("waypoint.help.section.arguments"))
                 .append(argumentEntry("<selection>", "waypoint.help.navigate.argument.selection"))
-                .append(argumentEntry("<method>", "waypoint.help.navigate.argument.method"))
+                .append(argumentEntry("<method>", "waypoint.help.navigate.argument.method"));
+        if (withTextDisplay) {
+            help = help.append(argumentEntry(
+                    "<x> <y> <z>",
+                    "waypoint.help.navigate.argument.transformation.vector"
+            ));
+        }
+        help = help
                 .append(section("waypoint.help.navigate.section.methods"))
                 .append(argumentEntry("compass", "waypoint.help.navigate.method.compass"))
                 .append(argumentEntry("map", "waypoint.help.navigate.method.map"))
                 .append(argumentEntry("bossbar", "waypoint.help.navigate.method.bossbar"))
-                .append(argumentEntry("actionbar", "waypoint.help.navigate.method.actionbar"))
+                .append(argumentEntry("actionbar", "waypoint.help.navigate.method.actionbar"));
+        if (withTextDisplay) {
+            help = help.append(argumentEntry(
+                    "text_display",
+                    "waypoint.help.navigate.method.text_display"
+            ));
+        }
+        help = help
                 .append(section("waypoint.help.navigate.section.inventory"))
                 .append(argumentEntry("compass / map", "waypoint.help.navigate.inventory"))
                 .append(section("waypoint.help.section.examples"))
@@ -322,8 +359,25 @@ final class WaypointCommandHelp {
                         "/wp navigate use bossbar",
                         "waypoint.help.navigate.example.use",
                         exampleArgument("bossbar", MODE_COLOR)
-                ))
-                .append(backButton());
+                ));
+        if (withTextDisplay) {
+            help = help.append(exampleEntry(
+                            "/wp navigate text_display transformation translation 0 0.1 0",
+                            "waypoint.help.navigate.example.transformation.translation",
+                            exampleArgument("0 0.1 0", NUMBER_COLOR)
+                    ))
+                    .append(exampleEntry(
+                            "/wp navigate text_display transformation rotation 5 0 0",
+                            "waypoint.help.navigate.example.transformation.rotation",
+                            exampleArgument("5 0 0", NUMBER_COLOR)
+                    ))
+                    .append(exampleEntry(
+                            "/wp navigate text_display transformation scale 1.35 1.35 1.35",
+                            "waypoint.help.navigate.example.transformation.scale",
+                            exampleArgument("1.35 1.35 1.35", NUMBER_COLOR)
+                    ));
+        }
+        return help.append(backButton());
     }
 
     private static Component topicHeader(String titleKey, String summaryKey) {

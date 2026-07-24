@@ -15,7 +15,8 @@ class NavigationDisplayTextTest {
     private final NavigationSession session = new NavigationSession(
             UUID.randomUUID(),
             new NavigationTarget("minecraft:overworld", "villages", "Village", new WaypointPos(10, 64, 20), 0x55FF55),
-            Set.of(NavigationMethod.ACTIONBAR)
+            Set.of(NavigationMethod.ACTIONBAR),
+            TextDisplayTransformation.defaultValue()
     );
 
     @Test
@@ -47,6 +48,43 @@ class NavigationDisplayTextTest {
         TextComponent vertical = (TextComponent) display.children().get(6);
         assertEquals(NavigationDisplayText.SYMBOL_HIGH, vertical.content());
         assertMeters(vertical.children().get(0), 13L);
+    }
+
+    @Test
+    void textDisplayUsesDirectionAndDistancesOnSeparateLines() {
+        TextComponent display = (TextComponent) NavigationDisplayText.buildTextDisplay(
+                this.session,
+                snapshot(12.6D, 38.0D)
+        );
+
+        assertEquals("Village", ((TextComponent) display.children().get(0)).content());
+        assertEquals(" — ", ((TextComponent) display.children().get(1)).content());
+        assertEquals(
+                NavigationDisplayText.SYMBOL_RIGHT + "38°",
+                ((TextComponent) display.children().get(2)).content()
+        );
+        assertEquals("\n", ((TextComponent) display.children().get(3)).content());
+        assertMeters(display.children().get(4), 143L);
+        assertEquals(" | ", ((TextComponent) display.children().get(5)).content());
+
+        TextComponent vertical = (TextComponent) display.children().get(6);
+        assertEquals(NavigationDisplayText.SYMBOL_HIGH, vertical.content());
+        assertMeters(vertical.children().get(0), 13L);
+    }
+
+    @Test
+    void textDisplayPutsWrongDimensionMessageOnSecondLine() {
+        TextComponent display = (TextComponent) NavigationDisplayText.buildTextDisplay(
+                this.session,
+                NavigationSnapshot.wrongDimension()
+        );
+
+        assertEquals("Village", ((TextComponent) display.children().get(0)).content());
+        assertEquals("\n", ((TextComponent) display.children().get(1)).content());
+        assertEquals(
+                "waypoint.navigation.wrong_dimension",
+                ((TranslatableComponent) display.children().get(2)).key()
+        );
     }
 
     @Test

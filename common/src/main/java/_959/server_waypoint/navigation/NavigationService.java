@@ -2,6 +2,7 @@ package _959.server_waypoint.navigation;
 
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,6 +15,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.UnaryOperator;
 
 /**
  * Owns server-thread-only, per-player navigation sessions and delegates all
@@ -24,6 +26,7 @@ public final class NavigationService<P> {
 
     private final NavigationPlatform<P> platform;
     private final Map<NavigationMethod, NavigationMethodHandler<P>> handlers;
+    private final Set<NavigationMethod> supportedMethods;
     private final Map<UUID, NavigationSession> sessions = new LinkedHashMap<>();
     private final Set<NavigationMethod> defaultMethods;
     private final int updateIntervalTicks;
@@ -68,8 +71,13 @@ public final class NavigationService<P> {
                 throw new IllegalArgumentException("Duplicate handler for navigation method " + method.id());
             }
         }
+        this.supportedMethods = NavigationMethod.immutableSet(this.handlers.keySet());
         this.defaultMethods = NavigationMethod.immutableSet(defaultMethods);
         this.updateIntervalTicks = updateIntervalTicks;
+    }
+
+    public Set<NavigationMethod> supportedMethods() {
+        return this.supportedMethods;
     }
 
     /**
@@ -282,7 +290,120 @@ public final class NavigationService<P> {
                 this.platform.playerUuid(player),
                 target.get(),
                 storedSession.get().enabledMethods(),
-                true
+                true,
+                storedSession.get().textDisplayTransformation()
+        );
+    }
+
+    public NavigationResult updateTextDisplayTranslation(P player, Vector3f translation) {
+        Objects.requireNonNull(translation, "translation");
+        Vector3f value = new Vector3f(translation);
+        return this.updateTextDisplayTransformation(
+                player,
+                transformation -> transformation.withTranslation(value)
+        );
+    }
+
+    public NavigationResult updateTextDisplayRotation(P player, Vector3f rotation) {
+        Objects.requireNonNull(rotation, "rotation");
+        Vector3f value = new Vector3f(rotation);
+        return this.updateTextDisplayTransformation(
+                player,
+                transformation -> transformation.withRotation(value)
+        );
+    }
+
+    public NavigationResult updateTextDisplayScale(P player, Vector3f scale) {
+        Objects.requireNonNull(scale, "scale");
+        Vector3f value = new Vector3f(scale);
+        return this.updateTextDisplayTransformation(
+                player,
+                transformation -> transformation.withScale(value)
+        );
+    }
+
+    public NavigationResult resetTextDisplayTransformation(P player) {
+        return this.updateTextDisplayTransformation(
+                player,
+                transformation -> TextDisplayTransformation.defaultValue()
+        );
+    }
+
+    private NavigationResult updateTextDisplayTransformation(
+            P player,
+            UnaryOperator<TextDisplayTransformation> update
+    ) {
+        this.platform.assertServerThread();
+        Objects.requireNonNull(player, "player");
+        Objects.requireNonNull(update, "update");
+        UUID playerUuid = this.platform.playerUuid(player);
+        NavigationSession currentSession = this.sessions.get(playerUuid);
+        if (currentSession == null) {
+            return NavigationResult.result(
+                    NavigationResult.Code.NO_ACTIVE_SESSION,
+                    null,
+                    NavigationMethod.TEXT_DISPLAY
+            );
+        }
+        NavigationMethodHandler<P> handler = this.handlers.get(NavigationMethod.TEXT_DISPLAY);
+        if (handler == null) {
+            return NavigationResult.result(
+                    NavigationResult.Code.METHOD_UNAVAILABLE,
+                    currentSession,
+                    NavigationMethod.TEXT_DISPLAY
+            );
+        }
+        if (!(handler instanceof TextDisplayTransformationHandler<?>)) {
+            return NavigationResult.result(
+                    NavigationResult.Code.METHOD_UNAVAILABLE,
+                    currentSession,
+                    NavigationMethod.TEXT_DISPLAY
+            );
+        }
+
+        TextDisplayTransformation updatedTransformation = Objects.requireNonNull(
+                update.apply(currentSession.textDisplayTransformation()),
+                "Text display transformation update returned null"
+        );
+        NavigationSession updatedSession = currentSession.withTextDisplayTransformation(
+                updatedTransformation
+        );
+        if (currentSession.isEnabled(NavigationMethod.TEXT_DISPLAY)) {
+            try {
+                this.applyTextDisplayTransformation(
+                        handler,
+                        player,
+                        updatedTransformation
+                );
+            } catch (RuntimeException exception) {
+                this.platform.onHandlerException(
+                        currentSession.playerUuid(),
+                        NavigationMethod.TEXT_DISPLAY,
+                        exception
+                );
+                return handlerFailure(currentSession, NavigationMethod.TEXT_DISPLAY);
+            }
+        }
+        this.sessions.put(playerUuid, updatedSession);
+        this.persistSession(player, updatedSession);
+        return NavigationResult.result(
+                NavigationResult.Code.TEXT_DISPLAY_TRANSFORMATION_UPDATED,
+                updatedSession,
+                NavigationMethod.TEXT_DISPLAY
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private void applyTextDisplayTransformation(
+            NavigationMethodHandler<P> handler,
+            P player,
+            TextDisplayTransformation transformation
+    ) {
+        ((TextDisplayTransformationHandler<P>) handler).applyTransformation(
+                player,
+                transformation.resolvedTranslation(),
+                transformation.rotationQuaternion(),
+                transformation.resolvedScale()
         );
     }
 
@@ -440,7 +561,7 @@ public final class NavigationService<P> {
             NavigationTarget target,
             Set<NavigationMethod> selection
     ) {
-        return this.replaceSelection(player, playerUuid, target, selection, false);
+        return this.replaceSelection(player, playerUuid, target, selection, false, null);
     }
 
     private NavigationResult replaceSelection(
@@ -448,7 +569,8 @@ public final class NavigationService<P> {
             UUID playerUuid,
             NavigationTarget target,
             Set<NavigationMethod> selection,
-            boolean allowEmptySelection
+            boolean allowEmptySelection,
+            @Nullable TextDisplayTransformation restoredTransformation
     ) {
         NavigationSession currentSession = this.sessions.get(playerUuid);
         if (selection.isEmpty() && !allowEmptySelection) {
@@ -469,7 +591,17 @@ public final class NavigationService<P> {
             }
         }
 
-        NavigationSession proposedSession = new NavigationSession(playerUuid, target, selection);
+        TextDisplayTransformation transformation = restoredTransformation != null
+                ? restoredTransformation
+                : currentSession == null
+                        ? TextDisplayTransformation.defaultValue()
+                        : currentSession.textDisplayTransformation();
+        NavigationSession proposedSession = new NavigationSession(
+                playerUuid,
+                target,
+                selection,
+                transformation
+        );
         NavigationResult preflight = this.preflight(player, currentSession, proposedSession);
         if (!preflight.successful()) {
             return preflight.withSession(currentSession);

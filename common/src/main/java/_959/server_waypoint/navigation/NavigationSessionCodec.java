@@ -1,6 +1,7 @@
 package _959.server_waypoint.navigation;
 
 import com.google.gson.Gson;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -9,7 +10,7 @@ import java.util.Optional;
 
 /** Encodes the platform-neutral portion of a navigation session. */
 public final class NavigationSessionCodec {
-    public static final int CURRENT_VERSION = 1;
+    public static final int CURRENT_VERSION = 2;
     private static final int MAX_ENCODED_LENGTH = 16_384;
     private static final int MAX_NAME_LENGTH = 1_024;
     private static final Gson GSON = new Gson();
@@ -26,7 +27,8 @@ public final class NavigationSessionCodec {
                 session.target().dimensionName(),
                 session.target().listName(),
                 session.target().waypointName(),
-                methodIds
+                methodIds,
+                TransformationPayload.from(session.textDisplayTransformation())
         );
         return GSON.toJson(payload);
     }
@@ -42,7 +44,8 @@ public final class NavigationSessionCodec {
                     || !validName(payload.dimension())
                     || !validName(payload.list())
                     || !validName(payload.waypoint())
-                    || payload.methods() == null) {
+                    || payload.methods() == null
+                    || payload.transformation() == null) {
                 return Optional.empty();
             }
 
@@ -57,7 +60,8 @@ public final class NavigationSessionCodec {
                     payload.dimension(),
                     payload.list(),
                     payload.waypoint(),
-                    methods
+                    methods,
+                    payload.transformation().toTransformation()
             ));
         } catch (RuntimeException exception) {
             return Optional.empty();
@@ -75,10 +79,46 @@ public final class NavigationSessionCodec {
             String dimension,
             String list,
             String waypoint,
-            List<String> methods
+            List<String> methods,
+            TransformationPayload transformation
     ) {
         private Payload {
             methods = methods == null ? null : new ArrayList<>(methods);
+        }
+    }
+
+    private record TransformationPayload(
+            VectorPayload translation,
+            VectorPayload rotation,
+            VectorPayload scale
+    ) {
+        private static TransformationPayload from(TextDisplayTransformation transformation) {
+            return new TransformationPayload(
+                    VectorPayload.from(transformation.translation()),
+                    VectorPayload.from(transformation.rotation()),
+                    VectorPayload.from(transformation.scale())
+            );
+        }
+
+        private TextDisplayTransformation toTransformation() {
+            if (this.translation == null || this.rotation == null || this.scale == null) {
+                throw new IllegalArgumentException("Incomplete text display transformation");
+            }
+            return new TextDisplayTransformation(
+                    this.translation.toVector(),
+                    this.rotation.toVector(),
+                    this.scale.toVector()
+            );
+        }
+    }
+
+    private record VectorPayload(float x, float y, float z) {
+        private static VectorPayload from(Vector3f vector) {
+            return new VectorPayload(vector.x(), vector.y(), vector.z());
+        }
+
+        private Vector3f toVector() {
+            return new Vector3f(this.x, this.y, this.z);
         }
     }
 }

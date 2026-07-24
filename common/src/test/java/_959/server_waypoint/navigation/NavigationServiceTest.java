@@ -4,6 +4,8 @@ import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -334,12 +336,136 @@ class NavigationServiceTest {
     }
 
     @Test
+    void textDisplayTransformationComponentsApplyAndPersistIndependently() {
+        this.service.navigate(
+                this.firstPlayer,
+                target("Target", 10, 64, 0),
+                Set.of(NavigationMethod.TEXT_DISPLAY)
+        );
+        TestHandler handler = this.handlers.get(NavigationMethod.TEXT_DISPLAY);
+        Vector3f translation = new Vector3f(1.0F, 2.0F, 3.0F);
+        Vector3f rotation = new Vector3f(10.0F, 20.0F, 30.0F);
+        Vector3f scale = new Vector3f(1.0F, 2.0F, 1.0F);
+
+        NavigationResult translated = this.service.updateTextDisplayTranslation(
+                this.firstPlayer,
+                translation
+        );
+        NavigationResult rotated = this.service.updateTextDisplayRotation(
+                this.firstPlayer,
+                rotation
+        );
+        NavigationResult scaled = this.service.updateTextDisplayScale(
+                this.firstPlayer,
+                scale
+        );
+
+        assertEquals(NavigationResult.Code.TEXT_DISPLAY_TRANSFORMATION_UPDATED, translated.code());
+        assertEquals(NavigationResult.Code.TEXT_DISPLAY_TRANSFORMATION_UPDATED, rotated.code());
+        assertEquals(NavigationResult.Code.TEXT_DISPLAY_TRANSFORMATION_UPDATED, scaled.code());
+        TextDisplayTransformation transformation = scaled.session().textDisplayTransformation();
+        assertEquals(translation, transformation.translation());
+        assertEquals(rotation, transformation.rotation());
+        assertEquals(scale, transformation.scale());
+        assertEquals(transformation.resolvedTranslation(), handler.lastTranslation);
+        assertEquals(transformation.resolvedScale(), handler.lastScale);
+        assertEquals(transformation.rotationQuaternion(), handler.lastRotation);
+        assertEquals(3, handler.transformationCount);
+        assertEquals(
+                transformation,
+                NavigationSessionCodec.decode(
+                        this.platform.persistedSessions.get(this.firstPlayer.uuid())
+                ).orElseThrow().textDisplayTransformation()
+        );
+
+        String persistedBeforeFailure = this.platform.persistedSessions.get(
+                this.firstPlayer.uuid()
+        );
+        handler.failNextTransformation = true;
+        NavigationResult failed = this.service.updateTextDisplayTranslation(
+                this.firstPlayer,
+                new Vector3f(4.0F, 5.0F, 6.0F)
+        );
+
+        assertEquals(NavigationResult.Code.HANDLER_FAILED, failed.code());
+        assertEquals(4, handler.transformationCount);
+        assertEquals(1, this.platform.handlerExceptionCount);
+        assertEquals(
+                transformation,
+                this.service.findSession(this.firstPlayer.uuid())
+                        .orElseThrow()
+                        .textDisplayTransformation()
+        );
+        assertEquals(
+                persistedBeforeFailure,
+                this.platform.persistedSessions.get(this.firstPlayer.uuid())
+        );
+    }
+
+    @Test
+    void textDisplayTransformationCanBePreparedWhileMethodIsDisabled() {
+        this.service.navigate(this.firstPlayer, target("Target", 10, 64, 0));
+
+        NavigationResult translated = this.service.updateTextDisplayTranslation(
+                this.firstPlayer,
+                new Vector3f(1.0F, 2.0F, 3.0F)
+        );
+        NavigationResult rotated = this.service.updateTextDisplayRotation(
+                this.firstPlayer,
+                new Vector3f(10.0F, 20.0F, 30.0F)
+        );
+        NavigationResult scaled = this.service.updateTextDisplayScale(
+                this.firstPlayer,
+                new Vector3f(1.0F, 2.0F, 1.0F)
+        );
+
+        assertEquals(NavigationResult.Code.TEXT_DISPLAY_TRANSFORMATION_UPDATED, translated.code());
+        assertEquals(NavigationResult.Code.TEXT_DISPLAY_TRANSFORMATION_UPDATED, rotated.code());
+        assertEquals(NavigationResult.Code.TEXT_DISPLAY_TRANSFORMATION_UPDATED, scaled.code());
+        assertEquals(0, this.handlers.get(NavigationMethod.TEXT_DISPLAY).transformationCount);
+        assertEquals(
+                scaled.session().textDisplayTransformation(),
+                NavigationSessionCodec.decode(
+                        this.platform.persistedSessions.get(this.firstPlayer.uuid())
+                ).orElseThrow().textDisplayTransformation()
+        );
+
+        NavigationResult enabled = this.service.enableMethod(
+                this.firstPlayer,
+                NavigationMethod.TEXT_DISPLAY
+        );
+        assertEquals(NavigationResult.Code.METHOD_ENABLED, enabled.code());
+        assertEquals(
+                scaled.session().textDisplayTransformation(),
+                this.handlers.get(NavigationMethod.TEXT_DISPLAY)
+                        .seenSessions
+                        .get(0)
+                        .textDisplayTransformation()
+        );
+    }
+
+    @Test
     void restoreResolvesCurrentWaypointPropertiesAndRecreatesHandlers() {
         this.service.navigate(
                 this.firstPlayer,
                 target("Target", 10, 64, 0),
                 Set.of(NavigationMethod.COMPASS, NavigationMethod.BOSSBAR)
         );
+        this.service.updateTextDisplayTranslation(
+                this.firstPlayer,
+                new Vector3f(1.0F, 2.0F, 3.0F)
+        );
+        this.service.updateTextDisplayRotation(
+                this.firstPlayer,
+                new Vector3f(10.0F, 20.0F, 30.0F)
+        );
+        this.service.updateTextDisplayScale(
+                this.firstPlayer,
+                new Vector3f(1.0F, 2.0F, 1.0F)
+        );
+        TextDisplayTransformation storedTransformation = this.service.findSession(
+                this.firstPlayer.uuid()
+        ).orElseThrow().textDisplayTransformation();
         this.service.removePlayer(this.firstPlayer);
         TestWaypointServer waypointServer = waypointServer(
                 "Target",
@@ -360,6 +486,7 @@ class NavigationServiceTest {
                 Set.of(NavigationMethod.COMPASS, NavigationMethod.BOSSBAR),
                 restored.enabledMethods()
         );
+        assertEquals(storedTransformation, restored.textDisplayTransformation());
         assertEquals(2, this.handlers.get(NavigationMethod.COMPASS).enableCount);
         assertEquals(2, this.handlers.get(NavigationMethod.BOSSBAR).enableCount);
     }
@@ -426,6 +553,13 @@ class NavigationServiceTest {
                 NavigationResult.Code.NO_ACTIVE_SESSION,
                 this.service.disableMethod(this.firstPlayer, NavigationMethod.MAP).code()
         );
+        assertEquals(
+                NavigationResult.Code.NO_ACTIVE_SESSION,
+                this.service.updateTextDisplayTranslation(
+                        this.firstPlayer,
+                        new Vector3f()
+                ).code()
+        );
         assertEquals(NavigationResult.Code.NO_ACTIVE_SESSION, this.service.status(this.firstPlayer).code());
     }
 
@@ -474,8 +608,8 @@ class NavigationServiceTest {
 
     @Test
     void removePlayerAndShutdownDisableHandlersAndClearSessions() {
-        this.service.navigate(this.firstPlayer, target("First", 10, 64, 0), NavigationMethod.allMethods());
-        this.service.navigate(this.secondPlayer, target("Second", 20, 64, 0), NavigationMethod.allMethods());
+        this.service.navigate(this.firstPlayer, target("First", 10, 64, 0), this.service.supportedMethods());
+        this.service.navigate(this.secondPlayer, target("Second", 20, 64, 0), this.service.supportedMethods());
 
         this.service.removePlayer(this.firstPlayer.uuid());
 
@@ -516,7 +650,7 @@ class NavigationServiceTest {
         this.service.navigate(
                 this.firstPlayer,
                 target("Target", 10, 64, 0),
-                NavigationMethod.allMethods()
+                this.service.supportedMethods()
         );
         this.handlers.get(NavigationMethod.COMPASS).failNextDisable = true;
 
@@ -667,7 +801,8 @@ class NavigationServiceTest {
         }
     }
 
-    private static final class TestHandler implements NavigationMethodHandler<TestPlayer> {
+    private static final class TestHandler
+            implements TextDisplayTransformationHandler<TestPlayer> {
         private final NavigationMethod method;
         private NavigationResult enableResult = NavigationResult.success();
         private int enableCount;
@@ -676,8 +811,13 @@ class NavigationServiceTest {
         private int cleanupCount;
         private boolean failNextUpdate;
         private boolean failNextDisable;
+        private boolean failNextTransformation;
+        private int transformationCount;
         private @Nullable NavigationSnapshot lastSnapshot;
         private @Nullable UUID lastCleanedPlayerUuid;
+        private @Nullable Vector3f lastTranslation;
+        private @Nullable Quaternionf lastRotation;
+        private @Nullable Vector3f lastScale;
         private final List<NavigationSession> seenSessions = new ArrayList<>();
 
         private TestHandler(NavigationMethod method) {
@@ -730,6 +870,23 @@ class NavigationServiceTest {
         public void cleanupPlayer(UUID playerUuid, NavigationSession session) {
             this.cleanupCount++;
             this.lastCleanedPlayerUuid = playerUuid;
+        }
+
+        @Override
+        public void applyTransformation(
+                TestPlayer player,
+                Vector3f translation,
+                Quaternionf rotation,
+                Vector3f scale
+        ) {
+            this.transformationCount++;
+            this.lastTranslation = new Vector3f(translation);
+            this.lastRotation = new Quaternionf(rotation);
+            this.lastScale = new Vector3f(scale);
+            if (this.failNextTransformation) {
+                this.failNextTransformation = false;
+                throw new IllegalStateException("transformation failed");
+            }
         }
 
         private List<String> seenWaypointNames() {

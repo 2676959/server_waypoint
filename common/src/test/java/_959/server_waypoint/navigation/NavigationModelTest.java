@@ -2,6 +2,8 @@ package _959.server_waypoint.navigation;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
@@ -38,7 +40,12 @@ class NavigationModelTest {
     @Test
     void sessionDefensivelyCopiesItsEnabledMethods() {
         EnumSet<NavigationMethod> methods = EnumSet.of(NavigationMethod.ACTIONBAR);
-        NavigationSession session = new NavigationSession(UUID.randomUUID(), target(), methods);
+        NavigationSession session = new NavigationSession(
+                UUID.randomUUID(),
+                target(),
+                methods,
+                TextDisplayTransformation.defaultValue()
+        );
 
         methods.add(NavigationMethod.BOSSBAR);
 
@@ -50,13 +57,101 @@ class NavigationModelTest {
     }
 
     @Test
+    void textDisplayTransformationResolvesOffsetsAndScaleAgainstBaseValues() {
+        TextDisplayTransformation transformation = new TextDisplayTransformation(
+                new Vector3f(1.0F, 0.2F, -0.3F),
+                new Vector3f(5.0F, 10.0F, 0.0F),
+                new Vector3f(1.0F, 2.0F, 1.0F)
+        );
+
+        assertVectorEquals(
+                new Vector3f(1.0F, -0.25F, -1.5F),
+                transformation.resolvedTranslation()
+        );
+        assertVectorEquals(
+                new Vector3f(-43.0F, 10.0F, 0.0F),
+                transformation.resolvedRotation()
+        );
+        assertVectorEquals(
+                new Vector3f(0.22F, 0.44F, 0.22F),
+                transformation.resolvedScale()
+        );
+    }
+
+    @Test
+    void textDisplayEulerRotationConvertsResolvedDegreesToQuaternion() {
+        TextDisplayTransformation transformation = TextDisplayTransformation.defaultValue()
+                .withRotation(new Vector3f(138.0F, 0.0F, 0.0F));
+        Quaternionf quaternion = transformation.rotationQuaternion();
+        float halfSqrtTwo = (float) Math.sqrt(0.5D);
+
+        assertEquals(halfSqrtTwo, quaternion.x(), 0.000001F);
+        assertEquals(0.0F, quaternion.y(), 0.000001F);
+        assertEquals(0.0F, quaternion.z(), 0.000001F);
+        assertEquals(halfSqrtTwo, quaternion.w(), 0.000001F);
+    }
+
+    @Test
+    void textDisplayTransformationDefensivelyCopiesJomlVectors() {
+        Vector3f translation = new Vector3f(1.0F, 2.0F, 3.0F);
+        TextDisplayTransformation transformation = new TextDisplayTransformation(
+                translation,
+                new Vector3f(),
+                new Vector3f(1.0F)
+        );
+
+        translation.set(0.0F);
+        transformation.translation().set(0.0F);
+
+        assertEquals(new Vector3f(1.0F, 2.0F, 3.0F), transformation.translation());
+    }
+
+    @Test
+    void textDisplayTransformationRejectsNonFiniteAndOutOfRangeValues() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new TextDisplayTransformation(
+                        new Vector3f(Float.NaN, 0.0F, 0.0F),
+                        new Vector3f(),
+                        new Vector3f(1.0F)
+                )
+        );
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new TextDisplayTransformation(
+                        new Vector3f(17.0F, 0.0F, 0.0F),
+                        new Vector3f(),
+                        new Vector3f(1.0F)
+                )
+        );
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new TextDisplayTransformation(
+                        new Vector3f(),
+                        new Vector3f(),
+                        new Vector3f(5.0F, 1.0F, 1.0F)
+                )
+        );
+    }
+
+    @Test
     void methodIdsAndKindsRemainPlatformNeutral() {
         assertEquals(NavigationMethod.COMPASS, NavigationMethod.fromId("COMPASS").orElseThrow());
         assertTrue(NavigationMethod.COMPASS.ownsItem());
         assertFalse(NavigationMethod.COMPASS.isLiveDisplay());
         assertTrue(NavigationMethod.ACTIONBAR.isLiveDisplay());
+        assertTrue(NavigationMethod.TEXT_DISPLAY.isLiveDisplay());
         assertEquals(Set.of(NavigationMethod.ACTIONBAR), NavigationMethod.defaultSelection());
-        assertEquals(EnumSet.allOf(NavigationMethod.class), NavigationMethod.allMethods());
+        assertEquals(
+                EnumSet.of(
+                        NavigationMethod.COMPASS,
+                        NavigationMethod.MAP,
+                        NavigationMethod.BOSSBAR,
+                        NavigationMethod.ACTIONBAR
+                ),
+                NavigationMethod.allMethods()
+        );
+        assertFalse(NavigationMethod.allMethods().contains(NavigationMethod.TEXT_DISPLAY));
     }
 
     private static NavigationTarget target() {
@@ -67,5 +162,11 @@ class NavigationModelTest {
                 new WaypointPos(1, 2, 3),
                 0x123456
         );
+    }
+
+    private static void assertVectorEquals(Vector3f expected, Vector3f actual) {
+        assertEquals(expected.x(), actual.x(), 0.000001F);
+        assertEquals(expected.y(), actual.y(), 0.000001F);
+        assertEquals(expected.z(), actual.z(), 0.000001F);
     }
 }
