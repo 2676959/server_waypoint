@@ -21,6 +21,7 @@ import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.navigation.TextDisplayTransformation;
 import _959.server_waypoint.navigation.TextDisplayTransformationHandler;
 import _959.server_waypoint.util.StringCommandBuilder;
+import com.google.gson.JsonParseException;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -150,7 +151,7 @@ class CoreWaypointCommandNavigationTest {
     }
 
     @Test
-    void navigationWithoutUsingStartsWithConfiguredDefault() throws CommandSyntaxException {
+    void navigationWithoutMethodSuffixStartsWithConfiguredDefault() throws CommandSyntaxException {
         this.dispatcher.execute("wp navigate overworld bases Home", this.source);
 
         NavigationSession session = this.session();
@@ -164,34 +165,46 @@ class CoreWaypointCommandNavigationTest {
     void configuredAllDefaultStartsWithEveryMethod() throws CommandSyntaxException {
         this.server.loadConfig(new StringReader("""
                 {
-                  "defaultNavigationSelection": "all"
+                  "defaultNavigationMethods": [
+                    "compass",
+                    "map",
+                    "bossbar",
+                    "actionbar",
+                    "text_display"
+                  ]
                 }
                 """));
 
         this.dispatcher.execute("wp navigate overworld bases Home", this.source);
 
-        assertEquals(NavigationMethod.allMethods(), this.session().enabledMethods());
+        assertEquals(NavigationMethod.definedMethods(), this.session().enabledMethods());
     }
 
     @Test
-    void configuredSingleMethodDefaultAndInvalidFallbackAreApplied() throws CommandSyntaxException {
+    void configuredDefaultMethodsAreApplied() throws CommandSyntaxException {
         this.server.loadConfig(new StringReader("""
                 {
-                  "defaultNavigationSelection": "map"
+                  "defaultNavigationMethods": ["map"]
                 }
                 """));
         this.dispatcher.execute("wp navigate overworld bases Home", this.source);
         assertEquals(Set.of(NavigationMethod.MAP), this.session().enabledMethods());
 
         this.navigationService.disableAll(this.player);
-        this.server.loadConfig(new StringReader("""
-                {
-                  "defaultNavigationSelection": "not-a-method"
-                }
-                """));
-        this.dispatcher.execute("wp navigate overworld bases Mine", this.source);
+        this.dispatcher.execute("wp navigate overworld bases Mine default", this.source);
+        assertEquals(Set.of(NavigationMethod.MAP), this.session().enabledMethods());
+    }
 
-        assertEquals(Set.of(NavigationMethod.ACTIONBAR), this.session().enabledMethods());
+    @Test
+    void invalidConfiguredDefaultMethodThrows() {
+        assertThrows(
+                JsonParseException.class,
+                () -> this.server.loadConfig(new StringReader("""
+                        {
+                          "defaultNavigationMethods": ["not-a-method"]
+                        }
+                        """))
+        );
     }
 
     @Test
@@ -202,21 +215,24 @@ class CoreWaypointCommandNavigationTest {
         String helpText = plainText(help);
         assertTrue(helpText.contains("/wp navigate <dimension> <list> <waypoint>"));
         assertTrue(helpText.contains(
-                "/wp navigate <dimension> <list> <waypoint> using <selection>"
+                "/wp navigate <dimension> <list> <waypoint> [default|all|<method>]"
         ));
         assertTrue(helpText.contains("/wp navigate use <method>"));
         assertTrue(helpText.contains("/wp navigate disable [<method>]"));
         assertTrue(helpText.contains("/wp navigate status"));
         assertTrue(helpText.contains(
-                "/wp navigate text_display transformation translation <x> <y> <z>"
+                "/wp navigate config text_display transformation translation <x> <y> <z>"
         ));
         assertTrue(helpText.contains(
-                "/wp navigate text_display transformation rotation <x> <y> <z>"
+                "/wp navigate config text_display transformation rotation <x> <y> <z>"
         ));
         assertTrue(helpText.contains(
-                "/wp navigate text_display transformation scale <x> <y> <z>"
+                "/wp navigate config text_display transformation scale <x> <y> <z>"
         ));
-        assertTrue(helpText.contains("/wp navigate text_display transformation reset"));
+        assertTrue(helpText.contains(
+                "/wp navigate config text_display transformation reset"
+        ));
+        assertFalse(helpText.contains(" using "));
         assertFalse(helpText.contains("/wp navigate methods"));
 
         assertTrue(translationKeys(help).containsAll(List.of(
@@ -224,7 +240,7 @@ class CoreWaypointCommandNavigationTest {
                 "waypoint.help.navigate.summary",
                 "waypoint.help.section.usage",
                 "waypoint.help.navigate.usage.start",
-                "waypoint.help.navigate.usage.using",
+                "waypoint.help.navigate.usage.methods",
                 "waypoint.help.navigate.usage.use",
                 "waypoint.help.navigate.usage.disable",
                 "waypoint.help.navigate.usage.status",
@@ -233,7 +249,7 @@ class CoreWaypointCommandNavigationTest {
                 "waypoint.help.navigate.usage.transformation.scale",
                 "waypoint.help.navigate.usage.transformation.reset",
                 "waypoint.help.section.arguments",
-                "waypoint.help.navigate.argument.selection",
+                "waypoint.help.navigate.argument.target_methods",
                 "waypoint.help.navigate.argument.method",
                 "waypoint.help.navigate.argument.transformation.vector",
                 "waypoint.help.navigate.section.methods",
@@ -247,6 +263,7 @@ class CoreWaypointCommandNavigationTest {
                 "waypoint.help.section.examples",
                 "waypoint.help.navigate.example.default",
                 "waypoint.help.navigate.example.all",
+                "waypoint.help.navigate.example.method",
                 "waypoint.help.navigate.example.use",
                 "waypoint.help.navigate.example.transformation.translation",
                 "waypoint.help.navigate.example.transformation.rotation",
@@ -258,17 +275,20 @@ class CoreWaypointCommandNavigationTest {
                 "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\""
         ));
         assertTrue(suggestions.contains(
-                "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\" using all"
+                "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\" all"
+        ));
+        assertTrue(suggestions.contains(
+                "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\" bossbar"
         ));
         assertTrue(suggestions.contains("/wp navigate use bossbar"));
         assertTrue(suggestions.contains(
-                "/wp navigate text_display transformation translation 0 0.1 0"
+                "/wp navigate config text_display transformation translation 0 0.1 0"
         ));
         assertTrue(suggestions.contains(
-                "/wp navigate text_display transformation rotation 5 0 0"
+                "/wp navigate config text_display transformation rotation 5 0 0"
         ));
         assertTrue(suggestions.contains(
-                "/wp navigate text_display transformation scale 1.35 1.35 1.35"
+                "/wp navigate config text_display transformation scale 1.35 1.35 1.35"
         ));
         assertFalse(suggestions.contains("/wp navigate methods"));
         assertEquals(List.of("/wp help"), runCommands(help));
@@ -291,9 +311,9 @@ class CoreWaypointCommandNavigationTest {
     }
 
     @Test
-    void retargetWithoutUsingPreservesCurrentMethods() throws CommandSyntaxException {
+    void retargetWithoutMethodSuffixPreservesCurrentMethods() throws CommandSyntaxException {
         this.dispatcher.execute(
-                "wp navigate overworld bases Home using compass",
+                "wp navigate overworld bases Home compass",
                 this.source
         );
         this.sender.clear();
@@ -307,53 +327,60 @@ class CoreWaypointCommandNavigationTest {
     }
 
     @Test
-    void usingReplacesSelectionAndAllEnablesEveryMethod() throws CommandSyntaxException {
+    void explicitMethodReplacesSelectionAndAllEnablesEverySupportedMethod()
+            throws CommandSyntaxException {
         this.dispatcher.execute("wp navigate overworld bases Home", this.source);
 
         this.dispatcher.execute(
-                "wp navigate overworld bases Mine using bossbar",
+                "wp navigate overworld bases Mine bossbar",
                 this.source
         );
         assertEquals(Set.of(NavigationMethod.BOSSBAR), this.session().enabledMethods());
         assertEquals("Mine", this.session().target().waypointName());
 
         this.dispatcher.execute(
-                "wp navigate overworld bases Home using all",
+                "wp navigate overworld bases Home all",
                 this.source
         );
-        assertEquals(NavigationMethod.allMethods(), this.session().enabledMethods());
+        assertEquals(
+                this.navigationService.supportedNavigationMethods(),
+                this.session().enabledMethods()
+        );
         assertEquals("Home", this.session().target().waypointName());
     }
 
     @Test
-    void experimentalMethodIsExplicitOptIn() throws CommandSyntaxException {
+    void allIncludesEverySupportedExperimentalMethod() throws CommandSyntaxException {
         this.dispatcher.execute(
-                "wp navigate overworld bases Home using text_display",
+                "wp navigate overworld bases Home text_display",
                 this.source
         );
 
         assertEquals(Set.of(NavigationMethod.TEXT_DISPLAY), this.session().enabledMethods());
 
         this.dispatcher.execute(
-                "wp navigate overworld bases Mine using all",
+                "wp navigate overworld bases Mine all",
                 this.source
         );
 
-        assertEquals(NavigationMethod.allMethods(), this.session().enabledMethods());
-        assertFalse(this.session().isEnabled(NavigationMethod.TEXT_DISPLAY));
+        assertEquals(
+                this.navigationService.supportedNavigationMethods(),
+                this.session().enabledMethods()
+        );
+        assertTrue(this.session().isEnabled(NavigationMethod.TEXT_DISPLAY));
     }
 
     @Test
     void textDisplayTransformationCommandsUpdateStoredComponentsIndependentlyAndReset()
             throws CommandSyntaxException {
         this.dispatcher.execute(
-                "wp navigate overworld bases Home using text_display",
+                "wp navigate overworld bases Home text_display",
                 this.source
         );
         this.sender.clear();
 
         this.dispatcher.execute(
-                "wp navigate text_display transformation translation 1 -2 3",
+                "wp navigate config text_display transformation translation 1 -2 3",
                 this.source
         );
 
@@ -365,11 +392,11 @@ class CoreWaypointCommandNavigationTest {
         assertEquals(TextDisplayTransformation.baseScale(), handler.lastScale);
 
         this.dispatcher.execute(
-                "wp navigate text_display transformation rotation 10 20 30",
+                "wp navigate config text_display transformation rotation 10 20 30",
                 this.source
         );
         this.dispatcher.execute(
-                "wp navigate text_display transformation scale 1 2 1",
+                "wp navigate config text_display transformation scale 1 2 1",
                 this.source
         );
         TextDisplayTransformation transformation = this.session().textDisplayTransformation();
@@ -384,7 +411,7 @@ class CoreWaypointCommandNavigationTest {
         );
 
         this.dispatcher.execute(
-                "wp navigate text_display transformation scale 1 1 1",
+                "wp navigate config text_display transformation scale 1 1 1",
                 this.source
         );
         assertEquals(TextDisplayTransformation.baseScale(), handler.lastScale);
@@ -396,6 +423,7 @@ class CoreWaypointCommandNavigationTest {
         var transformationNode = this.dispatcher.getRoot()
                 .getChild("wp")
                 .getChild("navigate")
+                .getChild("config")
                 .getChild("text_display")
                 .getChild("transformation");
         assertNotNull(transformationNode.getChild("translation"));
@@ -406,20 +434,20 @@ class CoreWaypointCommandNavigationTest {
         assertThrows(
                 CommandSyntaxException.class,
                 () -> this.dispatcher.execute(
-                        "wp navigate text_display transformation",
+                        "wp navigate config text_display transformation",
                         this.source
                 )
         );
         assertThrows(
                 CommandSyntaxException.class,
                 () -> this.dispatcher.execute(
-                        "wp navigate text_display transformation translation 0 0 0 rotation 0 0 0 scale 1 1 1",
+                        "wp navigate config text_display transformation translation 0 0 0 rotation 0 0 0 scale 1 1 1",
                         this.source
                 )
         );
 
         this.dispatcher.execute(
-                "wp navigate text_display transformation reset",
+                "wp navigate config text_display transformation reset",
                 this.source
         );
         assertEquals(TextDisplayTransformation.defaultValue(), this.session().textDisplayTransformation());
@@ -436,21 +464,21 @@ class CoreWaypointCommandNavigationTest {
     @Test
     void textDisplayTransformationCommandsEnforceSafeRanges() throws CommandSyntaxException {
         this.dispatcher.execute(
-                "wp navigate overworld bases Home using text_display",
+                "wp navigate overworld bases Home text_display",
                 this.source
         );
 
         assertThrows(
                 CommandSyntaxException.class,
                 () -> this.dispatcher.execute(
-                        "wp navigate text_display transformation translation 17 0 0",
+                        "wp navigate config text_display transformation translation 17 0 0",
                         this.source
                 )
         );
         assertThrows(
                 CommandSyntaxException.class,
                 () -> this.dispatcher.execute(
-                        "wp navigate text_display transformation scale 5 1 1",
+                        "wp navigate config text_display transformation scale 5 1 1",
                         this.source
                 )
         );
@@ -459,7 +487,8 @@ class CoreWaypointCommandNavigationTest {
     @Test
     void unsupportedExperimentalMethodIsNotRegisteredOrDocumented()
             throws CommandSyntaxException {
-        List<TestNavigationHandler> handlers = NavigationMethod.allMethods().stream()
+        List<TestNavigationHandler> handlers = NavigationMethod.definedMethods().stream()
+                .filter(method -> method != NavigationMethod.TEXT_DISPLAY)
                 .map(TestNavigationHandler::new)
                 .toList();
         this.navigationService = new NavigationService<>(this.platform, handlers);
@@ -470,7 +499,7 @@ class CoreWaypointCommandNavigationTest {
                 .getChild("navigate");
         assertNull(navigateNode.getChild("use").getChild("text_display"));
         assertNull(navigateNode.getChild("disable").getChild("text_display"));
-        assertNull(navigateNode.getChild("text_display"));
+        assertNull(navigateNode.getChild("config").getChild("text_display"));
 
         this.dispatcher.execute("wp help navigate", this.source);
         Component help = this.sender.messages.get(this.sender.messages.size() - 1);
@@ -518,8 +547,8 @@ class CoreWaypointCommandNavigationTest {
                 )
         );
         assertEquals(
-                "/wp navigate minecraft:overworld \"Home Bases\" \"Main Home\" using all",
-                StringCommandBuilder.navigateUsingCmd(
+                "/wp navigate minecraft:overworld \"Home Bases\" \"Main Home\" all",
+                StringCommandBuilder.navigateWithMethodsCmd(
                         "minecraft:overworld",
                         "Home Bases",
                         "Main Home",

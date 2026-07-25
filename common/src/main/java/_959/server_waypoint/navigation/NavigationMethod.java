@@ -16,13 +16,10 @@ public enum NavigationMethod {
     ACTIONBAR("actionbar", NavigationMethodKind.LIVE_DISPLAY),
     TEXT_DISPLAY("text_display", NavigationMethodKind.LIVE_DISPLAY);
 
-    private static final Set<NavigationMethod> DEFAULT_SELECTION = immutableSet(EnumSet.of(ACTIONBAR));
-    private static final Set<NavigationMethod> ALL_METHODS = immutableSet(EnumSet.of(
-            COMPASS,
-            MAP,
-            BOSSBAR,
-            ACTIONBAR
-    ));
+    private static final Set<NavigationMethod> BUILT_IN_DEFAULT_METHODS =
+            immutableSet(EnumSet.of(ACTIONBAR));
+    private static final Set<NavigationMethod> DEFINED_METHODS =
+            immutableSet(EnumSet.allOf(NavigationMethod.class));
 
     private final String id;
     private final NavigationMethodKind kind;
@@ -48,12 +45,21 @@ public enum NavigationMethod {
         return this.kind == NavigationMethodKind.LIVE_DISPLAY;
     }
 
-    public static Set<NavigationMethod> defaultSelection() {
-        return DEFAULT_SELECTION;
+    /**
+     * Returns the built-in fallback used when no configured defaults are available.
+     * Use {@link NavigationService#defaultNavigationMethods()} for a service's defaults.
+     */
+    public static Set<NavigationMethod> builtInDefaultMethods() {
+        return BUILT_IN_DEFAULT_METHODS;
     }
 
-    public static Set<NavigationMethod> allMethods() {
-        return ALL_METHODS;
+    /**
+     * Returns every method defined by the shared navigation model.
+     * Use {@link NavigationService#supportedNavigationMethods()} for methods available
+     * on a specific platform.
+     */
+    public static Set<NavigationMethod> definedMethods() {
+        return DEFINED_METHODS;
     }
 
     public static Optional<NavigationMethod> fromId(String id) {

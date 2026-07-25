@@ -47,14 +47,13 @@ public class StringCommandBuilder {
         return selectorCmd(NAVIGATE_COMMAND, dimensionName, listName, waypointName);
     }
 
-    public static String navigateUsingCmd(
+    public static String navigateWithMethodsCmd(
             String dimensionName,
             String listName,
             String waypointName,
-            String selection
+            String methods
     ) {
-        return navigateCmd(dimensionName, listName, waypointName)
-                + ' ' + USING_COMMAND + ' ' + selection;
+        return navigateCmd(dimensionName, listName, waypointName) + ' ' + methods;
     }
 
     public static String navigateUseCmd(String method) {

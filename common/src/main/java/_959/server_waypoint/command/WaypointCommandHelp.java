@@ -273,9 +273,9 @@ final class WaypointCommandHelp {
                         "waypoint.help.navigate.usage.start"
                 ))
                 .append(usageEntry(
-                        "/wp navigate <dimension> <list> <waypoint> using <selection>",
+                        "/wp navigate <dimension> <list> <waypoint> [default|all|<method>]",
                         NAVIGATE_COMMAND_PREFIX,
-                        "waypoint.help.navigate.usage.using"
+                        "waypoint.help.navigate.usage.methods"
                 ))
                 .append(usageEntry(
                         "/wp navigate use <method>",
@@ -294,29 +294,32 @@ final class WaypointCommandHelp {
                 ));
         if (withTextDisplay) {
             help = help.append(usageEntry(
-                            "/wp navigate text_display transformation translation <x> <y> <z>",
-                            NAVIGATE_COMMAND_PREFIX + "text_display transformation translation ",
+                            "/wp navigate config text_display transformation translation <x> <y> <z>",
+                            NAVIGATE_COMMAND_PREFIX + "config text_display transformation translation ",
                             "waypoint.help.navigate.usage.transformation.translation"
                     ))
                     .append(usageEntry(
-                            "/wp navigate text_display transformation rotation <x> <y> <z>",
-                            NAVIGATE_COMMAND_PREFIX + "text_display transformation rotation ",
+                            "/wp navigate config text_display transformation rotation <x> <y> <z>",
+                            NAVIGATE_COMMAND_PREFIX + "config text_display transformation rotation ",
                             "waypoint.help.navigate.usage.transformation.rotation"
                     ))
                     .append(usageEntry(
-                            "/wp navigate text_display transformation scale <x> <y> <z>",
-                            NAVIGATE_COMMAND_PREFIX + "text_display transformation scale ",
+                            "/wp navigate config text_display transformation scale <x> <y> <z>",
+                            NAVIGATE_COMMAND_PREFIX + "config text_display transformation scale ",
                             "waypoint.help.navigate.usage.transformation.scale"
                     ))
                     .append(usageEntry(
-                            "/wp navigate text_display transformation reset",
-                            NAVIGATE_COMMAND_PREFIX + "text_display transformation reset",
+                            "/wp navigate config text_display transformation reset",
+                            NAVIGATE_COMMAND_PREFIX + "config text_display transformation reset",
                             "waypoint.help.navigate.usage.transformation.reset"
                     ));
         }
         help = help
                 .append(section("waypoint.help.section.arguments"))
-                .append(argumentEntry("<selection>", "waypoint.help.navigate.argument.selection"))
+                .append(argumentEntry(
+                        "[default|all|<method>]",
+                        "waypoint.help.navigate.argument.target_methods"
+                ))
                 .append(argumentEntry("<method>", "waypoint.help.navigate.argument.method"));
         if (withTextDisplay) {
             help = help.append(argumentEntry(
@@ -348,12 +351,20 @@ final class WaypointCommandHelp {
                         exampleArgument("\"Oak Village\"", WAYPOINT_COLOR)
                 ))
                 .append(exampleEntry(
-                        "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\" using all",
+                        "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\" all",
                         "waypoint.help.navigate.example.all",
                         exampleArgument("minecraft:overworld", DIMENSION_COLOR),
                         exampleArgument("\"Villages\"", LIST_COLOR),
                         exampleArgument("\"Oak Village\"", WAYPOINT_COLOR),
                         exampleArgument("all", MODE_COLOR)
+                ))
+                .append(exampleEntry(
+                        "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\" bossbar",
+                        "waypoint.help.navigate.example.method",
+                        exampleArgument("minecraft:overworld", DIMENSION_COLOR),
+                        exampleArgument("\"Villages\"", LIST_COLOR),
+                        exampleArgument("\"Oak Village\"", WAYPOINT_COLOR),
+                        exampleArgument("bossbar", MODE_COLOR)
                 ))
                 .append(exampleEntry(
                         "/wp navigate use bossbar",
@@ -362,17 +373,17 @@ final class WaypointCommandHelp {
                 ));
         if (withTextDisplay) {
             help = help.append(exampleEntry(
-                            "/wp navigate text_display transformation translation 0 0.1 0",
+                            "/wp navigate config text_display transformation translation 0 0.1 0",
                             "waypoint.help.navigate.example.transformation.translation",
                             exampleArgument("0 0.1 0", NUMBER_COLOR)
                     ))
                     .append(exampleEntry(
-                            "/wp navigate text_display transformation rotation 5 0 0",
+                            "/wp navigate config text_display transformation rotation 5 0 0",
                             "waypoint.help.navigate.example.transformation.rotation",
                             exampleArgument("5 0 0", NUMBER_COLOR)
                     ))
                     .append(exampleEntry(
-                            "/wp navigate text_display transformation scale 1.35 1.35 1.35",
+                            "/wp navigate config text_display transformation scale 1.35 1.35 1.35",
                             "waypoint.help.navigate.example.transformation.scale",
                             exampleArgument("1.35 1.35 1.35", NUMBER_COLOR)
                     ));

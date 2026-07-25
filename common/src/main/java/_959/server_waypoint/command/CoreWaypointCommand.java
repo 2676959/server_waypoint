@@ -50,14 +50,11 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 import static _959.server_waypoint.core.waypoint.WaypointList.SERVER_N;
@@ -109,7 +106,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String TP_COMMAND = "tp";
     public static final String RELOAD_COMMAND = "reload";
     public static final String NAVIGATE_COMMAND = "navigate";
-    public static final String USING_COMMAND = "using";
     public static final String USE_COMMAND = "use";
     public static final String DISABLE_COMMAND = "disable";
     public static final String STATUS_COMMAND = "status";
@@ -123,6 +119,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String VIEW_COMMAND = "view";
     public static final String TREE_VIEW = "tree";
     public static final String FLAT_VIEW = "flat";
+    public static final String CONFIG_LITERAL_NODE = "config";
     public static final String DIMENSION_ARG = "dimension";
     public static final String LIST_NAME_ARG = "list name";
     public static final String WAYPOINT_NAME_ARG = "waypoint name";
@@ -189,7 +186,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     protected abstract D getSourceDimension(S source);
     protected abstract WaypointPos getSourcePosition(S source);
     protected abstract float getSourceYaw(S source);
-    protected abstract P getPlayer(S source);
+    protected abstract @Nullable P getPlayer(S source);
     protected abstract String getPlayerName(P player);
     protected abstract void teleportPlayer(S source, P player, D dimensionArgument, WaypointPos pos, int yaw);
     protected abstract Message getMessageFromComponent(Component component);
@@ -225,6 +222,15 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     @SuppressWarnings("unchecked")
     private <T> T getArgument(CommandContext<S> context, String name) {
         return context.getArgument(name, (Class<T>) Object.class);
+    }
+
+    private boolean hasArgument(CommandContext<S> context, String name) {
+        try {
+            getArgument(context, name);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     private CommandNode<S> selectorArguments(Command<S> command) {
@@ -779,7 +785,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             D dimensionArgument,
             String listName,
             String waypointName,
-            @Nullable String selection
+            @Nullable NavigationMethod method
     ) {
         P player = getNavigationPlayer(source);
         if (player == null || this.navigationService == null) {
@@ -797,13 +803,13 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                             waypoint
                     );
                     NavigationResult result;
-                    if (selection == null) {
+                    if (method == null) {
                         NavigationResult status = this.navigationService.status(player);
                         if (status.code() == NavigationResult.Code.NO_ACTIVE_SESSION) {
                             result = this.navigationService.navigate(
                                     player,
                                     target,
-                                    resolveNavigationSelection("default")
+                                    CONFIG.defaultNavigationMethods()
                             );
                         } else {
                             result = this.navigationService.retarget(player, target);
@@ -812,9 +818,42 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                         result = this.navigationService.navigate(
                                 player,
                                 target,
-                                resolveNavigationSelection(selection)
+                                method
                         );
                     }
+                    sendNavigationResult(source, result);
+                }
+        );
+    }
+
+    private void executeNavigate(
+            S source,
+            D dimensionArgument,
+            String listName,
+            String waypointName,
+            Set<NavigationMethod> methods
+    ) {
+        P player = getNavigationPlayer(source);
+        if (player == null || this.navigationService == null) {
+            return;
+        }
+        runWithSelectorTarget(
+                source,
+                dimensionArgument,
+                listName,
+                waypointName,
+                (fileManager, waypointList, waypoint) -> {
+                    NavigationTarget target = new NavigationTarget(
+                            fileManager.getDimensionName(),
+                            listName,
+                            waypoint
+                    );
+                    NavigationResult result;
+                    result = this.navigationService.navigate(
+                            player,
+                            target,
+                            methods
+                    );
                     sendNavigationResult(source, result);
                 }
         );
@@ -938,34 +977,15 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         return player;
     }
 
-    private Set<NavigationMethod> resolveNavigationSelection(String selection) {
-        String normalized = selection.toLowerCase(Locale.ROOT);
-        if ("default".equals(normalized)) {
-            normalized = CONFIG.defaultNavigationSelection().toLowerCase(Locale.ROOT);
-            if ("default".equals(normalized)) {
-                normalized = NavigationMethod.ACTIONBAR.id();
-            }
-        }
-        if ("all".equals(normalized)) {
-            EnumSet<NavigationMethod> methods = EnumSet.copyOf(NavigationMethod.allMethods());
-            methods.retainAll(this.supportedNavigationMethods());
-            return methods;
-        }
-        return NavigationMethod.fromId(normalized)
-                .filter(this::isNavigationMethodSupported)
-                .<Set<NavigationMethod>>map(EnumSet::of)
-                .orElseGet(() -> EnumSet.of(NavigationMethod.ACTIONBAR));
-    }
-
     private boolean isNavigationMethodSupported(NavigationMethod method) {
         return this.navigationService != null
-                && this.navigationService.supportedMethods().contains(method);
+                && this.navigationService.supportedNavigationMethods().contains(method);
     }
 
     private Set<NavigationMethod> supportedNavigationMethods() {
         return this.navigationService == null
                 ? Set.of()
-                : this.navigationService.supportedMethods();
+                : this.navigationService.supportedNavigationMethods();
     }
 
     private void sendNavigationResult(S source, NavigationResult result) {
@@ -1146,9 +1166,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         });
         navigateNode.then(statusNode);
 
+        LiteralArgumentBuilder<S> configNode = literal(CONFIG_LITERAL_NODE);
+
         if (this.isNavigationMethodSupported(NavigationMethod.TEXT_DISPLAY)) {
-            navigateNode.then(this.textDisplayTransformationCommandNode());
+            configNode.then(this.textDisplayTransformationCommandNode());
         }
+        navigateNode.then(configNode);
 
         RequiredArgumentBuilder<S, D> dimensionNode = argument(
                 DIMENSION_ARG,
@@ -1160,19 +1183,17 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         waypointNode.suggests(this.WAYPOINT_NAME_SUGGESTION);
         waypointNode.executes(navigateTargetCommand(null));
 
-        LiteralArgumentBuilder<S> usingNode = literal(USING_COMMAND);
         LiteralArgumentBuilder<S> defaultNode = literal("default");
-        defaultNode.executes(navigateTargetCommand("default"));
-        usingNode.then(defaultNode);
+        defaultNode.executes(navigateTargetWithDefaultCommand());
+        waypointNode.then(defaultNode);
         LiteralArgumentBuilder<S> allNode = literal("all");
-        allNode.executes(navigateTargetCommand("all"));
-        usingNode.then(allNode);
+        allNode.executes(navigateTargetWithAllCommand());
+        waypointNode.then(allNode);
         for (NavigationMethod method : this.supportedNavigationMethods()) {
             LiteralArgumentBuilder<S> methodNode = literal(method.id());
-            methodNode.executes(navigateTargetCommand(method.id()));
-            usingNode.then(methodNode);
+            methodNode.executes(navigateTargetCommand(method));
+            waypointNode.then(methodNode);
         }
-        waypointNode.then(usingNode);
         listNode.then(waypointNode);
         dimensionNode.then(listNode);
         navigateNode.then(dimensionNode);
@@ -1228,6 +1249,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 zArgument,
                 floatArg(-maximum, maximum)
         );
+        zNode.suggests(singleFloatSuggestion((context, builder) -> this.getTextDisplayTransformationZSuggestion(context, zArgument)));
         zNode.executes(context -> {
             operation.accept(
                     context.getSource(),
@@ -1243,25 +1265,53 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 yArgument,
                 floatArg(-maximum, maximum)
         );
+        yNode.suggests(singleFloatSuggestion((context, builder) -> this.getTextDisplayTransformationYSuggestion(context, yArgument)));
         yNode.then(zNode);
         RequiredArgumentBuilder<S, Float> xNode = argument(
                 xArgument,
                 floatArg(-maximum, maximum)
         );
+        xNode.suggests(singleFloatSuggestion((context, builder) -> this.getTextDisplayTransformationXSuggestion(context, xArgument)));
         xNode.then(yNode);
         LiteralArgumentBuilder<S> componentNode = literal(name);
         componentNode.then(xNode);
         return componentNode;
     }
 
-    private Command<S> navigateTargetCommand(@Nullable String selection) {
+    private Command<S> navigateTargetCommand(NavigationMethod method) {
         return context -> {
             executeNavigate(
                     context.getSource(),
                     getArgument(context, DIMENSION_ARG),
                     getString(context, LIST_NAME_ARG),
                     getString(context, WAYPOINT_NAME_ARG),
-                    selection
+                    method
+            );
+            return Command.SINGLE_SUCCESS;
+        };
+    }
+
+    private Command<S> navigateTargetWithAllCommand() {
+        return context -> {
+            executeNavigate(
+                    context.getSource(),
+                    getArgument(context, DIMENSION_ARG),
+                    getString(context, LIST_NAME_ARG),
+                    getString(context, WAYPOINT_NAME_ARG),
+                    this.navigationService.supportedNavigationMethods()
+            );
+            return Command.SINGLE_SUCCESS;
+        };
+    }
+
+    private Command<S> navigateTargetWithDefaultCommand() {
+        return context -> {
+            executeNavigate(
+                    context.getSource(),
+                    getArgument(context, DIMENSION_ARG),
+                    getString(context, LIST_NAME_ARG),
+                    getString(context, WAYPOINT_NAME_ARG),
+                    CONFIG.defaultNavigationMethods()
             );
             return Command.SINGLE_SUCCESS;
         };
@@ -1930,4 +1980,52 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         }
     }
 
+    private SuggestionProvider<S> singleFloatSuggestion(BiFunction<CommandContext<S>, SuggestionsBuilder, Float> floatProvider) {
+        return (context, builder) -> {
+            builder.suggest(String.valueOf(floatProvider.apply(context, builder)));
+            return builder.buildFuture();
+        };
+    }
+
+    private float getTextDisplayTransformationXSuggestion(CommandContext<S> context, String transformationArg) {
+        P player = getPlayer(context.getSource());
+        if (player == null) return 0F;
+        NavigationSession session = this.navigationService.status(player).session();
+        if (session != null) {
+            switch (transformationArg) {
+                case TRANSLATION_X_ARG, TRANSLATION_Y_ARG, TRANSLATION_Z_ARG: return session.textDisplayTransformation().translation().x;
+                case ROTATION_X_ARG, ROTATION_Y_ARG, ROTATION_Z_ARG: return session.textDisplayTransformation().rotation().x;
+                case SCALE_X_ARG, SCALE_Y_ARG, SCALE_Z_ARG: return session.textDisplayTransformation().scale().x;
+            }
+        }
+        return 0F;
+    }
+
+    private float getTextDisplayTransformationYSuggestion(CommandContext<S> context, String transformationArg) {
+        P player = getPlayer(context.getSource());
+        if (player == null) return 0F;
+        NavigationSession session = this.navigationService.status(player).session();
+        if (session != null) {
+            switch (transformationArg) {
+                case TRANSLATION_X_ARG, TRANSLATION_Y_ARG, TRANSLATION_Z_ARG: return session.textDisplayTransformation().translation().y;
+                case ROTATION_X_ARG, ROTATION_Y_ARG, ROTATION_Z_ARG: return session.textDisplayTransformation().rotation().y;
+                case SCALE_X_ARG, SCALE_Y_ARG, SCALE_Z_ARG: return session.textDisplayTransformation().scale().y;
+            }
+        }
+        return 0F;
+    }
+
+    private float getTextDisplayTransformationZSuggestion(CommandContext<S> context, String transformationArg) {
+        P player = getPlayer(context.getSource());
+        if (player == null) return 0F;
+        NavigationSession session = this.navigationService.status(player).session();
+        if (session != null) {
+            switch (transformationArg) {
+                case TRANSLATION_X_ARG, TRANSLATION_Y_ARG, TRANSLATION_Z_ARG: return session.textDisplayTransformation().translation().z;
+                case ROTATION_X_ARG, ROTATION_Y_ARG, ROTATION_Z_ARG: return session.textDisplayTransformation().rotation().z;
+                case SCALE_X_ARG, SCALE_Y_ARG, SCALE_Z_ARG: return session.textDisplayTransformation().scale().z;
+            }
+        }
+        return 0F;
+    }
 }

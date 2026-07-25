@@ -154,7 +154,7 @@ class NavigationServiceTest {
     }
 
     @Test
-    void usingAllPreflightFailureIsAtomicAndCarriesSlotCounts() {
+    void replacingWithEveryDefinedMethodPreflightFailureIsAtomicAndCarriesSlotCounts() {
         NavigationTarget oldTarget = target("Old", 10, 64, 0);
         this.service.navigate(this.firstPlayer, oldTarget);
         this.platform.nextPreflightResult = NavigationResult.insufficientInventory(2, 1);
@@ -162,7 +162,7 @@ class NavigationServiceTest {
         NavigationResult result = this.service.navigate(
                 this.firstPlayer,
                 target("New", 20, 64, 0),
-                NavigationMethod.allMethods()
+                NavigationMethod.definedMethods()
         );
 
         assertEquals(NavigationResult.Code.INSUFFICIENT_INVENTORY, result.code());
@@ -170,7 +170,10 @@ class NavigationServiceTest {
         assertEquals(1, result.availableSlots());
         assertEquals(oldTarget, result.session().target());
         assertEquals(Set.of(NavigationMethod.ACTIONBAR), result.session().enabledMethods());
-        assertEquals(NavigationMethod.allMethods(), this.platform.lastProposedSession.enabledMethods());
+        assertEquals(
+                NavigationMethod.definedMethods(),
+                this.platform.lastProposedSession.enabledMethods()
+        );
         assertEquals(0, this.handlers.get(NavigationMethod.COMPASS).enableCount);
         assertEquals(0, this.handlers.get(NavigationMethod.MAP).enableCount);
         assertEquals(0, this.handlers.get(NavigationMethod.ACTIONBAR).disableCount);
@@ -565,7 +568,11 @@ class NavigationServiceTest {
 
     @Test
     void tickSharesOneSnapshotAcrossLiveDisplayHandlersEveryFiveTicks() {
-        this.service.navigate(this.firstPlayer, target("Target", 10, 64, 0), NavigationMethod.allMethods());
+        this.service.navigate(
+                this.firstPlayer,
+                target("Target", 10, 64, 0),
+                NavigationMethod.definedMethods()
+        );
         this.platform.snapshotCount = 0;
         for (TestHandler handler : this.handlers.values()) {
             handler.updateCount = 0;
@@ -608,8 +615,16 @@ class NavigationServiceTest {
 
     @Test
     void removePlayerAndShutdownDisableHandlersAndClearSessions() {
-        this.service.navigate(this.firstPlayer, target("First", 10, 64, 0), this.service.supportedMethods());
-        this.service.navigate(this.secondPlayer, target("Second", 20, 64, 0), this.service.supportedMethods());
+        this.service.navigate(
+                this.firstPlayer,
+                target("First", 10, 64, 0),
+                this.service.supportedNavigationMethods()
+        );
+        this.service.navigate(
+                this.secondPlayer,
+                target("Second", 20, 64, 0),
+                this.service.supportedNavigationMethods()
+        );
 
         this.service.removePlayer(this.firstPlayer.uuid());
 
@@ -650,7 +665,7 @@ class NavigationServiceTest {
         this.service.navigate(
                 this.firstPlayer,
                 target("Target", 10, 64, 0),
-                this.service.supportedMethods()
+                this.service.supportedNavigationMethods()
         );
         this.handlers.get(NavigationMethod.COMPASS).failNextDisable = true;
 

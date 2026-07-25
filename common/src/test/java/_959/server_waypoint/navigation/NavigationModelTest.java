@@ -141,17 +141,21 @@ class NavigationModelTest {
         assertFalse(NavigationMethod.COMPASS.isLiveDisplay());
         assertTrue(NavigationMethod.ACTIONBAR.isLiveDisplay());
         assertTrue(NavigationMethod.TEXT_DISPLAY.isLiveDisplay());
-        assertEquals(Set.of(NavigationMethod.ACTIONBAR), NavigationMethod.defaultSelection());
+        assertEquals(
+                Set.of(NavigationMethod.ACTIONBAR),
+                NavigationMethod.builtInDefaultMethods()
+        );
         assertEquals(
                 EnumSet.of(
                         NavigationMethod.COMPASS,
                         NavigationMethod.MAP,
                         NavigationMethod.BOSSBAR,
-                        NavigationMethod.ACTIONBAR
+                        NavigationMethod.ACTIONBAR,
+                        NavigationMethod.TEXT_DISPLAY
                 ),
-                NavigationMethod.allMethods()
+                NavigationMethod.definedMethods()
         );
-        assertFalse(NavigationMethod.allMethods().contains(NavigationMethod.TEXT_DISPLAY));
+        assertTrue(NavigationMethod.definedMethods().contains(NavigationMethod.TEXT_DISPLAY));
     }
 
     private static NavigationTarget target() {

@@ -1,6 +1,7 @@
 package _959.server_waypoint.navigation;
 
 import _959.server_waypoint.core.WaypointFilesManagerCore;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -26,9 +27,9 @@ public final class NavigationService<P> {
 
     private final NavigationPlatform<P> platform;
     private final Map<NavigationMethod, NavigationMethodHandler<P>> handlers;
-    private final Set<NavigationMethod> supportedMethods;
+    private final Set<NavigationMethod> supportedNavigationMethods;
     private final Map<UUID, NavigationSession> sessions = new LinkedHashMap<>();
-    private final Set<NavigationMethod> defaultMethods;
+    private final Set<NavigationMethod> defaultNavigationMethods;
     private final int updateIntervalTicks;
     private int tickCounter;
 
@@ -36,27 +37,32 @@ public final class NavigationService<P> {
             NavigationPlatform<P> platform,
             Collection<? extends NavigationMethodHandler<P>> handlers
     ) {
-        this(platform, handlers, NavigationMethod.defaultSelection(), DEFAULT_UPDATE_INTERVAL_TICKS);
+        this(
+                platform,
+                handlers,
+                NavigationMethod.builtInDefaultMethods(),
+                DEFAULT_UPDATE_INTERVAL_TICKS
+        );
     }
 
     public NavigationService(
             NavigationPlatform<P> platform,
             Collection<? extends NavigationMethodHandler<P>> handlers,
-            Set<NavigationMethod> defaultMethods
+            Set<NavigationMethod> defaultNavigationMethods
     ) {
-        this(platform, handlers, defaultMethods, DEFAULT_UPDATE_INTERVAL_TICKS);
+        this(platform, handlers, defaultNavigationMethods, DEFAULT_UPDATE_INTERVAL_TICKS);
     }
 
     public NavigationService(
             NavigationPlatform<P> platform,
             Collection<? extends NavigationMethodHandler<P>> handlers,
-            Set<NavigationMethod> defaultMethods,
+            Set<NavigationMethod> defaultNavigationMethods,
             int updateIntervalTicks
     ) {
         this.platform = Objects.requireNonNull(platform, "platform");
         Objects.requireNonNull(handlers, "handlers");
-        Objects.requireNonNull(defaultMethods, "defaultMethods");
-        if (defaultMethods.isEmpty()) {
+        Objects.requireNonNull(defaultNavigationMethods, "defaultNavigationMethods");
+        if (defaultNavigationMethods.isEmpty()) {
             throw new IllegalArgumentException("At least one default navigation method is required");
         }
         if (updateIntervalTicks < 1) {
@@ -71,13 +77,13 @@ public final class NavigationService<P> {
                 throw new IllegalArgumentException("Duplicate handler for navigation method " + method.id());
             }
         }
-        this.supportedMethods = NavigationMethod.immutableSet(this.handlers.keySet());
-        this.defaultMethods = NavigationMethod.immutableSet(defaultMethods);
+        this.supportedNavigationMethods = NavigationMethod.immutableSet(this.handlers.keySet());
+        this.defaultNavigationMethods = NavigationMethod.immutableSet(defaultNavigationMethods);
         this.updateIntervalTicks = updateIntervalTicks;
     }
 
-    public Set<NavigationMethod> supportedMethods() {
-        return this.supportedMethods;
+    public Set<NavigationMethod> supportedNavigationMethods() {
+        return this.supportedNavigationMethods;
     }
 
     /**
@@ -92,7 +98,12 @@ public final class NavigationService<P> {
         if (this.sessions.containsKey(playerUuid)) {
             return this.retargetInternal(player, playerUuid, target);
         }
-        return this.replaceSelection(player, playerUuid, target, this.defaultMethods);
+        return this.replaceSelection(player, playerUuid, target, this.defaultNavigationMethods);
+    }
+
+    public NavigationResult navigate(P player, NavigationTarget target, NavigationMethod method) {
+        this.platform.assertServerThread();
+        return this.replaceSelection(player, this.platform.playerUuid(player), target, Set.of(method));
     }
 
     /**
@@ -407,7 +418,7 @@ public final class NavigationService<P> {
         );
     }
 
-    public NavigationResult status(P player) {
+    public NavigationResult status(@NotNull P player) {
         this.platform.assertServerThread();
         Objects.requireNonNull(player, "player");
         NavigationSession session = this.sessions.get(this.platform.playerUuid(player));
@@ -499,8 +510,8 @@ public final class NavigationService<P> {
         return this.sessions.size();
     }
 
-    public Set<NavigationMethod> defaultMethods() {
-        return this.defaultMethods;
+    public Set<NavigationMethod> defaultNavigationMethods() {
+        return this.defaultNavigationMethods;
     }
 
     private NavigationResult retargetInternal(P player, UUID playerUuid, NavigationTarget target) {
