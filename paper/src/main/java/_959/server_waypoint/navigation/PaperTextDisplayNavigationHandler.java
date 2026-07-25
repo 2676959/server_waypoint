@@ -1,0 +1,181 @@
+package _959.server_waypoint.navigation;
+
+import com.mojang.math.Transformation;
+import com.mojang.serialization.DataResult;
+import io.netty.buffer.Unpooled;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.translation.GlobalTranslator;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
+import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
+import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Brightness;
+import net.minecraft.world.entity.Display;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.phys.Vec3;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.entity.Player;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Paper adapter for the packet-only text display navigation method.
+ */
+public final class PaperTextDisplayNavigationHandler
+        extends AbstractTextDisplayNavigationHandler<Player, Display.TextDisplay> {
+    private static final int BACKGROUND_COLOR = 0x66000000;
+    private static final int LINE_WIDTH = 1000;
+
+    @Override
+    protected UUID playerUuid(Player player) {
+        return player.getUniqueId();
+    }
+
+    @Override
+    protected int playerEntityId(Player player) {
+        return player.getEntityId();
+    }
+
+    @Override
+    protected Object worldIdentity(Player player) {
+        return handle(player).level();
+    }
+
+    @Override
+    protected Display.TextDisplay createDisplay(Player player) {
+        ServerPlayer handle = handle(player);
+        Display.TextDisplay display = new Display.TextDisplay(
+                EntityType.TEXT_DISPLAY,
+                handle.level()
+        );
+        display.setPos(handle.getX(), handle.getY(), handle.getZ());
+        return display;
+    }
+
+    @Override
+    protected void sendSpawn(Player player, Display.TextDisplay display) {
+        ServerPlayer handle = handle(player);
+        handle.connection.send(new ClientboundAddEntityPacket(
+                display.getId(),
+                display.getUUID(),
+                handle.getX(),
+                handle.getY(),
+                handle.getZ(),
+                0.0F,
+                0.0F,
+                EntityType.TEXT_DISPLAY,
+                0,
+                Vec3.ZERO,
+                0.0D
+        ));
+    }
+
+    @Override
+    protected void sendRemove(Player player, Display.TextDisplay display) {
+        ServerPlayer handle = handle(player);
+        handle.connection.send(new ClientboundRemoveEntitiesPacket(display.getId()));
+        handle.connection.send(new ClientboundSetPassengersPacket(handle));
+    }
+
+    @Override
+    protected void setText(Player player, Display.TextDisplay display, Component text) {
+        Component translated = GlobalTranslator.render(text, player.locale());
+        CompoundTag tag = display.saveWithoutId(new CompoundTag());
+        tag.putString("text", GsonComponentSerializer.gson().serialize(translated));
+        display.load(tag);
+    }
+
+    @Override
+    protected void setTransformation(
+            Display.TextDisplay display,
+            Vector3f translation,
+            Quaternionf rotation,
+            Vector3f scale
+    ) {
+        CompoundTag tag = display.saveWithoutId(new CompoundTag());
+        tag.put(
+                "transformation",
+                encode(
+                        Transformation.EXTENDED_CODEC.encodeStart(
+                                NbtOps.INSTANCE,
+                                new Transformation(
+                                        new Vector3f(translation),
+                                        new Quaternionf(rotation),
+                                        new Vector3f(scale),
+                                        new Quaternionf()
+                                )
+                        ),
+                        "transformation"
+                )
+        );
+        tag.put(
+                "brightness",
+                encode(
+                        Brightness.CODEC.encodeStart(NbtOps.INSTANCE, Brightness.FULL_BRIGHT),
+                        "brightness"
+                )
+        );
+        tag.putString("billboard", "center");
+        tag.putInt("background", BACKGROUND_COLOR);
+        tag.putInt("line_width", LINE_WIDTH);
+        tag.putBoolean("shadow", true);
+        tag.putBoolean("see_through", true);
+        display.load(tag);
+    }
+
+    @Override
+    protected void sendEntityData(Player player, Display.TextDisplay display) {
+        List<SynchedEntityData.DataValue<?>> data = display.getEntityData().packDirty();
+        if (data != null) {
+            handle(player).connection.send(
+                    new ClientboundSetEntityDataPacket(display.getId(), data)
+            );
+        }
+    }
+
+    @Override
+    protected void sendPassengers(Player player, Display.TextDisplay display) {
+        ServerPlayer handle = handle(player);
+        handle.connection.send(passengerPacket(handle, display.getId()));
+    }
+
+    private static Tag encode(DataResult<Tag> result, String field) {
+        return result.result().orElseThrow(() -> new IllegalStateException(
+                "Could not encode text display " + field
+        ));
+    }
+
+    private static ClientboundSetPassengersPacket passengerPacket(
+            ServerPlayer player,
+            int displayEntityId
+    ) {
+        int[] passengerIds = new int[player.getPassengers().size() + 1];
+        for (int index = 0; index < player.getPassengers().size(); index++) {
+            passengerIds[index] = player.getPassengers().get(index).getId();
+        }
+        passengerIds[passengerIds.length - 1] = displayEntityId;
+
+        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+        try {
+            buffer.writeVarInt(player.getId());
+            buffer.writeVarIntArray(passengerIds);
+            return ClientboundSetPassengersPacket.STREAM_CODEC.decode(buffer);
+        } finally {
+            buffer.release();
+        }
+    }
+
+    private static ServerPlayer handle(Player player) {
+        return ((CraftPlayer) player).getHandle();
+    }
+}

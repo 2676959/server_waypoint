@@ -27,10 +27,6 @@ import org.jetbrains.annotations.Nullable;
 @SuppressWarnings("UnstableApiUsage")
 public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, Player, World, BlockPositionResolver> {
 
-    public WaypointCommand(WaypointServerCore waypointServer, PlatformMessageSender<CommandSourceStack, Player> sender, PermissionManager<CommandSourceStack, String, Player> permissionManager) {
-        super(waypointServer, sender, permissionManager, ArgumentTypes::world, ArgumentTypes::blockPosition);
-    }
-
     public WaypointCommand(
             WaypointServerCore waypointServer,
             PlatformMessageSender<CommandSourceStack, Player> sender,

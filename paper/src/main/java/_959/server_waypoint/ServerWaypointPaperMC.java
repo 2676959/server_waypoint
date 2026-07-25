@@ -18,6 +18,7 @@ import _959.server_waypoint.navigation.PaperMapNavigationHandler;
 import _959.server_waypoint.navigation.PaperNavigationItemManager;
 import _959.server_waypoint.navigation.PaperNavigationMapCache;
 import _959.server_waypoint.navigation.PaperNavigationPlatform;
+import _959.server_waypoint.navigation.PaperTextDisplayNavigationHandler;
 import _959.server_waypoint.network.PaperChatMessageHandler;
 import _959.server_waypoint.network.PaperMessageSender;
 import _959.server_waypoint.server.WaypointServerPlugin;
@@ -92,11 +93,14 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         );
         PaperBossbarNavigationHandler bossbarHandler = new PaperBossbarNavigationHandler();
         PaperActionbarNavigationHandler actionbarHandler = new PaperActionbarNavigationHandler();
+        PaperTextDisplayNavigationHandler textDisplayHandler =
+                new PaperTextDisplayNavigationHandler();
         List<NavigationMethodHandler<Player>> navigationHandlers = List.of(
                 compassHandler,
                 mapHandler,
                 bossbarHandler,
-                actionbarHandler
+                actionbarHandler,
+                textDisplayHandler
         );
         this.navigationService = new NavigationService<>(navigationPlatform, navigationHandlers);
 

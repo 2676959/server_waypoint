@@ -158,7 +158,7 @@
   "waypoint.help.navigate.method.map": "以路径点附近为中心并带有目标标记的临时固定比例地图",
   "waypoint.help.navigate.method.bossbar": "玩家专属Boss栏，显示水平距离、高度差和转向指引；进度指示左右朝向，路径点位于身后时变为红色",
   "waypoint.help.navigate.method.actionbar": "玩家专属操作栏，显示水平距离、高度差、转向和转角",
-  "waypoint.help.navigate.method.text_display": "使用玩家专属骑乘文字展示实体模拟HUD的实验性方式；仅适用于26.1.2 Fabric，且在该目标上包含在all中",
+  "waypoint.help.navigate.method.text_display": "使用玩家专属骑乘文字展示实体模拟HUD的实验性方式；适用于所有模组端与Paper目标，并包含在all中",
   "waypoint.help.navigate.section.inventory": "背包要求",
   "waypoint.help.navigate.inventory": "每种缺失的物品导航方式需要一个主背包或快捷栏空位；现有的本人导航物品会原位更新",
   "waypoint.help.navigate.example.default": "使用配置的默认方式组合导航至 Oak Village",

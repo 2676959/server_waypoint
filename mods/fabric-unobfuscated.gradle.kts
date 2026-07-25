@@ -45,9 +45,6 @@ sourceSets.main {
     java {
         exclude("_959/server_waypoint/forge")
         exclude("_959/server_waypoint/neoforge")
-        if (minecraft != "26.1.2") {
-            exclude("_959/server_waypoint/fabric/navigation/TextDisplayNavigationHandler.java")
-        }
     }
     resources {
         exclude("META-INF")

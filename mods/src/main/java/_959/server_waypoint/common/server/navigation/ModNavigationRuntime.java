@@ -2,8 +2,6 @@ package _959.server_waypoint.common.server.navigation;
 
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.server.WaypointServerMod;
-//? if =26.1.2 && fabric
-import _959.server_waypoint.fabric.navigation.TextDisplayNavigationHandler;
 import _959.server_waypoint.navigation.NavigationMethod;
 import _959.server_waypoint.navigation.NavigationResult;
 import _959.server_waypoint.navigation.NavigationService;
@@ -28,8 +26,7 @@ public final class ModNavigationRuntime {
     private final MapNavigationHandler mapHandler = new MapNavigationHandler(this.itemManager, this.mapCache);
     private final BossbarNavigationHandler bossbarHandler = new BossbarNavigationHandler();
     private final ActionbarNavigationHandler actionbarHandler = new ActionbarNavigationHandler();
-    //? if =26.1.2 && fabric
-    private final TextDisplayNavigationHandler textDisplayHandler = new TextDisplayNavigationHandler();
+    private final ModTextDisplayNavigationHandler textDisplayHandler = new ModTextDisplayNavigationHandler();
     private final ModNavigationPlatform platform = new ModNavigationPlatform(this.itemManager);
     private final NavigationService<ServerPlayer> service = new NavigationService<>(
             this.platform,
@@ -37,8 +34,8 @@ public final class ModNavigationRuntime {
                     this.compassHandler,
                     this.mapHandler,
                     this.bossbarHandler,
-                    this.actionbarHandler
-                    /*? if =26.1.2 && fabric {*/, this.textDisplayHandler/*?}*/
+                    this.actionbarHandler,
+                    this.textDisplayHandler
             )
     );
 

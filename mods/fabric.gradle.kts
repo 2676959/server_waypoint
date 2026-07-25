@@ -59,7 +59,6 @@ sourceSets.main {
     java {
         exclude("_959/server_waypoint/forge")
         exclude("_959/server_waypoint/neoforge")
-        exclude("_959/server_waypoint/fabric/navigation/TextDisplayNavigationHandler.java")
     }
     resources {
         exclude("META-INF")
@@ -188,6 +187,7 @@ tasks.shadowJar {
 tasks.remapJar {
     inputFile.set(tasks.shadowJar.flatMap { it.archiveFile })
     archiveClassifier.set("")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     dependsOn(tasks.shadowJar)
 }
 

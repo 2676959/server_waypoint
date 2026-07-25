@@ -52,6 +52,7 @@ import org.joml.Vector3f;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
@@ -87,7 +88,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private final WaypointQueryEngine waypointQueryEngine;
     private final PermissionKeys<K> permissionKeys;
     private final PermissionManager<S, K, P> permissionManager;
-    private final @Nullable NavigationService<P> navigationService;
+    private final NavigationService<P> navigationService;
     private final Supplier<ArgumentType<D>> dimensionArgumentProvider;
     private final Supplier<ArgumentType<B>> blockPosArgumentProvider;
     private final SuggestionProvider<S> WAYPOINT_NAME_SUGGESTION = new WaypointNameSuggestion();
@@ -148,24 +149,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             WaypointServerCore waypointServer,
             PlatformMessageSender<S, P> sender,
             PermissionManager<S, K, P> permissionManager,
-            Supplier<ArgumentType<D>> dimensionArgument,
-            Supplier<ArgumentType<B>> blockPositionArgument
-    ) {
-        this(
-                waypointServer,
-                sender,
-                permissionManager,
-                null,
-                dimensionArgument,
-                blockPositionArgument
-        );
-    }
-
-    public CoreWaypointCommand(
-            WaypointServerCore waypointServer,
-            PlatformMessageSender<S, P> sender,
-            PermissionManager<S, K, P> permissionManager,
-            @Nullable NavigationService<P> navigationService,
+            NavigationService<P> navigationService,
             Supplier<ArgumentType<D>> dimensionArgument,
             Supplier<ArgumentType<B>> blockPositionArgument
     ) {
@@ -173,7 +157,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         this.waypointQueryEngine = new WaypointQueryEngine(waypointServer);
         this.sender = sender;
         this.permissionManager = permissionManager;
-        this.navigationService = navigationService;
+        this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
         this.dimensionArgumentProvider = dimensionArgument;
         this.blockPosArgumentProvider = blockPositionArgument;
         this.permissionKeys = permissionManager.keys;
@@ -212,7 +196,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     }
 
     private boolean hasNavigatePermission(S source) {
-        return this.navigationService != null && this.permissionManager.hasPermission(
+        return this.permissionManager.hasPermission(
                 source,
                 this.permissionKeys.navigate(),
                 CONFIG.CommandPermission().navigate()
@@ -788,7 +772,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             @Nullable NavigationMethod method
     ) {
         P player = getNavigationPlayer(source);
-        if (player == null || this.navigationService == null) {
+        if (player == null) {
             return;
         }
         runWithSelectorTarget(
@@ -834,7 +818,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             Set<NavigationMethod> methods
     ) {
         P player = getNavigationPlayer(source);
-        if (player == null || this.navigationService == null) {
+        if (player == null) {
             return;
         }
         runWithSelectorTarget(
@@ -861,35 +845,35 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     private void executeNavigateUse(S source, NavigationMethod method) {
         P player = getNavigationPlayer(source);
-        if (player != null && this.navigationService != null) {
+        if (player != null) {
             sendNavigationResult(source, this.navigationService.enableMethod(player, method));
         }
     }
 
     private void executeNavigateDisable(S source) {
         P player = getNavigationPlayer(source);
-        if (player != null && this.navigationService != null) {
+        if (player != null) {
             sendNavigationResult(source, this.navigationService.disableAll(player));
         }
     }
 
     private void executeNavigateDisable(S source, NavigationMethod method) {
         P player = getNavigationPlayer(source);
-        if (player != null && this.navigationService != null) {
+        if (player != null) {
             sendNavigationResult(source, this.navigationService.disableMethod(player, method));
         }
     }
 
     private void executeNavigateStatus(S source) {
         P player = getNavigationPlayer(source);
-        if (player != null && this.navigationService != null) {
+        if (player != null) {
             sendNavigationResult(source, this.navigationService.status(player));
         }
     }
 
     private void executeTextDisplayTransformationReset(S source) {
         P player = getNavigationPlayer(source);
-        if (player == null || this.navigationService == null) {
+        if (player == null) {
             return;
         }
         NavigationResult result = this.navigationService.resetTextDisplayTransformation(player);
@@ -906,7 +890,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     private void executeTextDisplayTranslation(S source, Vector3f translation) {
         P player = getNavigationPlayer(source);
-        if (player == null || this.navigationService == null) {
+        if (player == null) {
             return;
         }
         NavigationResult result = this.navigationService.updateTextDisplayTranslation(
@@ -918,7 +902,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     private void executeTextDisplayRotation(S source, Vector3f rotation) {
         P player = getNavigationPlayer(source);
-        if (player == null || this.navigationService == null) {
+        if (player == null) {
             return;
         }
         NavigationResult result = this.navigationService.updateTextDisplayRotation(
@@ -930,7 +914,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     private void executeTextDisplayScale(S source, Vector3f scale) {
         P player = getNavigationPlayer(source);
-        if (player == null || this.navigationService == null) {
+        if (player == null) {
             return;
         }
         NavigationResult result = this.navigationService.updateTextDisplayScale(player, scale);
@@ -978,14 +962,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     }
 
     private boolean isNavigationMethodSupported(NavigationMethod method) {
-        return this.navigationService != null
-                && this.navigationService.supportedNavigationMethods().contains(method);
+        return this.navigationService.supportedNavigationMethods().contains(method);
     }
 
     private Set<NavigationMethod> supportedNavigationMethods() {
-        return this.navigationService == null
-                ? Set.of()
-                : this.navigationService.supportedNavigationMethods();
+        return this.navigationService.supportedNavigationMethods();
     }
 
     private void sendNavigationResult(S source, NavigationResult result) {

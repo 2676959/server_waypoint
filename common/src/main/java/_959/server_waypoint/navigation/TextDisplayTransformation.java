@@ -58,7 +58,7 @@ public record TextDisplayTransformation(
     }
 
     public static Vector3f baseRotation() {
-        return new Vector3f(0.0F, 0.0F, 0.0F);
+        return new Vector3f(-48.0F, 0.0F, 0.0F);
     }
 
     public static Vector3f baseScale() {

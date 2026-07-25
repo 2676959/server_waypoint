@@ -158,7 +158,7 @@
   "waypoint.help.navigate.method.map": "A temporary fixed-scale map centered near the waypoint with a target marker",
   "waypoint.help.navigate.method.bossbar": "A private bossbar showing horizontal and vertical distance plus turn guidance; progress tracks left/right heading and turns red when the waypoint is behind you",
   "waypoint.help.navigate.method.actionbar": "A private actionbar showing horizontal and vertical distance, turn direction, and turn angle",
-  "waypoint.help.navigate.method.text_display": "Experimental fake HUD using a private text display riding the player; available only on 26.1.2 Fabric and included in all on that target",
+  "waypoint.help.navigate.method.text_display": "Experimental fake HUD using a private text display riding the player; available on every modded and Paper target and included in all",
   "waypoint.help.navigate.section.inventory": "Inventory requirements",
   "waypoint.help.navigate.inventory": "Each missing item method needs one empty main-inventory or hotbar slot; existing owned navigation items are updated in place",
   "waypoint.help.navigate.example.default": "Navigate to Oak Village with the configured default methods",

@@ -10,6 +10,10 @@ import _959.server_waypoint.core.network.buffer.MessageBuffer;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.navigation.NavigationPlatform;
+import _959.server_waypoint.navigation.NavigationService;
+import _959.server_waypoint.navigation.NavigationSnapshot;
+import _959.server_waypoint.navigation.NavigationTarget;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -28,6 +32,8 @@ import java.io.StringReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -128,6 +134,7 @@ class CoreWaypointCommandListTest {
         assertTrue(helpText.contains("/wp download [<dimension> [<list> [<waypoint>]]]"));
         assertTrue(helpText.contains("/wp add"));
         assertTrue(helpText.contains("/wp edit"));
+        assertTrue(helpText.contains("/wp navigate"));
         assertTrue(helpText.contains("/wp remove <dimension> <list> [<waypoint>]"));
         assertTrue(helpText.contains("/wp tp <dimension> <list> <waypoint>"));
         assertTrue(helpText.contains("/wp reload"));
@@ -135,6 +142,7 @@ class CoreWaypointCommandListTest {
                 "waypoint.help.title",
                 "waypoint.help.list",
                 "waypoint.help.download",
+                "waypoint.help.navigate",
                 "waypoint.help.add",
                 "waypoint.help.edit",
                 "waypoint.help.remove",
@@ -146,6 +154,7 @@ class CoreWaypointCommandListTest {
         assertEquals(List.of(
                 "/wp list ",
                 "/wp download ",
+                "/wp navigate ",
                 "/wp add ",
                 "/wp edit ",
                 "/wp remove ",
@@ -154,6 +163,7 @@ class CoreWaypointCommandListTest {
         ), suggestedCommands(help));
         assertEquals(List.of(
                 "/wp help list",
+                "/wp help navigate",
                 "/wp help add",
                 "/wp help edit"
         ), runCommands(help));
@@ -705,9 +715,30 @@ class CoreWaypointCommandListTest {
                     server,
                     sender,
                     permissionManager,
+                    navigationService(),
                     StringArgumentType::string,
                     StringArgumentType::string
             );
+        }
+
+        private static NavigationService<Object> navigationService() {
+            NavigationPlatform<Object> platform = new NavigationPlatform<>() {
+                @Override
+                public UUID playerUuid(Object player) {
+                    return new UUID(0, 0);
+                }
+
+                @Override
+                public Optional<Object> findPlayer(UUID playerUuid) {
+                    return Optional.empty();
+                }
+
+                @Override
+                public NavigationSnapshot snapshot(Object player, NavigationTarget target) {
+                    return NavigationSnapshot.wrongDimension();
+                }
+            };
+            return new NavigationService<>(platform, List.of());
         }
 
         @Override
