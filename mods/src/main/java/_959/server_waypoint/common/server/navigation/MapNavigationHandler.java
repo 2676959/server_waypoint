@@ -15,8 +15,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.UUID;
-
 final class MapNavigationHandler implements NavigationMethodHandler<ServerPlayer> {
     private final ModNavigationItemManager itemManager;
     private final ModNavigationMapCache mapCache;
@@ -51,12 +49,6 @@ final class MapNavigationHandler implements NavigationMethodHandler<ServerPlayer
     @Override
     public void disable(ServerPlayer player, NavigationSession session) {
         this.itemManager.removeMethodItems(player, this.method());
-        this.mapCache.release(player.getUUID());
-    }
-
-    @Override
-    public void cleanupPlayer(UUID playerUuid, NavigationSession session) {
-        this.mapCache.release(playerUuid);
     }
 
     NavigationResult restore(ServerPlayer player, NavigationSession session) {
@@ -64,7 +56,7 @@ final class MapNavigationHandler implements NavigationMethodHandler<ServerPlayer
     }
 
     private NavigationResult install(ServerPlayer player, NavigationTarget target) {
-        ModNavigationMapCache.PreparedMap preparedMap = this.prepareMap(target);
+        ModNavigationMapCache.PreparedMap preparedMap = this.prepareMap(player, target);
         if (preparedMap == null) {
             return NavigationResult.failure(NavigationResult.Code.TARGET_UNAVAILABLE);
         }
@@ -73,19 +65,21 @@ final class MapNavigationHandler implements NavigationMethodHandler<ServerPlayer
                 this.method(),
                 preparedMap.item()
         );
-        if (result.successful()) {
-            this.mapCache.activate(player.getUUID(), preparedMap);
-        }
         return result;
     }
 
-    private @Nullable ModNavigationMapCache.PreparedMap prepareMap(NavigationTarget target) {
+    private @Nullable ModNavigationMapCache.PreparedMap prepareMap(
+            ServerPlayer player,
+            NavigationTarget target
+    ) {
         MinecraftServer server = WaypointServerMod.MINECRAFT_SERVER;
         ResourceKey<Level> dimension = DimensionFileHelper.getDimensionKey(target.dimensionName());
         if (server == null || dimension == null) {
             return null;
         }
         ServerLevel targetLevel = server.getLevel(dimension);
-        return targetLevel == null ? null : this.mapCache.prepare(targetLevel, target);
+        return targetLevel == null
+                ? null
+                : this.mapCache.prepare(player, targetLevel, target);
     }
 }

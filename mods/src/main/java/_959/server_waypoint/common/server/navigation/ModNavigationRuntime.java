@@ -128,7 +128,6 @@ public final class ModNavigationRuntime {
 
     public void shutdown() {
         this.service.shutdown();
-        this.mapCache.clear();
     }
 
     public void sendMovementDenied(ServerPlayer player) {

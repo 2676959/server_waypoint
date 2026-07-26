@@ -84,16 +84,18 @@ public final class PaperMapNavigationHandler implements
     private InstallResult installForTarget(Player player, NavigationTarget target) {
         UUID playerUuid = player.getUniqueId();
         PaperNavigationMapCache.Lease currentLease = this.leases.get(playerUuid);
-        if (currentLease != null && currentLease.matches(target)) {
+        if (currentLease != null) {
+            if (!currentLease.updateTarget(target)) {
+                return InstallResult.TARGET_UNAVAILABLE;
+            }
             ItemStack item = this.createItem(player, target, currentLease);
             if (!this.itemManager.install(player, this.method(), item)) {
                 return InstallResult.INSUFFICIENT_INVENTORY;
             }
-            currentLease.updateTarget(target);
             return InstallResult.SUCCESS;
         }
 
-        PaperNavigationMapCache.Lease newLease = this.mapCache.acquire(playerUuid, target);
+        PaperNavigationMapCache.Lease newLease = this.mapCache.acquire(player, target);
         if (newLease == null) {
             return InstallResult.TARGET_UNAVAILABLE;
         }
@@ -104,9 +106,6 @@ public final class PaperMapNavigationHandler implements
         }
 
         this.leases.put(playerUuid, newLease);
-        if (currentLease != null) {
-            currentLease.close();
-        }
         return InstallResult.SUCCESS;
     }
 
@@ -118,7 +117,6 @@ public final class PaperMapNavigationHandler implements
         ItemStack item = new ItemStack(Material.FILLED_MAP, 1);
         MapMeta meta = (MapMeta) item.getItemMeta();
         meta.setMapView(lease.view());
-        meta.setScaling(false);
         meta.displayName(Component.text(
                 target.waypointName(),
                 TextColor.color(target.rgb())

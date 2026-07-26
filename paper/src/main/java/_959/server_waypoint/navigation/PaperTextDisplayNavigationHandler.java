@@ -1,14 +1,10 @@
 package _959.server_waypoint.navigation;
 
 import com.mojang.math.Transformation;
-import com.mojang.serialization.DataResult;
+import io.papermc.paper.adventure.PaperAdventure;
 import io.netty.buffer.Unpooled;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
@@ -90,9 +86,7 @@ public final class PaperTextDisplayNavigationHandler
     @Override
     protected void setText(Player player, Display.TextDisplay display, Component text) {
         Component translated = GlobalTranslator.render(text, player.locale());
-        CompoundTag tag = display.saveWithoutId(new CompoundTag());
-        tag.putString("text", GsonComponentSerializer.gson().serialize(translated));
-        display.load(tag);
+        display.setText(PaperAdventure.asVanilla(translated));
     }
 
     @Override
@@ -102,35 +96,28 @@ public final class PaperTextDisplayNavigationHandler
             Quaternionf rotation,
             Vector3f scale
     ) {
-        CompoundTag tag = display.saveWithoutId(new CompoundTag());
-        tag.put(
-                "transformation",
-                encode(
-                        Transformation.EXTENDED_CODEC.encodeStart(
-                                NbtOps.INSTANCE,
-                                new Transformation(
-                                        new Vector3f(translation),
-                                        new Quaternionf(rotation),
-                                        new Vector3f(scale),
-                                        new Quaternionf()
-                                )
-                        ),
-                        "transformation"
+        display.setTransformation(
+                new Transformation(
+                        new Vector3f(translation),
+                        new Quaternionf(rotation),
+                        new Vector3f(scale),
+                        new Quaternionf()
                 )
         );
-        tag.put(
-                "brightness",
-                encode(
-                        Brightness.CODEC.encodeStart(NbtOps.INSTANCE, Brightness.FULL_BRIGHT),
-                        "brightness"
-                )
+        display.setBrightnessOverride(Brightness.FULL_BRIGHT);
+        display.setBillboardConstraints(Display.BillboardConstraints.CENTER);
+        display.getEntityData().set(
+                Display.TextDisplay.DATA_BACKGROUND_COLOR_ID,
+                BACKGROUND_COLOR
         );
-        tag.putString("billboard", "center");
-        tag.putInt("background", BACKGROUND_COLOR);
-        tag.putInt("line_width", LINE_WIDTH);
-        tag.putBoolean("shadow", true);
-        tag.putBoolean("see_through", true);
-        display.load(tag);
+        display.getEntityData().set(
+                Display.TextDisplay.DATA_LINE_WIDTH_ID,
+                LINE_WIDTH
+        );
+        display.setFlags(
+                (byte) (Display.TextDisplay.FLAG_SHADOW
+                        | Display.TextDisplay.FLAG_SEE_THROUGH)
+        );
     }
 
     @Override
@@ -147,12 +134,6 @@ public final class PaperTextDisplayNavigationHandler
     protected void sendPassengers(Player player, Display.TextDisplay display) {
         ServerPlayer handle = handle(player);
         handle.connection.send(passengerPacket(handle, display.getId()));
-    }
-
-    private static Tag encode(DataResult<Tag> result, String field) {
-        return result.result().orElseThrow(() -> new IllegalStateException(
-                "Could not encode text display " + field
-        ));
     }
 
     private static ClientboundSetPassengersPacket passengerPacket(
