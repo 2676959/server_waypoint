@@ -44,9 +44,13 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
+import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 import static _959.server_waypoint.core.network.MessageChannelID.*;
 
 public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageListener, IPlatformConfigPath {
+    private static final String BUILD_PROPERTIES_RESOURCE = "/server-waypoint-paper.properties";
+    private static final String MINECRAFT_VERSION_RANGE_PROPERTY = "minecraft-version-range";
+
     private WaypointServerPlugin waypointServer;
     private WaypointCommand waypointCommand;
     private NavigationService<Player> navigationService;
@@ -58,6 +62,8 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
     @Override
     @SuppressWarnings("UnstableApiUsage")
     public void onEnable() {
+        enforceSupportedMinecraftVersion();
+
         // Plugin startup logic
         // You can find the plugin id of your plugins on
         // the page https://bstats.org/what-is-my-plugin-id
@@ -209,5 +215,13 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
 
     public static JavaPlugin getSelf() {
         return getPlugin(ServerWaypointPaperMC.class);
+    }
+
+    private static void enforceSupportedMinecraftVersion() {
+        String minecraft = Bukkit.getMinecraftVersion();
+        if (!CompatibilityChecker.isCompatible(minecraft)) {
+            LOGGER.error("This build is only compatible with Minecraft: {}", CompatibilityChecker.getSupportedVersions());
+            throw new IllegalStateException("Server waypoint plugin is incompatible with Minecraft %s".formatted(minecraft));
+        };
     }
 }

@@ -14,7 +14,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Brightness;
 import net.minecraft.world.entity.Display;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
@@ -24,6 +23,13 @@ import org.joml.Vector3f;
 import java.util.List;
 import java.util.UUID;
 
+//? if >= 26.2 {
+/*import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityType;
+*///?} else {
+import net.minecraft.world.entity.EntityType;
+//?}
+
 /**
  * Paper adapter for the packet-only text display navigation method.
  */
@@ -31,6 +37,11 @@ public final class PaperTextDisplayNavigationHandler
         extends AbstractTextDisplayNavigationHandler<Player, Display.TextDisplay> {
     private static final int BACKGROUND_COLOR = 0x66000000;
     private static final int LINE_WIDTH = 1000;
+    //? if >= 26.2 {
+    /*private static final EntityType<Display.TextDisplay> TEXT_DISPLAY = EntityTypes.TEXT_DISPLAY;
+    *///?} else {
+    private static final EntityType<Display.TextDisplay> TEXT_DISPLAY = EntityType.TEXT_DISPLAY;
+    //?}
 
     @Override
     protected UUID playerUuid(Player player) {
@@ -51,7 +62,7 @@ public final class PaperTextDisplayNavigationHandler
     protected Display.TextDisplay createDisplay(Player player) {
         ServerPlayer handle = handle(player);
         Display.TextDisplay display = new Display.TextDisplay(
-                EntityType.TEXT_DISPLAY,
+                TEXT_DISPLAY,
                 handle.level()
         );
         display.setPos(handle.getX(), handle.getY(), handle.getZ());
@@ -69,7 +80,7 @@ public final class PaperTextDisplayNavigationHandler
                 handle.getZ(),
                 0.0F,
                 0.0F,
-                EntityType.TEXT_DISPLAY,
+                TEXT_DISPLAY,
                 0,
                 Vec3.ZERO,
                 0.0D

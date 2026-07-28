@@ -10,6 +10,7 @@ val mod_version: String by project
 val mod_id: String by project
 val mcVersion : String by project
 val mcVersionRange : String by project
+val targetJavaVersion = if (stonecutter.eval(stonecutter.current.version, ">=26.1")) 25 else 21
 
 base {
     archivesName.set("$mod_id-$mod_version-paper-mc$mcVersionRange")
@@ -56,14 +57,25 @@ tasks.shadowJar {
 
 tasks.processResources {
     inputs.property("version", mod_version)
-    filesMatching("paper-plugin.yml") {
-        expand("version" to mod_version)
+    inputs.property("mcVersion", mcVersion)
+    filesMatching(listOf("paper-plugin.yml")) {
+        expand(
+            "version" to mod_version,
+            "mcVersion" to mcVersion
+        )
     }
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
+    }
+    targetCompatibility = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = JavaVersion.toVersion(targetJavaVersion)
 }
 
 artifacts {
@@ -71,7 +83,7 @@ artifacts {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.release.set(21)
+    options.release.set(targetJavaVersion)
     options.encoding = "UTF-8"
     options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
 }

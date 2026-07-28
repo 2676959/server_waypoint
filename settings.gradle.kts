@@ -56,6 +56,7 @@ stonecutter {
         // 1.21    : Transformation(Vector3f, Quaternionf, Vector3f, Quaternionf)
         // 1.21.11 : Transformation(Vector3fc, Quaternionfc, Vector3fc, Quaternionfc)
         vers("1.21.11-paper", "1.21.11")
+        vers("26.2-paper", "26.2")
     }
 }
 
