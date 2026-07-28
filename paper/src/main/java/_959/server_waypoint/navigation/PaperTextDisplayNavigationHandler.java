@@ -24,11 +24,11 @@ import java.util.List;
 import java.util.UUID;
 
 //? if >= 26.2 {
-/*import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EntityType;
-*///?} else {
-import net.minecraft.world.entity.EntityType;
-//?}
+//?} else {
+/*import net.minecraft.world.entity.EntityType;
+*///?}
 
 /**
  * Paper adapter for the packet-only text display navigation method.
@@ -38,10 +38,10 @@ public final class PaperTextDisplayNavigationHandler
     private static final int BACKGROUND_COLOR = 0x66000000;
     private static final int LINE_WIDTH = 1000;
     //? if >= 26.2 {
-    /*private static final EntityType<Display.TextDisplay> TEXT_DISPLAY = EntityTypes.TEXT_DISPLAY;
-    *///?} else {
-    private static final EntityType<Display.TextDisplay> TEXT_DISPLAY = EntityType.TEXT_DISPLAY;
-    //?}
+    private static final EntityType<Display.TextDisplay> TEXT_DISPLAY = EntityTypes.TEXT_DISPLAY;
+    //?} else {
+    /*private static final EntityType<Display.TextDisplay> TEXT_DISPLAY = EntityType.TEXT_DISPLAY;
+    *///?}
 
     @Override
     protected UUID playerUuid(Player player) {
