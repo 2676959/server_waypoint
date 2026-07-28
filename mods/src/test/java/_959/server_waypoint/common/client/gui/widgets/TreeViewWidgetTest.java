@@ -1,3 +1,4 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
 import java.util.ArrayList;
@@ -5,7 +6,6 @@ import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -110,7 +110,7 @@ class TreeViewWidgetTest {
         }
 
         @Override
-        protected @NonNull List<Node> getChildren(Node value) {
+        protected List<Node> getChildren(Node value) {
             return value.children;
         }
 

@@ -1,6 +1,5 @@
 package _959.server_waypoint.common.util;
 
-import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import net.minecraft.resources.ResourceKey;
 import org.junit.jupiter.api.Test;
 import xaero.common.minimap.waypoints.Waypoint;
@@ -63,6 +62,7 @@ class XaeroMinimapHelperTest {
     }
 
     private static MinimapWorld createMinimapWorld() throws ReflectiveOperationException {
+        //? if >= 1.21.5 {
         Constructor<MinimapWorld> constructor = MinimapWorld.class.getDeclaredConstructor(
                 MinimapWorldContainer.class,
                 String.class,
@@ -70,10 +70,21 @@ class XaeroMinimapHelperTest {
         );
         constructor.setAccessible(true);
         return constructor.newInstance(null, "test", null);
+        //?} else {
+        /*return new MinimapWorld(null, "test", null) {
+        };
+        *///?}
     }
 
-    private static Waypoint createWaypoint(String name) {
-        SimpleWaypoint simpleWaypoint = new SimpleWaypoint("test", "T", 0, 64, 0, 0xFFFFFF, 0, false);
-        return XaerosWaypointHelper.simpleWaypointToXaerosWaypoint(simpleWaypoint, name);
+    private static Waypoint createWaypoint(String name) throws ReflectiveOperationException {
+        Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+        var unsafeField = unsafeClass.getDeclaredField("theUnsafe");
+        unsafeField.setAccessible(true);
+        Object unsafe = unsafeField.get(null);
+        Waypoint waypoint = (Waypoint) unsafeClass
+                .getMethod("allocateInstance", Class.class)
+                .invoke(unsafe, Waypoint.class);
+        waypoint.setName(name);
+        return waypoint;
     }
 }

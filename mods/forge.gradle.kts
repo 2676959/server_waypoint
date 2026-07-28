@@ -8,6 +8,7 @@ import java.util.zip.GZIPInputStream
 plugins {
     id("net.minecraftforge.renamer")
     id("net.minecraftforge.gradle")
+    id("net.minecraftforge.jarjar")
     id("com.gradleup.shadow")
 }
 
@@ -28,6 +29,8 @@ val forge_loader: String by project
 val mixinConfig = "server_waypoint-common.mixins.json"
 val mixinRefmap = "server_waypoint-common.refmap.json"
 val needsSrgReobf = stonecutter.eval(minecraftVersion, "<1.20.6")
+
+jarJar.register("jarJar", tasks.named<ShadowJar>("shadowJar"))
 
 evaluationDependsOn(":common")
 val commonMainSourceSet = project(":common")
@@ -161,6 +164,13 @@ repositories {
         }
     }
     maven("https://maven.minecraftforge.net/")
+    maven {
+        name = "Xaero's Maven"
+        url = uri("https://chocolateminecraft.com/maven")
+        content {
+            includeGroup("xaero.lib")
+        }
+    }
 }
 
 val minecraftExtension = extensions.getByType<net.minecraftforge.gradle.MinecraftExtensionForProject>()
@@ -219,13 +229,30 @@ minecraftExtension.mavenizer(repositories)
 dependencies {
     implementation(minecraftExtension.dependency("net.minecraftforge:forge:$minecraftVersion-$forge_loader").asProvider())
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
+    val mixinExtrasVersion = "0.5.4"
+    compileOnly("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
+    annotationProcessor("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
+    implementation("io.github.llamalad7:mixinextras-forge:$mixinExtrasVersion")
+    val mixinExtrasForge = requireNotNull(
+        add("jarJar", "io.github.llamalad7:mixinextras-forge:$mixinExtrasVersion")
+    )
+    jarJar.configure(mixinExtrasForge) {
+        setRange("[$mixinExtrasVersion,)")
+    }
 
     implementation(project(":common"))
     add(shadedDependencies.name, project(":common"))
     addAdventureSerializerDependency()
 
     val xaeros_minimap_forge: String by project
+    val xaeros_world_map_forge: String by project
+    if (project.hasProperty("xaerolib_forge")) {
+        val xaerolibMinecraft = findProperty("xaerolib_forge_minecraft")?.toString() ?: minecraftVersion
+        compileOnly("xaero.lib:xaerolib-forge-$xaerolibMinecraft:${property("xaerolib_forge")}")
+    }
     compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
+    compileOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_forge")
+    testImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -322,10 +349,15 @@ tasks.named<ShadowJar>("shadowJar") {
     }
 }
 
+val jarJarTask = tasks.named<Jar>("shadowJarJar") {
+    archiveClassifier.set(if (needsSrgReobf) "dev-jarjar" else "")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 val reobfShadowJar = if (needsSrgReobf) {
     extensions
         .getByType(net.minecraftforge.renamer.gradle.RenamerExtension::class.java)
-        .classes("reobfShadowJar", tasks.named<ShadowJar>("shadowJar")) {
+        .classes("reobfShadowJar", jarJarTask) {
             archiveClassifier.set("")
             output.set(layout.buildDirectory.file("libs/${base.archivesName.get()}.jar"))
             dependsOn(unpackMixinMappings!!)
@@ -336,11 +368,11 @@ val reobfShadowJar = if (needsSrgReobf) {
 }
 
 tasks.assemble {
-    dependsOn(reobfShadowJar ?: tasks.shadowJar)
+    dependsOn(reobfShadowJar ?: jarJarTask)
 }
 
 artifacts {
-    archives(reobfShadowJar ?: tasks.shadowJar)
+    archives(reobfShadowJar ?: jarJarTask)
 }
 
 tasks.test {
@@ -349,7 +381,7 @@ tasks.test {
 
 tasks.register<Copy>("buildAndCollect") {
     group = "build"
-    from(if (reobfShadowJar != null) reobfShadowJar.map { it.output } else tasks.shadowJar.map { it.archiveFile })
+    from(if (reobfShadowJar != null) reobfShadowJar.map { it.output } else jarJarTask.map { it.archiveFile })
     into(rootProject.layout.buildDirectory.file("libs/$mod_version"))
     dependsOn("build")
 }
