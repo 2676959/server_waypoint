@@ -54,6 +54,12 @@ sourceSets.main {
     }
 }
 
+sourceSets.test {
+    compileClasspath += sourceSets.main.get().compileClasspath
+    runtimeClasspath += sourceSets.main.get().compileClasspath
+    runtimeClasspath += sourceSets.main.get().runtimeClasspath
+}
+
 repositories {
     mavenCentral()
     exclusiveContent {
@@ -87,6 +93,9 @@ dependencies {
     compileOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_neoforge")
     runtimeOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
     runtimeOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_neoforge")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 runs {
@@ -149,6 +158,10 @@ java {
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.named("compileJava") {

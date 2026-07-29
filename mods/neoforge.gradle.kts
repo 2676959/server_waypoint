@@ -78,6 +78,12 @@ sourceSets.main {
     }
 }
 
+sourceSets.test {
+    compileClasspath += sourceSets.main.get().compileClasspath
+    runtimeClasspath += sourceSets.main.get().compileClasspath
+    runtimeClasspath += sourceSets.main.get().runtimeClasspath
+}
+
 repositories {
     mavenCentral()
     exclusiveContent {

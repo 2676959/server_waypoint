@@ -67,6 +67,14 @@ sourceSets.main {
     }
 }
 
+if (minecraft == "1.21.2") {
+    configurations.configureEach {
+        if (name == "modCompileClasspathMainMapped") {
+            sourceSets.test.get().runtimeClasspath += this
+        }
+    }
+}
+
 repositories {
     exclusiveContent {
         forRepository {
