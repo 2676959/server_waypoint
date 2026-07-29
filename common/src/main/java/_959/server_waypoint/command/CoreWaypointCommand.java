@@ -703,12 +703,21 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         if (rgb < 0) {
             sendHexColorCodeError(source, hexCode);
         } else {
-            runWithSelectorTarget(source, dimensionArgument, listName, oldName, (fileManager, waypointList, waypoint) ->
+            runWithSelectorTarget(source, dimensionArgument, listName, oldName, (fileManager, waypointList, waypoint) -> {
+                NavigationTarget previousTarget = new NavigationTarget(
+                        fileManager.getDimensionName(),
+                        listName,
+                        waypoint
+                );
                 this.waypointServer.updateWaypointProperties(fileManager, waypointList, waypoint, newName, initials, waypointPos, rgb, yaw, global,
                         () -> {
                             waypointList.incSyncNum();
                             saveChanges(source, fileManager);
                             String dimensionName = fileManager.getDimensionName();
+                            this.navigationService.refreshTarget(
+                                    previousTarget,
+                                    new NavigationTarget(dimensionName, listName, waypoint)
+                            );
                             WaypointModificationBuffer buffer = new WaypointModificationBuffer(dimensionName, listName, oldName, waypoint, WaypointModificationType.UPDATE, waypointList.getSyncNum());
 //                            LOGGER.info("syncNum: {}", waypointList.getSyncNum());
                             this.sender.broadcastWaypointModification(source, buffer);
@@ -716,8 +725,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                         },
 
                         () -> this.sender.sendMessage(source, translatable("waypoint.edit.existing-name", text(newName))),
-                        () -> this.sender.sendMessage(source, translatable("waypoint.edit.identical")))
-            );
+                        () -> this.sender.sendMessage(source, translatable("waypoint.edit.identical")));
+            });
         }
     }
 

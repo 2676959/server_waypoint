@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,8 @@ public final class NavigationService<P> {
     private final Map<NavigationMethod, NavigationMethodHandler<P>> handlers;
     private final Set<NavigationMethod> supportedNavigationMethods;
     private final Map<UUID, NavigationSession> sessions = new LinkedHashMap<>();
+    private final Map<TargetIdentity, Set<UUID>> sessionPlayerUuidsByTarget =
+            new HashMap<>();
     private final Set<NavigationMethod> defaultNavigationMethods;
     private final int updateIntervalTicks;
     private int tickCounter;
@@ -134,6 +138,32 @@ public final class NavigationService<P> {
         return this.retargetInternal(player, this.platform.playerUuid(player), target);
     }
 
+    /**
+     * Refreshes every active session targeting the previous waypoint identity.
+     * This is used after a waypoint edit so renamed targets, navigation items,
+     * and live displays all receive the current waypoint properties.
+     */
+    public void refreshTarget(
+            NavigationTarget previousTarget,
+            NavigationTarget updatedTarget
+    ) {
+        this.platform.assertServerThread();
+        Objects.requireNonNull(previousTarget, "previousTarget");
+        Objects.requireNonNull(updatedTarget, "updatedTarget");
+
+        Set<UUID> playerUuids = this.sessionPlayerUuidsByTarget.get(
+                TargetIdentity.from(previousTarget)
+        );
+        if (playerUuids == null) {
+            return;
+        }
+        for (UUID playerUuid : List.copyOf(playerUuids)) {
+            this.platform.findPlayer(playerUuid).ifPresent(
+                    player -> this.retargetInternal(player, playerUuid, updatedTarget)
+            );
+        }
+    }
+
     public NavigationResult enableMethod(P player, NavigationMethod method) {
         this.platform.assertServerThread();
         Objects.requireNonNull(player, "player");
@@ -175,7 +205,7 @@ public final class NavigationService<P> {
             return enableResult.withSession(currentSession).withMethod(method);
         }
 
-        this.sessions.put(playerUuid, proposedSession);
+        this.putSession(proposedSession);
         this.persistSession(player, proposedSession);
         return NavigationResult.result(
                 NavigationResult.Code.METHOD_ENABLED,
@@ -217,7 +247,7 @@ public final class NavigationService<P> {
         EnumSet<NavigationMethod> enabledMethods = copyMethods(currentSession.enabledMethods());
         enabledMethods.remove(method);
         NavigationSession updatedSession = currentSession.withEnabledMethods(enabledMethods);
-        this.sessions.put(playerUuid, updatedSession);
+        this.putSession(updatedSession);
         this.persistSession(player, updatedSession);
         return NavigationResult.result(
                 NavigationResult.Code.METHOD_DISABLED,
@@ -255,7 +285,7 @@ public final class NavigationService<P> {
             }
             disabledHandlers.add(handler);
         }
-        this.sessions.remove(playerUuid);
+        this.removeSession(playerUuid);
         this.clearPersistedSession(player);
         return NavigationResult.result(NavigationResult.Code.NAVIGATION_DISABLED, null, null);
     }
@@ -395,7 +425,7 @@ public final class NavigationService<P> {
                 return handlerFailure(currentSession, NavigationMethod.TEXT_DISPLAY);
             }
         }
-        this.sessions.put(playerUuid, updatedSession);
+        this.putSession(updatedSession);
         this.persistSession(player, updatedSession);
         return NavigationResult.result(
                 NavigationResult.Code.TEXT_DISPLAY_TRANSFORMATION_UPDATED,
@@ -502,6 +532,7 @@ public final class NavigationService<P> {
             this.cleanupSession(player.orElse(null), session);
         }
         this.sessions.clear();
+        this.sessionPlayerUuidsByTarget.clear();
         this.tickCounter = 0;
     }
 
@@ -557,7 +588,7 @@ public final class NavigationService<P> {
                 updatedHandlers.add(handler);
             }
         }
-        this.sessions.put(playerUuid, retargetedSession);
+        this.putSession(retargetedSession);
         this.persistSession(player, retargetedSession);
         return NavigationResult.result(
                 NavigationResult.Code.TARGET_CHANGED,
@@ -689,7 +720,7 @@ public final class NavigationService<P> {
             }
         }
 
-        this.sessions.put(playerUuid, proposedSession);
+        this.putSession(proposedSession);
         this.persistSession(player, proposedSession);
         NavigationResult.Code resultCode = currentSession == null
                 ? NavigationResult.Code.NAVIGATION_STARTED
@@ -827,7 +858,7 @@ public final class NavigationService<P> {
                 this.tryCleanupPlayer(session, handler);
             }
         } finally {
-            this.sessions.remove(session.playerUuid());
+            this.removeSession(session.playerUuid());
         }
     }
 
@@ -888,5 +919,56 @@ public final class NavigationService<P> {
         return methods.isEmpty()
                 ? EnumSet.noneOf(NavigationMethod.class)
                 : EnumSet.copyOf(methods);
+    }
+
+    private void putSession(NavigationSession session) {
+        UUID playerUuid = session.playerUuid();
+        NavigationSession previousSession = this.sessions.put(playerUuid, session);
+        TargetIdentity targetIdentity = TargetIdentity.from(session.target());
+        if (previousSession != null) {
+            TargetIdentity previousTargetIdentity = TargetIdentity.from(previousSession.target());
+            if (previousTargetIdentity.equals(targetIdentity)) {
+                return;
+            }
+            this.removeFromTargetIndex(previousTargetIdentity, playerUuid);
+        }
+        this.sessionPlayerUuidsByTarget
+                .computeIfAbsent(targetIdentity, ignored -> new HashSet<>())
+                .add(playerUuid);
+    }
+
+    private void removeSession(UUID playerUuid) {
+        NavigationSession removedSession = this.sessions.remove(playerUuid);
+        if (removedSession != null) {
+            this.removeFromTargetIndex(
+                    TargetIdentity.from(removedSession.target()),
+                    playerUuid
+            );
+        }
+    }
+
+    private void removeFromTargetIndex(TargetIdentity targetIdentity, UUID playerUuid) {
+        Set<UUID> playerUuids = this.sessionPlayerUuidsByTarget.get(targetIdentity);
+        if (playerUuids == null) {
+            return;
+        }
+        playerUuids.remove(playerUuid);
+        if (playerUuids.isEmpty()) {
+            this.sessionPlayerUuidsByTarget.remove(targetIdentity);
+        }
+    }
+
+    private record TargetIdentity(
+            String dimensionName,
+            String listName,
+            String waypointName
+    ) {
+        private static TargetIdentity from(NavigationTarget target) {
+            return new TargetIdentity(
+                    target.dimensionName(),
+                    target.listName(),
+                    target.waypointName()
+            );
+        }
     }
 }

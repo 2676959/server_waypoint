@@ -122,6 +122,87 @@ class NavigationServiceTest {
     }
 
     @Test
+    void refreshTargetUpdatesEveryMatchingSessionHandlerAndPersistence() {
+        NavigationTarget oldTarget = target("Old", 10, 64, 0);
+        NavigationTarget otherTarget = target("Other", 30, 64, 0);
+        Set<NavigationMethod> methods = NavigationMethod.definedMethods();
+        this.service.navigate(this.firstPlayer, oldTarget, methods);
+        this.service.navigate(this.secondPlayer, oldTarget, methods);
+        TestPlayer otherPlayer = this.platform.addPlayer();
+        this.service.navigate(otherPlayer, otherTarget, methods);
+        this.platform.findPlayerRequests.clear();
+        for (TestHandler handler : this.handlers.values()) {
+            handler.updateCount = 0;
+            handler.seenSessions.clear();
+        }
+        NavigationTarget updatedTarget = new NavigationTarget(
+                oldTarget.dimensionName(),
+                oldTarget.listName(),
+                "Renamed",
+                new WaypointPos(80, 75, -40),
+                0xABCDEF
+        );
+
+        this.service.refreshTarget(oldTarget, updatedTarget);
+
+        assertEquals(2, this.platform.findPlayerRequests.size());
+        assertEquals(
+                Set.of(this.firstPlayer.uuid(), this.secondPlayer.uuid()),
+                Set.copyOf(this.platform.findPlayerRequests)
+        );
+        assertEquals(updatedTarget, this.service.findSession(this.firstPlayer.uuid())
+                .orElseThrow()
+                .target());
+        assertEquals(updatedTarget, this.service.findSession(this.secondPlayer.uuid())
+                .orElseThrow()
+                .target());
+        assertEquals(otherTarget, this.service.findSession(otherPlayer.uuid())
+                .orElseThrow()
+                .target());
+        for (TestHandler handler : this.handlers.values()) {
+            assertEquals(2, handler.updateCount);
+            assertEquals(List.of("Renamed", "Renamed"), handler.seenWaypointNames());
+        }
+        assertEquals(
+                "Renamed",
+                NavigationSessionCodec.decode(
+                        this.platform.persistedSessions.get(this.firstPlayer.uuid())
+                ).orElseThrow().waypointName()
+        );
+        assertEquals(
+                "Renamed",
+                NavigationSessionCodec.decode(
+                        this.platform.persistedSessions.get(this.secondPlayer.uuid())
+                ).orElseThrow().waypointName()
+        );
+        assertEquals(
+                "Other",
+                NavigationSessionCodec.decode(
+                        this.platform.persistedSessions.get(otherPlayer.uuid())
+                ).orElseThrow().waypointName()
+        );
+
+        this.platform.findPlayerRequests.clear();
+        this.service.refreshTarget(oldTarget, updatedTarget);
+        assertTrue(this.platform.findPlayerRequests.isEmpty());
+
+        this.service.disableAll(this.firstPlayer);
+        this.platform.findPlayerRequests.clear();
+        NavigationTarget renamedAgain = new NavigationTarget(
+                updatedTarget.dimensionName(),
+                updatedTarget.listName(),
+                "Renamed Again",
+                updatedTarget.position(),
+                updatedTarget.rgb()
+        );
+        this.service.refreshTarget(updatedTarget, renamedAgain);
+        assertEquals(List.of(this.secondPlayer.uuid()), this.platform.findPlayerRequests);
+        assertEquals(renamedAgain, this.service.findSession(this.secondPlayer.uuid())
+                .orElseThrow()
+                .target());
+    }
+
+    @Test
     void explicitSelectionReplacesExistingMethods() {
         this.service.navigate(this.firstPlayer, target("Old", 10, 64, 0));
         Set<NavigationMethod> replacement = Set.of(NavigationMethod.COMPASS, NavigationMethod.MAP);
@@ -741,6 +822,7 @@ class NavigationServiceTest {
     private static final class TestPlatform implements NavigationPlatform<TestPlayer> {
         private final Map<UUID, TestPlayer> players = new HashMap<>();
         private final Map<UUID, String> persistedSessions = new HashMap<>();
+        private final List<UUID> findPlayerRequests = new ArrayList<>();
         private NavigationResult nextPreflightResult = NavigationResult.success();
         private @Nullable NavigationSession lastProposedSession;
         private int snapshotCount;
@@ -763,6 +845,7 @@ class NavigationServiceTest {
 
         @Override
         public Optional<TestPlayer> findPlayer(UUID playerUuid) {
+            this.findPlayerRequests.add(playerUuid);
             return Optional.ofNullable(this.players.get(playerUuid));
         }
 

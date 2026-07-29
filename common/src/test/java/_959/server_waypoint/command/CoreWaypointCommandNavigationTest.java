@@ -38,7 +38,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -159,6 +161,30 @@ class CoreWaypointCommandNavigationTest {
         assertEquals(Set.of(NavigationMethod.ACTIONBAR), session.enabledMethods());
         assertEquals(List.of("waypoint.navigation.started"), this.sender.messageKeys());
         assertTrue(this.permissionManager.sawCheck("navigate", 0));
+    }
+
+    @Test
+    void editingTargetRefreshesNavigationInformationAndItems()
+            throws CommandSyntaxException, IOException {
+        this.dispatcher.execute("wp navigate overworld bases Home all", this.source);
+        for (TestNavigationHandler handler : this.handlers) {
+            handler.updateCount = 0;
+        }
+        Files.createDirectories(this.tempDir.resolve("waypoints"));
+
+        this.dispatcher.execute(
+                "wp edit overworld bases Home Renamed R position ABCDEF 45 true",
+                this.source
+        );
+
+        NavigationTarget target = this.session().target();
+        assertEquals("Renamed", target.waypointName());
+        assertEquals(this.source.position(), target.position());
+        assertEquals(0xABCDEF, target.rgb());
+        for (TestNavigationHandler handler : this.handlers) {
+            assertEquals(1, handler.updateCount);
+            assertEquals(target, handler.lastUpdatedTarget);
+        }
     }
 
     @Test
@@ -856,6 +882,8 @@ class CoreWaypointCommandNavigationTest {
         private @Nullable Quaternionf lastRotation;
         private @Nullable Vector3f lastScale;
         private int transformationCount;
+        private int updateCount;
+        private @Nullable NavigationTarget lastUpdatedTarget;
 
         private TestNavigationHandler(NavigationMethod method) {
             this.method = method;
@@ -881,6 +909,8 @@ class CoreWaypointCommandNavigationTest {
                 NavigationSession session,
                 NavigationSnapshot snapshot
         ) {
+            this.updateCount++;
+            this.lastUpdatedTarget = session.target();
         }
 
         @Override
