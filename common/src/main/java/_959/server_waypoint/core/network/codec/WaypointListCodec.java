@@ -8,9 +8,10 @@ import java.util.List;
 
 public class WaypointListCodec {
     public static void encode(ByteBuf buf, WaypointList waypointList) {
-        UtfStringCodec.encode(buf, waypointList.name());
-        buf.writeInt(waypointList.getSyncNum());
-        List<SimpleWaypoint> waypoints = waypointList.simpleWaypoints();
+        WaypointList snapshot = waypointList.deepCopy();
+        UtfStringCodec.encode(buf, snapshot.name());
+        buf.writeInt(snapshot.getSyncNum());
+        List<SimpleWaypoint> waypoints = snapshot.simpleWaypoints();
         ListCodec.encode(buf, waypoints, SimpleWaypointCodec::encode);
     }
 

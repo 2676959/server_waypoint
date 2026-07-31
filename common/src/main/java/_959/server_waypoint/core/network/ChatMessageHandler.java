@@ -1,6 +1,7 @@
 package _959.server_waypoint.core.network;
 
 import _959.server_waypoint.command.permission.PermissionManager;
+import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
@@ -29,8 +30,9 @@ public abstract class ChatMessageHandler<S, K, P> {
     protected abstract boolean isDimensionValid(String dimensionName);
 
     public void onChatMessage(P player, String message) {
-        if (CONFIG.Features().addWaypointFromChatSharing() &&
-                this.permissionManager.checkPlayerPermission(player, this.permissionManager.keys.add(), CONFIG.CommandPermission().add())) {
+        Config config = CONFIG;
+        if (config.Features().addWaypointFromChatSharing() &&
+                this.permissionManager.checkPlayerPermission(player, this.permissionManager.keys.add(), config.CommandPermission().add())) {
             String[] args = message.split(XAEROS_SEPARATOR);
             if (isValidXaerosSharingMessage(args)) {
                 LOGGER.info("Found chat shared waypoint");
@@ -43,7 +45,8 @@ public abstract class ChatMessageHandler<S, K, P> {
                 }
                 SimpleWaypoint waypoint = waypointWithDim.left();
                 String dimensionName = waypointWithDim.right();
-                WaypointFileManager waypointFileManager = WaypointServerCore.INSTANCE.getWaypointFileManager(dimensionName);
+                WaypointServerCore waypointServer = WaypointServerCore.INSTANCE;
+                WaypointFileManager waypointFileManager = waypointServer.getWaypointFileManager(dimensionName);
                 if (waypointFileManager != null) {
                     Set<String> listNames = waypointFileManager.getWaypointListMap().keySet();
                     if (listNames.isEmpty()) {
@@ -69,7 +72,7 @@ public abstract class ChatMessageHandler<S, K, P> {
                     }
                 } else if (isDimensionValid(dimensionName)) {
                     LOGGER.info("dimension {} not found, add new dimension", dimensionName);
-                    WaypointServerCore.INSTANCE.addWaypointFileManager(dimensionName);
+                    waypointServer.addWaypointFileManager(dimensionName);
                     promptNoWaypointList(player, dimensionName);
                 } else {
                     this.sender.sendPlayerMessage(player, Component.translatable("waypoint.xaeros.sharing.invalid.dimension",

@@ -12,7 +12,6 @@ import _959.server_waypoint.core.WaypointServerCore;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
@@ -27,17 +26,18 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static _959.server_waypoint.core.WaypointFilesManagerCore.*;
 import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asIntegratedServer;
 
 public class WaypointServerMod extends WaypointServerCore {
     // the default value is true because this is used by WaypointClient to identify the server
-    private static boolean runsWithClient = false;
-    private static WaypointServerMod INSTANCE;
-    public static MinecraftServer MINECRAFT_SERVER;
+    private static volatile boolean runsWithClient = false;
+    private static volatile WaypointServerMod INSTANCE;
+    public static volatile MinecraftServer MINECRAFT_SERVER;
     public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_mod");
     public final ModChatMessageHandler<String> chatMessageHandler;
     private final ModNavigationRuntime navigation = new ModNavigationRuntime();
-    private boolean loaded = false;
+    private volatile boolean loaded = false;
 
     public WaypointServerMod(Path configDir, ModChatMessageHandler<String> handler) {
         super(configDir);
@@ -58,80 +58,164 @@ public class WaypointServerMod extends WaypointServerCore {
     }
 
     @Override
-    public void addWaypoint(String dimensionName, String listName, SimpleWaypoint waypoint, BiConsumer<@NotNull WaypointFileManager, @NotNull WaypointList> successAction, Consumer<@NotNull SimpleWaypoint> duplicateAction) {
-        boolean dimensionListChanged = this.getWaypointFileManager(dimensionName) == null;
-        super.addWaypoint(dimensionName, listName, waypoint, (fileManager, waypointList) -> {
-            successAction.accept(fileManager, waypointList);
-            if (runsWithClient) {
-                runOnClientThread(() -> {
-                    if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
-                        OptimizedWaypointRenderer.add(waypoint);
-                    }
-                    updateWaypointManagerView(dimensionName, dimensionListChanged);
-                    syncWaypointModification(dimensionName, listName, WaypointModificationType.ADD, waypoint, waypoint.name());
-                });
-            }
-        }, duplicateAction);
-    }
-
-    @Override
-    public void removeWaypoint(@NotNull WaypointFileManager fileManager, WaypointList waypointList, SimpleWaypoint waypoint) {
-        super.removeWaypoint(fileManager, waypointList, waypoint);
-        if (runsWithClient) {
-            String dimensionName = fileManager.getDimensionName();
-            runOnClientThread(() -> {
-                if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
-                    OptimizedWaypointRenderer.remove(waypoint);
+    public AddWaypointResult addWaypoint(
+            String dimensionName,
+            String listName,
+            SimpleWaypoint waypoint,
+            Consumer<AddWaypointResult> resultAction
+    ) {
+        return super.addWaypoint(dimensionName, listName, waypoint, result -> {
+            try {
+                resultAction.accept(result);
+            } finally {
+                if (result.status() == AddWaypointStatus.ADDED && runsWithClient) {
+                    this.runOnClientThreadIfGenerationActive(
+                            dimensionName,
+                            result.fileManager(),
+                            () -> {
+                                if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
+                                    OptimizedWaypointRenderer.add(result.waypoint());
+                                }
+                                updateWaypointManagerView(dimensionName, result.dimensionCreated());
+                                syncWaypointModification(
+                                        dimensionName,
+                                        listName,
+                                        WaypointModificationType.ADD,
+                                        result.waypointSnapshot(),
+                                        result.waypointSnapshot().name()
+                                );
+                            }
+                    );
                 }
-                WaypointManagerScreen.updateWaypointWidget(dimensionName);
-                syncWaypointModification(dimensionName, waypointList.name(), WaypointModificationType.REMOVE, null, waypoint.name());
-            });
-        }
+            }
+        });
     }
 
     @Override
-    public void updateWaypointProperties(@NotNull WaypointFileManager fileManager, @NotNull WaypointList waypointList, @NotNull SimpleWaypoint waypoint, String newName, String initials, WaypointPos waypointPos, int rgb, int yaw, boolean global, Runnable successAction, Runnable nameUsedAction, Runnable identicalAction) {
-        String oldName = waypoint.name();
-        super.updateWaypointProperties(fileManager, waypointList, waypoint, newName, initials, waypointPos, rgb, yaw, global, () -> {
-            successAction.run();
-            if (runsWithClient) {
-                runOnClientThread(() -> {
-                    if (fileManager.getDimensionName().equals(WaypointClientMod.getCurrentDimensionName())) {
-                        OptimizedWaypointRenderer.updateWaypoint(waypoint);
+    public RemoveWaypointResult removeWaypoint(
+            String dimensionName,
+            String listName,
+            String waypointName,
+            Consumer<RemoveWaypointResult> resultAction
+    ) {
+        return super.removeWaypoint(dimensionName, listName, waypointName, result -> {
+            try {
+                resultAction.accept(result);
+            } finally {
+                if (result.status() == RemoveWaypointStatus.REMOVED && runsWithClient) {
+                    this.runOnClientThreadIfGenerationActive(
+                            dimensionName,
+                            result.fileManager(),
+                            () -> {
+                                if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
+                                    OptimizedWaypointRenderer.remove(result.waypoint());
+                                }
+                                WaypointManagerScreen.updateWaypointWidget(dimensionName);
+                                syncWaypointModification(dimensionName, listName, WaypointModificationType.REMOVE, null, waypointName);
+                            }
+                    );
+                }
+            }
+        });
+    }
+
+    @Override
+    public UpdateWaypointResult updateWaypointProperties(
+            String dimensionName,
+            String listName,
+            String oldName,
+            String newName,
+            String initials,
+            WaypointPos waypointPos,
+            int rgb,
+            int yaw,
+            boolean global,
+            Consumer<UpdateWaypointResult> resultAction
+    ) {
+        return super.updateWaypointProperties(
+                dimensionName,
+                listName,
+                oldName,
+                newName,
+                initials,
+                waypointPos,
+                rgb,
+                yaw,
+                global,
+                result -> {
+                    try {
+                        resultAction.accept(result);
+                    } finally {
+                        if (result.status() == UpdateWaypointStatus.UPDATED && runsWithClient) {
+                            this.runOnClientThreadIfGenerationActive(
+                                    dimensionName,
+                                    result.fileManager(),
+                                    () -> {
+                                        if (dimensionName.equals(WaypointClientMod.getCurrentDimensionName())) {
+                                            OptimizedWaypointRenderer.updateWaypoint(result.waypoint());
+                                        }
+                                        WaypointManagerScreen.updateWaypointWidget(dimensionName);
+                                        syncWaypointModification(
+                                                dimensionName,
+                                                listName,
+                                                WaypointModificationType.UPDATE,
+                                                result.afterSnapshot(),
+                                                oldName
+                                        );
+                                    }
+                            );
+                        }
                     }
-                    WaypointManagerScreen.updateWaypointWidget(fileManager.getDimensionName());
-                    syncWaypointModification(fileManager.getDimensionName(), waypointList.name(), WaypointModificationType.UPDATE, waypoint, oldName);
-                });
-            }
-        }, nameUsedAction, identicalAction);
+                }
+        );
     }
 
     @Override
-    public void addWaypointList(String dimensionName, String listName, Consumer<WaypointFileManager> successAction, Runnable listExistsAction) {
-        boolean dimensionListChanged = this.getWaypointFileManager(dimensionName) == null;
-        super.addWaypointList(dimensionName, listName, (fileManager) -> {
-            successAction.accept(fileManager);
-            if (runsWithClient) {
-                runOnClientThread(() -> {
-                    updateWaypointManagerView(dimensionName, dimensionListChanged);
-                    syncWaypointModification(dimensionName, listName, WaypointModificationType.ADD_LIST, null, null);
-                });
+    public AddWaypointListResult addWaypointList(
+            String dimensionName,
+            String listName,
+            Consumer<AddWaypointListResult> resultAction
+    ) {
+        return super.addWaypointList(dimensionName, listName, result -> {
+            try {
+                resultAction.accept(result);
+            } finally {
+                if (result.status() == AddWaypointListStatus.ADDED && runsWithClient) {
+                    this.runOnClientThreadIfGenerationActive(
+                            dimensionName,
+                            result.fileManager(),
+                            () -> {
+                                updateWaypointManagerView(dimensionName, result.dimensionCreated());
+                                syncWaypointModification(dimensionName, listName, WaypointModificationType.ADD_LIST, null, null);
+                            }
+                    );
+                }
             }
-        }, listExistsAction);
+        });
     }
 
     @Override
-    public void removeWaypointList(@NotNull WaypointFileManager fileManager, String listName, Consumer<WaypointFileManager> successAction, Runnable listNotFoundAction, Runnable nonEmptyListAction) {
-        super.removeWaypointList(fileManager, listName, (fileManager1) -> {
-            successAction.accept(fileManager1);
-            if (runsWithClient) {
-                runOnClientThread(() -> {
-                    WaypointManagerScreen.updateWaypointWidget(fileManager1.getDimensionName());
-                    syncWaypointModification(fileManager1.getDimensionName(), listName, WaypointModificationType.REMOVE_LIST, null, null);
-                });
+    public RemoveWaypointListResult removeWaypointList(
+            String dimensionName,
+            String listName,
+            Consumer<RemoveWaypointListResult> resultAction
+    ) {
+        return super.removeWaypointList(dimensionName, listName, result -> {
+            try {
+                resultAction.accept(result);
+            } finally {
+                if (result.status() == RemoveWaypointListStatus.REMOVED && runsWithClient) {
+                    this.runOnClientThreadIfGenerationActive(
+                            dimensionName,
+                            result.fileManager(),
+                            () -> {
+                                WaypointManagerScreen.updateWaypointWidget(dimensionName);
+                                syncWaypointModification(dimensionName, listName, WaypointModificationType.REMOVE_LIST, null, null);
+                            }
+                    );
+                }
             }
-        }, listNotFoundAction, nonEmptyListAction);
-
+        });
     }
 
     /**
@@ -151,6 +235,19 @@ public class WaypointServerMod extends WaypointServerCore {
     private static void runOnClientThread(Runnable task) {
         Minecraft minecraft = Minecraft.getInstance();
         ThreadDispatching.runOnTargetThread(minecraft::isSameThread, minecraft::execute, task);
+    }
+
+    private void runOnClientThreadIfGenerationActive(
+            String dimensionName,
+            WaypointFileManager expectedManager,
+            Runnable task
+    ) {
+        runOnClientThread(() -> this.readLifecycle(() -> {
+            if (this.fileManagerMap.get(dimensionName) == expectedManager) {
+                task.run();
+            }
+            return null;
+        }));
     }
 
     private static void syncWaypointModification(String dimensionName, String listName, WaypointModificationType type, SimpleWaypoint waypoint, String waypointName) {

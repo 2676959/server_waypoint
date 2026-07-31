@@ -1,6 +1,5 @@
 package _959.server_waypoint.core.waypoint;
 
-import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import java.nio.file.Path;
 import java.util.List;
@@ -206,9 +205,8 @@ class WaypointQueryEngineTest {
     }
 
     private static void addDimension(WaypointFilesManagerCore filesManager, String dimensionName, WaypointList... waypointLists) {
-        WaypointFileManager fileManager = filesManager.getOrCreateWaypointFileManager(dimensionName);
         for (WaypointList waypointList : waypointLists) {
-            fileManager.addWaypointList(waypointList);
+            filesManager.putWaypointList(dimensionName, waypointList);
         }
     }
 

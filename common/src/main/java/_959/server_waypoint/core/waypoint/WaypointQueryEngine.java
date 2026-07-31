@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -66,9 +67,10 @@ public final class WaypointQueryEngine {
         Set<String> suggestions = new LinkedHashSet<>();
         for (WaypointList waypointList : fileManager.getWaypointLists()) {
             suggestions.add(waypointList.name());
-            for (SimpleWaypoint waypoint : waypointList.simpleWaypoints()) {
-                suggestions.add(waypoint.name());
-                suggestions.add(waypoint.initials());
+            for (WaypointList.WaypointSnapshot entry : waypointList.snapshotWaypoints()) {
+                SimpleWaypoint snapshot = entry.snapshot();
+                suggestions.add(snapshot.name());
+                suggestions.add(snapshot.initials());
             }
         }
         return Collections.unmodifiableList(new ArrayList<>(suggestions));
@@ -99,10 +101,13 @@ public final class WaypointQueryEngine {
 
     private ListResult queryList(String dimensionName, WaypointList waypointList, String filter, Query query) {
         boolean includeAll = filter.isEmpty();
-        List<SimpleWaypoint> waypoints = new ArrayList<>();
-        for (SimpleWaypoint waypoint : waypointList.simpleWaypoints()) {
-            if (includeAll || matchesText(waypoint.name(), filter)) {
-                waypoints.add(waypoint);
+        List<SimpleWaypoint> waypointSnapshots = new ArrayList<>();
+        Map<SimpleWaypoint, SimpleWaypoint> liveWaypointsBySnapshot = new IdentityHashMap<>();
+        for (WaypointList.WaypointSnapshot entry : waypointList.snapshotWaypoints()) {
+            SimpleWaypoint snapshot = entry.snapshot();
+            if (includeAll || matchesText(snapshot.name(), filter)) {
+                waypointSnapshots.add(snapshot);
+                liveWaypointsBySnapshot.put(snapshot, entry.liveWaypoint());
             }
         }
         WaypointSorting.SortMode dimensionSortMode = query.sortMode();
@@ -111,13 +116,17 @@ public final class WaypointQueryEngine {
             dimensionSortMode = WaypointSorting.SortMode.DEFAULT;
         }
         WaypointSorting.sort(
-                waypoints,
+                waypointSnapshots,
                 dimensionSortMode,
                 query.origin(),
                 query.originDimension(),
                 dimensionName,
                 query.reversed()
         );
+        List<SimpleWaypoint> waypoints = new ArrayList<>(waypointSnapshots.size());
+        for (SimpleWaypoint snapshot : waypointSnapshots) {
+            waypoints.add(liveWaypointsBySnapshot.get(snapshot));
+        }
         return new ListResult(waypointList, Collections.unmodifiableList(waypoints), includeAll);
     }
 

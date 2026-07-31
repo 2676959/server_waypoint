@@ -1,11 +1,14 @@
 package _959.server_waypoint.navigation;
 
+import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.UUID;
@@ -16,6 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NavigationModelTest {
+    @TempDir
+    private Path tempDir;
+
     @Test
     void targetCopiesValuesOutOfMutableWaypoint() {
         SimpleWaypoint waypoint = new SimpleWaypoint(
@@ -26,12 +32,34 @@ class NavigationModelTest {
                 0,
                 false
         );
+        WaypointFilesManagerCore filesManager = new WaypointFilesManagerCore(this.tempDir);
+        WaypointFilesManagerCore.AddWaypointResult addResult = filesManager.addWaypoint(
+                "minecraft:overworld",
+                "towns",
+                waypoint,
+                ignored -> {
+                }
+        );
         NavigationTarget target = new NavigationTarget("minecraft:overworld", "towns", waypoint);
 
-        waypoint.setName("Changed");
-        waypoint.setPos(new WaypointPos(9, 9, 9));
-        waypoint.setRgb(0xFFFFFF);
+        filesManager.updateWaypointProperties(
+                "minecraft:overworld",
+                "towns",
+                "Village",
+                "Changed",
+                "C",
+                new WaypointPos(9, 9, 9),
+                0xFFFFFF,
+                90,
+                true,
+                ignored -> {
+                }
+        );
 
+        assertEquals(
+                WaypointFilesManagerCore.AddWaypointStatus.ADDED,
+                addResult.status()
+        );
         assertEquals("Village", target.waypointName());
         assertEquals(new WaypointPos(1, 2, 3), target.position());
         assertEquals(0x123456, target.rgb());

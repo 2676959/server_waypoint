@@ -7,6 +7,7 @@ import _959.server_waypoint.translation.AdventureTranslator;
 import _959.server_waypoint.translation.LanguageFilesManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.Translator;
 import org.jetbrains.annotations.Nullable;
@@ -14,9 +15,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static _959.server_waypoint.translation.LanguageFilesManager.getExternalLoadedLanguages;
 import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asDedicatedServer;
@@ -25,14 +30,16 @@ import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asDedicated
  * Serverside waypoint manager used by a dedicated or integrated server
  * */
 public abstract class WaypointServerCore extends WaypointFilesManagerCore {
-    public static WaypointServerCore INSTANCE;
-    private static int worldId;
-    public static Config CONFIG = new Config();
+    public static volatile WaypointServerCore INSTANCE;
+    private static volatile int worldId;
+    public static volatile Config CONFIG = new Config();
     public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_core");
     private static final String CONFIG_FILE_NAME = "config.json";
     private final Path configDir;
     private final byte[] DEFAULT_CONFIG;
     private final LanguageFilesManager languageFilesManager;
+    private final ReentrantLock configIoLock = new ReentrantLock(true);
+    private volatile boolean resourcesLoaded;
 
     /**
      * constructor for a dedicated server </br>
@@ -44,63 +51,100 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
         this.configDir = configDir;
         this.languageFilesManager = new LanguageFilesManager(configDir);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        this.DEFAULT_CONFIG = gson.toJson(CONFIG).getBytes();
+        this.DEFAULT_CONFIG = gson.toJson(CONFIG).getBytes(StandardCharsets.UTF_8);
         addAdventureTranslator();
         INSTANCE = this;
     }
 
     @Nullable
     public WorldWaypointBuffer toWorldWaypointBuffer() {
-        List<DimensionWaypointBuffer> dimensionWaypointBuffers = new ArrayList<>(this.getFileManagerMap().size());
-
-        for (WaypointFileManager fileManager : this.getFileManagerMap().values()) {
-            if (fileManager != null && !fileManager.hasNoWaypoints()) {
-                dimensionWaypointBuffers.add(fileManager.toDimensionWaypoint());
+        return this.readLifecycle(() -> {
+            Collection<WaypointFileManager> fileManagers = this.fileManagerMap.values();
+            List<DimensionWaypointBuffer> dimensionWaypointBuffers = new ArrayList<>(fileManagers.size());
+            for (WaypointFileManager fileManager : fileManagers) {
+                if (fileManager != null && !fileManager.hasNoWaypoints()) {
+                    dimensionWaypointBuffers.add(fileManager.toDimensionWaypoint());
+                }
             }
-        }
 
-        if (dimensionWaypointBuffers.isEmpty()) {
-            return null;
-        } else {
+            if (dimensionWaypointBuffers.isEmpty()) {
+                return null;
+            }
             return new WorldWaypointBuffer(dimensionWaypointBuffers);
-        }
+        });
     }
 
     public void loadConfig(Reader reader) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        CONFIG = gson.fromJson(reader, Config.class);
-        LOGGER.info("Loaded config {}", CONFIG);
+        this.configIoLock.lock();
+        try {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            Config loadedConfig = gson.fromJson(reader, Config.class);
+            if (loadedConfig == null) {
+                loadedConfig = new Config();
+            }
+            CONFIG = loadedConfig;
+            LOGGER.info("Loaded config {}", loadedConfig);
+        } finally {
+            this.configIoLock.unlock();
+        }
     }
 
     private void initOrReadConfigFile(Path configDir) {
         Path configFile = configDir.resolve(CONFIG_FILE_NAME);
-
+        this.configIoLock.lock();
         try {
             if (Files.exists(configFile) && Files.isRegularFile(configFile)) {
-                try (Reader reader = new FileReader(configFile.toFile())) {
+                try (Reader reader = Files.newBufferedReader(configFile, StandardCharsets.UTF_8)) {
                     this.loadConfig(reader);
                 }
             } else {
-                Files.createFile(configFile);
-                Files.write(configFile, this.DEFAULT_CONFIG);
+                this.writeFileAtomically(configFile, this.DEFAULT_CONFIG);
                 LOGGER.info("Created config file at: {}", configFile);
             }
-        } catch (IOException e) {
-            LOGGER.error("Failed to read config file, use default config instead", e);
+        } catch (IOException | JsonParseException e) {
+            LOGGER.error("Failed to read config file, keep the current config instead", e);
+        } finally {
+            this.configIoLock.unlock();
         }
     }
 
     private void saveConfigFile(Path configDir) {
         Path configFile = configDir.resolve(CONFIG_FILE_NAME);
+        this.configIoLock.lock();
         try {
-            if (!Files.exists(configFile) || !Files.isRegularFile(configFile)) {
-                Files.createFile(configFile);
-            }
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            Files.write(configFile, gson.toJson(CONFIG).getBytes());
+            byte[] configJson = gson.toJson(CONFIG).getBytes(StandardCharsets.UTF_8);
+            this.writeFileAtomically(configFile, configJson);
             LOGGER.info("Saved config file: {}", configFile);
         } catch (IOException e) {
             LOGGER.error("Failed to save config file", e);
+        } finally {
+            this.configIoLock.unlock();
+        }
+    }
+
+    private void writeFileAtomically(Path file, byte[] contents) throws IOException {
+        Path targetFile = file.toAbsolutePath();
+        Path parent = targetFile.getParent();
+        if (parent == null) {
+            throw new IOException("Config file has no parent directory: " + file);
+        }
+        Files.createDirectories(parent);
+        Path tempFile = Files.createTempFile(parent, file.getFileName().toString(), ".tmp");
+        try {
+            Files.write(tempFile, contents);
+            try {
+                Files.move(
+                        tempFile,
+                        targetFile,
+                        StandardCopyOption.ATOMIC_MOVE,
+                        StandardCopyOption.REPLACE_EXISTING
+                );
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(tempFile, targetFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(tempFile);
         }
     }
 
@@ -133,9 +177,11 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
      * only initialize config file and language files, should only call once
      * */
     public void initConfigAndLanguageResource() throws IOException {
+        this.resourcesLoaded = false;
         this.initConfigDir(this.configDir);
         this.initOrReadConfigFile(this.configDir);
         this.initLanguageManager();
+        this.resourcesLoaded = true;
         List<String> languages = getExternalLoadedLanguages();
         String log = String.join(", ", languages);
         LOGGER.info("Loaded {} languages: {}", languages.size(), log);
@@ -145,25 +191,40 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
      * calls saveAllFiles first then free all loaded waypoint files and external language files <br>
      * */
     public void freeAllLoadedFiles() {
-        saveAllFiles();
-        this.fileManagerMap.clear();
-        this.languageFilesManager.unloadAllExternalLanguages();
+        this.withLifecycleWriteLock(() -> {
+            this.resourcesLoaded = false;
+            saveAllFiles();
+            this.clearWaypointFileManagers();
+            this.languageFilesManager.unloadAllExternalLanguages();
+        });
     }
 
     public void reload() {
-        initOrReadConfigFile(this.configDir);
-        this.languageFilesManager.reloadExternalLanguages();
+        this.withLifecycleWriteLock(() -> {
+            if (!this.resourcesLoaded) {
+                LOGGER.warn("Ignoring reload because server resources are not loaded");
+                return;
+            }
+            initOrReadConfigFile(this.configDir);
+            this.languageFilesManager.reloadExternalLanguages();
+        });
     }
 
     @SuppressWarnings("unused")
     public void reloadWaypointFiles() {
-        saveAllFiles();
-        try {
-            initOrReadWaypointFiles();
-        } catch (IOException e) {
-            LOGGER.error("Failed to load waypoints file", e);
-            throw new RuntimeException(e);
-        }
+        this.withLifecycleWriteLock(() -> {
+            if (!this.resourcesLoaded) {
+                LOGGER.warn("Ignoring waypoint reload because server resources are not loaded");
+                return;
+            }
+            saveAllFiles();
+            try {
+                initOrReadWaypointFiles();
+            } catch (IOException e) {
+                LOGGER.error("Failed to load waypoints file", e);
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     /**

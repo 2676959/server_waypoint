@@ -4,6 +4,7 @@ import _959.server_waypoint.util.ColorUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public final class WaypointListDisplayModel {
                         )) {
                     dimensionSortMode = WaypointSorting.SortMode.DEFAULT;
                 }
-                WaypointSorting.sort(
+                sortLiveWaypoints(
                         waypoints,
                         dimensionSortMode,
                         result.query().origin(),
@@ -96,18 +97,42 @@ public final class WaypointListDisplayModel {
             String originDimension,
             boolean reversed
     ) {
+        Map<DisplayWaypoint, DisplayWaypointSnapshot> snapshots = new IdentityHashMap<>();
+        for (DisplayWaypoint waypoint : waypoints) {
+            snapshots.put(
+                    waypoint,
+                    new DisplayWaypointSnapshot(
+                            new SimpleWaypoint(waypoint.waypoint()),
+                            waypoint.sourceList().name()
+                    )
+            );
+        }
+        Comparator<DisplayWaypoint> byName = Comparator.comparing(
+                        (DisplayWaypoint row) -> snapshots.get(row).waypoint().name(),
+                        String.CASE_INSENSITIVE_ORDER
+                )
+                .thenComparing(row -> snapshots.get(row).waypoint().name())
+                .thenComparing(row -> snapshots.get(row).listName(), String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(row -> snapshots.get(row).listName());
         switch (sortMode) {
             case DEFAULT -> {
             }
-            case NAME -> waypoints.sort(DisplayWaypoint.BY_WAYPOINT_NAME);
+            case NAME -> waypoints.sort(byName);
             case DISTANCE -> {
-                sortDisplayWaypointsByDistance(waypoints, origin, originDimension, reversed);
+                sortDisplayWaypointsByDistance(
+                        waypoints,
+                        snapshots,
+                        byName,
+                        origin,
+                        originDimension,
+                        reversed
+                );
                 return;
             }
             case COLOR -> ColorUtils.sortWaypointColors(
                     waypoints,
-                    waypoint -> waypoint.waypoint().rgb(),
-                    DisplayWaypoint.BY_WAYPOINT_NAME
+                    waypoint -> snapshots.get(waypoint).waypoint().rgb(),
+                    byName
             );
         }
         if (sortMode != WaypointSorting.SortMode.DEFAULT && reversed) {
@@ -117,6 +142,8 @@ public final class WaypointListDisplayModel {
 
     private static void sortDisplayWaypointsByDistance(
             List<DisplayWaypoint> waypoints,
+            Map<DisplayWaypoint, DisplayWaypointSnapshot> snapshots,
+            Comparator<DisplayWaypoint> byName,
             WaypointPos origin,
             String originDimension,
             boolean reversed
@@ -130,7 +157,16 @@ public final class WaypointListDisplayModel {
                 otherWaypoints.add(waypoint);
             }
         }
-        comparableWaypoints.sort(DisplayWaypoint.byDistanceFrom(origin, originDimension));
+        comparableWaypoints.sort(
+                Comparator.comparingDouble((DisplayWaypoint waypoint) ->
+                                WaypointSorting.distanceSquared(
+                                        snapshots.get(waypoint).waypoint(),
+                                        origin,
+                                        originDimension,
+                                        waypoint.dimensionName()
+                                ))
+                        .thenComparing(byName)
+        );
         if (reversed) {
             Collections.reverse(comparableWaypoints);
         }
@@ -141,6 +177,38 @@ public final class WaypointListDisplayModel {
         waypoints.clear();
         waypoints.addAll(comparableWaypoints);
         waypoints.addAll(otherWaypoints);
+    }
+
+    private static void sortLiveWaypoints(
+            List<SimpleWaypoint> liveWaypoints,
+            WaypointSorting.SortMode sortMode,
+            WaypointPos origin,
+            String originDimension,
+            String waypointDimension,
+            boolean reversed
+    ) {
+        Map<SimpleWaypoint, SimpleWaypoint> liveWaypointsBySnapshot = new IdentityHashMap<>();
+        List<SimpleWaypoint> snapshots = new ArrayList<>(liveWaypoints.size());
+        for (SimpleWaypoint liveWaypoint : liveWaypoints) {
+            SimpleWaypoint snapshot = new SimpleWaypoint(liveWaypoint);
+            snapshots.add(snapshot);
+            liveWaypointsBySnapshot.put(snapshot, liveWaypoint);
+        }
+        WaypointSorting.sort(
+                snapshots,
+                sortMode,
+                origin,
+                originDimension,
+                waypointDimension,
+                reversed
+        );
+        liveWaypoints.clear();
+        for (SimpleWaypoint snapshot : snapshots) {
+            liveWaypoints.add(liveWaypointsBySnapshot.get(snapshot));
+        }
+    }
+
+    private record DisplayWaypointSnapshot(SimpleWaypoint waypoint, String listName) {
     }
 
     public record Display(boolean groupByLists, List<DisplayList> lists, List<DisplayWaypoint> flatWaypoints) {
@@ -188,14 +256,5 @@ public final class WaypointListDisplayModel {
                 .thenComparing(row -> row.sourceList().name(), String.CASE_INSENSITIVE_ORDER)
                 .thenComparing(row -> row.sourceList().name());
 
-        private static Comparator<DisplayWaypoint> byDistanceFrom(WaypointPos origin, String originDimension) {
-            return Comparator.comparingDouble((DisplayWaypoint row) -> WaypointSorting.distanceSquared(
-                            row.waypoint(),
-                            origin,
-                            originDimension,
-                            row.dimensionName()
-                    ))
-                    .thenComparing(BY_WAYPOINT_NAME);
-        }
     }
 }

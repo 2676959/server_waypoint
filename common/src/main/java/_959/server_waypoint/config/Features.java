@@ -1,9 +1,9 @@
 package _959.server_waypoint.config;
 
 public class Features {
-    public static boolean noXaerosMod = true;
-    boolean addWaypointFromChatSharing = true;
-    boolean sendXaerosWorldId = true;
+    public static volatile boolean noXaerosMod = true;
+    volatile boolean addWaypointFromChatSharing = true;
+    volatile boolean sendXaerosWorldId = true;
 
     public Features() {
     }

@@ -221,6 +221,7 @@ public class TextButtonBuilder {
     }
 
     public static Component replaceButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
+        waypoint = new SimpleWaypoint(waypoint);
         return buildSuggestButton(
                 NamedTextColor.AQUA,
                 editCmd(dimensionName, listName, waypoint.name(), waypoint),
@@ -230,6 +231,7 @@ public class TextButtonBuilder {
     }
 
     public static Component restoreButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
+        waypoint = new SimpleWaypoint(waypoint);
         return buildSuggestButton(
                 NamedTextColor.LIGHT_PURPLE,
                 addCmd(dimensionName, listName, waypoint),
@@ -239,6 +241,7 @@ public class TextButtonBuilder {
     }
 
     public static Component removeButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
+        waypoint = new SimpleWaypoint(waypoint);
         return buildSuggestButton(
                 NamedTextColor.RED,
                 removeCmd(dimensionName, listName, waypoint),
@@ -248,6 +251,7 @@ public class TextButtonBuilder {
     }
 
     public static Component editButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
+        waypoint = new SimpleWaypoint(waypoint);
         return buildSuggestButton(
                 NamedTextColor.YELLOW,
                 editCmd(dimensionName, listName, waypoint.name(), waypoint),
@@ -257,6 +261,7 @@ public class TextButtonBuilder {
     }
 
     public static Component addWaypointButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
+        waypoint = new SimpleWaypoint(waypoint);
         return buildSuggestButton(
                 NamedTextColor.GREEN,
                 addCmd(dimensionName, listName, waypoint),

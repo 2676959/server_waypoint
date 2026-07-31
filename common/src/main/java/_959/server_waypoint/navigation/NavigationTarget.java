@@ -23,12 +23,28 @@ public record NavigationTarget(
     }
 
     public NavigationTarget(String dimensionName, String listName, SimpleWaypoint waypoint) {
+        this(dimensionName, listName, snapshot(waypoint));
+    }
+
+    private NavigationTarget(
+            String dimensionName,
+            String listName,
+            WaypointSnapshot waypointSnapshot
+    ) {
         this(
                 dimensionName,
                 listName,
-                Objects.requireNonNull(waypoint, "waypoint").name(),
-                waypoint.pos(),
-                waypoint.rgb()
+                waypointSnapshot.name(),
+                waypointSnapshot.position(),
+                waypointSnapshot.rgb()
         );
+    }
+
+    private static WaypointSnapshot snapshot(SimpleWaypoint waypoint) {
+        SimpleWaypoint snapshot = new SimpleWaypoint(Objects.requireNonNull(waypoint, "waypoint"));
+        return new WaypointSnapshot(snapshot.name(), snapshot.pos(), snapshot.rgb());
+    }
+
+    private record WaypointSnapshot(String name, WaypointPos position, int rgb) {
     }
 }

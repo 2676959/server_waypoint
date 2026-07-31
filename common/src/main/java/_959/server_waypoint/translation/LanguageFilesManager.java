@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -34,8 +35,8 @@ public class LanguageFilesManager {
     private static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_translator");
     private static final String FALL_BACK_LANGUAGE = "en_us";
     private static final String ASSETS_PATH = "lang/";
-    private static final Map<String, Map<String, String>> internalTranslations = new HashMap<>();
-    private static final Map<String, Map<String, String>> externalTranslations = new HashMap<>();
+    private static volatile Map<String, Map<String, String>> internalTranslations = Map.of();
+    private static volatile Map<String, Map<String, String>> externalTranslations = Map.of();
 
     public LanguageFilesManager(@NotNull Path configDir) {
         EXTERNAL_LANG_PATH = configDir.resolve("lang");
@@ -55,7 +56,7 @@ public class LanguageFilesManager {
             String value = jsonObject.get(key).getAsString();
             languageMap.put(key, value);
         }
-        return languageMap;
+        return Map.copyOf(languageMap);
     }
 
     private void initExternalLangDirectory() throws IOException {
@@ -72,67 +73,81 @@ public class LanguageFilesManager {
 
     private void loadAllInternalLanguageFiles() {
         List<Path> langFiles = getInternalLanguageFiles();
+        Map<String, Map<String, String>> loadedTranslations = new HashMap<>();
         for (Path langFile : langFiles) {
-            loadInternalLanguageFile(langFile.getFileName().toString());
+            loadInternalLanguageFile(langFile.getFileName().toString(), loadedTranslations);
         }
+        internalTranslations = Map.copyOf(loadedTranslations);
     }
 
     public void loadAllExternalLanguageFiles() {
         List<Path> langFiles = getExternalLanguageFiles();
+        Map<String, Map<String, String>> loadedTranslations = new HashMap<>();
         for (Path langFile : langFiles) {
-            loadExternalLanguageFile(langFile);
+            loadExternalLanguageFile(langFile, loadedTranslations);
         }
+        externalTranslations = Map.copyOf(loadedTranslations);
     }
 
-    private void loadInternalLanguageFile(String fileName) {
-        InputStream inputStream = LanguageFilesManager.class.getClassLoader().getResourceAsStream(ASSETS_PATH + fileName);
-        if (inputStream == null) {
+    private void loadInternalLanguageFile(String fileName, Map<String, Map<String, String>> loadedTranslations) {
+        InputStream resourceStream = LanguageFilesManager.class.getClassLoader()
+                .getResourceAsStream(ASSETS_PATH + fileName);
+        if (resourceStream == null) {
             LOGGER.error("internal language file not found: {}", fileName);
             return;
         }
-        JsonObject jsonObject = JsonParser.parseReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
-                .getAsJsonObject();
-        Map<String, String> languageMap = convertJsonToHashMap(jsonObject);
-        String key = fileName.split("\\.")[0].toLowerCase();
-        internalTranslations.put(key, languageMap);
+        try (InputStream inputStream = resourceStream;
+             InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+            JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+            Map<String, String> languageMap = convertJsonToHashMap(jsonObject);
+            String key = fileName.split("\\.")[0].toLowerCase();
+            loadedTranslations.put(key, languageMap);
+        } catch (IOException e) {
+            LOGGER.error("Error loading internal language file {}: {}", fileName, e.getMessage());
+        }
     }
 
-    private void loadExternalLanguageFile(Path fullPath) {
+    private void loadExternalLanguageFile(Path fullPath, Map<String, Map<String, String>> loadedTranslations) {
         if (!Files.exists(fullPath)) {
             LOGGER.error("external language file not found: {}", fullPath);
             return;
         }
         try {
             String key = fullPath.getFileName().toString().split("\\.")[0].toLowerCase();
-            JsonObject jsonObject = JsonParser.parseReader(Files.newBufferedReader(fullPath, StandardCharsets.UTF_8))
-                    .getAsJsonObject();
-            Map<String, String> languageMap = convertJsonToHashMap(jsonObject);
-            externalTranslations.put(key, languageMap);
+            try (BufferedReader reader = Files.newBufferedReader(fullPath, StandardCharsets.UTF_8)) {
+                JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+                Map<String, String> languageMap = convertJsonToHashMap(jsonObject);
+                loadedTranslations.put(key, languageMap);
+            }
         } catch (Exception e) {
             LOGGER.error("Error parsing language file {}: {}", fullPath, e.getMessage());
         }
     }
 
     public static @Unmodifiable @NotNull List<String> getExternalLoadedLanguages() {
-        List<String> languageCodes = new ArrayList<>(externalTranslations.keySet());
+        Map<String, Map<String, String>> snapshot = externalTranslations;
+        List<String> languageCodes = new ArrayList<>(snapshot.keySet());
         Collections.sort(languageCodes);
         return Collections.unmodifiableList(languageCodes);
     }
 
     @Nullable
     public static String getTranslation(String languageCode, String key) {
-        String translation = getTranslationFrom(externalTranslations, languageCode, key);
-        return translation == null ? getTranslationFrom(internalTranslations, languageCode, key) : translation;
+        Map<String, Map<String, String>> externalSnapshot = externalTranslations;
+        Map<String, Map<String, String>> internalSnapshot = internalTranslations;
+        return getTranslation(languageCode, key, externalSnapshot, internalSnapshot);
     }
 
     @Nullable
     public static String getTranslation(Locale locale, String key) {
+        Map<String, Map<String, String>> externalSnapshot = externalTranslations;
+        Map<String, Map<String, String>> internalSnapshot = internalTranslations;
         String fullCode = locale.toString().toLowerCase();
-        String translation = getTranslation(fullCode, key);
+        String translation = getTranslation(fullCode, key, externalSnapshot, internalSnapshot);
         if (translation == null) {
             // try without region code
             String language = locale.getLanguage().toLowerCase();
-            Set<String> allLoadedLanguageCodes = getAllLoadedLanguageCodes();
+            Set<String> allLoadedLanguageCodes = getAllLoadedLanguageCodes(internalSnapshot, externalSnapshot);
             List<String> matchingLanguages = new ArrayList<>(allLoadedLanguageCodes.size());
             for (String value : allLoadedLanguageCodes) {
                 if (value.toLowerCase().startsWith(language)) {
@@ -141,16 +156,32 @@ public class LanguageFilesManager {
             }
             Collections.sort(matchingLanguages);
             for (String languageCode : matchingLanguages) {
-                if ((translation = getTranslation(languageCode, key)) != null) {
+                if ((translation = getTranslation(languageCode, key, externalSnapshot, internalSnapshot)) != null) {
                     break;
                 }
             }
         }
-        return translation == null ? getTranslation(FALL_BACK_LANGUAGE, key) : translation;
+        return translation == null
+                ? getTranslation(FALL_BACK_LANGUAGE, key, externalSnapshot, internalSnapshot)
+                : translation;
+    }
+
+    @Nullable
+    private static String getTranslation(
+            String languageCode,
+            String key,
+            Map<String, Map<String, String>> externalSnapshot,
+            Map<String, Map<String, String>> internalSnapshot
+    ) {
+        String translation = getTranslationFrom(externalSnapshot, languageCode, key);
+        return translation == null ? getTranslationFrom(internalSnapshot, languageCode, key) : translation;
     }
 
     @Nullable
     private static String getTranslationFrom(@NotNull Map<String, Map<String, String>> source, String languageCode, String key) {
+        if (languageCode == null || key == null) {
+            return null;
+        }
         Map<String, String> translations = source.get(languageCode);
         if (translations != null) {
             return translations.get(key);
@@ -158,9 +189,12 @@ public class LanguageFilesManager {
         return null;
     }
 
-    private static @Unmodifiable @NotNull Set<String> getAllLoadedLanguageCodes() {
-        Set<String> languageCodes = new HashSet<>(internalTranslations.keySet());
-        languageCodes.addAll(externalTranslations.keySet());
+    private static @Unmodifiable @NotNull Set<String> getAllLoadedLanguageCodes(
+            Map<String, Map<String, String>> internalSnapshot,
+            Map<String, Map<String, String>> externalSnapshot
+    ) {
+        Set<String> languageCodes = new HashSet<>(internalSnapshot.keySet());
+        languageCodes.addAll(externalSnapshot.keySet());
         return Collections.unmodifiableSet(languageCodes);
     }
 
@@ -261,11 +295,10 @@ public class LanguageFilesManager {
     }
 
     public void unloadAllExternalLanguages() {
-        externalTranslations.clear();
+        externalTranslations = Map.of();
     }
 
     public void reloadExternalLanguages() {
-        unloadAllExternalLanguages();
         loadAllExternalLanguageFiles();
     }
 

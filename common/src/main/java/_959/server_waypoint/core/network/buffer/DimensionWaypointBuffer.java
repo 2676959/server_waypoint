@@ -10,6 +10,11 @@ import java.util.List;
 import static _959.server_waypoint.core.network.MessageChannelID.DIMENSION_WAYPOINT_CHANNEL;
 
 public record DimensionWaypointBuffer(String dimensionName, List<WaypointList> waypointLists) implements MessageBuffer {
+    public DimensionWaypointBuffer {
+        waypointLists = waypointLists.stream()
+                .map(WaypointList::deepCopy)
+                .toList();
+    }
 
     @Override
     public MessageChannelID getChannelId() {

@@ -99,6 +99,7 @@ public class StringCommandBuilder {
     }
 
     public static String addCmd(String dimensionName, String listName, SimpleWaypoint waypoint, boolean withSlash) {
+        waypoint = new SimpleWaypoint(waypoint);
         StringBuilder sb = new StringBuilder();
         sb.append(withSlash ? WAYPOINT_COMMAND_WITH_SLASH : WAYPOINT_COMMAND);
         sb.append(' ').append(ADD_COMMAND);
@@ -120,6 +121,7 @@ public class StringCommandBuilder {
     }
 
     public static String editCmd(String dimensionName, String listName, String oldName, SimpleWaypoint waypoint, boolean withSlash) {
+        waypoint = new SimpleWaypoint(waypoint);
         StringBuilder sb = new StringBuilder();
         sb.append(withSlash ? WAYPOINT_COMMAND_WITH_SLASH : WAYPOINT_COMMAND);
         sb.append(' ').append(EDIT_COMMAND);

@@ -15,6 +15,9 @@ public record WaypointModificationBuffer(
         SimpleWaypoint waypoint,
         WaypointModificationType type,
         int syncId) implements MessageBuffer {
+    public WaypointModificationBuffer {
+        waypoint = waypoint == null ? null : new SimpleWaypoint(waypoint);
+    }
 
     @Override
     public MessageChannelID getChannelId() {

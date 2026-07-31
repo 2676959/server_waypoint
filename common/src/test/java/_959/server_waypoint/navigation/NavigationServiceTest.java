@@ -802,9 +802,7 @@ class NavigationServiceTest {
                 "minecraft:overworld",
                 "test-list",
                 new SimpleWaypoint(name, "T", position, rgb, 0, false),
-                (fileManager, waypointList) -> {
-                },
-                duplicate -> {
+                result -> {
                 }
         );
         return waypointServer;

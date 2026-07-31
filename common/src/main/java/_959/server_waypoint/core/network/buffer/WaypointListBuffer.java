@@ -8,6 +8,10 @@ import io.netty.buffer.ByteBuf;
 import static _959.server_waypoint.core.network.MessageChannelID.WAYPOINT_LIST_CHANNEL;
 
 public record WaypointListBuffer(String dimensionName, WaypointList waypointList) implements MessageBuffer {
+    public WaypointListBuffer {
+        waypointList = waypointList.deepCopy();
+    }
+
     @Override
     public MessageChannelID getChannelId() {
         return WAYPOINT_LIST_CHANNEL;

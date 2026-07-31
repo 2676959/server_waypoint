@@ -29,10 +29,12 @@ public class WaypointTextHelper {
     public static final Style DEFAULT_STYLE = Style.style().color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD, false).build();
 
     public static Component waypointTextWithTp(SimpleWaypoint waypoint, String dimensionName, String listName) {
+        waypoint = new SimpleWaypoint(waypoint);
         return basicWaypointText(waypoint, tpCmd(dimensionName, listName, waypoint.name()), Component.translatable("button.initials.tp"), waypointHoverText(waypoint, dimensionName));
     }
 
     public static Component waypointTextNoTp(SimpleWaypoint waypoint, String dimensionName) {
+        waypoint = new SimpleWaypoint(waypoint);
         return basicWaypointText(waypoint, null, null, waypointHoverText(waypoint, dimensionName));
     }
 
@@ -197,6 +199,7 @@ public class WaypointTextHelper {
             boolean withRemove,
             boolean withTp
     ) {
+        waypoint = new SimpleWaypoint(waypoint);
         Component waypointText = text("  ".repeat(indentLevel)).decoration(TextDecoration.BOLD, false);
         if (withEdit) {
             waypointText = waypointText.append(editButton(dimensionName, listName, waypoint)).appendSpace();

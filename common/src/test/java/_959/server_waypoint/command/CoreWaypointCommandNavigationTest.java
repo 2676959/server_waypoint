@@ -3,7 +3,6 @@ package _959.server_waypoint.command;
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.config.Config;
-import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.buffer.MessageBuffer;
@@ -78,8 +77,7 @@ class CoreWaypointCommandNavigationTest {
         WaypointServerCore.CONFIG = new Config();
         this.server = new WaypointServerCore(this.tempDir) {
         };
-        WaypointFileManager fileManager = this.server.getOrCreateWaypointFileManager("overworld");
-        fileManager.addWaypointList(new WaypointList(
+        this.server.putWaypointList("overworld", new WaypointList(
                 "bases",
                 1,
                 List.of(

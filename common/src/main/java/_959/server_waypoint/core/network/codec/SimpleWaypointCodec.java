@@ -6,18 +6,19 @@ import io.netty.buffer.ByteBuf;
 
 public class SimpleWaypointCodec {
     public static void encode(ByteBuf buf, SimpleWaypoint waypoint) {
-        UtfStringCodec.encode(buf, waypoint.name());
-        String initials = waypoint.initials();
+        SimpleWaypoint snapshot = new SimpleWaypoint(waypoint);
+        UtfStringCodec.encode(buf, snapshot.name());
+        String initials = snapshot.initials();
         UtfStringCodec.encode(buf, initials);
-        WaypointPos pos = waypoint.pos();
+        WaypointPos pos = snapshot.pos();
         buf.writeInt(pos.x());
         buf.writeInt(pos.y());
         buf.writeInt(pos.z());
-        buf.writeInt(waypoint.rgb());
-        int yaw = waypoint.yaw();
+        buf.writeInt(snapshot.rgb());
+        int yaw = snapshot.yaw();
         buf.writeBoolean(yaw < 0);
         buf.writeByte(Math.abs(yaw));
-        buf.writeBoolean(waypoint.global());
+        buf.writeBoolean(snapshot.global());
     }
 
     public static SimpleWaypoint decode(ByteBuf byteBuf) {

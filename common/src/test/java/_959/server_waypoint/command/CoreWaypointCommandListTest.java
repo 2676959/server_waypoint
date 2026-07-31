@@ -3,7 +3,6 @@ package _959.server_waypoint.command;
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.config.Config;
-import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.buffer.MessageBuffer;
@@ -55,14 +54,16 @@ class CoreWaypointCommandListTest {
         this.originalConfig = WaypointServerCore.CONFIG;
         this.server = new WaypointServerCore(this.tempDir) {
         };
-        WaypointFileManager fileManager = this.server.getOrCreateWaypointFileManager("overworld");
-        fileManager.addWaypointList(new WaypointList("bases", 1, waypoints("base", 12)));
-        fileManager.addWaypointList(new WaypointList(
+        this.server.putWaypointList(
+                "overworld",
+                new WaypointList("bases", 1, waypoints("base", 12))
+        );
+        this.server.putWaypointList("overworld", new WaypointList(
                 "search",
                 1,
                 waypoints("reserved list waypoint", 12)
         ));
-        fileManager.addWaypointList(new WaypointList(
+        this.server.putWaypointList("overworld", new WaypointList(
                 "",
                 1,
                 waypoints("empty-name list waypoint", 12)
@@ -415,8 +416,7 @@ class CoreWaypointCommandListTest {
         for (int index = 0; index < 4; index++) {
             String dimensionName = "dim" + index;
             String listName = index == 1 ? "list one" : "list" + index;
-            WaypointFileManager fileManager = this.server.getOrCreateWaypointFileManager(dimensionName);
-            fileManager.addWaypointList(new WaypointList(
+            this.server.putWaypointList(dimensionName, new WaypointList(
                     listName,
                     1,
                     List.of(waypoint("marker " + dimensionName, index))
