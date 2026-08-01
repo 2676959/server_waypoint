@@ -42,6 +42,43 @@ class WaypointListDisplayModelTest {
     }
 
     @Test
+    void nameSortGroupedUsesPlainIdentityNames() {
+        String formattedListName = "{\"text\":\"aardvark\",\"color\":\"gold\"}";
+        String formattedWaypointName = "{\"text\":\"alpha\",\"bold\":true}";
+        WaypointList formatted = new WaypointList(
+                "aardvark",
+                formattedListName,
+                1,
+                List.of(
+                waypoint("zeta", 0, 0, 0),
+                new SimpleWaypoint(
+                        "alpha",
+                        formattedWaypointName,
+                        "a",
+                        new WaypointPos(0, 0, 0),
+                        0xFFFFFF,
+                        0,
+                        false,
+                        List.of(),
+                        ""
+                )
+                )
+        );
+        WaypointList beta = list("beta", waypoint("middle", 0, 0, 0));
+        WaypointQueryEngine.QueryResult result = result(
+                WaypointSorting.SortMode.NAME,
+                null,
+                listResult(beta),
+                listResult(formatted)
+        );
+
+        WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, true);
+
+        assertEquals(List.of("aardvark", "beta"), listNames(display));
+        assertEquals(List.of("alpha", "zeta"), waypointNames(display.lists().get(0)));
+    }
+
+    @Test
     void nameSortGroupedCanReverseListsAndWaypoints() {
         WaypointList alpha = list("alpha", waypoint("zeta", 0, 0, 0), waypoint("Beta", 0, 0, 0));
         WaypointList gamma = list("gamma", waypoint("delta", 0, 0, 0));

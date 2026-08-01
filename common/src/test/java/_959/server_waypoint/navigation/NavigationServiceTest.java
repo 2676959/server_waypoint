@@ -138,6 +138,8 @@ class NavigationServiceTest {
         NavigationTarget updatedTarget = new NavigationTarget(
                 oldTarget.dimensionName(),
                 oldTarget.listName(),
+                oldTarget.listDisplayName(),
+                "Renamed",
                 "Renamed",
                 new WaypointPos(80, 75, -40),
                 0xABCDEF
@@ -191,6 +193,8 @@ class NavigationServiceTest {
         NavigationTarget renamedAgain = new NavigationTarget(
                 updatedTarget.dimensionName(),
                 updatedTarget.listName(),
+                updatedTarget.listDisplayName(),
+                "Renamed Again",
                 "Renamed Again",
                 updatedTarget.position(),
                 updatedTarget.rgb()
@@ -790,6 +794,8 @@ class NavigationServiceTest {
         return new NavigationTarget(
                 "minecraft:overworld",
                 "test-list",
+                "test-list",
+                name,
                 name,
                 new WaypointPos(x, y, z),
                 0x39C5BB

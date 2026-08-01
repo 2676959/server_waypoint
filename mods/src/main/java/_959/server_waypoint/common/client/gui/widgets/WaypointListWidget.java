@@ -25,6 +25,7 @@ import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -47,6 +48,7 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
+import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
 import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
 import static _959.server_waypoint.util.StringCommandBuilder.removeCmd;
@@ -488,10 +490,11 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             return true;
         } else if (contentMouseX > secondBtnXPos) {
             MinecraftClientHelper.setScreen(new WaypointEditScreen(
-                    this.parentScreen,
-                    dimensionName,
-                    waypointList.name(),
-                    waypoint
+                        this.parentScreen,
+                        dimensionName,
+                        waypointList.name(),
+                        waypointList.displayName(),
+                        waypoint
             ));
             return true;
         } else if (contentMouseX > firstBtnXPos) {
@@ -550,6 +553,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     @Override
     protected void beforeRenderEntries(GuiGraphicsExtractor context, int contentWidth, int mouseX, int mouseY, float deltaTicks) {
+        this.setTooltip(null);
         thirdBtnXPos = contentWidth - btnWidth;
         secondBtnXPos = thirdBtnXPos - btnWidth;
         firstBtnXPos = secondBtnXPos - btnWidth;
@@ -663,7 +667,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             }
         }
 
-        drawText(context, textRenderer, waypointList.name(), indent + 18, rowY + textVertOffset, textColor, true);
+        drawText(context, textRenderer, parseFormattedText(waypointList.displayName()), indent + 18, rowY + textVertOffset, textColor, true);
         if (isListEmpty) {
             texture(context, WidgetTextures.LIST_EMPTY, indent, rowY + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
         } else if (waypointList.isExpand()) {
@@ -682,7 +686,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             int indent
     ) {
         SimpleWaypoint waypoint = waypointNode.waypoint();
-        String name = waypoint.name();
+        Component name = parseFormattedText(waypoint.displayName());
         String initials = waypoint.initials();
         boolean wpRendered = waypoint.isRendered();
         int bgAlpha = wpRendered ? 0xFF000000 : 0x80000000;
@@ -690,6 +694,9 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         int rgb = waypoint.rgb();
         int y2 = rowY + itemHeight;
         if (hovered) {
+            if (!waypoint.description().isEmpty()) {
+                this.setTooltip(Tooltip.create(parseFormattedText(waypoint.description())));
+            }
             context.fill(0, rowY, contentWidth, y2, 0x60000000 + rgb);
             int wpCenteredBtnY = rowY + buttonIconVertOffset;
             if (canToggleVisibility(waypointNode.dimensionName())) {
@@ -718,14 +725,14 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         }
         drawInitialsBox(context, initials, indent + 15, finalY - 1, backgroundColor, getInitialsTextColor(rgb, wpRendered));
         String dimensionLine = "";
-        String listName = "";
+        Component listName = Component.empty();
         int dimensionColor = getColor(TEXT_MUTED);
         if (waypointNode.showListName()) {
             if (waypointNode.showDimensionName()) {
                 dimensionLine = toDisplayDimensionName(waypointNode.dimensionName());
                 dimensionColor = getDisplayDimensionColor(waypointNode.dimensionName());
             }
-            listName = waypointNode.waypointList().name();
+            listName = parseFormattedText(waypointNode.waypointList().displayName());
         }
         renderWaypointLabel(
                 context,
@@ -743,8 +750,8 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private void renderWaypointLabel(
             GuiGraphicsExtractor context,
             String dimensionLine,
-            String listName,
-            String waypointName,
+            Component listName,
+            Component waypointName,
             DistanceLabel distanceLabel,
             int x,
             int rowY,
@@ -754,7 +761,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         int availableWidth = Math.max(0, distanceColumnX - x - labelTextGap);
         int metadataLineHeight = Math.round(textRenderer.lineHeight * metadataTextScale);
         int listWidth = (int)Math.ceil(textRenderer.width(listName) * metadataTextScale);
-        int waypointX = listName.isEmpty() ? 0 : listWidth + labelTextGap;
+        int waypointX = listName.getString().isEmpty() ? 0 : listWidth + labelTextGap;
         int detailWidth = waypointX + textRenderer.width(waypointName);
         int dimensionWidth = (int)Math.ceil(textRenderer.width(dimensionLine) * metadataTextScale);
         int labelWidth = Math.max(dimensionWidth, detailWidth);
@@ -777,7 +784,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         if (twoLines) {
             renderMetadataText(context, dimensionLine, 0, 0, dimensionColor);
         }
-        if (!listName.isEmpty()) {
+        if (!listName.getString().isEmpty()) {
             renderMetadataText(
                     context,
                     listName,
@@ -861,6 +868,14 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         pop(context);
     }
 
+    private void renderMetadataText(GuiGraphicsExtractor context, Component text, int x, int y, int color) {
+        push(context);
+        translate(context, x, y);
+        scale(context, metadataTextScale, metadataTextScale);
+        drawText(context, textRenderer, text, 0, 0, color);
+        pop(context);
+    }
+
     private static String toDisplayDimensionName(String dimensionName) {
         if (dimensionName.startsWith(minecraftNamespace)) {
             return dimensionName.substring(minecraftNamespace.length());
@@ -920,7 +935,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         private final List<SimpleWaypoint> waypoints;
 
         private ViewWaypointList(WaypointList source, List<SimpleWaypoint> waypoints) {
-            super(source.name(), source.getSyncNum(), waypoints);
+            super(source.name(), source.displayName(), source.getSyncNum(), waypoints);
             this.source = source;
             this.waypoints = waypoints;
         }

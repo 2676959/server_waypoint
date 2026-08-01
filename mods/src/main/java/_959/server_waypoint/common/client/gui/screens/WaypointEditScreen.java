@@ -15,10 +15,13 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
+import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
+import static _959.server_waypoint.text.FormattedTextHelper.plainText;
 import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import static _959.server_waypoint.util.StringCommandBuilder.editCmd;
 
 public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
+    private final String listDisplayName;
     private TranslucentButton updateButton;
     private TranslucentButton resetButton;
 
@@ -33,7 +36,7 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
         int dimensionColor = ColorHelper.scaleRgb(0xFF000000 | getDimensionColor(this.dimensionName).value(), 0.8F);
         ScalableText dimensionNameLabel = new ScalableText(0, 0, Component.nullToEmpty(this.dimensionName), 0.8F, dimensionColor, font);
         ScalableText listNameLabel = new ScalableText(0, 0,
-                Component.translatable("waypoint.list_name.info", this.listName),
+                Component.translatable("waypoint.list_name.info", parseFormattedText(this.listDisplayName)),
                 0.8F, WidgetThemeVariable.TEXT_MUTED, font);
         infoRow.addChild(dimensionLabel, 0);
         infoRow.addChild(dimensionNameLabel, 0);
@@ -69,7 +72,18 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     }
 
     public WaypointEditScreen(Screen previousScreen, String dimensionName, String listName, SimpleWaypoint waypoint) {
-        super(previousScreen, Component.translatable("waypoint.edit.screen.title", waypoint.name()), dimensionName, listName, waypoint);
+        this(previousScreen, dimensionName, listName, listName, waypoint);
+    }
+
+    public WaypointEditScreen(
+            Screen previousScreen,
+            String dimensionName,
+            String listName,
+            String listDisplayName,
+            SimpleWaypoint waypoint
+    ) {
+        super(previousScreen, Component.translatable("waypoint.edit.screen.title", parseFormattedText(waypoint.displayName())), dimensionName, listName, waypoint);
+        this.listDisplayName = listDisplayName;
         this.configureSuggestions();
         this.buttonRow.setXOffset(CONTENT_WIDTH);
     }
@@ -78,17 +92,20 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
         WaypointPos resolvedPos = this.resolveCoordinateFields();
         sendCommand(editCmd(this.dimensionName, this.listName, this.waypointName,
                 new SimpleWaypoint(
+                        plainText(this.nameEditBox.getValue()),
                         this.nameEditBox.getValue(),
                         this.initialsEditBox.getValue(),
                         resolvedPos,
                         this.colorPickerButton.getColor() & 0xFFFFFF,
                         this.yawEditBox.getIntValue(),
-                        this.globalToggle.getState()
+                        this.globalToggle.getState(),
+                        this.keywords,
+                        this.description
                 ), false));
     }
 
     public void resetProperties() {
-        this.nameEditBox.setValue(this.waypointName);
+        this.nameEditBox.setValue(this.waypointDisplayName);
         this.initialsEditBox.setValue(this.initials);
         int color = 0xFF000000 | this.rgb;
         this.colorEditBox.setColor(color);
@@ -109,6 +126,6 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     }
 
     private List<String> getWaypointInitialsSuggestions() {
-        return WaypointInitials.getInitialsCandidatesFromName(this.nameEditBox.getValue());
+        return WaypointInitials.getInitialsCandidatesFromName(plainText(this.nameEditBox.getValue()));
     }
 }

@@ -34,7 +34,11 @@ final class PaperNavigationMapRenderer extends MapRenderer {
         int cursorZ = cursorCoordinate(target.position().z() - centerZ, blocksPerPixel);
         this.targets.put(
                 playerUuid,
-                new TargetMarker((byte) cursorX, (byte) cursorZ, Component.text(target.waypointName()))
+                new TargetMarker(
+                        (byte) cursorX,
+                        (byte) cursorZ,
+                        _959.server_waypoint.text.FormattedTextHelper.parse(target.waypointDisplayName())
+                )
         );
     }
 

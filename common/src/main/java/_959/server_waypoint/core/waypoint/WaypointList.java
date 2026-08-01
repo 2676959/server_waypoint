@@ -17,6 +17,7 @@ public class WaypointList {
     public static final int REMOVE_LIST = -2;
     public static final int SERVER_N = 1;
     @Expose @SerializedName("list_name") private String name;
+    @Expose @SerializedName("display_name") private String displayName;
     @Expose @SerializedName("n") private int syncNum;
     @Expose @SerializedName("waypoints") private List<SimpleWaypoint> simpleWaypoints;
     private transient MutationAuthority mutationAuthority;
@@ -106,7 +107,17 @@ public class WaypointList {
     }
 
     public WaypointList(String name, int syncNum, List<SimpleWaypoint> simpleWaypoints) {
-        this.name = name;
+        this(name, name, syncNum, simpleWaypoints);
+    }
+
+    public WaypointList(
+            String name,
+            String displayName,
+            int syncNum,
+            List<SimpleWaypoint> simpleWaypoints
+    ) {
+        this.name = Objects.requireNonNull(name, "name");
+        this.displayName = normalizeDisplayName(name, displayName);
         this.syncNum = syncNum;
         this.simpleWaypoints = new ArrayList<>(simpleWaypoints.size());
         for (SimpleWaypoint waypoint : simpleWaypoints) {
@@ -125,6 +136,10 @@ public class WaypointList {
 
     public synchronized String name() {
         return this.name;
+    }
+
+    public synchronized String displayName() {
+        return this.displayName == null ? this.name : this.displayName;
     }
 
     public synchronized int getSyncNum() {
@@ -202,11 +217,14 @@ public class WaypointList {
             MutationAuthority authority,
             String oldName,
             String newName,
+            String displayName,
             String initials,
             WaypointPos waypointPos,
             int rgb,
             int yaw,
-            boolean global
+            boolean global,
+            List<String> keywords,
+            String description
     ) {
         this.requireMutationAuthority(authority);
         if (this.simpleWaypoints.isEmpty()) {
@@ -226,7 +244,7 @@ public class WaypointList {
                     this.syncNum
             );
         }
-        if (waypoint.compareProperties(newName, initials, waypointPos, rgb, yaw, global)) {
+        if (waypoint.compareProperties(newName, displayName, initials, waypointPos, rgb, yaw, global, keywords, description)) {
             SimpleWaypoint snapshot = new SimpleWaypoint(waypoint);
             return new ServerUpdateResult(
                     ServerUpdateStatus.IDENTICAL,
@@ -237,7 +255,7 @@ public class WaypointList {
             );
         }
         SimpleWaypoint before = new SimpleWaypoint(waypoint);
-        waypoint.updateProperties(newName, initials, waypointPos, rgb, yaw, global);
+        waypoint.updateProperties(newName, displayName, initials, waypointPos, rgb, yaw, global, keywords, description);
         this.syncNum++;
         return new ServerUpdateResult(
                 ServerUpdateStatus.UPDATED,
@@ -276,7 +294,12 @@ public class WaypointList {
 
     @SuppressWarnings("unused")
     public synchronized WaypointList deepCopy() {
-        WaypointList newList = new WaypointList(this.name, this.syncNum, this.simpleWaypoints);
+        WaypointList newList = new WaypointList(
+                this.name,
+                this.displayName(),
+                this.syncNum,
+                this.simpleWaypoints
+        );
         //? if !paper {
         newList.show = this.show;
         newList.expand = this.expand;
@@ -285,15 +308,28 @@ public class WaypointList {
     }
 
     public synchronized String toString() {
-        return "WaypointList{name='" + this.name + "', simpleWaypoints=" + this.simpleWaypoints + "}";
+        return "WaypointList{name='" + this.name + "', displayName='" + this.displayName() + "', simpleWaypoints=" + this.simpleWaypoints + "}";
     }
 
     public static WaypointList build(String name, int syncId) {
         return new WaypointList(name, syncId, new ArrayList<>());
     }
 
+    public static WaypointList build(String name, String displayName, int syncId) {
+        return new WaypointList(name, displayName, syncId, new ArrayList<>());
+    }
+
     public static WaypointList buildByServer(String name) {
         return new WaypointList(name, SERVER_N, new ArrayList<>());
+    }
+
+    public static WaypointList buildByServer(String name, String displayName) {
+        return new WaypointList(name, displayName, SERVER_N, new ArrayList<>());
+    }
+
+    private static String normalizeDisplayName(String name, String displayName) {
+        Objects.requireNonNull(displayName, "displayName");
+        return name.equals(displayName) ? null : displayName;
     }
 
     public static ExclusionStrategy exclusionStrategy(boolean excludeClientFields) {

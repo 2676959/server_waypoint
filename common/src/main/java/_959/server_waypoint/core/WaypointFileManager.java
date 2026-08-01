@@ -240,13 +240,14 @@ public class WaypointFileManager {
     //? if !paper {
     SimpleWaypoint addWaypointFromRemoteServer(
             String listName,
+            String listDisplayName,
             SimpleWaypoint waypoint,
             int syncId
     ) {
         return this.writeState(() -> {
             WaypointList waypointList = this.waypointListMap.get(listName);
             if (waypointList == null) {
-                waypointList = WaypointList.build(listName, syncId);
+                waypointList = WaypointList.build(listName, listDisplayName, syncId);
                 this.putWaypointList(waypointList);
             }
             return waypointList.addFromRemoteServer(
@@ -296,6 +297,7 @@ public class WaypointFileManager {
 
     WaypointFilesManagerCore.AddWaypointResult addWaypointIfAbsent(
             String listName,
+            String listDisplayName,
             SimpleWaypoint waypoint,
             boolean dimensionCreated
     ) {
@@ -303,7 +305,7 @@ public class WaypointFileManager {
             WaypointList waypointList = this.waypointListMap.get(listName);
             boolean listCreated = false;
             if (waypointList == null) {
-                waypointList = WaypointList.buildByServer(listName);
+                waypointList = WaypointList.buildByServer(listName, listDisplayName);
                 this.putWaypointList(waypointList);
                 listCreated = true;
             }
@@ -330,13 +332,14 @@ public class WaypointFileManager {
 
     WaypointFilesManagerCore.AddWaypointListResult addWaypointListIfAbsent(
             String listName,
+            String displayName,
             boolean dimensionCreated
     ) {
         return this.writeState(() -> {
             WaypointList waypointList = this.waypointListMap.get(listName);
             WaypointFilesManagerCore.AddWaypointListStatus status;
             if (waypointList == null) {
-                waypointList = WaypointList.buildByServer(listName);
+                waypointList = WaypointList.buildByServer(listName, displayName);
                 this.putWaypointList(waypointList);
                 status = WaypointFilesManagerCore.AddWaypointListStatus.ADDED;
             } else {
@@ -384,11 +387,14 @@ public class WaypointFileManager {
             String listName,
             String oldName,
             String newName,
+            String displayName,
             String initials,
             WaypointPos waypointPos,
             int rgb,
             int yaw,
-            boolean global
+            boolean global,
+            List<String> keywords,
+            String description
     ) {
         return this.writeState(() -> {
             WaypointList waypointList = this.waypointListMap.get(listName);
@@ -399,11 +405,14 @@ public class WaypointFileManager {
                     this.mutationAuthority,
                     oldName,
                     newName,
+                    displayName,
                     initials,
                     waypointPos,
                     rgb,
                     yaw,
-                    global
+                    global,
+                    keywords,
+                    description
             );
             WaypointFilesManagerCore.UpdateWaypointStatus status = switch (result.status()) {
                 case UPDATED -> WaypointFilesManagerCore.UpdateWaypointStatus.UPDATED;

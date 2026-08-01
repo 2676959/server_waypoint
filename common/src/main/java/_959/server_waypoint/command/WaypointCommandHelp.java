@@ -26,6 +26,8 @@ final class WaypointCommandHelp {
     private static final TextColor COLOR_COLOR = TextColor.color(0xFF5555);
     private static final TextColor YAW_COLOR = TextColor.color(0x00D5A0);
     private static final TextColor GLOBAL_COLOR = TextColor.color(0xC77DFF);
+    private static final TextColor KEYWORDS_COLOR = TextColor.color(0xFFB86C);
+    private static final TextColor DESCRIPTION_COLOR = TextColor.color(0xBD93F9);
     private static final TextColor QUERY_COLOR = TextColor.color(0xFF79C6);
     private static final TextColor MODE_COLOR = TextColor.color(0xF1FA8C);
     private static final TextColor DIRECTION_COLOR = TextColor.color(0x8BE9FD);
@@ -117,12 +119,12 @@ final class WaypointCommandHelp {
                         "waypoint.help.add.usage.quick"
                 ))
                 .append(usageEntry(
-                        "/wp add <position> <list> <waypoint> <initials> <color> <yaw> <global>",
+                        "/wp add <position> <list> <waypoint> <initials> <color> <yaw> <global> [<keywords> [<description>]]",
                         ADD_COMMAND_PREFIX,
                         "waypoint.help.add.usage.current"
                 ))
                 .append(usageEntry(
-                        "/wp add <dimension> <list> <position> <waypoint> <initials> <color> <yaw> <global>",
+                        "/wp add <dimension> <list> <position> <waypoint> <initials> <color> <yaw> <global> [<keywords> [<description>]]",
                         ADD_COMMAND_PREFIX,
                         "waypoint.help.add.usage.dimension"
                 ))
@@ -134,6 +136,8 @@ final class WaypointCommandHelp {
                 .append(argumentEntry("<color>", "waypoint.help.argument.color"))
                 .append(argumentEntry("<yaw>", "waypoint.help.argument.yaw"))
                 .append(argumentEntry("<global>", "waypoint.help.argument.global"))
+                .append(argumentEntry("<keywords>", "waypoint.help.argument.keywords"))
+                .append(argumentEntry("<description>", "waypoint.help.argument.description"))
                 .append(section("waypoint.help.section.examples"))
                 .append(exampleEntry(
                         "/wp add minecraft:overworld \"Home Bases\"",
@@ -167,7 +171,7 @@ final class WaypointCommandHelp {
         return topicHeader("waypoint.help.edit.title", "waypoint.help.edit.summary")
                 .append(section("waypoint.help.section.usage"))
                 .append(usageEntry(
-                        "/wp edit <dimension> <list> <waypoint> <new name> <initials> <position> <color> <yaw> <global>",
+                        "/wp edit <dimension> <list> <waypoint> <new name> <initials> <position> <color> <yaw> <global> [<keywords> [<description>]]",
                         EDIT_COMMAND_PREFIX,
                         "waypoint.help.edit.usage"
                 ))
@@ -182,6 +186,8 @@ final class WaypointCommandHelp {
                 .append(argumentEntry("<color>", "waypoint.help.argument.color"))
                 .append(argumentEntry("<yaw>", "waypoint.help.argument.yaw"))
                 .append(argumentEntry("<global>", "waypoint.help.argument.global"))
+                .append(argumentEntry("<keywords>", "waypoint.help.argument.keywords"))
+                .append(argumentEntry("<description>", "waypoint.help.argument.description"))
                 .append(section("waypoint.help.section.examples"))
                 .append(exampleEntry(
                         "/wp edit minecraft:overworld \"Home Bases\" \"Main Home\" \"Mountain Home\" MH ~ ~ ~ 39C5BB 90 true",
@@ -534,6 +540,8 @@ final class WaypointCommandHelp {
             case "color" -> COLOR_COLOR;
             case "yaw" -> YAW_COLOR;
             case "global" -> GLOBAL_COLOR;
+            case "keywords" -> KEYWORDS_COLOR;
+            case "description" -> DESCRIPTION_COLOR;
             case "query" -> QUERY_COLOR;
             case "mode", "selection", "method" -> MODE_COLOR;
             case "direction" -> DIRECTION_COLOR;

@@ -108,11 +108,13 @@
   "waypoint.help.add.usage.dimension": "Add a waypoint with every property in a selected dimension",
   "waypoint.help.argument.dimension": "A dimension ID such as minecraft:overworld",
   "waypoint.help.argument.position": "Absolute or relative block coordinates, such as 100 64 -20 or ~ ~ ~",
-  "waypoint.help.argument.names": "Quote names containing spaces, such as \"Home Bases\"",
+  "waypoint.help.argument.names": "Plain text or Minecraft JSON text; the visible plain text is used as the command/index name, and names containing spaces must be quoted",
   "waypoint.help.argument.initials": "The short label displayed for the waypoint; quote it if it contains spaces",
   "waypoint.help.argument.color": "A vanilla color name, six-digit RGB hex code, or random; hover the autocomplete suggestion to preview the color of your hex input",
   "waypoint.help.argument.yaw": "An integer facing direction in degrees",
   "waypoint.help.argument.global": "true for global visibility; false for local visibility",
+  "waypoint.help.argument.keywords": "Optional comma-separated plain-text search terms; quote the group when it contains spaces",
+  "waypoint.help.argument.description": "Optional plain text or Minecraft JSON text shown to players; requires the keywords argument first (use an empty string for none)",
   "waypoint.help.add.example.list": "Create the Home Bases list in the Overworld",
   "waypoint.help.add.example.quick": "Quickly add Main Home at your current position",
   "waypoint.help.add.example.full": "Add Main Home with explicitly selected properties",
@@ -129,7 +131,7 @@
   "waypoint.help.list.usage.dimension": "List waypoints in one dimension",
   "waypoint.help.list.usage.list": "List waypoints in one waypoint list",
   "waypoint.help.list.usage.options": "Append any applicable options to one of the targets above",
-  "waypoint.help.list.argument.query": "Case-insensitive substring or fuzzy matching against waypoint names",
+  "waypoint.help.list.argument.query": "Case-insensitive substring or fuzzy matching against plain waypoint/list names and waypoint keywords",
   "waypoint.help.list.argument.mode": "default, name, distance, or color",
   "waypoint.help.list.argument.direction": "ascending or descending; available after a non-default sort mode",
   "waypoint.help.list.argument.number": "Pages start at 1; page limits accept values from 1 through 100",
@@ -189,5 +191,8 @@
   "button.sort.descending": "click to use descending order",
   "button.sort.order.unavailable": "select a sort mode first",
 
-  "hex_color_code.invalid": "Invalid hex color code: {0}"
+  "hex_color_code.invalid": "Invalid hex color code: {0}",
+  "argument.text.too_long": "Argument {0} is too long (maximum raw length: {1})",
+  "argument.keywords.too_many": "Too many keywords (maximum: {0})",
+  "argument.formatted_text.invalid": "Invalid Minecraft JSON formatted text"
 }

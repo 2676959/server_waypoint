@@ -12,6 +12,7 @@ import _959.server_waypoint.core.WaypointServerCore;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.function.Consumer;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
@@ -64,7 +65,18 @@ public class WaypointServerMod extends WaypointServerCore {
             SimpleWaypoint waypoint,
             Consumer<AddWaypointResult> resultAction
     ) {
-        return super.addWaypoint(dimensionName, listName, waypoint, result -> {
+        return this.addWaypoint(dimensionName, listName, listName, waypoint, resultAction);
+    }
+
+    @Override
+    public AddWaypointResult addWaypoint(
+            String dimensionName,
+            String listName,
+            String listDisplayName,
+            SimpleWaypoint waypoint,
+            Consumer<AddWaypointResult> resultAction
+    ) {
+        return super.addWaypoint(dimensionName, listName, listDisplayName, waypoint, result -> {
             try {
                 resultAction.accept(result);
             } finally {
@@ -130,6 +142,41 @@ public class WaypointServerMod extends WaypointServerCore {
             int rgb,
             int yaw,
             boolean global,
+            List<String> keywords,
+            String description,
+            Consumer<UpdateWaypointResult> resultAction
+    ) {
+        return this.updateWaypointProperties(
+                dimensionName,
+                listName,
+                oldName,
+                newName,
+                newName,
+                initials,
+                waypointPos,
+                rgb,
+                yaw,
+                global,
+                keywords,
+                description,
+                resultAction
+        );
+    }
+
+    @Override
+    public UpdateWaypointResult updateWaypointProperties(
+            String dimensionName,
+            String listName,
+            String oldName,
+            String newName,
+            String displayName,
+            String initials,
+            WaypointPos waypointPos,
+            int rgb,
+            int yaw,
+            boolean global,
+            List<String> keywords,
+            String description,
             Consumer<UpdateWaypointResult> resultAction
     ) {
         return super.updateWaypointProperties(
@@ -137,11 +184,14 @@ public class WaypointServerMod extends WaypointServerCore {
                 listName,
                 oldName,
                 newName,
+                displayName,
                 initials,
                 waypointPos,
                 rgb,
                 yaw,
                 global,
+                keywords,
+                description,
                 result -> {
                     try {
                         resultAction.accept(result);
@@ -176,7 +226,17 @@ public class WaypointServerMod extends WaypointServerCore {
             String listName,
             Consumer<AddWaypointListResult> resultAction
     ) {
-        return super.addWaypointList(dimensionName, listName, result -> {
+        return this.addWaypointList(dimensionName, listName, listName, resultAction);
+    }
+
+    @Override
+    public AddWaypointListResult addWaypointList(
+            String dimensionName,
+            String listName,
+            String displayName,
+            Consumer<AddWaypointListResult> resultAction
+    ) {
+        return super.addWaypointList(dimensionName, listName, displayName, result -> {
             try {
                 resultAction.accept(result);
             } finally {

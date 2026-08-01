@@ -70,6 +70,8 @@ final class AbstractTextDisplayNavigationHandlerTest {
                 new NavigationTarget(
                         "minecraft:overworld",
                         "towns",
+                        "towns",
+                        "Village",
                         "Village",
                         new WaypointPos(1, 2, 3),
                         0x123456

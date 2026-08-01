@@ -4,10 +4,13 @@ import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import io.netty.buffer.ByteBuf;
 
+import java.util.List;
+
 public class SimpleWaypointCodec {
     public static void encode(ByteBuf buf, SimpleWaypoint waypoint) {
         SimpleWaypoint snapshot = new SimpleWaypoint(waypoint);
         UtfStringCodec.encode(buf, snapshot.name());
+        UtfStringCodec.encode(buf, snapshot.displayName());
         String initials = snapshot.initials();
         UtfStringCodec.encode(buf, initials);
         WaypointPos pos = snapshot.pos();
@@ -19,10 +22,13 @@ public class SimpleWaypointCodec {
         buf.writeBoolean(yaw < 0);
         buf.writeByte(Math.abs(yaw));
         buf.writeBoolean(snapshot.global());
+        ListCodec.encode(buf, snapshot.keywords(), UtfStringCodec::encode);
+        UtfStringCodec.encode(buf, snapshot.description());
     }
 
     public static SimpleWaypoint decode(ByteBuf byteBuf) {
         String name = UtfStringCodec.decode(byteBuf);
+        String displayName = UtfStringCodec.decode(byteBuf);
         String initials = UtfStringCodec.decode(byteBuf);
         // pos
         int x = byteBuf.readInt();
@@ -37,6 +43,18 @@ public class SimpleWaypointCodec {
         yaw = isNegative ? -yaw : yaw;
         // global
         boolean global = byteBuf.readBoolean();
-        return new SimpleWaypoint(name, initials, new WaypointPos(x, y, z), rgb, yaw, global);
+        List<String> keywords = ListCodec.decode(byteBuf, UtfStringCodec::decode);
+        String description = UtfStringCodec.decode(byteBuf);
+        return new SimpleWaypoint(
+                name,
+                displayName,
+                initials,
+                new WaypointPos(x, y, z),
+                rgb,
+                yaw,
+                global,
+                keywords,
+                description
+        );
     }
 }

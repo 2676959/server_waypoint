@@ -11,6 +11,7 @@ import static _959.server_waypoint.core.network.MessageChannelID.WAYPOINT_MODIFI
 public record WaypointModificationBuffer(
         String dimensionName,
         String listName,
+        String listDisplayName,
         String waypointName,
         SimpleWaypoint waypoint,
         WaypointModificationType type,

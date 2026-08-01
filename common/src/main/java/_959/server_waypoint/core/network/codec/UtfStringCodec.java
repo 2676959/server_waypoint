@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 
 public class UtfStringCodec {
     private static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_network_codec");
-    private static final int MAX_BYTES = 255;
+    private static final int MAX_BYTES = 65_535;
 
     public static void encode(ByteBuf byteBuf, String string) {
         byte[] raw = string.getBytes(StandardCharsets.UTF_8);
@@ -18,12 +18,12 @@ public class UtfStringCodec {
             raw = truncateUtf8(string);
             length = raw.length;
         }
-        byteBuf.writeByte(length);
+        byteBuf.writeShort(length);
         byteBuf.writeBytes(raw);
     }
 
     public static String decode(ByteBuf byteBuf) {
-        int length = byteBuf.readUnsignedByte();
+        int length = byteBuf.readUnsignedShort();
         byte[] raw = new byte[length];
         byteBuf.readBytes(raw);
         return new String(raw, StandardCharsets.UTF_8);

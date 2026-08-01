@@ -99,6 +99,16 @@ public class WaypointFilesManagerCore {
             SimpleWaypoint waypoint,
             Consumer<AddWaypointResult> resultAction
     ) {
+        return this.addWaypoint(dimensionName, listName, listName, waypoint, resultAction);
+    }
+
+    public AddWaypointResult addWaypoint(
+            String dimensionName,
+            String listName,
+            String listDisplayName,
+            SimpleWaypoint waypoint,
+            Consumer<AddWaypointResult> resultAction
+    ) {
         return this.mutateDimension(
                 dimensionName,
                 () -> {
@@ -109,6 +119,7 @@ public class WaypointFilesManagerCore {
                     );
                     return fileManager.addWaypointIfAbsent(
                             listName,
+                            listDisplayName,
                             waypoint,
                             dimensionCreated.get()
                     );
@@ -122,6 +133,15 @@ public class WaypointFilesManagerCore {
             String listName,
             Consumer<AddWaypointListResult> resultAction
     ) {
+        return this.addWaypointList(dimensionName, listName, listName, resultAction);
+    }
+
+    public AddWaypointListResult addWaypointList(
+            String dimensionName,
+            String listName,
+            String displayName,
+            Consumer<AddWaypointListResult> resultAction
+    ) {
         return this.mutateDimension(
                 dimensionName,
                 () -> {
@@ -132,6 +152,7 @@ public class WaypointFilesManagerCore {
                     );
                     return fileManager.addWaypointListIfAbsent(
                             listName,
+                            displayName,
                             dimensionCreated.get()
                     );
                 },
@@ -166,6 +187,40 @@ public class WaypointFilesManagerCore {
             int rgb,
             int yaw,
             boolean global,
+            List<String> keywords,
+            String description,
+            Consumer<UpdateWaypointResult> resultAction
+    ) {
+        return this.updateWaypointProperties(
+                dimensionName,
+                listName,
+                oldName,
+                newName,
+                newName,
+                initials,
+                waypointPos,
+                rgb,
+                yaw,
+                global,
+                keywords,
+                description,
+                resultAction
+        );
+    }
+
+    public UpdateWaypointResult updateWaypointProperties(
+            String dimensionName,
+            String listName,
+            String oldName,
+            String newName,
+            String displayName,
+            String initials,
+            WaypointPos waypointPos,
+            int rgb,
+            int yaw,
+            boolean global,
+            List<String> keywords,
+            String description,
             Consumer<UpdateWaypointResult> resultAction
     ) {
         return this.mutateDimension(
@@ -178,11 +233,14 @@ public class WaypointFilesManagerCore {
                                     listName,
                                     oldName,
                                     newName,
+                                    displayName,
                                     initials,
                                     waypointPos,
                                     rgb,
                                     yaw,
-                                    global
+                                    global,
+                                    keywords,
+                                    description
                             );
                 },
                 resultAction
@@ -259,6 +317,7 @@ public class WaypointFilesManagerCore {
     public SimpleWaypoint addWaypointFromRemoteServer(
             String dimensionName,
             String listName,
+            String listDisplayName,
             SimpleWaypoint waypoint,
             int syncId
     ) {
@@ -267,7 +326,7 @@ public class WaypointFilesManagerCore {
                     dimensionName,
                     new AtomicBoolean()
             );
-            return fileManager.addWaypointFromRemoteServer(listName, waypoint, syncId);
+            return fileManager.addWaypointFromRemoteServer(listName, listDisplayName, waypoint, syncId);
         });
     }
 

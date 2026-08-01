@@ -14,7 +14,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class NavigationDisplayTextTest {
     private final NavigationSession session = new NavigationSession(
             UUID.randomUUID(),
-            new NavigationTarget("minecraft:overworld", "villages", "Village", new WaypointPos(10, 64, 20), 0x55FF55),
+            new NavigationTarget(
+                    "minecraft:overworld",
+                    "villages",
+                    "villages",
+                    "Village",
+                    "Village",
+                    new WaypointPos(10, 64, 20),
+                    0x55FF55
+            ),
             Set.of(NavigationMethod.ACTIONBAR),
             TextDisplayTransformation.defaultValue()
     );

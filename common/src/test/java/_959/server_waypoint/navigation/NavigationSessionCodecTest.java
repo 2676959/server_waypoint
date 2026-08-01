@@ -24,6 +24,8 @@ class NavigationSessionCodecTest {
                 new NavigationTarget(
                         "minecraft:the_nether",
                         "portals",
+                        "portals",
+                        "Hub",
                         "Hub",
                         new WaypointPos(10, 64, -20),
                         0x123456
@@ -53,6 +55,8 @@ class NavigationSessionCodecTest {
                 new NavigationTarget(
                         "minecraft:overworld",
                         "towns",
+                        "towns",
+                        "Village",
                         "Village",
                         new WaypointPos(1, 2, 3),
                         0x39C5BB

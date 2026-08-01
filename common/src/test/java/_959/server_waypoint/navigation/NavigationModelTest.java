@@ -10,6 +10,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -40,18 +41,29 @@ class NavigationModelTest {
                 ignored -> {
                 }
         );
-        NavigationTarget target = new NavigationTarget("minecraft:overworld", "towns", waypoint);
+        NavigationTarget target = new NavigationTarget(
+                "minecraft:overworld",
+                "towns",
+                "towns",
+                waypoint.name(),
+                waypoint.displayName(),
+                waypoint.pos(),
+                waypoint.rgb()
+        );
 
         filesManager.updateWaypointProperties(
                 "minecraft:overworld",
                 "towns",
                 "Village",
                 "Changed",
+                "Changed",
                 "C",
                 new WaypointPos(9, 9, 9),
                 0xFFFFFF,
                 90,
                 true,
+                List.of(),
+                "",
                 ignored -> {
                 }
         );
@@ -190,6 +202,8 @@ class NavigationModelTest {
         return new NavigationTarget(
                 "minecraft:overworld",
                 "towns",
+                "towns",
+                "Village",
                 "Village",
                 new WaypointPos(1, 2, 3),
                 0x123456

@@ -108,11 +108,13 @@
   "waypoint.help.add.usage.dimension": "在所选维度添加并指定路径点的全部属性",
   "waypoint.help.argument.dimension": "维度 ID，例如 minecraft:overworld",
   "waypoint.help.argument.position": "绝对或相对方块坐标，例如 100 64 -20 或 ~ ~ ~",
-  "waypoint.help.argument.names": "包含空格的名称需要加引号，例如 \"Home Bases\"",
+  "waypoint.help.argument.names": "纯文本或 Minecraft JSON 文本；可见纯文本将作为命令和索引名称，包含空格时需要加引号",
   "waypoint.help.argument.initials": "路径点显示的短标签；包含空格时需要加引号",
   "waypoint.help.argument.color": "原版颜色名称、六位 RGB 十六进制颜色码或 random；将鼠标悬停在自动补全建议上可预览输入的十六进制颜色",
   "waypoint.help.argument.yaw": "以度数表示的整数朝向",
   "waypoint.help.argument.global": "true 表示全局可见，false 表示仅本地可见",
+  "waypoint.help.argument.keywords": "可选的逗号分隔纯文本搜索词；包含空格时需为整组加引号",
+  "waypoint.help.argument.description": "向玩家显示的可选纯文本或 Minecraft JSON 文本；必须先提供关键词参数（无关键词时使用空字符串）",
   "waypoint.help.add.example.list": "在主世界创建 Home Bases 列表",
   "waypoint.help.add.example.quick": "在当前位置快速添加 Main Home",
   "waypoint.help.add.example.full": "使用明确指定的属性添加 Main Home",
@@ -129,7 +131,7 @@
   "waypoint.help.list.usage.dimension": "列出一个维度中的路径点",
   "waypoint.help.list.usage.list": "列出一个路径点列表中的路径点",
   "waypoint.help.list.usage.options": "将适用的选项附加到上述任一目标之后",
-  "waypoint.help.list.argument.query": "按路径点名称进行不区分大小写的子字符串或模糊匹配",
+  "waypoint.help.list.argument.query": "按纯文本路径点名称、列表名称和路径点关键词进行不区分大小写的子字符串或模糊匹配",
   "waypoint.help.list.argument.mode": "default、name、distance 或 color",
   "waypoint.help.list.argument.direction": "ascending 或 descending；仅可用于非默认排序方式",
   "waypoint.help.list.argument.number": "页码从 1 开始；每页数量可设置为 1 至 100",
@@ -189,5 +191,8 @@
   "button.sort.descending": "点击切换为降序",
   "button.sort.order.unavailable": "请先选择排序方式",
 
-  "hex_color_code.invalid": "无效的十六进制颜色码：{0}"
+  "hex_color_code.invalid": "无效的十六进制颜色码：{0}",
+  "argument.text.too_long": "参数 {0} 过长（原始输入最大长度：{1}）",
+  "argument.keywords.too_many": "关键词过多（最多：{0}）",
+  "argument.formatted_text.invalid": "无效的 Minecraft JSON 格式文本"
 }

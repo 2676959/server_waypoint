@@ -24,6 +24,8 @@ import net.minecraft.network.chat.MutableComponent;
 
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.util.StringCommandBuilder.addCmd;
+import static _959.server_waypoint.text.FormattedTextHelper.MAX_NAME_LENGTH;
+import static _959.server_waypoint.text.FormattedTextHelper.plainText;
 
 public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     private TranslucentTextField listNameField;
@@ -38,6 +40,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         super(previousScreen, Component.translatable("waypoint.add.screen.title"), dimensionName, listName, null);
         this.dimensionField.setValue(dimensionName);
         this.listNameField.setValue(listName);
+        this.listNameField.setMaxLength(MAX_NAME_LENGTH);
         this.configureSuggestions();
         this.buttonRow.setXOffset(CONTENT_WIDTH);
         if (defaultPos == null) {
@@ -125,12 +128,15 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         WaypointPos resolvedPos = this.resolveCoordinateFields();
         sendCommand(addCmd(this.dimensionField.getValue(), this.listNameField.getValue(),
                 new SimpleWaypoint(
+                        plainText(this.nameEditBox.getValue()),
                         this.nameEditBox.getValue(),
                         this.initialsEditBox.getValue(),
                         resolvedPos,
                         this.colorPickerButton.getColor() & 0xFFFFFF,
                         this.yawEditBox.getIntValue(),
-                        this.globalToggle.getState()
+                        this.globalToggle.getState(),
+                        List.of(),
+                        ""
                 ), false));
     }
 
@@ -142,7 +148,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     }
 
     private List<String> getWaypointInitialsSuggestions() {
-        return WaypointInitials.getInitialsCandidatesFromName(this.nameEditBox.getValue());
+        return WaypointInitials.getInitialsCandidatesFromName(plainText(this.nameEditBox.getValue()));
     }
 
 }

@@ -6,17 +6,24 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 import static _959.server_waypoint.util.ColorUtils.*;
 
 public class SimpleWaypoint {
     @Expose private String name;
+    @Expose @SerializedName("display_name") private String displayName;
     @Expose private String initials;
     @Expose private WaypointPos pos;
     @Expose @SerializedName("color") @JsonAdapter(ColorToHexCodeSerializer.class) private int rgb;
     @Expose private int yaw;
     @Expose private boolean global;
+    @Expose private List<String> keywords;
+    @Expose private String description;
     private static final String SEPARATOR = ":";
     // not on paper
     //? if !paper {
@@ -34,36 +41,62 @@ public class SimpleWaypoint {
     //?}
 
     public SimpleWaypoint(String name, String initials, WaypointPos pos, int rgb, int yaw, boolean global) {
-        this.name = name;
+        this(name, name, initials, pos, rgb, yaw, global, List.of(), "");
+    }
+
+    public SimpleWaypoint(
+            String name,
+            String displayName,
+            String initials,
+            WaypointPos pos,
+            int rgb,
+            int yaw,
+            boolean global,
+            List<String> keywords,
+            String description
+    ) {
+        this.name = Objects.requireNonNull(name, "name");
+        this.displayName = normalizeDisplayName(name, displayName);
         this.initials = initials;
         this.pos = pos;
         this.rgb = rgb;
         this.yaw = convertYaw(yaw);
         this.global = global;
+        this.keywords = copyKeywords(keywords);
+        this.description = Objects.requireNonNull(description, "description");
         //? if !paper
         this.renderId = -1;
     }
 
+    public SimpleWaypoint(
+            String name,
+            String initials,
+            WaypointPos pos,
+            int rgb,
+            int yaw,
+            boolean global,
+            List<String> keywords,
+            String description
+    ) {
+        this(name, name, initials, pos, rgb, yaw, global, keywords, description);
+    }
+
     public SimpleWaypoint(String name, String initials, int x, int y, int z, int rgb, int yaw, boolean global) {
-        this.name = name;
-        this.initials = initials;
-        this.pos = new WaypointPos(x, y, z);
-        this.rgb = rgb;
-        this.yaw = convertYaw(yaw);
-        this.global = global;
-        //? if !paper
-        this.renderId = -1;
+        this(name, initials, new WaypointPos(x, y, z), rgb, yaw, global);
     }
 
     // do not need to copy renderId as renderId should be unique for each instance
     public SimpleWaypoint(SimpleWaypoint other) {
         State state = other.snapshotState();
         this.name = state.name();
+        this.displayName = state.displayName();
         this.initials = state.initials();
         this.pos = state.pos();
         this.rgb = state.rgb();
         this.yaw = state.yaw();
         this.global = state.global();
+        this.keywords = copyKeywords(state.keywords());
+        this.description = state.description();
         //? if !paper
         this.renderId = -1;
     }
@@ -82,6 +115,10 @@ public class SimpleWaypoint {
 
     public synchronized String name() {
         return this.name;
+    }
+
+    public synchronized String displayName() {
+        return this.displayName == null ? this.name : this.displayName;
     }
 
     public synchronized String initials() {
@@ -128,8 +165,16 @@ public class SimpleWaypoint {
         return this.global;
     }
 
+    public synchronized List<String> keywords() {
+        return Collections.unmodifiableList(copyKeywords(this.keywords));
+    }
+
+    public synchronized String description() {
+        return this.description;
+    }
+
     public synchronized String toString() {
-        return "SimpleWaypoint{name='" + this.name + "', initials='" + this.initials + "', pos=" + this.pos + ", rgb=" + this.rgb + ", yaw=" + this.yaw + ", global=" + this.global + "}";
+        return "SimpleWaypoint{name='" + this.name + "', displayName='" + this.displayName() + "', initials='" + this.initials + "', pos=" + this.pos + ", rgb=" + this.rgb + ", yaw=" + this.yaw + ", global=" + this.global + ", keywords=" + this.keywords() + ", description='" + this.description() + "'}";
     }
 
     public static SimpleWaypoint fromString(String waypointString) throws NumberFormatException {
@@ -139,33 +184,56 @@ public class SimpleWaypoint {
         return new SimpleWaypoint(args[0], args[1], new WaypointPos(Integer.parseInt(args[2]), Integer.parseInt(args[3]), Integer.parseInt(args[4])), rgb, Integer.parseInt(args[6]), Boolean.parseBoolean(args[7]));
     }
 
-    synchronized boolean compareProperties(String name, String initials, WaypointPos pos, int colorIdx, int yaw, boolean global) {
-        return this.name.equals(name) && this.initials.equals(initials) && this.pos.equals(pos) && this.rgb == colorIdx && this.yaw == convertYaw(yaw) && this.global == global;
+    synchronized boolean compareProperties(String name, String displayName, String initials, WaypointPos pos, int colorIdx, int yaw, boolean global, List<String> keywords, String description) {
+        return this.name.equals(name) && Objects.equals(this.displayName, normalizeDisplayName(name, displayName)) && this.initials.equals(initials) && this.pos.equals(pos) && this.rgb == colorIdx && this.yaw == convertYaw(yaw) && this.global == global && this.keywords().equals(copyKeywords(keywords)) && this.description.equals(description);
     }
 
-    synchronized void updateProperties(String name, String initials, WaypointPos pos, int rgb, int yaw, boolean global) {
-        this.name = name;
+    synchronized void updateProperties(String name, String displayName, String initials, WaypointPos pos, int rgb, int yaw, boolean global, List<String> keywords, String description) {
+        this.name = Objects.requireNonNull(name, "name");
+        this.displayName = normalizeDisplayName(name, displayName);
         this.initials = initials;
         this.pos = pos;
         this.rgb = rgb;
         this.yaw = convertYaw(yaw);
         this.global = global;
+        this.keywords = copyKeywords(keywords);
+        this.description = Objects.requireNonNull(description, "description");
     }
 
     private synchronized State snapshotState() {
-        return new State(this.name, this.initials, this.pos, this.rgb, this.yaw, this.global);
+        return new State(this.name, this.displayName, this.initials, this.pos, this.rgb, this.yaw, this.global, this.keywords(), this.description());
     }
 
     private void applyState(State state) {
         this.name = state.name();
+        this.displayName = state.displayName();
         this.initials = state.initials();
         this.pos = state.pos();
         this.rgb = state.rgb();
         this.yaw = state.yaw();
         this.global = state.global();
+        this.keywords = copyKeywords(state.keywords());
+        this.description = state.description();
     }
 
-    private record State(String name, String initials, WaypointPos pos, int rgb, int yaw, boolean global) {
+    private static List<String> copyKeywords(List<String> keywords) {
+        Objects.requireNonNull(keywords, "keywords");
+        if (keywords.isEmpty()) {
+            return new ArrayList<>();
+        }
+        ArrayList<String> result = new ArrayList<>(keywords.size());
+        for (String keyword : keywords) {
+            result.add(Objects.requireNonNull(keyword, "keyword"));
+        }
+        return result;
+    }
+
+    private static String normalizeDisplayName(String name, String displayName) {
+        Objects.requireNonNull(displayName, "displayName");
+        return name.equals(displayName) ? null : displayName;
+    }
+
+    private record State(String name, String displayName, String initials, WaypointPos pos, int rgb, int yaw, boolean global, List<String> keywords, String description) {
     }
 
     public static class ColorToHexCodeSerializer implements JsonSerializer<Integer>, JsonDeserializer<Integer> {

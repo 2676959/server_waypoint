@@ -435,6 +435,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         if (networkState != ClientNetworkState.SYNC_FINISHED) return;
         String dimensionName = buffer.dimensionName();
         String listName = buffer.listName();
+        String listDisplayName = buffer.listDisplayName();
         WaypointFileManager fileManager = this.getWaypointFileManager(dimensionName);
         boolean dimensionListChanged = fileManager == null;
         WaypointModificationType modificationType = buffer.type();
@@ -447,6 +448,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                     SimpleWaypoint liveWaypoint = this.addWaypointFromRemoteServer(
                             dimensionName,
                             listName,
+                            listDisplayName,
                             waypoint,
                             syncId
                     );
@@ -505,7 +507,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                     }
                     WaypointList waypointList = fileManager.getWaypointListByName(listName);
                     if (waypointList == null) {
-                        waypointList = WaypointList.buildByServer(listName);
+                        waypointList = WaypointList.buildByServer(listName, listDisplayName);
                         fileManager = this.putWaypointList(dimensionName, waypointList);
                     }
                     updateWaypointManagerView(dimensionName, dimensionListChanged);

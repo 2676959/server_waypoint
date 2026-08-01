@@ -114,6 +114,8 @@ class NavigationMathTest {
         return new NavigationTarget(
                 dimension,
                 "test-list",
+                "test-list",
+                "test-waypoint",
                 "test-waypoint",
                 new WaypointPos(x, y, z),
                 0x39C5BB

@@ -137,7 +137,25 @@ class WaypointQueryEngineTest {
     @Test
     void searchSuggestionsComeFromSelectedDimensionWithoutDuplicates() {
         WaypointFilesManagerCore filesManager = createFilesManager();
-        addDimension(filesManager, "minecraft:overworld", list("bases", waypoint("base", 0, 0, 0), waypoint("base", 1, 0, 0)));
+        addDimension(filesManager, "minecraft:overworld", new WaypointList(
+                "bases",
+                "{\"text\":\"bases\",\"color\":\"gold\"}",
+                1,
+                List.of(
+                new SimpleWaypoint(
+                        "base",
+                        "{\"text\":\"base\",\"bold\":true}",
+                        "b",
+                        new WaypointPos(0, 0, 0),
+                        0xFFFFFF,
+                        0,
+                        false,
+                        List.of(),
+                        ""
+                ),
+                waypoint("base", 1, 0, 0)
+                )
+        ));
         addDimension(filesManager, "minecraft:the_nether", list("nether", waypoint("nether base", 0, 0, 0)));
 
         List<String> suggestions = new WaypointQueryEngine(filesManager).getSearchSuggestions("minecraft:overworld");
@@ -160,7 +178,7 @@ class WaypointQueryEngineTest {
     }
 
     @Test
-    void filterDoesNotMatchListNames() {
+    void filterMatchesListNames() {
         WaypointFilesManagerCore filesManager = createFilesManager();
         addDimension(filesManager, "minecraft:overworld", list("homes", waypoint("storage", 0, 0, 0)));
 
@@ -169,8 +187,36 @@ class WaypointQueryEngineTest {
                 new WaypointQueryEngine.Query("hoems", WaypointSorting.SortMode.NAME, null)
         );
 
-        assertEquals(0, result.listCount());
-        assertEquals(0, result.waypointCount());
+        assertEquals(1, result.listCount());
+        assertEquals(1, result.waypointCount());
+    }
+
+    @Test
+    void filterMatchesKeywordsButNotFormattedDisplayNames() {
+        WaypointFilesManagerCore filesManager = createFilesManager();
+        SimpleWaypoint waypoint = new SimpleWaypoint(
+                "Port",
+                "{\"text\":\"Hidden raw\",\"extra\":[{\"text\":\" Harbor\"}]}",
+                "H",
+                new WaypointPos(0, 0, 0),
+                0xFFFFFF,
+                0,
+                false,
+                List.of("ships", "trading post"),
+                ""
+        );
+        addDimension(filesManager, "minecraft:overworld", list("ports", waypoint));
+
+        WaypointQueryEngine queryEngine = new WaypointQueryEngine(filesManager);
+
+        assertEquals(0, queryEngine.queryDimension(
+                "minecraft:overworld",
+                new WaypointQueryEngine.Query("harbor", WaypointSorting.SortMode.NAME, null)
+        ).waypointCount());
+        assertEquals(1, queryEngine.queryDimension(
+                "minecraft:overworld",
+                new WaypointQueryEngine.Query("trading", WaypointSorting.SortMode.NAME, null)
+        ).waypointCount());
     }
 
     @Test

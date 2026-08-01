@@ -11,6 +11,7 @@ public class WaypointModificationBufferCodec {
         buf.writeByte(type.ordinal());
         UtfStringCodec.encode(buf, modification.dimensionName());
         UtfStringCodec.encode(buf, modification.listName());
+        UtfStringCodec.encode(buf, modification.listDisplayName());
         switch (type) {
             case ADD -> {
                 // only needs a waypoint object
@@ -37,8 +38,9 @@ public class WaypointModificationBufferCodec {
         WaypointModificationType type = WaypointModificationType.values()[buf.readByte()];
         String dimensionName = UtfStringCodec.decode(buf);
         String listName = UtfStringCodec.decode(buf);
+        String listDisplayName = UtfStringCodec.decode(buf);
         // already has enough information for actions on a waypoint list
-        if (type == WaypointModificationType.ADD_LIST || type == WaypointModificationType.REMOVE_LIST) return new WaypointModificationBuffer(dimensionName, listName, null, null, type, 0);
+        if (type == WaypointModificationType.ADD_LIST || type == WaypointModificationType.REMOVE_LIST) return new WaypointModificationBuffer(dimensionName, listName, listDisplayName, null, null, type, 0);
         String waypointName = null;
         SimpleWaypoint waypoint = null;
         int syncId = 0;
@@ -60,6 +62,6 @@ public class WaypointModificationBufferCodec {
                 syncId = buf.readInt();
             }
         }
-        return new WaypointModificationBuffer(dimensionName, listName, waypointName, waypoint, type, syncId);
+        return new WaypointModificationBuffer(dimensionName, listName, listDisplayName, waypointName, waypoint, type, syncId);
     }
 }

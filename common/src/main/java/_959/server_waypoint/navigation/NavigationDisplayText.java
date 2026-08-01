@@ -7,6 +7,7 @@ import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static _959.server_waypoint.text.FormattedTextHelper.parse;
 
 /**
  * Builds shared navigation text without retaining platform player or display
@@ -26,7 +27,7 @@ public final class NavigationDisplayText {
 
     public static Component build(NavigationSession session, NavigationSnapshot snapshot) {
         NavigationTarget target = session.target();
-        Component targetName = text(target.waypointName(), TextColor.color(target.rgb()));
+        Component targetName = parse(target.waypointDisplayName()).colorIfAbsent(TextColor.color(target.rgb()));
         if (!snapshot.inTargetDimension()) {
             return empty()
                     .append(targetName)
@@ -53,7 +54,7 @@ public final class NavigationDisplayText {
             NavigationSnapshot snapshot
     ) {
         NavigationTarget target = session.target();
-        Component targetName = text(target.waypointName(), TextColor.color(target.rgb()));
+        Component targetName = parse(target.waypointDisplayName()).colorIfAbsent(TextColor.color(target.rgb()));
         if (!snapshot.inTargetDimension()) {
             return empty()
                     .append(targetName)

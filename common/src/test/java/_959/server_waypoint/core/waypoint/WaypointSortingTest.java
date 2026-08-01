@@ -22,6 +22,28 @@ class WaypointSortingTest {
     }
 
     @Test
+    void ignoresFormattedDisplayNamesWhenSorting() {
+        List<SimpleWaypoint> waypoints = new ArrayList<>(List.of(
+                new SimpleWaypoint(
+                        "Zulu",
+                        "{\"text\":\"Aardvark\",\"color\":\"red\"}",
+                        "Z",
+                        new WaypointPos(0, 0, 0),
+                        0xFF0000,
+                        0,
+                        false,
+                        List.of(),
+                        ""
+                ),
+                waypoint("Beta", 0, 0, 0, 0x00FF00)
+        ));
+
+        waypoints.sort(WaypointSorting.byName());
+
+        assertEquals(List.of("Beta", "Zulu"), names(waypoints));
+    }
+
+    @Test
     void sortsWaypointsByDistanceFromPosition() {
         List<SimpleWaypoint> waypoints = new ArrayList<>(List.of(
                 waypoint("far", 10, 0, 0, 0xFF0000),

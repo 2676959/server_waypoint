@@ -36,6 +36,8 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.ne
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.util.ColorUtils.*;
 import static _959.server_waypoint.util.WaypointInitials.getDefaultInitials;
+import static _959.server_waypoint.text.FormattedTextHelper.MAX_NAME_LENGTH;
+import static _959.server_waypoint.text.FormattedTextHelper.plainText;
 
 public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedScreen {
     protected final Screen previousScreen;
@@ -79,6 +81,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected final String dimensionName;
     protected final String listName;
     protected final String waypointName;
+    protected final String waypointDisplayName;
     protected final String initials;
     protected final int x;
     protected final int y;
@@ -86,6 +89,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected final int rgb;
     protected final int yaw;
     protected final boolean global;
+    protected final List<String> keywords;
+    protected final String description;
     protected WaypointPos coordinateDefaultPos;
     private boolean enforcingCoordinateMode;
 
@@ -101,6 +106,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.listName = listName;
         if (waypoint == null) {
             this.waypointName = "";
+            this.waypointDisplayName = "";
             this.initials = "";
             this.x = 0;
             this.y = 0;
@@ -108,6 +114,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             this.rgb = 0xFF000000 | randomColor();
             this.yaw = 0;
             this.global = true;
+            this.keywords = List.of();
+            this.description = "";
             this.coordinateDefaultPos = new WaypointPos(this.x, this.y, this.z);
             this.colorEditBox.setColor(rgb);
             this.colorPickerButton.setColor(rgb);
@@ -115,6 +123,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             this.swatchWidget.setPreviousColor(rgb);
         } else {
             this.waypointName = waypoint.name();
+            this.waypointDisplayName = waypoint.displayName();
             this.initials = waypoint.initials();
             WaypointPos pos = waypoint.pos();
             this.x = pos.x();
@@ -123,8 +132,10 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             this.rgb = 0xFF000000 | waypoint.rgb();
             this.yaw = waypoint.yaw();
             this.global = waypoint.global();
+            this.keywords = waypoint.keywords();
+            this.description = waypoint.description();
             this.coordinateDefaultPos = new WaypointPos(this.x, this.y, this.z);
-            this.nameEditBox.setValue(this.waypointName);
+            this.nameEditBox.setValue(this.waypointDisplayName);
             this.initialsEditBox.setValue(this.initials);
             int color = 0xFF000000 | this.rgb;
             this.colorEditBox.setColor(color);
@@ -143,6 +154,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             this.globalToggle.setState(this.global);
         }
         this.swatchWidget.visible = false;
+        this.nameEditBox.setMaxLength(MAX_NAME_LENGTH);
         this.configureInitialsAutoUpdate();
         this.configureCoordinateModeEnforcement();
         this.configureCoordinateSuggestions();
@@ -233,7 +245,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     private void configureInitialsAutoUpdate() {
         this.nameEditBox.setResponder(
                 waypointName ->
-                    this.initialsEditBox.setValue(getDefaultInitials(waypointName))
+                    this.initialsEditBox.setValue(getDefaultInitials(plainText(waypointName)))
         );
     }
 

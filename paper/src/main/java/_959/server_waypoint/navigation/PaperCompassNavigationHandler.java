@@ -85,10 +85,8 @@ public final class PaperCompassNavigationHandler implements
                 target.position().z()
         ));
         meta.setLodestoneTracked(false);
-        meta.displayName(Component.text(
-                target.waypointName(),
-                TextColor.color(target.rgb())
-        ));
+        meta.displayName(_959.server_waypoint.text.FormattedTextHelper.parse(target.waypointDisplayName())
+                .colorIfAbsent(TextColor.color(target.rgb())));
         compass.setItemMeta(meta);
         return this.itemManager.tag(compass);
     }

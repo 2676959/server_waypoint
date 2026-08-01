@@ -5,11 +5,12 @@ import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.util.Pair;
 import net.kyori.adventure.text.Component;
 
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
@@ -48,19 +49,20 @@ public abstract class ChatMessageHandler<S, K, P> {
                 WaypointServerCore waypointServer = WaypointServerCore.INSTANCE;
                 WaypointFileManager waypointFileManager = waypointServer.getWaypointFileManager(dimensionName);
                 if (waypointFileManager != null) {
-                    Set<String> listNames = waypointFileManager.getWaypointListMap().keySet();
-                    if (listNames.isEmpty()) {
+                    List<WaypointList> waypointListsOnServer = waypointFileManager.getWaypointLists();
+                    if (waypointListsOnServer.isEmpty()) {
                         promptNoWaypointList(player, dimensionName);
                     } else {
                         Component feedback = Component.translatable("waypoint.xaeros.sharing.found",
                                 waypointTextNoTp(waypoint, dimensionName),
                                 dimensionNameWithColor(dimensionName));
                         Component waypointLists = Component.text("");
-                        for (Iterator<String> iterator = listNames.iterator(); iterator.hasNext();) {
-                            String listName = iterator.next();
+                        for (Iterator<WaypointList> iterator = waypointListsOnServer.iterator(); iterator.hasNext();) {
+                            WaypointList waypointList = iterator.next();
+                            String listName = waypointList.name();
                             Component listItem = addWaypointButton(dimensionName, listName, waypoint)
                                     .append(Component.text(" ").style(DEFAULT_STYLE))
-                                    .append(Component.text(listName).style(DEFAULT_STYLE));
+                                    .append(_959.server_waypoint.text.FormattedTextHelper.parse(waypointList.displayName()).style(DEFAULT_STYLE));
                             waypointLists = waypointLists.append(listItem);
                             if (iterator.hasNext()) {
                                 waypointLists = waypointLists.appendNewline();

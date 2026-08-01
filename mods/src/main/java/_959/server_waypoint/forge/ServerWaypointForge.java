@@ -66,7 +66,7 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
 @Mod(ModInfo.MOD_ID)
 public class ServerWaypointForge implements IPlatformConfigPath {
-    private static final String NETWORK_PROTOCOL_VERSION = "1";
+    private static final String NETWORK_PROTOCOL_VERSION = "3";
 //? if <= 1.20.1 {
     /*public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
             modId("main"),

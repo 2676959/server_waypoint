@@ -71,6 +71,7 @@ public final class WaypointQueryEngine {
                 SimpleWaypoint snapshot = entry.snapshot();
                 suggestions.add(snapshot.name());
                 suggestions.add(snapshot.initials());
+                suggestions.addAll(snapshot.keywords());
             }
         }
         return Collections.unmodifiableList(new ArrayList<>(suggestions));
@@ -101,11 +102,12 @@ public final class WaypointQueryEngine {
 
     private ListResult queryList(String dimensionName, WaypointList waypointList, String filter, Query query) {
         boolean includeAll = filter.isEmpty();
+        boolean listMatched = !includeAll && matchesText(waypointList.name(), filter);
         List<SimpleWaypoint> waypointSnapshots = new ArrayList<>();
         Map<SimpleWaypoint, SimpleWaypoint> liveWaypointsBySnapshot = new IdentityHashMap<>();
         for (WaypointList.WaypointSnapshot entry : waypointList.snapshotWaypoints()) {
             SimpleWaypoint snapshot = entry.snapshot();
-            if (includeAll || matchesText(snapshot.name(), filter)) {
+            if (includeAll || listMatched || matchesWaypoint(snapshot, filter)) {
                 waypointSnapshots.add(snapshot);
                 liveWaypointsBySnapshot.put(snapshot, entry.liveWaypoint());
             }
@@ -127,7 +129,19 @@ public final class WaypointQueryEngine {
         for (SimpleWaypoint snapshot : waypointSnapshots) {
             waypoints.add(liveWaypointsBySnapshot.get(snapshot));
         }
-        return new ListResult(waypointList, Collections.unmodifiableList(waypoints), includeAll);
+        return new ListResult(waypointList, Collections.unmodifiableList(waypoints), includeAll || listMatched);
+    }
+
+    private static boolean matchesWaypoint(SimpleWaypoint waypoint, String filter) {
+        if (matchesText(waypoint.name(), filter)) {
+            return true;
+        }
+        for (String keyword : waypoint.keywords()) {
+            if (matchesText(keyword, filter)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean matchesText(String text, String filter) {

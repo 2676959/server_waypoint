@@ -46,7 +46,7 @@ public record StoredNavigationSession(
         }
         return Optional.of(new NavigationTarget(
                 fileManager.getDimensionName(),
-                waypointList.name(),
+                waypointList,
                 waypoint
         ));
     }

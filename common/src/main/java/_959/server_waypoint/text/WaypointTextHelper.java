@@ -24,6 +24,7 @@ import static _959.server_waypoint.util.StringCommandBuilder.tpCmd;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static _959.server_waypoint.text.FormattedTextHelper.parse;
 
 public class WaypointTextHelper {
     public static final Style DEFAULT_STYLE = Style.style().color(NamedTextColor.WHITE).decoration(TextDecoration.BOLD, false).build();
@@ -61,12 +62,16 @@ public class WaypointTextHelper {
                 .decoration(TextDecoration.BOLD, false)
                 .hoverEvent(HoverEvent.showText(waypointInfo))
                 .build();
-        return waypointText.append(text(waypoint.name()).style(nameStyle));
+        return waypointText.append(text("").style(nameStyle).append(parse(waypoint.displayName())));
     }
 
     public static Component waypointHoverText(SimpleWaypoint waypoint, String dimensionName) {
         WaypointPos pos = waypoint.pos();
-        Component hover = text(pos.toShortString());
+        Component hover = text("");
+        if (!waypoint.description().isEmpty()) {
+            hover = hover.append(parse(waypoint.description())).appendNewline();
+        }
+        hover = hover.append(text(pos.toShortString()));
         if (MINECRAFT_OVERWORLD.equals(dimensionName)) {
             return hover.appendNewline().append(text(overWorldToNether(pos).toShortString()).color(NamedTextColor.RED));
         } else if (MINECRAFT_THE_NETHER.equals(dimensionName)) {
@@ -148,13 +153,13 @@ public class WaypointTextHelper {
             @Nullable String listCommand
     ) {
         String listName = waypointList.name();
-        Component listTitle = text("  ".repeat(indentLevel) + listName, NamedTextColor.WHITE);
+        Component listTitle = text("  ".repeat(indentLevel)).append(parse(waypointList.displayName()).colorIfAbsent(NamedTextColor.WHITE));
         if (listCommand != null) {
             listTitle = listTitle
                     .clickEvent(ClickEvent.runCommand(listCommand))
                     .hoverEvent(HoverEvent.showText(translatable(
                             "button.list.waypoint_list",
-                            text(listName)
+                            parse(waypointList.displayName())
                     )));
         }
         Component listHeader = text("").append(listTitle);

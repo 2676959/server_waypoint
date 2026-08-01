@@ -117,10 +117,8 @@ public final class PaperMapNavigationHandler implements
         ItemStack item = new ItemStack(Material.FILLED_MAP, 1);
         MapMeta meta = (MapMeta) item.getItemMeta();
         meta.setMapView(lease.view());
-        meta.displayName(Component.text(
-                target.waypointName(),
-                TextColor.color(target.rgb())
-        ));
+        meta.displayName(_959.server_waypoint.text.FormattedTextHelper.parse(target.waypointDisplayName())
+                .colorIfAbsent(TextColor.color(target.rgb())));
         item.setItemMeta(meta);
         return this.itemManager.tag(item);
     }

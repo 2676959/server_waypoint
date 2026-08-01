@@ -37,6 +37,8 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -237,6 +239,122 @@ class CoreWaypointCommandListTest {
         assertEquals(TextColor.color(0xFF5555), textColor(help, "39C5BB"));
         assertEquals(TextColor.color(0x00D5A0), textColor(help, "90"));
         assertEquals(List.of("/wp help"), runCommands(help));
+    }
+
+    @Test
+    void addAcceptsOptionalExtraInfoAndEditSuggestsItsCurrentValues() throws CommandSyntaxException {
+        String name = "{\"text\":\"Golden Beacon\",\"color\":\"gold\"}";
+        String description = "{\"text\":\"Near spawn\",\"italic\":true}";
+        String commandPrefix = "wp add overworld bases position "
+                + StringArgumentType.escapeIfRequired(name)
+                + " GB FFAA00 45 true";
+
+        List<String> initialsSuggestions = this.dispatcher.getCompletionSuggestions(
+                        this.dispatcher.parse(
+                                "wp add overworld bases position "
+                                        + StringArgumentType.escapeIfRequired(name)
+                                        + " ",
+                                this.source
+                        )
+                ).join().getList().stream()
+                .map(suggestion -> suggestion.getText())
+                .toList();
+        assertTrue(initialsSuggestions.contains("GB"));
+
+        this.dispatcher.execute(
+                commandPrefix
+                        + " " + StringArgumentType.escapeIfRequired("home, mining")
+                        + " " + StringArgumentType.escapeIfRequired(description),
+                this.source
+        );
+
+        WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
+        assertNotNull(bases);
+        SimpleWaypoint waypoint = bases.getWaypointByName("Golden Beacon");
+        assertNotNull(waypoint);
+        assertEquals("Golden Beacon", waypoint.name());
+        assertEquals(name, waypoint.displayName());
+        assertEquals(List.of("home", "mining"), waypoint.keywords());
+        assertEquals(description, waypoint.description());
+
+        List<String> displayNameSuggestions = this.dispatcher.getCompletionSuggestions(
+                        this.dispatcher.parse(
+                                "wp edit overworld bases "
+                                        + StringArgumentType.escapeIfRequired(waypoint.name())
+                                        + " ",
+                                this.source
+                        )
+                ).join().getList().stream()
+                .map(suggestion -> suggestion.getText())
+                .toList();
+        assertTrue(displayNameSuggestions.contains(StringArgumentType.escapeIfRequired(name)));
+
+        String editPrefix = "wp edit overworld bases "
+                + StringArgumentType.escapeIfRequired(waypoint.name())
+                + " " + StringArgumentType.escapeIfRequired(name)
+                + " GB position FFAA00 45 true ";
+        List<String> keywordSuggestions = this.dispatcher.getCompletionSuggestions(
+                        this.dispatcher.parse(editPrefix, this.source)
+                ).join().getList().stream()
+                .map(suggestion -> suggestion.getText())
+                .toList();
+        assertTrue(keywordSuggestions.contains(StringArgumentType.escapeIfRequired("home, mining")));
+
+        List<String> descriptionSuggestions = this.dispatcher.getCompletionSuggestions(
+                        this.dispatcher.parse(
+                                editPrefix + StringArgumentType.escapeIfRequired("home, mining") + " ",
+                                this.source
+                        )
+                ).join().getList().stream()
+                .map(suggestion -> suggestion.getText())
+                .toList();
+        assertTrue(descriptionSuggestions.contains(StringArgumentType.escapeIfRequired(description)));
+
+        this.dispatcher.execute(
+                "wp add overworld bases position \"Legacy Marker\" LM FFAA00 45 true",
+                this.source
+        );
+        SimpleWaypoint plainWaypoint = bases.getWaypointByName("Legacy Marker");
+        assertNotNull(plainWaypoint);
+        assertEquals("Legacy Marker", plainWaypoint.displayName());
+        assertEquals(List.of(), plainWaypoint.keywords());
+        assertEquals("", plainWaypoint.description());
+    }
+
+    @Test
+    void addListStoresAPlainIdentityAndFormattedDisplayName() throws CommandSyntaxException {
+        String displayName = "{\"text\":\"Travel Hubs\",\"color\":\"aqua\"}";
+
+        this.dispatcher.execute(
+                "wp add overworld " + StringArgumentType.escapeIfRequired(displayName),
+                this.source
+        );
+
+        WaypointList waypointList = this.server.getWaypointFileManager("overworld")
+                .getWaypointListByName("Travel Hubs");
+        assertNotNull(waypointList);
+        assertEquals("Travel Hubs", waypointList.name());
+        assertEquals(displayName, waypointList.displayName());
+    }
+
+    @Test
+    void addRejectsRawNamesAndDescriptionsOverTheirLimits() throws CommandSyntaxException {
+        this.dispatcher.execute("wp add overworld " + "l".repeat(257), this.source);
+
+        assertEquals(1, this.sender.errors.size());
+        assertTrue(this.sender.errors.get(0).toString().contains("argument.text.too_long"));
+
+        this.sender.errors.clear();
+        this.dispatcher.execute(
+                "wp add overworld bases position marker M FFAA00 0 true \"\" " + "d".repeat(2049),
+                this.source
+        );
+
+        assertEquals(1, this.sender.errors.size());
+        assertTrue(this.sender.errors.get(0).toString().contains("argument.text.too_long"));
+        assertNull(this.server.getWaypointFileManager("overworld")
+                .getWaypointListByName("bases")
+                .getWaypointByName("marker"));
     }
 
     @Test

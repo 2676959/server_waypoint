@@ -189,6 +189,8 @@ class WaypointFilesManagerConcurrencyTest {
                 0x123456,
                 45,
                 true,
+                List.of(),
+                "",
                 ignored -> {
                 }
         );
@@ -234,6 +236,8 @@ class WaypointFilesManagerConcurrencyTest {
                                     0x336699,
                                     index,
                                     true,
+                                    List.of(),
+                                    "",
                                     result -> {
                                         assertNull(callbackResult.getAndSet(result));
                                         callbackCount.incrementAndGet();
@@ -678,6 +682,8 @@ class WaypointFilesManagerConcurrencyTest {
                 0xAA5500,
                 90,
                 true,
+                List.of(),
+                "",
                 ignored -> {
                 }
         );

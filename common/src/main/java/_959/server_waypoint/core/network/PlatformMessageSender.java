@@ -7,7 +7,7 @@ import net.kyori.adventure.text.Component;
 
 import static _959.server_waypoint.text.WaypointTextHelper.waypointTextNoTp;
 import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
-import static net.kyori.adventure.text.Component.text;
+import static _959.server_waypoint.text.FormattedTextHelper.parse;
 
 public interface PlatformMessageSender<S, P> {
     void sendMessage(S source, Component component);
@@ -38,7 +38,7 @@ public interface PlatformMessageSender<S, P> {
                 yield Component.translatable("waypoint.modification.broadcast.player", senderName, modification.type().toTranslatable(), waypointText);
             }
             case ADD_LIST, REMOVE_LIST ->
-                Component.translatable("waypoint_list.modification.broadcast.player", senderName, modification.type().toTranslatable(), text(modification.listName()));
+                Component.translatable("waypoint_list.modification.broadcast.player", senderName, modification.type().toTranslatable(), parse(modification.listDisplayName()));
         };
     }
 }
