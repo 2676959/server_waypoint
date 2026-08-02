@@ -142,6 +142,7 @@ class NavigationServiceTest {
                 oldTarget.listDisplayName(),
                 "Renamed",
                 "Renamed",
+                "Updated description",
                 new WaypointPos(80, 75, -40),
                 0xABCDEF
         );
@@ -197,6 +198,7 @@ class NavigationServiceTest {
                 updatedTarget.listDisplayName(),
                 "Renamed Again",
                 "Renamed Again",
+                updatedTarget.waypointDescription(),
                 updatedTarget.position(),
                 updatedTarget.rgb()
         );
@@ -816,6 +818,7 @@ class NavigationServiceTest {
                 "test-list",
                 name,
                 name,
+                "",
                 new WaypointPos(x, y, z),
                 0x39C5BB
         );

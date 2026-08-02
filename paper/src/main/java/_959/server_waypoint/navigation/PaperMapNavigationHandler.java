@@ -1,7 +1,5 @@
 package _959.server_waypoint.navigation;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -117,8 +115,8 @@ public final class PaperMapNavigationHandler implements
         ItemStack item = new ItemStack(Material.FILLED_MAP, 1);
         MapMeta meta = (MapMeta) item.getItemMeta();
         meta.setMapView(lease.view());
-        meta.displayName(_959.server_waypoint.text.FormattedTextHelper.parse(target.waypointDisplayName())
-                .colorIfAbsent(TextColor.color(target.rgb())));
+        meta.displayName(NavigationDisplayText.buildItemName(target));
+        meta.lore(NavigationDisplayText.buildItemLore(target));
         item.setItemMeta(meta);
         return this.itemManager.tag(item);
     }

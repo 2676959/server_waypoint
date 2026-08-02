@@ -27,6 +27,7 @@ class NavigationSessionCodecTest {
                         "portals",
                         "Hub",
                         "Hub",
+                        "",
                         new WaypointPos(10, 64, -20),
                         0x123456
                 ),
@@ -58,6 +59,7 @@ class NavigationSessionCodecTest {
                         "towns",
                         "Village",
                         "Village",
+                        "",
                         new WaypointPos(1, 2, 3),
                         0x39C5BB
                 ),

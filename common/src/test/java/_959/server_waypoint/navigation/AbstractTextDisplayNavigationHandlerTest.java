@@ -73,6 +73,7 @@ final class AbstractTextDisplayNavigationHandlerTest {
                         "towns",
                         "Village",
                         "Village",
+                        "",
                         new WaypointPos(1, 2, 3),
                         0x123456
                 ),

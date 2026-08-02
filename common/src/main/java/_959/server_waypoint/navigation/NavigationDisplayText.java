@@ -2,7 +2,11 @@ package _959.server_waypoint.navigation;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
+import java.util.List;
+
+import static _959.server_waypoint.text.WaypointTextHelper.dimensionNameWithColor;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
@@ -25,9 +29,23 @@ public final class NavigationDisplayText {
     private NavigationDisplayText() {
     }
 
+    public static Component buildItemName(NavigationTarget target) {
+        return parse(target.waypointDisplayName())
+                .decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                .colorIfAbsent(TextColor.color(target.rgb()));
+    }
+
+    public static List<Component> buildItemLore(NavigationTarget target) {
+        if (target.waypointDescription().isEmpty()) {
+            return List.of(dimensionNameWithColor(target.dimensionName()).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE));
+        }
+        return List.of(dimensionNameWithColor(target.dimensionName()).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE),
+                parse(target.waypointDescription()).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
+    }
+
     public static Component build(NavigationSession session, NavigationSnapshot snapshot) {
         NavigationTarget target = session.target();
-        Component targetName = parse(target.waypointDisplayName()).colorIfAbsent(TextColor.color(target.rgb()));
+        Component targetName = buildItemName(target);
         if (!snapshot.inTargetDimension()) {
             return empty()
                     .append(targetName)
@@ -54,7 +72,7 @@ public final class NavigationDisplayText {
             NavigationSnapshot snapshot
     ) {
         NavigationTarget target = session.target();
-        Component targetName = parse(target.waypointDisplayName()).colorIfAbsent(TextColor.color(target.rgb()));
+        Component targetName = buildItemName(target);
         if (!snapshot.inTargetDimension()) {
             return empty()
                     .append(targetName)

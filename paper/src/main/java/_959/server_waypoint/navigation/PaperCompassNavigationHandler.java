@@ -1,7 +1,5 @@
 package _959.server_waypoint.navigation;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -85,8 +83,8 @@ public final class PaperCompassNavigationHandler implements
                 target.position().z()
         ));
         meta.setLodestoneTracked(false);
-        meta.displayName(_959.server_waypoint.text.FormattedTextHelper.parse(target.waypointDisplayName())
-                .colorIfAbsent(TextColor.color(target.rgb())));
+        meta.displayName(NavigationDisplayText.buildItemName(target));
+        meta.lore(NavigationDisplayText.buildItemLore(target));
         compass.setItemMeta(meta);
         return this.itemManager.tag(compass);
     }

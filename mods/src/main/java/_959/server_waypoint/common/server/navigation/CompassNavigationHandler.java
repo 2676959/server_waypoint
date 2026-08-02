@@ -99,6 +99,7 @@ final class CompassNavigationHandler implements NavigationMethodHandler<ServerPl
         compass.getOrCreateTag().put("LodestonePos", net.minecraft.nbt.NbtUtils.writeBlockPos(position));
         compass.getOrCreateTag().putBoolean("LodestoneTracked", false);
         *///?}
+        ModNavigationItemText.apply(compass, target);
         return compass;
     }
 }

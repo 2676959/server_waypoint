@@ -15,6 +15,7 @@ public record NavigationTarget(
         String listDisplayName,
         String waypointName,
         String waypointDisplayName,
+        String waypointDescription,
         WaypointPos position,
         int rgb
 ) {
@@ -24,6 +25,7 @@ public record NavigationTarget(
         Objects.requireNonNull(listDisplayName, "listDisplayName");
         Objects.requireNonNull(waypointName, "waypointName");
         Objects.requireNonNull(waypointDisplayName, "waypointDisplayName");
+        Objects.requireNonNull(waypointDescription, "waypointDescription");
         Objects.requireNonNull(position, "position");
     }
 
@@ -47,6 +49,7 @@ public record NavigationTarget(
                 listDisplayName,
                 waypointSnapshot.name(),
                 waypointSnapshot.displayName(),
+                waypointSnapshot.description(),
                 waypointSnapshot.position(),
                 waypointSnapshot.rgb()
         );
@@ -57,11 +60,18 @@ public record NavigationTarget(
         return new WaypointSnapshot(
                 snapshot.name(),
                 snapshot.displayName(),
+                snapshot.description(),
                 snapshot.pos(),
                 snapshot.rgb()
         );
     }
 
-    private record WaypointSnapshot(String name, String displayName, WaypointPos position, int rgb) {
+    private record WaypointSnapshot(
+            String name,
+            String displayName,
+            String description,
+            WaypointPos position,
+            int rgb
+    ) {
     }
 }

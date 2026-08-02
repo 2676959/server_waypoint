@@ -4,6 +4,7 @@ import _959.server_waypoint.core.waypoint.WaypointPos;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -19,13 +20,27 @@ class NavigationDisplayTextTest {
                     "villages",
                     "villages",
                     "Village",
-                    "Village",
+                    "{\"text\":\"Village\",\"color\":\"gold\"}",
+                    "{\"text\":\"A nearby village\",\"italic\":false}",
                     new WaypointPos(10, 64, 20),
                     0x55FF55
             ),
             Set.of(NavigationMethod.ACTIONBAR),
             TextDisplayTransformation.defaultValue()
     );
+
+    @Test
+    void buildsNavigationItemNameAndLoreFromTargetDisplayText() {
+        NavigationTarget target = this.session.target();
+
+        TextComponent name = (TextComponent) NavigationDisplayText.buildItemName(target);
+        assertEquals("Village", name.content());
+        assertEquals(NamedTextColor.GOLD, name.color());
+        assertEquals(
+                "A nearby village",
+                ((TextComponent) NavigationDisplayText.buildItemLore(target).get(0)).content()
+        );
+    }
 
     @Test
     void usesWrongDimensionMessageWithoutDirectionOrDistance() {

@@ -27,11 +27,14 @@ class NavigationModelTest {
     void targetCopiesValuesOutOfMutableWaypoint() {
         SimpleWaypoint waypoint = new SimpleWaypoint(
                 "Village",
+                "{\"text\":\"Village\",\"color\":\"gold\"}",
                 "V",
                 new WaypointPos(1, 2, 3),
                 0x123456,
                 0,
-                false
+                false,
+                List.of("town"),
+                "Original description"
         );
         WaypointFilesManagerCore filesManager = new WaypointFilesManagerCore(this.tempDir);
         WaypointFilesManagerCore.AddWaypointResult addResult = filesManager.addWaypoint(
@@ -43,12 +46,8 @@ class NavigationModelTest {
         );
         NavigationTarget target = new NavigationTarget(
                 "minecraft:overworld",
-                "towns",
-                "towns",
-                waypoint.name(),
-                waypoint.displayName(),
-                waypoint.pos(),
-                waypoint.rgb()
+                addResult.waypointList(),
+                addResult.waypoint()
         );
 
         filesManager.updateWaypointProperties(
@@ -73,6 +72,8 @@ class NavigationModelTest {
                 addResult.status()
         );
         assertEquals("Village", target.waypointName());
+        assertEquals("{\"text\":\"Village\",\"color\":\"gold\"}", target.waypointDisplayName());
+        assertEquals("Original description", target.waypointDescription());
         assertEquals(new WaypointPos(1, 2, 3), target.position());
         assertEquals(0x123456, target.rgb());
     }
@@ -205,6 +206,7 @@ class NavigationModelTest {
                 "towns",
                 "Village",
                 "Village",
+                "",
                 new WaypointPos(1, 2, 3),
                 0x123456
         );

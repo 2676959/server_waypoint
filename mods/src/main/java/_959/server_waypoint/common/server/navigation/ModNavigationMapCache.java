@@ -41,6 +41,7 @@ final class ModNavigationMapCache {
             replaceMapData(targetLevel, target, mapId);
             map = mapStack(mapId, target);
         }
+        ModNavigationItemText.apply(map, target);
         return new PreparedMap(map);
     }
 
