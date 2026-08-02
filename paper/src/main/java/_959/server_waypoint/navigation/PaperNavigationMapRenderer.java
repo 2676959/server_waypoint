@@ -9,15 +9,15 @@ import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 final class PaperNavigationMapRenderer extends MapRenderer {
     private static final int MAP_CURSOR_MIN = -128;
     private static final int MAP_CURSOR_MAX = 127;
 
-    private final Map<UUID, TargetMarker> targets = new HashMap<>();
+    private final Map<UUID, TargetMarker> targets = new ConcurrentHashMap<>();
 
     PaperNavigationMapRenderer() {
         super(true);

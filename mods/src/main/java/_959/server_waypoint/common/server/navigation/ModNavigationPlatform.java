@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 final class ModNavigationPlatform implements NavigationPlatform<ServerPlayer> {
     private final ModNavigationItemManager itemManager;
@@ -29,11 +30,15 @@ final class ModNavigationPlatform implements NavigationPlatform<ServerPlayer> {
     }
 
     @Override
-    public Optional<ServerPlayer> findPlayer(UUID playerUuid) {
+    public void executePlayer(UUID playerUuid, Consumer<ServerPlayer> action) {
         MinecraftServer server = WaypointServerMod.MINECRAFT_SERVER;
-        return server == null
-                ? Optional.empty()
-                : Optional.ofNullable(server.getPlayerList().getPlayer(playerUuid));
+        if (server == null) {
+            return;
+        }
+        ServerPlayer player = server.getPlayerList().getPlayer(playerUuid);
+        if (player != null) {
+            action.accept(player);
+        }
     }
 
     @Override
@@ -63,7 +68,7 @@ final class ModNavigationPlatform implements NavigationPlatform<ServerPlayer> {
     }
 
     @Override
-    public void assertServerThread() {
+    public void assertPlayerThread(ServerPlayer player) {
         MinecraftServer server = WaypointServerMod.MINECRAFT_SERVER;
         if (server != null && !server.isSameThread()) {
             throw new IllegalStateException("Navigation state must be accessed on the server thread");

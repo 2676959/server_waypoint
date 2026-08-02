@@ -44,7 +44,12 @@ public final class ModNavigationRuntime {
     }
 
     public void tick() {
-        this.service.tick();
+        if (WaypointServerMod.MINECRAFT_SERVER == null) {
+            return;
+        }
+        for (ServerPlayer player : WaypointServerMod.MINECRAFT_SERVER.getPlayerList().getPlayers()) {
+            this.service.tickPlayer(player);
+        }
     }
 
     public void onPlayerJoin(ServerPlayer player) {

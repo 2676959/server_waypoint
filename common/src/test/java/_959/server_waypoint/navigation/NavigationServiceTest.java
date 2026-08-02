@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -204,6 +205,24 @@ class NavigationServiceTest {
         assertEquals(renamedAgain, this.service.findSession(this.secondPlayer.uuid())
                 .orElseThrow()
                 .target());
+    }
+
+    @Test
+    void delayedRefreshDoesNotOverwriteANewerPlayerTarget() {
+        NavigationTarget oldTarget = target("Old", 10, 64, 0);
+        NavigationTarget updatedTarget = target("Updated", 20, 64, 0);
+        NavigationTarget newerTarget = target("Newer", 30, 64, 0);
+        this.service.navigate(this.firstPlayer, oldTarget);
+        this.platform.deferPlayerActions = true;
+
+        this.service.refreshTarget(oldTarget, updatedTarget);
+        this.service.retarget(this.firstPlayer, newerTarget);
+        this.platform.runDeferredPlayerActions();
+
+        assertEquals(
+                newerTarget,
+                this.service.findSession(this.firstPlayer.uuid()).orElseThrow().target()
+        );
     }
 
     @Test
@@ -665,11 +684,11 @@ class NavigationServiceTest {
         }
 
         for (int i = 0; i < 4; i++) {
-            this.service.tick();
+            this.service.tickPlayer(this.firstPlayer);
         }
         assertEquals(0, this.platform.snapshotCount);
 
-        this.service.tick();
+        this.service.tickPlayer(this.firstPlayer);
 
         assertEquals(1, this.platform.snapshotCount);
         NavigationSnapshot sharedSnapshot = this.handlers.get(NavigationMethod.ACTIONBAR).lastSnapshot;
@@ -690,7 +709,7 @@ class NavigationServiceTest {
         this.platform.snapshotCount = 0;
 
         for (int i = 0; i < NavigationService.DEFAULT_UPDATE_INTERVAL_TICKS; i++) {
-            this.service.tick();
+            this.service.tickPlayer(this.firstPlayer);
         }
 
         assertEquals(0, this.platform.snapshotCount);
@@ -699,7 +718,7 @@ class NavigationServiceTest {
     }
 
     @Test
-    void removePlayerAndShutdownDisableHandlersAndClearSessions() {
+    void uuidRemovalAndShutdownCleanHandlersWithoutAccessingPlayers() {
         this.service.navigate(
                 this.firstPlayer,
                 target("First", 10, 64, 0),
@@ -716,7 +735,7 @@ class NavigationServiceTest {
         assertTrue(this.service.findSession(this.firstPlayer.uuid()).isEmpty());
         assertTrue(this.service.findSession(this.secondPlayer.uuid()).isPresent());
         for (TestHandler handler : this.handlers.values()) {
-            assertEquals(1, handler.disableCount);
+            assertEquals(0, handler.disableCount);
             assertEquals(1, handler.cleanupCount);
         }
 
@@ -726,7 +745,7 @@ class NavigationServiceTest {
         assertTrue(this.platform.persistedSessions.containsKey(this.firstPlayer.uuid()));
         assertTrue(this.platform.persistedSessions.containsKey(this.secondPlayer.uuid()));
         for (TestHandler handler : this.handlers.values()) {
-            assertEquals(2, handler.disableCount);
+            assertEquals(0, handler.disableCount);
             assertEquals(2, handler.cleanupCount);
         }
     }
@@ -831,6 +850,8 @@ class NavigationServiceTest {
         private @Nullable NavigationSession lastProposedSession;
         private int snapshotCount;
         private int handlerExceptionCount;
+        private boolean deferPlayerActions;
+        private final List<Runnable> deferredPlayerActions = new ArrayList<>();
 
         private TestPlayer addPlayer() {
             TestPlayer player = new TestPlayer(UUID.randomUUID());
@@ -848,9 +869,24 @@ class NavigationServiceTest {
         }
 
         @Override
-        public Optional<TestPlayer> findPlayer(UUID playerUuid) {
+        public void executePlayer(UUID playerUuid, Consumer<TestPlayer> action) {
             this.findPlayerRequests.add(playerUuid);
-            return Optional.ofNullable(this.players.get(playerUuid));
+            TestPlayer player = this.players.get(playerUuid);
+            if (player != null) {
+                Runnable task = () -> action.accept(player);
+                if (this.deferPlayerActions) {
+                    this.deferredPlayerActions.add(task);
+                } else {
+                    task.run();
+                }
+            }
+        }
+
+        private void runDeferredPlayerActions() {
+            List<Runnable> tasks = List.copyOf(this.deferredPlayerActions);
+            this.deferredPlayerActions.clear();
+            this.deferPlayerActions = false;
+            tasks.forEach(Runnable::run);
         }
 
         @Override

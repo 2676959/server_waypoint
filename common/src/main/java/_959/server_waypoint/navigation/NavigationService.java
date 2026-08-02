@@ -9,20 +9,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
 
 /**
- * Owns server-thread-only, per-player navigation sessions and delegates all
- * platform effects to method handlers.
+ * Owns concurrent, per-player navigation sessions and delegates all platform
+ * effects to method handlers. Callers must invoke player operations from the
+ * platform thread which owns that player. Different players may be processed
+ * concurrently.
  */
 public final class NavigationService<P> {
     public static final int DEFAULT_UPDATE_INTERVAL_TICKS = 5;
@@ -30,12 +30,12 @@ public final class NavigationService<P> {
     private final NavigationPlatform<P> platform;
     private final Map<NavigationMethod, NavigationMethodHandler<P>> handlers;
     private final Set<NavigationMethod> supportedNavigationMethods;
-    private final Map<UUID, NavigationSession> sessions = new LinkedHashMap<>();
+    private final Map<UUID, NavigationSession> sessions = new ConcurrentHashMap<>();
     private final Map<TargetIdentity, Set<UUID>> sessionPlayerUuidsByTarget =
-            new HashMap<>();
+            new ConcurrentHashMap<>();
+    private final Map<UUID, Integer> tickCounters = new ConcurrentHashMap<>();
     private final Set<NavigationMethod> defaultNavigationMethods;
     private final int updateIntervalTicks;
-    private int tickCounter;
 
     public NavigationService(
             NavigationPlatform<P> platform,
@@ -95,8 +95,8 @@ public final class NavigationService<P> {
      * existing session without changing its enabled methods.
      */
     public NavigationResult navigate(P player, NavigationTarget target) {
-        this.platform.assertServerThread();
         Objects.requireNonNull(player, "player");
+        this.platform.assertPlayerThread(player);
         Objects.requireNonNull(target, "target");
         UUID playerUuid = this.platform.playerUuid(player);
         if (this.sessions.containsKey(playerUuid)) {
@@ -106,7 +106,8 @@ public final class NavigationService<P> {
     }
 
     public NavigationResult navigate(P player, NavigationTarget target, NavigationMethod method) {
-        this.platform.assertServerThread();
+        Objects.requireNonNull(player, "player");
+        this.platform.assertPlayerThread(player);
         return this.replaceSelection(player, this.platform.playerUuid(player), target, Set.of(method));
     }
 
@@ -119,8 +120,8 @@ public final class NavigationService<P> {
             NavigationTarget target,
             Set<NavigationMethod> selection
     ) {
-        this.platform.assertServerThread();
         Objects.requireNonNull(player, "player");
+        this.platform.assertPlayerThread(player);
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(selection, "selection");
         return this.replaceSelection(
@@ -132,8 +133,8 @@ public final class NavigationService<P> {
     }
 
     public NavigationResult retarget(P player, NavigationTarget target) {
-        this.platform.assertServerThread();
         Objects.requireNonNull(player, "player");
+        this.platform.assertPlayerThread(player);
         Objects.requireNonNull(target, "target");
         return this.retargetInternal(player, this.platform.playerUuid(player), target);
     }
@@ -147,7 +148,6 @@ public final class NavigationService<P> {
             NavigationTarget previousTarget,
             NavigationTarget updatedTarget
     ) {
-        this.platform.assertServerThread();
         Objects.requireNonNull(previousTarget, "previousTarget");
         Objects.requireNonNull(updatedTarget, "updatedTarget");
 
@@ -157,16 +157,23 @@ public final class NavigationService<P> {
         if (playerUuids == null) {
             return;
         }
+        TargetIdentity previousIdentity = TargetIdentity.from(previousTarget);
         for (UUID playerUuid : List.copyOf(playerUuids)) {
-            this.platform.findPlayer(playerUuid).ifPresent(
-                    player -> this.retargetInternal(player, playerUuid, updatedTarget)
+            this.platform.executePlayer(
+                    playerUuid,
+                    player -> this.refreshPlayerTarget(
+                            player,
+                            playerUuid,
+                            previousIdentity,
+                            updatedTarget
+                    )
             );
         }
     }
 
     public NavigationResult enableMethod(P player, NavigationMethod method) {
-        this.platform.assertServerThread();
         Objects.requireNonNull(player, "player");
+        this.platform.assertPlayerThread(player);
         Objects.requireNonNull(method, "method");
         UUID playerUuid = this.platform.playerUuid(player);
         NavigationSession currentSession = this.sessions.get(playerUuid);
@@ -215,8 +222,8 @@ public final class NavigationService<P> {
     }
 
     public NavigationResult disableMethod(P player, NavigationMethod method) {
-        this.platform.assertServerThread();
         Objects.requireNonNull(player, "player");
+        this.platform.assertPlayerThread(player);
         Objects.requireNonNull(method, "method");
         UUID playerUuid = this.platform.playerUuid(player);
         NavigationSession currentSession = this.sessions.get(playerUuid);
@@ -257,8 +264,8 @@ public final class NavigationService<P> {
     }
 
     public NavigationResult disableAll(P player) {
-        this.platform.assertServerThread();
         Objects.requireNonNull(player, "player");
+        this.platform.assertPlayerThread(player);
         UUID playerUuid = this.platform.playerUuid(player);
         NavigationSession session = this.sessions.get(playerUuid);
         if (session == null) {
@@ -296,8 +303,8 @@ public final class NavigationService<P> {
      * removed so they cannot fail on every future login.
      */
     public NavigationResult restorePersistedSession(P player, WaypointFilesManagerCore waypointFiles) {
-        this.platform.assertServerThread();
         Objects.requireNonNull(player, "player");
+        this.platform.assertPlayerThread(player);
         Objects.requireNonNull(waypointFiles, "waypointFiles");
 
         Optional<String> encodedSession;
@@ -374,8 +381,8 @@ public final class NavigationService<P> {
             P player,
             UnaryOperator<TextDisplayTransformation> update
     ) {
-        this.platform.assertServerThread();
         Objects.requireNonNull(player, "player");
+        this.platform.assertPlayerThread(player);
         Objects.requireNonNull(update, "update");
         UUID playerUuid = this.platform.playerUuid(player);
         NavigationSession currentSession = this.sessions.get(playerUuid);
@@ -449,8 +456,8 @@ public final class NavigationService<P> {
     }
 
     public NavigationResult status(@NotNull P player) {
-        this.platform.assertServerThread();
         Objects.requireNonNull(player, "player");
+        this.platform.assertPlayerThread(player);
         NavigationSession session = this.sessions.get(this.platform.playerUuid(player));
         if (session == null) {
             return NavigationResult.result(NavigationResult.Code.NO_ACTIVE_SESSION, null, null);
@@ -459,55 +466,49 @@ public final class NavigationService<P> {
     }
 
     public Optional<NavigationSession> findSession(UUID playerUuid) {
-        this.platform.assertServerThread();
         return Optional.ofNullable(this.sessions.get(Objects.requireNonNull(playerUuid, "playerUuid")));
     }
 
-    public void tick() {
-        this.platform.assertServerThread();
-        this.tickCounter++;
-        if (this.tickCounter < this.updateIntervalTicks) {
+    /** Ticks the live displays owned by one player. */
+    public void tickPlayer(P player) {
+        Objects.requireNonNull(player, "player");
+        this.platform.assertPlayerThread(player);
+        UUID playerUuid = this.platform.playerUuid(player);
+        int tickCounter = this.tickCounters.merge(playerUuid, 1, Integer::sum);
+        if (tickCounter < this.updateIntervalTicks) {
             return;
         }
-        this.tickCounter = 0;
+        this.tickCounters.remove(playerUuid);
 
-        for (NavigationSession session : List.copyOf(this.sessions.values())) {
-            boolean hasLiveDisplay = session.enabledMethods().stream()
-                    .anyMatch(NavigationMethod::isLiveDisplay);
-            if (!hasLiveDisplay) {
+        NavigationSession session = this.sessions.get(playerUuid);
+        if (session == null || session.enabledMethods().stream()
+                .noneMatch(NavigationMethod::isLiveDisplay)) {
+            return;
+        }
+        NavigationSnapshot snapshot = this.platform.snapshot(player, session.target());
+        for (NavigationMethod method : session.enabledMethods()) {
+            if (!method.isLiveDisplay()) {
                 continue;
             }
-            Optional<P> player = this.platform.findPlayer(session.playerUuid());
-            if (player.isEmpty()) {
+            NavigationMethodHandler<P> handler = this.handlers.get(method);
+            if (handler == null) {
                 continue;
             }
-            NavigationSnapshot snapshot = this.platform.snapshot(player.get(), session.target());
-            for (NavigationMethod method : session.enabledMethods()) {
-                if (!method.isLiveDisplay()) {
-                    continue;
-                }
-                NavigationMethodHandler<P> handler = this.handlers.get(method);
-                if (handler == null) {
-                    continue;
-                }
-                try {
-                    handler.update(player.get(), session, snapshot);
-                } catch (RuntimeException exception) {
-                    this.platform.onHandlerException(session.playerUuid(), method, exception);
-                }
+            try {
+                handler.update(player, session, snapshot);
+            } catch (RuntimeException exception) {
+                this.platform.onHandlerException(session.playerUuid(), method, exception);
             }
         }
     }
 
     public void removePlayer(UUID playerUuid) {
-        this.platform.assertServerThread();
         Objects.requireNonNull(playerUuid, "playerUuid");
         NavigationSession session = this.sessions.get(playerUuid);
         if (session == null) {
             return;
         }
-        Optional<P> player = this.platform.findPlayer(playerUuid);
-        this.cleanupSession(player.orElse(null), session);
+        this.cleanupSession(null, session);
     }
 
     /**
@@ -515,8 +516,8 @@ public final class NavigationService<P> {
      * object, ensuring every handler can clean up immediately.
      */
     public void removePlayer(P player) {
-        this.platform.assertServerThread();
         Objects.requireNonNull(player, "player");
+        this.platform.assertPlayerThread(player);
         UUID playerUuid = this.platform.playerUuid(player);
         NavigationSession session = this.sessions.get(playerUuid);
         if (session == null) {
@@ -526,18 +527,15 @@ public final class NavigationService<P> {
     }
 
     public void shutdown() {
-        this.platform.assertServerThread();
         for (NavigationSession session : List.copyOf(this.sessions.values())) {
-            Optional<P> player = this.platform.findPlayer(session.playerUuid());
-            this.cleanupSession(player.orElse(null), session);
+            this.cleanupSession(null, session);
         }
         this.sessions.clear();
         this.sessionPlayerUuidsByTarget.clear();
-        this.tickCounter = 0;
+        this.tickCounters.clear();
     }
 
     public int sessionCount() {
-        this.platform.assertServerThread();
         return this.sessions.size();
     }
 
@@ -595,6 +593,21 @@ public final class NavigationService<P> {
                 retargetedSession,
                 null
         );
+    }
+
+    private void refreshPlayerTarget(
+            P player,
+            UUID playerUuid,
+            TargetIdentity previousIdentity,
+            NavigationTarget updatedTarget
+    ) {
+        this.platform.assertPlayerThread(player);
+        NavigationSession currentSession = this.sessions.get(playerUuid);
+        if (currentSession == null
+                || !TargetIdentity.from(currentSession.target()).equals(previousIdentity)) {
+            return;
+        }
+        this.retargetInternal(player, playerUuid, updatedTarget);
     }
 
     private NavigationResult replaceSelection(
@@ -933,12 +946,13 @@ public final class NavigationService<P> {
             this.removeFromTargetIndex(previousTargetIdentity, playerUuid);
         }
         this.sessionPlayerUuidsByTarget
-                .computeIfAbsent(targetIdentity, ignored -> new HashSet<>())
+                .computeIfAbsent(targetIdentity, ignored -> ConcurrentHashMap.newKeySet())
                 .add(playerUuid);
     }
 
     private void removeSession(UUID playerUuid) {
         NavigationSession removedSession = this.sessions.remove(playerUuid);
+        this.tickCounters.remove(playerUuid);
         if (removedSession != null) {
             this.removeFromTargetIndex(
                     TargetIdentity.from(removedSession.target()),
@@ -948,14 +962,13 @@ public final class NavigationService<P> {
     }
 
     private void removeFromTargetIndex(TargetIdentity targetIdentity, UUID playerUuid) {
-        Set<UUID> playerUuids = this.sessionPlayerUuidsByTarget.get(targetIdentity);
-        if (playerUuids == null) {
-            return;
-        }
-        playerUuids.remove(playerUuid);
-        if (playerUuids.isEmpty()) {
-            this.sessionPlayerUuidsByTarget.remove(targetIdentity);
-        }
+        this.sessionPlayerUuidsByTarget.computeIfPresent(
+                targetIdentity,
+                (ignored, playerUuids) -> {
+                    playerUuids.remove(playerUuid);
+                    return playerUuids.isEmpty() ? null : playerUuids;
+                }
+        );
     }
 
     private record TargetIdentity(

@@ -4,9 +4,9 @@ import net.kyori.adventure.text.Component;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Shared lifecycle for a client-only text display mounted to its owning
@@ -14,7 +14,7 @@ import java.util.UUID;
  */
 public abstract class AbstractTextDisplayNavigationHandler<P, D>
         implements TextDisplayTransformationHandler<P> {
-    private final Map<UUID, DisplayState<D>> displays = new HashMap<>();
+    private final Map<UUID, DisplayState<D>> displays = new ConcurrentHashMap<>();
 
     @Override
     public final NavigationMethod method() {

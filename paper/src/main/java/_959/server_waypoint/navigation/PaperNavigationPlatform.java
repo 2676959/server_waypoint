@@ -1,18 +1,23 @@
 package _959.server_waypoint.navigation;
 
 import _959.server_waypoint.ModInfo;
+import _959.server_waypoint.PaperScheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,15 +29,17 @@ public final class PaperNavigationPlatform implements NavigationPlatform<Player>
     private final Server server;
     private final Logger logger;
     private final PaperNavigationItemManager itemManager;
+    private final PaperScheduler scheduler;
+    private final ConcurrentHashMap<UUID, Player> players = new ConcurrentHashMap<>();
 
     public PaperNavigationPlatform(
-            Server server,
-            Logger logger,
+            JavaPlugin plugin,
             PaperNavigationItemManager itemManager
     ) {
-        this.server = server;
-        this.logger = logger;
+        this.server = plugin.getServer();
+        this.logger = plugin.getLogger();
         this.itemManager = itemManager;
+        this.scheduler = new PaperScheduler(plugin);
     }
 
     @Override
@@ -41,8 +48,11 @@ public final class PaperNavigationPlatform implements NavigationPlatform<Player>
     }
 
     @Override
-    public Optional<Player> findPlayer(UUID playerUuid) {
-        return Optional.ofNullable(this.server.getPlayer(playerUuid));
+    public void executePlayer(UUID playerUuid, Consumer<Player> action) {
+        Player player = this.players.get(playerUuid);
+        if (player != null) {
+            this.scheduler.execute(player, () -> action.accept(player));
+        }
     }
 
     @Override
@@ -82,9 +92,9 @@ public final class PaperNavigationPlatform implements NavigationPlatform<Player>
     }
 
     @Override
-    public void assertServerThread() {
-        if (!Bukkit.isPrimaryThread()) {
-            throw new IllegalStateException("Navigation must be accessed from the Paper server thread");
+    public void assertPlayerThread(Player player) {
+        if (!Bukkit.isOwnedByCurrentRegion(player)) {
+            throw new IllegalStateException("Navigation must be accessed from the player's owning region");
         }
     }
 
@@ -140,5 +150,17 @@ public final class PaperNavigationPlatform implements NavigationPlatform<Player>
     public @Nullable World resolveWorld(String dimensionName) {
         NamespacedKey key = NamespacedKey.fromString(dimensionName);
         return key == null ? null : this.server.getWorld(key);
+    }
+
+    public void registerPlayer(Player player) {
+        this.players.put(player.getUniqueId(), player);
+    }
+
+    public void unregisterPlayer(UUID playerUuid) {
+        this.players.remove(playerUuid);
+    }
+
+    public Set<UUID> registeredPlayerUuids() {
+        return Set.copyOf(this.players.keySet());
     }
 }

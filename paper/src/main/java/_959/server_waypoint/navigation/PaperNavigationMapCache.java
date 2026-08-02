@@ -11,9 +11,9 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class PaperNavigationMapCache implements AutoCloseable {
     private static final MapView.Scale MAP_SCALE = MapView.Scale.NORMAL;
@@ -22,8 +22,8 @@ public final class PaperNavigationMapCache implements AutoCloseable {
 
     private final Server server;
     private final NamespacedKey navigationMapIdKey;
-    private final Map<UUID, CachedMap> maps = new HashMap<>();
-    private boolean closed;
+    private final Map<UUID, CachedMap> maps = new ConcurrentHashMap<>();
+    private volatile boolean closed;
 
     public PaperNavigationMapCache(JavaPlugin plugin) {
         this.server = plugin.getServer();
@@ -31,7 +31,7 @@ public final class PaperNavigationMapCache implements AutoCloseable {
     }
 
     public @Nullable Lease acquire(Player player, NavigationTarget target) {
-        this.assertOpenServerThread();
+        this.assertOpen();
         World world = this.resolveWorld(target.dimensionName());
         if (world == null) {
             return null;
@@ -59,14 +59,14 @@ public final class PaperNavigationMapCache implements AutoCloseable {
 
     @Override
     public void close() {
-        this.assertServerThread();
         if (this.closed) {
             return;
         }
         this.closed = true;
         for (CachedMap cached : this.maps.values()) {
+            // onDisable runs after Folia has stopped region scheduling. Only
+            // discard plugin-owned state; the server process is shutting down.
             cached.renderer.clearTargets();
-            cached.view.removeRenderer(cached.renderer);
         }
         this.maps.clear();
     }
@@ -86,7 +86,7 @@ public final class PaperNavigationMapCache implements AutoCloseable {
     }
 
     private boolean updateTarget(Lease lease, NavigationTarget target) {
-        this.assertOpenServerThread();
+        this.assertOpen();
         lease.assertOpen();
         World world = this.resolveWorld(target.dimensionName());
         if (world == null) {
@@ -105,7 +105,6 @@ public final class PaperNavigationMapCache implements AutoCloseable {
     }
 
     private void release(Lease lease) {
-        this.assertServerThread();
         if (lease.closed) {
             return;
         }
@@ -131,16 +130,9 @@ public final class PaperNavigationMapCache implements AutoCloseable {
         view.setLocked(false);
     }
 
-    private void assertOpenServerThread() {
-        this.assertServerThread();
+    private void assertOpen() {
         if (this.closed) {
             throw new IllegalStateException("Navigation map cache is closed");
-        }
-    }
-
-    private void assertServerThread() {
-        if (!this.server.isPrimaryThread()) {
-            throw new IllegalStateException("Navigation map cache must run on the Paper server thread");
         }
     }
 

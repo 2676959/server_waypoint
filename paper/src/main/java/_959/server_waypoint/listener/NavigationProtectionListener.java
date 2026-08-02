@@ -1,16 +1,18 @@
 package _959.server_waypoint.listener;
 
+import _959.server_waypoint.PaperScheduler;
 import _959.server_waypoint.navigation.NavigationMethod;
 import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationSession;
 import _959.server_waypoint.navigation.PaperItemNavigationHandler;
 import _959.server_waypoint.navigation.PaperNavigationItemManager;
+import _959.server_waypoint.navigation.PaperNavigationPlatform;
 import _959.server_waypoint.server.WaypointServerPlugin;
 import com.destroystokyo.paper.event.inventory.PrepareResultEvent;
 import io.papermc.paper.event.player.CartographyItemEvent;
 import io.papermc.paper.event.player.PlayerInventorySlotChangeEvent;
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
-import org.bukkit.Bukkit;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Material;
 import org.bukkit.entity.Allay;
 import org.bukkit.entity.ItemFrame;
@@ -49,13 +51,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
@@ -63,25 +64,29 @@ import static net.kyori.adventure.text.Component.translatable;
 public final class NavigationProtectionListener implements Listener {
     private static final int DENIAL_MESSAGE_INTERVAL_TICKS = 20;
 
-    private final JavaPlugin plugin;
     private final WaypointServerPlugin waypointServer;
     private final NavigationService<Player> navigationService;
+    private final PaperNavigationPlatform navigationPlatform;
     private final PaperNavigationItemManager itemManager;
+    private final PaperScheduler scheduler;
     private final Map<NavigationMethod, PaperItemNavigationHandler> itemHandlers;
-    private final Set<UUID> reconciling = new HashSet<>();
-    private final Map<UUID, Integer> lastDenialMessageTick = new HashMap<>();
+    private final Set<UUID> reconciling = ConcurrentHashMap.newKeySet();
+    private final Map<UUID, Integer> lastDenialMessageTick = new ConcurrentHashMap<>();
+    private final Map<UUID, ScheduledTask> navigationTickTasks = new ConcurrentHashMap<>();
 
     public NavigationProtectionListener(
             JavaPlugin plugin,
             WaypointServerPlugin waypointServer,
             NavigationService<Player> navigationService,
+            PaperNavigationPlatform navigationPlatform,
             PaperNavigationItemManager itemManager,
             List<? extends PaperItemNavigationHandler> itemHandlers
     ) {
-        this.plugin = plugin;
         this.waypointServer = waypointServer;
         this.navigationService = navigationService;
+        this.navigationPlatform = navigationPlatform;
         this.itemManager = itemManager;
+        this.scheduler = new PaperScheduler(plugin);
         this.itemHandlers = new EnumMap<>(NavigationMethod.class);
         for (PaperItemNavigationHandler handler : itemHandlers) {
             this.itemHandlers.put(handler.method(), handler);
@@ -288,13 +293,11 @@ public final class NavigationProtectionListener implements Listener {
     public void onInventoryMove(InventoryMoveItemEvent event) {
         if (this.itemManager.containsNavigationItem(event.getItem())) {
             event.setCancelled(true);
-            Bukkit.getScheduler().runTask(
-                    this.plugin,
-                    () -> {
-                        this.itemManager.removeFromInvalidInventory(event.getSource());
-                        this.reconcileActivePlayers();
-                    }
-            );
+            Inventory source = event.getSource();
+            this.scheduler.runNextTick(source, () -> {
+                this.itemManager.removeFromInvalidInventory(source);
+                this.reconcileActivePlayers();
+            });
         }
     }
 
@@ -425,17 +428,24 @@ public final class NavigationProtectionListener implements Listener {
     }
 
     public void restorePlayer(Player player) {
+        this.navigationPlatform.registerPlayer(player);
         this.navigationService.restorePersistedSession(player, this.waypointServer);
+        this.startNavigationTick(player);
         this.reconcileNextTick(player, false);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        ScheduledTask tickTask = this.navigationTickTasks.remove(player.getUniqueId());
+        if (tickTask != null) {
+            tickTask.cancel();
+        }
         this.navigationService.removePlayer(player);
         this.itemManager.purgeAll(player);
         this.lastDenialMessageTick.remove(player.getUniqueId());
         this.reconciling.remove(player.getUniqueId());
+        this.navigationPlatform.unregisterPlayer(player.getUniqueId());
     }
 
     private ItemStack hotbarItem(InventoryClickEvent event, Player player) {
@@ -450,14 +460,11 @@ public final class NavigationProtectionListener implements Listener {
     }
 
     private void reconcileNextTick(Player player, boolean restoreMissing) {
-        Bukkit.getScheduler().runTask(
-                this.plugin,
-                () -> {
-                    if (player.isOnline()) {
-                        this.reconcile(player, restoreMissing);
-                    }
-                }
-        );
+        this.scheduler.runNextTick(player, () -> {
+            if (player.isOnline()) {
+                this.reconcile(player, restoreMissing);
+            }
+        });
     }
 
     private void reconcile(Player player, boolean restoreMissing) {
@@ -525,15 +532,19 @@ public final class NavigationProtectionListener implements Listener {
     }
 
     private void reconcileActivePlayers() {
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (this.navigationService.findSession(player.getUniqueId()).isPresent()) {
-                this.reconcileNextTick(player, true);
+        for (UUID playerUuid : this.navigationPlatform.registeredPlayerUuids()) {
+            if (this.navigationService.findSession(playerUuid).isEmpty()) {
+                continue;
             }
+            this.navigationPlatform.executePlayer(
+                    playerUuid,
+                    player -> this.reconcileNextTick(player, true)
+            );
         }
     }
 
     private void sendMovementDenied(Player player) {
-        int currentTick = Bukkit.getCurrentTick();
+        int currentTick = player.getTicksLived();
         Integer previousTick = this.lastDenialMessageTick.get(player.getUniqueId());
         if (previousTick != null && currentTick - previousTick < DENIAL_MESSAGE_INTERVAL_TICKS) {
             return;
@@ -544,6 +555,28 @@ public final class NavigationProtectionListener implements Listener {
 
     private void sendDeduplicated(Player player) {
         player.sendMessage(translatable("waypoint.navigation.item.deduplicated"));
+    }
+
+    private void startNavigationTick(Player player) {
+        UUID playerUuid = player.getUniqueId();
+        ScheduledTask previousTask = this.navigationTickTasks.remove(playerUuid);
+        if (previousTask != null) {
+            previousTask.cancel();
+        }
+        ScheduledTask task = this.scheduler.runAtFixedRate(
+                player,
+                ignored -> this.navigationService.tickPlayer(player),
+                () -> {
+                    this.navigationTickTasks.remove(playerUuid);
+                    this.navigationService.removePlayer(playerUuid);
+                    this.navigationPlatform.unregisterPlayer(playerUuid);
+                },
+                1L,
+                1L
+        );
+        if (task != null) {
+            this.navigationTickTasks.put(playerUuid, task);
+        }
     }
 
     private static boolean isAllowedDirectSlot(

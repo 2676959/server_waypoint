@@ -1,6 +1,7 @@
 package _959.server_waypoint.server.command;
 
 import _959.server_waypoint.ServerWaypointPaperMC;
+import _959.server_waypoint.PaperScheduler;
 import _959.server_waypoint.command.CoreWaypointCommand;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.core.WaypointServerCore;
@@ -15,17 +16,16 @@ import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.BlockPositionResolver;
 import io.papermc.paper.math.BlockPosition;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("UnstableApiUsage")
 public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, Player, World, BlockPositionResolver> {
+    private final PaperScheduler scheduler;
 
     public WaypointCommand(
             WaypointServerCore waypointServer,
@@ -41,6 +41,7 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
                 ArgumentTypes::world,
                 ArgumentTypes::blockPosition
         );
+        this.scheduler = new PaperScheduler(ServerWaypointPaperMC.getSelf());
     }
 
     @Override
@@ -67,8 +68,7 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
 
     @Override
     protected void executeByServer(CommandSourceStack source, Runnable task) {
-        BukkitScheduler scheduler = Bukkit.getScheduler();
-        scheduler.runTaskLaterAsynchronously(ServerWaypointPaperMC.getSelf(), task, 20);
+        this.scheduler.runAsyncDelayed(task, 20L);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     @Override
     protected void teleportPlayer(CommandSourceStack source, Player player, World dimensionArgument, WaypointPos pos, int yaw) {
         Location location = new Location(dimensionArgument, pos.X(), pos.y(), pos.Z(), yaw, 0);
-        player.teleport(location, PlayerTeleportEvent.TeleportCause.COMMAND);
+        player.teleportAsync(location, PlayerTeleportEvent.TeleportCause.COMMAND);
     }
 
     @Override

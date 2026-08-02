@@ -26,7 +26,7 @@ dependencies {
     val paperApiVersion : String by project
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     paperweight.paperDevBundle(paperApiVersion)
-    implementation("org.bstats:bstats-bukkit:3.1.0")
+    implementation("org.bstats:bstats-bukkit:3.2.1")
     implementation(project(":common"))
 }
 

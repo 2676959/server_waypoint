@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 /**
  * Platform access required by the shared navigation service.
@@ -11,7 +12,12 @@ import java.util.UUID;
 public interface NavigationPlatform<P> {
     UUID playerUuid(P player);
 
-    Optional<P> findPlayer(UUID playerUuid);
+    /**
+     * Executes player-owned work on the platform thread which owns that
+     * player. The callback may run immediately when the caller already owns
+     * the player.
+     */
+    void executePlayer(UUID playerUuid, Consumer<P> action);
 
     NavigationSnapshot snapshot(P player, NavigationTarget target);
 
@@ -29,9 +35,9 @@ public interface NavigationPlatform<P> {
     }
 
     /**
-     * Implementations may throw here to enforce the server-thread-only contract.
+     * Implementations may throw here to enforce player thread ownership.
      */
-    default void assertServerThread() {
+    default void assertPlayerThread(P player) {
     }
 
     /**

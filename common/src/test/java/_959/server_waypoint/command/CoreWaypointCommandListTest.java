@@ -847,8 +847,7 @@ class CoreWaypointCommandListTest {
                 }
 
                 @Override
-                public Optional<Object> findPlayer(UUID playerUuid) {
-                    return Optional.empty();
+                public void executePlayer(UUID playerUuid, java.util.function.Consumer<Object> action) {
                 }
 
                 @Override

@@ -2,6 +2,7 @@ name: ServerWaypoint
 version: '${version}'
 main: _959.server_waypoint.ServerWaypointPaperMC
 api-version: '${mcVersion}'
+folia-supported: true
 author: 2676959
 description: Serverside waypoint manager
 website: https://modrinth.com/mod/server_waypoint

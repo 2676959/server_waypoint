@@ -7,16 +7,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.MapMeta;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class PaperMapNavigationHandler implements
         NavigationMethodHandler<Player>,
         PaperItemNavigationHandler {
     private final PaperNavigationItemManager itemManager;
     private final PaperNavigationMapCache mapCache;
-    private final Map<UUID, PaperNavigationMapCache.Lease> leases = new HashMap<>();
+    private final Map<UUID, PaperNavigationMapCache.Lease> leases = new ConcurrentHashMap<>();
 
     public PaperMapNavigationHandler(
             PaperNavigationItemManager itemManager,

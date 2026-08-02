@@ -856,8 +856,11 @@ class CoreWaypointCommandNavigationTest {
         }
 
         @Override
-        public Optional<TestPlayer> findPlayer(UUID playerUuid) {
-            return Optional.ofNullable(this.players.get(playerUuid));
+        public void executePlayer(UUID playerUuid, java.util.function.Consumer<TestPlayer> action) {
+            TestPlayer player = this.players.get(playerUuid);
+            if (player != null) {
+                action.accept(player);
+            }
         }
 
         @Override

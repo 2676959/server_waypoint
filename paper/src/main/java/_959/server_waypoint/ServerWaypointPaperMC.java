@@ -37,7 +37,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
 import org.bukkit.plugin.messaging.PluginMessageListener;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -56,7 +55,6 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
     private NavigationService<Player> navigationService;
     private PaperNavigationItemManager navigationItemManager;
     private PaperNavigationMapCache navigationMapCache;
-    private BukkitTask navigationTickTask;
     private @SuppressWarnings("UnstableApiUsage") C2SPacketHandler<CommandSourceStack, Player> c2sPacketHandler;
 
     @Override
@@ -85,8 +83,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         this.navigationItemManager = new PaperNavigationItemManager();
         this.navigationMapCache = new PaperNavigationMapCache(this);
         PaperNavigationPlatform navigationPlatform = new PaperNavigationPlatform(
-                server,
-                this.getLogger(),
+                this,
                 this.navigationItemManager
         );
         PaperCompassNavigationHandler compassHandler = new PaperCompassNavigationHandler(
@@ -116,12 +113,16 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 permissionManager,
                 this.navigationService
         );
-        ChatMessageListenerPaperMC chatListener = new ChatMessageListenerPaperMC(new PaperChatMessageHandler(server, sender, permissionManager));
+        ChatMessageListenerPaperMC chatListener = new ChatMessageListenerPaperMC(
+                this,
+                new PaperChatMessageHandler(server, sender, permissionManager)
+        );
         PlayerRegisterChannelListener channelRegisterListener = new PlayerRegisterChannelListener();
         NavigationProtectionListener navigationListener = new NavigationProtectionListener(
                 this,
                 waypointServer,
                 this.navigationService,
+                navigationPlatform,
                 this.navigationItemManager,
                 List.<PaperItemNavigationHandler>of(compassHandler, mapHandler)
         );
@@ -135,31 +136,12 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         server.getPluginManager().registerEvents(chatListener, this);
         server.getPluginManager().registerEvents(channelRegisterListener, this);
         server.getPluginManager().registerEvents(navigationListener, this);
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            navigationListener.restorePlayer(player);
-        }
-        // NavigationService performs its own five-call throttling.
-        this.navigationTickTask = server.getScheduler().runTaskTimer(
-                this,
-                this.navigationService::tick,
-                1L,
-                1L
-        );
     }
 
     @Override
     public void onDisable() {
-        if (this.navigationTickTask != null) {
-            this.navigationTickTask.cancel();
-            this.navigationTickTask = null;
-        }
         if (this.navigationService != null) {
             this.navigationService.shutdown();
-        }
-        if (this.navigationItemManager != null) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                this.navigationItemManager.purgeAll(player);
-            }
         }
         if (this.navigationMapCache != null) {
             this.navigationMapCache.close();
