@@ -23,7 +23,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.phys.Vec3;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
@@ -44,8 +43,6 @@ public final class OptimizedWaypointRenderer {
     private static final int DEPTH_RADIX_BITS = 8;
     private static final int DEPTH_RADIX_SIZE = 1 << DEPTH_RADIX_BITS;
     private static final int DEPTH_RADIX_MASK = DEPTH_RADIX_SIZE - 1;
-    private static final int DESCRIPTION_MAX_WIDTH = 240;
-    private static final int DESCRIPTION_MAX_LINES = 6;
     private static boolean DISABLED = false;
     private static float WAYPOINT_BASE_SCALE = 1.0F;
     private static int WAYPOINT_BG_ALPHA_MASK = 0x80000000;
@@ -78,7 +75,6 @@ public final class OptimizedWaypointRenderer {
     private static int[] bgColor;
     private static int[] fgColor;
     private static Component[] names;
-    private static Component[] descriptions;
     private static String[] initials;
     private static float[] nameTextWidth;
     private static float[] nameTextBgWidth;
@@ -124,7 +120,6 @@ public final class OptimizedWaypointRenderer {
         int bgColor;
         int fgColor;
         Component name;
-        Component description;
         String initials;
         SimpleWaypoint waypoint;
         float initialsWidth;
@@ -161,7 +156,6 @@ public final class OptimizedWaypointRenderer {
         bgColor = new int[MAX_WAYPOINTS];
         fgColor = new int[MAX_WAYPOINTS];
         names = new Component[MAX_WAYPOINTS];
-        descriptions = new Component[MAX_WAYPOINTS];
         initials = new String[MAX_WAYPOINTS];
         nameTextWidth = new float[MAX_WAYPOINTS];
         nameTextBgWidth = new float[MAX_WAYPOINTS];
@@ -452,7 +446,6 @@ public final class OptimizedWaypointRenderer {
     private static void cleanCommandWaypointData(WaypointRendererCommand cmd) {
         cmd.waypoint = null;
         cmd.name = null;
-        cmd.description = null;
         cmd.initials = null;
     }
 
@@ -480,7 +473,6 @@ public final class OptimizedWaypointRenderer {
         cmd.bgColor = color;
         cmd.fgColor = getSafeTextColor(color);
         cmd.name = parseFormattedText(name);
-        cmd.description = parseFormattedText(waypoint == null ? "" : waypoint.description());
         cmd.initials = initials;
         cmd.initialsWidth = getTextWidth(initials);
         cmd.nameWidth = getTextWidth(cmd.name);
@@ -624,26 +616,6 @@ public final class OptimizedWaypointRenderer {
             float distanceBgWidth = getTextBgWidth(distanceText);
             float distanceScale = detailScale * 0.8F;
             drawTextBoxAt(context, distanceText, labelBgLeft, labelBgBottom, distanceScale, distanceWidth, distanceBgWidth, 0x88000000, 0xFFFFFFFF);
-            Component description = descriptions[detailIndex];
-            if (description != null && !description.getString().isEmpty()) {
-                List<FormattedCharSequence> lines = textRenderer.split(description, DESCRIPTION_MAX_WIDTH);
-                int lineCount = Math.min(lines.size(), DESCRIPTION_MAX_LINES);
-                float descriptionWidth = 0;
-                for (int lineIndex = 0; lineIndex < lineCount; lineIndex++) {
-                    descriptionWidth = Math.max(descriptionWidth, textRenderer.width(lines.get(lineIndex)));
-                }
-                drawWrappedComponentBoxAt(
-                        context,
-                        lines,
-                        lineCount,
-                        labelBgLeft,
-                        labelBgBottom + textBgHeight * distanceScale,
-                        distanceScale,
-                        descriptionWidth,
-                        0xCC000000,
-                        0xFFFFFFFF
-                );
-            }
             float scaledRealBgWidth = bgWidth * detailScale;
             float scaledRealBgHeight = textBgHeight * detailScale;
             float upperCornerX = detailWinX - scaledRealBgWidth * 0.5F;
@@ -776,42 +748,6 @@ public final class OptimizedWaypointRenderer {
         finishGuiLayer(context);
     }
 
-    private static void drawWrappedComponentBoxAt(
-            GuiGraphicsExtractor context,
-            List<FormattedCharSequence> lines,
-            int lineCount,
-            float left,
-            float topY,
-            float boxScale,
-            float textWidth,
-            int backgroundColor,
-            int textColor
-    ) {
-        if (lineCount == 0) {
-            return;
-        }
-        int backgroundWidth = (int)Math.ceil(Math.max(textWidth + 2, textBgHeight));
-        int backgroundHeight = lineCount * textRenderer.lineHeight + 2;
-
-        push(context);
-        translate(context, left, topY);
-        scale(context, boxScale, boxScale);
-        context.fill(0, 0, backgroundWidth, backgroundHeight, backgroundColor);
-        for (int lineIndex = 0; lineIndex < lineCount; lineIndex++) {
-            drawText(
-                    context,
-                    textRenderer,
-                    lines.get(lineIndex),
-                    1,
-                    1 + lineIndex * textRenderer.lineHeight,
-                    textColor,
-                    false
-            );
-        }
-        pop(context);
-        finishGuiLayer(context);
-    }
-
     private static void drawTextBoxAt(GuiGraphicsExtractor context, String text, float left, float topY, float boxScale, float textWidth, float backgroundWidth, int backgroundColor, int textColor) {
         int bgWidth = (int) Math.ceil(backgroundWidth);
         float textX = getCenteredTextX(bgWidth, textWidth);
@@ -849,7 +785,7 @@ public final class OptimizedWaypointRenderer {
     private static void processCommand(WaypointRendererCommand cmd) {
         switch (cmd.type) {
             case ADD:
-                addInternal(cmd.waypoint, cmd.renderId, cmd.x, cmd.y, cmd.z, cmd.bgColor, cmd.fgColor, cmd.name, cmd.description, cmd.initials, cmd.nameWidth, cmd.initialsWidth, cmd.nameBgWidth, cmd.initialsBgWidth, cmd.local);
+                addInternal(cmd.waypoint, cmd.renderId, cmd.x, cmd.y, cmd.z, cmd.bgColor, cmd.fgColor, cmd.name, cmd.initials, cmd.nameWidth, cmd.initialsWidth, cmd.nameBgWidth, cmd.initialsBgWidth, cmd.local);
                 break;
             case REMOVE:
                 removeInternal(cmd.renderId);
@@ -865,7 +801,6 @@ public final class OptimizedWaypointRenderer {
                     bgColor[idx] = cmd.bgColor;
                     fgColor[idx] = cmd.fgColor;
                     names[idx] = cmd.name;
-                    descriptions[idx] = cmd.description;
                     initials[idx] = cmd.initials;
                     nameTextWidth[idx] = cmd.nameWidth;
                     initialsTextWidth[idx] = cmd.initialsWidth;
@@ -881,7 +816,7 @@ public final class OptimizedWaypointRenderer {
                 if (cmd.bulkWaypoints != null) {
                     for (int i = 0; i < cmd.bulkSize; i++) {
                         SimpleWaypoint wp = cmd.bulkWaypoints[i];
-                        addInternal(wp, cmd.bulkIds[i], getWaypointX(wp), getWaypointY(wp), getWaypointZ(wp), wp.rgb(), cmd.bulkFgColor[i], parseFormattedText(wp.displayName()), parseFormattedText(wp.description()), wp.initials(), cmd.bulkNameWidth[i], cmd.bulkInitialsWidth[i], cmd.bulkNameBgWidth[i], cmd.bulkInitialsBgWidth[i], cmd.bulkLocal[i]);
+                        addInternal(wp, cmd.bulkIds[i], getWaypointX(wp), getWaypointY(wp), getWaypointZ(wp), wp.rgb(), cmd.bulkFgColor[i], parseFormattedText(wp.displayName()), wp.initials(), cmd.bulkNameWidth[i], cmd.bulkInitialsWidth[i], cmd.bulkNameBgWidth[i], cmd.bulkInitialsBgWidth[i], cmd.bulkLocal[i]);
                     }
                 }
                 break;
@@ -897,7 +832,7 @@ public final class OptimizedWaypointRenderer {
         }
     }
 
-    private static void addInternal(SimpleWaypoint waypoint, int id, double x, double y, double z, int bg_color, int fg_color, Component name, Component description, String initial, float nameWidth, float initialsWidth, float nameBgWidth, float initialsBgWidth, boolean isLocal) {
+    private static void addInternal(SimpleWaypoint waypoint, int id, double x, double y, double z, int bg_color, int fg_color, Component name, String initial, float nameWidth, float initialsWidth, float nameBgWidth, float initialsBgWidth, boolean isLocal) {
         if (waypoint != null && waypoint.renderId != id) return;
         if (id < 0 || id >= MAX_RENDER_ID) {
             releaseRenderId(waypoint, id);
@@ -923,7 +858,6 @@ public final class OptimizedWaypointRenderer {
         bgColor[i] = bg_color;
         fgColor[i] = fg_color;
         names[i] = name;
-        descriptions[i] = description;
         initials[i] = initial;
         initialsTextWidth[i] = initialsWidth;
         nameTextWidth[i] = nameWidth;
@@ -952,7 +886,6 @@ public final class OptimizedWaypointRenderer {
             bgColor[indexToRemove] = bgColor[lastIndex];
             fgColor[indexToRemove] = fgColor[lastIndex];
             names[indexToRemove] = names[lastIndex];
-            descriptions[indexToRemove] = descriptions[lastIndex];
             initials[indexToRemove] = initials[lastIndex];
             initialsTextWidth[indexToRemove] = initialsTextWidth[lastIndex];
             nameTextWidth[indexToRemove] = nameTextWidth[lastIndex];
@@ -965,7 +898,6 @@ public final class OptimizedWaypointRenderer {
 
         // Clean up string reference to assist GC
         names[lastIndex] = null;
-        descriptions[lastIndex] = null;
         initials[lastIndex] = null;
         waypointRefs[lastIndex] = null;
         idMap[id] = -1;
@@ -976,7 +908,6 @@ public final class OptimizedWaypointRenderer {
         // Clear string references for GC
         for (int i = 0; i < count; i++) {
             names[i] = null;
-            descriptions[i] = null;
             initials[i] = null;
             waypointRefs[i] = null;
         }

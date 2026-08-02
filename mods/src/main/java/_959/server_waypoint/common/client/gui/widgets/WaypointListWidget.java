@@ -25,7 +25,6 @@ import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -553,7 +552,6 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     @Override
     protected void beforeRenderEntries(GuiGraphicsExtractor context, int contentWidth, int mouseX, int mouseY, float deltaTicks) {
-        this.setTooltip(null);
         thirdBtnXPos = contentWidth - btnWidth;
         secondBtnXPos = thirdBtnXPos - btnWidth;
         firstBtnXPos = secondBtnXPos - btnWidth;
@@ -694,9 +692,6 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         int rgb = waypoint.rgb();
         int y2 = rowY + itemHeight;
         if (hovered) {
-            if (!waypoint.description().isEmpty()) {
-                this.setTooltip(Tooltip.create(parseFormattedText(waypoint.description())));
-            }
             context.fill(0, rowY, contentWidth, y2, 0x60000000 + rgb);
             int wpCenteredBtnY = rowY + buttonIconVertOffset;
             if (canToggleVisibility(waypointNode.dimensionName())) {
