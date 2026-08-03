@@ -47,13 +47,18 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.re
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.texture;
 
 public class WaypointManagerScreen extends MovementAllowedScreen {
-    private static final int MIDDLE_PART_WIDTH = 220;
+    private static final float MIDDLE_PART_WIDTH_RATIO = 0.38F;
+    private static final float DETAILS_PART_WIDTH_RATIO = 0.32F;
+    private static final int MIN_MIDDLE_PART_WIDTH = 180;
+    private static final int MAX_MIDDLE_PART_WIDTH = 360;
+    private static final int MIN_DETAILS_PART_WIDTH = 150;
+    private static final int MAX_DETAILS_PART_WIDTH = 320;
     private static final int WAYPOINT_LIST_HORIZONTAL_PADDING = 8;
     private static final int MIN_CONTENT_HEIGHT = 120;
-    private static final int MAX_CONTENT_HEIGHT = 260;
+    private static final int MAX_CONTENT_HEIGHT = 400;
     private static final int SCREEN_MARGIN = 12;
     private static final int PANEL_PADDING = 4;
-    private static final int PANEL_GAP = 4;
+    private static final int PANEL_GAP = 2;
     private static final int SECTION_GAP = 6;
     private static final int CONTROL_GAP = 4;
     private static final int SEARCH_GAP = 4;
@@ -74,6 +79,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private static boolean isRendering = false;
     private static WaypointListWidget waypointListWidget;
     private static DimensionListWidget dimensionListWidget;
+    private final WaypointDetailsWidget waypointDetailsWidget;
     private final IconButton addWaypointButton;
     private final WaypointSearchBarWidget searchField;
     private final IconToggleButton groupModeToggle;
@@ -107,14 +113,22 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 DIMENSION_VERTICAL_PADDING,
                 DIMENSION_HORIZONTAL_PADDING
         );
+        waypointDetailsWidget = new WaypointDetailsWidget(
+                0,
+                0,
+                MIN_DETAILS_PART_WIDTH,
+                200,
+                this.font
+        );
         waypointListWidget = new WaypointListWidget(
                 0,
                 0,
-                MIDDLE_PART_WIDTH - WAYPOINT_LIST_HORIZONTAL_PADDING,
+                MIN_MIDDLE_PART_WIDTH - WAYPOINT_LIST_HORIZONTAL_PADDING,
                 200,
                 this,
                 new WaypointQueryEngine(getWaypointQuerySource()),
-                this.font
+                this.font,
+                waypointDetailsWidget::setSelection
         );
         addWaypointButton = new IconButton(
                 0,
@@ -135,7 +149,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         searchField = new WaypointSearchBarWidget(
                 0,
                 0,
-                MIDDLE_PART_WIDTH,
+                MIN_MIDDLE_PART_WIDTH,
                 Component.translatable("waypoint.search.entry"),
                 this.font,
                 waypointListWidget::setSearchQuery
@@ -182,7 +196,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         syncControlStates();
 
         this.middleLayout = new WidgetPack(
-                MIDDLE_PART_WIDTH,
+                MIN_MIDDLE_PART_WIDTH,
                 MAX_CONTENT_HEIGHT,
                 LayoutFlow.Orientation.VERTICAL
         );
@@ -370,11 +384,22 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         searchField.active = middleVisible;
         waypointListWidget.visible = middleVisible;
         waypointListWidget.active = middleVisible;
+        searchField.setVisualWidth(this.layoutGeometry.middlePartWidth());
+        waypointListWidget.setVisualWidth(this.layoutGeometry.middlePartWidth());
         waypointListWidget.setVisualHeight(Math.max(MIN_WAYPOINT_LIST_HEIGHT, waypointListHeight));
         this.middleLayout.setDimensions(
-                MIDDLE_PART_WIDTH,
+                this.layoutGeometry.middlePartWidth(),
                 this.layoutGeometry.contentHeight()
         );
+
+        waypointDetailsWidget.visible = true;
+        waypointDetailsWidget.active = true;
+        waypointDetailsWidget.setDimensions(
+                this.layoutGeometry.detailsContentWidth(),
+                this.layoutGeometry.contentHeight()
+        );
+        waypointDetailsWidget.setX(this.layoutGeometry.detailsContentX());
+        waypointDetailsWidget.setY(this.layoutGeometry.contentY());
 
         int dimensionListHeight = this.layoutGeometry.dimensionListHeight();
         boolean dimensionListVisible = dimensionListHeight >= MIN_DIMENSION_LIST_HEIGHT;
@@ -389,7 +414,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
     @Override
     int getContentWidth() {
-        return MIDDLE_PART_WIDTH + PANEL_PADDING * 2;
+        return calculateLayoutGeometry(this.width, this.height).completeWidth();
     }
 
     @Override
@@ -432,6 +457,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
         this.leftLayout.visitWidgets(this::addRenderableWidget);
         this.middleLayout.visitWidgets(this::addRenderableWidget);
+        this.addRenderableWidget(this.waypointDetailsWidget);
     }
 
     @Override
@@ -561,6 +587,17 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         extractRenderState
                 (context, mouseX, mouseY, delta);
         waypointListWidget.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
+        this.renderPanel(
+                context,
+                this.layoutGeometry.detailsPanelX(),
+                this.layoutGeometry.panelY(),
+                this.layoutGeometry.detailsPanelWidth(),
+                this.layoutGeometry.panelHeight()
+        );
+        waypointDetailsWidget.
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, delta);
@@ -762,33 +799,78 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 0,
                 screenHeight - (SCREEN_MARGIN + PANEL_PADDING) * 2
         );
-        int preferredContentHeight = Math.max(
+        int preferredContentHeight = clamp(
+                Math.round(screenHeight * RELATIVE_HEIGHT),
                 MIN_CONTENT_HEIGHT,
-                Math.round(screenHeight * RELATIVE_HEIGHT)
+                MAX_CONTENT_HEIGHT
         );
-        int contentHeight = Math.min(
-                availableContentHeight,
-                Math.min(MAX_CONTENT_HEIGHT, preferredContentHeight)
+        int contentHeight = Math.min(availableContentHeight, preferredContentHeight);
+        int leftPanelWidth = LEFT_PART_WIDTH + PANEL_PADDING * 2;
+        int fixedHorizontalWidth = leftPanelWidth + PANEL_GAP * 2 + PANEL_PADDING * 4;
+        int desiredMiddlePartWidth = clamp(
+                Math.round(screenWidth * MIDDLE_PART_WIDTH_RATIO),
+                MIN_MIDDLE_PART_WIDTH,
+                MAX_MIDDLE_PART_WIDTH
         );
-        int middleX = centered(screenWidth, MIDDLE_PART_WIDTH);
-        int preferredLeftX = middleX
-                - PANEL_PADDING
-                - LEFT_PART_WIDTH
-                - PANEL_PADDING
-                - PANEL_GAP;
-        int leftX = Math.max(
-                SCREEN_MARGIN + PANEL_PADDING,
-                preferredLeftX
+        int desiredDetailsPartWidth = clamp(
+                Math.round(screenWidth * DETAILS_PART_WIDTH_RATIO),
+                MIN_DETAILS_PART_WIDTH,
+                MAX_DETAILS_PART_WIDTH
         );
+        int desiredFlexibleWidth = desiredMiddlePartWidth + desiredDetailsPartWidth;
+        int availableCompleteWidth = screenWidth <= 0
+                ? fixedHorizontalWidth + desiredFlexibleWidth
+                : Math.max(0, screenWidth - SCREEN_MARGIN * 2);
+        int availableFlexibleWidth = Math.max(
+                2,
+                availableCompleteWidth - fixedHorizontalWidth
+        );
+        int middlePartWidth = desiredMiddlePartWidth;
+        int detailsPartWidth = desiredDetailsPartWidth;
+        if (desiredFlexibleWidth > availableFlexibleWidth) {
+            middlePartWidth = Math.max(
+                    1,
+                    Math.round((float)availableFlexibleWidth
+                            * desiredMiddlePartWidth / desiredFlexibleWidth)
+            );
+            detailsPartWidth = Math.max(1, availableFlexibleWidth - middlePartWidth);
+        }
+        int middlePanelWidth = middlePartWidth + PANEL_PADDING * 2;
+        int detailsPanelWidth = detailsPartWidth + PANEL_PADDING * 2;
+        int completeWidth = leftPanelWidth
+                + PANEL_GAP
+                + middlePanelWidth
+                + PANEL_GAP
+                + detailsPanelWidth;
+        int leftPanelX = centered(screenWidth, completeWidth);
+        int leftX = leftPanelX + PANEL_PADDING;
+        int middleX = leftPanelX + leftPanelWidth + PANEL_GAP + PANEL_PADDING;
+        int detailsPanelX = leftPanelX + leftPanelWidth + PANEL_GAP
+                + middlePanelWidth + PANEL_GAP;
         return new ManagerLayoutGeometry(
                 contentHeight,
                 middleX,
                 leftX,
-                centered(screenHeight, contentHeight)
+                centered(screenHeight, contentHeight),
+                middlePartWidth,
+                detailsPanelX,
+                detailsPanelWidth
         );
     }
 
-    record ManagerLayoutGeometry(int contentHeight, int middleX, int leftX, int contentY) {
+    private static int clamp(int value, int minimum, int maximum) {
+        return Math.max(minimum, Math.min(maximum, value));
+    }
+
+    record ManagerLayoutGeometry(
+            int contentHeight,
+            int middleX,
+            int leftX,
+            int contentY,
+            int middlePartWidth,
+            int detailsPanelX,
+            int detailsPanelWidth
+    ) {
         int panelY() {
             return this.contentY - PANEL_PADDING;
         }
@@ -802,7 +884,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         }
 
         int middlePanelWidth() {
-            return MIDDLE_PART_WIDTH + PANEL_PADDING * 2;
+            return this.middlePartWidth + PANEL_PADDING * 2;
         }
 
         int leftPanelX() {
@@ -811,6 +893,18 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
         int leftPanelWidth() {
             return LEFT_PART_WIDTH + PANEL_PADDING * 2;
+        }
+
+        int detailsContentX() {
+            return this.detailsPanelX + PANEL_PADDING;
+        }
+
+        int detailsContentWidth() {
+            return Math.max(0, this.detailsPanelWidth - PANEL_PADDING * 2);
+        }
+
+        int completeWidth() {
+            return this.detailsPanelX + this.detailsPanelWidth - this.leftPanelX();
         }
 
         int dimensionListHeight() {

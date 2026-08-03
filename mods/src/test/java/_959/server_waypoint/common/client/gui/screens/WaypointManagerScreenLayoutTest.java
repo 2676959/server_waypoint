@@ -7,31 +7,49 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WaypointManagerScreenLayoutTest {
     @Test
-    void onlyTheFixedWidthMiddlePartIsCentered() {
+    void allThreePanelsAreCenteredTogether() {
         int screenWidth = 854;
         WaypointManagerScreen.ManagerLayoutGeometry geometry =
                 WaypointManagerScreen.calculateLayoutGeometry(screenWidth, 480);
 
-        assertEquals(228, geometry.middlePanelWidth());
+        assertEquals(333, geometry.middlePanelWidth());
         assertEquals(24, geometry.leftPanelWidth());
-        assertEquals(screenWidth / 2, geometry.middleX() + 110);
-        assertEquals(317, geometry.middleX());
-        assertEquals(289, geometry.leftX());
-        assertEquals(4, geometry.panelGap());
+        assertEquals(screenWidth / 2, (geometry.leftPanelX()
+                + geometry.detailsPanelX() + geometry.detailsPanelWidth()) / 2);
+        assertEquals(136, geometry.middleX());
+        assertEquals(110, geometry.leftX());
+        assertEquals(2, geometry.panelGap());
+        assertEquals(467, geometry.detailsPanelX());
+        assertEquals(281, geometry.detailsPanelWidth());
+        assertEquals(471, geometry.detailsContentX());
+        assertEquals(273, geometry.detailsContentWidth());
     }
 
     @Test
-    void middleWidthRemainsFixedAtDifferentScreenWidths() {
+    void panelWidthsGrowWithTheViewport() {
         WaypointManagerScreen.ManagerLayoutGeometry wide =
                 WaypointManagerScreen.calculateLayoutGeometry(854, 480);
         WaypointManagerScreen.ManagerLayoutGeometry narrower =
                 WaypointManagerScreen.calculateLayoutGeometry(740, 480);
 
-        assertEquals(228, wide.middlePanelWidth());
-        assertEquals(228, narrower.middlePanelWidth());
-        assertEquals(317, wide.middleX());
-        assertEquals(260, narrower.middleX());
-        assertEquals(232, narrower.leftX());
+        assertEquals(333, wide.middlePanelWidth());
+        assertEquals(289, narrower.middlePanelWidth());
+        assertEquals(281, wide.detailsPanelWidth());
+        assertEquals(245, narrower.detailsPanelWidth());
+        assertTrue(wide.completeWidth() > narrower.completeWidth());
+    }
+
+    @Test
+    void panelWidthsStopGrowingAtTheirClamps() {
+        WaypointManagerScreen.ManagerLayoutGeometry clamped =
+                WaypointManagerScreen.calculateLayoutGeometry(1280, 720);
+        WaypointManagerScreen.ManagerLayoutGeometry wider =
+                WaypointManagerScreen.calculateLayoutGeometry(1920, 1080);
+
+        assertEquals(368, clamped.middlePanelWidth());
+        assertEquals(328, clamped.detailsPanelWidth());
+        assertEquals(clamped.middlePanelWidth(), wider.middlePanelWidth());
+        assertEquals(clamped.detailsPanelWidth(), wider.detailsPanelWidth());
     }
 
     @Test
@@ -39,9 +57,9 @@ class WaypointManagerScreenLayoutTest {
         WaypointManagerScreen.ManagerLayoutGeometry geometry =
                 WaypointManagerScreen.calculateLayoutGeometry(854, 480);
 
-        assertEquals(260, geometry.contentHeight());
-        assertEquals(158, geometry.dimensionListHeight());
-        assertEquals(245, geometry.waypointListHeight(11));
+        assertEquals(394, geometry.contentHeight());
+        assertEquals(292, geometry.dimensionListHeight());
+        assertEquals(379, geometry.waypointListHeight(11));
 
         WaypointManagerScreen.ManagerLayoutGeometry shorter =
                 WaypointManagerScreen.calculateLayoutGeometry(854, 200);
@@ -61,22 +79,38 @@ class WaypointManagerScreenLayoutTest {
     }
 
     @Test
-    void reducedMiddleWidthKeepsTheLeftPartOnScreenAtCompactWidths() {
+    void completeGroupRemainsCenteredAtCompactWidths() {
         WaypointManagerScreen.ManagerLayoutGeometry commonCompactWidth =
                 WaypointManagerScreen.calculateLayoutGeometry(400, 480);
         WaypointManagerScreen.ManagerLayoutGeometry extremelyCompactWidth =
                 WaypointManagerScreen.calculateLayoutGeometry(320, 480);
 
-        assertEquals(58, commonCompactWidth.leftPanelX());
+        assertEquals(13, commonCompactWidth.leftPanelX());
         assertEquals(commonCompactWidth.leftX(), commonCompactWidth.controlX());
-        assertEquals(-10, commonCompactWidth.leftDropdownEdge(4));
-        assertEquals(22, commonCompactWidth.dropdownXOffset(4));
-        assertEquals(400 / 2, commonCompactWidth.middleX() + 110);
-        assertEquals(18, extremelyCompactWidth.leftPanelX());
-        assertEquals(-50, extremelyCompactWidth.leftDropdownEdge(4));
-        assertEquals(62, extremelyCompactWidth.dropdownXOffset(4));
-        assertEquals(320 / 2, extremelyCompactWidth.middleX() + 110);
-        assertEquals(228, extremelyCompactWidth.middlePanelWidth());
+        assertEquals(-55, commonCompactWidth.leftDropdownEdge(4));
+        assertEquals(67, commonCompactWidth.dropdownXOffset(4));
+        assertEquals(400 / 2, (commonCompactWidth.leftPanelX()
+                + commonCompactWidth.detailsPanelX() + commonCompactWidth.detailsPanelWidth()) / 2);
+        assertEquals(12, extremelyCompactWidth.leftPanelX());
+        assertEquals(-56, extremelyCompactWidth.leftDropdownEdge(4));
+        assertEquals(68, extremelyCompactWidth.dropdownXOffset(4));
+        assertEquals(320 / 2, (extremelyCompactWidth.leftPanelX()
+                + extremelyCompactWidth.detailsPanelX() + extremelyCompactWidth.detailsPanelWidth()) / 2);
+        assertEquals(145, extremelyCompactWidth.middlePanelWidth());
+        assertEquals(158, commonCompactWidth.detailsPanelWidth());
+        assertEquals(123, extremelyCompactWidth.detailsPanelWidth());
+    }
+
+    @Test
+    void completeLayoutFitsCompactGuiScaleFourViewports() {
+        WaypointManagerScreen.ManagerLayoutGeometry geometry =
+                WaypointManagerScreen.calculateLayoutGeometry(427, 240);
+
+        assertEquals(26, geometry.leftPanelX());
+        assertEquals(400, geometry.detailsPanelX() + geometry.detailsPanelWidth());
+        assertEquals(374, geometry.completeWidth());
+        assertTrue(geometry.panelY() >= 12);
+        assertTrue(geometry.panelY() + geometry.panelHeight() <= 240 - 12);
     }
 
     @Test
@@ -90,7 +124,20 @@ class WaypointManagerScreenLayoutTest {
         assertEquals(4, geometry.leftX() - geometry.leftPanelX());
         assertEquals(4, geometry.leftPanelX() + geometry.leftPanelWidth()
                 - (geometry.leftX() + 16));
-        assertEquals(4, geometry.panelGap());
+        assertEquals(2, geometry.panelGap());
+        assertEquals(2, geometry.detailsPanelX()
+                - (geometry.middlePanelX() + geometry.middlePanelWidth()));
         assertEquals(4, geometry.contentHeight() - 11 - geometry.waypointListHeight(11));
+    }
+
+    @Test
+    void contentHeightUsesPercentageAndMaximumClamp() {
+        WaypointManagerScreen.ManagerLayoutGeometry medium =
+                WaypointManagerScreen.calculateLayoutGeometry(854, 480);
+        WaypointManagerScreen.ManagerLayoutGeometry tall =
+                WaypointManagerScreen.calculateLayoutGeometry(1280, 1000);
+
+        assertEquals(394, medium.contentHeight());
+        assertEquals(400, tall.contentHeight());
     }
 }
