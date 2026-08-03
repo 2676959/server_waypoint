@@ -81,7 +81,7 @@ public class StringCommandBuilder {
         if (request.scope() == UploadScope.WORLD) {
             return command.toString();
         }
-        command.append(' ').append(request.dimensionNames().getFirst());
+        command.append(' ').append(request.dimensionNames().get(0));
         if (request.scope() == UploadScope.DIMENSION) {
             return command.toString();
         }
