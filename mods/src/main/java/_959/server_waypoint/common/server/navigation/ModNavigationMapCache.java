@@ -1,10 +1,14 @@
 package _959.server_waypoint.common.server.navigation;
 
 import _959.server_waypoint.access.PlayerNavigationMapIdAccessor;
+import _959.server_waypoint.common.util.TextHelper;
+import _959.server_waypoint.mixin.MapItemSavedDataAccessor;
+import _959.server_waypoint.navigation.NavigationDisplayText;
 import _959.server_waypoint.navigation.NavigationTarget;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
@@ -39,7 +43,7 @@ final class ModNavigationMapCache {
             mapIdData.sw$setNavigationMapId(mapId);
         } else {
             replaceMapData(targetLevel, target, mapId);
-            map = mapStack(mapId, target);
+            map = mapStack(targetLevel, mapId, target);
         }
         ModNavigationItemText.apply(map, target);
         return new PreparedMap(map);
@@ -54,7 +58,7 @@ final class ModNavigationMapCache {
                 true,
                 false
         );
-        addMarker(map, target);
+        addMarker(targetLevel, map, target);
         return map;
     }
 
@@ -67,6 +71,7 @@ final class ModNavigationMapCache {
                 false,
                 targetLevel.dimension()
         );
+        addNamedMarker(savedData, targetLevel, target);
         //? if >= 1.20.5 {
         targetLevel.setMapData(new MapId(mapId), savedData);
         //?} else {
@@ -74,18 +79,26 @@ final class ModNavigationMapCache {
         *///?}
     }
 
-    private static ItemStack mapStack(int mapId, NavigationTarget target) {
+    private static ItemStack mapStack(
+            ServerLevel targetLevel,
+            int mapId,
+            NavigationTarget target
+    ) {
         ItemStack map = new ItemStack(Items.FILLED_MAP);
         //? if >= 1.20.5 {
         map.set(net.minecraft.core.component.DataComponents.MAP_ID, new MapId(mapId));
         //?} else {
         /*map.getOrCreateTag().putInt("map", mapId);
         *///?}
-        addMarker(map, target);
+        addMarker(targetLevel, map, target);
         return map;
     }
 
-    private static void addMarker(ItemStack map, NavigationTarget target) {
+    private static void addMarker(
+            ServerLevel targetLevel,
+            ItemStack map,
+            NavigationTarget target
+    ) {
         BlockPos position = new BlockPos(
                 target.position().x(),
                 target.position().y(),
@@ -95,6 +108,44 @@ final class ModNavigationMapCache {
         MapItemSavedData.addTargetDecoration(map, position, TARGET_MARKER_ID, MapDecorationTypes.TARGET_X);
         //?} else {
         /*MapItemSavedData.addTargetDecoration(map, position, TARGET_MARKER_ID, MapDecoration.Type.TARGET_X);
+        *///?}
+
+        MapItemSavedData mapData = MapItem.getSavedData(map, targetLevel);
+        if (mapData != null) {
+            addNamedMarker(mapData, targetLevel, target);
+        }
+    }
+
+    private static void addNamedMarker(
+            MapItemSavedData mapData,
+            LevelAccessor level,
+            NavigationTarget target
+    ) {
+        BlockPos position = new BlockPos(
+                target.position().x(),
+                target.position().y(),
+                target.position().z()
+        );
+        //? if >= 1.20.5 {
+        ((MapItemSavedDataAccessor) mapData).serverWaypoint$addDecoration(
+                MapDecorationTypes.TARGET_X,
+                level,
+                TARGET_MARKER_ID,
+                position.getX(),
+                position.getZ(),
+                180.0D,
+                TextHelper.toMinecraft(NavigationDisplayText.buildItemName(target))
+        );
+        //?} else {
+        /*((MapItemSavedDataAccessor) mapData).serverWaypoint$addDecoration(
+                MapDecoration.Type.TARGET_X,
+                level,
+                TARGET_MARKER_ID,
+                position.getX(),
+                position.getZ(),
+                180.0D,
+                TextHelper.toMinecraft(NavigationDisplayText.buildItemName(target))
+        );
         *///?}
     }
 

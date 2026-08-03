@@ -37,7 +37,7 @@ final class PaperNavigationMapRenderer extends MapRenderer {
                 new TargetMarker(
                         (byte) cursorX,
                         (byte) cursorZ,
-                        _959.server_waypoint.text.FormattedTextHelper.parse(target.waypointDisplayName())
+                        NavigationDisplayText.buildItemName(target)
                 )
         );
     }

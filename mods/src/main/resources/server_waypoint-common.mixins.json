@@ -15,7 +15,8 @@
     "DecoratedPotBlockNavigationMixin",
     "InventoryNavigationMixin",
     "ItemEntityNavigationMixin",
-    "ItemFrameNavigationMixin"
+    "ItemFrameNavigationMixin",
+    "MapItemSavedDataAccessor"
   ],
   "client": [
     "BoundKeyAccessor",
