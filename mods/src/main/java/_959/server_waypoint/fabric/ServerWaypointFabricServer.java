@@ -4,6 +4,7 @@ package _959.server_waypoint.fabric;
 import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
+import _959.server_waypoint.common.network.payload.c2s.UploadChunkC2SPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.common.server.command.WaypointCommand;
 import _959.server_waypoint.config.Features;
@@ -13,6 +14,7 @@ import _959.server_waypoint.common.network.payload.c2s.UpdateRequestC2SPayload;
 import _959.server_waypoint.common.network.payload.c2s.WaypointEditRequestC2SPayload;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.network.C2SPacketHandler;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.fabric.permission.FabricPermissionManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -49,13 +51,21 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
             }
         };
         WaypointServerMod waypointServer = new WaypointServerMod(this.getAssignedConfigDirectory(), handler);
+        UploadCoordinator<ServerPlayer> uploadCoordinator = new UploadCoordinator<>(
+                waypointServer,
+                messageSender::sendPlayerMessage,
+                messageSender::broadcastPacket,
+                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
+                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete())
+        );
         C2SPacketHandler<CommandSourceStack, String, ServerPlayer> c2sPacketHandler = new C2SPacketHandler<>(
                 messageSender,
                 waypointServer,
                 permissionManager,
-                waypointServer.navigation().service()
+                waypointServer.navigation().service(),
+                uploadCoordinator
         );
-        WaypointCommand waypointCommand = new WaypointCommand(waypointServer, messageSender, permissionManager);
+        WaypointCommand waypointCommand = new WaypointCommand(waypointServer, messageSender, permissionManager, uploadCoordinator);
 
         FabricLoader fabricLoader = FabricLoader.getInstance();
         if (fabricLoader.isModLoaded("fabric-permissions-api-v0")) {
@@ -106,6 +116,9 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         ServerPlayNetworking.registerGlobalReceiver(WaypointEditRequestC2SPayload.ID, (payload, context) ->
                 c2sPacketHandler.onWaypointEditRequest(context.player(), payload.request())
         );
+        ServerPlayNetworking.registerGlobalReceiver(UploadChunkC2SPayload.ID, (uploadChunkC2SPayload, context) ->
+                c2sPacketHandler.onUploadChunk(context.player(), uploadChunkC2SPayload.uploadChunkBuffer())
+        );
         //?} else if fabric {
         /*ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (packet, player, responseSender) ->
                 c2sPacketHandler.onClientUpdateRequest(player, packet.clientUpdateRequestBuffer()
@@ -153,6 +166,10 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         //$ payload_s2c_registry_swap
         clientboundPlay
         ().register(WaypointListUpdateS2CPayload.ID, WaypointListUpdateS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.
+        //$ payload_s2c_registry_swap
+        clientboundPlay
+        ().register(UploadRequestS2CPayload.ID, UploadRequestS2CPayload.PACKET_CODEC);
 
         PayloadTypeRegistry.
         //$ payload_c2s_registry_swap
@@ -166,6 +183,10 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         //$ payload_c2s_registry_swap
         serverboundPlay
         ().register(WaypointEditRequestC2SPayload.ID, WaypointEditRequestC2SPayload.PACKET_CODEC);
+        PayloadTypeRegistry.
+        //$ payload_c2s_registry_swap
+        serverboundPlay
+        ().register(UploadChunkC2SPayload.ID, UploadChunkC2SPayload.PACKET_CODEC);
         //?}
     }
 

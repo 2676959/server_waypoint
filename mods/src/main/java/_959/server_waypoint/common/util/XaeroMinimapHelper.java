@@ -35,8 +35,8 @@ public class XaeroMinimapHelper {
     }
 
     public static MinimapWorld getMinimapWorld(MinimapSession session, ResourceKey<Level> dimKey) {
-        String dimId = session.getDimensionHelper().getDimensionDirectoryName(dimKey);
         MinimapWorldManager manager = session.getWorldManager();
+        String dimId = session.getDimensionHelper().getDimensionDirectoryName(dimKey);
         XaeroPath root = manager.getAutoRootContainer().getPath();
         String node = getMinimapWorldNode(session, dimKey);
         XaeroPath fullPath = root.resolve(dimId).resolve(node);

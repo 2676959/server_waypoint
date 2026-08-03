@@ -17,6 +17,7 @@ public interface PlatformMessageSender<S, P> {
     void sendError(S source, Component component);
     void sendPacket(S source, MessageBuffer packet);
     void sendPlayerPacket(P player, MessageBuffer packet);
+    void broadcastPacket(MessageBuffer packet);
     Iterable<? extends P> getBroadcastPlayers(S source);
     default Iterable<? extends P> getBroadcastPlayersFromPlayer(P player) {
         return List.of(player);

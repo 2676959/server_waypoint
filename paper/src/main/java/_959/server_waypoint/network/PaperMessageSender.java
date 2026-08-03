@@ -55,6 +55,11 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
     }
 
     @Override
+    public void broadcastPacket(MessageBuffer packet) {
+        this.plugin.getServer().getOnlinePlayers().forEach(player -> sendPlayerPacket(player, packet));
+    }
+
+    @Override
     public void sendPacket(CommandSourceStack source, MessageBuffer packet) {
         Entity entity = source.getExecutor();
         if (entity instanceof Player player) {

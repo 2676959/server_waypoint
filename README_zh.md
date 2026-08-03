@@ -43,6 +43,11 @@
 - `/wp add` 添加新路径点。无法添加同名路径点。会提示用户使用 `/wp edit` 替换现有路径点。
   - `/wp add <维度> <列表>` 添加一个路径点列表。
 - `/wp download` 下载路径点并添加到 Xaero 小地图（需客户端安装本模组才生效）。
+- `/wp upload` 从执行玩家客户端上的 Xaero 小地图导入普通、已启用且非临时的路径点。需要客户端模组和 Xaero 小地图。
+  - `/wp upload <维度> [<列表> [<路径点>]]` 可将导入限制为一个维度、路径点集或路径点。
+  - 默认模式（或 `/wp upload force server`）仅添加服务器上不存在的路径点；同名但属性不同的路径点会被报告为冲突，并保留服务器版本。
+  - `/wp upload force local [<维度> [<列表> [<路径点>]]]` 会让本地 Xaero 路径点覆盖冲突项，但不会删除服务器路径点。
+  - `/wp upload force local delete [<维度> [<列表> [<路径点>]]]` 会将所选范围内的本地数据镜像到服务器，并删除 Xaero 小地图中不存在的服务器路径点或路径点集。
 - `/wp edit` 编辑路径点。
 - `/wp list` 列出当前维度中的路径点。可使用 `all`、维度，或维度加列表名称来更改范围。结果按照服务端配置的每页数量分页（默认 10 个），并提供可点击的排序和翻页按钮。
   - 添加 `search <查询内容>` 可按路径点名称筛选。
@@ -116,6 +121,8 @@
   修改执行命令所需的[原版权限等级](https://minecraft.wiki/w/Permission_level)。
   
   这将被 [LuckPerms](https://modrinth.com/plugin/luckperms) 设置的权限覆盖。
+
+  上传默认需要等级 2。具有破坏性的 `force local delete` 需要等级 4，也可通过 `server_waypoint.command.upload.delete` 单独授予；普通上传使用 `server_waypoint.command.upload`。
   
   默认值：
   ```json5
@@ -132,7 +139,11 @@
       // /wp tp
       "tp": 2,
       // /wp reload
-      "reload": 2
+      "reload": 2,
+      // /wp upload
+      "upload": 2,
+      // /wp upload force local delete
+      "uploadDelete": 4
     }
   }
 - ### 功能 Features
@@ -178,7 +189,7 @@
 - #### 自动同步至Xaero的小地图模组
   默认值：`true`
   
-  需要安装Xaero的小地图模组。
+  需要安装Xaero的小地图模组。服务端管理的 Xaero 路径点集合使用内部 `sw␟` 前缀，因此自动同步仅更新这些集合并保留个人集合；上传时会将这些管理名称映射回服务端的列表和路径点名称。
 - #### 手动同步至Xaero的小地图模组
   默认值：`无`
 

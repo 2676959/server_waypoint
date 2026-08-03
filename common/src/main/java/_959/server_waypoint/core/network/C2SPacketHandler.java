@@ -10,6 +10,7 @@ import _959.server_waypoint.core.edit.EditTarget;
 import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.core.network.buffer.*;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -28,17 +29,20 @@ public class C2SPacketHandler<S, K, P> {
     private final WaypointServerCore waypointServer;
     private final PermissionManager<S, K, P> permissionManager;
     private final NavigationService<P> navigationService;
+    private final UploadCoordinator<P> uploadCoordinator;
 
     public C2SPacketHandler(
             PlatformMessageSender<S, P> messageSender,
             WaypointServerCore waypointServerCore,
             PermissionManager<S, K, P> permissionManager,
-            NavigationService<P> navigationService
+            NavigationService<P> navigationService,
+            UploadCoordinator<P> uploadCoordinator
     ) {
         this.sender = messageSender;
         this.waypointServer = waypointServerCore;
         this.permissionManager = permissionManager;
         this.navigationService = navigationService;
+        this.uploadCoordinator = uploadCoordinator;
     }
 
     public void onClientHandshake(P player, ClientHandshakeBuffer buffer) {
@@ -193,5 +197,9 @@ public class C2SPacketHandler<S, K, P> {
                 waypoint,
                 revision
         ));
+    }
+
+    public void onUploadChunk(P player, UploadChunkBuffer buffer) {
+        this.uploadCoordinator.onUploadChunk(player, buffer);
     }
 }

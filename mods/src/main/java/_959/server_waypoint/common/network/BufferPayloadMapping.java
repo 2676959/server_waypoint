@@ -20,6 +20,8 @@ public class BufferPayloadMapping {
             case WAYPOINT_EDIT_RESULT_CHANNEL -> new WaypointEditResultS2CPayload((WaypointEditResultBuffer) packet);
             case WAYPOINT_LIST_UPDATE_CHANNEL -> new WaypointListUpdateS2CPayload((WaypointListUpdateBuffer) packet);
             case XAEROS_WORLD_ID_CHANNEL -> new XaerosWorldIdS2CPayload((XaerosWorldIdBuffer) packet);
+            case UPLOAD_REQUEST_CHANNEL -> new UploadRequestS2CPayload((UploadRequestBuffer) packet);
+            case UPLOAD_CHUNK_CHANNEL -> new UploadChunkC2SPayload((UploadChunkBuffer) packet);
         };
     }
 }

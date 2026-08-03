@@ -2,6 +2,8 @@ package _959.server_waypoint.util;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.upload.UploadScope;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,6 +72,24 @@ public class StringCommandBuilder {
 
     public static String navigateStatusCmd() {
         return WAYPOINT_COMMAND_WITH_SLASH + ' ' + NAVIGATE_COMMAND + ' ' + STATUS_COMMAND;
+    }
+
+    public static String uploadLocalCmd(UploadRequestBuffer request) {
+        StringBuilder command = new StringBuilder(WAYPOINT_COMMAND_WITH_SLASH)
+                .append(' ').append(UPLOAD_COMMAND)
+                .append(" force local");
+        if (request.scope() == UploadScope.WORLD) {
+            return command.toString();
+        }
+        command.append(' ').append(request.dimensionNames().getFirst());
+        if (request.scope() == UploadScope.DIMENSION) {
+            return command.toString();
+        }
+        command.append(' ').append(StringArgumentType.escapeIfRequired(request.listName()));
+        if (request.scope() == UploadScope.LIST) {
+            return command.toString();
+        }
+        return command.append(' ').append(StringArgumentType.escapeIfRequired(request.waypointName())).toString();
     }
 
     private static String selectorCmd(

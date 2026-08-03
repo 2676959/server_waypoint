@@ -108,6 +108,14 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
     }
 
     @Override
+    public void broadcastPacket(MessageBuffer packet) {
+        if (WaypointServerMod.MINECRAFT_SERVER != null) {
+            WaypointServerMod.MINECRAFT_SERVER.getPlayerList().getPlayers()
+                    .forEach(player -> sendPlayerPacket(player, packet));
+        }
+    }
+
+    @Override
     public void sendPlayerPacket(ServerPlayer player, MessageBuffer packet) {
         //? if fabric {
         ServerPlayNetworking.send(player, getPayload(packet));

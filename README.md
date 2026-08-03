@@ -45,6 +45,11 @@ Optional:
 - `/wp download` download waypoints and add to Xaero's Minimap (will not work without client installation).
 - `/wp details list <dimension> <list-identifier>` and `/wp details waypoint <dimension> <list-identifier> <waypoint-identifier>` show every property and its available actions.
 - `/wp edit list ...` and `/wp edit waypoint ...` set one property at a time or clear an optional property. Run `/wp help edit` for the complete grammar.
+- `/wp upload` import normal, enabled, non-temporary waypoints from Xaero's Minimap on the executing player's client. Requires the client mod and Xaero's Minimap.
+  - `/wp upload <dimension> [<list> [<waypoint>]]` restricts the import to a dimension, waypoint set, or waypoint.
+  - The default (or `/wp upload force server`) only adds missing server waypoints. An existing waypoint with the same name but different properties is reported as a conflict and keeps the server version.
+  - `/wp upload force local [<dimension> [<list> [<waypoint>]]]` makes the local Xaero waypoint win conflicts without deleting server waypoints.
+  - `/wp upload force local delete [<dimension> [<list> [<waypoint>]]]` mirrors local data into the selected scope, deleting server waypoints or waypoint sets that are absent in Xaero's Minimap.
 - `/wp list` lists waypoints in the current dimension. Use `all`, a dimension, or a dimension plus list name to change the scope. Results are split using the server's configured page limit (10 by default), with clickable sorting and page controls.
   - Add `search <query>` to filter by waypoint name.
   - Add `sort <default|name|distance|color>` and, for non-default sorts, optionally `order <ascending|descending>` to sort the result.
@@ -137,6 +142,8 @@ Some changes made in `config.json` may take effects after server restarts.
   Changes the vanilla [permission level](https://minecraft.wiki/w/Permission_level) required to execute the command.
   
   This will be overridden by the permission set by [LuckPerms](https://modrinth.com/plugin/luckperms).
+
+  Upload defaults to level 2. The destructive `force local delete` mode requires level 4 and can be granted separately with `server_waypoint.command.upload.delete`; normal upload uses `server_waypoint.command.upload`.
   
   Default value:
   ```json5
@@ -153,7 +160,11 @@ Some changes made in `config.json` may take effects after server restarts.
       // /wp tp
       "tp": 2,
       // /wp reload
-      "reload": 2
+      "reload": 2,
+      // /wp upload
+      "upload": 2,
+      // /wp upload force local delete
+      "uploadDelete": 4
     }
   }
   ```
@@ -202,6 +213,7 @@ Some changes made in `config.json` may take effects after server restarts.
   Default value: `true`
 
   Requires Xaero's Minimap mod installed.
+  Server-managed Xaero waypoint sets use an internal `sw␟` prefix, so automatic sync updates only those sets and preserves personal Xaero waypoint sets. Upload maps these managed names back to their server list and waypoint names.
 - #### Manually Sync to Xaero's Minimap
   Default value: `None`
   

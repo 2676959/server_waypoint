@@ -1,6 +1,7 @@
 package _959.server_waypoint.common.client.handlers;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.integrations.XaerosMinimapWaypointHelper;
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.core.network.buffer.*;
@@ -55,6 +56,18 @@ public class S2CPayloadHandler {
         @Override
         public void bufferHandler(UpdatesBundleBuffer buffer) {
             WaypointClientMod.getInstance().onUpdatesBundle(buffer);
+        }
+    }
+
+    public static class UploadRequestHandler implements CustomPayloadHandler<UploadRequestBuffer, UploadRequestS2CPayload> {
+        @Override
+        public UploadRequestBuffer payloadToBuffer(UploadRequestS2CPayload payload) {
+            return payload.uploadRequestBuffer();
+        }
+
+        @Override
+        public void bufferHandler(UploadRequestBuffer buffer) {
+            XaerosMinimapWaypointHelper.uploadToServer(buffer);
         }
     }
 

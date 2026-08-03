@@ -16,6 +16,7 @@ import _959.server_waypoint.common.network.payload.s2c.WaypointModificationS2CPa
 import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WaypointEditResultS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WaypointListUpdateS2CPayload;
+import _959.server_waypoint.common.network.payload.s2c.UploadRequestS2CPayload;
 import com.mojang.blaze3d.platform.InputConstants;
 //? if >= 1.20.5
 import io.netty.buffer.ByteBuf;
@@ -129,6 +130,7 @@ public class ServerWaypointForgeClient {
         S2CPayloadHandler.UpdatesBundleHandler updatesBundleHandler = new S2CPayloadHandler.UpdatesBundleHandler();
         S2CPayloadHandler.WaypointEditResultHandler waypointEditResultHandler = new S2CPayloadHandler.WaypointEditResultHandler();
         S2CPayloadHandler.WaypointListUpdateHandler waypointListUpdateHandler = new S2CPayloadHandler.WaypointListUpdateHandler();
+        S2CPayloadHandler.UploadRequestHandler uploadRequestHandler = new S2CPayloadHandler.UploadRequestHandler();
 
         registerClientPayload(WaypointListS2CPayload.class, 0, /*? if >= 1.20.5 {*/ WaypointListS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointListS2CPayload::new *//*?}*/, waypointListHandler);
         registerClientPayload(DimensionWaypointS2CPayload.class, 1, /*? if >= 1.20.5 {*/ DimensionWaypointS2CPayload.PACKET_CODEC /*?} else {*/ /*DimensionWaypointS2CPayload::new *//*?}*/, dimensionWaypointHandler);
@@ -138,6 +140,9 @@ public class ServerWaypointForgeClient {
         registerClientPayload(ServerHandshakeS2CPayload.class, 5, /*? if >= 1.20.5 {*/ ServerHandshakeS2CPayload.PACKET_CODEC /*?} else {*/ /*ServerHandshakeS2CPayload::new *//*?}*/, serverHandshakeHandler);
         registerClientPayload(WaypointEditResultS2CPayload.class, 9, /*? if >= 1.20.5 {*/ WaypointEditResultS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointEditResultS2CPayload::new *//*?}*/, waypointEditResultHandler);
         registerClientPayload(WaypointListUpdateS2CPayload.class, 10, /*? if >= 1.20.5 {*/ WaypointListUpdateS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointListUpdateS2CPayload::new *//*?}*/, waypointListUpdateHandler);
+        //? if >= 1.20.5 {
+        registerClientPayload(UploadRequestS2CPayload.class, 12, UploadRequestS2CPayload.PACKET_CODEC, uploadRequestHandler);
+        //?}
     }
 
     private static <P extends ModPayload> void registerClientPayload(

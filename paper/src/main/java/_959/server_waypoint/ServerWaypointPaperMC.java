@@ -107,12 +107,20 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 textDisplayHandler
         );
         this.navigationService = new NavigationService<>(navigationPlatform, navigationHandlers);
+        UploadCoordinator<Player> uploadCoordinator = new UploadCoordinator<>(
+                waypointServer,
+                sender::sendPlayerMessage,
+                sender::broadcastPacket,
+                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
+                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete())
+        );
 
         waypointCommand = new WaypointCommand(
                 waypointServer,
                 sender,
                 permissionManager,
-                this.navigationService
+                this.navigationService,
+                uploadCoordinator
         );
         ChatMessageListenerPaperMC chatListener = new ChatMessageListenerPaperMC(
                 this,
@@ -131,7 +139,8 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 sender,
                 waypointServer,
                 permissionManager,
-                this.navigationService
+                this.navigationService,
+                uploadCoordinator
         );
         LiteralCommandNode<CommandSourceStack> command = waypointCommand.build();
         // register
@@ -172,11 +181,13 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         messenger.registerOutgoingPluginChannel(this, WAYPOINT_MODIFICATION_CHANNEL.ID);
         messenger.registerOutgoingPluginChannel(this, UPDATES_BUNDLE_CHANNEL.ID);
         messenger.registerOutgoingPluginChannel(this, SERVER_HANDSHAKE_CHANNEL.ID);
+        messenger.registerOutgoingPluginChannel(this, UPLOAD_REQUEST_CHANNEL.ID);
         messenger.registerOutgoingPluginChannel(this, WAYPOINT_EDIT_RESULT_CHANNEL.ID);
         messenger.registerOutgoingPluginChannel(this, WAYPOINT_LIST_UPDATE_CHANNEL.ID);
         // register for incoming
         messenger.registerIncomingPluginChannel(this, CLIENT_HANDSHAKE_CHANNEL.ID, this);
         messenger.registerIncomingPluginChannel(this, CLIENT_UPDATE_REQUEST_CHANNEL.ID, this);
+        messenger.registerIncomingPluginChannel(this, UPLOAD_CHUNK_CHANNEL.ID, this);
         messenger.registerIncomingPluginChannel(this, WAYPOINT_EDIT_REQUEST_CHANNEL.ID, this);
 
         // register for xaero's minimap mod
@@ -201,6 +212,10 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                             player,
                             WaypointEditRequestBufferCodec.decode(buf)
                     );
+                }
+                case ModInfo.MOD_ID + ":" + PayloadID.UPLOAD_CHUNK -> {
+                    ByteBuf buf = Unpooled.copiedBuffer(message);
+                    this.c2sPacketHandler.onUploadChunk(player, UploadChunkCodec.decode(buf));
                 }
             }
         }

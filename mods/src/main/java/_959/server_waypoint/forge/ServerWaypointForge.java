@@ -7,6 +7,7 @@ import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
 import _959.server_waypoint.common.network.payload.c2s.UpdateRequestC2SPayload;
 import _959.server_waypoint.common.network.payload.c2s.WaypointEditRequestC2SPayload;
+import _959.server_waypoint.common.network.payload.c2s.UploadChunkC2SPayload;
 import _959.server_waypoint.common.network.payload.s2c.DimensionWaypointS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.ServerHandshakeS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.UpdatesBundleS2CPayload;
@@ -16,11 +17,13 @@ import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WaypointEditResultS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.WaypointListUpdateS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.XaerosWorldIdS2CPayload;
+import _959.server_waypoint.common.network.payload.s2c.UploadRequestS2CPayload;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.common.server.command.WaypointCommand;
 import _959.server_waypoint.config.Features;
 import _959.server_waypoint.core.IPlatformConfigPath;
 import _959.server_waypoint.core.network.C2SPacketHandler;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.forge.permission.ForgePermissionManager;
 //? if >= 1.20.5
 import io.netty.buffer.ByteBuf;
@@ -69,7 +72,7 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
 @Mod(ModInfo.MOD_ID)
 public class ServerWaypointForge implements IPlatformConfigPath {
-    private static final String NETWORK_PROTOCOL_VERSION = "4";
+    private static final String NETWORK_PROTOCOL_VERSION = "5";
 //? if <= 1.20.1 {
     /*public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
             modId("main"),
@@ -94,13 +97,21 @@ public class ServerWaypointForge implements IPlatformConfigPath {
         ForgePermissionManager permissionManager = new ForgePermissionManager();
         this.chatMessageHandler = new ModChatMessageHandler<>(messageSender, permissionManager) {};
         this.waypointServer = new WaypointServerMod(this.getAssignedConfigDirectory(), this.chatMessageHandler);
+        UploadCoordinator<ServerPlayer> uploadCoordinator = new UploadCoordinator<>(
+                this.waypointServer,
+                messageSender::sendPlayerMessage,
+                messageSender::broadcastPacket,
+                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
+                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete())
+        );
         this.c2sPacketHandler = new C2SPacketHandler<>(
                 messageSender,
                 this.waypointServer,
                 permissionManager,
-                this.waypointServer.navigation().service()
+                this.waypointServer.navigation().service(),
+                uploadCoordinator
         );
-        this.waypointCommand = new WaypointCommand(this.waypointServer, messageSender, permissionManager);
+        this.waypointCommand = new WaypointCommand(this.waypointServer, messageSender, permissionManager, uploadCoordinator);
 
         //? if < 1.21.6
         /*IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();*/
@@ -197,6 +208,9 @@ public class ServerWaypointForge implements IPlatformConfigPath {
             registerS2C(ServerHandshakeS2CPayload.class, 5, /*? if >= 1.20.5 {*/ ServerHandshakeS2CPayload.PACKET_CODEC /*?} else {*/ /*ServerHandshakeS2CPayload::new *//*?}*/, (payload, context) -> {});
             registerS2C(WaypointEditResultS2CPayload.class, 9, /*? if >= 1.20.5 {*/ WaypointEditResultS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointEditResultS2CPayload::new *//*?}*/, (payload, context) -> {});
             registerS2C(WaypointListUpdateS2CPayload.class, 10, /*? if >= 1.20.5 {*/ WaypointListUpdateS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointListUpdateS2CPayload::new *//*?}*/, (payload, context) -> {});
+            //? if >= 1.20.5 {
+            registerS2C(UploadRequestS2CPayload.class, 12, UploadRequestS2CPayload.PACKET_CODEC, (payload, context) -> {});
+            //?}
         }
         if (Features.noXaerosMod) {
             registerS2C(XaerosWorldIdS2CPayload.class, 6, /*? if >= 1.20.5 {*/ XaerosWorldIdS2CPayload.PACKET_CODEC /*?} else {*/ /*XaerosWorldIdS2CPayload::new *//*?}*/, (payload, context) -> {});
@@ -231,6 +245,14 @@ public class ServerWaypointForge implements IPlatformConfigPath {
                 this.c2sPacketHandler.onWaypointEditRequest(player, payload.request());
             }
         });
+        //? if >= 1.20.5 {
+        registerC2S(UploadChunkC2SPayload.class, 13, UploadChunkC2SPayload.PACKET_CODEC, (payload, context) -> {
+            ServerPlayer player = context.getSender();
+            if (player != null) {
+                this.c2sPacketHandler.onUploadChunk(player, payload.uploadChunkBuffer());
+            }
+        });
+        //?}
     }
 
     private static <T extends ModPayload> void registerS2C(

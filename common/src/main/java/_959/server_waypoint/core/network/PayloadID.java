@@ -12,4 +12,6 @@ public class PayloadID {
     public static final String WAYPOINT_EDIT_REQUEST = "waypoint_edit_request";
     public static final String WAYPOINT_EDIT_RESULT = "waypoint_edit_result";
     public static final String WAYPOINT_LIST_UPDATE = "waypoint_list_update";
+    public static final String UPLOAD_REQUEST = "upload_request";
+    public static final String UPLOAD_CHUNK = "upload_chunk";
 }
