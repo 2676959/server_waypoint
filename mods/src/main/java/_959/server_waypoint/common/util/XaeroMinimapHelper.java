@@ -15,6 +15,7 @@ import xaero.hud.path.XaeroPath;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
@@ -30,8 +31,19 @@ public class XaeroMinimapHelper {
     }
 
     public static MinimapWorld getMinimapWorld(MinimapSession session, ResourceKey<Level> dimKey) {
-        String dimId = session.getDimensionHelper().getDimensionDirectoryName(dimKey);
         MinimapWorldManager manager = session.getWorldManager();
+        // Xaero can change the automatic world path after receiving a server level id
+        // or a user-created sub-world connection. Reconstructing that path can point
+        // at a second, unconnected sub-world. For the current dimension, use Xaero's
+        // actual active automatic world instead.
+        if (Minecraft.getInstance().level != null && dimKey.equals(Minecraft.getInstance().level.dimension())) {
+            MinimapWorld autoWorld = manager.getAutoWorld();
+            if (autoWorld != null) {
+                return autoWorld;
+            }
+        }
+
+        String dimId = session.getDimensionHelper().getDimensionDirectoryName(dimKey);
         XaeroPath root = manager.getAutoRootContainer().getPath();
         String node = getMinimapWorldNode(session, dimKey);
         XaeroPath fullPath = root.resolve(dimId).resolve(node);
