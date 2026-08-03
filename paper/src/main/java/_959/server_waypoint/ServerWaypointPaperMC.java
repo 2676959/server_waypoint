@@ -5,6 +5,8 @@ import _959.server_waypoint.core.network.C2SPacketHandler;
 import _959.server_waypoint.core.network.PayloadID;
 import _959.server_waypoint.core.network.codec.ClientHandshakeCodec;
 import _959.server_waypoint.core.network.codec.ClientUpdateRequestBufferCodec;
+import _959.server_waypoint.core.network.codec.UploadChunkCodec;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.listener.ChatMessageListenerPaperMC;
 import _959.server_waypoint.listener.PlayerRegisterChannelListener;
 import _959.server_waypoint.network.PaperChatMessageHandler;
@@ -31,6 +33,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import static _959.server_waypoint.core.network.MessageChannelID.*;
+import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
 public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageListener, IPlatformConfigPath {
     private WaypointServerPlugin waypointServer;
@@ -52,10 +55,17 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         waypointServer = new WaypointServerPlugin(this.getAssignedConfigDirectory(), server.getWorldContainer().toPath());
         PaperMessageSender sender = new PaperMessageSender(this);
         PaperPermissionManager permissionManager = new PaperPermissionManager();
-        waypointCommand = new WaypointCommand(waypointServer, sender, permissionManager);
+        UploadCoordinator<Player> uploadCoordinator = new UploadCoordinator<>(
+                waypointServer,
+                sender::sendPlayerMessage,
+                sender::broadcastPacket,
+                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
+                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete())
+        );
+        waypointCommand = new WaypointCommand(waypointServer, sender, permissionManager, uploadCoordinator);
         ChatMessageListenerPaperMC chatListener = new ChatMessageListenerPaperMC(new PaperChatMessageHandler(server, sender, permissionManager));
         PlayerRegisterChannelListener channelRegisterListener = new PlayerRegisterChannelListener();
-        this.c2sPacketHandler = new C2SPacketHandler<>(sender, waypointServer);
+        this.c2sPacketHandler = new C2SPacketHandler<>(sender, waypointServer, uploadCoordinator);
         LiteralCommandNode<CommandSourceStack> command = waypointCommand.build();
         // register
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands ->
@@ -89,9 +99,11 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         messenger.registerOutgoingPluginChannel(this, WAYPOINT_MODIFICATION_CHANNEL.ID);
         messenger.registerOutgoingPluginChannel(this, UPDATES_BUNDLE_CHANNEL.ID);
         messenger.registerOutgoingPluginChannel(this, SERVER_HANDSHAKE_CHANNEL.ID);
+        messenger.registerOutgoingPluginChannel(this, UPLOAD_REQUEST_CHANNEL.ID);
         // register for incoming
         messenger.registerIncomingPluginChannel(this, CLIENT_HANDSHAKE_CHANNEL.ID, this);
         messenger.registerIncomingPluginChannel(this, CLIENT_UPDATE_REQUEST_CHANNEL.ID, this);
+        messenger.registerIncomingPluginChannel(this, UPLOAD_CHUNK_CHANNEL.ID, this);
 
         // register for xaero's minimap mod
         messenger.registerOutgoingPluginChannel(this, XAEROS_WORLD_ID_CHANNEL.ID);
@@ -108,6 +120,10 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 case ModInfo.MOD_ID + ":" + PayloadID.CLIENT_UPDATE_REQUEST -> {
                     ByteBuf buf = Unpooled.copiedBuffer(message);
                     this.c2sPacketHandler.onClientUpdateRequest(player, ClientUpdateRequestBufferCodec.decode(buf));
+                }
+                case ModInfo.MOD_ID + ":" + PayloadID.UPLOAD_CHUNK -> {
+                    ByteBuf buf = Unpooled.copiedBuffer(message);
+                    this.c2sPacketHandler.onUploadChunk(player, UploadChunkCodec.decode(buf));
                 }
             }
         }

@@ -6,12 +6,14 @@ import _959.server_waypoint.common.network.ModChatMessageHandler;
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
 import _959.server_waypoint.common.network.payload.c2s.UpdateRequestC2SPayload;
+import _959.server_waypoint.common.network.payload.c2s.UploadChunkC2SPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.common.server.command.WaypointCommand;
 import _959.server_waypoint.config.Features;
 import _959.server_waypoint.core.IPlatformConfigPath;
 import _959.server_waypoint.core.network.C2SPacketHandler;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.neoforge.permission.NeoForgePermissionManager;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -46,7 +48,7 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
 @Mod(ModInfo.MOD_ID)
 public class ServerWaypointNeoForge implements IPlatformConfigPath {
-    private static final String NETWORK_PROTOCOL_VERSION = "1";
+    private static final String NETWORK_PROTOCOL_VERSION = "3";
 //? if = 1.20.2 {
     /^public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
             _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, "main"),
@@ -66,8 +68,15 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         NeoForgePermissionManager permissionManager = new NeoForgePermissionManager();
         this.chatMessageHandler = new ModChatMessageHandler<>(messageSender, permissionManager) {};
         this.waypointServer = new WaypointServerMod(this.getAssignedConfigDirectory(), this.chatMessageHandler);
-        this.c2sPacketHandler = new C2SPacketHandler<>(messageSender, this.waypointServer);
-        this.waypointCommand = new WaypointCommand(this.waypointServer, messageSender, permissionManager);
+        UploadCoordinator<ServerPlayer> uploadCoordinator = new UploadCoordinator<>(
+                this.waypointServer,
+                messageSender::sendPlayerMessage,
+                messageSender::broadcastPacket,
+                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
+                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete())
+        );
+        this.c2sPacketHandler = new C2SPacketHandler<>(messageSender, this.waypointServer, uploadCoordinator);
+        this.waypointCommand = new WaypointCommand(this.waypointServer, messageSender, permissionManager, uploadCoordinator);
 
         this.configureLoadedMods();
 //? if = 1.20.2 {
@@ -118,6 +127,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
             registrar.playToClient(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC, (payload, context) -> {});
             registrar.playToClient(UpdatesBundleS2CPayload.ID, UpdatesBundleS2CPayload.PACKET_CODEC, (payload, context) -> {});
             registrar.playToClient(ServerHandshakeS2CPayload.ID, ServerHandshakeS2CPayload.PACKET_CODEC, (payload, context) -> {});
+            registrar.playToClient(UploadRequestS2CPayload.ID, UploadRequestS2CPayload.PACKET_CODEC, (payload, context) -> {});
         }
         if (Features.noXaerosMod) {
             registrar.playToClient(XaerosWorldIdS2CPayload.ID, XaerosWorldIdS2CPayload.PACKET_CODEC, (payload, context) -> {});
@@ -128,6 +138,9 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         );
         registrar.playToServer(UpdateRequestC2SPayload.ID, UpdateRequestC2SPayload.PACKET_CODEC, (payload, context) ->
                 context.enqueueWork(() -> this.c2sPacketHandler.onClientUpdateRequest((ServerPlayer) context.player(), payload.clientUpdateRequestBuffer()))
+        );
+        registrar.playToServer(UploadChunkC2SPayload.ID, UploadChunkC2SPayload.PACKET_CODEC, (payload, context) ->
+                context.enqueueWork(() -> this.c2sPacketHandler.onUploadChunk((ServerPlayer) context.player(), payload.uploadChunkBuffer()))
         );
     }
 //?} elif = 1.20.4 {

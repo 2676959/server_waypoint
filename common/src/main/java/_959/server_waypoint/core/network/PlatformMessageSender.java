@@ -14,6 +14,7 @@ public interface PlatformMessageSender<S, P> {
     void sendPlayerMessage(P player, Component component);
     void sendError(S source, Component component);
     void broadcastWaypointModification(S source, WaypointModificationBuffer modification);
+    void broadcastPacket(MessageBuffer packet);
     void sendPacket(S source, MessageBuffer packet);
     void sendPlayerPacket(P player, MessageBuffer packet);
     default Component getModificationMessage(Component senderName, WaypointModificationBuffer modification) {

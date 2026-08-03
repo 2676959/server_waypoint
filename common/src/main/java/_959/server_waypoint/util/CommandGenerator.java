@@ -1,6 +1,8 @@
 package _959.server_waypoint.util;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.upload.UploadScope;
 
 import static _959.server_waypoint.command.CoreWaypointCommand.*;
 import static _959.server_waypoint.util.ColorUtils.rgbToNameOrHexCode;
@@ -99,5 +101,27 @@ public class CommandGenerator {
         sb.append(' ').append(dimensionName);
         sb.append(" \"").append(listName).append('"');
         return sb.toString();
+    }
+
+    public static String uploadLocalCmd(UploadRequestBuffer request) {
+        StringBuilder sb = new StringBuilder(WAYPOINT_COMMAND_WITH_SLASH)
+                .append(' ').append(UPLOAD_COMMAND)
+                .append(" force local");
+        if (request.scope() == UploadScope.WORLD) {
+            return sb.toString();
+        }
+        sb.append(' ').append(request.dimensionNames().get(0));
+        if (request.scope() == UploadScope.DIMENSION) {
+            return sb.toString();
+        }
+        sb.append(' ').append(quoted(request.listName()));
+        if (request.scope() == UploadScope.LIST) {
+            return sb.toString();
+        }
+        return sb.append(' ').append(quoted(request.waypointName())).toString();
+    }
+
+    private static String quoted(String value) {
+        return "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
     }
 }

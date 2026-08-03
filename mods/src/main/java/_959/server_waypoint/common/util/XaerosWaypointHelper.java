@@ -6,6 +6,7 @@ import xaero.hud.minimap.waypoint.WaypointColor;
 import xaero.hud.minimap.waypoint.WaypointPurpose;
 
 import static _959.server_waypoint.util.ColorUtils.rgbToClosestColorIndex;
+import static _959.server_waypoint.util.ColorUtils.colorIndexToRgb;
 
 //? if >= 1.21.5 {
 import xaero.hud.minimap.waypoint.WaypointVisibilityType;
@@ -30,5 +31,18 @@ public class XaerosWaypointHelper {
         waypoint.setRotation(true);
         waypoint.setVisibility(simpleWaypoint.global() ? WaypointVisibilityType.GLOBAL : WaypointVisibilityType.LOCAL);
         return waypoint;
+    }
+
+    public static SimpleWaypoint xaerosWaypointToSimpleWaypoint(Waypoint waypoint) {
+        return new SimpleWaypoint(
+                waypoint.getName(),
+                waypoint.getInitials(),
+                waypoint.getX(),
+                waypoint.getY(),
+                waypoint.getZ(),
+                colorIndexToRgb(waypoint.getColor()),
+                waypoint.getYaw(),
+                waypoint.isGlobal()
+        );
     }
 }

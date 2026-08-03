@@ -5,10 +5,13 @@ import _959.server_waypoint.core.network.buffer.MessageBuffer;
 import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.translation.GlobalTranslator;
 import org.bukkit.Server;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Locale;
 
 @SuppressWarnings("UnstableApiUsage")
 public class PaperMessageSender implements PlatformMessageSender<CommandSourceStack, Player> {
@@ -20,17 +23,19 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
 
     @Override
     public void sendMessage(CommandSourceStack source, Component component) {
-        source.getSender().sendMessage(component);
+        Entity executor = source.getExecutor();
+        Locale locale = executor instanceof Player player ? player.locale() : Locale.getDefault();
+        source.getSender().sendMessage(GlobalTranslator.render(component, locale));
     }
 
     @Override
     public void sendPlayerMessage(Player player, Component component) {
-        player.sendMessage(component);
+        player.sendMessage(GlobalTranslator.render(component, player.locale()));
     }
 
     @Override
     public void sendError(CommandSourceStack source, Component component) {
-        source.getSender().sendMessage(component);
+        sendMessage(source, component);
     }
 
     @Override
@@ -38,6 +43,11 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
         Server server = source.getSender().getServer();
         server.sendMessage(this.getModificationMessage(source.getSender().name(), modification));
         server.sendPluginMessage(this.plugin, modification.getChannelId().toString(), modification.encode());
+    }
+
+    @Override
+    public void broadcastPacket(MessageBuffer packet) {
+        this.plugin.getServer().getOnlinePlayers().forEach(player -> sendPlayerPacket(player, packet));
     }
 
     @Override

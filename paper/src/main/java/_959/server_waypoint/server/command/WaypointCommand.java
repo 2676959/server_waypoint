@@ -5,6 +5,7 @@ import _959.server_waypoint.command.CoreWaypointCommand;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -23,11 +24,13 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 @SuppressWarnings("UnstableApiUsage")
 public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, Player, World, BlockPositionResolver> {
 
-    public WaypointCommand(WaypointServerCore waypointServer, PlatformMessageSender<CommandSourceStack, Player> sender, PermissionManager<CommandSourceStack, String, Player> permissionManager) {
-        super(waypointServer, sender, permissionManager, ArgumentTypes::world, ArgumentTypes::blockPosition);
+    public WaypointCommand(WaypointServerCore waypointServer, PlatformMessageSender<CommandSourceStack, Player> sender, PermissionManager<CommandSourceStack, String, Player> permissionManager, UploadCoordinator<Player> uploadCoordinator) {
+        super(waypointServer, sender, permissionManager, uploadCoordinator, ArgumentTypes::world, ArgumentTypes::blockPosition);
     }
 
     @Override
@@ -92,5 +95,10 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     @Override
     protected Message getMessageFromComponent(Component component) {
         return MessageComponentSerializer.message().serialize(component);
+    }
+
+    @Override
+    protected List<String> getAvailableDimensionNames(CommandSourceStack source) {
+        return source.getSender().getServer().getWorlds().stream().map(world -> world.getKey().asString()).toList();
     }
 }

@@ -1,6 +1,7 @@
 package _959.server_waypoint.text;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
@@ -26,6 +27,25 @@ public class TextButton {
                 .hoverEvent(HoverEvent.showText(hoverText))
                 .build();
         return text("["+symbol+"]").style(btnStyle);
+    }
+
+    private static Component buildRunButton(NamedTextColor color, String command, String label, Component hoverText) {
+        Style btnStyle = Style.style()
+                .decoration(TextDecoration.BOLD, TextDecoration.State.TRUE)
+                .color(color)
+                .clickEvent(ClickEvent.runCommand(command))
+                .hoverEvent(HoverEvent.showText(hoverText))
+                .build();
+        return text("[" + label + "]").style(btnStyle);
+    }
+
+    public static Component uploadPreferLocalButton(UploadRequestBuffer request) {
+        return buildRunButton(
+                NamedTextColor.YELLOW,
+                uploadLocalCmd(request),
+                "FORCE LOCAL",
+                Component.translatable("button.upload.prefer.local")
+        );
     }
 
     public static Component replaceButton(String dimensionName, String listName, SimpleWaypoint waypoint) {

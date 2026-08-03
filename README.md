@@ -43,6 +43,11 @@ Optional:
 - `/wp add` add a new waypoint. No duplicate name allowed. Prompts user to use `/wp edit` to replace the existing one.
   - `/wp add <dimension> <list>` add a waypoint list.
 - `/wp download` download waypoints and add to Xaero's Minimap (will not work without client installation).
+- `/wp upload` import normal, enabled, non-temporary waypoints from Xaero's Minimap on the executing player's client. Requires the client mod and Xaero's Minimap.
+  - `/wp upload <dimension> [<list> [<waypoint>]]` restricts the import to a dimension, waypoint set, or waypoint.
+  - The default (or `/wp upload force server`) only adds missing server waypoints. An existing waypoint with the same name but different properties is reported as a conflict and keeps the server version.
+  - `/wp upload force local [<dimension> [<list> [<waypoint>]]]` makes the local Xaero waypoint win conflicts without deleting server waypoints.
+  - `/wp upload force local delete [<dimension> [<list> [<waypoint>]]]` mirrors local data into the selected scope, deleting server waypoints or waypoint sets that are absent in Xaero's Minimap.
 - `/wp edit` edit a waypoint.
 - `/wp list` list all waypoints. Shows all waypoints in a tree hierarchy. Allowing user to click to teleport, edit and remove the waypoint.
 - `/wp reload` reload `config.json` and translation files in `/config/server_waypoint/lang`, feature `sendXaerosWorldId` requires restarting to take effect.
@@ -110,6 +115,8 @@ Some changes made in `config.json` may take effects after server restarts.
   Changes the vanilla [permission level](https://minecraft.wiki/w/Permission_level) required to execute the command.
   
   This will be overridden by the permission set by [LuckPerms](https://modrinth.com/plugin/luckperms).
+
+  Upload defaults to level 2. The destructive `force local delete` mode requires level 4 and can be granted separately with `server_waypoint.command.upload.delete`; normal upload uses `server_waypoint.command.upload`.
   
   Default value:
   ```json5
@@ -124,7 +131,11 @@ Some changes made in `config.json` may take effects after server restarts.
       // /wp tp
       "tp": 2,
       // /wp reload
-      "reload": 2
+      "reload": 2,
+      // /wp upload
+      "upload": 2,
+      // /wp upload force local delete
+      "uploadDelete": 4
     }
   }
   ```
@@ -173,6 +184,7 @@ Some changes made in `config.json` may take effects after server restarts.
   Default value: `true`
 
   Requires Xaero's Minimap mod installed.
+  Server waypoint sets with the same names are replaced during automatic sync. Use distinct set names when importing personal Xaero waypoints that should remain independent from server-managed sets.
 - #### Manually Sync to Xaero's Minimap
   Default value: `None`
   

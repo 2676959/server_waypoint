@@ -17,6 +17,8 @@ public class BufferPayloadMapping {
             case CLIENT_UPDATE_REQUEST_CHANNEL -> new UpdateRequestC2SPayload((ClientUpdateRequestBuffer) packet);
             case UPDATES_BUNDLE_CHANNEL -> new UpdatesBundleS2CPayload((UpdatesBundleBuffer) packet);
             case XAEROS_WORLD_ID_CHANNEL -> new XaerosWorldIdS2CPayload((XaerosWorldIdBuffer) packet);
+            case UPLOAD_REQUEST_CHANNEL -> new UploadRequestS2CPayload((UploadRequestBuffer) packet);
+            case UPLOAD_CHUNK_CHANNEL -> new UploadChunkC2SPayload((UploadChunkBuffer) packet);
         };
     }
 }

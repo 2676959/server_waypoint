@@ -60,6 +60,18 @@ public class S2CPayloadHandler {
         }
     }
 
+    public static class UploadRequestHandler implements CustomPayloadHandler<UploadRequestBuffer, UploadRequestS2CPayload> {
+        @Override
+        public UploadRequestBuffer payloadToBuffer(UploadRequestS2CPayload payload) {
+            return payload.uploadRequestBuffer();
+        }
+
+        @Override
+        public void bufferHandler(UploadRequestBuffer buffer) {
+            HandlerForXaerosMinimap.uploadToServer(buffer);
+        }
+    }
+
     public static class WaypointListHandler implements CustomPayloadHandler<WaypointListBuffer, WaypointListS2CPayload> {
         @Override
         public WaypointListBuffer payloadToBuffer(WaypointListS2CPayload payload) {

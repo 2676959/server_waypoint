@@ -5,6 +5,7 @@ import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.network.buffer.WaypointListBuffer;
 import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
 import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
@@ -12,6 +13,9 @@ import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
+import _959.server_waypoint.core.network.upload.UploadConflictPolicy;
+import _959.server_waypoint.core.network.upload.UploadScope;
 import _959.server_waypoint.text.TextButton;
 import _959.server_waypoint.util.TriConsumer;
 import com.mojang.brigadier.Command;
@@ -64,6 +68,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private final PermissionManager<S, K, P> permissionManager;
     private final Supplier<ArgumentType<D>> dimensionArgumentProvider;
     private final Supplier<ArgumentType<B>> blockPosArgumentProvider;
+    private final UploadCoordinator<P> uploadCoordinator;
     private final SuggestionProvider<S> WAYPOINT_NAME_SUGGESTION = new WaypointNameSuggestion();
     private final SuggestionProvider<S> WAYPOINT_LIST_SUGGESTION = new WaypointListSuggestion();
     private final SuggestionProvider<S> NAME_INITIALS_SUGGESTION = new NameInitialsSuggestion();
@@ -77,6 +82,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String REMOVE_COMMAND = "remove";
     public static final String LIST_COMMAND = "list";
     public static final String DOWNLOAD_COMMAND = "download";
+    public static final String UPLOAD_COMMAND = "upload";
+    public static final String UPLOAD_FORCE_COMMAND = "force";
+    public static final String UPLOAD_SERVER_COMMAND = "server";
+    public static final String UPLOAD_LOCAL_COMMAND = "local";
+    public static final String UPLOAD_DELETE_COMMAND = "delete";
     public static final String TP_COMMAND = "tp";
     public static final String RELOAD_COMMAND = "reload";
     public static final String DIMENSION_ARG = "dimension";
@@ -90,12 +100,13 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String VISIBILITY_ARG = "global";
     public static final String RANDOM_COLOR = "random";
 
-    public CoreWaypointCommand(WaypointServerCore waypointServer, PlatformMessageSender<S, P> sender, PermissionManager<S, K, P> permissionManager, Supplier<ArgumentType<D>> dimensionArgument, Supplier<ArgumentType<B>> blockPositionArgument) {
+    public CoreWaypointCommand(WaypointServerCore waypointServer, PlatformMessageSender<S, P> sender, PermissionManager<S, K, P> permissionManager, UploadCoordinator<P> uploadCoordinator, Supplier<ArgumentType<D>> dimensionArgument, Supplier<ArgumentType<B>> blockPositionArgument) {
         this.waypointServer = waypointServer;
         this.sender = sender;
         this.permissionManager = permissionManager;
         this.dimensionArgumentProvider = dimensionArgument;
         this.blockPosArgumentProvider = blockPositionArgument;
+        this.uploadCoordinator = uploadCoordinator;
         this.permissionKeys = permissionManager.keys;
     }
 
@@ -109,6 +120,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     protected abstract String getPlayerName(P player);
     protected abstract void teleportPlayer(S source, P player, D dimensionArgument, WaypointPos pos, int yaw);
     protected abstract Message getMessageFromComponent(Component component);
+    protected abstract List<String> getAvailableDimensionNames(S source);
 
     private boolean hasAddPermission(S source) {
         return this.permissionManager.hasPermission(source, this.permissionKeys.add(), CONFIG.CommandPermission().add());
@@ -128,6 +140,14 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     private boolean hasReloadPermission(S source) {
         return this.permissionManager.hasPermission(source, this.permissionKeys.reload(), CONFIG.CommandPermission().reload());
+    }
+
+    private boolean hasUploadPermission(S source) {
+        return this.permissionManager.hasPermission(source, this.permissionKeys.upload(), CONFIG.CommandPermission().upload());
+    }
+
+    private boolean hasUploadDeletePermission(S source) {
+        return this.permissionManager.hasPermission(source, this.permissionKeys.uploadDelete(), CONFIG.CommandPermission().uploadDelete());
     }
 
     @SuppressWarnings("unchecked")
@@ -381,6 +401,42 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                                             return Command.SINGLE_SUCCESS;
                                                         }
                                                 )
+                                        )
+                                )
+                        )
+                )
+                .then(literal(UPLOAD_COMMAND)
+                        .requires(source -> hasUploadPermission((S) source))
+                        .executes(context -> {
+                            executeUpload((S) context.getSource(), UploadConflictPolicy.SERVER,
+                                    false, UploadScope.WORLD, null, null, null);
+                            return Command.SINGLE_SUCCESS;
+                        })
+                        .then((ArgumentBuilder<Object, ?>) uploadSelectorArguments(UploadConflictPolicy.SERVER, false))
+                        .then(literal(UPLOAD_FORCE_COMMAND)
+                                .then(literal(UPLOAD_SERVER_COMMAND)
+                                        .executes(context -> {
+                                            executeUpload((S) context.getSource(), UploadConflictPolicy.SERVER,
+                                                    false, UploadScope.WORLD, null, null, null);
+                                            return Command.SINGLE_SUCCESS;
+                                        })
+                                        .then((ArgumentBuilder<Object, ?>) uploadSelectorArguments(UploadConflictPolicy.SERVER, false))
+                                )
+                                .then(literal(UPLOAD_LOCAL_COMMAND)
+                                        .executes(context -> {
+                                            executeUpload((S) context.getSource(), UploadConflictPolicy.LOCAL,
+                                                    false, UploadScope.WORLD, null, null, null);
+                                            return Command.SINGLE_SUCCESS;
+                                        })
+                                        .then((ArgumentBuilder<Object, ?>) uploadSelectorArguments(UploadConflictPolicy.LOCAL, false))
+                                        .then(literal(UPLOAD_DELETE_COMMAND)
+                                                .requires(source -> hasUploadDeletePermission((S) source))
+                                                .executes(context -> {
+                                                    executeUpload((S) context.getSource(), UploadConflictPolicy.LOCAL,
+                                                            true, UploadScope.WORLD, null, null, null);
+                                                    return Command.SINGLE_SUCCESS;
+                                                })
+                                                .then((ArgumentBuilder<Object, ?>) uploadSelectorArguments(UploadConflictPolicy.LOCAL, true))
                                         )
                                 )
                         )
@@ -672,6 +728,64 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             this.sender.sendMessage(source, translatable("waypoint.download.waypoint", waypointTextWithTp(waypoint, dimensionName, listName)));
             this.sender.sendPacket(source, new WaypointModificationBuffer(dimensionName, listName, name, waypoint, WaypointModificationType.ADD, waypointList.getSyncNum()));
         });
+    }
+
+    private ArgumentBuilder<S, ?> uploadSelectorArguments(UploadConflictPolicy conflictPolicy, boolean deleteMissing) {
+        return dimensionNode()
+                .executes(context -> {
+                    executeUpload(context.getSource(), conflictPolicy, deleteMissing,
+                            UploadScope.DIMENSION, getArgument(context, DIMENSION_ARG), null, null);
+                    return Command.SINGLE_SUCCESS;
+                })
+                .then(listNameNode()
+                        .executes(context -> {
+                            executeUpload(context.getSource(), conflictPolicy, deleteMissing,
+                                    UploadScope.LIST, getArgument(context, DIMENSION_ARG),
+                                    getString(context, LIST_NAME_ARG), null);
+                            return Command.SINGLE_SUCCESS;
+                        })
+                        .then(waypointNameNode()
+                                .executes(context -> {
+                                    executeUpload(context.getSource(), conflictPolicy, deleteMissing,
+                                            UploadScope.WAYPOINT, getArgument(context, DIMENSION_ARG),
+                                            getString(context, LIST_NAME_ARG),
+                                            getString(context, WAYPOINT_NAME_ARG));
+                                    return Command.SINGLE_SUCCESS;
+                                })
+                        )
+                );
+    }
+
+    private void executeUpload(S source, UploadConflictPolicy conflictPolicy, boolean deleteMissing, UploadScope scope,
+                               D dimensionArgument, String listName, String waypointName) {
+        P player = getPlayer(source);
+        if (player == null) {
+            this.sender.sendError(source, translatable("waypoint.upload.player-only"));
+            return;
+        }
+
+        List<String> dimensions;
+        if (scope == UploadScope.WORLD) {
+            dimensions = getAvailableDimensionNames(source);
+        } else {
+            String dimensionName = toDimensionName(dimensionArgument);
+            if (!isDimensionValid(source, dimensionArgument)) {
+                sendDimensionError(source, dimensionName);
+                return;
+            }
+            dimensions = List.of(dimensionName);
+        }
+        if (dimensions.isEmpty()) {
+            this.sender.sendError(source, translatable("waypoint.upload.request.invalid"));
+            return;
+        }
+
+        UploadRequestBuffer request = this.uploadCoordinator.begin(player, scope, conflictPolicy, deleteMissing,
+                dimensions, listName, waypointName);
+        this.sender.sendPlayerPacket(player, request);
+        this.sender.sendMessage(source, translatable(deleteMissing
+                ? "waypoint.upload.requested.force-delete"
+                : "waypoint.upload.requested"));
     }
 
     private void executeListAll(S source) {

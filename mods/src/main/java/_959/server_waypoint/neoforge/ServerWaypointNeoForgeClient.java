@@ -119,6 +119,7 @@ public class ServerWaypointNeoForgeClient {
         S2CPayloadHandler.WaypointModificationHandler waypointModificationHandler = new S2CPayloadHandler.WaypointModificationHandler();
         S2CPayloadHandler.ServerHandshakeHandler serverHandshakeHandler = new S2CPayloadHandler.ServerHandshakeHandler();
         S2CPayloadHandler.UpdatesBundleHandler updatesBundleHandler = new S2CPayloadHandler.UpdatesBundleHandler();
+        S2CPayloadHandler.UploadRequestHandler uploadRequestHandler = new S2CPayloadHandler.UploadRequestHandler();
         // S2C
         registrar.playToClient(WaypointListS2CPayload.ID, WaypointListS2CPayload.PACKET_CODEC, waypointListHandler::handle);
         registrar.playToClient(DimensionWaypointS2CPayload.ID, DimensionWaypointS2CPayload.PACKET_CODEC, dimensionWaypointHandler::handle);
@@ -126,6 +127,7 @@ public class ServerWaypointNeoForgeClient {
         registrar.playToClient(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC, waypointModificationHandler::handle);
         registrar.playToClient(ServerHandshakeS2CPayload.ID, ServerHandshakeS2CPayload.PACKET_CODEC, serverHandshakeHandler::handle);
         registrar.playToClient(UpdatesBundleS2CPayload.ID, UpdatesBundleS2CPayload.PACKET_CODEC, updatesBundleHandler::handle);
+        registrar.playToClient(UploadRequestS2CPayload.ID, UploadRequestS2CPayload.PACKET_CODEC, uploadRequestHandler::handle);
     }
 //?} elif = 1.20.4 {
     /^public static void registerClientPayloadHandlers(IPayloadRegistrar registrar) {

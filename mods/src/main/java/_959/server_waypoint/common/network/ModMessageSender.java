@@ -5,6 +5,7 @@ package _959.server_waypoint.common.network;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.buffer.MessageBuffer;
 import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
+import _959.server_waypoint.common.server.WaypointServerMod;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -104,6 +105,14 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
                     sendPlayerPacket(player, modification);
                 }
         );
+    }
+
+    @Override
+    public void broadcastPacket(MessageBuffer packet) {
+        if (WaypointServerMod.MINECRAFT_SERVER != null) {
+            WaypointServerMod.MINECRAFT_SERVER.getPlayerList().getPlayers()
+                    .forEach(player -> sendPlayerPacket(player, packet));
+        }
     }
 
     @Override
