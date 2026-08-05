@@ -136,6 +136,7 @@ class CoreWaypointCommandListTest {
         String helpText = plainText(help);
         assertTrue(helpText.contains("/wp list"));
         assertTrue(helpText.contains("/wp download [<dimension> [<list-identifier> [<waypoint-identifier>]]]"));
+        assertTrue(helpText.contains("/wp upload [<dimension> [<list> [<waypoint>]]]"));
         assertTrue(helpText.contains("/wp add"));
         assertTrue(helpText.contains("/wp edit"));
         assertTrue(helpText.contains("/wp navigate"));
@@ -146,6 +147,7 @@ class CoreWaypointCommandListTest {
                 "waypoint.help.title",
                 "waypoint.help.list",
                 "waypoint.help.download",
+                "waypoint.help.upload",
                 "waypoint.help.navigate",
                 "waypoint.help.add",
                 "waypoint.help.edit",
@@ -158,6 +160,7 @@ class CoreWaypointCommandListTest {
         assertEquals(List.of(
                 "/wp list ",
                 "/wp download ",
+                "/wp upload ",
                 "/wp navigate ",
                 "/wp add ",
                 "/wp edit ",
