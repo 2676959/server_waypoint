@@ -1,6 +1,7 @@
 package _959.server_waypoint.core.network.upload;
 
 import _959.server_waypoint.core.WaypointFileManager;
+import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
 import _959.server_waypoint.core.network.buffer.MessageBuffer;
@@ -169,15 +170,12 @@ public final class UploadCoordinator<P> {
     }
 
     private MergeSummary merge(PendingUpload pending) {
-        Map<String, List<WaypointList>> changedListsByDimension = new LinkedHashMap<>();
+        Map<String, Map<String, WaypointList>> changedListsByDimension = new LinkedHashMap<>();
         Map<String, WaypointFileManager> changedManagers = new LinkedHashMap<>();
         MergeSummary summary = new MergeSummary();
 
         for (Map.Entry<UploadListKey, List<SimpleWaypoint>> entry : pending.uploadedWaypoints.entrySet()) {
             UploadListKey key = entry.getKey();
-            WaypointFileManager fileManager = this.waypointServer.getOrCreateWaypointFileManager(key.dimensionName);
-            WaypointList waypointList = fileManager.getWaypointListByName(key.listName);
-            boolean changed = false;
             boolean invalidWaypointFound = false;
 
             for (SimpleWaypoint waypoint : entry.getValue()) {
@@ -186,47 +184,102 @@ public final class UploadCoordinator<P> {
                     invalidWaypointFound = true;
                     continue;
                 }
-                if (waypointList == null) {
-                    waypointList = WaypointList.buildByServer(key.listName);
-                    fileManager.addWaypointList(waypointList);
-                    changed = true;
-                }
-                SimpleWaypoint existing = waypointList.getWaypointByName(waypoint.name());
-                if (existing == null) {
-                    waypointList.addByServer(waypoint);
+                WaypointFilesManagerCore.AddWaypointResult addResult = this.waypointServer.addWaypoint(
+                        key.dimensionName,
+                        key.listName,
+                        waypoint,
+                        ignored -> {
+                        }
+                );
+                if (addResult.status() == WaypointFilesManagerCore.AddWaypointStatus.ADDED) {
                     summary.added++;
-                    changed = true;
-                } else if (existing.compareProperties(
-                        waypoint.name(), waypoint.initials(), waypoint.pos(), waypoint.rgb(), waypoint.yaw(), waypoint.global())) {
+                    markChangedList(
+                            changedManagers,
+                            changedListsByDimension,
+                            key.dimensionName,
+                            addResult.fileManager(),
+                            addResult.waypointList()
+                    );
+                    continue;
+                }
+
+                SimpleWaypoint existing = addResult.waypointSnapshot();
+                if (hasSameProperties(existing, waypoint)) {
                     summary.unchanged++;
-                } else if (pending.request.conflictPolicy() == UploadConflictPolicy.LOCAL) {
-                    existing.copyFrom(waypoint);
-                    waypointList.incSyncNum();
+                    continue;
+                }
+                if (pending.request.conflictPolicy() != UploadConflictPolicy.LOCAL) {
+                    summary.conflicts++;
+                    continue;
+                }
+
+                WaypointFilesManagerCore.UpdateWaypointResult updateResult = this.waypointServer.updateWaypointProperties(
+                        key.dimensionName,
+                        key.listName,
+                        waypoint.name(),
+                        waypoint.name(),
+                        waypoint.displayName(),
+                        waypoint.initials(),
+                        waypoint.pos(),
+                        waypoint.rgb(),
+                        waypoint.yaw(),
+                        waypoint.global(),
+                        waypoint.keywords(),
+                        waypoint.description(),
+                        ignored -> {
+                        }
+                );
+                if (updateResult.status() == WaypointFilesManagerCore.UpdateWaypointStatus.UPDATED) {
                     summary.replaced++;
-                    changed = true;
+                    markChangedList(
+                            changedManagers,
+                            changedListsByDimension,
+                            key.dimensionName,
+                            updateResult.fileManager(),
+                            updateResult.waypointList()
+                    );
+                } else if (updateResult.status() == WaypointFilesManagerCore.UpdateWaypointStatus.IDENTICAL) {
+                    summary.unchanged++;
                 } else {
                     summary.conflicts++;
                 }
             }
 
-            if (pending.request.deleteMissing() && waypointList != null && !invalidWaypointFound) {
+            if (pending.request.deleteMissing() && !invalidWaypointFound) {
                 Set<String> localWaypointNames = new HashSet<>();
                 for (SimpleWaypoint waypoint : entry.getValue()) {
                     if (waypoint != null) {
                         localWaypointNames.add(waypoint.name());
                     }
                 }
-                for (SimpleWaypoint existing : new ArrayList<>(waypointList.simpleWaypoints())) {
+                WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(key.dimensionName);
+                WaypointList waypointList = fileManager == null
+                        ? null
+                        : fileManager.getWaypointListByName(key.listName);
+                if (waypointList == null) {
+                    continue;
+                }
+                for (SimpleWaypoint existing : waypointList.simpleWaypoints()) {
                     if (!localWaypointNames.contains(existing.name())) {
-                        waypointList.remove(existing);
-                        summary.deleted++;
-                        changed = true;
+                        WaypointFilesManagerCore.RemoveWaypointResult removeResult = this.waypointServer.removeWaypoint(
+                                key.dimensionName,
+                                key.listName,
+                                existing.name(),
+                                ignored -> {
+                                }
+                        );
+                        if (removeResult.status() == WaypointFilesManagerCore.RemoveWaypointStatus.REMOVED) {
+                            summary.deleted++;
+                            markChangedList(
+                                    changedManagers,
+                                    changedListsByDimension,
+                                    key.dimensionName,
+                                    removeResult.fileManager(),
+                                    removeResult.waypointList()
+                            );
+                        }
                     }
                 }
-            }
-
-            if (changed) {
-                markChangedList(changedManagers, changedListsByDimension, key.dimensionName, fileManager, waypointList);
             }
         }
 
@@ -236,21 +289,21 @@ public final class UploadCoordinator<P> {
 
         for (Map.Entry<String, WaypointFileManager> entry : changedManagers.entrySet()) {
             try {
-                entry.getValue().saveDimension();
+                this.waypointServer.saveWaypointFile(entry.getValue());
             } catch (IOException e) {
                 WaypointServerCore.LOGGER.error("Failed to save uploaded waypoints for dimension {}", entry.getKey(), e);
                 summary.saveFailed = true;
             }
         }
-        for (Map.Entry<String, List<WaypointList>> entry : changedListsByDimension.entrySet()) {
-            summary.dimensionUpdates.add(new DimensionWaypointBuffer(entry.getKey(), entry.getValue()));
+        for (Map.Entry<String, Map<String, WaypointList>> entry : changedListsByDimension.entrySet()) {
+            summary.dimensionUpdates.add(new DimensionWaypointBuffer(entry.getKey(), List.copyOf(entry.getValue().values())));
         }
         return summary;
     }
 
     private void deleteMissingServerWaypoints(PendingUpload pending,
                                               Map<String, WaypointFileManager> changedManagers,
-                                              Map<String, List<WaypointList>> changedListsByDimension,
+                                              Map<String, Map<String, WaypointList>> changedListsByDimension,
                                               MergeSummary summary) {
         switch (pending.request.scope()) {
             case WORLD, DIMENSION -> {
@@ -294,11 +347,22 @@ public final class UploadCoordinator<P> {
                 boolean localWaypointExists = uploadedWaypoints != null && uploadedWaypoints.stream()
                         .anyMatch(waypoint -> waypoint != null && pending.request.waypointName().equals(waypoint.name()));
                 if (!localWaypointExists) {
-                    SimpleWaypoint serverWaypoint = waypointList.getWaypointByName(pending.request.waypointName());
-                    if (serverWaypoint != null) {
-                        waypointList.remove(serverWaypoint);
+                    WaypointFilesManagerCore.RemoveWaypointResult removeResult = this.waypointServer.removeWaypoint(
+                            dimensionName,
+                            pending.request.listName(),
+                            pending.request.waypointName(),
+                            ignored -> {
+                            }
+                    );
+                    if (removeResult.status() == WaypointFilesManagerCore.RemoveWaypointStatus.REMOVED) {
                         summary.deleted++;
-                        markChangedList(changedManagers, changedListsByDimension, dimensionName, fileManager, waypointList);
+                        markChangedList(
+                                changedManagers,
+                                changedListsByDimension,
+                                dimensionName,
+                                removeResult.fileManager(),
+                                removeResult.waypointList()
+                        );
                     }
                 }
             }
@@ -315,26 +379,38 @@ public final class UploadCoordinator<P> {
         return listNames;
     }
 
-    private static void removeServerList(String dimensionName, WaypointFileManager fileManager, String listName,
-                                         Map<String, WaypointFileManager> changedManagers,
-                                         Map<String, List<WaypointList>> changedListsByDimension,
-                                         MergeSummary summary) {
-        WaypointList serverList = fileManager.getWaypointListByName(listName);
-        if (serverList == null) {
+    private void removeServerList(String dimensionName, WaypointFileManager fileManager, String listName,
+                                  Map<String, WaypointFileManager> changedManagers,
+                                  Map<String, Map<String, WaypointList>> changedListsByDimension,
+                                  MergeSummary summary) {
+        WaypointList removedList = this.waypointServer.removeWaypointListImmediately(dimensionName, listName);
+        if (removedList == null) {
             return;
         }
-        summary.deleted += serverList.size();
-        fileManager.removeWaypointListByName(listName);
+        summary.deleted += removedList.size();
         changedManagers.put(dimensionName, fileManager);
-        changedListsByDimension.computeIfAbsent(dimensionName, ignored -> new ArrayList<>())
-                .add(WaypointList.build(listName, WaypointList.REMOVE_LIST));
+        changedListsByDimension.computeIfAbsent(dimensionName, ignored -> new LinkedHashMap<>())
+                .put(listName, WaypointList.build(listName, WaypointList.REMOVE_LIST));
     }
 
     private static void markChangedList(Map<String, WaypointFileManager> changedManagers,
-                                        Map<String, List<WaypointList>> changedListsByDimension,
+                                        Map<String, Map<String, WaypointList>> changedListsByDimension,
                                         String dimensionName, WaypointFileManager fileManager, WaypointList waypointList) {
         changedManagers.put(dimensionName, fileManager);
-        changedListsByDimension.computeIfAbsent(dimensionName, ignored -> new ArrayList<>()).add(waypointList);
+        changedListsByDimension.computeIfAbsent(dimensionName, ignored -> new LinkedHashMap<>())
+                .put(waypointList.name(), waypointList);
+    }
+
+    private static boolean hasSameProperties(SimpleWaypoint serverWaypoint, SimpleWaypoint uploadedWaypoint) {
+        return serverWaypoint.name().equals(uploadedWaypoint.name())
+                && serverWaypoint.displayName().equals(uploadedWaypoint.displayName())
+                && serverWaypoint.initials().equals(uploadedWaypoint.initials())
+                && serverWaypoint.pos().equals(uploadedWaypoint.pos())
+                && serverWaypoint.rgb() == uploadedWaypoint.rgb()
+                && serverWaypoint.yaw() == uploadedWaypoint.yaw()
+                && serverWaypoint.global() == uploadedWaypoint.global()
+                && serverWaypoint.keywords().equals(uploadedWaypoint.keywords())
+                && serverWaypoint.description().equals(uploadedWaypoint.description());
     }
 
     private static boolean isValidWaypoint(SimpleWaypoint waypoint) {

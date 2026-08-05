@@ -140,9 +140,7 @@ public class ServerWaypointForgeClient {
         registerClientPayload(ServerHandshakeS2CPayload.class, 5, /*? if >= 1.20.5 {*/ ServerHandshakeS2CPayload.PACKET_CODEC /*?} else {*/ /*ServerHandshakeS2CPayload::new *//*?}*/, serverHandshakeHandler);
         registerClientPayload(WaypointEditResultS2CPayload.class, 9, /*? if >= 1.20.5 {*/ WaypointEditResultS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointEditResultS2CPayload::new *//*?}*/, waypointEditResultHandler);
         registerClientPayload(WaypointListUpdateS2CPayload.class, 10, /*? if >= 1.20.5 {*/ WaypointListUpdateS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointListUpdateS2CPayload::new *//*?}*/, waypointListUpdateHandler);
-        //? if >= 1.20.5 {
-        registerClientPayload(UploadRequestS2CPayload.class, 12, UploadRequestS2CPayload.PACKET_CODEC, uploadRequestHandler);
-        //?}
+        registerClientPayload(UploadRequestS2CPayload.class, 12, /*? if >= 1.20.5 {*/ UploadRequestS2CPayload.PACKET_CODEC /*?} else {*/ /*UploadRequestS2CPayload::new *//*?}*/, uploadRequestHandler);
     }
 
     private static <P extends ModPayload> void registerClientPayload(

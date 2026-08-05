@@ -13,6 +13,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?} else if fabric {
 /*import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.FriendlyByteBuf;
+*///?} else if neoforge || forge {
+/*import net.minecraft.network.FriendlyByteBuf;
 *///?}
 
 import static _959.server_waypoint.core.network.PayloadID.UPLOAD_REQUEST;
@@ -56,5 +58,21 @@ public record UploadRequestS2CPayload(UploadRequestBuffer uploadRequestBuffer) i
     public PacketType<?> getType() {
         return ID;
     }
+*///?} else if neoforge || forge {
+    /*public UploadRequestS2CPayload(FriendlyByteBuf buf) {
+        this(UploadRequestCodec.decode(buf));
+    }
+
+    @Override
+    public void write(FriendlyByteBuf buf) {
+        UploadRequestCodec.encode(buf, uploadRequestBuffer);
+    }
+
+    //? if neoforge {
+    /^@Override
+    public net.minecraft.resources.Identifier id() {
+        return UPLOAD_REQUEST_PAYLOAD_ID;
+    }
+    ^///?}
 *///?}
 }

@@ -71,11 +71,15 @@ public final class XaerosMinimapWaypointHelper {
             for (String dimensionName : request.dimensionNames()) {
                 ResourceKey<Level> dimensionKey = getDimensionKey(dimensionName);
                 if (dimensionKey == null) {
-                    continue;
+                    LOGGER.warn("Cannot export Xaero's waypoints: unknown requested dimension {}", dimensionName);
+                    sendUploadResult(request, UploadStatus.XAERO_NOT_READY, List.of());
+                    return;
                 }
                 MinimapWorld minimapWorld = getMinimapWorld(session, dimensionKey);
                 if (minimapWorld == null) {
-                    continue;
+                    LOGGER.warn("Cannot export Xaero's waypoints: world for requested dimension {} is not loaded", dimensionName);
+                    sendUploadResult(request, UploadStatus.XAERO_NOT_READY, List.of());
+                    return;
                 }
                 for (WaypointSet waypointSet : minimapWorld.getIterableWaypointSets()) {
                     String listName = SyncedWaypointName.parseSyncedName(waypointSet.getName());

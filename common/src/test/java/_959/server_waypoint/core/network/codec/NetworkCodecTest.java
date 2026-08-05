@@ -7,6 +7,9 @@ import _959.server_waypoint.core.network.buffer.WaypointListUpdateBuffer;
 import _959.server_waypoint.core.edit.EditResultStatus;
 import _959.server_waypoint.core.edit.PatchField;
 import _959.server_waypoint.core.edit.WaypointPatch;
+import _959.server_waypoint.core.network.buffer.UploadChunkBuffer;
+import _959.server_waypoint.core.network.upload.UploadStatus;
+import _959.server_waypoint.core.network.upload.UploadedWaypointListChunk;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
@@ -16,6 +19,7 @@ import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -169,5 +173,39 @@ class NetworkCodecTest {
         assertEquals("", decoded.waypointList().name());
         assertEquals("{\"text\":\"Shown\"}", decoded.waypointList().displayName());
         assertEquals(9, decoded.waypointList().getSyncNum());
+    }
+
+    @Test
+    void uploadChunkReusesWaypointListCodecWithoutLosingWaypointDetails() {
+        SimpleWaypoint waypoint = new SimpleWaypoint(
+                "Home",
+                "{\"text\":\"Home\",\"bold\":true}",
+                "H",
+                new WaypointPos(1, 2, 3),
+                0x39C5BB,
+                -90,
+                true,
+                List.of("base", "storage"),
+                "{\"text\":\"Bring food\",\"color\":\"gold\"}"
+        );
+        UploadChunkBuffer uploadChunk = new UploadChunkBuffer(
+                UUID.randomUUID(),
+                0,
+                true,
+                UploadStatus.SUCCESS,
+                List.of(new UploadedWaypointListChunk("minecraft:overworld", "Bases", List.of(waypoint)))
+        );
+        ByteBuf buf = Unpooled.buffer();
+
+        UploadChunkCodec.encode(buf, uploadChunk);
+        UploadChunkBuffer decoded = UploadChunkCodec.decode(buf);
+
+        SimpleWaypoint decodedWaypoint = decoded.waypointLists().get(0).waypoints().get(0);
+        assertEquals(uploadChunk.requestId(), decoded.requestId());
+        assertEquals("minecraft:overworld", decoded.waypointLists().get(0).dimensionName());
+        assertEquals("Bases", decoded.waypointLists().get(0).listName());
+        assertEquals(waypoint.displayName(), decodedWaypoint.displayName());
+        assertEquals(waypoint.keywords(), decodedWaypoint.keywords());
+        assertEquals(waypoint.description(), decodedWaypoint.description());
     }
 }

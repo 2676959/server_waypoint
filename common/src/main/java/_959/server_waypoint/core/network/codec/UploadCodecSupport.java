@@ -1,13 +1,11 @@
 package _959.server_waypoint.core.network.codec;
 
+import _959.server_waypoint.core.network.buffer.WaypointListBuffer;
 import _959.server_waypoint.core.network.upload.UploadedWaypointListChunk;
-import _959.server_waypoint.core.waypoint.SimpleWaypoint;
-import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.core.waypoint.WaypointList;
 import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 final class UploadCodecSupport {
     static final int MAX_STRING_BYTES = 1_024;
@@ -49,53 +47,28 @@ final class UploadCodecSupport {
     }
 
     static void encodeListChunk(ByteBuf buf, UploadedWaypointListChunk chunk) {
-        encodeString(buf, chunk.dimensionName());
-        encodeString(buf, chunk.listName());
-        List<SimpleWaypoint> waypoints = chunk.waypoints();
-        if (waypoints.size() > MAX_WAYPOINTS_PER_LIST_CHUNK) {
+        if (chunk.waypoints().size() > MAX_WAYPOINTS_PER_LIST_CHUNK) {
             throw new IllegalArgumentException("Too many waypoints in upload chunk");
         }
-        buf.writeShort(waypoints.size());
-        for (SimpleWaypoint waypoint : waypoints) {
-            encodeWaypoint(buf, waypoint);
-        }
+        WaypointList waypointList = new WaypointList(
+                chunk.listName(),
+                chunk.listName(),
+                WaypointList.SERVER_N,
+                chunk.waypoints()
+        );
+        WaypointListBufferCodec.encode(buf, new WaypointListBuffer(chunk.dimensionName(), waypointList));
     }
 
     static UploadedWaypointListChunk decodeListChunk(ByteBuf buf) {
-        String dimensionName = decodeString(buf);
-        String listName = decodeString(buf);
-        int size = buf.readUnsignedShort();
-        if (size > MAX_WAYPOINTS_PER_LIST_CHUNK) {
-            throw new IllegalArgumentException("Too many waypoints in upload chunk: " + size);
+        WaypointListBuffer waypointListBuffer = WaypointListBufferCodec.decode(buf);
+        WaypointList waypointList = waypointListBuffer.waypointList();
+        if (waypointList.size() > MAX_WAYPOINTS_PER_LIST_CHUNK) {
+            throw new IllegalArgumentException("Too many waypoints in upload chunk: " + waypointList.size());
         }
-        List<SimpleWaypoint> waypoints = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
-            waypoints.add(decodeWaypoint(buf));
-        }
-        return new UploadedWaypointListChunk(dimensionName, listName, waypoints);
-    }
-
-    private static void encodeWaypoint(ByteBuf buf, SimpleWaypoint waypoint) {
-        encodeString(buf, waypoint.name());
-        encodeString(buf, waypoint.initials());
-        WaypointPos pos = waypoint.pos();
-        buf.writeInt(pos.x());
-        buf.writeInt(pos.y());
-        buf.writeInt(pos.z());
-        buf.writeInt(waypoint.rgb());
-        buf.writeInt(waypoint.yaw());
-        buf.writeBoolean(waypoint.global());
-    }
-
-    private static SimpleWaypoint decodeWaypoint(ByteBuf buf) {
-        String name = decodeString(buf);
-        String initials = decodeString(buf);
-        int x = buf.readInt();
-        int y = buf.readInt();
-        int z = buf.readInt();
-        int rgb = buf.readInt();
-        int yaw = buf.readInt();
-        boolean global = buf.readBoolean();
-        return new SimpleWaypoint(name, initials, new WaypointPos(x, y, z), rgb, yaw, global);
+        return new UploadedWaypointListChunk(
+                waypointListBuffer.dimensionName(),
+                waypointList.name(),
+                waypointList.simpleWaypoints()
+        );
     }
 }

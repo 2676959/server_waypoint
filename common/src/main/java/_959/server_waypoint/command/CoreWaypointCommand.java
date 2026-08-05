@@ -768,7 +768,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                 )
                         )
                 )
-                .then(uploadCommandNode())
+                .then((ArgumentBuilder<Object, ?>) (ArgumentBuilder<?, ?>) uploadCommandNode())
                 .then((ArgumentBuilder<Object, ?>) listCommandNode())
                 .then((ArgumentBuilder<Object, ?>) navigationCommandNode())
                 .then(literal(RELOAD_COMMAND)
@@ -784,7 +784,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     }
 
     private LiteralArgumentBuilder<S> uploadCommandNode() {
-        LiteralArgumentBuilder<S> upload = literal(UPLOAD_COMMAND).requires(this::hasUploadPermission);
+        LiteralArgumentBuilder<S> upload = literal(UPLOAD_COMMAND);
+        upload.requires(this::hasUploadPermission);
         upload.executes(context -> executeUploadAndReturn(
                 context.getSource(), UploadConflictPolicy.SERVER, false, UploadScope.WORLD, null, null, null
         ));
@@ -804,7 +805,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         ));
         local.then(uploadSelectorArguments(UploadConflictPolicy.LOCAL, false));
 
-        LiteralArgumentBuilder<S> delete = literal(UPLOAD_DELETE_COMMAND).requires(this::hasUploadDeletePermission);
+        LiteralArgumentBuilder<S> delete = literal(UPLOAD_DELETE_COMMAND);
+        delete.requires(this::hasUploadDeletePermission);
         delete.executes(context -> executeUploadAndReturn(
                 context.getSource(), UploadConflictPolicy.LOCAL, true, UploadScope.WORLD, null, null, null
         ));

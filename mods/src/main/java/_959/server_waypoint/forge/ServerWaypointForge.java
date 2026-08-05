@@ -208,9 +208,7 @@ public class ServerWaypointForge implements IPlatformConfigPath {
             registerS2C(ServerHandshakeS2CPayload.class, 5, /*? if >= 1.20.5 {*/ ServerHandshakeS2CPayload.PACKET_CODEC /*?} else {*/ /*ServerHandshakeS2CPayload::new *//*?}*/, (payload, context) -> {});
             registerS2C(WaypointEditResultS2CPayload.class, 9, /*? if >= 1.20.5 {*/ WaypointEditResultS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointEditResultS2CPayload::new *//*?}*/, (payload, context) -> {});
             registerS2C(WaypointListUpdateS2CPayload.class, 10, /*? if >= 1.20.5 {*/ WaypointListUpdateS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointListUpdateS2CPayload::new *//*?}*/, (payload, context) -> {});
-            //? if >= 1.20.5 {
-            registerS2C(UploadRequestS2CPayload.class, 12, UploadRequestS2CPayload.PACKET_CODEC, (payload, context) -> {});
-            //?}
+            registerS2C(UploadRequestS2CPayload.class, 12, /*? if >= 1.20.5 {*/ UploadRequestS2CPayload.PACKET_CODEC /*?} else {*/ /*UploadRequestS2CPayload::new *//*?}*/, (payload, context) -> {});
         }
         if (Features.noXaerosMod) {
             registerS2C(XaerosWorldIdS2CPayload.class, 6, /*? if >= 1.20.5 {*/ XaerosWorldIdS2CPayload.PACKET_CODEC /*?} else {*/ /*XaerosWorldIdS2CPayload::new *//*?}*/, (payload, context) -> {});
@@ -245,14 +243,16 @@ public class ServerWaypointForge implements IPlatformConfigPath {
                 this.c2sPacketHandler.onWaypointEditRequest(player, payload.request());
             }
         });
-        //? if >= 1.20.5 {
-        registerC2S(UploadChunkC2SPayload.class, 13, UploadChunkC2SPayload.PACKET_CODEC, (payload, context) -> {
+        registerC2S(UploadChunkC2SPayload.class, 13, /*? if >= 1.20.5 {*/ UploadChunkC2SPayload.PACKET_CODEC /*?} else {*/ /*UploadChunkC2SPayload::new *//*?}*/, (payload, context) -> {
+//? if <= 1.20.1 {
+            /*ServerPlayer player = context.get().getSender();
+*///?} else {
             ServerPlayer player = context.getSender();
+            //?}
             if (player != null) {
                 this.c2sPacketHandler.onUploadChunk(player, payload.uploadChunkBuffer());
             }
         });
-        //?}
     }
 
     private static <T extends ModPayload> void registerS2C(

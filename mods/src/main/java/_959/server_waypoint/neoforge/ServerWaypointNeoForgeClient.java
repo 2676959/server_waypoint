@@ -152,6 +152,8 @@ public class ServerWaypointNeoForgeClient {
         registrar.play(UpdatesBundleS2CPayload.UPDATES_BUNDLE_PAYLOAD_ID, UpdatesBundleS2CPayload::new, handler -> handler.client(updatesBundleHandler::handle));
         registrar.play(WaypointEditResultS2CPayload.PAYLOAD_ID, WaypointEditResultS2CPayload::new, handler -> handler.client(waypointEditResultHandler::handle));
         registrar.play(WaypointListUpdateS2CPayload.PAYLOAD_ID, WaypointListUpdateS2CPayload::new, handler -> handler.client(waypointListUpdateHandler::handle));
+        S2CPayloadHandler.UploadRequestHandler uploadRequestHandler = new S2CPayloadHandler.UploadRequestHandler();
+        registrar.play(UploadRequestS2CPayload.UPLOAD_REQUEST_PAYLOAD_ID, UploadRequestS2CPayload::new, handler -> handler.client(uploadRequestHandler::handle));
     }
 ^///?} elif = 1.20.2 {
     /^public static void registerClientPayloadHandlers(SimpleChannel channel) {
@@ -163,6 +165,7 @@ public class ServerWaypointNeoForgeClient {
         S2CPayloadHandler.UpdatesBundleHandler updatesBundleHandler = new S2CPayloadHandler.UpdatesBundleHandler();
         S2CPayloadHandler.WaypointEditResultHandler waypointEditResultHandler = new S2CPayloadHandler.WaypointEditResultHandler();
         S2CPayloadHandler.WaypointListUpdateHandler waypointListUpdateHandler = new S2CPayloadHandler.WaypointListUpdateHandler();
+        S2CPayloadHandler.UploadRequestHandler uploadRequestHandler = new S2CPayloadHandler.UploadRequestHandler();
         registerLegacyClientPayload(channel, WaypointListS2CPayload.class, 0, WaypointListS2CPayload::new, waypointListHandler);
         registerLegacyClientPayload(channel, DimensionWaypointS2CPayload.class, 1, DimensionWaypointS2CPayload::new, dimensionWaypointHandler);
         registerLegacyClientPayload(channel, WorldWaypointS2CPayload.class, 2, WorldWaypointS2CPayload::new, worldWaypointHandler);
@@ -171,6 +174,7 @@ public class ServerWaypointNeoForgeClient {
         registerLegacyClientPayload(channel, ServerHandshakeS2CPayload.class, 5, ServerHandshakeS2CPayload::new, serverHandshakeHandler);
         registerLegacyClientPayload(channel, WaypointEditResultS2CPayload.class, 9, WaypointEditResultS2CPayload::new, waypointEditResultHandler);
         registerLegacyClientPayload(channel, WaypointListUpdateS2CPayload.class, 10, WaypointListUpdateS2CPayload::new, waypointListUpdateHandler);
+        registerLegacyClientPayload(channel, UploadRequestS2CPayload.class, 12, UploadRequestS2CPayload::new, uploadRequestHandler);
     }
 
     private static <P extends _959.server_waypoint.common.network.payload.ModPayload> void registerLegacyClientPayload(

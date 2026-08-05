@@ -129,6 +129,9 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         ServerPlayNetworking.registerGlobalReceiver(WaypointEditRequestC2SPayload.ID, (packet, player, responseSender) ->
                 c2sPacketHandler.onWaypointEditRequest(player, packet.request()
                 ));
+        ServerPlayNetworking.registerGlobalReceiver(UploadChunkC2SPayload.ID, (packet, player, responseSender) ->
+                c2sPacketHandler.onUploadChunk(player, packet.uploadChunkBuffer()
+                ));
         *///?}
     }
 

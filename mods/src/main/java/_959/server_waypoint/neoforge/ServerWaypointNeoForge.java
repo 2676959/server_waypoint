@@ -225,6 +225,13 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                     }
                 }))
         );
+        registrar.play(UploadChunkC2SPayload.UPLOAD_CHUNK_PAYLOAD_ID, UploadChunkC2SPayload::new, handler ->
+                handler.server((payload, context) -> context.workHandler().execute(() -> {
+                    if (context.player().orElse(null) instanceof ServerPlayer player) {
+                        this.c2sPacketHandler.onUploadChunk(player, payload.uploadChunkBuffer());
+                    }
+                }))
+        );
     }
 
     private static void registerNoopClientPayloadHandlers(IPayloadRegistrar registrar) {
@@ -236,6 +243,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         registrar.play(ServerHandshakeS2CPayload.SERVER_HANDSHAKE_PAYLOAD, ServerHandshakeS2CPayload::new, handler -> handler.client((payload, context) -> {}));
         registrar.play(WaypointEditResultS2CPayload.PAYLOAD_ID, WaypointEditResultS2CPayload::new, handler -> handler.client((payload, context) -> {}));
         registrar.play(WaypointListUpdateS2CPayload.PAYLOAD_ID, WaypointListUpdateS2CPayload::new, handler -> handler.client((payload, context) -> {}));
+        registrar.play(UploadRequestS2CPayload.UPLOAD_REQUEST_PAYLOAD_ID, UploadRequestS2CPayload::new, handler -> handler.client((payload, context) -> {}));
         if (Features.noXaerosMod) {
             registrar.play(XaerosWorldIdS2CPayload.XAEROS_WORLD_ID_PAYLOAD_ID, XaerosWorldIdS2CPayload::new, handler -> handler.client((payload, context) -> {}));
         }
@@ -277,6 +285,16 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                     }
                 })
                 .add();
+        PACKET_CHANNEL.messageBuilder(UploadChunkC2SPayload.class, 13, PlayNetworkDirection.PLAY_TO_SERVER)
+                .encoder((payload, buf) -> payload.write(buf))
+                .decoder(UploadChunkC2SPayload::new)
+                .consumerMainThread((payload, context) -> {
+                    ServerPlayer player = context.getSender();
+                    if (player != null) {
+                        this.c2sPacketHandler.onUploadChunk(player, payload.uploadChunkBuffer());
+                    }
+                })
+                .add();
     }
 
     private static void registerLegacyNoopClientPayloadHandlers() {
@@ -288,6 +306,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         registerLegacyNoopClientPayload(ServerHandshakeS2CPayload.class, 5, ServerHandshakeS2CPayload::new);
         registerLegacyNoopClientPayload(WaypointEditResultS2CPayload.class, 9, WaypointEditResultS2CPayload::new);
         registerLegacyNoopClientPayload(WaypointListUpdateS2CPayload.class, 10, WaypointListUpdateS2CPayload::new);
+        registerLegacyNoopClientPayload(UploadRequestS2CPayload.class, 12, UploadRequestS2CPayload::new);
         if (Features.noXaerosMod) {
             registerLegacyNoopClientPayload(XaerosWorldIdS2CPayload.class, 6, XaerosWorldIdS2CPayload::new);
         }

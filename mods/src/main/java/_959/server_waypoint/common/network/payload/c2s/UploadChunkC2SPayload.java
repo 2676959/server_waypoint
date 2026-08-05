@@ -13,6 +13,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 //?} else if fabric {
 /*import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.FriendlyByteBuf;
+*///?} else if neoforge || forge {
+/*import net.minecraft.network.FriendlyByteBuf;
 *///?}
 
 import static _959.server_waypoint.core.network.PayloadID.UPLOAD_CHUNK;
@@ -56,5 +58,21 @@ public record UploadChunkC2SPayload(UploadChunkBuffer uploadChunkBuffer) impleme
     public PacketType<?> getType() {
         return ID;
     }
+*///?} else if neoforge || forge {
+    /*public UploadChunkC2SPayload(FriendlyByteBuf buf) {
+        this(UploadChunkCodec.decode(buf));
+    }
+
+    @Override
+    public void write(FriendlyByteBuf buf) {
+        UploadChunkCodec.encode(buf, uploadChunkBuffer);
+    }
+
+    //? if neoforge {
+    /^@Override
+    public net.minecraft.resources.Identifier id() {
+        return UPLOAD_CHUNK_PAYLOAD_ID;
+    }
+    ^///?}
 *///?}
 }
