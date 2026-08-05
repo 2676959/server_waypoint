@@ -986,6 +986,10 @@ class CoreWaypointCommandNavigationTest {
         }
 
         @Override
+        public void broadcastPacket(MessageBuffer packet) {
+        }
+
+        @Override
         public Iterable<? extends TestPlayer> getBroadcastPlayers(TestSource source) {
             return List.of();
         }

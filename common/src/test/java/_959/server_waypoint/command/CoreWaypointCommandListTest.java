@@ -1051,6 +1051,10 @@ class CoreWaypointCommandListTest {
         }
 
         @Override
+        public void broadcastPacket(MessageBuffer packet) {
+        }
+
+        @Override
         public Iterable<?> getBroadcastPlayers(TestSource source) {
             return List.of();
         }
