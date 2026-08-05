@@ -144,6 +144,12 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
 
     @Override
     protected List<String> getAvailableDimensionNames(CommandSourceStack source) {
-        return source.getServer().levelKeys().stream().map(key -> key.identifier().toString()).toList();
+        return source.getServer().levelKeys().stream().map(key ->
+                //? if >= 1.21.11 {
+                key.identifier().toString()
+                //?} else {
+                /*key.location().toString()
+                *///?}
+        ).toList();
     }
 }

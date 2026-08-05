@@ -1,7 +1,6 @@
 //~ resource_location_import
 package _959.server_waypoint.common.network.payload.c2s;
 
-import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.core.network.buffer.UploadChunkBuffer;
 import _959.server_waypoint.core.network.codec.UploadChunkCodec;
@@ -17,13 +16,14 @@ import net.minecraft.network.FriendlyByteBuf;
 /*import net.minecraft.network.FriendlyByteBuf;
 *///?}
 
+import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
 import static _959.server_waypoint.core.network.PayloadID.UPLOAD_CHUNK;
 
 public record UploadChunkC2SPayload(UploadChunkBuffer uploadChunkBuffer) implements ModPayload {
     public static final
     //$ resource_location_type_swap
     Identifier
-    UPLOAD_CHUNK_PAYLOAD_ID = _959.server_waypoint.common.util.ResourceLocationHelper.id(ModInfo.MOD_ID, UPLOAD_CHUNK);
+    UPLOAD_CHUNK_PAYLOAD_ID = modId(UPLOAD_CHUNK);
 //? if >= 1.20.5 {
     public static final CustomPacketPayload.Type<UploadChunkC2SPayload> ID = new CustomPacketPayload.Type<>(UPLOAD_CHUNK_PAYLOAD_ID);
     public static final StreamCodec<ByteBuf, UploadChunkC2SPayload> PACKET_CODEC = new StreamCodec<>() {
