@@ -6,6 +6,8 @@ import _959.server_waypoint.core.network.PayloadID;
 import _959.server_waypoint.core.network.codec.ClientHandshakeCodec;
 import _959.server_waypoint.core.network.codec.ClientUpdateRequestBufferCodec;
 import _959.server_waypoint.core.network.codec.WaypointEditRequestBufferCodec;
+import _959.server_waypoint.core.network.codec.UploadChunkCodec;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.listener.ChatMessageListenerPaperMC;
 import _959.server_waypoint.listener.NavigationProtectionListener;
 import _959.server_waypoint.listener.PlayerRegisterChannelListener;
@@ -44,6 +46,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
+import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 import static _959.server_waypoint.core.network.MessageChannelID.*;
 
