@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceKey;
@@ -95,6 +96,7 @@ public class XaeroMinimapHelper {
             return;
         }
         syncWaypointSetByWaypoints(waypointSet, waypointList);
+        removeMatchingLocalWaypoints(minimapWorld, waypointList);
     }
 
     private static WaypointSet getOrCreateSyncedWaypointSet(MinimapWorld minimapWorld, String listName) {
@@ -136,6 +138,7 @@ public class XaeroMinimapHelper {
                 continue;
             }
             syncWaypointSetByWaypoints(waypointSet, waypointList);
+            removeMatchingLocalWaypoints(minimapWorld, waypointList);
             syncedExistingListNames.add(waypointSet.getName());
         }
 
@@ -144,8 +147,55 @@ public class XaeroMinimapHelper {
                 WaypointSet waypointSet = WaypointSet.Builder.begin().setName(entry.getKey()).build();
                 minimapWorld.addWaypointSet(waypointSet);
                 syncWaypointSetByWaypoints(waypointSet, entry.getValue());
+                removeMatchingLocalWaypoints(minimapWorld, entry.getValue());
             }
         }
+    }
+
+    public static void removeMatchingLocalWaypoint(
+            MinimapWorld minimapWorld,
+            String listName,
+            SimpleWaypoint waypoint
+    ) {
+        removeMatchingLocalWaypoints(
+                minimapWorld,
+                new WaypointList(listName, 0, List.of(waypoint))
+        );
+    }
+
+    private static void removeMatchingLocalWaypoints(MinimapWorld minimapWorld, WaypointList waypointList) {
+        WaypointSet localWaypointSet = minimapWorld.getWaypointSet(waypointList.name());
+        if (localWaypointSet == null || SyncedWaypointName.parseSyncedName(localWaypointSet.getName()) != null) {
+            return;
+        }
+
+        Iterator<Waypoint> iterator = localWaypointSet.getWaypoints().iterator();
+        while (iterator.hasNext()) {
+            Waypoint localWaypoint = iterator.next();
+            if (localWaypoint.getPurpose() != xaero.hud.minimap.waypoint.WaypointPurpose.NORMAL
+                    || localWaypoint.isTemporary()
+                    || localWaypoint.isDisabled()) {
+                continue;
+            }
+            SimpleWaypoint syncedWaypoint = waypointList.getWaypointByName(localWaypoint.getName());
+            if (syncedWaypoint != null && representsSameWaypoint(syncedWaypoint, localWaypoint)) {
+                iterator.remove();
+            }
+        }
+
+        if (localWaypointSet.isEmpty()) {
+            removeWaypointSet(minimapWorld, localWaypointSet.getName());
+        }
+    }
+
+    private static boolean representsSameWaypoint(SimpleWaypoint expected, Waypoint actualWaypoint) {
+        SimpleWaypoint actual = XaerosWaypointHelper.xaerosWaypointToSimpleWaypoint(actualWaypoint);
+        return expected.name().equals(actual.name())
+                && Objects.equals(expected.initials(), actual.initials())
+                && expected.pos().equals(actual.pos())
+                && expected.rgb() == actual.rgb()
+                && expected.yaw() == actual.yaw()
+                && expected.global() == actual.global();
     }
 
     public static void removeSyncedWaypointSet(MinimapWorld minimapWorld, String waypointSetName) {

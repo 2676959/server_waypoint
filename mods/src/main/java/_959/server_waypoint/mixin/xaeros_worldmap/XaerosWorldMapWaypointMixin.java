@@ -12,9 +12,6 @@ import xaero.map.mods.gui.Waypoint;
 @Mixin(value = Waypoint.class, remap = false)
 public class XaerosWorldMapWaypointMixin implements XaerosWorldMapWaypointAccess {
     @Shadow
-    private String text;
-
-    @Shadow
     private String setName;
 
     @Inject(method = "getName", at = @At("RETURN"), cancellable = true, remap = false)
@@ -29,7 +26,11 @@ public class XaerosWorldMapWaypointMixin implements XaerosWorldMapWaypointAccess
 
     @Override
     public String sw$getRawName() {
-        return this.text;
+        Object original = ((Waypoint) (Object) this).getOriginal();
+        if (original instanceof xaero.common.minimap.waypoints.Waypoint minimapWaypoint) {
+            return minimapWaypoint.getName();
+        }
+        return ((Waypoint) (Object) this).getName();
     }
 
     @Override
