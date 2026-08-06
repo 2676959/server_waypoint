@@ -45,6 +45,11 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
     }
 
     @Override
+    public Collection<? extends Player> getBroadcastPlayersFromPlayer(Player player) {
+        return player.getServer().getOnlinePlayers();
+    }
+
+    @Override
     public Component getSenderName(CommandSourceStack source) {
         return source.getSender().name();
     }

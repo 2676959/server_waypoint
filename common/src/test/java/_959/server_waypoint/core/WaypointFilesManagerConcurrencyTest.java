@@ -1,6 +1,10 @@
 package _959.server_waypoint.core;
 
 import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
+import _959.server_waypoint.core.edit.EditResultStatus;
+import _959.server_waypoint.core.edit.EditTarget;
+import _959.server_waypoint.core.edit.PatchField;
+import _959.server_waypoint.core.edit.WaypointPatch;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
@@ -260,6 +264,37 @@ class WaypointFilesManagerConcurrencyTest {
                         .count()
         );
         assertTrue(results.stream().allMatch(result -> result.syncNum() == syncNumBeforeRename + 1));
+    }
+
+    @Test
+    void concurrentRevisionCheckedPatchEditsCommitExactlyOnce() throws Exception {
+        WaypointFilesManagerCore filesManager = new WaypointFilesManagerCore(this.tempDir);
+        filesManager.addWaypoint(DIMENSION, LIST, waypoint("target", 0), ignored -> {
+        });
+        int revision = filesManager.getWaypointFileManager(DIMENSION)
+                .getWaypointListByName(LIST)
+                .getSyncNum();
+
+        var results = runConcurrently(16, index -> filesManager.updateWaypoint(
+                EditTarget.waypoint(DIMENSION, LIST, "target"),
+                revision,
+                new WaypointPatch(
+                        PatchField.unchanged(), PatchField.unchanged(), PatchField.set("I" + index),
+                        PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                        PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged()
+                ),
+                ignored -> {
+                }
+        ));
+
+        assertEquals(1, count(results, result -> result.status() == EditResultStatus.SUCCESS));
+        assertEquals(15, count(results, result -> result.status() == EditResultStatus.STALE_REVISION));
+        assertEquals(
+                revision + 1,
+                filesManager.getWaypointFileManager(DIMENSION)
+                        .getWaypointListByName(LIST)
+                        .getSyncNum()
+        );
     }
 
     @Test

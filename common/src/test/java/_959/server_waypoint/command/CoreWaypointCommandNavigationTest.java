@@ -168,17 +168,18 @@ class CoreWaypointCommandNavigationTest {
         for (TestNavigationHandler handler : this.handlers) {
             handler.updateCount = 0;
         }
+        NavigationTarget originalTarget = this.session().target();
         Files.createDirectories(this.tempDir.resolve("waypoints"));
 
         this.dispatcher.execute(
-                "wp edit overworld bases Home Renamed R position ABCDEF 45 true",
+                "wp edit waypoint overworld bases Home set identifier Renamed",
                 this.source
         );
 
         NavigationTarget target = this.session().target();
         assertEquals("Renamed", target.waypointName());
-        assertEquals(this.source.position(), target.position());
-        assertEquals(0xABCDEF, target.rgb());
+        assertEquals(originalTarget.position(), target.position());
+        assertEquals(originalTarget.rgb(), target.rgb());
         for (TestNavigationHandler handler : this.handlers) {
             assertEquals(1, handler.updateCount);
             assertEquals(target, handler.lastUpdatedTarget);

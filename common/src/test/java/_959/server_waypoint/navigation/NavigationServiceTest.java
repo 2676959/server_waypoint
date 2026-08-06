@@ -210,6 +210,33 @@ class NavigationServiceTest {
     }
 
     @Test
+    void refreshListIdentityUpdatesActiveAndPersistedTargets() {
+        NavigationTarget original = target("Home", 10, 64, 0);
+        this.service.navigate(this.firstPlayer, original);
+
+        this.service.refreshListIdentity(
+                original.dimensionName(),
+                original.listName(),
+                "renamed-list",
+                "{\"text\":\"Renamed list\"}"
+        );
+
+        NavigationTarget refreshed = this.service.findSession(this.firstPlayer.uuid())
+                .orElseThrow()
+                .target();
+        assertEquals("renamed-list", refreshed.listName());
+        assertEquals("{\"text\":\"Renamed list\"}", refreshed.listDisplayName());
+        assertEquals(original.waypointName(), refreshed.waypointName());
+        assertEquals(
+                "renamed-list",
+                NavigationSessionCodec.decode(
+                        this.platform.persistedSessions.get(this.firstPlayer.uuid())
+                ).orElseThrow().listName()
+        );
+        assertEquals(1, this.handlers.get(NavigationMethod.ACTIONBAR).updateCount);
+    }
+
+    @Test
     void delayedRefreshDoesNotOverwriteANewerPlayerTarget() {
         NavigationTarget oldTarget = target("Old", 10, 64, 0);
         NavigationTarget updatedTarget = target("Updated", 20, 64, 0);

@@ -80,8 +80,8 @@ public class StringCommandBuilder {
     ) {
         return WAYPOINT_COMMAND_WITH_SLASH + ' ' + command
                 + ' ' + dimensionName
-                + ' ' + StringArgumentType.escapeIfRequired(listName)
-                + ' ' + StringArgumentType.escapeIfRequired(waypointName);
+                + ' ' + escapeArgument(listName)
+                + ' ' + escapeArgument(waypointName);
     }
 
     public static String tpCmd(String dimensionName, String waypointList, String waypointName, boolean withSlash) {
@@ -89,8 +89,8 @@ public class StringCommandBuilder {
         sb.append(withSlash ? WAYPOINT_COMMAND_WITH_SLASH : WAYPOINT_COMMAND);
         sb.append(' ').append(TP_COMMAND);
         sb.append(' ').append(dimensionName);
-        sb.append(' ').append(StringArgumentType.escapeIfRequired(waypointList));
-        sb.append(' ').append(StringArgumentType.escapeIfRequired(waypointName));
+        sb.append(' ').append(escapeArgument(waypointList));
+        sb.append(' ').append(escapeArgument(waypointName));
         return sb.toString();
     }
 
@@ -104,12 +104,12 @@ public class StringCommandBuilder {
         sb.append(withSlash ? WAYPOINT_COMMAND_WITH_SLASH : WAYPOINT_COMMAND);
         sb.append(' ').append(ADD_COMMAND);
         sb.append(' ').append(dimensionName);
-        sb.append(' ').append(StringArgumentType.escapeIfRequired(listName));
+        sb.append(' ').append(escapeArgument(listName));
         sb.append(' ').append(waypoint.pos().x());
         sb.append(' ').append(waypoint.pos().y());
         sb.append(' ').append(waypoint.pos().z());
-        sb.append(' ').append(StringArgumentType.escapeIfRequired(waypoint.displayName()));
-        sb.append(' ').append(StringArgumentType.escapeIfRequired(waypoint.initials()));
+        sb.append(' ').append(escapeArgument(waypoint.name()));
+        sb.append(' ').append(escapeArgument(waypoint.initials()));
         sb.append(' ').append(rgbToNameOrHexCode(waypoint.rgb(), false));
         sb.append(' ').append(waypoint.yaw());
         sb.append(' ').append(waypoint.global());
@@ -125,19 +125,11 @@ public class StringCommandBuilder {
         waypoint = new SimpleWaypoint(waypoint);
         StringBuilder sb = new StringBuilder();
         sb.append(withSlash ? WAYPOINT_COMMAND_WITH_SLASH : WAYPOINT_COMMAND);
-        sb.append(' ').append(EDIT_COMMAND);
+        sb.append(' ').append(EDIT_COMMAND).append(" waypoint");
         sb.append(' ').append(dimensionName);
-        sb.append(' ').append(StringArgumentType.escapeIfRequired(listName));
-        sb.append(' ').append(StringArgumentType.escapeIfRequired(oldName));
-        sb.append(' ').append(StringArgumentType.escapeIfRequired(waypoint.displayName()));
-        sb.append(' ').append(StringArgumentType.escapeIfRequired(waypoint.initials()));
-        sb.append(' ').append(waypoint.pos().x());
-        sb.append(' ').append(waypoint.pos().y());
-        sb.append(' ').append(waypoint.pos().z());
-        sb.append(' ').append(rgbToNameOrHexCode(waypoint.rgb(), false));
-        sb.append(' ').append(waypoint.yaw());
-        sb.append(' ').append(waypoint.global());
-        appendExtraInfo(sb, waypoint);
+        sb.append(' ').append(escapeArgument(listName));
+        sb.append(' ').append(escapeArgument(oldName));
+        sb.append(" set identifier ").append(escapeArgument(waypoint.name()));
         return sb.toString();
     }
 
@@ -150,8 +142,8 @@ public class StringCommandBuilder {
         sb.append(withSlash ? WAYPOINT_COMMAND_WITH_SLASH : WAYPOINT_COMMAND);
         sb.append(' ').append(REMOVE_COMMAND);
         sb.append(' ').append(dimensionName);
-        sb.append(' ').append(StringArgumentType.escapeIfRequired(listName));
-        sb.append(' ').append(StringArgumentType.escapeIfRequired(waypoint.name()));
+        sb.append(' ').append(escapeArgument(listName));
+        sb.append(' ').append(escapeArgument(waypoint.name()));
         return sb.toString();
     }
 
@@ -164,7 +156,7 @@ public class StringCommandBuilder {
         sb.append(withSlash ? WAYPOINT_COMMAND_WITH_SLASH : WAYPOINT_COMMAND);
         sb.append(' ').append(ADD_COMMAND);
         sb.append(' ').append(dimensionName);
-        sb.append(' ').append(StringArgumentType.escapeIfRequired(listName));
+        sb.append(' ').append(escapeArgument(listName));
         return sb.toString();
     }
 
@@ -173,7 +165,7 @@ public class StringCommandBuilder {
         sb.append(withSlash ? WAYPOINT_COMMAND_WITH_SLASH : WAYPOINT_COMMAND);
         sb.append(' ').append(REMOVE_COMMAND);
         sb.append(' ').append(dimensionName);
-        sb.append(' ').append(StringArgumentType.escapeIfRequired(listName));
+        sb.append(' ').append(escapeArgument(listName));
         return sb.toString();
     }
 
@@ -181,9 +173,9 @@ public class StringCommandBuilder {
         if (waypoint.keywords().isEmpty() && waypoint.description().isEmpty()) {
             return;
         }
-        command.append(' ').append(StringArgumentType.escapeIfRequired(String.join(", ", waypoint.keywords())));
+        command.append(' ').append(escapeArgument(String.join(", ", waypoint.keywords())));
         if (!waypoint.description().isEmpty()) {
-            command.append(' ').append(StringArgumentType.escapeIfRequired(waypoint.description()));
+            command.append(' ').append(escapeArgument(waypoint.description()));
         }
     }
 
@@ -371,14 +363,89 @@ public class StringCommandBuilder {
     }
 
     public static String escapeListName(String listName) {
-        if (listName.isEmpty()) {
-            return "\"\"";
-        }
-        String escaped = StringArgumentType.escapeIfRequired(listName);
+        String escaped = escapeArgument(listName);
         if (!escaped.equals(listName) || !isListOptionLiteral(listName)) {
             return escaped;
         }
         return "\"" + listName.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+    }
+
+    public static String escapeArgument(String value) {
+        if (value.isEmpty()) {
+            return "\"\"";
+        }
+        return StringArgumentType.escapeIfRequired(value);
+    }
+
+    public static String detailsListCmd(String dimensionName, String listIdentifier) {
+        return WAYPOINT_COMMAND_WITH_SLASH + " details list " + dimensionName + ' '
+                + escapeArgument(listIdentifier);
+    }
+
+    public static String detailsWaypointCmd(
+            String dimensionName,
+            String listIdentifier,
+            String waypointIdentifier
+    ) {
+        return WAYPOINT_COMMAND_WITH_SLASH + " details waypoint " + dimensionName + ' '
+                + escapeArgument(listIdentifier) + ' ' + escapeArgument(waypointIdentifier);
+    }
+
+    public static String editListSetCmd(
+            String dimensionName,
+            String listIdentifier,
+            String property,
+            String value
+    ) {
+        return WAYPOINT_COMMAND_WITH_SLASH + " edit list " + dimensionName + ' '
+                + escapeArgument(listIdentifier) + " set " + property + ' ' + escapeArgument(value);
+    }
+
+    public static String editListClearCmd(
+            String dimensionName,
+            String listIdentifier,
+            String property
+    ) {
+        return WAYPOINT_COMMAND_WITH_SLASH + " edit list " + dimensionName + ' '
+                + escapeArgument(listIdentifier) + " clear " + property;
+    }
+
+    public static String editWaypointSetCmd(
+            String dimensionName,
+            String listIdentifier,
+            String waypointIdentifier,
+            String property,
+            String value
+    ) {
+        return WAYPOINT_COMMAND_WITH_SLASH + " edit waypoint " + dimensionName + ' '
+                + escapeArgument(listIdentifier) + ' ' + escapeArgument(waypointIdentifier)
+                + " set " + property + ' ' + escapeArgument(value);
+    }
+
+    public static String editWaypointClearCmd(
+            String dimensionName,
+            String listIdentifier,
+            String waypointIdentifier,
+            String property
+    ) {
+        return WAYPOINT_COMMAND_WITH_SLASH + " edit waypoint " + dimensionName + ' '
+                + escapeArgument(listIdentifier) + ' ' + escapeArgument(waypointIdentifier)
+                + " clear " + property;
+    }
+
+    public static String editWaypointPositionCmd(
+            String dimensionName,
+            String listIdentifier,
+            String waypointIdentifier,
+            SimpleWaypoint waypoint
+    ) {
+        return WAYPOINT_COMMAND_WITH_SLASH + " edit waypoint " + dimensionName + ' '
+                + escapeArgument(listIdentifier) + ' ' + escapeArgument(waypointIdentifier)
+                + " set position " + waypoint.x() + ' ' + waypoint.y() + ' ' + waypoint.z();
+    }
+
+    public static String restoreCmd(String token) {
+        return WAYPOINT_COMMAND_WITH_SLASH + " restore " + escapeArgument(token);
     }
 
     private static boolean isListOptionLiteral(String listName) {

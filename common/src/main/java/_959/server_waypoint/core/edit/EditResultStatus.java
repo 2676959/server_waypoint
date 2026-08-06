@@ -1,0 +1,15 @@
+package _959.server_waypoint.core.edit;
+
+public enum EditResultStatus {
+    SUCCESS,
+    STALE_REVISION,
+    DIMENSION_NOT_FOUND,
+    LIST_NOT_FOUND,
+    WAYPOINT_NOT_FOUND,
+    IDENTIFIER_COLLISION,
+    INVALID_DISPLAY_TEXT,
+    INVALID_VALUE,
+    IDENTICAL,
+    PERMISSION_DENIED,
+    MALFORMED_REQUEST
+}

@@ -105,4 +105,28 @@ public class S2CPayloadHandler {
             WaypointClientMod.getInstance().onWaypointModification(buffer);
         }
     }
+
+    public static class WaypointListUpdateHandler implements CustomPayloadHandler<WaypointListUpdateBuffer, WaypointListUpdateS2CPayload> {
+        @Override
+        public WaypointListUpdateBuffer payloadToBuffer(WaypointListUpdateS2CPayload payload) {
+            return payload.update();
+        }
+
+        @Override
+        public void bufferHandler(WaypointListUpdateBuffer buffer) {
+            WaypointClientMod.getInstance().onWaypointListUpdate(buffer);
+        }
+    }
+
+    public static class WaypointEditResultHandler implements CustomPayloadHandler<WaypointEditResultBuffer, WaypointEditResultS2CPayload> {
+        @Override
+        public WaypointEditResultBuffer payloadToBuffer(WaypointEditResultS2CPayload payload) {
+            return payload.result();
+        }
+
+        @Override
+        public void bufferHandler(WaypointEditResultBuffer buffer) {
+            WaypointClientMod.getInstance().onWaypointEditResult(buffer);
+        }
+    }
 }

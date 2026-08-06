@@ -16,6 +16,9 @@ public class BufferPayloadMapping {
             case CLIENT_HANDSHAKE_CHANNEL -> new ClientHandshakeC2SPayload((ClientHandshakeBuffer) packet);
             case CLIENT_UPDATE_REQUEST_CHANNEL -> new UpdateRequestC2SPayload((ClientUpdateRequestBuffer) packet);
             case UPDATES_BUNDLE_CHANNEL -> new UpdatesBundleS2CPayload((UpdatesBundleBuffer) packet);
+            case WAYPOINT_EDIT_REQUEST_CHANNEL -> new WaypointEditRequestC2SPayload((WaypointEditRequestBuffer) packet);
+            case WAYPOINT_EDIT_RESULT_CHANNEL -> new WaypointEditResultS2CPayload((WaypointEditResultBuffer) packet);
+            case WAYPOINT_LIST_UPDATE_CHANNEL -> new WaypointListUpdateS2CPayload((WaypointListUpdateBuffer) packet);
             case XAEROS_WORLD_ID_CHANNEL -> new XaerosWorldIdS2CPayload((XaerosWorldIdBuffer) packet);
         };
     }

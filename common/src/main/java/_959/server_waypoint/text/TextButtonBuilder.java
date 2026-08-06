@@ -20,13 +20,13 @@ import static net.kyori.adventure.text.Component.translatable;
 
 public class TextButtonBuilder {
     private static final String REPLACE_SYMBOL = "⇄";
-    private static final String RESTORE_SYMBOL = "↓";
     private static final String REMOVE_SYMBOL = "❌";
     private static final String EDIT_SYMBOL = "📝";
     private static final String ADD_SYMBOL = "+";
     private static final String PREVIOUS_PAGE = "←";
     private static final String NEXT_PAGE = "→";
     private static final String SEARCH_SYMBOL = "🔍";
+    private static final String SHOW_MORE_SYMBOL = "⋯";
 
     private static Component buildButton(
             Component label,
@@ -73,6 +73,87 @@ public class TextButtonBuilder {
                 TextDecoration.State.NOT_SET,
                 null,
                 null
+        );
+    }
+
+    public static Component showMoreButton(String command) {
+        return buildButton(
+                text(SHOW_MORE_SYMBOL),
+                NamedTextColor.AQUA,
+                TextDecoration.State.TRUE,
+                TextDecoration.State.FALSE,
+                ClickEvent.runCommand(command),
+                translatable("button.details")
+        );
+    }
+
+    public static Component detailsButton(String command) {
+        return runCommandButton(
+                translatable("button.details.label"),
+                NamedTextColor.AQUA,
+                command,
+                translatable("button.details")
+        );
+    }
+
+    public static Component propertyEditButton(String command, Component hoverText) {
+        return buildSuggestButton(
+                NamedTextColor.YELLOW,
+                command,
+                EDIT_SYMBOL,
+                hoverText
+        );
+    }
+
+    public static Component propertyClearButton(String command, Component hoverText) {
+        return buildSuggestButton(
+                NamedTextColor.RED,
+                command,
+                "×",
+                hoverText
+        );
+    }
+
+    public static Component disabledPermissionButton(String symbol, Component hoverText) {
+        return buildButton(
+                text(symbol),
+                NamedTextColor.DARK_GRAY,
+                TextDecoration.State.FALSE,
+                TextDecoration.State.FALSE,
+                null,
+                hoverText
+        );
+    }
+
+    public static Component runCommandButton(
+            Component label,
+            NamedTextColor color,
+            String command,
+            Component hoverText
+    ) {
+        return buildButton(
+                label,
+                color,
+                TextDecoration.State.FALSE,
+                TextDecoration.State.FALSE,
+                ClickEvent.runCommand(command),
+                hoverText
+        );
+    }
+
+    public static Component suggestCommandButton(
+            Component label,
+            NamedTextColor color,
+            String command,
+            Component hoverText
+    ) {
+        return buildButton(
+                label,
+                color,
+                TextDecoration.State.FALSE,
+                TextDecoration.State.FALSE,
+                ClickEvent.suggestCommand(command),
+                hoverText
         );
     }
 
@@ -221,23 +302,7 @@ public class TextButtonBuilder {
     }
 
     public static Component replaceButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
-        waypoint = new SimpleWaypoint(waypoint);
-        return buildSuggestButton(
-                NamedTextColor.AQUA,
-                editCmd(dimensionName, listName, waypoint.name(), waypoint),
-                REPLACE_SYMBOL,
-                Component.translatable("button.replace")
-        );
-    }
-
-    public static Component restoreButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
-        waypoint = new SimpleWaypoint(waypoint);
-        return buildSuggestButton(
-                NamedTextColor.LIGHT_PURPLE,
-                addCmd(dimensionName, listName, waypoint),
-                RESTORE_SYMBOL,
-                Component.translatable("button.restore")
-        );
+        return showMoreButton(detailsWaypointCmd(dimensionName, listName, waypoint.name()));
     }
 
     public static Component removeButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
@@ -251,13 +316,7 @@ public class TextButtonBuilder {
     }
 
     public static Component editButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
-        waypoint = new SimpleWaypoint(waypoint);
-        return buildSuggestButton(
-                NamedTextColor.YELLOW,
-                editCmd(dimensionName, listName, waypoint.name(), waypoint),
-                EDIT_SYMBOL,
-                Component.translatable("button.edit")
-        );
+        return showMoreButton(detailsWaypointCmd(dimensionName, listName, waypoint.name()));
     }
 
     public static Component addWaypointButton(String dimensionName, String listName, SimpleWaypoint waypoint) {
@@ -276,6 +335,15 @@ public class TextButtonBuilder {
                 addListCmd(dimensionName, listName),
                 ADD_SYMBOL,
                 Component.translatable("button.add.list")
+        );
+    }
+
+    public static Component restoreTokenButton(String token) {
+        return suggestCommandButton(
+                translatable("button.restore.label"),
+                NamedTextColor.LIGHT_PURPLE,
+                restoreCmd(token),
+                translatable("button.restore")
         );
     }
 }

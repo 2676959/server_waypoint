@@ -12,7 +12,8 @@ import java.util.Optional;
 public final class NavigationSessionCodec {
     public static final int CURRENT_VERSION = 2;
     private static final int MAX_ENCODED_LENGTH = 16_384;
-    private static final int MAX_NAME_LENGTH = 1_024;
+    private static final int MAX_DIMENSION_LENGTH = 1_024;
+    private static final int MAX_IDENTIFIER_LENGTH = 65_535;
     private static final Gson GSON = new Gson();
 
     private NavigationSessionCodec() {
@@ -41,9 +42,9 @@ public final class NavigationSessionCodec {
             Payload payload = GSON.fromJson(encoded, Payload.class);
             if (payload == null
                     || payload.version() != CURRENT_VERSION
-                    || !validName(payload.dimension())
-                    || !validName(payload.list())
-                    || !validName(payload.waypoint())
+                    || !validDimension(payload.dimension())
+                    || !validIdentifier(payload.list())
+                    || !validIdentifier(payload.waypoint())
                     || payload.methods() == null
                     || payload.transformation() == null) {
                 return Optional.empty();
@@ -68,10 +69,14 @@ public final class NavigationSessionCodec {
         }
     }
 
-    private static boolean validName(String value) {
+    private static boolean validDimension(String value) {
         return value != null
                 && !value.isBlank()
-                && value.length() <= MAX_NAME_LENGTH;
+                && value.length() <= MAX_DIMENSION_LENGTH;
+    }
+
+    private static boolean validIdentifier(String value) {
+        return value != null && value.length() <= MAX_IDENTIFIER_LENGTH;
     }
 
     private record Payload(

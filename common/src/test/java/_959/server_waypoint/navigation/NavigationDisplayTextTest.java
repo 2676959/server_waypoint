@@ -38,7 +38,7 @@ class NavigationDisplayTextTest {
         assertEquals(NamedTextColor.GOLD, name.color());
         assertEquals(
                 "A nearby village",
-                ((TextComponent) NavigationDisplayText.buildItemLore(target).get(0)).content()
+                ((TextComponent) NavigationDisplayText.buildItemLore(target).get(1)).content()
         );
     }
 

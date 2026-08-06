@@ -128,7 +128,6 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         WaypointPos resolvedPos = this.resolveCoordinateFields();
         sendCommand(addCmd(this.dimensionField.getValue(), this.listNameField.getValue(),
                 new SimpleWaypoint(
-                        plainText(this.nameEditBox.getValue()),
                         this.nameEditBox.getValue(),
                         this.initialsEditBox.getValue(),
                         resolvedPos,

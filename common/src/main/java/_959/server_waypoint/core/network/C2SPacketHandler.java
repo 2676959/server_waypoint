@@ -4,6 +4,11 @@ import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
+import _959.server_waypoint.command.permission.PermissionManager;
+import _959.server_waypoint.core.edit.EditResultStatus;
+import _959.server_waypoint.core.edit.EditTarget;
+import _959.server_waypoint.navigation.NavigationService;
+import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.core.network.buffer.*;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -11,19 +16,29 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import java.util.*;
+import java.io.IOException;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
-public class C2SPacketHandler<S, P> {
+public class C2SPacketHandler<S, K, P> {
     private final PlatformMessageSender<S, P> sender;
     private final WaypointServerCore waypointServer;
+    private final PermissionManager<S, K, P> permissionManager;
+    private final NavigationService<P> navigationService;
 
-    public C2SPacketHandler(PlatformMessageSender<S, P> messageSender, WaypointServerCore waypointServerCore) {
+    public C2SPacketHandler(
+            PlatformMessageSender<S, P> messageSender,
+            WaypointServerCore waypointServerCore,
+            PermissionManager<S, K, P> permissionManager,
+            NavigationService<P> navigationService
+    ) {
         this.sender = messageSender;
         this.waypointServer = waypointServerCore;
+        this.permissionManager = permissionManager;
+        this.navigationService = navigationService;
     }
 
     public void onClientHandshake(P player, ClientHandshakeBuffer buffer) {
@@ -95,5 +110,88 @@ public class C2SPacketHandler<S, P> {
         if (!updatesBundle.isEmpty()) {
             this.sender.sendPlayerMessage(player, translatable("waypoint.updates.sent"));
         }
+    }
+
+    public void onWaypointEditRequest(P player, WaypointEditRequestBuffer request) {
+        if (!this.permissionManager.checkPlayerPermission(
+                player,
+                this.permissionManager.keys.edit(),
+                CONFIG.CommandPermission().edit()
+        )) {
+            this.sendEditResult(player, request, EditResultStatus.PERMISSION_DENIED, null, 0);
+            return;
+        }
+        try {
+            this.waypointServer.updateWaypoint(
+                    EditTarget.waypoint(
+                            request.dimensionName(),
+                            request.listIdentifier(),
+                            request.waypointIdentifier()
+                    ),
+                    request.expectedListRevision(),
+                    request.patch(),
+                    result -> {
+                        if (result.status() == EditResultStatus.SUCCESS) {
+                            WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
+                            try {
+                                this.waypointServer.saveWaypointFile(fileManager);
+                            } catch (IOException exception) {
+                                LOGGER.error("Failed to persist waypoint edit", exception);
+                            }
+                            WaypointList list = Objects.requireNonNull(result.listSnapshot());
+                            this.navigationService.refreshTarget(
+                                    new NavigationTarget(
+                                            request.dimensionName(),
+                                            list,
+                                            Objects.requireNonNull(result.beforeSnapshot())
+                                    ),
+                                    new NavigationTarget(
+                                            request.dimensionName(),
+                                            list,
+                                            Objects.requireNonNull(result.afterSnapshot())
+                                    )
+                            );
+                            WaypointModificationBuffer modification = new WaypointModificationBuffer(
+                                    request.dimensionName(),
+                                    request.listIdentifier(),
+                                    list.displayName(),
+                                    request.waypointIdentifier(),
+                                    result.afterSnapshot(),
+                                    _959.server_waypoint.core.waypoint.WaypointModificationType.UPDATE,
+                                    result.syncNum()
+                            );
+                            this.sender.broadcastPacketFromPlayer(player, modification);
+                        }
+                        this.sendEditResult(
+                                player,
+                                request,
+                                result.status(),
+                                result.afterSnapshot(),
+                                result.syncNum()
+                        );
+                    }
+            );
+        } catch (RuntimeException exception) {
+            LOGGER.warn("Rejected malformed waypoint edit request", exception);
+            this.sendEditResult(player, request, EditResultStatus.MALFORMED_REQUEST, null, 0);
+        }
+    }
+
+    private void sendEditResult(
+            P player,
+            WaypointEditRequestBuffer request,
+            EditResultStatus status,
+            _959.server_waypoint.core.waypoint.SimpleWaypoint waypoint,
+            int revision
+    ) {
+        this.sender.sendPlayerPacket(player, new WaypointEditResultBuffer(
+                request.requestId(),
+                status,
+                request.dimensionName(),
+                request.listIdentifier(),
+                request.waypointIdentifier(),
+                waypoint,
+                revision
+        ));
     }
 }

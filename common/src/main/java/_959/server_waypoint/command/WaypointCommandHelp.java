@@ -53,7 +53,7 @@ final class WaypointCommandHelp {
                         "waypoint.help.list"
                 ))
                 .append(commandEntry(
-                        "/wp download [<dimension> [<list> [<waypoint>]]]",
+                        "/wp download [<dimension> [<list-identifier> [<waypoint-identifier>]]]",
                         "/wp download ",
                         "waypoint.help.download"
                 ));
@@ -83,14 +83,14 @@ final class WaypointCommandHelp {
         }
         if (withRemove) {
             help = help.append(commandEntry(
-                    "/wp remove <dimension> <list> [<waypoint>]",
+                    "/wp remove <dimension> <list-identifier> [<waypoint-identifier>]",
                     "/wp remove ",
                     "waypoint.help.remove"
             ));
         }
         if (withTp) {
             help = help.append(commandEntry(
-                    "/wp tp <dimension> <list> <waypoint>",
+                    "/wp tp <dimension> <list-identifier> <waypoint-identifier>",
                     "/wp tp ",
                     "waypoint.help.tp"
             ));
@@ -109,29 +109,29 @@ final class WaypointCommandHelp {
         return topicHeader("waypoint.help.add.title", "waypoint.help.add.summary")
                 .append(section("waypoint.help.section.usage"))
                 .append(usageEntry(
-                        "/wp add <dimension> <list>",
+                        "/wp add <dimension> <list-identifier>",
                         ADD_COMMAND_PREFIX,
                         "waypoint.help.add.usage.list"
                 ))
                 .append(usageEntry(
-                        "/wp add <position> <list> <waypoint>",
+                        "/wp add <position> <list-identifier> <waypoint-identifier>",
                         ADD_COMMAND_PREFIX,
                         "waypoint.help.add.usage.quick"
                 ))
                 .append(usageEntry(
-                        "/wp add <position> <list> <waypoint> <initials> <color> <yaw> <global> [<keywords> [<description>]]",
+                        "/wp add <position> <list-identifier> <waypoint-identifier> <initials> <color> <yaw> <global> [<keywords> [<description>]]",
                         ADD_COMMAND_PREFIX,
                         "waypoint.help.add.usage.current"
                 ))
                 .append(usageEntry(
-                        "/wp add <dimension> <list> <position> <waypoint> <initials> <color> <yaw> <global> [<keywords> [<description>]]",
+                        "/wp add <dimension> <list-identifier> <position> <waypoint-identifier> <initials> <color> <yaw> <global> [<keywords> [<description>]]",
                         ADD_COMMAND_PREFIX,
                         "waypoint.help.add.usage.dimension"
                 ))
                 .append(section("waypoint.help.section.arguments"))
                 .append(argumentEntry("<dimension>", "waypoint.help.argument.dimension"))
                 .append(argumentEntry("<position>", "waypoint.help.argument.position"))
-                .append(argumentEntry("<list> / <waypoint>", "waypoint.help.argument.names"))
+                .append(argumentEntry("<list-identifier> / <waypoint-identifier>", "waypoint.help.argument.names"))
                 .append(argumentEntry("<initials>", "waypoint.help.argument.initials"))
                 .append(argumentEntry("<color>", "waypoint.help.argument.color"))
                 .append(argumentEntry("<yaw>", "waypoint.help.argument.yaw"))
@@ -171,36 +171,39 @@ final class WaypointCommandHelp {
         return topicHeader("waypoint.help.edit.title", "waypoint.help.edit.summary")
                 .append(section("waypoint.help.section.usage"))
                 .append(usageEntry(
-                        "/wp edit <dimension> <list> <waypoint> <new name> <initials> <position> <color> <yaw> <global> [<keywords> [<description>]]",
+                        "/wp edit list <dimension> <list-identifier> set identifier <identifier>",
+                        EDIT_COMMAND_PREFIX,
+                        "waypoint.help.edit.usage"
+                ))
+                .append(usageEntry(
+                        "/wp edit list <dimension> <list-identifier> set|clear display-name [<display-name>]",
+                        EDIT_COMMAND_PREFIX,
+                        "waypoint.help.edit.usage"
+                ))
+                .append(usageEntry(
+                        "/wp edit waypoint <dimension> <list-identifier> <waypoint-identifier> set <property> <value>",
+                        EDIT_COMMAND_PREFIX,
+                        "waypoint.help.edit.usage"
+                ))
+                .append(usageEntry(
+                        "/wp edit waypoint <dimension> <list-identifier> <waypoint-identifier> clear <display-name|keywords|description>",
                         EDIT_COMMAND_PREFIX,
                         "waypoint.help.edit.usage"
                 ))
                 .append(section("waypoint.help.section.arguments"))
                 .append(argumentEntry("<dimension>", "waypoint.help.argument.dimension"))
                 .append(argumentEntry(
-                        "<list> / <waypoint> / <new name>",
+                        "<list-identifier> / <waypoint-identifier>",
                         "waypoint.help.argument.names"
                 ))
-                .append(argumentEntry("<initials>", "waypoint.help.argument.initials"))
-                .append(argumentEntry("<position>", "waypoint.help.argument.position"))
-                .append(argumentEntry("<color>", "waypoint.help.argument.color"))
-                .append(argumentEntry("<yaw>", "waypoint.help.argument.yaw"))
-                .append(argumentEntry("<global>", "waypoint.help.argument.global"))
-                .append(argumentEntry("<keywords>", "waypoint.help.argument.keywords"))
-                .append(argumentEntry("<description>", "waypoint.help.argument.description"))
                 .append(section("waypoint.help.section.examples"))
                 .append(exampleEntry(
-                        "/wp edit minecraft:overworld \"Home Bases\" \"Main Home\" \"Mountain Home\" MH ~ ~ ~ 39C5BB 90 true",
+                        "/wp edit waypoint minecraft:overworld \"Home Bases\" \"Main Home\" set identifier \"Mountain Home\"",
                         "waypoint.help.edit.example.full",
                         exampleArgument("minecraft:overworld", DIMENSION_COLOR),
                         exampleArgument("\"Home Bases\"", LIST_COLOR),
                         exampleArgument("\"Main Home\"", WAYPOINT_COLOR),
-                        exampleArgument("\"Mountain Home\"", NEW_NAME_COLOR),
-                        exampleArgument("MH", INITIALS_COLOR),
-                        exampleArgument("~ ~ ~", POSITION_COLOR),
-                        exampleArgument("39C5BB", COLOR_COLOR),
-                        exampleArgument("90", YAW_COLOR),
-                        exampleArgument("true", GLOBAL_COLOR)
+                        exampleArgument("\"Mountain Home\"", NEW_NAME_COLOR)
                 ))
                 .append(backButton());
     }
@@ -532,10 +535,10 @@ final class WaypointCommandHelp {
     private static TextColor argumentColor(String argumentName) {
         return switch (argumentName) {
             case "dimension" -> DIMENSION_COLOR;
-            case "list" -> LIST_COLOR;
+            case "list", "list-identifier" -> LIST_COLOR;
             case "position" -> POSITION_COLOR;
-            case "waypoint" -> WAYPOINT_COLOR;
-            case "new name" -> NEW_NAME_COLOR;
+            case "waypoint", "waypoint-identifier" -> WAYPOINT_COLOR;
+            case "new name", "identifier" -> NEW_NAME_COLOR;
             case "initials" -> INITIALS_COLOR;
             case "color" -> COLOR_COLOR;
             case "yaw" -> YAW_COLOR;

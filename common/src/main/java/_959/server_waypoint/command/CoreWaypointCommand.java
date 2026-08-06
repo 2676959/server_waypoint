@@ -5,10 +5,16 @@ import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
+import _959.server_waypoint.core.edit.EditResultStatus;
+import _959.server_waypoint.core.edit.EditTarget;
+import _959.server_waypoint.core.edit.PatchField;
+import _959.server_waypoint.core.edit.WaypointListPatch;
+import _959.server_waypoint.core.edit.WaypointPatch;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.buffer.WaypointListBuffer;
 import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
 import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
+import _959.server_waypoint.core.network.buffer.WaypointListUpdateBuffer;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointListDisplayModel;
@@ -22,6 +28,7 @@ import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationSession;
 import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.navigation.TextDisplayTransformation;
+import _959.server_waypoint.core.restore.WaypointRestoreRegistry;
 import _959.server_waypoint.text.TextButtonBuilder;
 import _959.server_waypoint.util.StringCommandBuilder.ListOptions;
 import _959.server_waypoint.util.StringCommandBuilder.ListTarget;
@@ -92,21 +99,24 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private final PermissionKeys<K> permissionKeys;
     private final PermissionManager<S, K, P> permissionManager;
     private final NavigationService<P> navigationService;
+    private final WaypointRestoreRegistry<String> restoreRegistry;
     private final Supplier<ArgumentType<D>> dimensionArgumentProvider;
     private final Supplier<ArgumentType<B>> blockPosArgumentProvider;
     private final SuggestionProvider<S> WAYPOINT_NAME_SUGGESTION = new WaypointNameSuggestion();
     private final SuggestionProvider<S> WAYPOINT_LIST_SUGGESTION = new WaypointListSuggestion();
     private final SuggestionProvider<S> NAME_INITIALS_SUGGESTION = new NameInitialsSuggestion();
-    private final SuggestionProvider<S> NEW_NAME_INITIALS_SUGGESTION = new NewNameInitialsSuggestion();
     private final SuggestionProvider<S> PLAYER_YAW_SUGGESTION = new PlayerYawSuggestion();
     private final SuggestionProvider<S> HEX_COLOR_CODE_SUGGESTION = new HexColorCodeSuggestion();
-    private final SuggestionProvider<S> CURRENT_WAYPOINT_DISPLAY_NAME_SUGGESTION = new CurrentWaypointDisplayNameSuggestion();
-    private final SuggestionProvider<S> CURRENT_KEYWORDS_SUGGESTION = new CurrentKeywordsSuggestion();
-    private final SuggestionProvider<S> CURRENT_DESCRIPTION_SUGGESTION = new CurrentDescriptionSuggestion();
     public static final String WAYPOINT_COMMAND = "wp";
     public static final String HELP_COMMAND = "help";
     public static final String ADD_COMMAND = "add";
     public static final String EDIT_COMMAND = "edit";
+    public static final String DETAILS_COMMAND = "details";
+    public static final String RESTORE_COMMAND = "restore";
+    public static final String SET_COMMAND = "set";
+    public static final String CLEAR_COMMAND = "clear";
+    public static final String LIST_TARGET = "list";
+    public static final String WAYPOINT_TARGET = "waypoint";
     public static final String REMOVE_COMMAND = "remove";
     public static final String LIST_COMMAND = "list";
     public static final String DOWNLOAD_COMMAND = "download";
@@ -128,9 +138,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String FLAT_VIEW = "flat";
     public static final String CONFIG_LITERAL_NODE = "config";
     public static final String DIMENSION_ARG = "dimension";
-    public static final String LIST_NAME_ARG = "list name";
-    public static final String WAYPOINT_NAME_ARG = "waypoint name";
-    public static final String NEW_WAYPOINT_NAME_ARG = "new waypoint name";
+    public static final String LIST_NAME_ARG = "list identifier";
+    public static final String WAYPOINT_NAME_ARG = "waypoint identifier";
+    public static final String VALUE_ARG = "value";
+    public static final String TOKEN_ARG = "token";
     public static final String INITIALS_ARG = "initials";
     public static final String POS_ARG = "position";
     public static final String YAW_ARG = "yaw";
@@ -166,6 +177,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         this.sender = sender;
         this.permissionManager = permissionManager;
         this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
+        this.restoreRegistry = new WaypointRestoreRegistry<>();
         this.dimensionArgumentProvider = dimensionArgument;
         this.blockPosArgumentProvider = blockPositionArgument;
         this.permissionKeys = permissionManager.keys;
@@ -243,40 +255,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 ).build();
     }
 
-    @SuppressWarnings("unchecked")
-    private CommandNode<S> propertiesArguments(Command<S> command) {
-        Command<Object> objectCommand = (Command<Object>) command;
-        return (CommandNode<S>) argument(NEW_WAYPOINT_NAME_ARG, string())
-                .suggests((SuggestionProvider<Object>) CURRENT_WAYPOINT_DISPLAY_NAME_SUGGESTION)
-                .then(argument(INITIALS_ARG, string())
-                        .suggests((SuggestionProvider<Object>) NEW_NAME_INITIALS_SUGGESTION)
-                        .then(argument(POS_ARG, blockPosArgumentProvider.get())
-                                .then(argument(COLOR_ARG, string())
-                                        .suggests((SuggestionProvider<Object>) HEX_COLOR_CODE_SUGGESTION)
-                                        .then(argument(YAW_ARG, integer())
-                                                .suggests((SuggestionProvider<Object>) PLAYER_YAW_SUGGESTION)
-                                                .then(extraInfoArguments(objectCommand, true))
-                                        )
-                                )
-                        )
-                ).build();
-    }
-
-    private RequiredArgumentBuilder<Object, Boolean> extraInfoArguments(
-            Command<Object> command,
-            boolean suggestCurrent
-    ) {
+    private RequiredArgumentBuilder<Object, Boolean> extraInfoArguments(Command<Object> command) {
         RequiredArgumentBuilder<Object, Boolean> visibilityNode = argument(VISIBILITY_ARG, bool());
         visibilityNode.executes(command);
         RequiredArgumentBuilder<Object, String> keywordsNode = argument(KEYWORDS_ARG, string());
-        if (suggestCurrent) {
-            keywordsNode.suggests((SuggestionProvider<Object>) this.CURRENT_KEYWORDS_SUGGESTION);
-        }
         keywordsNode.executes(command);
         RequiredArgumentBuilder<Object, String> descriptionNode = argument(DESCRIPTION_ARG, string());
-        if (suggestCurrent) {
-            descriptionNode.suggests((SuggestionProvider<Object>) this.CURRENT_DESCRIPTION_SUGGESTION);
-        }
         descriptionNode.executes(command);
         keywordsNode.then(descriptionNode);
         visibilityNode.then(keywordsNode);
@@ -295,6 +279,238 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     @SuppressWarnings("unchecked")
     private ArgumentBuilder<S, ?> waypointNameNode() {
         return (ArgumentBuilder<S, ?>) argument(WAYPOINT_NAME_ARG, string()).suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION);
+    }
+
+    private LiteralArgumentBuilder<S> detailsCommandNode() {
+        LiteralArgumentBuilder<S> root = literal(DETAILS_COMMAND);
+        RequiredArgumentBuilder<S, D> listDimension = argument(
+                DIMENSION_ARG,
+                this.dimensionArgumentProvider.get()
+        );
+        listDimension.then(this.stringArgument(LIST_NAME_ARG, this.WAYPOINT_LIST_SUGGESTION)
+                .executes(context -> {
+                    this.executeListDetails(
+                            context.getSource(),
+                            this.getArgument(context, DIMENSION_ARG),
+                            getString(context, LIST_NAME_ARG)
+                    );
+                    return Command.SINGLE_SUCCESS;
+                }));
+        root.then(LiteralArgumentBuilder.<S>literal(LIST_TARGET).then(listDimension));
+
+        RequiredArgumentBuilder<S, D> waypointDimension = argument(
+                DIMENSION_ARG,
+                this.dimensionArgumentProvider.get()
+        );
+        RequiredArgumentBuilder<S, String> list = this.stringArgument(
+                LIST_NAME_ARG,
+                this.WAYPOINT_LIST_SUGGESTION
+        );
+        list.then(this.stringArgument(WAYPOINT_NAME_ARG, this.WAYPOINT_NAME_SUGGESTION)
+                .executes(context -> {
+                    this.executeWaypointDetails(
+                            context.getSource(),
+                            this.getArgument(context, DIMENSION_ARG),
+                            getString(context, LIST_NAME_ARG),
+                            getString(context, WAYPOINT_NAME_ARG)
+                    );
+                    return Command.SINGLE_SUCCESS;
+                }));
+        waypointDimension.then(list);
+        root.then(LiteralArgumentBuilder.<S>literal(WAYPOINT_TARGET).then(waypointDimension));
+        return root;
+    }
+
+    private LiteralArgumentBuilder<S> editCommandNode() {
+        LiteralArgumentBuilder<S> root = literal(EDIT_COMMAND);
+        root.requires(this::hasEditPermission);
+        root.then(this.listEditTargetNode());
+        root.then(this.waypointEditTargetNode());
+        return root;
+    }
+
+    private LiteralArgumentBuilder<S> listEditTargetNode() {
+        LiteralArgumentBuilder<S> target = literal(LIST_TARGET);
+        RequiredArgumentBuilder<S, D> dimension = argument(
+                DIMENSION_ARG,
+                this.dimensionArgumentProvider.get()
+        );
+        RequiredArgumentBuilder<S, String> list = this.stringArgument(
+                LIST_NAME_ARG,
+                this.WAYPOINT_LIST_SUGGESTION
+        );
+        LiteralArgumentBuilder<S> set = literal(SET_COMMAND);
+        set.then(this.listStringPatchNode("identifier", false));
+        set.then(this.listStringPatchNode("display-name", true));
+        LiteralArgumentBuilder<S> clear = literal(CLEAR_COMMAND);
+        clear.then(LiteralArgumentBuilder.<S>literal("display-name").executes(context -> {
+            this.executeListPatch(
+                    context.getSource(),
+                    this.getArgument(context, DIMENSION_ARG),
+                    getString(context, LIST_NAME_ARG),
+                    new WaypointListPatch(PatchField.unchanged(), PatchField.clear())
+            );
+            return Command.SINGLE_SUCCESS;
+        }));
+        list.then(set).then(clear);
+        dimension.then(list);
+        target.then(dimension);
+        return target;
+    }
+
+    private LiteralArgumentBuilder<S> listStringPatchNode(String property, boolean displayName) {
+        LiteralArgumentBuilder<S> propertyNode = literal(property);
+        propertyNode.then(RequiredArgumentBuilder.<S, String>argument(VALUE_ARG, string()).executes(context -> {
+            PatchField<String> value = PatchField.set(getString(context, VALUE_ARG));
+            this.executeListPatch(
+                    context.getSource(),
+                    this.getArgument(context, DIMENSION_ARG),
+                    getString(context, LIST_NAME_ARG),
+                    displayName
+                            ? new WaypointListPatch(PatchField.unchanged(), value)
+                            : new WaypointListPatch(value, PatchField.unchanged())
+            );
+            return Command.SINGLE_SUCCESS;
+        }));
+        return propertyNode;
+    }
+
+    private LiteralArgumentBuilder<S> waypointEditTargetNode() {
+        LiteralArgumentBuilder<S> target = literal(WAYPOINT_TARGET);
+        RequiredArgumentBuilder<S, D> dimension = argument(
+                DIMENSION_ARG,
+                this.dimensionArgumentProvider.get()
+        );
+        RequiredArgumentBuilder<S, String> list = this.stringArgument(
+                LIST_NAME_ARG,
+                this.WAYPOINT_LIST_SUGGESTION
+        );
+        RequiredArgumentBuilder<S, String> waypoint = this.stringArgument(
+                WAYPOINT_NAME_ARG,
+                this.WAYPOINT_NAME_SUGGESTION
+        );
+        LiteralArgumentBuilder<S> set = literal(SET_COMMAND);
+        set.then(this.waypointStringPatchNode("identifier", WaypointPatchProperty.IDENTIFIER));
+        set.then(this.waypointStringPatchNode("display-name", WaypointPatchProperty.DISPLAY_NAME));
+        set.then(this.waypointStringPatchNode("initials", WaypointPatchProperty.INITIALS));
+        set.then(LiteralArgumentBuilder.<S>literal("position")
+                .then(RequiredArgumentBuilder.<S, B>argument(POS_ARG, this.blockPosArgumentProvider.get())
+                        .executes(context -> {
+                            WaypointPos position = this.toWaypointPos(
+                                    context.getSource(),
+                                    this.getArgument(context, POS_ARG)
+                            );
+                            if (position == null) {
+                                this.sendPosArgumentError(context.getSource());
+                            } else {
+                                this.executeWaypointPatch(
+                                        context.getSource(),
+                                        this.getArgument(context, DIMENSION_ARG),
+                                        getString(context, LIST_NAME_ARG),
+                                        getString(context, WAYPOINT_NAME_ARG),
+                                        patchWithPosition(position)
+                                );
+                            }
+                            return Command.SINGLE_SUCCESS;
+                        })));
+        set.then(LiteralArgumentBuilder.<S>literal("color")
+                .then(RequiredArgumentBuilder.<S, String>argument(COLOR_ARG, string())
+                        .suggests(this.HEX_COLOR_CODE_SUGGESTION)
+                        .executes(context -> {
+                            String input = getString(context, COLOR_ARG);
+                            int color = colorNameOrHexCodeToRgb(input, false);
+                            if (color < 0) {
+                                this.sendHexColorCodeError(context.getSource(), input);
+                            } else {
+                                this.executeWaypointPatch(
+                                        context.getSource(),
+                                        this.getArgument(context, DIMENSION_ARG),
+                                        getString(context, LIST_NAME_ARG),
+                                        getString(context, WAYPOINT_NAME_ARG),
+                                        patchWithColor(color)
+                                );
+                            }
+                            return Command.SINGLE_SUCCESS;
+                        })));
+        set.then(LiteralArgumentBuilder.<S>literal("yaw")
+                .then(RequiredArgumentBuilder.<S, Integer>argument(YAW_ARG, integer()).executes(context -> {
+                    this.executeWaypointPatch(
+                            context.getSource(),
+                            this.getArgument(context, DIMENSION_ARG),
+                            getString(context, LIST_NAME_ARG),
+                            getString(context, WAYPOINT_NAME_ARG),
+                            patchWithYaw(getInteger(context, YAW_ARG))
+                    );
+                    return Command.SINGLE_SUCCESS;
+                })));
+        LiteralArgumentBuilder<S> visibility = literal("visibility");
+        visibility.then(LiteralArgumentBuilder.<S>literal("global").executes(context -> this.executeVisibilityPatch(context, true)));
+        visibility.then(LiteralArgumentBuilder.<S>literal("local").executes(context -> this.executeVisibilityPatch(context, false)));
+        set.then(visibility);
+        set.then(this.waypointStringPatchNode("keywords", WaypointPatchProperty.KEYWORDS));
+        set.then(this.waypointStringPatchNode("description", WaypointPatchProperty.DESCRIPTION));
+
+        LiteralArgumentBuilder<S> clear = literal(CLEAR_COMMAND);
+        clear.then(this.waypointClearPatchNode("display-name", WaypointPatchProperty.DISPLAY_NAME));
+        clear.then(this.waypointClearPatchNode("keywords", WaypointPatchProperty.KEYWORDS));
+        clear.then(this.waypointClearPatchNode("description", WaypointPatchProperty.DESCRIPTION));
+        waypoint.then(set).then(clear);
+        list.then(waypoint);
+        dimension.then(list);
+        target.then(dimension);
+        return target;
+    }
+
+    private int executeVisibilityPatch(CommandContext<S> context, boolean global) {
+        this.executeWaypointPatch(
+                context.getSource(),
+                this.getArgument(context, DIMENSION_ARG),
+                getString(context, LIST_NAME_ARG),
+                getString(context, WAYPOINT_NAME_ARG),
+                patchWithVisibility(global)
+        );
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private LiteralArgumentBuilder<S> waypointStringPatchNode(
+            String property,
+            WaypointPatchProperty patchProperty
+    ) {
+        LiteralArgumentBuilder<S> propertyNode = literal(property);
+        propertyNode.then(RequiredArgumentBuilder.<S, String>argument(VALUE_ARG, string()).executes(context -> {
+            this.executeWaypointPatch(
+                    context.getSource(),
+                    this.getArgument(context, DIMENSION_ARG),
+                    getString(context, LIST_NAME_ARG),
+                    getString(context, WAYPOINT_NAME_ARG),
+                    patchWithString(patchProperty, getString(context, VALUE_ARG), false)
+            );
+            return Command.SINGLE_SUCCESS;
+        }));
+        return propertyNode;
+    }
+
+    private LiteralArgumentBuilder<S> waypointClearPatchNode(
+            String property,
+            WaypointPatchProperty patchProperty
+    ) {
+        return LiteralArgumentBuilder.<S>literal(property).executes(context -> {
+            this.executeWaypointPatch(
+                    context.getSource(),
+                    this.getArgument(context, DIMENSION_ARG),
+                    getString(context, LIST_NAME_ARG),
+                    getString(context, WAYPOINT_NAME_ARG),
+                    patchWithString(patchProperty, "", true)
+            );
+            return Command.SINGLE_SUCCESS;
+        });
+    }
+
+    private RequiredArgumentBuilder<S, String> stringArgument(
+            String name,
+            SuggestionProvider<S> suggestions
+    ) {
+        return RequiredArgumentBuilder.<S, String>argument(name, string()).suggests(suggestions);
     }
 
     @SuppressWarnings("unchecked")
@@ -373,8 +589,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                                                                                     getOptionalString(context, DESCRIPTION_ARG, "")
                                                                                             );
                                                                                             return Command.SINGLE_SUCCESS;
-                                                                                        },
-                                                                                        false
+                                                                                        }
                                                                                 ))
                                                                                 )
                                                                         )
@@ -425,8 +640,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                                                                                     getOptionalString(context, DESCRIPTION_ARG, "")
                                                                                             );
                                                                                             return Command.SINGLE_SUCCESS;
-                                                                                        },
-                                                                                false
+                                                                                        }
                                                                         ))
                                                                         )
                                                                 )
@@ -435,30 +649,15 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                         )
                                 )
                 )
-                .then(literal(EDIT_COMMAND)
-                        .requires(source -> hasEditPermission((S) source))
-                        .then((CommandNode<Object>)
-                                selectorArguments(
-                                        propertiesArguments(
-                                                context -> {
-                                                    executeEdit(
-                                                            context.getSource(),
-                                                            getArgument(context, DIMENSION_ARG),
-                                                            getString(context, LIST_NAME_ARG),
-                                                            getString(context, WAYPOINT_NAME_ARG),
-                                                            getString(context, NEW_WAYPOINT_NAME_ARG),
-                                                            getString(context, INITIALS_ARG),
-                                                            getArgument(context, POS_ARG),
-                                                            getInteger(context, YAW_ARG),
-                                                            getString(context, COLOR_ARG),
-                                                            getBool(context, VISIBILITY_ARG),
-                                                            parseKeywords(getOptionalString(context, KEYWORDS_ARG, "")),
-                                                            getOptionalString(context, DESCRIPTION_ARG, "")
-                                                    );
-                                                    return Command.SINGLE_SUCCESS;
-                                                }
-                                        )
-                                )
+                .then((ArgumentBuilder<Object, ?>) editCommandNode())
+                .then((ArgumentBuilder<Object, ?>) detailsCommandNode())
+                .then(literal(RESTORE_COMMAND)
+                        .requires(source -> hasAddPermission((S) source))
+                        .then(argument(TOKEN_ARG, string())
+                                .executes(context -> {
+                                    executeRestore((S) context.getSource(), getString(context, TOKEN_ARG));
+                                    return Command.SINGLE_SUCCESS;
+                                })
                         )
                 )
                 .then(literal(REMOVE_COMMAND)
@@ -622,7 +821,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         runWithSelectorTarget(source, dimensionArgument, (fileManager) -> {
             WaypointList waypointList = fileManager.getWaypointListByName(listName);
             if (waypointList == null) {
-                this.sender.sendError(source, translatable("waypoint.nonexist.list", parse(listName)));
+                this.sender.sendError(source, translatable("waypoint.nonexist.list", text(listName)));
             } else if (waypointList.isEmpty()) {
                 foundEmptyAction.accept(fileManager, waypointList);
             } else {
@@ -635,7 +834,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         runWithSelectorTarget(source, dimensionArgument, listName, (fileManager, waypointList) -> {
             SimpleWaypoint waypoint = waypointList.getWaypointByName(name);
             if (waypoint == null) {
-                this.sender.sendError(source, translatable("waypoint.nonexist.waypoint", parse(name)));
+                this.sender.sendError(source, translatable("waypoint.nonexist.waypoint", text(name)));
             } else {
                 action.accept(fileManager, waypointList, waypoint);
             }
@@ -662,16 +861,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             @Nullable List<String> keywords,
             @Nullable String description
     ) {
-        if (!validateLength(source, LIST_NAME_ARG, listName, MAX_NAME_LENGTH)
-                || waypointName != null
-                && !validateLength(source, WAYPOINT_NAME_ARG, waypointName, MAX_NAME_LENGTH)
-                || description != null
+        if (description != null
                 && !validateLength(source, DESCRIPTION_ARG, description, MAX_DESCRIPTION_LENGTH)) {
             return false;
         }
-        if (!isValidInput(listName)
-                || waypointName != null && !isValidInput(waypointName)
-                || description != null && !isValidInput(description)) {
+        if (description != null && !isValidInput(description)) {
             this.sender.sendError(source, translatable("argument.formatted_text.invalid"));
             return false;
         }
@@ -717,22 +911,307 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         return List.copyOf(keywords);
     }
 
+    private static WaypointPatch patchWithString(
+            WaypointPatchProperty property,
+            String value,
+            boolean clear
+    ) {
+        PatchField<String> field = clear ? PatchField.clear() : PatchField.set(value);
+        return new WaypointPatch(
+                property == WaypointPatchProperty.IDENTIFIER ? field : PatchField.unchanged(),
+                property == WaypointPatchProperty.DISPLAY_NAME ? field : PatchField.unchanged(),
+                property == WaypointPatchProperty.INITIALS ? field : PatchField.unchanged(),
+                PatchField.unchanged(),
+                PatchField.unchanged(),
+                PatchField.unchanged(),
+                PatchField.unchanged(),
+                property == WaypointPatchProperty.KEYWORDS
+                        ? (clear ? PatchField.clear() : PatchField.set(parseKeywords(value)))
+                        : PatchField.unchanged(),
+                property == WaypointPatchProperty.DESCRIPTION ? field : PatchField.unchanged()
+        );
+    }
+
+    private static WaypointPatch patchWithPosition(WaypointPos position) {
+        return new WaypointPatch(
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.set(position), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged()
+        );
+    }
+
+    private static WaypointPatch patchWithColor(int color) {
+        return new WaypointPatch(
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.set(color), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged()
+        );
+    }
+
+    private static WaypointPatch patchWithYaw(int yaw) {
+        return new WaypointPatch(
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.set(yaw),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged()
+        );
+    }
+
+    private static WaypointPatch patchWithVisibility(boolean global) {
+        return new WaypointPatch(
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.set(global), PatchField.unchanged(), PatchField.unchanged()
+        );
+    }
+
+    private void executeListPatch(
+            S source,
+            D dimensionArgument,
+            String listIdentifier,
+            WaypointListPatch patch
+    ) {
+        String dimensionName = toDimensionName(dimensionArgument);
+        if (!isDimensionValid(source, dimensionArgument)) {
+            sendDimensionError(source, dimensionName);
+            return;
+        }
+        this.waypointServer.updateWaypointList(
+                EditTarget.list(dimensionName, listIdentifier),
+                null,
+                patch,
+                result -> {
+                    if (result.status() != EditResultStatus.SUCCESS) {
+                        this.sendEditError(source, result.status(), listIdentifier);
+                        return;
+                    }
+                    WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
+                    WaypointList before = Objects.requireNonNull(result.beforeSnapshot());
+                    WaypointList after = Objects.requireNonNull(result.afterSnapshot());
+                    saveChanges(source, fileManager);
+                    this.navigationService.refreshListIdentity(
+                            dimensionName,
+                            before.name(),
+                            after.name(),
+                            after.displayName()
+                    );
+                    WaypointListUpdateBuffer update = new WaypointListUpdateBuffer(
+                            dimensionName,
+                            before.name(),
+                            after
+                    );
+                    for (P player : this.sender.getBroadcastPlayers(source)) {
+                        this.sender.sendPlayerPacket(player, update);
+                    }
+                    this.sender.sendMessage(
+                            source,
+                            _959.server_waypoint.text.WaypointDetailsTextBuilder.listDetails(
+                                    dimensionName,
+                                    after,
+                                    hasAddPermission(source),
+                                    hasEditPermission(source),
+                                    hasRemovePermission(source)
+                            )
+                    );
+                }
+        );
+    }
+
+    private void executeWaypointPatch(
+            S source,
+            D dimensionArgument,
+            String listIdentifier,
+            String waypointIdentifier,
+            WaypointPatch patch
+    ) {
+        String dimensionName = toDimensionName(dimensionArgument);
+        if (!isDimensionValid(source, dimensionArgument)) {
+            sendDimensionError(source, dimensionName);
+            return;
+        }
+        this.waypointServer.updateWaypoint(
+                EditTarget.waypoint(dimensionName, listIdentifier, waypointIdentifier),
+                null,
+                patch,
+                result -> {
+                    if (result.status() != EditResultStatus.SUCCESS) {
+                        this.sendEditError(source, result.status(), waypointIdentifier);
+                        return;
+                    }
+                    WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
+                    WaypointList list = Objects.requireNonNull(result.listSnapshot());
+                    SimpleWaypoint before = Objects.requireNonNull(result.beforeSnapshot());
+                    SimpleWaypoint after = Objects.requireNonNull(result.afterSnapshot());
+                    saveChanges(source, fileManager);
+                    this.navigationService.refreshTarget(
+                            new NavigationTarget(dimensionName, list, before),
+                            new NavigationTarget(dimensionName, list, after)
+                    );
+                    WaypointModificationBuffer update = new WaypointModificationBuffer(
+                            dimensionName,
+                            list.name(),
+                            list.displayName(),
+                            before.name(),
+                            after,
+                            WaypointModificationType.UPDATE,
+                            result.syncNum()
+                    );
+                    for (P player : this.sender.getBroadcastPlayers(source)) {
+                        this.sender.sendPlayerPacket(player, update);
+                    }
+                    this.sender.sendMessage(
+                            source,
+                            _959.server_waypoint.text.WaypointDetailsTextBuilder.waypointDetails(
+                                    dimensionName,
+                                    list,
+                                    after,
+                                    hasEditPermission(source),
+                                    hasRemovePermission(source),
+                                    hasTpPermission(source),
+                                    hasNavigatePermission(source)
+                            )
+                    );
+                }
+        );
+    }
+
+    private void executeListDetails(S source, D dimensionArgument, String listIdentifier) {
+        BiConsumer<WaypointFileManager, WaypointList> action = (fileManager, waypointList) ->
+                this.sender.sendMessage(
+                        source,
+                        _959.server_waypoint.text.WaypointDetailsTextBuilder.listDetails(
+                                fileManager.getDimensionName(),
+                                waypointList,
+                                hasAddPermission(source),
+                                hasEditPermission(source),
+                                hasRemovePermission(source)
+                        )
+                );
+        runWithSelectorTarget(source, dimensionArgument, listIdentifier, action, action);
+    }
+
+    private void executeWaypointDetails(
+            S source,
+            D dimensionArgument,
+            String listIdentifier,
+            String waypointIdentifier
+    ) {
+        runWithSelectorTarget(
+                source,
+                dimensionArgument,
+                listIdentifier,
+                waypointIdentifier,
+                (fileManager, waypointList, waypoint) -> this.sender.sendMessage(
+                        source,
+                        _959.server_waypoint.text.WaypointDetailsTextBuilder.waypointDetails(
+                                fileManager.getDimensionName(),
+                                waypointList,
+                                waypoint,
+                                hasEditPermission(source),
+                                hasRemovePermission(source),
+                                hasTpPermission(source),
+                                hasNavigatePermission(source)
+                        )
+                )
+        );
+    }
+
+    private void sendEditError(S source, EditResultStatus status, String identifier) {
+        this.sender.sendError(
+                source,
+                translatable(
+                        "waypoint.edit.error." + status.name().toLowerCase(Locale.ROOT),
+                        text(identifier)
+                )
+        );
+    }
+
+    private String restoreOwner(S source) {
+        P player = getPlayer(source);
+        return player == null ? this.sender.getSenderName(source).toString() : getPlayerName(player);
+    }
+
+    private void executeRestore(S source, String token) {
+        String owner = this.restoreOwner(source);
+        this.restoreRegistry.lookup(owner, token).ifPresentOrElse(entry ->
+                this.waypointServer.restoreWaypoint(
+                        entry.dimensionName(),
+                        entry.listIdentifier(),
+                        entry.waypoint(),
+                        result -> {
+                            switch (result.status()) {
+                                case RESTORED -> {
+                                    this.restoreRegistry.consume(owner, token);
+                                    WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
+                                    WaypointList list = Objects.requireNonNull(result.waypointList());
+                                    SimpleWaypoint waypoint = Objects.requireNonNull(result.waypointSnapshot());
+                                    saveChanges(source, fileManager);
+                                    this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(
+                                            entry.dimensionName(),
+                                            list.name(),
+                                            list.displayName(),
+                                            waypoint.name(),
+                                            waypoint,
+                                            WaypointModificationType.ADD,
+                                            result.syncNum()
+                                    ));
+                                    this.sender.sendMessage(
+                                            source,
+                                            _959.server_waypoint.text.WaypointDetailsTextBuilder.waypointDetails(
+                                                    entry.dimensionName(),
+                                                    list,
+                                                    waypoint,
+                                                    hasEditPermission(source),
+                                                    hasRemovePermission(source),
+                                                    hasTpPermission(source),
+                                                    hasNavigatePermission(source)
+                                            )
+                                    );
+                                }
+                                case DIMENSION_NOT_FOUND, LIST_NOT_FOUND -> this.sender.sendError(
+                                        source,
+                                        translatable("waypoint.restore.list_missing")
+                                );
+                                case IDENTIFIER_COLLISION -> this.sender.sendError(
+                                        source,
+                                        translatable("waypoint.restore.collision")
+                                );
+                            }
+                        }
+                ),
+                () -> this.sender.sendError(source, translatable("waypoint.restore.invalid"))
+        );
+    }
+
+    private enum WaypointPatchProperty {
+        IDENTIFIER,
+        DISPLAY_NAME,
+        INITIALS,
+        KEYWORDS,
+        DESCRIPTION
+    }
+
     private void executeAddWaypointList(S source, D dimensionArgument, String listName) {
         String dimensionName = toDimensionName(dimensionArgument);
         if (!validateTextInputs(source, listName, null, null, null)) {
             return;
         }
-        NameInput listInput = NameInput.from(listName);
         if (isDimensionValid(source, dimensionArgument)) {
             this.waypointServer.addWaypointList(
                     dimensionName,
-                    listInput.name(),
-                    listInput.displayName(),
+                    listName,
+                    listName,
                     result -> {
                 switch (result.status()) {
                     case ADDED -> {
-                        this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(dimensionName, listInput.name(), listInput.displayName(), null, null, ADD_LIST, SERVER_N));
-                        this.sender.sendMessage(source, translatable("waypoint.add.list.success", parse(listInput.displayName()), dimensionNameWithColor(dimensionName)));
+                        this.sender.broadcastWaypointModification(source, new WaypointModificationBuffer(dimensionName, listName, listName, null, null, ADD_LIST, SERVER_N));
+                        this.sender.sendMessage(source, translatable("waypoint.add.list.success", text(listName), dimensionNameWithColor(dimensionName))
+                                .appendSpace().append(detailsButton(_959.server_waypoint.util.StringCommandBuilder.detailsListCmd(dimensionName, listName)))
+                                .appendSpace().append(suggestCommandButton(
+                                        translatable("button.add.waypoint.label"),
+                                        NamedTextColor.GREEN,
+                                        "/wp add " + dimensionName + " " + _959.server_waypoint.util.StringCommandBuilder.escapeArgument(listName) + " ",
+                                        translatable("button.add.waypoint")
+                                )));
                         saveChanges(source, result.fileManager());
                     }
                     case EXISTS -> this.sender.sendError(source, translatable("waypoint.add.list.exists", parse(result.waypointList().displayName())));
@@ -745,11 +1224,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         if (!validateTextInputs(source, listName, name, keywords, description)) {
             return;
         }
-        NameInput listInput = NameInput.from(listName);
-        NameInput waypointInput = NameInput.from(name);
         SimpleWaypoint newWaypoint = new SimpleWaypoint(
-                waypointInput.name(),
-                waypointInput.displayName(),
+                name,
                 initials,
                 waypointPos,
                 rgb,
@@ -758,7 +1234,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 keywords,
                 description
         );
-        this.waypointServer.addWaypoint(dimensionName, listInput.name(), listInput.displayName(), newWaypoint, result -> {
+        this.waypointServer.addWaypoint(dimensionName, listName, listName, newWaypoint, result -> {
             switch (result.status()) {
                 case ADDED -> {
                     saveChanges(source, result.fileManager());
@@ -776,7 +1252,13 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                             translatable("waypoint.add.success",
                                     waypointTextWithTp(result.waypointSnapshot(), dimensionName, result.waypointList().name()),
                                     parse(result.waypointList().displayName())
-                            )
+                            ).appendSpace().append(detailsButton(
+                                    _959.server_waypoint.util.StringCommandBuilder.detailsWaypointCmd(
+                                            dimensionName,
+                                            result.waypointList().name(),
+                                            result.waypointSnapshot().name()
+                                    )
+                            ))
                     );
                 }
                 case DUPLICATE -> this.sender.sendMessage(
@@ -819,79 +1301,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         addWaypointDirectly(source, toDimensionName(getSourceDimension(source)), listName, name, WaypointInitials.getDefaultInitials(plainText(name)), toWaypointPos(source, blockPosArgument), Math.round(getSourceYaw(source)), randomColor(), true, List.of(), "");
     }
 
-    private void executeEdit(S source, D dimensionArgument, String listName, String oldName, String newName, String initials, B blockPosArgument, int yaw, String hexCode, boolean global, List<String> keywords, String description) {
-        if (!validateTextInputs(source, listName, newName, keywords, description)) {
-            return;
-        }
-        WaypointPos waypointPos = toWaypointPos(source, blockPosArgument);
-        if (waypointPos == null) {
-            sendPosArgumentError(source);
-            return;
-        }
-        int rgb;
-        if (RANDOM_COLOR.equals(hexCode)) {
-            rgb = randomColor();
-        } else {
-            rgb = colorNameOrHexCodeToRgb(hexCode, false);
-        }
-        if (rgb < 0) {
-            sendHexColorCodeError(source, hexCode);
-        } else {
-            NameInput waypointInput = NameInput.from(newName);
-            String dimensionName = toDimensionName(dimensionArgument);
-            if (!isDimensionValid(source, dimensionArgument)) {
-                sendDimensionError(source, dimensionName);
-                return;
-            }
-            this.waypointServer.updateWaypointProperties(
-                    dimensionName,
-                    listName,
-                    oldName,
-                    waypointInput.name(),
-                    waypointInput.displayName(),
-                    initials,
-                    waypointPos,
-                    rgb,
-                    yaw,
-                    global,
-                    keywords,
-                    description,
-                    result -> {
-                        switch (result.status()) {
-                            case UPDATED -> {
-                                WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
-                                SimpleWaypoint before = Objects.requireNonNull(result.beforeSnapshot());
-                                SimpleWaypoint after = Objects.requireNonNull(result.afterSnapshot());
-                                saveChanges(source, fileManager);
-                                WaypointList updatedList = Objects.requireNonNull(result.waypointList());
-                                this.navigationService.refreshTarget(
-                                        new NavigationTarget(dimensionName, updatedList, before),
-                                        new NavigationTarget(dimensionName, updatedList, after)
-                                );
-                                WaypointModificationBuffer buffer = new WaypointModificationBuffer(
-                                        dimensionName,
-                                        listName,
-                                        updatedList.displayName(),
-                                        oldName,
-                                        after,
-                                        WaypointModificationType.UPDATE,
-                                        result.syncNum()
-                                );
-                                this.sender.broadcastWaypointModification(source, buffer);
-                                this.sender.sendMessage(source, translatable("waypoint.edit.success", waypointTextWithTp(after, dimensionName, listName)));
-                            }
-                            case NAME_USED -> this.sender.sendMessage(source, translatable("waypoint.edit.existing-name", parse(waypointInput.displayName())));
-                            case IDENTICAL -> this.sender.sendMessage(source, translatable("waypoint.edit.identical"));
-                            case DIMENSION_NOT_FOUND -> this.sender.sendError(source, translatable("waypoint.empty.dimension", dimensionNameWithColor(dimensionName)));
-                            case LIST_NOT_FOUND -> this.sender.sendError(source, translatable("waypoint.nonexist.list", parse(listName)));
-                            case LIST_EMPTY -> this.sender.sendError(source, translatable("waypoint.empty.list", parse(Objects.requireNonNull(result.waypointList()).displayName())));
-                            case WAYPOINT_NOT_FOUND -> this.sender.sendError(source, translatable("waypoint.nonexist.waypoint", parse(oldName)));
-                        }
-                    }
-            );
-        }
-    }
-
     private void executeRemoveList(S source, D dimensionArgument, String listName) {
 //        runWithSelectorTarget(source, dimensionArgument, listName,
 //                (fileManager, waypointList) ->
@@ -918,7 +1327,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                     saveChanges(source, fileManager);
                 }
                 case DIMENSION_NOT_FOUND -> this.sender.sendError(source, translatable("waypoint.empty.dimension", dimensionNameWithColor(dimensionName)));
-                case LIST_NOT_FOUND -> this.sender.sendError(source, translatable("waypoint.nonexist.list", parse(listName)));
+                case LIST_NOT_FOUND -> this.sender.sendError(source, translatable("waypoint.nonexist.list", text(listName)));
                 case NON_EMPTY -> this.sender.sendError(source, translatable("waypoint.remove.list.nonempty", parse(Objects.requireNonNull(result.waypointList()).displayName())));
             }
         });
@@ -946,12 +1355,22 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                             result.syncNum()
                     );
                     this.sender.broadcastWaypointModification(source, buffer);
-                    this.sender.sendMessage(source, translatable("waypoint.remove.success", waypointTextNoTp(waypoint, dimensionName), restoreButton(dimensionName, listName, waypoint)));
+                    String token = this.restoreRegistry.register(
+                            this.restoreOwner(source),
+                            dimensionName,
+                            listName,
+                            waypoint
+                    );
+                    this.sender.sendMessage(source, translatable(
+                            "waypoint.remove.success",
+                            waypointTextNoTp(waypoint, dimensionName),
+                            restoreTokenButton(token)
+                    ));
                 }
                 case DIMENSION_NOT_FOUND -> this.sender.sendError(source, translatable("waypoint.empty.dimension", dimensionNameWithColor(dimensionName)));
-                case LIST_NOT_FOUND -> this.sender.sendError(source, translatable("waypoint.nonexist.list", parse(listName)));
+                case LIST_NOT_FOUND -> this.sender.sendError(source, translatable("waypoint.nonexist.list", text(listName)));
                 case LIST_EMPTY -> this.sender.sendError(source, translatable("waypoint.empty.list", parse(Objects.requireNonNull(result.waypointList()).displayName())));
-                case WAYPOINT_NOT_FOUND -> this.sender.sendError(source, translatable("waypoint.nonexist.waypoint", parse(name)));
+                case WAYPOINT_NOT_FOUND -> this.sender.sendError(source, translatable("waypoint.nonexist.waypoint", text(name)));
             }
         });
     }
@@ -2030,9 +2449,13 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 return Suggestions.empty();
             } else {
                 String currentInput = stripOuterQuotes(builder.getRemaining());
-                for (String listName : fileManager.getWaypointListMap().keySet()) {
+                for (WaypointList list : fileManager.getWaypointListMap().values()) {
+                    String listName = list.name();
                     if (listName.startsWith(currentInput)) {
-                        builder.suggest(escapeListName(listName));
+                        builder.suggest(
+                                escapeListName(listName),
+                                getMessageFromComponent(parse(list.displayName()))
+                        );
                     }
                 }
             }
@@ -2057,11 +2480,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 for (SimpleWaypoint waypoint : waypointList.simpleWaypoints()) {
                     String name = waypoint.name();
                     if (name.startsWith(currentInput)) {
-                        if (name.matches(SINGLE_WORD_REGEX)) {
-                            builder.suggest(name);
-                        } else {
-                            builder.suggest("\"%s\"".formatted(name));
-                        }
+                        builder.suggest(
+                                _959.server_waypoint.util.StringCommandBuilder.escapeArgument(name),
+                                getMessageFromComponent(parse(waypoint.displayName()))
+                        );
                     }
                 }
                 return builder.buildFuture();
@@ -2089,79 +2511,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
             return getInitialsSuggestions(context, builder, WAYPOINT_NAME_ARG);
-        }
-    }
-
-    private class NewNameInitialsSuggestion implements SuggestionProvider<S> {
-        @Override
-        public CompletableFuture<Suggestions> getSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-            return getInitialsSuggestions(context, builder, NEW_WAYPOINT_NAME_ARG);
-        }
-    }
-
-    private @Nullable SimpleWaypoint getSelectedWaypoint(CommandContext<S> context) {
-        CommandContext<S> currentContext = context.getLastChild();
-        D dimension = getDefaultDimension(currentContext);
-        WaypointFileManager fileManager = CoreWaypointCommand.this.waypointServer.getWaypointFileManager(
-                toDimensionName(dimension)
-        );
-        if (fileManager == null) {
-            return null;
-        }
-        WaypointList waypointList = fileManager.getWaypointListByName(
-                getString(currentContext, LIST_NAME_ARG)
-        );
-        if (waypointList == null) {
-            return null;
-        }
-        return waypointList.getWaypointByName(getString(currentContext, WAYPOINT_NAME_ARG));
-    }
-
-    private class CurrentKeywordsSuggestion implements SuggestionProvider<S> {
-        @Override
-        public CompletableFuture<Suggestions> getSuggestions(
-                CommandContext<S> context,
-                SuggestionsBuilder builder
-        ) {
-            SimpleWaypoint waypoint = getSelectedWaypoint(context);
-            if (waypoint != null) {
-                builder.suggest(StringArgumentType.escapeIfRequired(String.join(", ", waypoint.keywords())));
-            }
-            return builder.buildFuture();
-        }
-    }
-
-    private class CurrentWaypointDisplayNameSuggestion implements SuggestionProvider<S> {
-        @Override
-        public CompletableFuture<Suggestions> getSuggestions(
-                CommandContext<S> context,
-                SuggestionsBuilder builder
-        ) {
-            SimpleWaypoint waypoint = getSelectedWaypoint(context);
-            if (waypoint != null) {
-                builder.suggest(StringArgumentType.escapeIfRequired(waypoint.displayName()));
-            }
-            return builder.buildFuture();
-        }
-    }
-
-    private class CurrentDescriptionSuggestion implements SuggestionProvider<S> {
-        @Override
-        public CompletableFuture<Suggestions> getSuggestions(
-                CommandContext<S> context,
-                SuggestionsBuilder builder
-        ) {
-            SimpleWaypoint waypoint = getSelectedWaypoint(context);
-            if (waypoint != null) {
-                builder.suggest(StringArgumentType.escapeIfRequired(waypoint.description()));
-            }
-            return builder.buildFuture();
-        }
-    }
-
-    private record NameInput(String name, String displayName) {
-        private static NameInput from(String rawInput) {
-            return new NameInput(plainText(rawInput), rawInput);
         }
     }
 

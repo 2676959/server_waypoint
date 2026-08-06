@@ -1,6 +1,9 @@
 package _959.server_waypoint.core.waypoint;
 
 import _959.server_waypoint.core.WaypointFileManager.MutationAuthority;
+import _959.server_waypoint.core.edit.PatchField;
+import _959.server_waypoint.core.edit.WaypointListPatch;
+import _959.server_waypoint.core.edit.WaypointPatch;
 import _959.server_waypoint.core.network.WaypointListSyncIdentifier;
 import _959.server_waypoint.util.GsonUtils;
 import com.google.gson.ExclusionStrategy;
@@ -142,6 +145,14 @@ public class WaypointList {
         return this.displayName == null ? this.name : this.displayName;
     }
 
+    public synchronized boolean hasDisplayNameOverride() {
+        return this.displayName != null;
+    }
+
+    public synchronized @Nullable String displayNameOverride() {
+        return this.displayName;
+    }
+
     public synchronized int getSyncNum() {
         return this.syncNum;
     }
@@ -266,6 +277,132 @@ public class WaypointList {
         );
     }
 
+    public synchronized ListPatchResult applyListPatchByServer(
+            MutationAuthority authority,
+            WaypointListPatch patch
+    ) {
+        this.requireMutationAuthority(authority);
+        String newIdentifier = resolveRequired(this.name, patch.identifier());
+        String newDisplayName = resolveDisplayName(
+                newIdentifier,
+                this.displayName,
+                patch.displayName()
+        );
+        WaypointList before = this.deepCopy();
+        if (this.name.equals(newIdentifier)
+                && Objects.equals(this.displayName, normalizeDisplayName(newIdentifier, newDisplayName))) {
+            return new ListPatchResult(false, before, before);
+        }
+        this.name = newIdentifier;
+        this.displayName = normalizeDisplayName(newIdentifier, newDisplayName);
+        this.syncNum++;
+        return new ListPatchResult(true, before, this.deepCopy());
+    }
+
+    public synchronized ServerUpdateResult applyWaypointPatchByServer(
+            MutationAuthority authority,
+            String waypointIdentifier,
+            WaypointPatch patch
+    ) {
+        this.requireMutationAuthority(authority);
+        if (this.simpleWaypoints.isEmpty()) {
+            return new ServerUpdateResult(ServerUpdateStatus.EMPTY, null, null, null, this.syncNum);
+        }
+        SimpleWaypoint waypoint = this.getWaypointByName(waypointIdentifier);
+        if (waypoint == null) {
+            return new ServerUpdateResult(ServerUpdateStatus.NOT_FOUND, null, null, null, this.syncNum);
+        }
+        String newIdentifier = resolveRequired(waypoint.name(), patch.identifier());
+        SimpleWaypoint waypointUsingNewName = this.getWaypointByName(newIdentifier);
+        if (!waypointIdentifier.equals(newIdentifier) && waypointUsingNewName != null) {
+            SimpleWaypoint snapshot = new SimpleWaypoint(waypoint);
+            return new ServerUpdateResult(
+                    ServerUpdateStatus.NAME_USED,
+                    waypoint,
+                    snapshot,
+                    snapshot,
+                    this.syncNum
+            );
+        }
+        String newDisplayName = resolveDisplayName(
+                newIdentifier,
+                waypoint.displayNameOverride(),
+                patch.displayName()
+        );
+        String newInitials = resolveRequired(waypoint.initials(), patch.initials());
+        WaypointPos newPosition = resolveRequired(waypoint.pos(), patch.position());
+        int newColor = resolveRequired(waypoint.rgb(), patch.color());
+        int newYaw = resolveRequired(waypoint.yaw(), patch.yaw());
+        boolean newVisibility = resolveRequired(waypoint.global(), patch.visibility());
+        List<String> newKeywords = patch.keywords().isClear()
+                ? List.of()
+                : resolveRequired(waypoint.keywords(), patch.keywords());
+        String newDescription = patch.description().isClear()
+                ? ""
+                : resolveRequired(waypoint.description(), patch.description());
+        if (waypoint.compareProperties(
+                newIdentifier,
+                newDisplayName,
+                newInitials,
+                newPosition,
+                newColor,
+                newYaw,
+                newVisibility,
+                newKeywords,
+                newDescription
+        )) {
+            SimpleWaypoint snapshot = new SimpleWaypoint(waypoint);
+            return new ServerUpdateResult(
+                    ServerUpdateStatus.IDENTICAL,
+                    waypoint,
+                    snapshot,
+                    snapshot,
+                    this.syncNum
+            );
+        }
+        SimpleWaypoint before = new SimpleWaypoint(waypoint);
+        waypoint.updateProperties(
+                newIdentifier,
+                newDisplayName,
+                newInitials,
+                newPosition,
+                newColor,
+                newYaw,
+                newVisibility,
+                newKeywords,
+                newDescription
+        );
+        this.syncNum++;
+        return new ServerUpdateResult(
+                ServerUpdateStatus.UPDATED,
+                waypoint,
+                before,
+                new SimpleWaypoint(waypoint),
+                this.syncNum
+        );
+    }
+
+    private static String resolveDisplayName(
+            String newIdentifier,
+            @Nullable String currentOverride,
+            PatchField<String> patch
+    ) {
+        if (patch.isClear()) {
+            return newIdentifier;
+        }
+        if (patch.isSet()) {
+            return patch.requiredValue();
+        }
+        return currentOverride == null ? newIdentifier : currentOverride;
+    }
+
+    private static <T> T resolveRequired(T current, PatchField<T> patch) {
+        if (patch.isClear()) {
+            throw new IllegalArgumentException("Required field cannot be cleared");
+        }
+        return patch.isSet() ? patch.requiredValue() : current;
+    }
+
     public synchronized ServerRemoveResult removeByServer(
             MutationAuthority authority,
             String waypointName
@@ -381,6 +518,13 @@ public class WaypointList {
             @Nullable SimpleWaypoint waypoint,
             @Nullable SimpleWaypoint waypointSnapshot,
             int syncNum
+    ) {
+    }
+
+    public record ListPatchResult(
+            boolean updated,
+            WaypointList beforeSnapshot,
+            WaypointList afterSnapshot
     ) {
     }
 

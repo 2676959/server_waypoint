@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import org.jetbrains.annotations.Nullable;
 
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
 import static _959.server_waypoint.util.ColorUtils.*;
@@ -119,6 +120,14 @@ public class SimpleWaypoint {
 
     public synchronized String displayName() {
         return this.displayName == null ? this.name : this.displayName;
+    }
+
+    public synchronized boolean hasDisplayNameOverride() {
+        return this.displayName != null;
+    }
+
+    public synchronized @Nullable String displayNameOverride() {
+        return this.displayName;
     }
 
     public synchronized String initials() {

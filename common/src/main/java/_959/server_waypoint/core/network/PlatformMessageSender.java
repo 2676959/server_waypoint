@@ -5,6 +5,8 @@ import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import net.kyori.adventure.text.Component;
 
+import java.util.List;
+
 import static _959.server_waypoint.text.WaypointTextHelper.waypointTextNoTp;
 import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
 import static _959.server_waypoint.text.FormattedTextHelper.parse;
@@ -16,6 +18,9 @@ public interface PlatformMessageSender<S, P> {
     void sendPacket(S source, MessageBuffer packet);
     void sendPlayerPacket(P player, MessageBuffer packet);
     Iterable<? extends P> getBroadcastPlayers(S source);
+    default Iterable<? extends P> getBroadcastPlayersFromPlayer(P player) {
+        return List.of(player);
+    }
     Component getSenderName(S source);
 
     default void broadcastWaypointModification(S source, WaypointModificationBuffer modification) {
@@ -23,6 +28,12 @@ public interface PlatformMessageSender<S, P> {
         for (P player : this.getBroadcastPlayers(source)) {
             this.sendPlayerMessage(player, info);
             this.sendPlayerPacket(player, modification);
+        }
+    }
+
+    default void broadcastPacketFromPlayer(P player, MessageBuffer packet) {
+        for (P recipient : this.getBroadcastPlayersFromPlayer(player)) {
+            this.sendPlayerPacket(recipient, packet);
         }
     }
 

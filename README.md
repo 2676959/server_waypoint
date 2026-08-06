@@ -40,18 +40,26 @@ Optional:
 - In the waypoint manager screen, press `C` to open client configuration screen.
 
 ## Commands
-- `/wp add` add a new waypoint. No duplicate name allowed. Prompts user to use `/wp edit` to replace the existing one.
-  - `/wp add <dimension> <list>` add a waypoint list.
+- `/wp add` adds a new waypoint. Identifiers must be unique within their list.
+  - `/wp add <dimension> <list-identifier>` adds a waypoint list.
 - `/wp download` download waypoints and add to Xaero's Minimap (will not work without client installation).
-- `/wp edit` edit a waypoint.
+- `/wp details list <dimension> <list-identifier>` and `/wp details waypoint <dimension> <list-identifier> <waypoint-identifier>` show every property and its available actions.
+- `/wp edit list ...` and `/wp edit waypoint ...` set one property at a time or clear an optional property. Run `/wp help edit` for the complete grammar.
 - `/wp list` lists waypoints in the current dimension. Use `all`, a dimension, or a dimension plus list name to change the scope. Results are split using the server's configured page limit (10 by default), with clickable sorting and page controls.
   - Add `search <query>` to filter by waypoint name.
   - Add `sort <default|name|distance|color>` and, for non-default sorts, optionally `order <ascending|descending>` to sort the result.
   - Add `page <number>` and/or `limit <1-100>` to choose a page or change its size. Options follow the order `search`, `sort`, `order`, `page`, `limit`; quote multi-word values and list names that match an option word.
 - `/wp reload` reload `config.json` and translation files in `/config/server_waypoint/lang`, feature `sendXaerosWorldId` requires restarting to take effect.
-- `/wp remove` remove a waypoint by name. Shows the removed waypoint and click it to restore that waypoint.
-  - `/wp remove <dimension> <list>` remove an empty waypoint list.
+- `/wp remove` removes a waypoint by identifier and returns a temporary, single-use restore action.
+  - `/wp remove <dimension> <list-identifier>` removes an empty waypoint list.
+- `/wp restore <token>` restores a recently removed waypoint while its temporary token remains valid.
 - `/wp tp` teleport the executor player to a waypoint
+
+### Identifiers and display names
+
+List and waypoint identifiers are exact lookup keys. Commands preserve them verbatim: they may be empty (`""`), contain whitespace when quoted, start with option-like text, or look like Minecraft JSON. Add commands create no display-name override and never parse an identifier as formatted text.
+
+Display names are optional presentation overrides edited separately with `/wp edit ... set display-name`. Clearing a display name restores the identifier fallback; setting it to an empty string creates an intentionally empty override. Command suggestions insert identifiers, while a display name may appear only as tooltip context.
 
 ## Server-side Translations
 Messages and command feedbacks sent by this mod will be automatically translated based on the language setting on the receiver's client. This works entirely on the server-side; players can see the translated message without client-side installation of this mod. Right now, the mod comes with translations for English and Simplified Chinese. If you’re interested, you can help out by adding translations on [Crowdin](https://crowdin.com/project/server-waypoint)!

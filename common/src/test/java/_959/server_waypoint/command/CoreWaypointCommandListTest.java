@@ -134,12 +134,12 @@ class CoreWaypointCommandListTest {
         Component help = lastMessage();
         String helpText = plainText(help);
         assertTrue(helpText.contains("/wp list"));
-        assertTrue(helpText.contains("/wp download [<dimension> [<list> [<waypoint>]]]"));
+        assertTrue(helpText.contains("/wp download [<dimension> [<list-identifier> [<waypoint-identifier>]]]"));
         assertTrue(helpText.contains("/wp add"));
         assertTrue(helpText.contains("/wp edit"));
         assertTrue(helpText.contains("/wp navigate"));
-        assertTrue(helpText.contains("/wp remove <dimension> <list> [<waypoint>]"));
-        assertTrue(helpText.contains("/wp tp <dimension> <list> <waypoint>"));
+        assertTrue(helpText.contains("/wp remove <dimension> <list-identifier> [<waypoint-identifier>]"));
+        assertTrue(helpText.contains("/wp tp <dimension> <list-identifier> <waypoint-identifier>"));
         assertTrue(helpText.contains("/wp reload"));
         assertTrue(translationKeys(help).containsAll(List.of(
                 "waypoint.help.title",
@@ -178,13 +178,13 @@ class CoreWaypointCommandListTest {
 
         Component help = lastMessage();
         String helpText = plainText(help);
-        assertTrue(helpText.contains("/wp add <dimension> <list>"));
-        assertTrue(helpText.contains("/wp add <position> <list> <waypoint>"));
+        assertTrue(helpText.contains("/wp add <dimension> <list-identifier>"));
+        assertTrue(helpText.contains("/wp add <position> <list-identifier> <waypoint-identifier>"));
         assertTrue(helpText.contains(
-                "/wp add <position> <list> <waypoint> <initials> <color> <yaw> <global>"
+                "/wp add <position> <list-identifier> <waypoint-identifier> <initials> <color> <yaw> <global>"
         ));
         assertTrue(helpText.contains(
-                "/wp add <dimension> <list> <position> <waypoint> <initials> <color> <yaw> <global>"
+                "/wp add <dimension> <list-identifier> <position> <waypoint-identifier> <initials> <color> <yaw> <global>"
         ));
         assertTrue(suggestedCommands(help).contains(
                 "/wp add minecraft:overworld \"Home Bases\" ~ ~ ~ \"Main Home\" MH gold 0 true"
@@ -197,9 +197,9 @@ class CoreWaypointCommandListTest {
                 "waypoint.help.section.examples"
         )));
         assertEquals(TextColor.color(0x55FF55), textColor(help, "<dimension>"));
-        assertEquals(TextColor.color(0xFFAA00), textColor(help, "<list>"));
+        assertEquals(TextColor.color(0xFFAA00), textColor(help, "<list-identifier>"));
         assertEquals(TextColor.color(0x55AAFF), textColor(help, "<position>"));
-        assertEquals(TextColor.color(0xFFFF55), textColor(help, "<waypoint>"));
+        assertEquals(TextColor.color(0xFFFF55), textColor(help, "<waypoint-identifier>"));
         assertEquals(TextColor.color(0xAAAAFF), textColor(help, "<initials>"));
         assertEquals(TextColor.color(0xFF5555), textColor(help, "<color>"));
         assertEquals(TextColor.color(0x00D5A0), textColor(help, "<yaw>"));
@@ -216,17 +216,17 @@ class CoreWaypointCommandListTest {
     }
 
     @Test
-    void editHelpShowsFullFormArgumentsAndExample() throws CommandSyntaxException {
+    void editHelpShowsPatchRoutesAndExample() throws CommandSyntaxException {
         this.dispatcher.execute("wp help edit", this.source);
 
         Component help = lastMessage();
         String helpText = plainText(help);
-        assertTrue(helpText.contains(
-                "/wp edit <dimension> <list> <waypoint> <new name> <initials> <position> <color> <yaw> <global>"
-        ));
+        assertTrue(helpText.contains("/wp edit list <dimension> <list-identifier> set identifier <identifier>"));
+        assertTrue(helpText.contains("/wp edit waypoint <dimension> <list-identifier> <waypoint-identifier> set <property> <value>"));
+        assertTrue(helpText.contains("clear <display-name|keywords|description>"));
         assertTrue(suggestedCommands(help).contains(
-                "/wp edit minecraft:overworld \"Home Bases\" \"Main Home\" "
-                        + "\"Mountain Home\" MH ~ ~ ~ 39C5BB 90 true"
+                "/wp edit waypoint minecraft:overworld \"Home Bases\" \"Main Home\" "
+                        + "set identifier \"Mountain Home\""
         ));
         assertTrue(translationKeys(help).containsAll(List.of(
                 "waypoint.help.edit.title",
@@ -234,15 +234,12 @@ class CoreWaypointCommandListTest {
                 "waypoint.help.edit.usage",
                 "waypoint.help.edit.example.full"
         )));
-        assertEquals(TextColor.color(0xFF55FF), textColor(help, "<new name>"));
         assertEquals(TextColor.color(0xFF55FF), textColor(help, "\"Mountain Home\""));
-        assertEquals(TextColor.color(0xFF5555), textColor(help, "39C5BB"));
-        assertEquals(TextColor.color(0x00D5A0), textColor(help, "90"));
         assertEquals(List.of("/wp help"), runCommands(help));
     }
 
     @Test
-    void addAcceptsOptionalExtraInfoAndEditSuggestsItsCurrentValues() throws CommandSyntaxException {
+    void addUsesExactIdentifierAndPatchEditSetsDisplayName() throws CommandSyntaxException {
         String name = "{\"text\":\"Golden Beacon\",\"color\":\"gold\"}";
         String description = "{\"text\":\"Near spawn\",\"italic\":true}";
         String commandPrefix = "wp add overworld bases position "
@@ -270,45 +267,21 @@ class CoreWaypointCommandListTest {
 
         WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
         assertNotNull(bases);
-        SimpleWaypoint waypoint = bases.getWaypointByName("Golden Beacon");
+        SimpleWaypoint waypoint = bases.getWaypointByName(name);
         assertNotNull(waypoint);
-        assertEquals("Golden Beacon", waypoint.name());
+        assertEquals(name, waypoint.name());
         assertEquals(name, waypoint.displayName());
+        assertFalse(waypoint.hasDisplayNameOverride());
         assertEquals(List.of("home", "mining"), waypoint.keywords());
         assertEquals(description, waypoint.description());
 
-        List<String> displayNameSuggestions = this.dispatcher.getCompletionSuggestions(
-                        this.dispatcher.parse(
-                                "wp edit overworld bases "
-                                        + StringArgumentType.escapeIfRequired(waypoint.name())
-                                        + " ",
-                                this.source
-                        )
-                ).join().getList().stream()
-                .map(suggestion -> suggestion.getText())
-                .toList();
-        assertTrue(displayNameSuggestions.contains(StringArgumentType.escapeIfRequired(name)));
-
-        String editPrefix = "wp edit overworld bases "
-                + StringArgumentType.escapeIfRequired(waypoint.name())
-                + " " + StringArgumentType.escapeIfRequired(name)
-                + " GB position FFAA00 45 true ";
-        List<String> keywordSuggestions = this.dispatcher.getCompletionSuggestions(
-                        this.dispatcher.parse(editPrefix, this.source)
-                ).join().getList().stream()
-                .map(suggestion -> suggestion.getText())
-                .toList();
-        assertTrue(keywordSuggestions.contains(StringArgumentType.escapeIfRequired("home, mining")));
-
-        List<String> descriptionSuggestions = this.dispatcher.getCompletionSuggestions(
-                        this.dispatcher.parse(
-                                editPrefix + StringArgumentType.escapeIfRequired("home, mining") + " ",
-                                this.source
-                        )
-                ).join().getList().stream()
-                .map(suggestion -> suggestion.getText())
-                .toList();
-        assertTrue(descriptionSuggestions.contains(StringArgumentType.escapeIfRequired(description)));
+        this.dispatcher.execute(
+                "wp edit waypoint overworld bases " + StringArgumentType.escapeIfRequired(name)
+                        + " set display-name \"Golden Beacon\"",
+                this.source
+        );
+        assertEquals("Golden Beacon", bases.getWaypointByName(name).displayName());
+        assertTrue(bases.getWaypointByName(name).hasDisplayNameOverride());
 
         this.dispatcher.execute(
                 "wp add overworld bases position \"Legacy Marker\" LM FFAA00 45 true",
@@ -322,27 +295,65 @@ class CoreWaypointCommandListTest {
     }
 
     @Test
-    void addListStoresAPlainIdentityAndFormattedDisplayName() throws CommandSyntaxException {
-        String displayName = "{\"text\":\"Travel Hubs\",\"color\":\"aqua\"}";
+    void renameFeedbackBuildsDetailsControlsFromTheAfterSnapshot() throws CommandSyntaxException {
+        this.dispatcher.execute("wp add overworld bases position old O FFAA00 0 true", this.source);
+        this.sender.messages.clear();
 
         this.dispatcher.execute(
-                "wp add overworld " + StringArgumentType.escapeIfRequired(displayName),
+                "wp edit waypoint overworld bases old set identifier \"new identifier\"",
+                this.source
+        );
+
+        Component details = lastMessage();
+        assertTrue(plainText(details).contains("new identifier"));
+        List<String> commands = new ArrayList<>();
+        commands.addAll(runCommands(details));
+        commands.addAll(suggestedCommands(details));
+        assertTrue(commands.stream().anyMatch(command -> command.contains("\"new identifier\"")));
+        assertFalse(commands.stream().anyMatch(command -> command.contains(" old ")));
+    }
+
+    @Test
+    void addListStoresTheExactIdentifierWithoutDisplayNameOverride() throws CommandSyntaxException {
+        String identifier = "{\"text\":\"Travel Hubs\",\"color\":\"aqua\"}";
+
+        this.dispatcher.execute(
+                "wp add overworld " + StringArgumentType.escapeIfRequired(identifier),
                 this.source
         );
 
         WaypointList waypointList = this.server.getWaypointFileManager("overworld")
-                .getWaypointListByName("Travel Hubs");
+                .getWaypointListByName(identifier);
         assertNotNull(waypointList);
-        assertEquals("Travel Hubs", waypointList.name());
-        assertEquals(displayName, waypointList.displayName());
+        assertEquals(identifier, waypointList.name());
+        assertEquals(identifier, waypointList.displayName());
+        assertFalse(waypointList.hasDisplayNameOverride());
     }
 
     @Test
-    void addRejectsRawNamesAndDescriptionsOverTheirLimits() throws CommandSyntaxException {
+    void emptyIdentifiersRoundTripThroughAddAndDetailsCommands() throws CommandSyntaxException {
+        this.dispatcher.execute("wp add overworld \"\"", this.source);
+        this.dispatcher.execute("wp add overworld \"\" position \"\" E FFAA00 0 true", this.source);
+
+        WaypointList list = this.server.getWaypointFileManager("overworld")
+                .getWaypointListByName("");
+        assertNotNull(list);
+        assertNotNull(list.getWaypointByName(""));
+        assertFalse(list.hasDisplayNameOverride());
+        assertFalse(list.getWaypointByName("").hasDisplayNameOverride());
+        assertDoesNotThrow(() -> this.dispatcher.execute(
+                "wp details waypoint overworld \"\" \"\"",
+                this.source
+        ));
+    }
+
+    @Test
+    void addAcceptsLongIdentifiersButRejectsDescriptionsOverTheirLimits() throws CommandSyntaxException {
         this.dispatcher.execute("wp add overworld " + "l".repeat(257), this.source);
 
-        assertEquals(1, this.sender.errors.size());
-        assertTrue(this.sender.errors.get(0).toString().contains("argument.text.too_long"));
+        assertEquals(0, this.sender.errors.size());
+        assertNotNull(this.server.getWaypointFileManager("overworld")
+                .getWaypointListByName("l".repeat(257)));
 
         this.sender.errors.clear();
         this.dispatcher.execute(
@@ -549,7 +560,8 @@ class CoreWaypointCommandListTest {
 
         Component page = lastMessage();
         String pageText = plainText(page);
-        assertTrue(pageText.contains("dim0\n  ...\ndim1\n  list one\n"));
+        assertTrue(pageText.contains("dim0\n  ...\ndim1\n"));
+        assertTrue(pageText.contains("list one"));
         assertTrue(pageText.contains("dim2\n  ...\ndim3\n  ...\n"));
         assertEquals(3, countOccurrences(pageText, "  ...\n"));
         assertTrue(translationKeys(page).contains("button.list.dimension"));

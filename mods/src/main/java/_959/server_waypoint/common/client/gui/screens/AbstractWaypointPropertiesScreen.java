@@ -50,6 +50,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     // main layout
     protected final WidgetStack mainLayout = new WidgetStack(0, 0, 10, true, false);
     protected final TranslucentTextField nameEditBox = new TranslucentTextField(0, 0, 60, Component.translatable("waypoint.edit.screen.name.entry"), font);
+    protected final TranslucentTextField displayNameEditBox = new TranslucentTextField(0, 0, 90, Component.translatable("waypoint.edit.screen.display_name.entry"), font);
     protected final TranslucentTextField initialsEditBox = new TranslucentTextField(0, 0, 30, Component.translatable("waypoint.edit.screen.initials.entry"), font);
     protected final ColorHexCodeField colorEditBox = new ColorHexCodeField(0, 0, Component.translatable("waypoint.edit.screen.color"), font);
     protected final ColorSquareButton colorPickerButton = new ColorSquareButton(0, 0, 9, this::openSwatch);
@@ -100,6 +101,17 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected abstract @Unmodifiable List<AbstractWidget> getButtonRowClickableWidgets();
 
     public AbstractWaypointPropertiesScreen(Screen previousScreen, Component title, String dimensionName, String listName, @Nullable SimpleWaypoint waypoint) {
+        this(previousScreen, title, dimensionName, listName, waypoint, false);
+    }
+
+    public AbstractWaypointPropertiesScreen(
+            Screen previousScreen,
+            Component title,
+            String dimensionName,
+            String listName,
+            @Nullable SimpleWaypoint waypoint,
+            boolean showDisplayNameField
+    ) {
         super(title);
         this.previousScreen = previousScreen;
         this.dimensionName = dimensionName;
@@ -135,7 +147,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             this.keywords = waypoint.keywords();
             this.description = waypoint.description();
             this.coordinateDefaultPos = new WaypointPos(this.x, this.y, this.z);
-            this.nameEditBox.setValue(this.waypointDisplayName);
+            this.nameEditBox.setValue(this.waypointName);
+            this.displayNameEditBox.setValue(this.waypointDisplayName);
             this.initialsEditBox.setValue(this.initials);
             int color = 0xFF000000 | this.rgb;
             this.colorEditBox.setColor(color);
@@ -154,7 +167,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             this.globalToggle.setState(this.global);
         }
         this.swatchWidget.visible = false;
-        this.nameEditBox.setMaxLength(MAX_NAME_LENGTH);
+        this.nameEditBox.setMaxLength(65_535);
+        this.displayNameEditBox.setMaxLength(MAX_NAME_LENGTH);
         this.configureInitialsAutoUpdate();
         this.configureCoordinateModeEnforcement();
         this.configureCoordinateSuggestions();
@@ -164,7 +178,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         // name & initials row
         WidgetStack nameInitialsRow = new WidgetStack(0, 0, 0);
         ScalableText wpNameLabel = new ScalableText(0, 0,
-                Component.translatable("waypoint.edit.screen.name.entry"),
+                Component.translatable("waypoint.edit.screen.identifier.entry"),
                 WidgetThemeVariable.TEXT_PRIMARY, font);
         ScalableText initialsLabel = new ScalableText(0, 0,
                 Component.translatable("waypoint.edit.screen.initials.entry"),
@@ -173,6 +187,19 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         nameInitialsRow.addChild(this.nameEditBox);
         nameInitialsRow.addChild(initialsLabel, 10);
         nameInitialsRow.addChild(this.initialsEditBox);
+
+        WidgetStack displayNameRow = new WidgetStack(0, 0, 0);
+        if (showDisplayNameField) {
+            ScalableText displayNameLabel = new ScalableText(
+                    0,
+                    0,
+                    Component.translatable("waypoint.edit.screen.display_name.entry"),
+                    WidgetThemeVariable.TEXT_PRIMARY,
+                    font
+            );
+            displayNameRow.addChild(displayNameLabel, 0);
+            displayNameRow.addChild(this.displayNameEditBox);
+        }
 
         // color row
         WidgetStack colorRow = new WidgetStack(0, 0, 0);
@@ -210,6 +237,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
 
         this.mainLayout.addChild(this.titleRow, 0);
         this.mainLayout.addChild(nameInitialsRow);
+        if (showDisplayNameField) {
+            this.mainLayout.addChild(displayNameRow);
+        }
         this.mainLayout.addChild(colorRow);
         this.mainLayout.addChild(this.coordsLabel);
         this.mainLayout.addChild(coordsRow);
@@ -415,6 +445,10 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         for (var child : this.getButtonRowClickableWidgets()) {
             child.active = true;
         }
+        this.onSwatchClosed();
+    }
+
+    protected void onSwatchClosed() {
     }
 
     @Override

@@ -37,6 +37,19 @@ public record NavigationTarget(
         this(dimensionName, waypointList.name(), waypointList.displayName(), snapshot(waypoint));
     }
 
+    public NavigationTarget withListIdentity(String newListName, String newListDisplayName) {
+        return new NavigationTarget(
+                this.dimensionName,
+                newListName,
+                newListDisplayName,
+                this.waypointName,
+                this.waypointDisplayName,
+                this.waypointDescription,
+                this.position,
+                this.rgb
+        );
+    }
+
     private NavigationTarget(
             String dimensionName,
             String listName,

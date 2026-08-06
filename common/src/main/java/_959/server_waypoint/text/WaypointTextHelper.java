@@ -16,11 +16,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 
-import static _959.server_waypoint.text.TextButtonBuilder.editButton;
-import static _959.server_waypoint.text.TextButtonBuilder.removeButton;
+import static _959.server_waypoint.text.TextButtonBuilder.showMoreButton;
 import static _959.server_waypoint.util.BlockPosConverter.netherToOverWorld;
 import static _959.server_waypoint.util.BlockPosConverter.overWorldToNether;
 import static _959.server_waypoint.util.StringCommandBuilder.tpCmd;
+import static _959.server_waypoint.util.StringCommandBuilder.detailsWaypointCmd;
+import static _959.server_waypoint.util.StringCommandBuilder.detailsListCmd;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
@@ -162,7 +163,10 @@ public class WaypointTextHelper {
                             parse(waypointList.displayName())
                     )));
         }
-        Component listHeader = text("").append(listTitle);
+        Component listHeader = text("")
+                .append(showMoreButton(detailsListCmd(dimensionName, listName)))
+                .appendSpace()
+                .append(listTitle);
         if (!isPart) {
             listHeader = listHeader.appendSpace().append(text("⬅")).appendSpace()
                     .append(dimensionNameWithColor(dimensionName));
@@ -206,12 +210,9 @@ public class WaypointTextHelper {
     ) {
         waypoint = new SimpleWaypoint(waypoint);
         Component waypointText = text("  ".repeat(indentLevel)).decoration(TextDecoration.BOLD, false);
-        if (withEdit) {
-            waypointText = waypointText.append(editButton(dimensionName, listName, waypoint)).appendSpace();
-        }
-        if (withRemove) {
-            waypointText = waypointText.append(removeButton(dimensionName, listName, waypoint)).appendSpace();
-        }
+        waypointText = waypointText.append(showMoreButton(
+                detailsWaypointCmd(dimensionName, listName, waypoint.name())
+        )).appendSpace();
         if (withTp) {
             return waypointText.append(waypointTextWithTp(waypoint, dimensionName, listName));
         }

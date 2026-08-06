@@ -1,6 +1,11 @@
 package _959.server_waypoint.core;
 
 import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
+import _959.server_waypoint.core.edit.EditResultStatus;
+import _959.server_waypoint.core.edit.WaypointEditResult;
+import _959.server_waypoint.core.edit.WaypointListEditResult;
+import _959.server_waypoint.core.edit.WaypointListPatch;
+import _959.server_waypoint.core.edit.WaypointPatch;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
@@ -22,6 +27,8 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
+
+import static _959.server_waypoint.text.FormattedTextHelper.*;
 
 /**
  * Thread-safe owner of the waypoint lists for one dimension.
@@ -330,6 +337,37 @@ public class WaypointFileManager {
         });
     }
 
+    WaypointFilesManagerCore.RestoreWaypointResult restoreWaypointIfAbsent(
+            String listIdentifier,
+            SimpleWaypoint waypoint
+    ) {
+        return this.writeState(() -> {
+            WaypointList waypointList = this.waypointListMap.get(listIdentifier);
+            if (waypointList == null) {
+                return new WaypointFilesManagerCore.RestoreWaypointResult(
+                        WaypointFilesManagerCore.RestoreWaypointStatus.LIST_NOT_FOUND,
+                        this,
+                        null,
+                        null,
+                        0
+                );
+            }
+            WaypointList.ServerAddResult result = waypointList.addByServerIfAbsent(
+                    this.mutationAuthority,
+                    waypoint
+            );
+            return new WaypointFilesManagerCore.RestoreWaypointResult(
+                    result.status() == WaypointList.ServerAddStatus.ADDED
+                            ? WaypointFilesManagerCore.RestoreWaypointStatus.RESTORED
+                            : WaypointFilesManagerCore.RestoreWaypointStatus.IDENTIFIER_COLLISION,
+                    this,
+                    waypointList,
+                    result.waypointSnapshot(),
+                    result.syncNum()
+            );
+        });
+    }
+
     WaypointFilesManagerCore.AddWaypointListResult addWaypointListIfAbsent(
             String listName,
             String displayName,
@@ -352,6 +390,211 @@ public class WaypointFileManager {
                     dimensionCreated
             );
         });
+    }
+
+    WaypointListEditResult updateWaypointList(
+            String listIdentifier,
+            @Nullable Integer expectedSyncNum,
+            WaypointListPatch patch
+    ) {
+        return this.writeState(() -> {
+            WaypointList waypointList = this.waypointListMap.get(listIdentifier);
+            if (waypointList == null) {
+                return new WaypointListEditResult(
+                        EditResultStatus.LIST_NOT_FOUND,
+                        this,
+                        null,
+                        null
+                );
+            }
+            if (expectedSyncNum != null && waypointList.getSyncNum() != expectedSyncNum) {
+                WaypointList snapshot = waypointList.deepCopy();
+                return new WaypointListEditResult(
+                        EditResultStatus.STALE_REVISION,
+                        this,
+                        snapshot,
+                        snapshot
+                );
+            }
+            if (patch.identifier().isClear()) {
+                return new WaypointListEditResult(
+                        EditResultStatus.INVALID_VALUE,
+                        this,
+                        waypointList,
+                        waypointList
+                );
+            }
+            if (patch.displayName().isSet()
+                    && !validFormattedText(patch.displayName().requiredValue(), MAX_NAME_LENGTH)) {
+                return new WaypointListEditResult(
+                        EditResultStatus.INVALID_DISPLAY_TEXT,
+                        this,
+                        waypointList,
+                        waypointList
+                );
+            }
+            String newIdentifier = patch.identifier().isSet()
+                    ? patch.identifier().requiredValue()
+                    : listIdentifier;
+            if (!listIdentifier.equals(newIdentifier)
+                    && this.waypointListMap.containsKey(newIdentifier)) {
+                return new WaypointListEditResult(
+                        EditResultStatus.IDENTIFIER_COLLISION,
+                        this,
+                        waypointList,
+                        waypointList
+                );
+            }
+            WaypointList.ListPatchResult result;
+            try {
+                result = waypointList.applyListPatchByServer(this.mutationAuthority, patch);
+            } catch (IllegalArgumentException exception) {
+                return new WaypointListEditResult(
+                        EditResultStatus.INVALID_VALUE,
+                        this,
+                        waypointList,
+                        waypointList
+                );
+            }
+            if (!result.updated()) {
+                return new WaypointListEditResult(
+                        EditResultStatus.IDENTICAL,
+                        this,
+                        result.beforeSnapshot(),
+                        result.afterSnapshot()
+                );
+            }
+            if (!listIdentifier.equals(newIdentifier)) {
+                this.waypointListMap.remove(listIdentifier, waypointList);
+                this.waypointListMap.put(newIdentifier, waypointList);
+            }
+            return new WaypointListEditResult(
+                    EditResultStatus.SUCCESS,
+                    this,
+                    result.beforeSnapshot(),
+                    result.afterSnapshot()
+            );
+        });
+    }
+
+    WaypointEditResult updateWaypoint(
+            String listIdentifier,
+            String waypointIdentifier,
+            @Nullable Integer expectedSyncNum,
+            WaypointPatch patch
+    ) {
+        return this.writeState(() -> {
+            WaypointList waypointList = this.waypointListMap.get(listIdentifier);
+            if (waypointList == null) {
+                return new WaypointEditResult(
+                        EditResultStatus.LIST_NOT_FOUND,
+                        this,
+                        null,
+                        null,
+                        null,
+                        0
+                );
+            }
+            if (expectedSyncNum != null && waypointList.getSyncNum() != expectedSyncNum) {
+                SimpleWaypoint current = waypointList.getWaypointByName(waypointIdentifier);
+                return new WaypointEditResult(
+                        EditResultStatus.STALE_REVISION,
+                        this,
+                        waypointList,
+                        current,
+                        current,
+                        waypointList.getSyncNum()
+                );
+            }
+            EditResultStatus invalidStatus = validateWaypointPatch(patch);
+            if (invalidStatus != null) {
+                SimpleWaypoint current = waypointList.getWaypointByName(waypointIdentifier);
+                return new WaypointEditResult(
+                        invalidStatus,
+                        this,
+                        waypointList,
+                        current,
+                        current,
+                        waypointList.getSyncNum()
+                );
+            }
+            WaypointList.ServerUpdateResult result;
+            try {
+                result = waypointList.applyWaypointPatchByServer(
+                        this.mutationAuthority,
+                        waypointIdentifier,
+                        patch
+                );
+            } catch (IllegalArgumentException exception) {
+                return new WaypointEditResult(
+                        EditResultStatus.INVALID_VALUE,
+                        this,
+                        waypointList,
+                        null,
+                        null,
+                        waypointList.getSyncNum()
+                );
+            }
+            EditResultStatus status = switch (result.status()) {
+                case UPDATED -> EditResultStatus.SUCCESS;
+                case NAME_USED -> EditResultStatus.IDENTIFIER_COLLISION;
+                case IDENTICAL -> EditResultStatus.IDENTICAL;
+                case EMPTY, NOT_FOUND -> EditResultStatus.WAYPOINT_NOT_FOUND;
+            };
+            return new WaypointEditResult(
+                    status,
+                    this,
+                    waypointList,
+                    result.beforeSnapshot(),
+                    result.afterSnapshot(),
+                    result.syncNum()
+            );
+        });
+    }
+
+    private static @Nullable EditResultStatus validateWaypointPatch(WaypointPatch patch) {
+        if (patch.identifier().isClear()
+                || patch.initials().isClear()
+                || patch.position().isClear()
+                || patch.color().isClear()
+                || patch.yaw().isClear()
+                || patch.visibility().isClear()) {
+            return EditResultStatus.INVALID_VALUE;
+        }
+        if (patch.displayName().isSet()
+                && !validFormattedText(patch.displayName().requiredValue(), MAX_NAME_LENGTH)) {
+            return EditResultStatus.INVALID_DISPLAY_TEXT;
+        }
+        if (patch.initials().isSet()
+                && patch.initials().requiredValue().length() > MAX_NAME_LENGTH) {
+            return EditResultStatus.INVALID_VALUE;
+        }
+        if (patch.color().isSet()) {
+            int color = patch.color().requiredValue();
+            if (color < 0 || color > 0xFFFFFF) {
+                return EditResultStatus.INVALID_VALUE;
+            }
+        }
+        if (patch.keywords().isSet()) {
+            List<String> keywords = patch.keywords().requiredValue();
+            if (keywords.size() > MAX_KEYWORDS) {
+                return EditResultStatus.INVALID_VALUE;
+            }
+            for (String keyword : keywords) {
+                if (keyword.length() > MAX_KEYWORD_LENGTH) {
+                    return EditResultStatus.INVALID_VALUE;
+                }
+            }
+        }
+        if (patch.description().isSet()
+                && !validFormattedText(patch.description().requiredValue(), MAX_DESCRIPTION_LENGTH)) {
+            return EditResultStatus.INVALID_DISPLAY_TEXT;
+        }
+        return null;
+    }
+
+    private static boolean validFormattedText(String value, int maximumLength) {
+        return value.length() <= maximumLength && isValidInput(value);
     }
 
     WaypointFilesManagerCore.RemoveWaypointListResult removeWaypointListIfEmpty(String listName) {

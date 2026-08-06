@@ -120,6 +120,8 @@ public class ServerWaypointNeoForgeClient {
         S2CPayloadHandler.WaypointModificationHandler waypointModificationHandler = new S2CPayloadHandler.WaypointModificationHandler();
         S2CPayloadHandler.ServerHandshakeHandler serverHandshakeHandler = new S2CPayloadHandler.ServerHandshakeHandler();
         S2CPayloadHandler.UpdatesBundleHandler updatesBundleHandler = new S2CPayloadHandler.UpdatesBundleHandler();
+        S2CPayloadHandler.WaypointEditResultHandler waypointEditResultHandler = new S2CPayloadHandler.WaypointEditResultHandler();
+        S2CPayloadHandler.WaypointListUpdateHandler waypointListUpdateHandler = new S2CPayloadHandler.WaypointListUpdateHandler();
         // S2C
         registrar.playToClient(WaypointListS2CPayload.ID, WaypointListS2CPayload.PACKET_CODEC, waypointListHandler::handle);
         registrar.playToClient(DimensionWaypointS2CPayload.ID, DimensionWaypointS2CPayload.PACKET_CODEC, dimensionWaypointHandler::handle);
@@ -127,6 +129,8 @@ public class ServerWaypointNeoForgeClient {
         registrar.playToClient(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC, waypointModificationHandler::handle);
         registrar.playToClient(ServerHandshakeS2CPayload.ID, ServerHandshakeS2CPayload.PACKET_CODEC, serverHandshakeHandler::handle);
         registrar.playToClient(UpdatesBundleS2CPayload.ID, UpdatesBundleS2CPayload.PACKET_CODEC, updatesBundleHandler::handle);
+        registrar.playToClient(WaypointEditResultS2CPayload.ID, WaypointEditResultS2CPayload.PACKET_CODEC, waypointEditResultHandler::handle);
+        registrar.playToClient(WaypointListUpdateS2CPayload.ID, WaypointListUpdateS2CPayload.PACKET_CODEC, waypointListUpdateHandler::handle);
     }
 //?} elif = 1.20.4 {
     /^public static void registerClientPayloadHandlers(IPayloadRegistrar registrar) {
@@ -136,12 +140,16 @@ public class ServerWaypointNeoForgeClient {
         S2CPayloadHandler.WaypointModificationHandler waypointModificationHandler = new S2CPayloadHandler.WaypointModificationHandler();
         S2CPayloadHandler.ServerHandshakeHandler serverHandshakeHandler = new S2CPayloadHandler.ServerHandshakeHandler();
         S2CPayloadHandler.UpdatesBundleHandler updatesBundleHandler = new S2CPayloadHandler.UpdatesBundleHandler();
+        S2CPayloadHandler.WaypointEditResultHandler waypointEditResultHandler = new S2CPayloadHandler.WaypointEditResultHandler();
+        S2CPayloadHandler.WaypointListUpdateHandler waypointListUpdateHandler = new S2CPayloadHandler.WaypointListUpdateHandler();
         registrar.play(WaypointListS2CPayload.WAYPOINT_LIST_PAYLOAD_ID, WaypointListS2CPayload::new, handler -> handler.client(waypointListHandler::handle));
         registrar.play(DimensionWaypointS2CPayload.DIM_WAYPOINT_PAYLOAD_ID, DimensionWaypointS2CPayload::new, handler -> handler.client(dimensionWaypointHandler::handle));
         registrar.play(WorldWaypointS2CPayload.WORLD_WAYPOINT_PAYLOAD_ID, WorldWaypointS2CPayload::new, handler -> handler.client(worldWaypointHandler::handle));
         registrar.play(WaypointModificationS2CPayload.WAYPOINT_MODIFICATION_PAYLOAD_ID, WaypointModificationS2CPayload::new, handler -> handler.client(waypointModificationHandler::handle));
         registrar.play(ServerHandshakeS2CPayload.SERVER_HANDSHAKE_PAYLOAD, ServerHandshakeS2CPayload::new, handler -> handler.client(serverHandshakeHandler::handle));
         registrar.play(UpdatesBundleS2CPayload.UPDATES_BUNDLE_PAYLOAD_ID, UpdatesBundleS2CPayload::new, handler -> handler.client(updatesBundleHandler::handle));
+        registrar.play(WaypointEditResultS2CPayload.PAYLOAD_ID, WaypointEditResultS2CPayload::new, handler -> handler.client(waypointEditResultHandler::handle));
+        registrar.play(WaypointListUpdateS2CPayload.PAYLOAD_ID, WaypointListUpdateS2CPayload::new, handler -> handler.client(waypointListUpdateHandler::handle));
     }
 ^///?} elif = 1.20.2 {
     /^public static void registerClientPayloadHandlers(SimpleChannel channel) {
@@ -151,12 +159,16 @@ public class ServerWaypointNeoForgeClient {
         S2CPayloadHandler.WaypointModificationHandler waypointModificationHandler = new S2CPayloadHandler.WaypointModificationHandler();
         S2CPayloadHandler.ServerHandshakeHandler serverHandshakeHandler = new S2CPayloadHandler.ServerHandshakeHandler();
         S2CPayloadHandler.UpdatesBundleHandler updatesBundleHandler = new S2CPayloadHandler.UpdatesBundleHandler();
+        S2CPayloadHandler.WaypointEditResultHandler waypointEditResultHandler = new S2CPayloadHandler.WaypointEditResultHandler();
+        S2CPayloadHandler.WaypointListUpdateHandler waypointListUpdateHandler = new S2CPayloadHandler.WaypointListUpdateHandler();
         registerLegacyClientPayload(channel, WaypointListS2CPayload.class, 0, WaypointListS2CPayload::new, waypointListHandler);
         registerLegacyClientPayload(channel, DimensionWaypointS2CPayload.class, 1, DimensionWaypointS2CPayload::new, dimensionWaypointHandler);
         registerLegacyClientPayload(channel, WorldWaypointS2CPayload.class, 2, WorldWaypointS2CPayload::new, worldWaypointHandler);
         registerLegacyClientPayload(channel, WaypointModificationS2CPayload.class, 3, WaypointModificationS2CPayload::new, waypointModificationHandler);
         registerLegacyClientPayload(channel, UpdatesBundleS2CPayload.class, 4, UpdatesBundleS2CPayload::new, updatesBundleHandler);
         registerLegacyClientPayload(channel, ServerHandshakeS2CPayload.class, 5, ServerHandshakeS2CPayload::new, serverHandshakeHandler);
+        registerLegacyClientPayload(channel, WaypointEditResultS2CPayload.class, 9, WaypointEditResultS2CPayload::new, waypointEditResultHandler);
+        registerLegacyClientPayload(channel, WaypointListUpdateS2CPayload.class, 10, WaypointListUpdateS2CPayload::new, waypointListUpdateHandler);
     }
 
     private static <P extends _959.server_waypoint.common.network.payload.ModPayload> void registerLegacyClientPayload(

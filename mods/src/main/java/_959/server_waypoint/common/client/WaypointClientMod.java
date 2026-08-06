@@ -2,6 +2,7 @@ package _959.server_waypoint.common.client;
 
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
+import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeJson;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.handlers.BufferHandler;
@@ -532,6 +533,45 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         } catch (IOException e) {
             LOGGER.error("failed to save waypoints for dimension: {}", dimensionName, e);
         }
+    }
+
+    @Override
+    public void onWaypointListUpdate(WaypointListUpdateBuffer buffer) {
+        if (WaypointServerMod.runsWithClient()) {
+            return;
+        }
+        String dimensionName = buffer.dimensionName();
+        WaypointFileManager fileManager = this.getWaypointFileManager(dimensionName);
+        if (fileManager == null) {
+            return;
+        }
+        WaypointList previous = fileManager.getWaypointListByName(buffer.previousListIdentifier());
+        if (previous != null) {
+            this.removeWaypointListImmediately(dimensionName, buffer.previousListIdentifier());
+        }
+        WaypointList updated = buffer.waypointList();
+        fileManager = this.putWaypointList(dimensionName, updated);
+        try {
+            this.saveWaypointFile(fileManager);
+        } catch (IOException exception) {
+            LOGGER.error("Failed to save updated waypoint list in {}", dimensionName, exception);
+        }
+        if (dimensionName.equals(currentDimensionName)) {
+            if (previous != null) {
+                OptimizedWaypointRenderer.removeList(previous.simpleWaypoints());
+            }
+            OptimizedWaypointRenderer.addList(updated.simpleWaypoints());
+        }
+        WaypointManagerScreen.updateWidgetsForDimensionListChange(dimensionName);
+        MapModIntegrations.onClientWaypointSync(
+                ClientWaypointSyncEvent.listReplaced(dimensionName, updated),
+                this
+        );
+    }
+
+    @Override
+    public void onWaypointEditResult(WaypointEditResultBuffer buffer) {
+        WaypointEditScreen.handleResult(buffer);
     }
 
     /**

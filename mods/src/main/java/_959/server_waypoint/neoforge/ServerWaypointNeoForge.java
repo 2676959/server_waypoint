@@ -6,6 +6,7 @@ import _959.server_waypoint.common.network.ModChatMessageHandler;
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
 import _959.server_waypoint.common.network.payload.c2s.UpdateRequestC2SPayload;
+import _959.server_waypoint.common.network.payload.c2s.WaypointEditRequestC2SPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.common.server.command.WaypointCommand;
@@ -53,7 +54,7 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
 @Mod(ModInfo.MOD_ID)
 public class ServerWaypointNeoForge implements IPlatformConfigPath {
-    private static final String NETWORK_PROTOCOL_VERSION = "3";
+    private static final String NETWORK_PROTOCOL_VERSION = "4";
 //? if = 1.20.2 {
     /^public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
             modId("main"),
@@ -64,7 +65,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
     ^///?}
 
     private final WaypointServerMod waypointServer;
-    private final C2SPacketHandler<CommandSourceStack, ServerPlayer> c2sPacketHandler;
+    private final C2SPacketHandler<CommandSourceStack, String, ServerPlayer> c2sPacketHandler;
     private final WaypointCommand waypointCommand;
     private final ModChatMessageHandler<String> chatMessageHandler;
 
@@ -73,7 +74,12 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         NeoForgePermissionManager permissionManager = new NeoForgePermissionManager();
         this.chatMessageHandler = new ModChatMessageHandler<>(messageSender, permissionManager) {};
         this.waypointServer = new WaypointServerMod(this.getAssignedConfigDirectory(), this.chatMessageHandler);
-        this.c2sPacketHandler = new C2SPacketHandler<>(messageSender, this.waypointServer);
+        this.c2sPacketHandler = new C2SPacketHandler<>(
+                messageSender,
+                this.waypointServer,
+                permissionManager,
+                this.waypointServer.navigation().service()
+        );
         this.waypointCommand = new WaypointCommand(this.waypointServer, messageSender, permissionManager);
 
         this.configureLoadedMods();
@@ -159,6 +165,8 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
             registrar.playToClient(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC, (payload, context) -> {});
             registrar.playToClient(UpdatesBundleS2CPayload.ID, UpdatesBundleS2CPayload.PACKET_CODEC, (payload, context) -> {});
             registrar.playToClient(ServerHandshakeS2CPayload.ID, ServerHandshakeS2CPayload.PACKET_CODEC, (payload, context) -> {});
+            registrar.playToClient(WaypointEditResultS2CPayload.ID, WaypointEditResultS2CPayload.PACKET_CODEC, (payload, context) -> {});
+            registrar.playToClient(WaypointListUpdateS2CPayload.ID, WaypointListUpdateS2CPayload.PACKET_CODEC, (payload, context) -> {});
         }
         if (Features.noXaerosMod) {
             registrar.playToClient(XaerosWorldIdS2CPayload.ID, XaerosWorldIdS2CPayload.PACKET_CODEC, (payload, context) -> {});
@@ -169,6 +177,9 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         );
         registrar.playToServer(UpdateRequestC2SPayload.ID, UpdateRequestC2SPayload.PACKET_CODEC, (payload, context) ->
                 context.enqueueWork(() -> this.c2sPacketHandler.onClientUpdateRequest((ServerPlayer) context.player(), payload.clientUpdateRequestBuffer()))
+        );
+        registrar.playToServer(WaypointEditRequestC2SPayload.ID, WaypointEditRequestC2SPayload.PACKET_CODEC, (payload, context) ->
+                context.enqueueWork(() -> this.c2sPacketHandler.onWaypointEditRequest((ServerPlayer) context.player(), payload.request()))
         );
     }
 //?} elif = 1.20.4 {
@@ -193,6 +204,13 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                     }
                 }))
         );
+        registrar.play(WaypointEditRequestC2SPayload.PAYLOAD_ID, WaypointEditRequestC2SPayload::new, handler ->
+                handler.server((payload, context) -> context.workHandler().execute(() -> {
+                    if (context.player().orElse(null) instanceof ServerPlayer player) {
+                        this.c2sPacketHandler.onWaypointEditRequest(player, payload.request());
+                    }
+                }))
+        );
     }
 
     private static void registerNoopClientPayloadHandlers(IPayloadRegistrar registrar) {
@@ -202,6 +220,8 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         registrar.play(WaypointModificationS2CPayload.WAYPOINT_MODIFICATION_PAYLOAD_ID, WaypointModificationS2CPayload::new, handler -> handler.client((payload, context) -> {}));
         registrar.play(UpdatesBundleS2CPayload.UPDATES_BUNDLE_PAYLOAD_ID, UpdatesBundleS2CPayload::new, handler -> handler.client((payload, context) -> {}));
         registrar.play(ServerHandshakeS2CPayload.SERVER_HANDSHAKE_PAYLOAD, ServerHandshakeS2CPayload::new, handler -> handler.client((payload, context) -> {}));
+        registrar.play(WaypointEditResultS2CPayload.PAYLOAD_ID, WaypointEditResultS2CPayload::new, handler -> handler.client((payload, context) -> {}));
+        registrar.play(WaypointListUpdateS2CPayload.PAYLOAD_ID, WaypointListUpdateS2CPayload::new, handler -> handler.client((payload, context) -> {}));
         if (Features.noXaerosMod) {
             registrar.play(XaerosWorldIdS2CPayload.XAEROS_WORLD_ID_PAYLOAD_ID, XaerosWorldIdS2CPayload::new, handler -> handler.client((payload, context) -> {}));
         }
@@ -233,6 +253,16 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                     }
                 })
                 .add();
+        PACKET_CHANNEL.messageBuilder(WaypointEditRequestC2SPayload.class, 11, PlayNetworkDirection.PLAY_TO_SERVER)
+                .encoder((payload, buf) -> payload.write(buf))
+                .decoder(WaypointEditRequestC2SPayload::new)
+                .consumerMainThread((payload, context) -> {
+                    ServerPlayer player = context.getSender();
+                    if (player != null) {
+                        this.c2sPacketHandler.onWaypointEditRequest(player, payload.request());
+                    }
+                })
+                .add();
     }
 
     private static void registerLegacyNoopClientPayloadHandlers() {
@@ -242,6 +272,8 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         registerLegacyNoopClientPayload(WaypointModificationS2CPayload.class, 3, WaypointModificationS2CPayload::new);
         registerLegacyNoopClientPayload(UpdatesBundleS2CPayload.class, 4, UpdatesBundleS2CPayload::new);
         registerLegacyNoopClientPayload(ServerHandshakeS2CPayload.class, 5, ServerHandshakeS2CPayload::new);
+        registerLegacyNoopClientPayload(WaypointEditResultS2CPayload.class, 9, WaypointEditResultS2CPayload::new);
+        registerLegacyNoopClientPayload(WaypointListUpdateS2CPayload.class, 10, WaypointListUpdateS2CPayload::new);
         if (Features.noXaerosMod) {
             registerLegacyNoopClientPayload(XaerosWorldIdS2CPayload.class, 6, XaerosWorldIdS2CPayload::new);
         }

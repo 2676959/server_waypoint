@@ -12,4 +12,6 @@ public interface BufferHandler {
     void onDimensionWaypoint(DimensionWaypointBuffer buffer);
     void onWorldWaypoint(WorldWaypointBuffer buffer);
     void onWaypointModification(WaypointModificationBuffer buffer);
+    void onWaypointListUpdate(WaypointListUpdateBuffer buffer);
+    void onWaypointEditResult(WaypointEditResultBuffer buffer);
 }

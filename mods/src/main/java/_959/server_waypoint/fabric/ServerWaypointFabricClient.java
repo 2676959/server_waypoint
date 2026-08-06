@@ -62,12 +62,16 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
         S2CPayloadHandler.WaypointModificationHandler waypointModificationHandler = new S2CPayloadHandler.WaypointModificationHandler();
         S2CPayloadHandler.ServerHandshakeHandler serverHandshakeHandler = new S2CPayloadHandler.ServerHandshakeHandler();
         S2CPayloadHandler.UpdatesBundleHandler updatesBundleHandler = new S2CPayloadHandler.UpdatesBundleHandler();
+        S2CPayloadHandler.WaypointEditResultHandler waypointEditResultHandler = new S2CPayloadHandler.WaypointEditResultHandler();
+        S2CPayloadHandler.WaypointListUpdateHandler waypointListUpdateHandler = new S2CPayloadHandler.WaypointListUpdateHandler();
         ClientPlayNetworking.registerGlobalReceiver(WaypointListS2CPayload.ID, waypointListHandler::handle);
         ClientPlayNetworking.registerGlobalReceiver(DimensionWaypointS2CPayload.ID, dimensionWaypointHandler::handle);
         ClientPlayNetworking.registerGlobalReceiver(WorldWaypointS2CPayload.ID, worldWaypointHandler::handle);
         ClientPlayNetworking.registerGlobalReceiver(WaypointModificationS2CPayload.ID, waypointModificationHandler::handle);
         ClientPlayNetworking.registerGlobalReceiver(ServerHandshakeS2CPayload.ID, serverHandshakeHandler::handle);
         ClientPlayNetworking.registerGlobalReceiver(UpdatesBundleS2CPayload.ID, updatesBundleHandler::handle);
+        ClientPlayNetworking.registerGlobalReceiver(WaypointEditResultS2CPayload.ID, waypointEditResultHandler::handle);
+        ClientPlayNetworking.registerGlobalReceiver(WaypointListUpdateS2CPayload.ID, waypointListUpdateHandler::handle);
     }
 }
 //?}

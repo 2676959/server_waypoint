@@ -10,6 +10,7 @@ import _959.server_waypoint.config.Features;
 import _959.server_waypoint.core.IPlatformConfigPath;
 import _959.server_waypoint.common.network.ModChatMessageHandler;
 import _959.server_waypoint.common.network.payload.c2s.UpdateRequestC2SPayload;
+import _959.server_waypoint.common.network.payload.c2s.WaypointEditRequestC2SPayload;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.network.C2SPacketHandler;
 import _959.server_waypoint.fabric.permission.FabricPermissionManager;
@@ -48,7 +49,12 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
             }
         };
         WaypointServerMod waypointServer = new WaypointServerMod(this.getAssignedConfigDirectory(), handler);
-        C2SPacketHandler<CommandSourceStack, ServerPlayer> c2sPacketHandler = new C2SPacketHandler<>(messageSender, waypointServer);
+        C2SPacketHandler<CommandSourceStack, String, ServerPlayer> c2sPacketHandler = new C2SPacketHandler<>(
+                messageSender,
+                waypointServer,
+                permissionManager,
+                waypointServer.navigation().service()
+        );
         WaypointCommand waypointCommand = new WaypointCommand(waypointServer, messageSender, permissionManager);
 
         FabricLoader fabricLoader = FabricLoader.getInstance();
@@ -97,12 +103,18 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (clientHandshakeC2SPayload, context) ->
                 c2sPacketHandler.onClientHandshake(context.player(), clientHandshakeC2SPayload.clientHandshakeBuffer())
         );
+        ServerPlayNetworking.registerGlobalReceiver(WaypointEditRequestC2SPayload.ID, (payload, context) ->
+                c2sPacketHandler.onWaypointEditRequest(context.player(), payload.request())
+        );
         //?} else if fabric {
         /*ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (packet, player, responseSender) ->
                 c2sPacketHandler.onClientUpdateRequest(player, packet.clientUpdateRequestBuffer()
                 ));
         ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (packet, player, responseSender) ->
                 c2sPacketHandler.onClientHandshake(player, packet.clientHandshakeBuffer()
+                ));
+        ServerPlayNetworking.registerGlobalReceiver(WaypointEditRequestC2SPayload.ID, (packet, player, responseSender) ->
+                c2sPacketHandler.onWaypointEditRequest(player, packet.request()
                 ));
         *///?}
     }
@@ -133,6 +145,14 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         //$ payload_s2c_registry_swap
         clientboundPlay
         ().register(ServerHandshakeS2CPayload.ID, ServerHandshakeS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.
+        //$ payload_s2c_registry_swap
+        clientboundPlay
+        ().register(WaypointEditResultS2CPayload.ID, WaypointEditResultS2CPayload.PACKET_CODEC);
+        PayloadTypeRegistry.
+        //$ payload_s2c_registry_swap
+        clientboundPlay
+        ().register(WaypointListUpdateS2CPayload.ID, WaypointListUpdateS2CPayload.PACKET_CODEC);
 
         PayloadTypeRegistry.
         //$ payload_c2s_registry_swap
@@ -142,6 +162,10 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         //$ payload_c2s_registry_swap
         serverboundPlay
         ().register(UpdateRequestC2SPayload.ID, UpdateRequestC2SPayload.PACKET_CODEC);
+        PayloadTypeRegistry.
+        //$ payload_c2s_registry_swap
+        serverboundPlay
+        ().register(WaypointEditRequestC2SPayload.ID, WaypointEditRequestC2SPayload.PACKET_CODEC);
         //?}
     }
 

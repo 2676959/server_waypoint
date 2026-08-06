@@ -139,5 +139,19 @@
   "server_waypoint.theme.variable.status.danger": "危险文本",
   "server_waypoint.theme.variable.status.successBackground": "成功背景",
   "server_waypoint.theme.variable.status.warningBackground": "警告背景",
-  "server_waypoint.theme.variable.status.dangerBackground": "危险背景"
+  "server_waypoint.theme.variable.status.dangerBackground": "危险背景",
+  "waypoint.edit.screen.identifier.entry": "标识符：",
+  "waypoint.edit.screen.display_name.entry": "显示名称：",
+  "waypoint.display_name.clear.button": "使用标识符",
+  "waypoint.display_name.keep.button": "保留覆盖值",
+  "waypoint.edit.error.stale_revision": "服务器上的路径点已更改，请重新打开后再试。",
+  "waypoint.edit.error.dimension_not_found": "该维度已不存在。",
+  "waypoint.edit.error.list_not_found": "该列表已不存在。",
+  "waypoint.edit.error.waypoint_not_found": "该路径点已不存在。",
+  "waypoint.edit.error.identifier_collision": "该标识符已被占用。",
+  "waypoint.edit.error.invalid_display_text": "显示名称不是有效的格式化文本。",
+  "waypoint.edit.error.invalid_value": "某个编辑值无效。",
+  "waypoint.edit.error.identical": "没有字段发生变化。",
+  "waypoint.edit.error.permission_denied": "你没有编辑权限。",
+  "waypoint.edit.error.malformed_request": "服务器拒绝了此编辑请求。"
 }

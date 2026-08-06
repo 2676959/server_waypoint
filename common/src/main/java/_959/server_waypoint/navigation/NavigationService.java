@@ -171,6 +171,44 @@ public final class NavigationService<P> {
         }
     }
 
+    /**
+     * Refreshes all active targets owned by a renamed or redisplayed waypoint list.
+     * Persisted sessions are rewritten by the normal per-player refresh path.
+     */
+    public void refreshListIdentity(
+            String dimensionName,
+            String previousListName,
+            String updatedListName,
+            String updatedListDisplayName
+    ) {
+        Objects.requireNonNull(dimensionName, "dimensionName");
+        Objects.requireNonNull(previousListName, "previousListName");
+        Objects.requireNonNull(updatedListName, "updatedListName");
+        Objects.requireNonNull(updatedListDisplayName, "updatedListDisplayName");
+        for (Map.Entry<UUID, NavigationSession> entry : List.copyOf(this.sessions.entrySet())) {
+            NavigationTarget currentTarget = entry.getValue().target();
+            if (!dimensionName.equals(currentTarget.dimensionName())
+                    || !previousListName.equals(currentTarget.listName())) {
+                continue;
+            }
+            UUID playerUuid = entry.getKey();
+            TargetIdentity previousIdentity = TargetIdentity.from(currentTarget);
+            NavigationTarget updatedTarget = currentTarget.withListIdentity(
+                    updatedListName,
+                    updatedListDisplayName
+            );
+            this.platform.executePlayer(
+                    playerUuid,
+                    player -> this.refreshPlayerTarget(
+                            player,
+                            playerUuid,
+                            previousIdentity,
+                            updatedTarget
+                    )
+            );
+        }
+    }
+
     public NavigationResult enableMethod(P player, NavigationMethod method) {
         Objects.requireNonNull(player, "player");
         this.platform.assertPlayerThread(player);

@@ -3,6 +3,12 @@ package _959.server_waypoint.core;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.core.edit.EditResultStatus;
+import _959.server_waypoint.core.edit.EditTarget;
+import _959.server_waypoint.core.edit.WaypointEditResult;
+import _959.server_waypoint.core.edit.WaypointListEditResult;
+import _959.server_waypoint.core.edit.WaypointListPatch;
+import _959.server_waypoint.core.edit.WaypointPatch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -102,6 +108,24 @@ public class WaypointFilesManagerCore {
         return this.addWaypoint(dimensionName, listName, listName, waypoint, resultAction);
     }
 
+    public RestoreWaypointResult restoreWaypoint(
+            String dimensionName,
+            String listIdentifier,
+            SimpleWaypoint waypoint,
+            Consumer<RestoreWaypointResult> resultAction
+    ) {
+        return this.mutateDimension(
+                dimensionName,
+                () -> {
+                    WaypointFileManager fileManager = this.fileManagerMap.get(dimensionName);
+                    return fileManager == null
+                            ? RestoreWaypointResult.dimensionNotFound()
+                            : fileManager.restoreWaypointIfAbsent(listIdentifier, waypoint);
+                },
+                resultAction
+        );
+    }
+
     public AddWaypointResult addWaypoint(
             String dimensionName,
             String listName,
@@ -172,6 +196,69 @@ public class WaypointFilesManagerCore {
                     return fileManager == null
                             ? RemoveWaypointListResult.dimensionNotFound()
                             : fileManager.removeWaypointListIfEmpty(listName);
+                },
+                resultAction
+        );
+    }
+
+    public WaypointListEditResult updateWaypointList(
+            EditTarget target,
+            @Nullable Integer expectedSyncNum,
+            WaypointListPatch patch,
+            Consumer<WaypointListEditResult> resultAction
+    ) {
+        if (target.type() != EditTarget.Type.LIST) {
+            throw new IllegalArgumentException("Expected a waypoint-list edit target");
+        }
+        return this.mutateDimension(
+                target.dimensionName(),
+                () -> {
+                    WaypointFileManager fileManager = this.fileManagerMap.get(target.dimensionName());
+                    return fileManager == null
+                            ? new WaypointListEditResult(
+                                    EditResultStatus.DIMENSION_NOT_FOUND,
+                                    null,
+                                    null,
+                                    null
+                            )
+                            : fileManager.updateWaypointList(
+                                    target.listIdentifier(),
+                                    expectedSyncNum,
+                                    patch
+                            );
+                },
+                resultAction
+        );
+    }
+
+    public WaypointEditResult updateWaypoint(
+            EditTarget target,
+            @Nullable Integer expectedSyncNum,
+            WaypointPatch patch,
+            Consumer<WaypointEditResult> resultAction
+    ) {
+        if (target.type() != EditTarget.Type.WAYPOINT) {
+            throw new IllegalArgumentException("Expected a waypoint edit target");
+        }
+        return this.mutateDimension(
+                target.dimensionName(),
+                () -> {
+                    WaypointFileManager fileManager = this.fileManagerMap.get(target.dimensionName());
+                    return fileManager == null
+                            ? new WaypointEditResult(
+                                    EditResultStatus.DIMENSION_NOT_FOUND,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    0
+                            )
+                            : fileManager.updateWaypoint(
+                                    target.listIdentifier(),
+                                    target.requiredWaypointIdentifier(),
+                                    expectedSyncNum,
+                                    patch
+                            );
                 },
                 resultAction
         );
@@ -1136,6 +1223,31 @@ public class WaypointFilesManagerCore {
     public enum AddWaypointListStatus {
         ADDED,
         EXISTS
+    }
+
+    public enum RestoreWaypointStatus {
+        RESTORED,
+        DIMENSION_NOT_FOUND,
+        LIST_NOT_FOUND,
+        IDENTIFIER_COLLISION
+    }
+
+    public record RestoreWaypointResult(
+            RestoreWaypointStatus status,
+            @Nullable WaypointFileManager fileManager,
+            @Nullable WaypointList waypointList,
+            @Nullable SimpleWaypoint waypointSnapshot,
+            int syncNum
+    ) {
+        static RestoreWaypointResult dimensionNotFound() {
+            return new RestoreWaypointResult(
+                    RestoreWaypointStatus.DIMENSION_NOT_FOUND,
+                    null,
+                    null,
+                    null,
+                    0
+            );
+        }
     }
 
     public record AddWaypointListResult(

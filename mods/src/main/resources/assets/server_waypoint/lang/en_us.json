@@ -139,5 +139,19 @@
   "server_waypoint.theme.variable.status.danger": "Danger text",
   "server_waypoint.theme.variable.status.successBackground": "Success background",
   "server_waypoint.theme.variable.status.warningBackground": "Warning background",
-  "server_waypoint.theme.variable.status.dangerBackground": "Danger background"
+  "server_waypoint.theme.variable.status.dangerBackground": "Danger background",
+  "waypoint.edit.screen.identifier.entry": "Identifier: ",
+  "waypoint.edit.screen.display_name.entry": "Display name: ",
+  "waypoint.display_name.clear.button": "Use identifier",
+  "waypoint.display_name.keep.button": "Keep override",
+  "waypoint.edit.error.stale_revision": "This waypoint changed on the server. Reopen it and try again.",
+  "waypoint.edit.error.dimension_not_found": "The dimension no longer exists.",
+  "waypoint.edit.error.list_not_found": "The list no longer exists.",
+  "waypoint.edit.error.waypoint_not_found": "The waypoint no longer exists.",
+  "waypoint.edit.error.identifier_collision": "That identifier is already in use.",
+  "waypoint.edit.error.invalid_display_text": "The display name is not valid formatted text.",
+  "waypoint.edit.error.invalid_value": "One of the edited values is invalid.",
+  "waypoint.edit.error.identical": "No fields changed.",
+  "waypoint.edit.error.permission_denied": "You do not have edit permission.",
+  "waypoint.edit.error.malformed_request": "The server rejected this edit request."
 }
