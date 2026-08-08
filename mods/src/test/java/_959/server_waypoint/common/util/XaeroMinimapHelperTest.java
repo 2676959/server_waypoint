@@ -175,6 +175,7 @@ class XaeroMinimapHelperTest {
             setName(name);
             setYaw(waypoint.yaw());
             setPurpose(xaero.hud.minimap.waypoint.WaypointPurpose.NORMAL);
+            setDisabled(false);
         }
 
         @Override
