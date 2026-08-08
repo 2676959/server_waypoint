@@ -22,8 +22,9 @@ class XaeroMinimapHelperTest {
     private static final String SYNCED_WAYPOINT = "sw\u241Fserver waypoint";
 
     @Test
-    void removingSyncedWaypointSetPreservesUnmanagedWaypoints() throws ReflectiveOperationException {
+    void removingSyncedWaypointSetRemovesPlainAndLegacyWaypoints() throws ReflectiveOperationException {
         MinimapWorld minimapWorld = createMinimapWorld();
+        minimapWorld.addWaypointSet(DEFAULT_SET);
         WaypointSet waypointSet = WaypointSet.Builder.begin().setName(SYNCED_SET).build();
         waypointSet.add(createWaypoint(SYNCED_WAYPOINT));
         waypointSet.add(createWaypoint("local waypoint"));
@@ -32,10 +33,8 @@ class XaeroMinimapHelperTest {
 
         XaeroMinimapHelper.removeSyncedWaypointSet(minimapWorld, SYNCED_SET);
 
-        assertEquals(waypointSet, minimapWorld.getWaypointSet(SYNCED_SET));
-        assertEquals(SYNCED_SET, minimapWorld.getCurrentWaypointSetId());
-        assertEquals(1, waypointSet.size());
-        assertEquals("local waypoint", waypointSet.get(0).getName());
+        assertNull(minimapWorld.getWaypointSet(SYNCED_SET));
+        assertEquals(DEFAULT_SET, minimapWorld.getCurrentWaypointSetId());
     }
 
     @Test
@@ -83,25 +82,28 @@ class XaeroMinimapHelperTest {
         WaypointSet syncedSet = minimapWorld.getWaypointSet("sw\u241Ftest");
         assertNotNull(syncedSet);
         assertEquals(1, syncedSet.size());
-        assertEquals("sw\u241FSpawn", syncedSet.get(0).getName());
+        assertEquals("Spawn", syncedSet.get(0).getName());
     }
 
     @Test
-    void replacingListRemovesEquivalentUnmanagedWaypointFromSyncedSet() throws ReflectiveOperationException {
+    void replacingListMigratesLegacyAndReplacesPlainWaypointIdentity() throws ReflectiveOperationException {
         MinimapWorld minimapWorld = createMinimapWorld();
-        SimpleWaypoint waypoint = new SimpleWaypoint("Spawn", "S", 1, 2, 3, 0, 0, false);
+        SimpleWaypoint localWaypoint = new SimpleWaypoint("Spawn", "S", 10, 2, 3, 0, 0, false);
+        SimpleWaypoint serverWaypoint = new SimpleWaypoint("Spawn", "S", 1, 2, 3, 0, 0, false);
         WaypointSet syncedSet = WaypointSet.Builder.begin().setName("sw\u241Ftest").build();
-        syncedSet.add(createWaypoint(waypoint, waypoint.name()));
+        syncedSet.add(createWaypoint(localWaypoint, localWaypoint.name()));
+        syncedSet.add(createWaypoint(serverWaypoint, "sw\u241FSpawn"));
         minimapWorld.addWaypointSet(syncedSet);
 
         XaeroMinimapHelper.replaceWaypointList(
                 minimapWorld,
-                new WaypointList("test", 1, List.of(waypoint)),
+                new WaypointList("test", 1, List.of(serverWaypoint)),
                 XaeroMinimapHelperTest::createWaypoint
         );
 
         assertEquals(1, syncedSet.size());
-        assertEquals("sw\u241FSpawn", syncedSet.get(0).getName());
+        assertEquals("Spawn", syncedSet.get(0).getName());
+        assertEquals(1, syncedSet.get(0).getX());
     }
 
     @Test
@@ -122,7 +124,10 @@ class XaeroMinimapHelperTest {
         assertEquals(localSet, minimapWorld.getWaypointSet("test"));
         assertEquals(1, localSet.size());
         assertEquals(10, localSet.get(0).getX());
-        assertNotNull(minimapWorld.getWaypointSet("sw\u241Ftest"));
+        WaypointSet syncedSet = minimapWorld.getWaypointSet("sw\u241Ftest");
+        assertNotNull(syncedSet);
+        assertEquals(1, syncedSet.size());
+        assertEquals("Spawn", syncedSet.get(0).getName());
     }
 
     private static MinimapWorld createMinimapWorld() throws ReflectiveOperationException {

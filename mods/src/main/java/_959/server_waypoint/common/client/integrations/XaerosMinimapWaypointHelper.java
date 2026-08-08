@@ -228,7 +228,7 @@ public final class XaerosMinimapWaypointHelper {
                 if (waypoint == null) {
                     return;
                 }
-                replaceSyncedWaypoint(waypointSet, listName, waypoint);
+                replaceSyncedWaypoint(waypointSet, waypoint);
                 removeMatchingLocalWaypoint(minimapWorld, listName, waypoint);
                 displayClientMessage(player, Component.translatable("server_waypoint.modification.add.xaeros", toVanillaText(waypointTextWithTp(waypoint, dimensionName, listName))));
             }
@@ -245,7 +245,7 @@ public final class XaerosMinimapWaypointHelper {
                 if (waypointName != null && !waypointName.equals(waypoint.name())) {
                     removeSyncedWaypoint(waypointSet, waypointName);
                 }
-                replaceSyncedWaypoint(waypointSet, listName, waypoint);
+                replaceSyncedWaypoint(waypointSet, waypoint);
                 removeMatchingLocalWaypoint(minimapWorld, listName, waypoint);
                 displayClientMessage(player, Component.translatable("server_waypoint.modification.update.xaeros", toVanillaText(waypointTextWithTp(waypoint, dimensionName, listName))));
             }

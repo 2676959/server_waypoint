@@ -23,8 +23,8 @@ public class SimpleWaypoint {
     @Expose @SerializedName("color") @JsonAdapter(ColorToHexCodeSerializer.class) private int rgb;
     @Expose private int yaw;
     @Expose private boolean global;
-    @Expose private List<String> keywords;
-    @Expose private String description;
+    @Expose private List<String> keywords = new ArrayList<>();
+    @Expose private String description = "";
     private static final String SEPARATOR = ":";
     // not on paper
     //? if !paper {
@@ -175,10 +175,16 @@ public class SimpleWaypoint {
     }
 
     public synchronized List<String> keywords() {
+        if (this.keywords == null) {
+            this.keywords = new ArrayList<>();
+        }
         return Collections.unmodifiableList(copyKeywords(this.keywords));
     }
 
     public synchronized String description() {
+        if (this.description == null) {
+            this.description = "";
+        }
         return this.description;
     }
 
@@ -194,7 +200,7 @@ public class SimpleWaypoint {
     }
 
     synchronized boolean compareProperties(String name, String displayName, String initials, WaypointPos pos, int colorIdx, int yaw, boolean global, List<String> keywords, String description) {
-        return this.name.equals(name) && Objects.equals(this.displayName, normalizeDisplayName(name, displayName)) && this.initials.equals(initials) && this.pos.equals(pos) && this.rgb == colorIdx && this.yaw == convertYaw(yaw) && this.global == global && this.keywords().equals(copyKeywords(keywords)) && this.description.equals(description);
+        return this.name.equals(name) && Objects.equals(this.displayName, normalizeDisplayName(name, displayName)) && this.initials.equals(initials) && this.pos.equals(pos) && this.rgb == colorIdx && this.yaw == convertYaw(yaw) && this.global == global && this.keywords().equals(copyKeywords(keywords)) && this.description().equals(description);
     }
 
     synchronized void updateProperties(String name, String displayName, String initials, WaypointPos pos, int rgb, int yaw, boolean global, List<String> keywords, String description) {
