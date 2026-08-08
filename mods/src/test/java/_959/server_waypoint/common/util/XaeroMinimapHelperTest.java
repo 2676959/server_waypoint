@@ -69,13 +69,14 @@ class XaeroMinimapHelperTest {
         MinimapWorld minimapWorld = createMinimapWorld();
         SimpleWaypoint waypoint = new SimpleWaypoint("Spawn", "S", 1, 2, 3, 0, 0, false);
         WaypointSet localSet = WaypointSet.Builder.begin().setName("test").build();
-        localSet.add(XaerosWaypointHelper.simpleWaypointToXaerosWaypoint(waypoint));
+        localSet.add(createWaypoint(waypoint, waypoint.name()));
         minimapWorld.addWaypointSet(localSet);
         minimapWorld.setCurrentWaypointSetId("test");
 
         XaeroMinimapHelper.replaceWaypointList(
                 minimapWorld,
-                new WaypointList("test", 1, List.of(waypoint))
+                new WaypointList("test", 1, List.of(waypoint)),
+                XaeroMinimapHelperTest::createWaypoint
         );
 
         assertNull(minimapWorld.getWaypointSet("test"));
@@ -86,17 +87,36 @@ class XaeroMinimapHelperTest {
     }
 
     @Test
+    void replacingListRemovesEquivalentUnmanagedWaypointFromSyncedSet() throws ReflectiveOperationException {
+        MinimapWorld minimapWorld = createMinimapWorld();
+        SimpleWaypoint waypoint = new SimpleWaypoint("Spawn", "S", 1, 2, 3, 0, 0, false);
+        WaypointSet syncedSet = WaypointSet.Builder.begin().setName("sw\u241Ftest").build();
+        syncedSet.add(createWaypoint(waypoint, waypoint.name()));
+        minimapWorld.addWaypointSet(syncedSet);
+
+        XaeroMinimapHelper.replaceWaypointList(
+                minimapWorld,
+                new WaypointList("test", 1, List.of(waypoint)),
+                XaeroMinimapHelperTest::createWaypoint
+        );
+
+        assertEquals(1, syncedSet.size());
+        assertEquals("sw\u241FSpawn", syncedSet.get(0).getName());
+    }
+
+    @Test
     void replacingListPreservesConflictingLocalWaypoint() throws ReflectiveOperationException {
         MinimapWorld minimapWorld = createMinimapWorld();
         SimpleWaypoint localWaypoint = new SimpleWaypoint("Spawn", "S", 10, 2, 3, 0, 0, false);
         SimpleWaypoint serverWaypoint = new SimpleWaypoint("Spawn", "S", 1, 2, 3, 0, 0, false);
         WaypointSet localSet = WaypointSet.Builder.begin().setName("test").build();
-        localSet.add(XaerosWaypointHelper.simpleWaypointToXaerosWaypoint(localWaypoint));
+        localSet.add(createWaypoint(localWaypoint, localWaypoint.name()));
         minimapWorld.addWaypointSet(localSet);
 
         XaeroMinimapHelper.replaceWaypointList(
                 minimapWorld,
-                new WaypointList("test", 1, List.of(serverWaypoint))
+                new WaypointList("test", 1, List.of(serverWaypoint)),
+                XaeroMinimapHelperTest::createWaypoint
         );
 
         assertEquals(localSet, minimapWorld.getWaypointSet("test"));
@@ -121,14 +141,55 @@ class XaeroMinimapHelperTest {
     }
 
     private static Waypoint createWaypoint(String name) throws ReflectiveOperationException {
-        Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
-        var unsafeField = unsafeClass.getDeclaredField("theUnsafe");
-        unsafeField.setAccessible(true);
-        Object unsafe = unsafeField.get(null);
-        Waypoint waypoint = (Waypoint) unsafeClass
-                .getMethod("allocateInstance", Class.class)
-                .invoke(unsafe, Waypoint.class);
-        waypoint.setName(name);
-        return waypoint;
+        return createWaypoint(new SimpleWaypoint(name, "", 0, 0, 0, 0, 0, false), name);
+    }
+
+    private static Waypoint createWaypoint(SimpleWaypoint waypoint, String name) {
+        try {
+            Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+            var unsafeField = unsafeClass.getDeclaredField("theUnsafe");
+            unsafeField.setAccessible(true);
+            Object unsafe = unsafeField.get(null);
+            TestWaypoint testWaypoint = (TestWaypoint) unsafeClass
+                    .getMethod("allocateInstance", Class.class)
+                    .invoke(unsafe, TestWaypoint.class);
+            testWaypoint.initialize(waypoint, name);
+            return testWaypoint;
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError("Failed to create a Xaero waypoint test double", e);
+        }
+    }
+
+    private static final class TestWaypoint extends Waypoint {
+        private SimpleWaypoint waypoint;
+
+        private TestWaypoint() {
+            super(0, 0, 0, "", "", 0);
+        }
+
+        private void initialize(SimpleWaypoint waypoint, String name) {
+            this.waypoint = waypoint;
+            setX(waypoint.pos().x());
+            setY(waypoint.pos().y());
+            setZ(waypoint.pos().z());
+            setName(name);
+            setYaw(waypoint.yaw());
+            setPurpose(xaero.hud.minimap.waypoint.WaypointPurpose.NORMAL);
+        }
+
+        @Override
+        public String getInitials() {
+            return waypoint.initials();
+        }
+
+        @Override
+        public int getColor() {
+            return _959.server_waypoint.util.ColorUtils.rgbToClosestColorIndex(waypoint.rgb());
+        }
+
+        @Override
+        public boolean isGlobal() {
+            return waypoint.global();
+        }
     }
 }
