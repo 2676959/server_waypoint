@@ -204,7 +204,7 @@ public final class UploadCoordinator<P> {
                 }
 
                 SimpleWaypoint existing = addResult.waypointSnapshot();
-                if (hasSameProperties(existing, waypoint)) {
+                if (hasSameXaeroProperties(existing, waypoint)) {
                     summary.unchanged++;
                     continue;
                 }
@@ -213,19 +213,20 @@ public final class UploadCoordinator<P> {
                     continue;
                 }
 
+                SimpleWaypoint replacement = mergeXaeroProperties(existing, waypoint);
                 WaypointFilesManagerCore.UpdateWaypointResult updateResult = this.waypointServer.updateWaypointProperties(
                         key.dimensionName,
                         key.listName,
-                        waypoint.name(),
-                        waypoint.name(),
-                        waypoint.displayName(),
-                        waypoint.initials(),
-                        waypoint.pos(),
-                        waypoint.rgb(),
-                        waypoint.yaw(),
-                        waypoint.global(),
-                        waypoint.keywords(),
-                        waypoint.description(),
+                        replacement.name(),
+                        replacement.name(),
+                        replacement.displayName(),
+                        replacement.initials(),
+                        replacement.pos(),
+                        replacement.rgb(),
+                        replacement.yaw(),
+                        replacement.global(),
+                        replacement.keywords(),
+                        replacement.description(),
                         ignored -> {
                         }
                 );
@@ -401,16 +402,27 @@ public final class UploadCoordinator<P> {
                 .put(waypointList.name(), waypointList);
     }
 
-    private static boolean hasSameProperties(SimpleWaypoint serverWaypoint, SimpleWaypoint uploadedWaypoint) {
+    static boolean hasSameXaeroProperties(SimpleWaypoint serverWaypoint, SimpleWaypoint uploadedWaypoint) {
         return serverWaypoint.name().equals(uploadedWaypoint.name())
-                && serverWaypoint.displayName().equals(uploadedWaypoint.displayName())
                 && serverWaypoint.initials().equals(uploadedWaypoint.initials())
                 && serverWaypoint.pos().equals(uploadedWaypoint.pos())
                 && serverWaypoint.rgb() == uploadedWaypoint.rgb()
                 && serverWaypoint.yaw() == uploadedWaypoint.yaw()
-                && serverWaypoint.global() == uploadedWaypoint.global()
-                && serverWaypoint.keywords().equals(uploadedWaypoint.keywords())
-                && serverWaypoint.description().equals(uploadedWaypoint.description());
+                && serverWaypoint.global() == uploadedWaypoint.global();
+    }
+
+    static SimpleWaypoint mergeXaeroProperties(SimpleWaypoint serverWaypoint, SimpleWaypoint uploadedWaypoint) {
+        return new SimpleWaypoint(
+                uploadedWaypoint.name(),
+                serverWaypoint.displayName(),
+                uploadedWaypoint.initials(),
+                uploadedWaypoint.pos(),
+                uploadedWaypoint.rgb(),
+                uploadedWaypoint.yaw(),
+                uploadedWaypoint.global(),
+                serverWaypoint.keywords(),
+                serverWaypoint.description()
+        );
     }
 
     private static boolean isValidWaypoint(SimpleWaypoint waypoint) {

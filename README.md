@@ -45,11 +45,7 @@ Optional:
 - `/wp download` download waypoints and add to Xaero's Minimap (will not work without client installation).
 - `/wp details list <dimension> <list-identifier>` and `/wp details waypoint <dimension> <list-identifier> <waypoint-identifier>` show every property and its available actions.
 - `/wp edit list ...` and `/wp edit waypoint ...` set one property at a time or clear an optional property. Run `/wp help edit` for the complete grammar.
-- `/wp upload` import normal, enabled, non-temporary waypoints from Xaero's Minimap on the executing player's client. Requires the client mod and Xaero's Minimap.
-  - `/wp upload <dimension> [<list> [<waypoint>]]` restricts the import to a dimension, waypoint set, or waypoint.
-  - The default (or `/wp upload force server`) only adds missing server waypoints. An existing waypoint with the same name but different properties is reported as a conflict and keeps the server version.
-  - `/wp upload force local [<dimension> [<list> [<waypoint>]]]` makes the local Xaero waypoint win conflicts without deleting server waypoints.
-  - `/wp upload force local delete [<dimension> [<list> [<waypoint>]]]` mirrors local data into the selected scope, deleting server waypoints or waypoint sets that are absent in Xaero's Minimap.
+- `/wp upload` imports waypoints from Xaero’s Minimap on the executing player’s client. See [Uploading from Xaero’s Minimap](#uploading-from-xaeros-minimap) for conflict, force, and delete behavior.
 - `/wp list` lists waypoints in the current dimension. Use `all`, a dimension, or a dimension plus list name to change the scope. Results are split using the server's configured page limit (10 by default), with clickable sorting and page controls.
   - Add `search <query>` to filter by waypoint name.
   - Add `sort <default|name|distance|color>` and, for non-default sorts, optionally `order <ascending|descending>` to sort the result.
@@ -59,6 +55,40 @@ Optional:
   - `/wp remove <dimension> <list-identifier>` removes an empty waypoint list.
 - `/wp restore <token>` restores a recently removed waypoint while its temporary token remains valid.
 - `/wp tp` teleport the executor player to a waypoint
+
+## Uploading from Xaero’s Minimap
+
+Upload is initiated by the server but reads Xaero data from the executing player’s client. The client must have both Server Waypoint and Xaero’s Minimap installed and ready. The server accepts only the dimensions and optional list/waypoint selected by the command.
+
+Only normal, enabled, non-temporary Xaero waypoints are imported. Upload synchronizes the waypoint name, initials, coordinates, Xaero color, yaw, and local/global visibility. Xaero does not store Server Waypoint’s display name, keywords, or description; those server-only fields are preserved when an existing waypoint is updated. New waypoints use their name as the display name and start with empty keywords and description.
+
+Every mode accepts the same optional scope:
+
+- No selector: every server dimension available to the command executor.
+- `<dimension>`: every waypoint set in that dimension.
+- `<dimension> <list>`: one Xaero waypoint set.
+- `<dimension> <list> <waypoint>`: one waypoint.
+
+### Normal upload / force server
+
+`/wp upload [<dimension> [<list> [<waypoint>]]]` and `/wp upload force server [<dimension> [<list> [<waypoint>]]]` have identical behavior. Missing server waypoints are added. Matching waypoints are left unchanged. If the same name exists with different Xaero-supported properties, the server version wins and the command reports a conflict. Nothing is deleted.
+
+### Force local
+
+`/wp upload force local [<dimension> [<list> [<waypoint>]]]` adds missing waypoints and replaces conflicting Xaero-supported properties with the client values. Server-only display names, keywords, and descriptions are preserved. Nothing is deleted.
+
+### Force local delete
+
+`/wp upload force local delete [<dimension> [<list> [<waypoint>]]]` first applies `force local`, then mirrors the selected scope by deleting server data that is absent from Xaero:
+
+- World scope removes absent waypoint sets and waypoints across all selected dimensions.
+- Dimension scope removes absent waypoint sets and waypoints in that dimension.
+- List scope removes absent waypoints from that set, or removes the server list if the Xaero set is absent.
+- Waypoint scope removes only the selected server waypoint if it is absent locally.
+
+Disabled, temporary, and non-normal Xaero waypoints are not exported. In `force local delete` they therefore count as absent and can cause the corresponding server waypoint to be deleted. Use this mode only when the selected Xaero scope is intended to be the authoritative copy.
+
+Upload uses `server_waypoint.command.upload` (vanilla permission level 2 by default). The destructive delete mode additionally requires `server_waypoint.command.upload.delete` (level 4 by default).
 
 ### Identifiers and display names
 

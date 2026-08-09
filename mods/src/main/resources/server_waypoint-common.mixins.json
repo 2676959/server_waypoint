@@ -31,7 +31,6 @@
     "WorldSessionMixin",
     "xaeros_minimap.XaerosMinimapDropDownWidgetMixin",
     "xaeros_minimap.MinimapWorldStateUpdaterMixin",
-    "xaeros_minimap.XaerosMinimapGuiWaypointsListMixin",
     "xaeros_minimap.XaerosMinimapWaypointMapRendererMixin",
     "xaeros_minimap.XaerosMinimapWaypointMixin",
     "xaeros_worldmap.XaerosWorldMapWaypointReaderMixin",
