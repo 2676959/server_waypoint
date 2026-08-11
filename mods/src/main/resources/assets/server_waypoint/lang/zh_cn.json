@@ -153,5 +153,6 @@
   "waypoint.edit.error.invalid_value": "某个编辑值无效。",
   "waypoint.edit.error.identical": "没有字段发生变化。",
   "waypoint.edit.error.permission_denied": "你没有编辑权限。",
-  "waypoint.edit.error.malformed_request": "服务器拒绝了此编辑请求。"
+  "waypoint.edit.error.malformed_request": "服务器拒绝了此编辑请求。",
+  "waypoint.edit.error.duplicate_keyword": "一个路径点不能包含重复的关键词。"
 }

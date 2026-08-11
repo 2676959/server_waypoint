@@ -196,6 +196,7 @@
   "hex_color_code.invalid": "Invalid hex color code: {0}",
   "argument.text.too_long": "Argument {0} is too long (maximum raw length: {1})",
   "argument.keywords.too_many": "Too many keywords (maximum: {0})",
+  "argument.keywords.duplicate": "A waypoint cannot contain duplicate keywords",
   "argument.formatted_text.invalid": "Invalid Minecraft JSON formatted text",
 
   "waypoint.details.list.title": "Waypoint list details",
@@ -223,6 +224,7 @@
   "waypoint.edit.error.identical": "No property changed",
   "waypoint.edit.error.permission_denied": "You do not have permission to edit waypoints",
   "waypoint.edit.error.malformed_request": "The edit request was malformed",
+  "waypoint.edit.error.duplicate_keyword": "A waypoint cannot contain duplicate keywords",
   "waypoint.edit.error.success": "The edit succeeded",
   "waypoint.restore.invalid": "This restore token is invalid or expired",
   "waypoint.restore.list_missing": "The original waypoint list is missing; the restore token remains available",

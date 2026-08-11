@@ -141,7 +141,7 @@ class NetworkCodecTest {
                 List.of(), ""
         );
         WaypointEditResultBuffer result = new WaypointEditResultBuffer(
-                42L, EditResultStatus.SUCCESS, "minecraft:overworld", "", "way point",
+                42L, EditResultStatus.DUPLICATE_KEYWORD, "minecraft:overworld", "", "way point",
                 canonical, 8
         );
         ByteBuf resultBuf = Unpooled.buffer();

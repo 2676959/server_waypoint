@@ -3,8 +3,10 @@ package _959.server_waypoint.text;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 import java.util.List;
 
@@ -47,7 +49,7 @@ public final class WaypointDetailsTextBuilder {
                         parse(snapshot.displayName()),
                         editControl(
                                 canEdit,
-                                editListSetCmd(
+                                editListSetSuggestionCmd(
                                         dimensionName,
                                         snapshot.name(),
                                         "display-name",
@@ -114,7 +116,7 @@ public final class WaypointDetailsTextBuilder {
                 .append(property(
                         "waypoint.details.display_name",
                         parse(snapshot.displayName()),
-                        editControl(canEdit, editWaypointSetCmd(dimensionName, listIdentifier, identifier, "display-name", snapshot.displayName()))
+                        editControl(canEdit, editWaypointSetSuggestionCmd(dimensionName, listIdentifier, identifier, "display-name", snapshot.displayName()))
                                 .append(snapshot.hasDisplayNameOverride()
                                         ? clearControl(canEdit, editWaypointClearCmd(dimensionName, listIdentifier, identifier, "display-name"))
                                         : text(""))
@@ -122,11 +124,13 @@ public final class WaypointDetailsTextBuilder {
                 .append(property("waypoint.details.source_list_display_name", parse(list.displayName()), text("")))
                 .append(property("waypoint.details.source_list_identifier", text(listIdentifier), text("")))
                 .append(property("waypoint.details.dimension", WaypointTextHelper.dimensionNameWithColor(dimensionName), text("")))
-                .append(property("waypoint.details.initials", text(snapshot.initials()), editControl(canEdit, editWaypointSetCmd(dimensionName, listIdentifier, identifier, "initials", snapshot.initials()))))
+                .append(property("waypoint.details.initials", text(snapshot.initials()), editControl(canEdit, editWaypointSetSuggestionCmd(dimensionName, listIdentifier, identifier, "initials", snapshot.initials()))))
                 .append(property("waypoint.details.position", text(snapshot.pos().toShortString()), editControl(canEdit, editWaypointPositionCmd(dimensionName, listIdentifier, identifier, snapshot))))
                 .append(property(
                         "waypoint.details.color",
-                        text("■", TextColor.color(snapshot.rgb())).appendSpace().append(text(rgbToHexCode(snapshot.rgb(), true))),
+                        text("■", TextColor.color(snapshot.rgb()))
+                                .appendSpace()
+                                .append(text(rgbToHexCode(snapshot.rgb(), true), NamedTextColor.WHITE)),
                         editControl(canEdit, editWaypointSetCmd(dimensionName, listIdentifier, identifier, "color", rgbToHexCode(snapshot.rgb(), false)))
                 ))
                 .append(property("waypoint.details.yaw", text(snapshot.yaw()), editControl(canEdit, editWaypointSetCmd(dimensionName, listIdentifier, identifier, "yaw", Integer.toString(snapshot.yaw())))))
@@ -134,13 +138,13 @@ public final class WaypointDetailsTextBuilder {
                 .append(property(
                         "waypoint.details.keywords",
                         text(String.join(", ", snapshot.keywords())),
-                        editControl(canEdit, editWaypointSetCmd(dimensionName, listIdentifier, identifier, "keywords", String.join(", ", snapshot.keywords())))
+                        editControl(canEdit, editWaypointSetSuggestionCmd(dimensionName, listIdentifier, identifier, "keywords", String.join(", ", snapshot.keywords())))
                                 .append(snapshot.keywords().isEmpty() ? text("") : clearControl(canEdit, editWaypointClearCmd(dimensionName, listIdentifier, identifier, "keywords")))
                 ))
                 .append(property(
                         "waypoint.details.description",
                         parse(snapshot.description()),
-                        editControl(canEdit, editWaypointSetCmd(dimensionName, listIdentifier, identifier, "description", snapshot.description()))
+                        editControl(canEdit, editWaypointSetSuggestionCmd(dimensionName, listIdentifier, identifier, "description", snapshot.description()))
                                 .append(snapshot.description().isEmpty() ? text("") : clearControl(canEdit, editWaypointClearCmd(dimensionName, listIdentifier, identifier, "description")))
                 ));
         Component actions = canNavigate
@@ -162,12 +166,16 @@ public final class WaypointDetailsTextBuilder {
     }
 
     private static Component property(String key, Component value, Component controls) {
-        return translatable(key, NamedTextColor.GRAY)
+        TextComponent.Builder line = text();
+        if (!controls.equals(Component.empty())) {
+            line.append(controls).appendSpace();
+        }
+        return line.append(translatable(key, NamedTextColor.GRAY)
+                .decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)
                 .append(text(": "))
-                .append(value.colorIfAbsent(NamedTextColor.WHITE))
-                .appendSpace()
-                .append(controls)
-                .appendNewline();
+                .append(value.colorIfAbsent(NamedTextColor.WHITE)))
+                .appendNewline()
+                .build();
     }
 
     private static Component editControl(boolean enabled, String command) {

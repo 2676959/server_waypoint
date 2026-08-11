@@ -153,5 +153,6 @@
   "waypoint.edit.error.invalid_value": "One of the edited values is invalid.",
   "waypoint.edit.error.identical": "No fields changed.",
   "waypoint.edit.error.permission_denied": "You do not have edit permission.",
-  "waypoint.edit.error.malformed_request": "The server rejected this edit request."
+  "waypoint.edit.error.malformed_request": "The server rejected this edit request.",
+  "waypoint.edit.error.duplicate_keyword": "A waypoint cannot contain duplicate keywords."
 }

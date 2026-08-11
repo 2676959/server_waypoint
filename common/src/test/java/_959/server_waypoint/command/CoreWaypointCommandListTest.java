@@ -295,6 +295,19 @@ class CoreWaypointCommandListTest {
     }
 
     @Test
+    void addRejectsCaseInsensitiveDuplicateKeywords() throws CommandSyntaxException {
+        this.dispatcher.execute(
+                "wp add overworld bases position duplicate D FFAA00 0 true \"home, HOME\"",
+                this.source
+        );
+
+        WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
+        assertNull(bases.getWaypointByName("duplicate"));
+        assertEquals(1, this.sender.errors.size());
+        assertTrue(this.sender.errors.get(0).toString().contains("argument.keywords.duplicate"));
+    }
+
+    @Test
     void renameFeedbackBuildsDetailsControlsFromTheAfterSnapshot() throws CommandSyntaxException {
         this.dispatcher.execute("wp add overworld bases position old O FFAA00 0 true", this.source);
         this.sender.messages.clear();

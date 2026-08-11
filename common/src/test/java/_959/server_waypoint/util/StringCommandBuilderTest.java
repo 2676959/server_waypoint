@@ -37,6 +37,30 @@ class StringCommandBuilderTest {
     }
 
     @Test
+    void editSuggestionsOmitValuesRejectedByMinecraftChatComponents() {
+        assertEquals(
+                "/wp edit waypoint minecraft:overworld list Text set description ",
+                StringCommandBuilder.editWaypointSetSuggestionCmd(
+                        "minecraft:overworld",
+                        "list",
+                        "Text",
+                        "description",
+                        "First line\nSecond line"
+                )
+        );
+        assertEquals(
+                "/wp edit waypoint minecraft:overworld list Text set description plain",
+                StringCommandBuilder.editWaypointSetSuggestionCmd(
+                        "minecraft:overworld",
+                        "list",
+                        "Text",
+                        "description",
+                        "plain"
+                )
+        );
+    }
+
+    @Test
     void addCommandUsesIdentifierInsteadOfDisplayName() {
         SimpleWaypoint waypoint = new SimpleWaypoint(
                 "exact-id", "{\"text\":\"Presentation\"}", "E",

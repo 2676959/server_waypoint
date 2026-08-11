@@ -132,6 +132,31 @@ class WaypointPatchTest {
     }
 
     @Test
+    void duplicateKeywordPatchIsRejectedWithoutMutation() {
+        WaypointFilesManagerCore manager = populatedManager();
+        WaypointList list = list(manager, "source");
+        int revision = list.getSyncNum();
+        WaypointPatch patch = new WaypointPatch(
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.set(List.of("home", "HOME")),
+                PatchField.unchanged()
+        );
+
+        var result = manager.updateWaypoint(
+                EditTarget.waypoint(DIMENSION, "source", "original"),
+                revision,
+                patch,
+                ignored -> {
+                }
+        );
+
+        assertEquals(EditResultStatus.DUPLICATE_KEYWORD, result.status());
+        assertEquals(revision, list.getSyncNum());
+        assertEquals(List.of("old"), list.getWaypointByName("original").keywords());
+    }
+
+    @Test
     void listRenameRekeysAtomicallyAndPreservesOrClearsDisplayOverride() {
         WaypointFilesManagerCore manager = populatedManager();
         manager.addWaypointList(DIMENSION, "occupied", "occupied", ignored -> {

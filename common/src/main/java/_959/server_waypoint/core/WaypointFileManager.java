@@ -580,6 +580,9 @@ public class WaypointFileManager {
             if (keywords.size() > MAX_KEYWORDS) {
                 return EditResultStatus.INVALID_VALUE;
             }
+            if (hasDuplicateKeywords(keywords)) {
+                return EditResultStatus.DUPLICATE_KEYWORD;
+            }
             for (String keyword : keywords) {
                 if (keyword.length() > MAX_KEYWORD_LENGTH) {
                     return EditResultStatus.INVALID_VALUE;

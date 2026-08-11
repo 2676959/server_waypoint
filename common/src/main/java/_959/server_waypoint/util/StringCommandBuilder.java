@@ -401,6 +401,17 @@ public class StringCommandBuilder {
                 + escapeArgument(listIdentifier) + " set " + property + ' ' + escapeArgument(value);
     }
 
+    public static String editListSetSuggestionCmd(
+            String dimensionName,
+            String listIdentifier,
+            String property,
+            String value
+    ) {
+        String prefix = WAYPOINT_COMMAND_WITH_SLASH + " edit list " + dimensionName + ' '
+                + escapeArgument(listIdentifier) + " set " + property + ' ';
+        return suggestionWithValue(prefix, value);
+    }
+
     public static String editListClearCmd(
             String dimensionName,
             String listIdentifier,
@@ -420,6 +431,29 @@ public class StringCommandBuilder {
         return WAYPOINT_COMMAND_WITH_SLASH + " edit waypoint " + dimensionName + ' '
                 + escapeArgument(listIdentifier) + ' ' + escapeArgument(waypointIdentifier)
                 + " set " + property + ' ' + escapeArgument(value);
+    }
+
+    public static String editWaypointSetSuggestionCmd(
+            String dimensionName,
+            String listIdentifier,
+            String waypointIdentifier,
+            String property,
+            String value
+    ) {
+        String prefix = WAYPOINT_COMMAND_WITH_SLASH + " edit waypoint " + dimensionName + ' '
+                + escapeArgument(listIdentifier) + ' ' + escapeArgument(waypointIdentifier)
+                + " set " + property + ' ';
+        return suggestionWithValue(prefix, value);
+    }
+
+    private static String suggestionWithValue(String prefix, String value) {
+        return value.chars().allMatch(StringCommandBuilder::isAllowedChatCharacter)
+                ? prefix + escapeArgument(value)
+                : prefix;
+    }
+
+    private static boolean isAllowedChatCharacter(int character) {
+        return character != '\u00A7' && character >= 32 && character != 127;
     }
 
     public static String editWaypointClearCmd(

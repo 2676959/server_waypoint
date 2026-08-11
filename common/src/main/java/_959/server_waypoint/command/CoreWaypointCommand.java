@@ -877,6 +877,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 );
                 return false;
             }
+            if (hasDuplicateKeywords(keywords)) {
+                this.sender.sendError(source, translatable("argument.keywords.duplicate"));
+                return false;
+            }
             for (String keyword : keywords) {
                 if (!validateLength(source, KEYWORDS_ARG, keyword, MAX_KEYWORD_LENGTH)) {
                     return false;

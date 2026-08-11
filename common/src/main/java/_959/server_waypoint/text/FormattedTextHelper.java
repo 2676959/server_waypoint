@@ -5,6 +5,11 @@ import net.kyori.adventure.text.flattener.ComponentFlattener;
 import net.kyori.adventure.text.flattener.FlattenerListener;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
 public final class FormattedTextHelper {
     public static final int MAX_NAME_LENGTH = 256;
     public static final int MAX_DESCRIPTION_LENGTH = 2048;
@@ -47,6 +52,16 @@ public final class FormattedTextHelper {
             }
         });
         return result.toString();
+    }
+
+    public static boolean hasDuplicateKeywords(List<String> keywords) {
+        Set<String> normalizedKeywords = new HashSet<>();
+        for (String keyword : keywords) {
+            if (!normalizedKeywords.add(keyword.toLowerCase(Locale.ROOT))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean looksLikeJson(String rawText) {
