@@ -10,6 +10,7 @@ import _959.server_waypoint.core.edit.WaypointPatch;
 import _959.server_waypoint.core.network.buffer.MessageBuffer;
 import _959.server_waypoint.core.network.buffer.WaypointEditRequestBuffer;
 import _959.server_waypoint.core.network.buffer.WaypointEditResultBuffer;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.navigation.NavigationPlatform;
 import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationSnapshot;
@@ -40,7 +41,8 @@ class C2SPacketHandlerTest {
                 sender,
                 server,
                 new TestPermissionManager(false),
-                navigationService()
+                navigationService(),
+                uploadCoordinator(server)
         );
 
         handler.onWaypointEditRequest("player", request());
@@ -67,7 +69,8 @@ class C2SPacketHandlerTest {
                 sender,
                 server,
                 new TestPermissionManager(true),
-                navigationService()
+                navigationService(),
+                uploadCoordinator(server)
         );
 
         handler.onWaypointEditRequest("player", request());
@@ -103,6 +106,18 @@ class C2SPacketHandlerTest {
                 return NavigationSnapshot.wrongDimension();
             }
         }, List.of());
+    }
+
+    private static UploadCoordinator<String> uploadCoordinator(WaypointServerCore server) {
+        return new UploadCoordinator<>(
+                server,
+                (player, message) -> {
+                },
+                packet -> {
+                },
+                player -> true,
+                player -> true
+        );
     }
 
     private static final class TestPermissionManager extends PermissionManager<String, String, String> {
@@ -154,6 +169,16 @@ class C2SPacketHandlerTest {
         protected PermissionKey createReloadPermissionKey() {
             return new PermissionKey("reload");
         }
+
+        @Override
+        protected PermissionKey createUploadPermissionKey() {
+            return new PermissionKey("upload");
+        }
+
+        @Override
+        protected PermissionKey createUploadDeletePermissionKey() {
+            return new PermissionKey("upload.delete");
+        }
     }
 
     private static final class TestSender implements PlatformMessageSender<String, String> {
@@ -183,6 +208,10 @@ class C2SPacketHandlerTest {
         @Override
         public void sendPlayerPacket(String player, MessageBuffer packet) {
             this.packets.add(packet);
+        }
+
+        @Override
+        public void broadcastPacket(MessageBuffer packet) {
         }
 
         @Override
