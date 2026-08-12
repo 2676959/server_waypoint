@@ -116,7 +116,8 @@ class C2SPacketHandlerTest {
                 packet -> {
                 },
                 player -> true,
-                player -> true
+                player -> true,
+                navigationService()
         );
     }
 

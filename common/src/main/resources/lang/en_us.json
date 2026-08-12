@@ -48,6 +48,7 @@
   "waypoint.upload.player-only": "This command can only be run by a player",
   "waypoint.upload.request.invalid": "The waypoint upload request was invalid or incomplete",
   "waypoint.upload.request.expired": "The waypoint upload request expired",
+  "waypoint.upload.request.stale": "Waypoints changed during the upload. No upload changes were applied to {0} affected dimension(s); retry to use the current server data.",
   "waypoint.upload.permission.revoked": "You no longer have permission to upload waypoints",
   "waypoint.upload.delete.permission.revoked": "You no longer have permission to force-delete waypoints",
   "waypoint.upload.xaero.missing": "Xaero''s Minimap is not installed on your client",

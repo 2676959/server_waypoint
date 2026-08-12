@@ -48,6 +48,7 @@
   "waypoint.upload.player-only": "此命令只能由玩家执行",
   "waypoint.upload.request.invalid": "路径点上传请求无效或不完整",
   "waypoint.upload.request.expired": "路径点上传请求已过期",
+  "waypoint.upload.request.stale": "上传期间路径点已发生变化。{0} 个受影响维度未应用上传更改；请基于当前服务器数据重试。",
   "waypoint.upload.permission.revoked": "你已没有上传路径点的权限",
   "waypoint.upload.delete.permission.revoked": "你已没有强制删除路径点的权限",
   "waypoint.upload.xaero.missing": "你的客户端未安装 Xaero 小地图",

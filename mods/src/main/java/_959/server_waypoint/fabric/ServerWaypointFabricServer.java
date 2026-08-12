@@ -56,7 +56,8 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
                 messageSender::sendPlayerMessage,
                 messageSender::broadcastPacket,
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
-                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete())
+                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete()),
+                waypointServer.navigation().service()
         );
         C2SPacketHandler<CommandSourceStack, String, ServerPlayer> c2sPacketHandler = new C2SPacketHandler<>(
                 messageSender,
@@ -97,7 +98,10 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
                 (listener, sender, server) -> waypointServer.navigation().onPlayerJoin(listener.player)
         );
         ServerPlayConnectionEvents.DISCONNECT.register(
-                (listener, server) -> waypointServer.navigation().onPlayerQuit(listener.player)
+                (listener, server) -> {
+                    c2sPacketHandler.onDisconnect(listener.player);
+                    waypointServer.navigation().onPlayerQuit(listener.player);
+                }
         );
         ServerPlayerEvents.AFTER_RESPAWN.register(
                 (oldPlayer, newPlayer, alive) -> waypointServer.navigation().onPlayerRespawn(newPlayer)

@@ -115,7 +115,8 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 sender::sendPlayerMessage,
                 sender::broadcastPacket,
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
-                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete())
+                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete()),
+                this.navigationService
         );
 
         waypointCommand = new WaypointCommand(
@@ -136,7 +137,8 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 this.navigationService,
                 navigationPlatform,
                 this.navigationItemManager,
-                List.<PaperItemNavigationHandler>of(compassHandler, mapHandler)
+                List.<PaperItemNavigationHandler>of(compassHandler, mapHandler),
+                uploadCoordinator
         );
         this.c2sPacketHandler = new C2SPacketHandler<>(
                 sender,

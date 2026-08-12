@@ -229,7 +229,6 @@ public final class XaerosMinimapWaypointHelper {
                     return;
                 }
                 replaceSyncedWaypoint(waypointSet, waypoint);
-                removeMatchingLocalWaypoint(minimapWorld, listName, waypoint);
                 displayClientMessage(player, Component.translatable("server_waypoint.modification.add.xaeros", toVanillaText(waypointTextWithTp(waypoint, dimensionName, listName))));
             }
             case REMOVE -> {
@@ -246,7 +245,6 @@ public final class XaerosMinimapWaypointHelper {
                     removeSyncedWaypoint(waypointSet, waypointName);
                 }
                 replaceSyncedWaypoint(waypointSet, waypoint);
-                removeMatchingLocalWaypoint(minimapWorld, listName, waypoint);
                 displayClientMessage(player, Component.translatable("server_waypoint.modification.update.xaeros", toVanillaText(waypointTextWithTp(waypoint, dimensionName, listName))));
             }
             case ADD_LIST -> {

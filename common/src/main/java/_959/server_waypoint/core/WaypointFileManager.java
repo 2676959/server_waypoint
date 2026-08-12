@@ -26,6 +26,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static _959.server_waypoint.text.FormattedTextHelper.*;
@@ -214,6 +215,122 @@ public class WaypointFileManager {
 
     public @Nullable WaypointList getWaypointListByName(String name) {
         return this.readState(() -> this.waypointListMap.get(name));
+    }
+
+    Map<String, Integer> snapshotListRevisions() {
+        return this.readState(() -> {
+            Map<String, Integer> revisions = new HashMap<>(this.waypointListMap.size());
+            for (Map.Entry<String, WaypointList> entry : this.waypointListMap.entrySet()) {
+                revisions.put(entry.getKey(), entry.getValue().getSyncNum());
+            }
+            return Map.copyOf(revisions);
+        });
+    }
+
+    <T> AtomicMutationResult<T> applyAtomicMutation(Function<AtomicMutation, T> action) {
+        return this.writeState(() -> {
+            List<WaypointList> before = this.snapshotWaypointLists();
+            AtomicMutation mutation = new AtomicMutation();
+            try {
+                T value = action.apply(mutation);
+                return new AtomicMutationResult<>(value, mutation.changed);
+            } catch (RuntimeException | Error exception) {
+                this.replaceWaypointLists(before);
+                throw exception;
+            } finally {
+                mutation.active = false;
+            }
+        });
+    }
+
+    /**
+     * A short-lived capability for one owner-mediated, dimension-lane mutation.
+     * It cannot be used after the enclosing atomic operation returns.
+     */
+    public final class AtomicMutation {
+        private boolean active = true;
+        private boolean changed;
+
+        private AtomicMutation() {
+        }
+
+        public List<WaypointList> waypointLists() {
+            this.requireActive();
+            return WaypointFileManager.this.snapshotWaypointLists();
+        }
+
+        public @Nullable WaypointList waypointList(String listName) {
+            this.requireActive();
+            WaypointList waypointList = WaypointFileManager.this.waypointListMap.get(listName);
+            return waypointList == null ? null : waypointList.deepCopy();
+        }
+
+        public WaypointFilesManagerCore.AddWaypointResult addWaypoint(
+                String listName,
+                SimpleWaypoint waypoint
+        ) {
+            this.requireActive();
+            WaypointFilesManagerCore.AddWaypointResult result =
+                    WaypointFileManager.this.addWaypointIfAbsent(
+                            listName,
+                            listName,
+                            waypoint,
+                            false
+                    );
+            this.changed |= result.status() == WaypointFilesManagerCore.AddWaypointStatus.ADDED;
+            return result;
+        }
+
+        public WaypointFilesManagerCore.UpdateWaypointResult updateWaypoint(
+                String listName,
+                String waypointName,
+                SimpleWaypoint replacement
+        ) {
+            this.requireActive();
+            WaypointFilesManagerCore.UpdateWaypointResult result =
+                    WaypointFileManager.this.updateWaypoint(
+                            listName,
+                            waypointName,
+                            replacement.name(),
+                            replacement.displayName(),
+                            replacement.initials(),
+                            replacement.pos(),
+                            replacement.rgb(),
+                            replacement.yaw(),
+                            replacement.global(),
+                            replacement.keywords(),
+                            replacement.description()
+                    );
+            this.changed |= result.status() == WaypointFilesManagerCore.UpdateWaypointStatus.UPDATED;
+            return result;
+        }
+
+        public WaypointFilesManagerCore.RemoveWaypointResult removeWaypoint(
+                String listName,
+                String waypointName
+        ) {
+            this.requireActive();
+            WaypointFilesManagerCore.RemoveWaypointResult result =
+                    WaypointFileManager.this.removeWaypoint(listName, waypointName);
+            this.changed |= result.status() == WaypointFilesManagerCore.RemoveWaypointStatus.REMOVED;
+            return result;
+        }
+
+        public @Nullable WaypointList removeWaypointList(String listName) {
+            this.requireActive();
+            WaypointList removed = WaypointFileManager.this.removeWaypointListByName(listName);
+            this.changed |= removed != null;
+            return removed;
+        }
+
+        private void requireActive() {
+            if (!this.active) {
+                throw new IllegalStateException("Atomic waypoint mutation is no longer active");
+            }
+        }
+    }
+
+    record AtomicMutationResult<T>(T value, boolean changed) {
     }
 
     /**

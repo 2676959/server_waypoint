@@ -102,7 +102,8 @@ public class ServerWaypointForge implements IPlatformConfigPath {
                 messageSender::sendPlayerMessage,
                 messageSender::broadcastPacket,
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
-                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete())
+                player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete()),
+                this.waypointServer.navigation().service()
         );
         this.c2sPacketHandler = new C2SPacketHandler<>(
                 messageSender,
@@ -182,6 +183,7 @@ public class ServerWaypointForge implements IPlatformConfigPath {
 
     private void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
+            this.c2sPacketHandler.onDisconnect(player);
             this.waypointServer.navigation().onPlayerQuit(player);
         }
     }

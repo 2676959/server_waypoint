@@ -870,7 +870,8 @@ class CoreWaypointCommandListTest {
                             packet -> {
                             },
                             player -> true,
-                            player -> true
+                            player -> true,
+                            navigationService()
                     ),
                     StringArgumentType::string,
                     StringArgumentType::string

@@ -202,4 +202,8 @@ public class C2SPacketHandler<S, K, P> {
     public void onUploadChunk(P player, UploadChunkBuffer buffer) {
         this.uploadCoordinator.onUploadChunk(player, buffer);
     }
+
+    public void onDisconnect(P player) {
+        this.uploadCoordinator.onDisconnect(player);
+    }
 }

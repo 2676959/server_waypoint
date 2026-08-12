@@ -9,21 +9,28 @@ import _959.server_waypoint.core.network.buffer.UploadChunkBuffer;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.navigation.NavigationService;
+import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.text.TextButtonBuilder;
 import net.kyori.adventure.text.Component;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -37,15 +44,25 @@ import static net.kyori.adventure.text.Component.translatable;
 public final class UploadCoordinator<P> {
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(30);
     private static final int MAX_WAYPOINTS_PER_REQUEST = 4_096;
+    private static final int MAX_LISTS_PER_REQUEST = 1_024;
+    private static final int MAX_CHUNKS_PER_REQUEST = 1_024;
+    private static final long MAX_RETAINED_BYTES_PER_REQUEST = 16L * 1_024L * 1_024L;
     private static final int MAX_ABSOLUTE_COORDINATE = 30_000_000;
     private static final int MIN_Y = -2_048;
     private static final int MAX_Y = 4_096;
+    private static final ScheduledExecutorService EXPIRY_EXECUTOR =
+            Executors.newSingleThreadScheduledExecutor(runnable -> {
+                Thread thread = new Thread(runnable, "server-waypoint-upload-expiry");
+                thread.setDaemon(true);
+                return thread;
+            });
 
     private final WaypointServerCore waypointServer;
     private final PlayerMessageSender<P> playerMessageSender;
     private final Consumer<MessageBuffer> packetBroadcaster;
     private final Predicate<P> permissionChecker;
     private final Predicate<P> deletePermissionChecker;
+    private final NavigationService<P> navigationService;
     private final Map<P, PendingUpload> pendingUploads = new ConcurrentHashMap<>();
 
     public UploadCoordinator(
@@ -53,21 +70,50 @@ public final class UploadCoordinator<P> {
             PlayerMessageSender<P> playerMessageSender,
             Consumer<MessageBuffer> packetBroadcaster,
             Predicate<P> permissionChecker,
-            Predicate<P> deletePermissionChecker
+            Predicate<P> deletePermissionChecker,
+            NavigationService<P> navigationService
     ) {
-        this.waypointServer = waypointServer;
-        this.playerMessageSender = playerMessageSender;
-        this.packetBroadcaster = packetBroadcaster;
-        this.permissionChecker = permissionChecker;
-        this.deletePermissionChecker = deletePermissionChecker;
+        this.waypointServer = Objects.requireNonNull(waypointServer, "waypointServer");
+        this.playerMessageSender = Objects.requireNonNull(playerMessageSender, "playerMessageSender");
+        this.packetBroadcaster = Objects.requireNonNull(packetBroadcaster, "packetBroadcaster");
+        this.permissionChecker = Objects.requireNonNull(permissionChecker, "permissionChecker");
+        this.deletePermissionChecker = Objects.requireNonNull(deletePermissionChecker, "deletePermissionChecker");
+        this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
     }
 
     public UploadRequestBuffer begin(P player, UploadScope scope, UploadConflictPolicy conflictPolicy, boolean deleteMissing,
                                      List<String> dimensionNames, String listName, String waypointName) {
         UploadRequestBuffer request = new UploadRequestBuffer(UUID.randomUUID(), scope, conflictPolicy, deleteMissing,
                 dimensionNames, listName, waypointName);
-        this.pendingUploads.put(player, new PendingUpload(request, Instant.now().plus(REQUEST_TIMEOUT)));
+        Map<String, WaypointFilesManagerCore.DimensionRevision> revisions = new LinkedHashMap<>();
+        for (String dimensionName : dimensionNames) {
+            revisions.putIfAbsent(
+                    dimensionName,
+                    this.waypointServer.captureDimensionRevision(dimensionName)
+            );
+        }
+        PendingUpload pending = new PendingUpload(
+                request,
+                Instant.now().plus(REQUEST_TIMEOUT),
+                revisions
+        );
+        PendingUpload replaced = this.pendingUploads.put(player, pending);
+        if (replaced != null) {
+            replaced.cancelExpiry();
+        }
+        pending.expiryTask = EXPIRY_EXECUTOR.schedule(
+                () -> this.pendingUploads.remove(player, pending),
+                REQUEST_TIMEOUT.toMillis(),
+                TimeUnit.MILLISECONDS
+        );
         return request;
+    }
+
+    public void onDisconnect(P player) {
+        PendingUpload pending = this.pendingUploads.remove(player);
+        if (pending != null) {
+            pending.cancelExpiry();
+        }
     }
 
     public void onUploadChunk(P player, UploadChunkBuffer chunk) {
@@ -77,29 +123,29 @@ public final class UploadCoordinator<P> {
             return;
         }
         if (pending.expiresAt.isBefore(Instant.now())) {
-            this.pendingUploads.remove(player, pending);
+            this.removePending(player, pending);
             this.playerMessageSender.send(player, translatable("waypoint.upload.request.expired"));
             return;
         }
         if (!this.permissionChecker.test(player)) {
-            this.pendingUploads.remove(player, pending);
+            this.removePending(player, pending);
             this.playerMessageSender.send(player, translatable("waypoint.upload.permission.revoked"));
             return;
         }
         if (pending.request.deleteMissing() && !this.deletePermissionChecker.test(player)) {
-            this.pendingUploads.remove(player, pending);
+            this.removePending(player, pending);
             this.playerMessageSender.send(player, translatable("waypoint.upload.delete.permission.revoked"));
             return;
         }
         if (chunk.sequence() != pending.nextSequence) {
-            this.pendingUploads.remove(player, pending);
+            this.removePending(player, pending);
             this.playerMessageSender.send(player, translatable("waypoint.upload.request.invalid"));
             return;
         }
         pending.nextSequence++;
 
         if (chunk.status() != UploadStatus.SUCCESS) {
-            this.pendingUploads.remove(player, pending);
+            this.removePending(player, pending);
             this.playerMessageSender.send(player, switch (chunk.status()) {
                 case XAERO_NOT_INSTALLED -> translatable("waypoint.upload.xaero.missing");
                 case XAERO_NOT_READY -> translatable("waypoint.upload.xaero.not-ready");
@@ -111,8 +157,8 @@ public final class UploadCoordinator<P> {
 
         try {
             appendChunk(pending, chunk);
-        } catch (IllegalArgumentException e) {
-            this.pendingUploads.remove(player, pending);
+        } catch (IllegalArgumentException exception) {
+            this.removePending(player, pending);
             this.playerMessageSender.send(player, translatable("waypoint.upload.request.invalid"));
             return;
         }
@@ -121,10 +167,20 @@ public final class UploadCoordinator<P> {
             return;
         }
 
-        this.pendingUploads.remove(player, pending);
-        MergeSummary summary = merge(pending);
+        this.removePending(player, pending);
+        MergeSummary summary;
+        try {
+            summary = this.merge(pending);
+        } catch (RuntimeException exception) {
+            WaypointServerCore.LOGGER.warn("Failed to apply waypoint upload", exception);
+            this.playerMessageSender.send(player, translatable("waypoint.upload.client.failed"));
+            return;
+        }
         for (DimensionWaypointBuffer update : summary.dimensionUpdates) {
             this.packetBroadcaster.accept(update);
+        }
+        for (NavigationReplacement replacement : summary.navigationReplacements) {
+            this.navigationService.refreshTarget(replacement.previous(), replacement.updated());
         }
         this.playerMessageSender.send(player, translatable(
                 "waypoint.upload.complete",
@@ -139,67 +195,128 @@ public final class UploadCoordinator<P> {
                     TextButtonBuilder.uploadPreferLocalButton(pending.request)
             ));
         }
+        if (summary.staleDimensions > 0) {
+            this.playerMessageSender.send(player, translatable(
+                    "waypoint.upload.request.stale",
+                    text(summary.staleDimensions)
+            ));
+        }
         if (summary.saveFailed) {
             this.playerMessageSender.send(player, translatable("waypoint.upload.save.failed"));
         }
     }
 
+    private void removePending(P player, PendingUpload pending) {
+        this.pendingUploads.remove(player, pending);
+        pending.cancelExpiry();
+    }
+
     private static void appendChunk(PendingUpload pending, UploadChunkBuffer chunk) {
+        if (++pending.chunkCount > MAX_CHUNKS_PER_REQUEST) {
+            throw new IllegalArgumentException("Upload exceeds chunk limit");
+        }
         for (UploadedWaypointListChunk listChunk : chunk.waypointLists()) {
             if (!pending.request.dimensionNames().contains(listChunk.dimensionName())
                     || (pending.request.listName() != null && !pending.request.listName().equals(listChunk.listName()))) {
                 throw new IllegalArgumentException("Upload response exceeds requested scope");
             }
-            if (!isValidText(listChunk.dimensionName(), false) || !isValidText(listChunk.listName(), false)) {
+            if (!isValidText(listChunk.dimensionName(), false) || !isValidText(listChunk.listName(), true)) {
                 throw new IllegalArgumentException("Invalid uploaded waypoint list name");
             }
-            List<SimpleWaypoint> target = pending.uploadedWaypoints.computeIfAbsent(
-                    new UploadListKey(listChunk.dimensionName(), listChunk.listName()),
-                    ignored -> new ArrayList<>()
-            );
-            for (SimpleWaypoint waypoint : listChunk.waypoints()) {
-                if (pending.request.waypointName() != null && !pending.request.waypointName().equals(waypoint.name())) {
-                    throw new IllegalArgumentException("Upload response exceeds requested waypoint scope");
+            pending.retainedBytes += utf8Length(listChunk.dimensionName()) + utf8Length(listChunk.listName());
+            if (pending.retainedBytes > MAX_RETAINED_BYTES_PER_REQUEST) {
+                throw new IllegalArgumentException("Upload exceeds retained-byte limit");
+            }
+            UploadListKey key = new UploadListKey(listChunk.dimensionName(), listChunk.listName());
+            List<SimpleWaypoint> target = pending.uploadedWaypoints.get(key);
+            if (target == null) {
+                if (pending.uploadedWaypoints.size() >= MAX_LISTS_PER_REQUEST) {
+                    throw new IllegalArgumentException("Upload exceeds waypoint-list limit");
                 }
+                target = new ArrayList<>();
+                pending.uploadedWaypoints.put(key, target);
+            }
+            for (SimpleWaypoint waypoint : listChunk.waypoints()) {
                 if (++pending.waypointCount > MAX_WAYPOINTS_PER_REQUEST) {
                     throw new IllegalArgumentException("Upload exceeds waypoint limit");
                 }
-                target.add(new SimpleWaypoint(waypoint));
+                SimpleWaypoint sanitized = sanitizeUploadedWaypoint(waypoint);
+                if (pending.request.waypointName() != null
+                        && (sanitized == null
+                        || !pending.request.waypointName().equals(sanitized.name()))) {
+                    throw new IllegalArgumentException("Upload response exceeds requested waypoint scope");
+                }
+                pending.retainedBytes += retainedBytes(sanitized);
+                if (pending.retainedBytes > MAX_RETAINED_BYTES_PER_REQUEST) {
+                    throw new IllegalArgumentException("Upload exceeds retained-byte limit");
+                }
+                target.add(sanitized);
             }
         }
     }
 
     private MergeSummary merge(PendingUpload pending) {
-        Map<String, Map<String, WaypointList>> changedListsByDimension = new LinkedHashMap<>();
-        Map<String, WaypointFileManager> changedManagers = new LinkedHashMap<>();
         MergeSummary summary = new MergeSummary();
+        for (String dimensionName : new LinkedHashSet<>(pending.request.dimensionNames())) {
+            WaypointFilesManagerCore.DimensionRevision expectedRevision =
+                    pending.dimensionRevisions.get(dimensionName);
+            if (expectedRevision == null) {
+                summary.staleDimensions++;
+                continue;
+            }
+            boolean hasUploadedLists = pending.uploadedWaypoints.keySet().stream()
+                    .anyMatch(key -> dimensionName.equals(key.dimensionName));
+            if (!expectedRevision.exists() && !hasUploadedLists) {
+                continue;
+            }
+            WaypointFilesManagerCore.RevisionedDimensionMutationResult<DimensionMergeSummary> result =
+                    this.waypointServer.applyDimensionMutationIfRevision(
+                            dimensionName,
+                            expectedRevision,
+                            mutation -> mergeDimension(pending, dimensionName, mutation)
+                    );
+            if (result.status()
+                    == WaypointFilesManagerCore.RevisionedDimensionMutationStatus.STALE_REVISION) {
+                summary.staleDimensions++;
+                continue;
+            }
+            DimensionMergeSummary dimensionSummary = Objects.requireNonNull(result.value());
+            summary.add(dimensionSummary);
+            summary.saveFailed |= result.saveFailed();
+            if (!dimensionSummary.listUpdates.isEmpty()) {
+                summary.dimensionUpdates.add(new DimensionWaypointBuffer(
+                        dimensionName,
+                        List.copyOf(dimensionSummary.listUpdates.values())
+                ));
+            }
+        }
+        return summary;
+    }
 
-        for (Map.Entry<UploadListKey, List<SimpleWaypoint>> entry : pending.uploadedWaypoints.entrySet()) {
+    private static DimensionMergeSummary mergeDimension(
+            PendingUpload pending,
+            String dimensionName,
+            WaypointFileManager.AtomicMutation mutation
+    ) {
+        DimensionMergeSummary summary = new DimensionMergeSummary();
+        for (Map.Entry<UploadListKey, List<SimpleWaypoint>> entry
+                : pending.uploadedWaypoints.entrySet()) {
             UploadListKey key = entry.getKey();
+            if (!dimensionName.equals(key.dimensionName)) {
+                continue;
+            }
             boolean invalidWaypointFound = false;
-
             for (SimpleWaypoint waypoint : entry.getValue()) {
                 if (!isValidWaypoint(waypoint)) {
                     summary.skipped++;
                     invalidWaypointFound = true;
                     continue;
                 }
-                WaypointFilesManagerCore.AddWaypointResult addResult = this.waypointServer.addWaypoint(
-                        key.dimensionName,
-                        key.listName,
-                        waypoint,
-                        ignored -> {
-                        }
-                );
+                WaypointFilesManagerCore.AddWaypointResult addResult =
+                        mutation.addWaypoint(key.listName, waypoint);
                 if (addResult.status() == WaypointFilesManagerCore.AddWaypointStatus.ADDED) {
                     summary.added++;
-                    markChangedList(
-                            changedManagers,
-                            changedListsByDimension,
-                            key.dimensionName,
-                            addResult.fileManager(),
-                            addResult.waypointList()
-                    );
+                    summary.changedLists.add(key.listName);
                     continue;
                 }
 
@@ -214,70 +331,55 @@ public final class UploadCoordinator<P> {
                 }
 
                 SimpleWaypoint replacement = mergeXaeroProperties(existing, waypoint);
-                WaypointFilesManagerCore.UpdateWaypointResult updateResult = this.waypointServer.updateWaypointProperties(
-                        key.dimensionName,
-                        key.listName,
-                        replacement.name(),
-                        replacement.name(),
-                        replacement.displayName(),
-                        replacement.initials(),
-                        replacement.pos(),
-                        replacement.rgb(),
-                        replacement.yaw(),
-                        replacement.global(),
-                        replacement.keywords(),
-                        replacement.description(),
-                        ignored -> {
-                        }
-                );
+                WaypointFilesManagerCore.UpdateWaypointResult updateResult =
+                        mutation.updateWaypoint(key.listName, existing.name(), replacement);
                 if (updateResult.status() == WaypointFilesManagerCore.UpdateWaypointStatus.UPDATED) {
                     summary.replaced++;
-                    markChangedList(
-                            changedManagers,
-                            changedListsByDimension,
-                            key.dimensionName,
-                            updateResult.fileManager(),
-                            updateResult.waypointList()
+                    summary.changedLists.add(key.listName);
+                    WaypointList listSnapshot = Objects.requireNonNull(
+                            mutation.waypointList(key.listName)
                     );
-                } else if (updateResult.status() == WaypointFilesManagerCore.UpdateWaypointStatus.IDENTICAL) {
+                    summary.navigationReplacements.add(new NavigationReplacement(
+                            new NavigationTarget(
+                                    dimensionName,
+                                    listSnapshot,
+                                    Objects.requireNonNull(updateResult.beforeSnapshot())
+                            ),
+                            new NavigationTarget(
+                                    dimensionName,
+                                    listSnapshot,
+                                    Objects.requireNonNull(updateResult.afterSnapshot())
+                            )
+                    ));
+                } else if (updateResult.status()
+                        == WaypointFilesManagerCore.UpdateWaypointStatus.IDENTICAL) {
                     summary.unchanged++;
                 } else {
                     summary.conflicts++;
                 }
             }
 
-            if (pending.request.deleteMissing() && !invalidWaypointFound) {
+            if (pending.request.deleteMissing()
+                    && pending.request.scope() != UploadScope.WAYPOINT
+                    && !invalidWaypointFound) {
                 Set<String> localWaypointNames = new HashSet<>();
                 for (SimpleWaypoint waypoint : entry.getValue()) {
                     if (waypoint != null) {
                         localWaypointNames.add(waypoint.name());
                     }
                 }
-                WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(key.dimensionName);
-                WaypointList waypointList = fileManager == null
-                        ? null
-                        : fileManager.getWaypointListByName(key.listName);
+                WaypointList waypointList = mutation.waypointList(key.listName);
                 if (waypointList == null) {
                     continue;
                 }
                 for (SimpleWaypoint existing : waypointList.simpleWaypoints()) {
                     if (!localWaypointNames.contains(existing.name())) {
-                        WaypointFilesManagerCore.RemoveWaypointResult removeResult = this.waypointServer.removeWaypoint(
-                                key.dimensionName,
-                                key.listName,
-                                existing.name(),
-                                ignored -> {
-                                }
-                        );
-                        if (removeResult.status() == WaypointFilesManagerCore.RemoveWaypointStatus.REMOVED) {
+                        WaypointFilesManagerCore.RemoveWaypointResult removeResult =
+                                mutation.removeWaypoint(key.listName, existing.name());
+                        if (removeResult.status()
+                                == WaypointFilesManagerCore.RemoveWaypointStatus.REMOVED) {
                             summary.deleted++;
-                            markChangedList(
-                                    changedManagers,
-                                    changedListsByDimension,
-                                    key.dimensionName,
-                                    removeResult.fileManager(),
-                                    removeResult.waypointList()
-                            );
+                            summary.changedLists.add(key.listName);
                         }
                     }
                 }
@@ -285,85 +387,61 @@ public final class UploadCoordinator<P> {
         }
 
         if (pending.request.deleteMissing()) {
-            deleteMissingServerWaypoints(pending, changedManagers, changedListsByDimension, summary);
+            deleteMissingServerWaypoints(pending, dimensionName, mutation, summary);
         }
 
-        for (Map.Entry<String, WaypointFileManager> entry : changedManagers.entrySet()) {
-            try {
-                this.waypointServer.saveWaypointFile(entry.getValue());
-            } catch (IOException e) {
-                WaypointServerCore.LOGGER.error("Failed to save uploaded waypoints for dimension {}", entry.getKey(), e);
-                summary.saveFailed = true;
+        for (String listName : summary.changedLists) {
+            if (summary.removedLists.contains(listName)) {
+                summary.listUpdates.put(listName, WaypointList.build(listName, WaypointList.REMOVE_LIST));
+                continue;
             }
-        }
-        for (Map.Entry<String, Map<String, WaypointList>> entry : changedListsByDimension.entrySet()) {
-            summary.dimensionUpdates.add(new DimensionWaypointBuffer(entry.getKey(), List.copyOf(entry.getValue().values())));
+            WaypointList waypointList = mutation.waypointList(listName);
+            if (waypointList != null) {
+                summary.listUpdates.put(listName, waypointList);
+            }
         }
         return summary;
     }
 
-    private void deleteMissingServerWaypoints(PendingUpload pending,
-                                              Map<String, WaypointFileManager> changedManagers,
-                                              Map<String, Map<String, WaypointList>> changedListsByDimension,
-                                              MergeSummary summary) {
+    private static void deleteMissingServerWaypoints(
+            PendingUpload pending,
+            String dimensionName,
+            WaypointFileManager.AtomicMutation mutation,
+            DimensionMergeSummary summary
+    ) {
         switch (pending.request.scope()) {
             case WORLD, DIMENSION -> {
-                for (String dimensionName : pending.request.dimensionNames()) {
-                    WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(dimensionName);
-                    if (fileManager == null) {
-                        continue;
-                    }
-                    Set<String> localListNames = getUploadedListNames(pending, dimensionName);
-                    for (String serverListName : new ArrayList<>(fileManager.getWaypointListMap().keySet())) {
-                        if (!localListNames.contains(serverListName)) {
-                            removeServerList(dimensionName, fileManager, serverListName,
-                                    changedManagers, changedListsByDimension, summary);
-                        }
+                Set<String> localListNames = getUploadedListNames(pending, dimensionName);
+                for (WaypointList serverList : mutation.waypointLists()) {
+                    if (!localListNames.contains(serverList.name())) {
+                        removeServerList(mutation, serverList.name(), summary);
                     }
                 }
             }
             case LIST -> {
-                String dimensionName = pending.request.dimensionNames().get(0);
-                if (!pending.uploadedWaypoints.containsKey(new UploadListKey(dimensionName, pending.request.listName()))) {
-                    WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(dimensionName);
-                    if (fileManager != null) {
-                        removeServerList(dimensionName, fileManager, pending.request.listName(),
-                                changedManagers, changedListsByDimension, summary);
-                    }
+                if (!pending.uploadedWaypoints.containsKey(
+                        new UploadListKey(dimensionName, pending.request.listName())
+                )) {
+                    removeServerList(mutation, pending.request.listName(), summary);
                 }
             }
             case WAYPOINT -> {
-                String dimensionName = pending.request.dimensionNames().get(0);
-                WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(dimensionName);
-                if (fileManager == null) {
-                    return;
-                }
-                WaypointList waypointList = fileManager.getWaypointListByName(pending.request.listName());
-                if (waypointList == null) {
-                    return;
-                }
                 List<SimpleWaypoint> uploadedWaypoints = pending.uploadedWaypoints.get(
                         new UploadListKey(dimensionName, pending.request.listName())
                 );
-                boolean localWaypointExists = uploadedWaypoints != null && uploadedWaypoints.stream()
-                        .anyMatch(waypoint -> waypoint != null && pending.request.waypointName().equals(waypoint.name()));
+                boolean localWaypointExists = uploadedWaypoints != null
+                        && uploadedWaypoints.stream().anyMatch(waypoint -> waypoint != null
+                        && pending.request.waypointName().equals(waypoint.name()));
                 if (!localWaypointExists) {
-                    WaypointFilesManagerCore.RemoveWaypointResult removeResult = this.waypointServer.removeWaypoint(
-                            dimensionName,
-                            pending.request.listName(),
-                            pending.request.waypointName(),
-                            ignored -> {
-                            }
-                    );
-                    if (removeResult.status() == WaypointFilesManagerCore.RemoveWaypointStatus.REMOVED) {
+                    WaypointFilesManagerCore.RemoveWaypointResult removeResult =
+                            mutation.removeWaypoint(
+                                    pending.request.listName(),
+                                    pending.request.waypointName()
+                            );
+                    if (removeResult.status()
+                            == WaypointFilesManagerCore.RemoveWaypointStatus.REMOVED) {
                         summary.deleted++;
-                        markChangedList(
-                                changedManagers,
-                                changedListsByDimension,
-                                dimensionName,
-                                removeResult.fileManager(),
-                                removeResult.waypointList()
-                        );
+                        summary.changedLists.add(pending.request.listName());
                     }
                 }
             }
@@ -380,26 +458,18 @@ public final class UploadCoordinator<P> {
         return listNames;
     }
 
-    private void removeServerList(String dimensionName, WaypointFileManager fileManager, String listName,
-                                  Map<String, WaypointFileManager> changedManagers,
-                                  Map<String, Map<String, WaypointList>> changedListsByDimension,
-                                  MergeSummary summary) {
-        WaypointList removedList = this.waypointServer.removeWaypointListImmediately(dimensionName, listName);
+    private static void removeServerList(
+            WaypointFileManager.AtomicMutation mutation,
+            String listName,
+            DimensionMergeSummary summary
+    ) {
+        WaypointList removedList = mutation.removeWaypointList(listName);
         if (removedList == null) {
             return;
         }
         summary.deleted += removedList.size();
-        changedManagers.put(dimensionName, fileManager);
-        changedListsByDimension.computeIfAbsent(dimensionName, ignored -> new LinkedHashMap<>())
-                .put(listName, WaypointList.build(listName, WaypointList.REMOVE_LIST));
-    }
-
-    private static void markChangedList(Map<String, WaypointFileManager> changedManagers,
-                                        Map<String, Map<String, WaypointList>> changedListsByDimension,
-                                        String dimensionName, WaypointFileManager fileManager, WaypointList waypointList) {
-        changedManagers.put(dimensionName, fileManager);
-        changedListsByDimension.computeIfAbsent(dimensionName, ignored -> new LinkedHashMap<>())
-                .put(waypointList.name(), waypointList);
+        summary.changedLists.add(listName);
+        summary.removedLists.add(listName);
     }
 
     static boolean hasSameXaeroProperties(SimpleWaypoint serverWaypoint, SimpleWaypoint uploadedWaypoint) {
@@ -425,10 +495,32 @@ public final class UploadCoordinator<P> {
         );
     }
 
+    static @org.jetbrains.annotations.Nullable SimpleWaypoint sanitizeUploadedWaypoint(
+            SimpleWaypoint waypoint
+    ) {
+        if (waypoint == null) {
+            return null;
+        }
+        try {
+            return new SimpleWaypoint(
+                    waypoint.name(),
+                    waypoint.initials(),
+                    waypoint.pos(),
+                    waypoint.rgb(),
+                    waypoint.yaw(),
+                    waypoint.global()
+            );
+        } catch (RuntimeException exception) {
+            return null;
+        }
+    }
+
     private static boolean isValidWaypoint(SimpleWaypoint waypoint) {
         if (waypoint == null || waypoint.pos() == null
-                || !isValidText(waypoint.name(), false)
-                || !isValidText(waypoint.initials(), true)) {
+                || !isValidText(waypoint.name(), true)
+                || !isValidText(waypoint.initials(), true)
+                || waypoint.rgb() < 0
+                || waypoint.rgb() > 0xFFFFFF) {
             return false;
         }
         int x = waypoint.pos().x();
@@ -442,10 +534,21 @@ public final class UploadCoordinator<P> {
 
     private static boolean isValidText(String value, boolean allowEmpty) {
         if (value == null || (!allowEmpty && value.isEmpty())
-                || value.getBytes(StandardCharsets.UTF_8).length > 1_024) {
+                || utf8Length(value) > 1_024) {
             return false;
         }
         return value.chars().noneMatch(Character::isISOControl);
+    }
+
+    private static long retainedBytes(SimpleWaypoint waypoint) {
+        if (waypoint == null) {
+            return 1;
+        }
+        return 32L + utf8Length(waypoint.name()) + utf8Length(waypoint.initials());
+    }
+
+    private static int utf8Length(String value) {
+        return value == null ? 0 : value.getBytes(StandardCharsets.UTF_8).length;
     }
 
     @FunctionalInterface
@@ -456,17 +559,49 @@ public final class UploadCoordinator<P> {
     private static final class PendingUpload {
         private final UploadRequestBuffer request;
         private final Instant expiresAt;
+        private final Map<String, WaypointFilesManagerCore.DimensionRevision> dimensionRevisions;
         private final Map<UploadListKey, List<SimpleWaypoint>> uploadedWaypoints = new LinkedHashMap<>();
         private int nextSequence;
         private int waypointCount;
+        private int chunkCount;
+        private long retainedBytes;
+        private volatile ScheduledFuture<?> expiryTask;
 
-        private PendingUpload(UploadRequestBuffer request, Instant expiresAt) {
+        private PendingUpload(
+                UploadRequestBuffer request,
+                Instant expiresAt,
+                Map<String, WaypointFilesManagerCore.DimensionRevision> dimensionRevisions
+        ) {
             this.request = request;
             this.expiresAt = expiresAt;
+            this.dimensionRevisions = Map.copyOf(dimensionRevisions);
+        }
+
+        private void cancelExpiry() {
+            ScheduledFuture<?> task = this.expiryTask;
+            if (task != null) {
+                task.cancel(false);
+            }
         }
     }
 
     private record UploadListKey(String dimensionName, String listName) {
+    }
+
+    private record NavigationReplacement(NavigationTarget previous, NavigationTarget updated) {
+    }
+
+    private static final class DimensionMergeSummary {
+        private int added;
+        private int replaced;
+        private int deleted;
+        private int unchanged;
+        private int conflicts;
+        private int skipped;
+        private final Set<String> changedLists = new LinkedHashSet<>();
+        private final Set<String> removedLists = new HashSet<>();
+        private final Map<String, WaypointList> listUpdates = new LinkedHashMap<>();
+        private final List<NavigationReplacement> navigationReplacements = new ArrayList<>();
     }
 
     private static final class MergeSummary {
@@ -476,7 +611,19 @@ public final class UploadCoordinator<P> {
         private int unchanged;
         private int conflicts;
         private int skipped;
+        private int staleDimensions;
         private boolean saveFailed;
         private final List<DimensionWaypointBuffer> dimensionUpdates = new ArrayList<>();
+        private final List<NavigationReplacement> navigationReplacements = new ArrayList<>();
+
+        private void add(DimensionMergeSummary dimensionSummary) {
+            this.added += dimensionSummary.added;
+            this.replaced += dimensionSummary.replaced;
+            this.deleted += dimensionSummary.deleted;
+            this.unchanged += dimensionSummary.unchanged;
+            this.conflicts += dimensionSummary.conflicts;
+            this.skipped += dimensionSummary.skipped;
+            this.navigationReplacements.addAll(dimensionSummary.navigationReplacements);
+        }
     }
 }
