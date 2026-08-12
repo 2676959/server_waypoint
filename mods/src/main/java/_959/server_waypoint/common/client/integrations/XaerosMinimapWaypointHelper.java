@@ -139,7 +139,7 @@ public final class XaerosMinimapWaypointHelper {
         }
         if (!batch.isEmpty()) {
             destination.add(new UploadedWaypointListChunk(dimensionName, listName, batch));
-        } else if (request.deleteMissing() && !exportedWaypoint) {
+        } else if (!exportedWaypoint) {
             destination.add(new UploadedWaypointListChunk(dimensionName, listName, List.of()));
         }
     }

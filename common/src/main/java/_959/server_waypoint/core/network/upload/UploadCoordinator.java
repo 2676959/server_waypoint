@@ -83,10 +83,14 @@ public final class UploadCoordinator<P> {
 
     public UploadRequestBuffer begin(P player, UploadScope scope, UploadConflictPolicy conflictPolicy, boolean deleteMissing,
                                      List<String> dimensionNames, String listName, String waypointName) {
-        UploadRequestBuffer request = new UploadRequestBuffer(UUID.randomUUID(), scope, conflictPolicy, deleteMissing,
-                dimensionNames, listName, waypointName);
+        if (deleteMissing && conflictPolicy != UploadConflictPolicy.LOCAL) {
+            throw new IllegalArgumentException("Only force-local uploads can delete missing waypoints");
+        }
+        UploadRequestBuffer request = new UploadRequestBuffer(
+                UUID.randomUUID(), dimensionNames, listName, waypointName
+        );
         Map<String, WaypointFilesManagerCore.DimensionRevision> revisions = new LinkedHashMap<>();
-        for (String dimensionName : dimensionNames) {
+        for (String dimensionName : request.dimensionNames()) {
             revisions.putIfAbsent(
                     dimensionName,
                     this.waypointServer.captureDimensionRevision(dimensionName)
@@ -94,6 +98,9 @@ public final class UploadCoordinator<P> {
         }
         PendingUpload pending = new PendingUpload(
                 request,
+                scope,
+                conflictPolicy,
+                deleteMissing,
                 Instant.now().plus(REQUEST_TIMEOUT),
                 revisions
         );
@@ -132,7 +139,7 @@ public final class UploadCoordinator<P> {
             this.playerMessageSender.send(player, translatable("waypoint.upload.permission.revoked"));
             return;
         }
-        if (pending.request.deleteMissing() && !this.deletePermissionChecker.test(player)) {
+        if (pending.deleteMissing && !this.deletePermissionChecker.test(player)) {
             this.removePending(player, pending);
             this.playerMessageSender.send(player, translatable("waypoint.upload.delete.permission.revoked"));
             return;
@@ -188,11 +195,11 @@ public final class UploadCoordinator<P> {
                 text(summary.unchanged), text(summary.conflicts), text(summary.skipped)
         ));
         this.playerMessageSender.send(player, translatable("waypoint.upload.legend"));
-        if (summary.conflicts > 0 && pending.request.conflictPolicy() == UploadConflictPolicy.SERVER) {
+        if (summary.conflicts > 0 && pending.conflictPolicy == UploadConflictPolicy.SERVER) {
             this.playerMessageSender.send(player, translatable(
                     "waypoint.upload.conflicts.server-kept",
                     text(summary.conflicts),
-                    TextButtonBuilder.uploadPreferLocalButton(pending.request)
+                    TextButtonBuilder.uploadPreferLocalButton(pending.scope, pending.request)
             ));
         }
         if (summary.staleDimensions > 0) {
@@ -325,7 +332,7 @@ public final class UploadCoordinator<P> {
                     summary.unchanged++;
                     continue;
                 }
-                if (pending.request.conflictPolicy() != UploadConflictPolicy.LOCAL) {
+                if (pending.conflictPolicy != UploadConflictPolicy.LOCAL) {
                     summary.conflicts++;
                     continue;
                 }
@@ -359,8 +366,8 @@ public final class UploadCoordinator<P> {
                 }
             }
 
-            if (pending.request.deleteMissing()
-                    && pending.request.scope() != UploadScope.WAYPOINT
+            if (pending.deleteMissing
+                    && pending.scope != UploadScope.WAYPOINT
                     && !invalidWaypointFound) {
                 Set<String> localWaypointNames = new HashSet<>();
                 for (SimpleWaypoint waypoint : entry.getValue()) {
@@ -386,7 +393,7 @@ public final class UploadCoordinator<P> {
             }
         }
 
-        if (pending.request.deleteMissing()) {
+        if (pending.deleteMissing) {
             deleteMissingServerWaypoints(pending, dimensionName, mutation, summary);
         }
 
@@ -409,7 +416,7 @@ public final class UploadCoordinator<P> {
             WaypointFileManager.AtomicMutation mutation,
             DimensionMergeSummary summary
     ) {
-        switch (pending.request.scope()) {
+        switch (pending.scope) {
             case WORLD, DIMENSION -> {
                 Set<String> localListNames = getUploadedListNames(pending, dimensionName);
                 for (WaypointList serverList : mutation.waypointLists()) {
@@ -558,6 +565,9 @@ public final class UploadCoordinator<P> {
 
     private static final class PendingUpload {
         private final UploadRequestBuffer request;
+        private final UploadScope scope;
+        private final UploadConflictPolicy conflictPolicy;
+        private final boolean deleteMissing;
         private final Instant expiresAt;
         private final Map<String, WaypointFilesManagerCore.DimensionRevision> dimensionRevisions;
         private final Map<UploadListKey, List<SimpleWaypoint>> uploadedWaypoints = new LinkedHashMap<>();
@@ -569,10 +579,16 @@ public final class UploadCoordinator<P> {
 
         private PendingUpload(
                 UploadRequestBuffer request,
+                UploadScope scope,
+                UploadConflictPolicy conflictPolicy,
+                boolean deleteMissing,
                 Instant expiresAt,
                 Map<String, WaypointFilesManagerCore.DimensionRevision> dimensionRevisions
         ) {
             this.request = request;
+            this.scope = scope;
+            this.conflictPolicy = conflictPolicy;
+            this.deleteMissing = deleteMissing;
             this.expiresAt = expiresAt;
             this.dimensionRevisions = Map.copyOf(dimensionRevisions);
         }

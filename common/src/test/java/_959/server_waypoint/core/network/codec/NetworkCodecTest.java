@@ -8,6 +8,7 @@ import _959.server_waypoint.core.edit.EditResultStatus;
 import _959.server_waypoint.core.edit.PatchField;
 import _959.server_waypoint.core.edit.WaypointPatch;
 import _959.server_waypoint.core.network.buffer.UploadChunkBuffer;
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.network.upload.UploadStatus;
 import _959.server_waypoint.core.network.upload.UploadedWaypointListChunk;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
@@ -207,5 +208,21 @@ class NetworkCodecTest {
         assertEquals(waypoint.displayName(), decodedWaypoint.displayName());
         assertEquals(waypoint.keywords(), decodedWaypoint.keywords());
         assertEquals(waypoint.description(), decodedWaypoint.description());
+    }
+
+    @Test
+    void uploadRequestRoundTripsOnlyClientExportSelection() {
+        UploadRequestBuffer request = new UploadRequestBuffer(
+                UUID.randomUUID(),
+                List.of("minecraft:overworld", "minecraft:the_nether"),
+                "Bases",
+                null
+        );
+        ByteBuf buf = Unpooled.buffer();
+
+        UploadRequestCodec.encode(buf, request);
+        UploadRequestBuffer decoded = UploadRequestCodec.decode(buf);
+
+        assertEquals(request, decoded);
     }
 }

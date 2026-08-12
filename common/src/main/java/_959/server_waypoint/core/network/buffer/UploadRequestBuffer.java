@@ -2,8 +2,6 @@ package _959.server_waypoint.core.network.buffer;
 
 import _959.server_waypoint.core.network.MessageChannelID;
 import _959.server_waypoint.core.network.codec.UploadRequestCodec;
-import _959.server_waypoint.core.network.upload.UploadConflictPolicy;
-import _959.server_waypoint.core.network.upload.UploadScope;
 import io.netty.buffer.ByteBuf;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,18 +13,12 @@ import static _959.server_waypoint.core.network.MessageChannelID.UPLOAD_REQUEST_
 /** Server-to-client request to export waypoints from Xaero's Minimap. */
 public record UploadRequestBuffer(
         UUID requestId,
-        UploadScope scope,
-        UploadConflictPolicy conflictPolicy,
-        boolean deleteMissing,
         List<String> dimensionNames,
         @Nullable String listName,
         @Nullable String waypointName
 ) implements MessageBuffer {
     public UploadRequestBuffer {
         dimensionNames = List.copyOf(dimensionNames);
-        if (deleteMissing && conflictPolicy != UploadConflictPolicy.LOCAL) {
-            throw new IllegalArgumentException("Only force-local uploads can delete missing waypoints");
-        }
     }
 
     @Override

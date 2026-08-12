@@ -26,6 +26,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,6 +34,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class UploadCoordinatorTest {
     @TempDir
     private Path tempDir;
+
+    @Test
+    void deleteMissingRequiresLocalConflictPolicyOnTheServer() {
+        UploadCoordinator<String> coordinator = coordinator(server());
+
+        assertThrows(IllegalArgumentException.class, () -> coordinator.begin(
+                "player",
+                UploadScope.DIMENSION,
+                UploadConflictPolicy.SERVER,
+                true,
+                List.of("minecraft:overworld"),
+                null,
+                null
+        ));
+    }
 
     @Test
     void sameXaeroPropertiesIgnoreServerOnlyMetadata() {

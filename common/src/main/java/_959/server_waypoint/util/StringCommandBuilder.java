@@ -74,19 +74,19 @@ public class StringCommandBuilder {
         return WAYPOINT_COMMAND_WITH_SLASH + ' ' + NAVIGATE_COMMAND + ' ' + STATUS_COMMAND;
     }
 
-    public static String uploadLocalCmd(UploadRequestBuffer request) {
+    public static String uploadLocalCmd(UploadScope scope, UploadRequestBuffer request) {
         StringBuilder command = new StringBuilder(WAYPOINT_COMMAND_WITH_SLASH)
                 .append(' ').append(UPLOAD_COMMAND)
                 .append(" force local");
-        if (request.scope() == UploadScope.WORLD) {
+        if (scope == UploadScope.WORLD) {
             return command.toString();
         }
         command.append(' ').append(request.dimensionNames().get(0));
-        if (request.scope() == UploadScope.DIMENSION) {
+        if (scope == UploadScope.DIMENSION) {
             return command.toString();
         }
         command.append(' ').append(StringArgumentType.escapeIfRequired(request.listName()));
-        if (request.scope() == UploadScope.LIST) {
+        if (scope == UploadScope.LIST) {
             return command.toString();
         }
         return command.append(' ').append(StringArgumentType.escapeIfRequired(request.waypointName())).toString();
