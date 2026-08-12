@@ -1,9 +1,10 @@
 package _959.server_waypoint.core.network.codec;
 
+import _959.server_waypoint.core.network.DecodingContext;
+import _959.server_waypoint.core.network.EncodingContext;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import io.netty.buffer.ByteBuf;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,35 +12,33 @@ public final class UploadRequestCodec {
     private UploadRequestCodec() {
     }
 
-    public static void encode(ByteBuf buf, UploadRequestBuffer request) {
+    public static void encode(ByteBuf buf, UploadRequestBuffer request, EncodingContext context) {
         buf.writeLong(request.requestId().getMostSignificantBits());
         buf.writeLong(request.requestId().getLeastSignificantBits());
-        if (request.dimensionNames().size() > UploadCodecSupport.MAX_DIMENSIONS) {
-            throw new IllegalArgumentException("Too many dimensions in upload request");
-        }
-        buf.writeShort(request.dimensionNames().size());
-        for (String dimensionName : request.dimensionNames()) {
-            UploadCodecSupport.encodeString(buf, dimensionName);
-        }
-        UploadCodecSupport.encodeOptionalString(buf, request.listName());
-        UploadCodecSupport.encodeOptionalString(buf, request.waypointName());
+        ListCodec.encode(buf, request.dimensionNames(), UtfStringCodec::encode, context);
+        encodeOptionalString(buf, request.listName(), context);
+        encodeOptionalString(buf, request.waypointName(), context);
     }
 
-    public static UploadRequestBuffer decode(ByteBuf buf) {
+    public static UploadRequestBuffer decode(ByteBuf buf, DecodingContext context) {
         UUID requestId = new UUID(buf.readLong(), buf.readLong());
-        int dimensionCount = buf.readUnsignedShort();
-        if (dimensionCount > UploadCodecSupport.MAX_DIMENSIONS) {
-            throw new IllegalArgumentException("Too many dimensions in upload request: " + dimensionCount);
-        }
-        List<String> dimensionNames = new ArrayList<>(dimensionCount);
-        for (int i = 0; i < dimensionCount; i++) {
-            dimensionNames.add(UploadCodecSupport.decodeString(buf));
-        }
+        List<String> dimensionNames = ListCodec.decode(buf, UtfStringCodec::decode, context);
         return new UploadRequestBuffer(
                 requestId,
                 dimensionNames,
-                UploadCodecSupport.decodeOptionalString(buf),
-                UploadCodecSupport.decodeOptionalString(buf)
+                decodeOptionalString(buf, context),
+                decodeOptionalString(buf, context)
         );
+    }
+
+    private static void encodeOptionalString(ByteBuf buf, String value, EncodingContext context) {
+        buf.writeBoolean(value != null);
+        if (value != null) {
+            UtfStringCodec.encode(buf, value, context);
+        }
+    }
+
+    private static String decodeOptionalString(ByteBuf buf, DecodingContext context) {
+        return buf.readBoolean() ? UtfStringCodec.decode(buf, context) : null;
     }
 }

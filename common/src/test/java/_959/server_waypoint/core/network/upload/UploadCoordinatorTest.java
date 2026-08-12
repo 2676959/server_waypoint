@@ -2,8 +2,9 @@ package _959.server_waypoint.core.network.upload;
 
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
-import _959.server_waypoint.core.network.buffer.UploadChunkBuffer;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.data.DimensionWaypointData;
+import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
@@ -111,19 +112,9 @@ class UploadCoordinatorTest {
                 "Injected description"
         );
 
-        coordinator.onUploadChunk(
+        coordinator.onUpload(
                 "player",
-                new UploadChunkBuffer(
-                        request.requestId(),
-                        0,
-                        true,
-                        UploadStatus.SUCCESS,
-                        List.of(new UploadedWaypointListChunk(
-                                "minecraft:overworld",
-                                "",
-                                List.of(clientWaypoint)
-                        ))
-                )
+                uploadData(request, "minecraft:overworld", "", List.of(clientWaypoint))
         );
 
         WaypointFileManager fileManager = server.getWaypointFileManager("minecraft:overworld");
@@ -151,26 +142,16 @@ class UploadCoordinatorTest {
                 null
         );
 
-        coordinator.onUploadChunk(
+        coordinator.onUpload(
                 "player",
-                new UploadChunkBuffer(
-                        request.requestId(),
+                uploadData(request, "minecraft:overworld", "list", List.of(new SimpleWaypoint(
+                        "bad",
+                        "B",
+                        new WaypointPos(0, 64, 0),
+                        0x1000000,
                         0,
-                        true,
-                        UploadStatus.SUCCESS,
-                        List.of(new UploadedWaypointListChunk(
-                                "minecraft:overworld",
-                                "list",
-                                List.of(new SimpleWaypoint(
-                                        "bad",
-                                        "B",
-                                        new WaypointPos(0, 64, 0),
-                                        0x1000000,
-                                        0,
-                                        false
-                                ))
-                        ))
-                )
+                        false
+                )))
         );
 
         WaypointFileManager fileManager = server.getWaypointFileManager("minecraft:overworld");
@@ -193,19 +174,9 @@ class UploadCoordinatorTest {
         );
 
         coordinator.onDisconnect("player");
-        coordinator.onUploadChunk(
+        coordinator.onUpload(
                 "player",
-                new UploadChunkBuffer(
-                        request.requestId(),
-                        0,
-                        true,
-                        UploadStatus.SUCCESS,
-                        List.of(new UploadedWaypointListChunk(
-                                "minecraft:overworld",
-                                "list",
-                                List.of(waypoint("ignored", 0))
-                        ))
-                )
+                uploadData(request, "minecraft:overworld", "list", List.of(waypoint("ignored", 0)))
         );
 
         assertNull(server.getWaypointFileManager("minecraft:overworld"));
@@ -239,19 +210,9 @@ class UploadCoordinatorTest {
                 }
         );
 
-        coordinator.onUploadChunk(
+        coordinator.onUpload(
                 "player",
-                new UploadChunkBuffer(
-                        request.requestId(),
-                        0,
-                        true,
-                        UploadStatus.SUCCESS,
-                        List.of(new UploadedWaypointListChunk(
-                                "minecraft:overworld",
-                                "list",
-                                List.of(waypoint("base", 0))
-                        ))
-                )
+                uploadData(request, "minecraft:overworld", "list", List.of(waypoint("base", 0)))
         );
 
         WaypointList list = server.getWaypointFileManager("minecraft:overworld")
@@ -290,19 +251,9 @@ class UploadCoordinatorTest {
                 "target"
         );
 
-        coordinator.onUploadChunk(
+        coordinator.onUpload(
                 "player",
-                new UploadChunkBuffer(
-                        request.requestId(),
-                        0,
-                        true,
-                        UploadStatus.SUCCESS,
-                        List.of(new UploadedWaypointListChunk(
-                                "minecraft:overworld",
-                                "list",
-                                List.of(waypoint("target", 25))
-                        ))
-                )
+                uploadData(request, "minecraft:overworld", "list", List.of(waypoint("target", 25)))
         );
 
         NavigationTarget refreshed = navigationService.findSession(playerUuid())
@@ -318,6 +269,22 @@ class UploadCoordinatorTest {
 
     private static SimpleWaypoint waypoint(String name, int x) {
         return new SimpleWaypoint(name, name, new WaypointPos(x, 64, 0), 0x00FF00, 0, false);
+    }
+
+    private static WaypointData uploadData(
+            UploadRequestBuffer request,
+            String dimensionName,
+            String listName,
+            List<SimpleWaypoint> waypoints
+    ) {
+        return WaypointData.upload(
+                request.requestId(),
+                UploadStatus.SUCCESS,
+                List.of(new DimensionWaypointData(
+                        dimensionName,
+                        List.of(new WaypointList(listName, WaypointList.SERVER_N, waypoints))
+                ))
+        );
     }
 
     private static UploadCoordinator<String> coordinator(WaypointServerCore server) {

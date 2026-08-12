@@ -58,6 +58,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
@@ -70,6 +71,7 @@ public final class NavigationProtectionListener implements Listener {
     private final PaperNavigationPlatform navigationPlatform;
     private final PaperNavigationItemManager itemManager;
     private final UploadCoordinator<Player> uploadCoordinator;
+    private final Consumer<Player> waypointDataDisconnect;
     private final PaperScheduler scheduler;
     private final Map<NavigationMethod, PaperItemNavigationHandler> itemHandlers;
     private final Set<UUID> reconciling = ConcurrentHashMap.newKeySet();
@@ -83,13 +85,15 @@ public final class NavigationProtectionListener implements Listener {
             PaperNavigationPlatform navigationPlatform,
             PaperNavigationItemManager itemManager,
             List<? extends PaperItemNavigationHandler> itemHandlers,
-            UploadCoordinator<Player> uploadCoordinator
+            UploadCoordinator<Player> uploadCoordinator,
+            Consumer<Player> waypointDataDisconnect
     ) {
         this.waypointServer = waypointServer;
         this.navigationService = navigationService;
         this.navigationPlatform = navigationPlatform;
         this.itemManager = itemManager;
         this.uploadCoordinator = uploadCoordinator;
+        this.waypointDataDisconnect = waypointDataDisconnect;
         this.scheduler = new PaperScheduler(plugin);
         this.itemHandlers = new EnumMap<>(NavigationMethod.class);
         for (PaperItemNavigationHandler handler : itemHandlers) {
@@ -441,6 +445,7 @@ public final class NavigationProtectionListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        this.waypointDataDisconnect.accept(player);
         this.uploadCoordinator.onDisconnect(player);
         ScheduledTask tickTask = this.navigationTickTasks.remove(player.getUniqueId());
         if (tickTask != null) {

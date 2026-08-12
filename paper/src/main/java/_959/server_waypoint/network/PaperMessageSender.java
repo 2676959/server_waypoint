@@ -1,8 +1,11 @@
 package _959.server_waypoint.network;
 
 import _959.server_waypoint.PaperScheduler;
+import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.MessageEncodingException;
 import _959.server_waypoint.core.network.PlatformMessageSender;
-import _959.server_waypoint.core.network.buffer.MessageBuffer;
+import _959.server_waypoint.core.network.SinglePacketMessage;
+import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
 import org.bukkit.command.CommandSender;
@@ -11,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("UnstableApiUsage")
 public class PaperMessageSender implements PlatformMessageSender<CommandSourceStack, Player> {
@@ -20,6 +24,13 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
     public PaperMessageSender(JavaPlugin plugin) {
         this.plugin = plugin;
         this.scheduler = new PaperScheduler(plugin);
+        plugin.getServer().getAsyncScheduler().runAtFixedRate(
+                plugin,
+                ignored -> this.tickChunkedMessages(),
+                1L,
+                1L,
+                TimeUnit.SECONDS
+        );
     }
 
     @Override
@@ -55,28 +66,56 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
     }
 
     @Override
-    public void broadcastPacket(MessageBuffer packet) {
-        this.plugin.getServer().getOnlinePlayers().forEach(player -> sendPlayerPacket(player, packet));
+    public void broadcastPacket(SinglePacketMessage message) {
+        this.plugin.getServer().getOnlinePlayers().forEach(player -> sendPlayerPacket(player, message));
     }
 
     @Override
-    public void sendPacket(CommandSourceStack source, MessageBuffer packet) {
+    public void broadcastChunkedMessage(ChunkedMessage message) {
+        this.plugin.getServer().getOnlinePlayers()
+                .forEach(player -> this.sendPlayerChunkedMessage(player, message));
+    }
+
+    @Override
+    public void sendPacket(CommandSourceStack source, SinglePacketMessage message) {
         Entity entity = source.getExecutor();
         if (entity instanceof Player player) {
-            sendPlayerPacket(player, packet);
+            sendPlayerPacket(player, message);
         }
     }
 
     @Override
-    public void sendPlayerPacket(Player player, MessageBuffer packet) {
-        byte[] payload = packet.encode();
-        this.scheduler.execute(
-                player,
-                () -> player.sendPluginMessage(
-                        this.plugin,
-                        packet.getChannelId().toString(),
-                        payload
-                )
-        );
+    public void sendChunkedMessage(CommandSourceStack source, ChunkedMessage message) {
+        Entity entity = source.getExecutor();
+        if (entity instanceof Player player) {
+            this.sendPlayerChunkedMessage(player, message);
+        }
+    }
+
+    @Override
+    public void sendPlayerPacket(Player player, SinglePacketMessage message) {
+        try {
+            byte[] payload = SinglePacketMessageEncoder.encode(message);
+            this.scheduler.execute(
+                    player,
+                    () -> player.sendPluginMessage(
+                            this.plugin,
+                            message.getChannelId().toString(),
+                            payload
+                    )
+            );
+        } catch (MessageEncodingException exception) {
+            this.plugin.getLogger().warning(
+                    "Failed to encode single-packet message type "
+                            + message.getClass().getSimpleName()
+                            + " within the "
+                            + SinglePacketMessageEncoder.MAX_ENCODED_BYTES
+                            + "-byte packet budget"
+            );
+            this.sendPlayerMessage(
+                    player,
+                    Component.translatable("waypoint.network.encoding_failed")
+            );
+        }
     }
 }

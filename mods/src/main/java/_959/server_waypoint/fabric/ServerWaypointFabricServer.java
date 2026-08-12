@@ -4,14 +4,12 @@ package _959.server_waypoint.fabric;
 import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
-import _959.server_waypoint.common.network.payload.c2s.UploadChunkC2SPayload;
+import _959.server_waypoint.common.network.payload.c2s.MessageChunkC2SPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.common.server.command.WaypointCommand;
 import _959.server_waypoint.config.Features;
 import _959.server_waypoint.core.IPlatformConfigPath;
 import _959.server_waypoint.common.network.ModChatMessageHandler;
-import _959.server_waypoint.common.network.payload.c2s.UpdateRequestC2SPayload;
-import _959.server_waypoint.common.network.payload.c2s.WaypointEditRequestC2SPayload;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.network.C2SPacketHandler;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
@@ -54,7 +52,7 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         UploadCoordinator<ServerPlayer> uploadCoordinator = new UploadCoordinator<>(
                 waypointServer,
                 messageSender::sendPlayerMessage,
-                messageSender::broadcastPacket,
+                messageSender::broadcastChunkedMessage,
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete()),
                 waypointServer.navigation().service()
@@ -93,7 +91,10 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, registrationEnvironment) -> waypointCommand.register(dispatcher));
         ServerLifecycleEvents.SERVER_STARTING.register(waypointServer::load);
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> waypointServer.unload());
-        ServerTickEvents.END_SERVER_TICK.register(server -> waypointServer.navigation().tick());
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            waypointServer.navigation().tick();
+            messageSender.tickChunkedMessages();
+        });
         ServerPlayConnectionEvents.JOIN.register(
                 (listener, sender, server) -> waypointServer.navigation().onPlayerJoin(listener.player)
         );
@@ -111,30 +112,18 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         registerPayloads();
 
         //? if >= 1.20.5 {
-        ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (handshakeC2SPayload, context) ->
-                c2sPacketHandler.onClientUpdateRequest(context.player(), handshakeC2SPayload.clientUpdateRequestBuffer())
-        );
         ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (clientHandshakeC2SPayload, context) ->
                 c2sPacketHandler.onClientHandshake(context.player(), clientHandshakeC2SPayload.clientHandshakeBuffer())
         );
-        ServerPlayNetworking.registerGlobalReceiver(WaypointEditRequestC2SPayload.ID, (payload, context) ->
-                c2sPacketHandler.onWaypointEditRequest(context.player(), payload.request())
-        );
-        ServerPlayNetworking.registerGlobalReceiver(UploadChunkC2SPayload.ID, (uploadChunkC2SPayload, context) ->
-                c2sPacketHandler.onUploadChunk(context.player(), uploadChunkC2SPayload.uploadChunkBuffer())
+        ServerPlayNetworking.registerGlobalReceiver(MessageChunkC2SPayload.ID, (payload, context) ->
+                c2sPacketHandler.onMessageChunk(context.player(), payload.messageChunk())
         );
         //?} else if fabric {
-        /*ServerPlayNetworking.registerGlobalReceiver(UpdateRequestC2SPayload.ID, (packet, player, responseSender) ->
-                c2sPacketHandler.onClientUpdateRequest(player, packet.clientUpdateRequestBuffer()
-                ));
-        ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (packet, player, responseSender) ->
+        /*ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (packet, player, responseSender) ->
                 c2sPacketHandler.onClientHandshake(player, packet.clientHandshakeBuffer()
                 ));
-        ServerPlayNetworking.registerGlobalReceiver(WaypointEditRequestC2SPayload.ID, (packet, player, responseSender) ->
-                c2sPacketHandler.onWaypointEditRequest(player, packet.request()
-                ));
-        ServerPlayNetworking.registerGlobalReceiver(UploadChunkC2SPayload.ID, (packet, player, responseSender) ->
-                c2sPacketHandler.onUploadChunk(player, packet.uploadChunkBuffer()
+        ServerPlayNetworking.registerGlobalReceiver(MessageChunkC2SPayload.ID, (packet, player, responseSender) ->
+                c2sPacketHandler.onMessageChunk(player, packet.messageChunk()
                 ));
         *///?}
     }
@@ -144,35 +133,11 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         PayloadTypeRegistry.
         //$ payload_s2c_registry_swap
         clientboundPlay
-        ().register(WaypointListS2CPayload.ID, WaypointListS2CPayload.PACKET_CODEC);
-        PayloadTypeRegistry.
-        //$ payload_s2c_registry_swap
-        clientboundPlay
-        ().register(DimensionWaypointS2CPayload.ID, DimensionWaypointS2CPayload.PACKET_CODEC);
-        PayloadTypeRegistry.
-        //$ payload_s2c_registry_swap
-        clientboundPlay
-        ().register(WorldWaypointS2CPayload.ID, WorldWaypointS2CPayload.PACKET_CODEC);
-        PayloadTypeRegistry.
-        //$ payload_s2c_registry_swap
-        clientboundPlay
-        ().register(WaypointModificationS2CPayload.ID, WaypointModificationS2CPayload.PACKET_CODEC);
-        PayloadTypeRegistry.
-        //$ payload_s2c_registry_swap
-        clientboundPlay
-        ().register(UpdatesBundleS2CPayload.ID, UpdatesBundleS2CPayload.PACKET_CODEC);
+        ().register(MessageChunkS2CPayload.ID, MessageChunkS2CPayload.PACKET_CODEC);
         PayloadTypeRegistry.
         //$ payload_s2c_registry_swap
         clientboundPlay
         ().register(ServerHandshakeS2CPayload.ID, ServerHandshakeS2CPayload.PACKET_CODEC);
-        PayloadTypeRegistry.
-        //$ payload_s2c_registry_swap
-        clientboundPlay
-        ().register(WaypointEditResultS2CPayload.ID, WaypointEditResultS2CPayload.PACKET_CODEC);
-        PayloadTypeRegistry.
-        //$ payload_s2c_registry_swap
-        clientboundPlay
-        ().register(WaypointListUpdateS2CPayload.ID, WaypointListUpdateS2CPayload.PACKET_CODEC);
         PayloadTypeRegistry.
         //$ payload_s2c_registry_swap
         clientboundPlay
@@ -185,15 +150,7 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         PayloadTypeRegistry.
         //$ payload_c2s_registry_swap
         serverboundPlay
-        ().register(UpdateRequestC2SPayload.ID, UpdateRequestC2SPayload.PACKET_CODEC);
-        PayloadTypeRegistry.
-        //$ payload_c2s_registry_swap
-        serverboundPlay
-        ().register(WaypointEditRequestC2SPayload.ID, WaypointEditRequestC2SPayload.PACKET_CODEC);
-        PayloadTypeRegistry.
-        //$ payload_c2s_registry_swap
-        serverboundPlay
-        ().register(UploadChunkC2SPayload.ID, UploadChunkC2SPayload.PACKET_CODEC);
+        ().register(MessageChunkC2SPayload.ID, MessageChunkC2SPayload.PACKET_CODEC);
         //?}
     }
 

@@ -7,14 +7,17 @@ import _959.server_waypoint.core.edit.EditTarget;
 import _959.server_waypoint.core.edit.EditResultStatus;
 import _959.server_waypoint.core.edit.WaypointEditResult;
 import _959.server_waypoint.core.edit.WaypointPatch;
-import _959.server_waypoint.core.network.buffer.MessageBuffer;
-import _959.server_waypoint.core.network.buffer.WaypointEditRequestBuffer;
-import _959.server_waypoint.core.network.buffer.WaypointEditResultBuffer;
+import _959.server_waypoint.core.network.message.WaypointEditRequestMessage;
+import _959.server_waypoint.core.network.message.WaypointEditResultMessage;
+import _959.server_waypoint.core.network.message.WaypointModificationMessage;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.navigation.NavigationPlatform;
 import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationSnapshot;
 import _959.server_waypoint.navigation.NavigationTarget;
+import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointModificationType;
+import _959.server_waypoint.core.waypoint.WaypointPos;
 import net.kyori.adventure.text.Component;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -60,6 +63,7 @@ class C2SPacketHandlerTest {
                     EditTarget target,
                     Integer expectedSyncNum,
                     WaypointPatch patch,
+                    Consumer<WaypointEditResult> preCommitAction,
                     Consumer<WaypointEditResult> resultAction
             ) {
                 throw new IllegalArgumentException("malformed target");
@@ -79,8 +83,62 @@ class C2SPacketHandlerTest {
         assertEquals(17L, sender.lastResult().requestId());
     }
 
-    private static WaypointEditRequestBuffer request() {
-        return new WaypointEditRequestBuffer(
+    @Test
+    void encodingFailureReturnsStructuredStatusWithoutEscapingTheBoundary() {
+        TestSender sender = new TestSender();
+        WaypointServerCore server = new WaypointServerCore(this.tempDir) {
+            @Override
+            public WaypointEditResult updateWaypoint(
+                    EditTarget target,
+                    Integer expectedSyncNum,
+                    WaypointPatch patch,
+                    Consumer<WaypointEditResult> preCommitAction,
+                    Consumer<WaypointEditResult> resultAction
+            ) {
+                throw new MessageEncodingException("simulated encoding failure");
+            }
+        };
+        C2SPacketHandler<String, String, String> handler = new C2SPacketHandler<>(
+                sender,
+                server,
+                new TestPermissionManager(true),
+                navigationService(),
+                uploadCoordinator(server)
+        );
+
+        handler.onWaypointEditRequest("player", request());
+
+        assertEquals(EditResultStatus.ENCODING_FAILED, sender.lastResult().status());
+        assertEquals(17L, sender.lastResult().requestId());
+    }
+
+    @Test
+    void oneBroadcastFailureDoesNotStopLaterRecipients() {
+        FailingBroadcastSender sender = new FailingBroadcastSender();
+        WaypointModificationMessage modification = new WaypointModificationMessage(
+                "minecraft:overworld",
+                "list",
+                "list",
+                "waypoint",
+                new SimpleWaypoint(
+                        "waypoint",
+                        "W",
+                        new WaypointPos(0, 64, 0),
+                        0,
+                        0,
+                        false
+                ),
+                WaypointModificationType.ADD,
+                2
+        );
+
+        sender.broadcastWaypointModification("source", modification);
+
+        assertEquals(List.of("first", "second"), sender.attemptedRecipients);
+    }
+
+    private static WaypointEditRequestMessage request() {
+        return new WaypointEditRequestMessage(
                 17L,
                 "minecraft:overworld",
                 "list",
@@ -182,11 +240,11 @@ class C2SPacketHandlerTest {
         }
     }
 
-    private static final class TestSender implements PlatformMessageSender<String, String> {
-        private final List<MessageBuffer> packets = new ArrayList<>();
+    private static class TestSender implements PlatformMessageSender<String, String> {
+        private final List<NetworkMessage> packets = new ArrayList<>();
 
-        private WaypointEditResultBuffer lastResult() {
-            return (WaypointEditResultBuffer) this.packets.get(this.packets.size() - 1);
+        private WaypointEditResultMessage lastResult() {
+            return (WaypointEditResultMessage) this.packets.get(this.packets.size() - 1);
         }
 
         @Override
@@ -202,17 +260,28 @@ class C2SPacketHandlerTest {
         }
 
         @Override
-        public void sendPacket(String source, MessageBuffer packet) {
-            this.packets.add(packet);
+        public void sendPacket(String source, SinglePacketMessage message) {
+            this.packets.add(message);
         }
 
         @Override
-        public void sendPlayerPacket(String player, MessageBuffer packet) {
-            this.packets.add(packet);
+        public void sendPlayerPacket(String player, SinglePacketMessage message) {
+            this.packets.add(message);
         }
 
         @Override
-        public void broadcastPacket(MessageBuffer packet) {
+        public void broadcastPacket(SinglePacketMessage message) {
+        }
+
+        @Override
+        public void sendChunkedMessage(String source, ChunkedMessage message) {
+            this.packets.add(message);
+        }
+
+        @Override
+        public boolean sendPlayerChunkedMessage(String player, ChunkedMessage message) {
+            this.packets.add(message);
+            return true;
         }
 
         @Override
@@ -223,6 +292,21 @@ class C2SPacketHandlerTest {
         @Override
         public Component getSenderName(String source) {
             return Component.text(source);
+        }
+    }
+
+    private static final class FailingBroadcastSender extends TestSender {
+        private final List<String> attemptedRecipients = new ArrayList<>();
+
+        @Override
+        public Iterable<? extends String> getBroadcastPlayers(String source) {
+            return List.of("first", "second");
+        }
+
+        @Override
+        public boolean sendPlayerChunkedMessage(String player, ChunkedMessage message) {
+            this.attemptedRecipients.add(player);
+            return !player.equals("first");
         }
     }
 }

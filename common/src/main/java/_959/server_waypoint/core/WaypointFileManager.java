@@ -1,6 +1,6 @@
 package _959.server_waypoint.core;
 
-import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
+import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.edit.EditResultStatus;
 import _959.server_waypoint.core.edit.WaypointEditResult;
 import _959.server_waypoint.core.edit.WaypointListEditResult;
@@ -26,7 +26,9 @@ import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static _959.server_waypoint.text.FormattedTextHelper.*;
@@ -51,8 +53,8 @@ public class WaypointFileManager {
         this.waypointListMap = new HashMap<>();
     }
 
-    public DimensionWaypointBuffer toDimensionWaypoint() {
-        return new DimensionWaypointBuffer(this.dimensionName, this.snapshotWaypointLists());
+    public DimensionWaypointData toDimensionWaypointData() {
+        return new DimensionWaypointData(this.dimensionName, this.snapshotWaypointLists());
     }
 
     public Path getDimensionFile() {
@@ -514,7 +516,22 @@ public class WaypointFileManager {
             @Nullable Integer expectedSyncNum,
             WaypointListPatch patch
     ) {
-        return this.writeState(() -> {
+        return this.updateWaypointList(
+                listIdentifier,
+                expectedSyncNum,
+                patch,
+                ignored -> {
+                }
+        );
+    }
+
+    WaypointListEditResult updateWaypointList(
+            String listIdentifier,
+            @Nullable Integer expectedSyncNum,
+            WaypointListPatch patch,
+            Consumer<WaypointListEditResult> preCommitAction
+    ) {
+        return this.writeState(() -> this.runPreflightedMutation(() -> {
             WaypointList waypointList = this.waypointListMap.get(listIdentifier);
             if (waypointList == null) {
                 return new WaypointListEditResult(
@@ -591,7 +608,7 @@ public class WaypointFileManager {
                     result.beforeSnapshot(),
                     result.afterSnapshot()
             );
-        });
+        }, result -> result.status() == EditResultStatus.SUCCESS, preCommitAction));
     }
 
     WaypointEditResult updateWaypoint(
@@ -600,7 +617,24 @@ public class WaypointFileManager {
             @Nullable Integer expectedSyncNum,
             WaypointPatch patch
     ) {
-        return this.writeState(() -> {
+        return this.updateWaypoint(
+                listIdentifier,
+                waypointIdentifier,
+                expectedSyncNum,
+                patch,
+                ignored -> {
+                }
+        );
+    }
+
+    WaypointEditResult updateWaypoint(
+            String listIdentifier,
+            String waypointIdentifier,
+            @Nullable Integer expectedSyncNum,
+            WaypointPatch patch,
+            Consumer<WaypointEditResult> preCommitAction
+    ) {
+        return this.writeState(() -> this.runPreflightedMutation(() -> {
             WaypointList waypointList = this.waypointListMap.get(listIdentifier);
             if (waypointList == null) {
                 return new WaypointEditResult(
@@ -666,7 +700,27 @@ public class WaypointFileManager {
                     result.afterSnapshot(),
                     result.syncNum()
             );
-        });
+        }, result -> result.status() == EditResultStatus.SUCCESS, preCommitAction));
+    }
+
+    private <T> T runPreflightedMutation(
+            Supplier<T> mutation,
+            Predicate<T> changed,
+            Consumer<T> preCommitAction
+    ) {
+        Objects.requireNonNull(preCommitAction, "preCommitAction");
+        List<WaypointList> before = this.snapshotWaypointLists();
+        T result = mutation.get();
+        if (!changed.test(result)) {
+            return result;
+        }
+        try {
+            preCommitAction.accept(result);
+            return result;
+        } catch (RuntimeException | Error exception) {
+            this.replaceWaypointLists(before);
+            throw exception;
+        }
     }
 
     private static @Nullable EditResultStatus validateWaypointPatch(WaypointPatch patch) {

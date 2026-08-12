@@ -4,9 +4,7 @@ import _959.server_waypoint.core.IPlatformConfigPath;
 import _959.server_waypoint.core.network.C2SPacketHandler;
 import _959.server_waypoint.core.network.PayloadID;
 import _959.server_waypoint.core.network.codec.ClientHandshakeCodec;
-import _959.server_waypoint.core.network.codec.ClientUpdateRequestBufferCodec;
-import _959.server_waypoint.core.network.codec.WaypointEditRequestBufferCodec;
-import _959.server_waypoint.core.network.codec.UploadChunkCodec;
+import _959.server_waypoint.core.network.codec.MessageChunkCodec;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.listener.ChatMessageListenerPaperMC;
 import _959.server_waypoint.listener.NavigationProtectionListener;
@@ -59,6 +57,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
     private NavigationService<Player> navigationService;
     private PaperNavigationItemManager navigationItemManager;
     private PaperNavigationMapCache navigationMapCache;
+    private PaperMessageSender messageSender;
     private @SuppressWarnings("UnstableApiUsage") C2SPacketHandler<CommandSourceStack, String, Player> c2sPacketHandler;
 
     @Override
@@ -83,6 +82,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         }
 
         PaperMessageSender sender = new PaperMessageSender(this);
+        this.messageSender = sender;
         PaperPermissionManager permissionManager = new PaperPermissionManager();
         this.navigationItemManager = new PaperNavigationItemManager();
         this.navigationMapCache = new PaperNavigationMapCache(this);
@@ -113,7 +113,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         UploadCoordinator<Player> uploadCoordinator = new UploadCoordinator<>(
                 waypointServer,
                 sender::sendPlayerMessage,
-                sender::broadcastPacket,
+                sender::broadcastChunkedMessage,
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete()),
                 this.navigationService
@@ -138,7 +138,8 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 navigationPlatform,
                 this.navigationItemManager,
                 List.<PaperItemNavigationHandler>of(compassHandler, mapHandler),
-                uploadCoordinator
+                uploadCoordinator,
+                sender::disconnectChunkedMessages
         );
         this.c2sPacketHandler = new C2SPacketHandler<>(
                 sender,
@@ -160,6 +161,10 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
 
     @Override
     public void onDisable() {
+        if (this.messageSender != null) {
+            this.getServer().getOnlinePlayers()
+                    .forEach(this.messageSender::disconnectChunkedMessages);
+        }
         if (this.navigationService != null) {
             this.navigationService.shutdown();
         }
@@ -172,6 +177,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         this.navigationMapCache = null;
         this.navigationItemManager = null;
         this.navigationService = null;
+        this.messageSender = null;
         waypointCommand = null;
         waypointServer = null;
     }
@@ -180,20 +186,12 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         // register for server_waypoint mod
         Server server = getServer();
         Messenger messenger = server.getMessenger();
-        messenger.registerOutgoingPluginChannel(this, WAYPOINT_LIST_CHANNEL.ID);
-        messenger.registerOutgoingPluginChannel(this, DIMENSION_WAYPOINT_CHANNEL.ID);
-        messenger.registerOutgoingPluginChannel(this, WORLD_WAYPOINT_CHANNEL.ID);
-        messenger.registerOutgoingPluginChannel(this, WAYPOINT_MODIFICATION_CHANNEL.ID);
-        messenger.registerOutgoingPluginChannel(this, UPDATES_BUNDLE_CHANNEL.ID);
+        messenger.registerOutgoingPluginChannel(this, MESSAGE_CHUNK_CHANNEL.ID);
         messenger.registerOutgoingPluginChannel(this, SERVER_HANDSHAKE_CHANNEL.ID);
         messenger.registerOutgoingPluginChannel(this, UPLOAD_REQUEST_CHANNEL.ID);
-        messenger.registerOutgoingPluginChannel(this, WAYPOINT_EDIT_RESULT_CHANNEL.ID);
-        messenger.registerOutgoingPluginChannel(this, WAYPOINT_LIST_UPDATE_CHANNEL.ID);
         // register for incoming
         messenger.registerIncomingPluginChannel(this, CLIENT_HANDSHAKE_CHANNEL.ID, this);
-        messenger.registerIncomingPluginChannel(this, CLIENT_UPDATE_REQUEST_CHANNEL.ID, this);
-        messenger.registerIncomingPluginChannel(this, UPLOAD_CHUNK_CHANNEL.ID, this);
-        messenger.registerIncomingPluginChannel(this, WAYPOINT_EDIT_REQUEST_CHANNEL.ID, this);
+        messenger.registerIncomingPluginChannel(this, MESSAGE_CHUNK_CHANNEL.ID, this);
 
         // register for xaero's minimap mod
         messenger.registerOutgoingPluginChannel(this, XAEROS_WORLD_ID_CHANNEL.ID);
@@ -202,26 +200,27 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
         if (this.isEnabled()) {
-            switch (channel) {
-                case ModInfo.MOD_ID + ":" + PayloadID.CLIENT_HANDSHAKE -> {
-                    ByteBuf buf = Unpooled.copiedBuffer(message);
-                    this.c2sPacketHandler.onClientHandshake(player, ClientHandshakeCodec.decode(buf));
+            ByteBuf buf = Unpooled.wrappedBuffer(message);
+            try {
+                switch (channel) {
+                    case ModInfo.MOD_ID + ":" + PayloadID.CLIENT_HANDSHAKE ->
+                            this.c2sPacketHandler.onClientHandshake(
+                                    player,
+                                    ClientHandshakeCodec.decode(buf)
+                            );
+                    case ModInfo.MOD_ID + ":" + PayloadID.MESSAGE_CHUNK ->
+                            this.c2sPacketHandler.onMessageChunk(
+                                    player,
+                                    MessageChunkCodec.decode(buf)
+                            );
                 }
-                case ModInfo.MOD_ID + ":" + PayloadID.CLIENT_UPDATE_REQUEST -> {
-                    ByteBuf buf = Unpooled.copiedBuffer(message);
-                    this.c2sPacketHandler.onClientUpdateRequest(player, ClientUpdateRequestBufferCodec.decode(buf));
+                if (buf.isReadable()) {
+                    throw new IllegalArgumentException("Plugin message has trailing bytes");
                 }
-                case ModInfo.MOD_ID + ":" + PayloadID.WAYPOINT_EDIT_REQUEST -> {
-                    ByteBuf buf = Unpooled.copiedBuffer(message);
-                    this.c2sPacketHandler.onWaypointEditRequest(
-                            player,
-                            WaypointEditRequestBufferCodec.decode(buf)
-                    );
-                }
-                case ModInfo.MOD_ID + ":" + PayloadID.UPLOAD_CHUNK -> {
-                    ByteBuf buf = Unpooled.copiedBuffer(message);
-                    this.c2sPacketHandler.onUploadChunk(player, UploadChunkCodec.decode(buf));
-                }
+            } catch (RuntimeException exception) {
+                LOGGER.warn("Rejected malformed plugin message on channel {}", channel, exception);
+            } finally {
+                buf.release();
             }
         }
     }

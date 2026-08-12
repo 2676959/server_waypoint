@@ -3,7 +3,10 @@ package _959.server_waypoint.common.network;
 //? if <= 1.20.1
 /*import _959.server_waypoint.access.PlayerLocaleAccessor;*/
 import _959.server_waypoint.core.network.PlatformMessageSender;
-import _959.server_waypoint.core.network.buffer.MessageBuffer;
+import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.MessageEncodingException;
+import _959.server_waypoint.core.network.SinglePacketMessage;
+import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -17,7 +20,7 @@ import java.util.Collection;
 import java.util.Locale;
 
 
-import static _959.server_waypoint.common.network.BufferPayloadMapping.getPayload;
+import static _959.server_waypoint.common.network.MessagePayloadMapping.getPayload;
 //? if >= 1.20.3 {
 import com.mojang.serialization.JsonOps;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -108,37 +111,67 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
     }
 
     @Override
-    public void broadcastPacket(MessageBuffer packet) {
+    public void broadcastPacket(SinglePacketMessage message) {
         if (WaypointServerMod.MINECRAFT_SERVER != null) {
             WaypointServerMod.MINECRAFT_SERVER.getPlayerList().getPlayers()
-                    .forEach(player -> sendPlayerPacket(player, packet));
+                    .forEach(player -> sendPlayerPacket(player, message));
         }
     }
 
     @Override
-    public void sendPlayerPacket(ServerPlayer player, MessageBuffer packet) {
-        //? if fabric {
-        ServerPlayNetworking.send(player, getPayload(packet));
-        //?} elif forge {
-        /*//? if <= 1.20.1 {
-        /^ServerWaypointForge.PACKET_CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), getPayload(packet));
-        ^///?} else {
-        ServerWaypointForge.PACKET_CHANNEL.send(getPayload(packet), PacketDistributor.PLAYER.with(player));
-        //?}
-        *///?} elif neoforge && = 1.20.2 {
-        /*ServerWaypointNeoForge.PACKET_CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), getPayload(packet));
-        *///?} elif neoforge && = 1.20.4 {
-        /*PacketDistributor.PLAYER.with(player).send(getPayload(packet));
-        *///?} else {
-        /*PacketDistributor.sendToPlayer(player, getPayload(packet));
-         *///?}
+    public void broadcastChunkedMessage(ChunkedMessage message) {
+        if (WaypointServerMod.MINECRAFT_SERVER != null) {
+            WaypointServerMod.MINECRAFT_SERVER.getPlayerList().getPlayers()
+                    .forEach(player -> sendPlayerChunkedMessage(player, message));
+        }
     }
 
     @Override
-    public void sendPacket(CommandSourceStack source, MessageBuffer packet) {
+    public void sendPlayerPacket(ServerPlayer player, SinglePacketMessage message) {
+        try {
+            byte[] encodedMessage = SinglePacketMessageEncoder.encode(message);
+        //? if fabric {
+        ServerPlayNetworking.send(player, getPayload(message, encodedMessage));
+        //?} elif forge {
+        /*//? if <= 1.20.1 {
+        /^ServerWaypointForge.PACKET_CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), getPayload(message, encodedMessage));
+        ^///?} else {
+        ServerWaypointForge.PACKET_CHANNEL.send(getPayload(message, encodedMessage), PacketDistributor.PLAYER.with(player));
+        //?}
+        *///?} elif neoforge && = 1.20.2 {
+        /*ServerWaypointNeoForge.PACKET_CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), getPayload(message, encodedMessage));
+        *///?} elif neoforge && = 1.20.4 {
+        /*PacketDistributor.PLAYER.with(player).send(getPayload(message, encodedMessage));
+        *///?} else {
+        /*PacketDistributor.sendToPlayer(player, getPayload(message, encodedMessage));
+         *///?}
+        } catch (MessageEncodingException exception) {
+            WaypointServerMod.LOGGER.warn(
+                    "Failed to encode single-packet message type {} within the {}-byte packet budget",
+                    message.getClass().getSimpleName(),
+                    SinglePacketMessageEncoder.MAX_ENCODED_BYTES,
+                    exception
+            );
+            this.sendPlayerMessage(
+                    player,
+                    Component.translatable("waypoint.network.encoding_failed")
+            );
+        }
+    }
+
+    @Override
+    public void sendPacket(CommandSourceStack source, SinglePacketMessage message) {
         ServerPlayer player = source.getPlayer();
         if (player != null) {
-            sendPlayerPacket(player, packet);
+            sendPlayerPacket(player, message);
+        }
+    }
+
+    @Override
+    public void sendChunkedMessage(CommandSourceStack source, ChunkedMessage message) {
+        ServerPlayer player = source.getPlayer();
+        if (player != null) {
+            this.sendPlayerChunkedMessage(player, message);
         }
     }
 }

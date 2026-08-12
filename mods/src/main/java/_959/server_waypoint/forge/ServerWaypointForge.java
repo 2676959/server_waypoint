@@ -5,17 +5,9 @@ import _959.server_waypoint.common.network.ModChatMessageHandler;
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
-import _959.server_waypoint.common.network.payload.c2s.UpdateRequestC2SPayload;
-import _959.server_waypoint.common.network.payload.c2s.WaypointEditRequestC2SPayload;
-import _959.server_waypoint.common.network.payload.c2s.UploadChunkC2SPayload;
-import _959.server_waypoint.common.network.payload.s2c.DimensionWaypointS2CPayload;
+import _959.server_waypoint.common.network.payload.c2s.MessageChunkC2SPayload;
 import _959.server_waypoint.common.network.payload.s2c.ServerHandshakeS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.UpdatesBundleS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.WaypointListS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.WaypointModificationS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.WaypointEditResultS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.WaypointListUpdateS2CPayload;
+import _959.server_waypoint.common.network.payload.s2c.MessageChunkS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.XaerosWorldIdS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.UploadRequestS2CPayload;
 import _959.server_waypoint.common.server.WaypointServerMod;
@@ -72,7 +64,7 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
 @Mod(ModInfo.MOD_ID)
 public class ServerWaypointForge implements IPlatformConfigPath {
-    private static final String NETWORK_PROTOCOL_VERSION = "5";
+    private static final String NETWORK_PROTOCOL_VERSION = "7";
 //? if <= 1.20.1 {
     /*public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
             modId("main"),
@@ -100,7 +92,7 @@ public class ServerWaypointForge implements IPlatformConfigPath {
         UploadCoordinator<ServerPlayer> uploadCoordinator = new UploadCoordinator<>(
                 this.waypointServer,
                 messageSender::sendPlayerMessage,
-                messageSender::broadcastPacket,
+                messageSender::broadcastChunkedMessage,
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete()),
                 this.waypointServer.navigation().service()
@@ -167,11 +159,13 @@ public class ServerWaypointForge implements IPlatformConfigPath {
     /*private void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             this.waypointServer.navigation().tick();
+            ModMessageSender.getInstance().tickChunkedMessages();
         }
     }
     *///?} else {
     private void onServerTick(TickEvent.ServerTickEvent.Post event) {
         this.waypointServer.navigation().tick();
+        ModMessageSender.getInstance().tickChunkedMessages();
     }
     //?}
 
@@ -202,20 +196,14 @@ public class ServerWaypointForge implements IPlatformConfigPath {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             ServerWaypointForgeClient.registerClientPayloadHandlers();
         } else {
-            registerS2C(WaypointListS2CPayload.class, 0, /*? if >= 1.20.5 {*/ WaypointListS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointListS2CPayload::new *//*?}*/, (payload, context) -> {});
-            registerS2C(DimensionWaypointS2CPayload.class, 1, /*? if >= 1.20.5 {*/ DimensionWaypointS2CPayload.PACKET_CODEC /*?} else {*/ /*DimensionWaypointS2CPayload::new *//*?}*/, (payload, context) -> {});
-            registerS2C(WorldWaypointS2CPayload.class, 2, /*? if >= 1.20.5 {*/ WorldWaypointS2CPayload.PACKET_CODEC /*?} else {*/ /*WorldWaypointS2CPayload::new *//*?}*/, (payload, context) -> {});
-            registerS2C(WaypointModificationS2CPayload.class, 3, /*? if >= 1.20.5 {*/ WaypointModificationS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointModificationS2CPayload::new *//*?}*/, (payload, context) -> {});
-            registerS2C(UpdatesBundleS2CPayload.class, 4, /*? if >= 1.20.5 {*/ UpdatesBundleS2CPayload.PACKET_CODEC /*?} else {*/ /*UpdatesBundleS2CPayload::new *//*?}*/, (payload, context) -> {});
-            registerS2C(ServerHandshakeS2CPayload.class, 5, /*? if >= 1.20.5 {*/ ServerHandshakeS2CPayload.PACKET_CODEC /*?} else {*/ /*ServerHandshakeS2CPayload::new *//*?}*/, (payload, context) -> {});
-            registerS2C(WaypointEditResultS2CPayload.class, 9, /*? if >= 1.20.5 {*/ WaypointEditResultS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointEditResultS2CPayload::new *//*?}*/, (payload, context) -> {});
-            registerS2C(WaypointListUpdateS2CPayload.class, 10, /*? if >= 1.20.5 {*/ WaypointListUpdateS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointListUpdateS2CPayload::new *//*?}*/, (payload, context) -> {});
-            registerS2C(UploadRequestS2CPayload.class, 12, /*? if >= 1.20.5 {*/ UploadRequestS2CPayload.PACKET_CODEC /*?} else {*/ /*UploadRequestS2CPayload::new *//*?}*/, (payload, context) -> {});
+            registerS2C(MessageChunkS2CPayload.class, 0, /*? if >= 1.20.5 {*/ MessageChunkS2CPayload.PACKET_CODEC /*?} else {*/ /*MessageChunkS2CPayload::new *//*?}*/, (payload, context) -> {});
+            registerS2C(ServerHandshakeS2CPayload.class, 1, /*? if >= 1.20.5 {*/ ServerHandshakeS2CPayload.PACKET_CODEC /*?} else {*/ /*ServerHandshakeS2CPayload::new *//*?}*/, (payload, context) -> {});
+            registerS2C(UploadRequestS2CPayload.class, 2, /*? if >= 1.20.5 {*/ UploadRequestS2CPayload.PACKET_CODEC /*?} else {*/ /*UploadRequestS2CPayload::new *//*?}*/, (payload, context) -> {});
         }
         if (Features.noXaerosMod) {
-            registerS2C(XaerosWorldIdS2CPayload.class, 6, /*? if >= 1.20.5 {*/ XaerosWorldIdS2CPayload.PACKET_CODEC /*?} else {*/ /*XaerosWorldIdS2CPayload::new *//*?}*/, (payload, context) -> {});
+            registerS2C(XaerosWorldIdS2CPayload.class, 3, /*? if >= 1.20.5 {*/ XaerosWorldIdS2CPayload.PACKET_CODEC /*?} else {*/ /*XaerosWorldIdS2CPayload::new *//*?}*/, (payload, context) -> {});
         }
-        registerC2S(ClientHandshakeC2SPayload.class, 7, /*? if >= 1.20.5 {*/ ClientHandshakeC2SPayload.PACKET_CODEC /*?} else {*/ /*ClientHandshakeC2SPayload::new *//*?}*/, (payload, context) -> {
+        registerC2S(ClientHandshakeC2SPayload.class, 4, /*? if >= 1.20.5 {*/ ClientHandshakeC2SPayload.PACKET_CODEC /*?} else {*/ /*ClientHandshakeC2SPayload::new *//*?}*/, (payload, context) -> {
 //? if <= 1.20.1 {
             /*ServerPlayer player = context.get().getSender();
 *///?} else {
@@ -225,34 +213,14 @@ public class ServerWaypointForge implements IPlatformConfigPath {
                 this.c2sPacketHandler.onClientHandshake(player, payload.clientHandshakeBuffer());
             }
         });
-        registerC2S(UpdateRequestC2SPayload.class, 8, /*? if >= 1.20.5 {*/ UpdateRequestC2SPayload.PACKET_CODEC /*?} else {*/ /*UpdateRequestC2SPayload::new *//*?}*/, (payload, context) -> {
+        registerC2S(MessageChunkC2SPayload.class, 5, /*? if >= 1.20.5 {*/ MessageChunkC2SPayload.PACKET_CODEC /*?} else {*/ /*MessageChunkC2SPayload::new *//*?}*/, (payload, context) -> {
 //? if <= 1.20.1 {
             /*ServerPlayer player = context.get().getSender();
 *///?} else {
             ServerPlayer player = context.getSender();
             //?}
             if (player != null) {
-                this.c2sPacketHandler.onClientUpdateRequest(player, payload.clientUpdateRequestBuffer());
-            }
-        });
-        registerC2S(WaypointEditRequestC2SPayload.class, 11, /*? if >= 1.20.5 {*/ WaypointEditRequestC2SPayload.PACKET_CODEC /*?} else {*/ /*WaypointEditRequestC2SPayload::new *//*?}*/, (payload, context) -> {
-//? if <= 1.20.1 {
-            /*ServerPlayer player = context.get().getSender();
-*///?} else {
-            ServerPlayer player = context.getSender();
-            //?}
-            if (player != null) {
-                this.c2sPacketHandler.onWaypointEditRequest(player, payload.request());
-            }
-        });
-        registerC2S(UploadChunkC2SPayload.class, 13, /*? if >= 1.20.5 {*/ UploadChunkC2SPayload.PACKET_CODEC /*?} else {*/ /*UploadChunkC2SPayload::new *//*?}*/, (payload, context) -> {
-//? if <= 1.20.1 {
-            /*ServerPlayer player = context.get().getSender();
-*///?} else {
-            ServerPlayer player = context.getSender();
-            //?}
-            if (player != null) {
-                this.c2sPacketHandler.onUploadChunk(player, payload.uploadChunkBuffer());
+                this.c2sPacketHandler.onMessageChunk(player, payload.messageChunk());
             }
         });
     }

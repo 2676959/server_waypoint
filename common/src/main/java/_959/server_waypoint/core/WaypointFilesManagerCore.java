@@ -258,6 +258,23 @@ public class WaypointFilesManagerCore {
             WaypointListPatch patch,
             Consumer<WaypointListEditResult> resultAction
     ) {
+        return this.updateWaypointList(
+                target,
+                expectedSyncNum,
+                patch,
+                ignored -> {
+                },
+                resultAction
+        );
+    }
+
+    public WaypointListEditResult updateWaypointList(
+            EditTarget target,
+            @Nullable Integer expectedSyncNum,
+            WaypointListPatch patch,
+            Consumer<WaypointListEditResult> preCommitAction,
+            Consumer<WaypointListEditResult> resultAction
+    ) {
         if (target.type() != EditTarget.Type.LIST) {
             throw new IllegalArgumentException("Expected a waypoint-list edit target");
         }
@@ -275,7 +292,8 @@ public class WaypointFilesManagerCore {
                             : fileManager.updateWaypointList(
                                     target.listIdentifier(),
                                     expectedSyncNum,
-                                    patch
+                                    patch,
+                                    preCommitAction
                             );
                 },
                 resultAction
@@ -286,6 +304,23 @@ public class WaypointFilesManagerCore {
             EditTarget target,
             @Nullable Integer expectedSyncNum,
             WaypointPatch patch,
+            Consumer<WaypointEditResult> resultAction
+    ) {
+        return this.updateWaypoint(
+                target,
+                expectedSyncNum,
+                patch,
+                ignored -> {
+                },
+                resultAction
+        );
+    }
+
+    public WaypointEditResult updateWaypoint(
+            EditTarget target,
+            @Nullable Integer expectedSyncNum,
+            WaypointPatch patch,
+            Consumer<WaypointEditResult> preCommitAction,
             Consumer<WaypointEditResult> resultAction
     ) {
         if (target.type() != EditTarget.Type.WAYPOINT) {
@@ -308,7 +343,8 @@ public class WaypointFilesManagerCore {
                                     target.listIdentifier(),
                                     target.requiredWaypointIdentifier(),
                                     expectedSyncNum,
-                                    patch
+                                    patch,
+                                    preCommitAction
                             );
                 },
                 resultAction

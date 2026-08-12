@@ -5,18 +5,25 @@ import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeJson;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
-import _959.server_waypoint.common.client.handlers.BufferHandler;
+import _959.server_waypoint.common.client.handlers.MessageHandler;
 import _959.server_waypoint.common.client.integrations.ClientWaypointSyncEvent;
 import _959.server_waypoint.common.client.integrations.MapModIntegrations;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
-import _959.server_waypoint.common.network.payload.c2s.UpdateRequestC2SPayload;
+import _959.server_waypoint.common.network.payload.c2s.MessageChunkC2SPayload;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
+import _959.server_waypoint.core.network.ChunkedMessage;
 import _959.server_waypoint.core.network.DimensionSyncIdentifier;
+import _959.server_waypoint.core.network.MessageEncodingException;
 import _959.server_waypoint.core.network.WaypointListSyncIdentifier;
+import _959.server_waypoint.core.network.WaypointRevisionSequence;
 import _959.server_waypoint.core.network.buffer.*;
+import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
+import _959.server_waypoint.core.network.data.DimensionWaypointData;
+import _959.server_waypoint.core.network.data.WaypointData;
+import _959.server_waypoint.core.network.message.*;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
@@ -48,7 +55,7 @@ import static _959.server_waypoint.ModInfo.MOD_ID;
 import static _959.server_waypoint.common.client.util.NetworkHelper.sendPayloadToServer;
 import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asClientFromRemoteServer;
 
-public class WaypointClientMod extends WaypointFilesManagerCore implements BufferHandler {
+public class WaypointClientMod extends WaypointFilesManagerCore implements MessageHandler {
     public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_client");
     public static boolean isXaerosMinimapReady = false;
     private static WaypointClientMod INSTANCE;
@@ -56,6 +63,8 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     private static String currentDimensionName;
     private static ClientConfig clientConfig;
     private final ClientHandshakeC2SPayload clientHandshake = new ClientHandshakeC2SPayload(new ClientHandshakeBuffer());
+    private final ChunkedMessageManager<String> chunkedMessages = new ChunkedMessageManager<>();
+    private boolean compressChunkedMessages;
     // TODO: add a local waypoint manager for using waypoints on an unsupported server
 //    private final WaypointFilesManagerCore localManager;
     private final Path gameRoot;
@@ -178,7 +187,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         this.removeWaypointFileManager(dimensionName, true);
     }
 
-    public UpdateRequestC2SPayload getClientUpdateRequestPayload() {
+    public ClientUpdateRequestMessage getClientUpdateRequestMessage() {
         List<DimensionSyncIdentifier> dimensionSyncIds = new ArrayList<>(this.fileManagerMap.size());
         for (WaypointFileManager manager : this.fileManagerMap.values()) {
             if (manager == null) continue;
@@ -190,7 +199,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             }
             dimensionSyncIds.add(new DimensionSyncIdentifier(dimensionName, listSyncIds));
         }
-        return new UpdateRequestC2SPayload(new ClientUpdateRequestBuffer(dimensionSyncIds));
+        return new ClientUpdateRequestMessage(dimensionSyncIds);
     }
 
     /**
@@ -245,6 +254,8 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     }
 
     public void onLeaveServer() {
+        this.chunkedMessages.clearAll();
+        this.compressChunkedMessages = false;
         OptimizedWaypointRenderer.clearScene();
         if (!WaypointServerMod.runsWithClient()) {
             this.saveAllWaypointFiles();
@@ -265,12 +276,14 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     /**
      * can only be called when connected to a server
      * */
-    public void requestUpdates() {
-        sendPayloadToServer(getClientUpdateRequestPayload());
+    public boolean requestUpdates() {
+        return this.sendChunkedMessageToServer(this.getClientUpdateRequestMessage());
     }
 
     public void onJoinServer() {
         LOGGER.info("join server");
+        this.chunkedMessages.clearAll();
+        this.compressChunkedMessages = false;
         WaypointManagerScreen.resetSessionWidgetStates();
         networkState = ClientNetworkState.NOT_READY;
         OptimizedWaypointRenderer.clearScene();
@@ -288,6 +301,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     @Override
     public void onServerHandshake(ServerHandshakeBuffer buffer) {
         networkState = ClientNetworkState.HANDSHAKE_FINISHED;
+        this.compressChunkedMessages = buffer.compressChunkedMessages();
         int serverId = buffer.serverId();
         int serverVersion = buffer.version();
         if (serverVersion != ProtocolVersion.PROTOCOL_VERSION) {
@@ -300,8 +314,115 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     }
 
     @Override
-    public void onUpdatesBundle(UpdatesBundleBuffer buffer) {
-        for (DimensionWaypointBuffer dimensionBuffer : buffer) {
+    public void onMessageChunk(MessageChunkBuffer buffer) {
+        try {
+            for (ChunkedMessage message : this.chunkedMessages.receive(
+                    "server",
+                    buffer,
+                    response -> sendPayloadToServer(new MessageChunkC2SPayload(response)),
+                    this::recoverFromOrderedMessageFailure
+            )) {
+                this.applyChunkedMessage(message);
+            }
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            LOGGER.warn("Rejected malformed chunked-message transfer", exception);
+        }
+    }
+
+    public boolean sendChunkedMessageToServer(ChunkedMessage message) {
+        try {
+            this.chunkedMessages.send(
+                    "server",
+                    message,
+                    this.compressChunkedMessages,
+                    packet -> sendPayloadToServer(new MessageChunkC2SPayload(packet))
+            );
+            return true;
+        } catch (MessageEncodingException exception) {
+            LOGGER.warn(
+                    "Failed to encode client chunked message type {}",
+                    message.getClass().getSimpleName(),
+                    exception
+            );
+            this.displayNetworkError();
+            if (message instanceof WaypointData waypointData
+                    && waypointData.type() == WaypointData.Type.UPLOAD
+                    && waypointData.uploadData().status()
+                    != _959.server_waypoint.core.network.upload.UploadStatus.FAILED) {
+                WaypointData.Upload upload = waypointData.uploadData();
+                this.sendChunkedMessageToServer(WaypointData.upload(
+                        upload.requestId(),
+                        _959.server_waypoint.core.network.upload.UploadStatus.FAILED,
+                        List.of()
+                ));
+            }
+            return false;
+        }
+    }
+
+    public void tickChunkedMessages() {
+        this.chunkedMessages.tick();
+    }
+
+    public static void tickChunkedMessagesIfInitialized() {
+        if (INSTANCE != null) {
+            INSTANCE.tickChunkedMessages();
+        }
+    }
+
+    private void applyChunkedMessage(ChunkedMessage message) {
+        if (message instanceof WaypointData waypointData) {
+            this.applyWaypointData(waypointData);
+        } else if (message instanceof WaypointModificationMessage modification) {
+            this.onWaypointModification(modification);
+        } else if (message instanceof WaypointListUpdateMessage update) {
+            this.onWaypointListUpdate(update);
+        } else if (message instanceof WaypointEditResultMessage result) {
+            this.onWaypointEditResult(result);
+        } else {
+            LOGGER.warn(
+                    "Ignoring clientbound chunked message type {}",
+                    message.getClass().getSimpleName()
+            );
+        }
+    }
+
+    private void applyWaypointData(WaypointData waypointData) {
+        switch (waypointData.type()) {
+            case UPDATES -> this.onUpdatesBundle(waypointData.dimensions());
+            case DIMENSION -> this.onDimensionWaypoint(waypointData.singleDimension());
+            case WAYPOINT_LIST -> this.onWaypointList(waypointData.singleDimension());
+            case WORLD -> this.onWorldWaypoint(waypointData.dimensions());
+            case UPLOAD -> LOGGER.warn("Ignoring upload waypoint data received from server");
+        }
+    }
+
+    private void recoverFromOrderedMessageFailure() {
+        LOGGER.warn("Ordered message delivery failed; requesting waypoint resynchronization");
+        this.displayNetworkError();
+        networkState = ClientNetworkState.HANDSHAKE_FINISHED;
+        if (!this.requestUpdates()) {
+            networkState = ClientNetworkState.SYNC_FINISHED;
+        }
+    }
+
+    private void displayNetworkError() {
+        this.mc.execute(() -> {
+            if (this.mc.player != null) {
+                net.minecraft.network.chat.Component message =
+                        net.minecraft.network.chat.Component.translatable(
+                                "waypoint.network.encoding_failed"
+                        );
+                //? if >=26
+                this.mc.player.sendSystemMessage(message);
+                //? if <26
+                /*this.mc.player.displayClientMessage(message, false);*/
+            }
+        });
+    }
+
+    private void onUpdatesBundle(List<DimensionWaypointData> updates) {
+        for (DimensionWaypointData dimensionBuffer : updates) {
             String dimensionName = dimensionBuffer.dimensionName();
             WaypointFileManager fileManager = this.getWaypointFileManager(dimensionName);
             List<WaypointList> listsUpdates = dimensionBuffer.waypointLists();
@@ -342,8 +463,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.allSynced(), this);
     }
 
-    @Override
-    public void onWaypointList(WaypointListBuffer buffer) {
+    private void onWaypointList(DimensionWaypointData buffer) {
         if (WaypointServerMod.runsWithClient()) return;
         String dimensionName = buffer.dimensionName();
         boolean inCurrentDimension = currentDimensionName.equals(dimensionName);
@@ -352,7 +472,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         if (dimensionListChanged) {
             fileManager = this.addWaypointFileManager(dimensionName);
         }
-        WaypointList newList = buffer.waypointList();
+        WaypointList newList = buffer.waypointLists().get(0);
         WaypointList oldList = fileManager.getWaypointListByName(newList.name());
         fileManager = this.putWaypointList(dimensionName, newList);
         try {
@@ -369,8 +489,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.listReplaced(dimensionName, newList), this);
     }
 
-    @Override
-    public void onDimensionWaypoint(DimensionWaypointBuffer buffer) {
+    private void onDimensionWaypoint(DimensionWaypointData buffer) {
         if (WaypointServerMod.runsWithClient()) return;
         String dimensionName = buffer.dimensionName();
         WaypointFileManager fileManager = this.fileManagerMap.get(dimensionName);
@@ -406,8 +525,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         );
     }
 
-    @Override
-    public void onWorldWaypoint(WorldWaypointBuffer buffer) {
+    private void onWorldWaypoint(List<DimensionWaypointData> dimensions) {
         if (WaypointServerMod.runsWithClient()) return;
         if (this.mc.level == null) {
             LOGGER.error("ClientLevel is null at this time");
@@ -417,7 +535,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         updateDimensionName();
         Map<String, List<WaypointList>> replacement = new LinkedHashMap<>();
         List<WaypointList> currentWaypointLists = List.of();
-        for (DimensionWaypointBuffer dimensionWaypoint : buffer) {
+        for (DimensionWaypointData dimensionWaypoint : dimensions) {
             String dimensionName = dimensionWaypoint.dimensionName();
             List<WaypointList> waypointLists = dimensionWaypoint.waypointLists();
             replacement.put(dimensionName, waypointLists);
@@ -445,8 +563,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
          *///?}
     }
 
-    @Override
-    public void onWaypointModification(WaypointModificationBuffer buffer) {
+    public void onWaypointModification(WaypointModificationMessage buffer) {
         if (WaypointServerMod.runsWithClient()) return;
         if (networkState != ClientNetworkState.SYNC_FINISHED) return;
         String dimensionName = buffer.dimensionName();
@@ -455,6 +572,12 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         WaypointFileManager fileManager = this.getWaypointFileManager(dimensionName);
         boolean dimensionListChanged = fileManager == null;
         WaypointModificationType modificationType = buffer.type();
+        WaypointList currentList = fileManager == null
+                ? null
+                : fileManager.getWaypointListByName(listName);
+        if (!this.shouldApplyIncrementalModification(buffer, currentList)) {
+            return;
+        }
 
         try {
             final SimpleWaypoint waypoint = buffer.waypoint();
@@ -550,9 +673,56 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         }
     }
 
-    @Override
-    public void onWaypointListUpdate(WaypointListUpdateBuffer buffer) {
+    private boolean shouldApplyIncrementalModification(
+            WaypointModificationMessage message,
+            WaypointList currentList
+    ) {
+        if (currentList == null) {
+            boolean completeCreation = message.type() == WaypointModificationType.ADD_LIST
+                    && message.syncId() == WaypointList.SERVER_N;
+            boolean firstWaypointCreation = message.type() == WaypointModificationType.ADD
+                    && message.syncId() == WaypointList.SERVER_N + 1;
+            if (completeCreation || firstWaypointCreation) {
+                return true;
+            }
+            if (message.type() == WaypointModificationType.REMOVE_LIST) {
+                return false;
+            }
+            this.requestRevisionRecovery(message.dimensionName(), message.listName());
+            return false;
+        }
+
+        WaypointRevisionSequence.Decision decision = WaypointRevisionSequence.classify(
+                currentList.getSyncNum(),
+                message.syncId()
+        );
+        if (decision == WaypointRevisionSequence.Decision.STALE) {
+            return false;
+        }
+        if (decision == WaypointRevisionSequence.Decision.GAP) {
+            this.requestRevisionRecovery(message.dimensionName(), message.listName());
+            return false;
+        }
+        return true;
+    }
+
+    private void requestRevisionRecovery(String dimensionName, String listName) {
+        LOGGER.warn(
+                "Waypoint revision gap for dimension {} list {}; requesting a complete snapshot",
+                dimensionName,
+                listName
+        );
+        networkState = ClientNetworkState.HANDSHAKE_FINISHED;
+        if (!this.requestUpdates()) {
+            networkState = ClientNetworkState.SYNC_FINISHED;
+        }
+    }
+
+    public void onWaypointListUpdate(WaypointListUpdateMessage buffer) {
         if (WaypointServerMod.runsWithClient()) {
+            return;
+        }
+        if (networkState != ClientNetworkState.SYNC_FINISHED) {
             return;
         }
         String dimensionName = buffer.dimensionName();
@@ -561,10 +731,16 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             return;
         }
         WaypointList previous = fileManager.getWaypointListByName(buffer.previousListIdentifier());
+        WaypointList updated = buffer.waypointList();
+        WaypointList current = previous == null
+                ? fileManager.getWaypointListByName(updated.name())
+                : previous;
+        if (current != null && updated.getSyncNum() <= current.getSyncNum()) {
+            return;
+        }
         if (previous != null) {
             this.removeWaypointListImmediately(dimensionName, buffer.previousListIdentifier());
         }
-        WaypointList updated = buffer.waypointList();
         fileManager = this.putWaypointList(dimensionName, updated);
         try {
             this.saveWaypointFile(fileManager);
@@ -584,8 +760,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         );
     }
 
-    @Override
-    public void onWaypointEditResult(WaypointEditResultBuffer buffer) {
+    public void onWaypointEditResult(WaypointEditResultMessage buffer) {
         WaypointEditScreen.handleResult(buffer);
     }
 

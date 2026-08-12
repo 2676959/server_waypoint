@@ -5,7 +5,8 @@ import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
-import _959.server_waypoint.core.network.buffer.MessageBuffer;
+import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.SinglePacketMessage;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
@@ -979,15 +980,19 @@ class CoreWaypointCommandNavigationTest {
         }
 
         @Override
-        public void sendPacket(TestSource source, MessageBuffer packet) {
+        public void sendPacket(TestSource source, SinglePacketMessage message) {
         }
 
         @Override
-        public void sendPlayerPacket(TestPlayer player, MessageBuffer packet) {
+        public void sendPlayerPacket(TestPlayer player, SinglePacketMessage message) {
         }
 
         @Override
-        public void broadcastPacket(MessageBuffer packet) {
+        public void broadcastPacket(SinglePacketMessage message) {
+        }
+
+        @Override
+        public void sendChunkedMessage(TestSource source, ChunkedMessage message) {
         }
 
         @Override

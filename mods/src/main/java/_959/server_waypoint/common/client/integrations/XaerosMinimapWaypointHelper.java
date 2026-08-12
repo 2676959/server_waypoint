@@ -2,13 +2,11 @@ package _959.server_waypoint.common.client.integrations;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.ClientConfig;
-import _959.server_waypoint.common.client.util.NetworkHelper;
-import _959.server_waypoint.common.network.payload.c2s.UploadChunkC2SPayload;
 import _959.server_waypoint.core.WaypointFileManager;
-import _959.server_waypoint.core.network.buffer.UploadChunkBuffer;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.data.DimensionWaypointData;
+import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.network.upload.UploadStatus;
-import _959.server_waypoint.core.network.upload.UploadedWaypointListChunk;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
@@ -38,9 +36,6 @@ import static _959.server_waypoint.common.util.XaeroMinimapHelper.*;
 import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
 
 public final class XaerosMinimapWaypointHelper {
-    private static final int UPLOAD_WAYPOINTS_PER_LIST_CHUNK = 64;
-    private static final int UPLOAD_LISTS_PER_PACKET = 4;
-
     private XaerosMinimapWaypointHelper() {
     }
 
@@ -67,7 +62,7 @@ public final class XaerosMinimapWaypointHelper {
                 sendUploadResult(request, UploadStatus.XAERO_NOT_READY, List.of());
                 return;
             }
-            List<UploadedWaypointListChunk> uploadedLists = new ArrayList<>();
+            List<DimensionWaypointData> uploadedDimensions = new ArrayList<>();
             for (String dimensionName : request.dimensionNames()) {
                 ResourceKey<Level> dimensionKey = getDimensionKey(dimensionName);
                 if (dimensionKey == null) {
@@ -81,6 +76,7 @@ public final class XaerosMinimapWaypointHelper {
                     sendUploadResult(request, UploadStatus.XAERO_NOT_READY, List.of());
                     return;
                 }
+                List<WaypointList> uploadedLists = new ArrayList<>();
                 for (WaypointSet waypointSet : minimapWorld.getIterableWaypointSets()) {
                     String listName = SyncedWaypointName.parseSyncedName(waypointSet.getName());
                     if (listName == null) {
@@ -89,25 +85,23 @@ public final class XaerosMinimapWaypointHelper {
                     if (request.listName() != null && !request.listName().equals(listName)) {
                         continue;
                     }
-                    addWaypointSetChunks(request, dimensionName, listName, waypointSet, uploadedLists);
+                    uploadedLists.add(createUploadedWaypointList(request, listName, waypointSet));
                 }
+                uploadedDimensions.add(new DimensionWaypointData(dimensionName, uploadedLists));
             }
-            sendUploadResult(request, UploadStatus.SUCCESS, uploadedLists);
+            sendUploadResult(request, UploadStatus.SUCCESS, uploadedDimensions);
         } catch (Exception exception) {
             LOGGER.warn("Failed to export Xaero's waypoints for upload", exception);
             sendUploadResult(request, UploadStatus.FAILED, List.of());
         }
     }
 
-    private static void addWaypointSetChunks(
+    private static WaypointList createUploadedWaypointList(
             UploadRequestBuffer request,
-            String dimensionName,
             String listName,
-            WaypointSet waypointSet,
-            List<UploadedWaypointListChunk> destination
+            WaypointSet waypointSet
     ) {
-        List<SimpleWaypoint> batch = new ArrayList<>(UPLOAD_WAYPOINTS_PER_LIST_CHUNK);
-        boolean exportedWaypoint = false;
+        List<SimpleWaypoint> uploadedWaypoints = new ArrayList<>();
         for (Waypoint waypoint : waypointSet.getWaypoints()) {
             if (waypoint.getPurpose() != WaypointPurpose.NORMAL || waypoint.isTemporary() || waypoint.isDisabled()) {
                 continue;
@@ -130,44 +124,19 @@ public final class XaerosMinimapWaypointHelper {
                         simpleWaypoint.global()
                 );
             }
-            batch.add(simpleWaypoint);
-            if (batch.size() == UPLOAD_WAYPOINTS_PER_LIST_CHUNK) {
-                destination.add(new UploadedWaypointListChunk(dimensionName, listName, batch));
-                exportedWaypoint = true;
-                batch = new ArrayList<>(UPLOAD_WAYPOINTS_PER_LIST_CHUNK);
-            }
+            uploadedWaypoints.add(simpleWaypoint);
         }
-        if (!batch.isEmpty()) {
-            destination.add(new UploadedWaypointListChunk(dimensionName, listName, batch));
-        } else if (!exportedWaypoint) {
-            destination.add(new UploadedWaypointListChunk(dimensionName, listName, List.of()));
-        }
+        return new WaypointList(listName, WaypointList.SERVER_N, uploadedWaypoints);
     }
 
     private static void sendUploadResult(
             UploadRequestBuffer request,
             UploadStatus status,
-            List<UploadedWaypointListChunk> uploadedLists
+            List<DimensionWaypointData> uploadedDimensions
     ) {
-        if (status != UploadStatus.SUCCESS || uploadedLists.isEmpty()) {
-            NetworkHelper.sendPayloadToServer(new UploadChunkC2SPayload(
-                    new UploadChunkBuffer(request.requestId(), 0, true, status, List.of())
-            ));
-            return;
-        }
-        int sequence = 0;
-        for (int from = 0; from < uploadedLists.size(); from += UPLOAD_LISTS_PER_PACKET) {
-            int to = Math.min(from + UPLOAD_LISTS_PER_PACKET, uploadedLists.size());
-            NetworkHelper.sendPayloadToServer(new UploadChunkC2SPayload(
-                    new UploadChunkBuffer(
-                            request.requestId(),
-                            sequence++,
-                            to == uploadedLists.size(),
-                            status,
-                            uploadedLists.subList(from, to)
-                    )
-            ));
-        }
+        WaypointClientMod.getInstance().sendChunkedMessageToServer(WaypointData.upload(
+                request.requestId(), status, uploadedDimensions
+        ));
     }
 
     public static void replaceList(String dimensionName, WaypointList waypointList) {

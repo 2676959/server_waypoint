@@ -1,6 +1,9 @@
 package _959.server_waypoint.core.network.buffer;
 
+import _959.server_waypoint.core.network.DecodingContext;
+import _959.server_waypoint.core.network.EncodingContext;
 import _959.server_waypoint.core.network.MessageChannelID;
+import _959.server_waypoint.core.network.SinglePacketMessage;
 import _959.server_waypoint.core.network.codec.UploadRequestCodec;
 import io.netty.buffer.ByteBuf;
 import org.jetbrains.annotations.Nullable;
@@ -16,7 +19,7 @@ public record UploadRequestBuffer(
         List<String> dimensionNames,
         @Nullable String listName,
         @Nullable String waypointName
-) implements MessageBuffer {
+) implements SinglePacketMessage {
     public UploadRequestBuffer {
         dimensionNames = List.copyOf(dimensionNames);
     }
@@ -27,12 +30,7 @@ public record UploadRequestBuffer(
     }
 
     @Override
-    public void encoderFunction(ByteBuf byteBuf) {
-        UploadRequestCodec.encode(byteBuf, this);
-    }
-
-    @Override
-    public MessageBuffer decoderFunction(ByteBuf byteBuf) {
-        return UploadRequestCodec.decode(byteBuf);
+    public void encode(ByteBuf byteBuf) {
+        UploadRequestCodec.encode(byteBuf, this, new EncodingContext(byteBuf.maxCapacity()));
     }
 }

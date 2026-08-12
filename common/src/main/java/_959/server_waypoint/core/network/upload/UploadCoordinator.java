@@ -3,10 +3,11 @@ package _959.server_waypoint.core.network.upload;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.WaypointServerCore;
-import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
-import _959.server_waypoint.core.network.buffer.MessageBuffer;
-import _959.server_waypoint.core.network.buffer.UploadChunkBuffer;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
+import _959.server_waypoint.core.network.MessageEncodingException;
+import _959.server_waypoint.core.network.data.DimensionWaypointData;
+import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.navigation.NavigationService;
@@ -45,7 +46,6 @@ public final class UploadCoordinator<P> {
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(30);
     private static final int MAX_WAYPOINTS_PER_REQUEST = 4_096;
     private static final int MAX_LISTS_PER_REQUEST = 1_024;
-    private static final int MAX_CHUNKS_PER_REQUEST = 1_024;
     private static final long MAX_RETAINED_BYTES_PER_REQUEST = 16L * 1_024L * 1_024L;
     private static final int MAX_ABSOLUTE_COORDINATE = 30_000_000;
     private static final int MIN_Y = -2_048;
@@ -59,7 +59,7 @@ public final class UploadCoordinator<P> {
 
     private final WaypointServerCore waypointServer;
     private final PlayerMessageSender<P> playerMessageSender;
-    private final Consumer<MessageBuffer> packetBroadcaster;
+    private final Consumer<WaypointData> waypointDataBroadcaster;
     private final Predicate<P> permissionChecker;
     private final Predicate<P> deletePermissionChecker;
     private final NavigationService<P> navigationService;
@@ -68,14 +68,14 @@ public final class UploadCoordinator<P> {
     public UploadCoordinator(
             WaypointServerCore waypointServer,
             PlayerMessageSender<P> playerMessageSender,
-            Consumer<MessageBuffer> packetBroadcaster,
+            Consumer<WaypointData> waypointDataBroadcaster,
             Predicate<P> permissionChecker,
             Predicate<P> deletePermissionChecker,
             NavigationService<P> navigationService
     ) {
         this.waypointServer = Objects.requireNonNull(waypointServer, "waypointServer");
         this.playerMessageSender = Objects.requireNonNull(playerMessageSender, "playerMessageSender");
-        this.packetBroadcaster = Objects.requireNonNull(packetBroadcaster, "packetBroadcaster");
+        this.waypointDataBroadcaster = Objects.requireNonNull(waypointDataBroadcaster, "waypointDataBroadcaster");
         this.permissionChecker = Objects.requireNonNull(permissionChecker, "permissionChecker");
         this.deletePermissionChecker = Objects.requireNonNull(deletePermissionChecker, "deletePermissionChecker");
         this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
@@ -123,9 +123,10 @@ public final class UploadCoordinator<P> {
         }
     }
 
-    public void onUploadChunk(P player, UploadChunkBuffer chunk) {
+    public void onUpload(P player, WaypointData waypointData) {
+        WaypointData.Upload upload = waypointData.uploadData();
         PendingUpload pending = this.pendingUploads.get(player);
-        if (pending == null || !pending.request.requestId().equals(chunk.requestId())) {
+        if (pending == null || !pending.request.requestId().equals(upload.requestId())) {
             this.playerMessageSender.send(player, translatable("waypoint.upload.request.invalid"));
             return;
         }
@@ -144,16 +145,9 @@ public final class UploadCoordinator<P> {
             this.playerMessageSender.send(player, translatable("waypoint.upload.delete.permission.revoked"));
             return;
         }
-        if (chunk.sequence() != pending.nextSequence) {
+        if (upload.status() != UploadStatus.SUCCESS) {
             this.removePending(player, pending);
-            this.playerMessageSender.send(player, translatable("waypoint.upload.request.invalid"));
-            return;
-        }
-        pending.nextSequence++;
-
-        if (chunk.status() != UploadStatus.SUCCESS) {
-            this.removePending(player, pending);
-            this.playerMessageSender.send(player, switch (chunk.status()) {
+            this.playerMessageSender.send(player, switch (upload.status()) {
                 case XAERO_NOT_INSTALLED -> translatable("waypoint.upload.xaero.missing");
                 case XAERO_NOT_READY -> translatable("waypoint.upload.xaero.not-ready");
                 case FAILED -> translatable("waypoint.upload.client.failed");
@@ -163,14 +157,10 @@ public final class UploadCoordinator<P> {
         }
 
         try {
-            appendChunk(pending, chunk);
+            appendUpload(pending, waypointData.dimensions());
         } catch (IllegalArgumentException exception) {
             this.removePending(player, pending);
             this.playerMessageSender.send(player, translatable("waypoint.upload.request.invalid"));
-            return;
-        }
-
-        if (!chunk.finalChunk()) {
             return;
         }
 
@@ -178,13 +168,24 @@ public final class UploadCoordinator<P> {
         MergeSummary summary;
         try {
             summary = this.merge(pending);
+        } catch (MessageEncodingException exception) {
+            WaypointServerCore.LOGGER.warn(
+                    "Rejected waypoint upload because its update could not be encoded within the {}-byte logical-message budget",
+                    ChunkedMessageManager.MAX_MESSAGE_BYTES,
+                    exception
+            );
+            this.playerMessageSender.send(
+                    player,
+                    translatable("waypoint.network.encoding_failed")
+            );
+            return;
         } catch (RuntimeException exception) {
             WaypointServerCore.LOGGER.warn("Failed to apply waypoint upload", exception);
             this.playerMessageSender.send(player, translatable("waypoint.upload.client.failed"));
             return;
         }
-        for (DimensionWaypointBuffer update : summary.dimensionUpdates) {
-            this.packetBroadcaster.accept(update);
+        if (!summary.dimensionUpdates.isEmpty()) {
+            this.waypointDataBroadcaster.accept(WaypointData.updates(summary.dimensionUpdates));
         }
         for (NavigationReplacement replacement : summary.navigationReplacements) {
             this.navigationService.refreshTarget(replacement.previous(), replacement.updated());
@@ -218,46 +219,53 @@ public final class UploadCoordinator<P> {
         pending.cancelExpiry();
     }
 
-    private static void appendChunk(PendingUpload pending, UploadChunkBuffer chunk) {
-        if (++pending.chunkCount > MAX_CHUNKS_PER_REQUEST) {
-            throw new IllegalArgumentException("Upload exceeds chunk limit");
-        }
-        for (UploadedWaypointListChunk listChunk : chunk.waypointLists()) {
-            if (!pending.request.dimensionNames().contains(listChunk.dimensionName())
-                    || (pending.request.listName() != null && !pending.request.listName().equals(listChunk.listName()))) {
-                throw new IllegalArgumentException("Upload response exceeds requested scope");
+    private static void appendUpload(
+            PendingUpload pending,
+            List<DimensionWaypointData> uploadedDimensions
+    ) {
+        for (DimensionWaypointData dimension : uploadedDimensions) {
+            if (!pending.request.dimensionNames().contains(dimension.dimensionName())
+                    || !isValidText(dimension.dimensionName(), false)) {
+                throw new IllegalArgumentException("Upload response exceeds requested dimension scope");
             }
-            if (!isValidText(listChunk.dimensionName(), false) || !isValidText(listChunk.listName(), true)) {
-                throw new IllegalArgumentException("Invalid uploaded waypoint list name");
-            }
-            pending.retainedBytes += utf8Length(listChunk.dimensionName()) + utf8Length(listChunk.listName());
-            if (pending.retainedBytes > MAX_RETAINED_BYTES_PER_REQUEST) {
-                throw new IllegalArgumentException("Upload exceeds retained-byte limit");
-            }
-            UploadListKey key = new UploadListKey(listChunk.dimensionName(), listChunk.listName());
-            List<SimpleWaypoint> target = pending.uploadedWaypoints.get(key);
-            if (target == null) {
-                if (pending.uploadedWaypoints.size() >= MAX_LISTS_PER_REQUEST) {
-                    throw new IllegalArgumentException("Upload exceeds waypoint-list limit");
+            for (WaypointList waypointList : dimension.waypointLists()) {
+                if (pending.request.listName() != null
+                        && !pending.request.listName().equals(waypointList.name())) {
+                    throw new IllegalArgumentException("Upload response exceeds requested waypoint-list scope");
                 }
-                target = new ArrayList<>();
-                pending.uploadedWaypoints.put(key, target);
-            }
-            for (SimpleWaypoint waypoint : listChunk.waypoints()) {
-                if (++pending.waypointCount > MAX_WAYPOINTS_PER_REQUEST) {
-                    throw new IllegalArgumentException("Upload exceeds waypoint limit");
+                if (!isValidText(waypointList.name(), true)) {
+                    throw new IllegalArgumentException("Invalid uploaded waypoint list name");
                 }
-                SimpleWaypoint sanitized = sanitizeUploadedWaypoint(waypoint);
-                if (pending.request.waypointName() != null
-                        && (sanitized == null
-                        || !pending.request.waypointName().equals(sanitized.name()))) {
-                    throw new IllegalArgumentException("Upload response exceeds requested waypoint scope");
-                }
-                pending.retainedBytes += retainedBytes(sanitized);
+                pending.retainedBytes += utf8Length(dimension.dimensionName())
+                        + utf8Length(waypointList.name());
                 if (pending.retainedBytes > MAX_RETAINED_BYTES_PER_REQUEST) {
                     throw new IllegalArgumentException("Upload exceeds retained-byte limit");
                 }
-                target.add(sanitized);
+                UploadListKey key = new UploadListKey(dimension.dimensionName(), waypointList.name());
+                if (pending.uploadedWaypoints.containsKey(key)) {
+                    throw new IllegalArgumentException("Duplicate uploaded waypoint list");
+                }
+                if (pending.uploadedWaypoints.size() >= MAX_LISTS_PER_REQUEST) {
+                    throw new IllegalArgumentException("Upload exceeds waypoint-list limit");
+                }
+                List<SimpleWaypoint> target = new ArrayList<>();
+                pending.uploadedWaypoints.put(key, target);
+                for (SimpleWaypoint waypoint : waypointList.simpleWaypoints()) {
+                    if (++pending.waypointCount > MAX_WAYPOINTS_PER_REQUEST) {
+                        throw new IllegalArgumentException("Upload exceeds waypoint limit");
+                    }
+                    SimpleWaypoint sanitized = sanitizeUploadedWaypoint(waypoint);
+                    if (pending.request.waypointName() != null
+                            && (sanitized == null
+                            || !pending.request.waypointName().equals(sanitized.name()))) {
+                        throw new IllegalArgumentException("Upload response exceeds requested waypoint scope");
+                    }
+                    pending.retainedBytes += retainedBytes(sanitized);
+                    if (pending.retainedBytes > MAX_RETAINED_BYTES_PER_REQUEST) {
+                        throw new IllegalArgumentException("Upload exceeds retained-byte limit");
+                    }
+                    target.add(sanitized);
+                }
             }
         }
     }
@@ -280,7 +288,21 @@ public final class UploadCoordinator<P> {
                     this.waypointServer.applyDimensionMutationIfRevision(
                             dimensionName,
                             expectedRevision,
-                            mutation -> mergeDimension(pending, dimensionName, mutation)
+                            mutation -> {
+                                DimensionMergeSummary dimensionSummary =
+                                        mergeDimension(pending, dimensionName, mutation);
+                                if (!dimensionSummary.listUpdates.isEmpty()) {
+                                    ChunkedMessageManager.validateEncodable(WaypointData.updates(
+                                            List.of(new DimensionWaypointData(
+                                                    dimensionName,
+                                                    List.copyOf(
+                                                            dimensionSummary.listUpdates.values()
+                                                    )
+                                            ))
+                                    ));
+                                }
+                                return dimensionSummary;
+                            }
                     );
             if (result.status()
                     == WaypointFilesManagerCore.RevisionedDimensionMutationStatus.STALE_REVISION) {
@@ -291,7 +313,7 @@ public final class UploadCoordinator<P> {
             summary.add(dimensionSummary);
             summary.saveFailed |= result.saveFailed();
             if (!dimensionSummary.listUpdates.isEmpty()) {
-                summary.dimensionUpdates.add(new DimensionWaypointBuffer(
+                summary.dimensionUpdates.add(new DimensionWaypointData(
                         dimensionName,
                         List.copyOf(dimensionSummary.listUpdates.values())
                 ));
@@ -571,9 +593,7 @@ public final class UploadCoordinator<P> {
         private final Instant expiresAt;
         private final Map<String, WaypointFilesManagerCore.DimensionRevision> dimensionRevisions;
         private final Map<UploadListKey, List<SimpleWaypoint>> uploadedWaypoints = new LinkedHashMap<>();
-        private int nextSequence;
         private int waypointCount;
-        private int chunkCount;
         private long retainedBytes;
         private volatile ScheduledFuture<?> expiryTask;
 
@@ -629,7 +649,7 @@ public final class UploadCoordinator<P> {
         private int skipped;
         private int staleDimensions;
         private boolean saveFailed;
-        private final List<DimensionWaypointBuffer> dimensionUpdates = new ArrayList<>();
+        private final List<DimensionWaypointData> dimensionUpdates = new ArrayList<>();
         private final List<NavigationReplacement> navigationReplacements = new ArrayList<>();
 
         private void add(DimensionMergeSummary dimensionSummary) {

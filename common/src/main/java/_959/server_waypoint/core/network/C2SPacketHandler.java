@@ -10,7 +10,11 @@ import _959.server_waypoint.core.edit.EditTarget;
 import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.core.network.buffer.*;
+import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
+import _959.server_waypoint.core.network.message.*;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
+import _959.server_waypoint.core.network.data.DimensionWaypointData;
+import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -50,17 +54,23 @@ public class C2SPacketHandler<S, K, P> {
         LOGGER.info("client join with protocol version: {}", clientVersion);
 
         if (clientVersion == ProtocolVersion.PROTOCOL_VERSION) {
-            this.sender.sendPlayerPacket(player, new ServerHandshakeBuffer(CONFIG.getServerId()));
+            this.sender.sendPlayerPacket(player, new ServerHandshakeBuffer(
+                    CONFIG.getServerId(),
+                    CONFIG.Features().compressChunkedMessages()
+            ));
         } else {
             this.sender.sendPlayerMessage(player, translatable("waypoint.incompatible.client",
                     text(ProtocolVersion.COMPATIBLE_VERSION).color(NamedTextColor.GREEN).decorate(TextDecoration.UNDERLINED).clickEvent(ClickEvent.openUrl(ModInfo.DOWNLOAD_URL))));
-            this.sender.sendPlayerPacket(player, new ServerHandshakeBuffer(CONFIG.getServerId()));
+            this.sender.sendPlayerPacket(player, new ServerHandshakeBuffer(
+                    CONFIG.getServerId(),
+                    CONFIG.Features().compressChunkedMessages()
+            ));
             LOGGER.warn("client version mismatch: {}", clientVersion);
         }
     }
 
-    public void onClientUpdateRequest(P player, ClientUpdateRequestBuffer buffer) {
-        UpdatesBundleBuffer updatesBundle = new UpdatesBundleBuffer();
+    public void onClientUpdateRequest(P player, ClientUpdateRequestMessage buffer) {
+        List<DimensionWaypointData> updates = new ArrayList<>();
         Map<String, WaypointFileManager> serverManagers =
                 new HashMap<>(this.waypointServer.getFileManagerMap());
         List<String> allDimensionsOnServer = new ArrayList<>(serverManagers.keySet());
@@ -70,7 +80,7 @@ public class C2SPacketHandler<S, K, P> {
             WaypointFileManager fileManager = serverManagers.get(dimensionOnClient);
             if (fileManager == null) {
                 // tell client to remove
-                updatesBundle.add(new DimensionWaypointBuffer(dimensionOnClient, List.of()));
+                updates.add(new DimensionWaypointData(dimensionOnClient, List.of()));
             } else {
                 // prepare updates in that dimension for client
                 Map<String, WaypointList> serverLists = fileManager.getWaypointListMap();
@@ -97,7 +107,7 @@ public class C2SPacketHandler<S, K, P> {
                     listUpdates.add(serverLists.get(listName));
                 }
                 if (!listUpdates.isEmpty()) {
-                    updatesBundle.add(new DimensionWaypointBuffer(dimensionOnClient, listUpdates));
+                    updates.add(new DimensionWaypointData(dimensionOnClient, listUpdates));
                 }
                 allDimensionsOnServer.remove(dimensionOnClient);
             }
@@ -106,17 +116,17 @@ public class C2SPacketHandler<S, K, P> {
         for (String dimensionName : allDimensionsOnServer) {
             WaypointFileManager waypointFileManager = serverManagers.get(dimensionName);
             if (!waypointFileManager.isEmpty()) {
-                updatesBundle.add(waypointFileManager.toDimensionWaypoint());
+                updates.add(waypointFileManager.toDimensionWaypointData());
             }
         }
 
-        this.sender.sendPlayerPacket(player, updatesBundle);
-        if (!updatesBundle.isEmpty()) {
+        this.sender.sendPlayerChunkedMessage(player, WaypointData.updates(updates));
+        if (!updates.isEmpty()) {
             this.sender.sendPlayerMessage(player, translatable("waypoint.updates.sent"));
         }
     }
 
-    public void onWaypointEditRequest(P player, WaypointEditRequestBuffer request) {
+    public void onWaypointEditRequest(P player, WaypointEditRequestMessage request) {
         if (!this.permissionManager.checkPlayerPermission(
                 player,
                 this.permissionManager.keys.edit(),
@@ -134,6 +144,17 @@ public class C2SPacketHandler<S, K, P> {
                     ),
                     request.expectedListRevision(),
                     request.patch(),
+                    result -> {
+                        if (result.status() != EditResultStatus.SUCCESS) {
+                            return;
+                        }
+                        ChunkedMessageManager.validateEncodable(
+                                this.toModificationMessage(request, result)
+                        );
+                        ChunkedMessageManager.validateEncodable(
+                                this.toEditResultMessage(request, result)
+                        );
+                    },
                     result -> {
                         if (result.status() == EditResultStatus.SUCCESS) {
                             WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
@@ -155,16 +176,9 @@ public class C2SPacketHandler<S, K, P> {
                                             Objects.requireNonNull(result.afterSnapshot())
                                     )
                             );
-                            WaypointModificationBuffer modification = new WaypointModificationBuffer(
-                                    request.dimensionName(),
-                                    request.listIdentifier(),
-                                    list.displayName(),
-                                    request.waypointIdentifier(),
-                                    result.afterSnapshot(),
-                                    _959.server_waypoint.core.waypoint.WaypointModificationType.UPDATE,
-                                    result.syncNum()
-                            );
-                            this.sender.broadcastPacketFromPlayer(player, modification);
+                            WaypointModificationMessage modification =
+                                    this.toModificationMessage(request, result);
+                            this.sender.broadcastChunkedMessageFromPlayer(player, modification);
                         }
                         this.sendEditResult(
                                 player,
@@ -175,20 +189,62 @@ public class C2SPacketHandler<S, K, P> {
                         );
                     }
             );
+        } catch (MessageEncodingException exception) {
+            LOGGER.warn(
+                    "Rejected waypoint edit because its result could not be encoded within the {}-byte logical-message budget",
+                    ChunkedMessageManager.MAX_MESSAGE_BYTES,
+                    exception
+            );
+            this.sender.sendPlayerMessage(
+                    player,
+                    translatable("waypoint.network.encoding_failed")
+            );
+            this.sendEditResult(player, request, EditResultStatus.ENCODING_FAILED, null, 0);
         } catch (RuntimeException exception) {
             LOGGER.warn("Rejected malformed waypoint edit request", exception);
             this.sendEditResult(player, request, EditResultStatus.MALFORMED_REQUEST, null, 0);
         }
     }
 
+    private WaypointModificationMessage toModificationMessage(
+            WaypointEditRequestMessage request,
+            _959.server_waypoint.core.edit.WaypointEditResult result
+    ) {
+        WaypointList list = Objects.requireNonNull(result.listSnapshot());
+        return new WaypointModificationMessage(
+                request.dimensionName(),
+                list.name(),
+                list.displayName(),
+                request.waypointIdentifier(),
+                Objects.requireNonNull(result.afterSnapshot()),
+                _959.server_waypoint.core.waypoint.WaypointModificationType.UPDATE,
+                result.syncNum()
+        );
+    }
+
+    private WaypointEditResultMessage toEditResultMessage(
+            WaypointEditRequestMessage request,
+            _959.server_waypoint.core.edit.WaypointEditResult result
+    ) {
+        return new WaypointEditResultMessage(
+                request.requestId(),
+                result.status(),
+                request.dimensionName(),
+                request.listIdentifier(),
+                request.waypointIdentifier(),
+                result.afterSnapshot(),
+                result.syncNum()
+        );
+    }
+
     private void sendEditResult(
             P player,
-            WaypointEditRequestBuffer request,
+            WaypointEditRequestMessage request,
             EditResultStatus status,
             _959.server_waypoint.core.waypoint.SimpleWaypoint waypoint,
             int revision
     ) {
-        this.sender.sendPlayerPacket(player, new WaypointEditResultBuffer(
+        this.sender.sendPlayerChunkedMessage(player, new WaypointEditResultMessage(
                 request.requestId(),
                 status,
                 request.dimensionName(),
@@ -199,11 +255,53 @@ public class C2SPacketHandler<S, K, P> {
         ));
     }
 
-    public void onUploadChunk(P player, UploadChunkBuffer buffer) {
-        this.uploadCoordinator.onUploadChunk(player, buffer);
+    public void onMessageChunk(P player, MessageChunkBuffer buffer) {
+        try {
+            for (ChunkedMessage message : this.sender.receiveChunkedMessage(
+                    player,
+                    buffer,
+                    () -> this.recoverFromOrderedMessageFailure(player)
+            )) {
+                if (message instanceof ClientUpdateRequestMessage updateRequest) {
+                    this.onClientUpdateRequest(player, updateRequest);
+                } else if (message instanceof WaypointEditRequestMessage editRequest) {
+                    this.onWaypointEditRequest(player, editRequest);
+                } else if (message instanceof WaypointData data) {
+                    if (data.type() == WaypointData.Type.UPLOAD) {
+                        this.uploadCoordinator.onUpload(player, data);
+                    } else {
+                        LOGGER.warn(
+                                "Ignoring non-upload waypoint data received from client: {}",
+                                data.type()
+                        );
+                    }
+                } else {
+                    LOGGER.warn(
+                            "Ignoring serverbound chunked message type {}",
+                            message.getClass().getSimpleName()
+                    );
+                }
+            }
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            LOGGER.warn("Rejected malformed chunked-message transfer", exception);
+        }
+    }
+
+    private void recoverFromOrderedMessageFailure(P player) {
+        LOGGER.warn("Serverbound ordered message delivery failed; resynchronizing the client");
+        this.sender.sendPlayerMessage(
+                player,
+                translatable("waypoint.network.resynchronizing")
+        );
+        WaypointData waypointData = this.waypointServer.toWorldWaypointData();
+        this.sender.sendPlayerChunkedMessage(
+                player,
+                waypointData == null ? WaypointData.world(List.of()) : waypointData
+        );
     }
 
     public void onDisconnect(P player) {
+        this.sender.disconnectChunkedMessages(player);
         this.uploadCoordinator.onDisconnect(player);
     }
 }
