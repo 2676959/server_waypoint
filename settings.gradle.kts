@@ -13,7 +13,7 @@ pluginManagement {
 }
 
 plugins {
-    id("dev.kikugie.stonecutter") version "0.7.1"
+    id("dev.kikugie.stonecutter") version "0.9.7"
 }
 
 stonecutter {
@@ -23,7 +23,9 @@ stonecutter {
     // Subproject configuration
     create("mods") {
         fun mc(loader: String, vararg versions: String) {
-            for (version in versions) vers("$version-$loader", version)
+            for (minecraftVersion in versions) {
+                version("$minecraftVersion-$loader", minecraftVersion)
+            }
         }
         mc("fabric",
             "1.20.1", "1.20.2", "1.20.4", "1.20.6",
@@ -51,7 +53,7 @@ stonecutter {
     }
 
     create("paper") {
-        vers("1.21-paper", "1.21")
+        version("1.21-paper", "1.21")
     }
 }
 
