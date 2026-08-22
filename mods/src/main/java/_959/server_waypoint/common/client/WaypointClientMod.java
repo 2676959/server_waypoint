@@ -1,5 +1,9 @@
 package _959.server_waypoint.common.client;
 
+import static _959.server_waypoint.ModInfo.MOD_ID;
+import static _959.server_waypoint.common.client.util.NetworkHelper.sendPayloadToServer;
+import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asClientFromRemoteServer;
+
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.handlers.BufferHandler;
@@ -19,13 +23,6 @@ import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.util.VanillaDimensionNames;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ServerData;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -34,27 +31,42 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static _959.server_waypoint.ModInfo.MOD_ID;
-import static _959.server_waypoint.common.client.util.NetworkHelper.sendPayloadToServer;
-import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asClientFromRemoteServer;
+public class WaypointClientMod
+    extends WaypointFilesManagerCore
+    implements BufferHandler
+{
 
-public class WaypointClientMod extends WaypointFilesManagerCore implements BufferHandler {
-    public static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_client");
+    public static final Logger LOGGER = LoggerFactory.getLogger(
+        "server_waypoint_client"
+    );
     public static boolean isXaerosMinimapReady = false;
     private static WaypointClientMod INSTANCE;
-    private static ClientNetworkState networkState = ClientNetworkState.NOT_READY;
+    private static ClientNetworkState networkState =
+        ClientNetworkState.NOT_READY;
     private static String currentDimensionName;
     private static ClientConfig clientConfig;
-    private final ClientHandshakeC2SPayload clientHandshake = new ClientHandshakeC2SPayload(new ClientHandshakeBuffer());
+    private final ClientHandshakeC2SPayload clientHandshake =
+        new ClientHandshakeC2SPayload(new ClientHandshakeBuffer());
     // TODO: add a local waypoint manager for using waypoints on an unsupported server
-//    private final WaypointFilesManagerCore localManager;
+    //    private final WaypointFilesManagerCore localManager;
     private final Path gameRoot;
     private final Path configPath;
     private final Minecraft mc;
 
-    public static void createInstance(Minecraft mc, Path gameRoot, Path configDir) {
+    public static void createInstance(
+        Minecraft mc,
+        Path gameRoot,
+        Path configDir
+    ) {
         if (INSTANCE == null) {
             INSTANCE = new WaypointClientMod(mc, gameRoot, configDir);
             INSTANCE.loadConfig();
@@ -63,8 +75,19 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     }
 
     public static WaypointClientMod getInstance() {
-        if (INSTANCE == null) throw new IllegalStateException("WaypointClient has not been initialized");
+        if (INSTANCE == null) throw new IllegalStateException(
+            "WaypointClient has not been initialized"
+        );
         return INSTANCE;
+    }
+
+    /**
+     * return false if there is no instance of WaypointClientMod
+     * */
+    public static boolean ifPresent(Consumer<WaypointClientMod> action) {
+        if (INSTANCE == null) return false;
+        action.accept(INSTANCE);
+        return true;
     }
 
     public static ClientNetworkState getNetworkState() {
@@ -75,7 +98,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         super();
         this.mc = mc;
         this.gameRoot = gameRoot;
-        this.configPath = configDir.resolve(MOD_ID).resolve("client-config.json");
+        this.configPath = configDir
+            .resolve(MOD_ID)
+            .resolve("client-config.json");
         INSTANCE = this;
     }
 
@@ -84,7 +109,10 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     }
 
     private Gson getGson() {
-        return new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().create();
+        return new GsonBuilder()
+            .setPrettyPrinting()
+            .excludeFieldsWithoutExposeAnnotation()
+            .create();
     }
 
     public void loadConfig() {
@@ -92,11 +120,21 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         if (Files.exists(configPath)) {
             try (Reader reader = Files.newBufferedReader(configPath)) {
                 clientConfig = GSON.fromJson(reader, ClientConfig.class);
-                OptimizedWaypointRenderer.enableRendering(clientConfig.isEnableWaypointRender());
-                OptimizedWaypointRenderer.setWaypointScalingFactor(clientConfig.getWaypointScalingFactor());
-                OptimizedWaypointRenderer.setWaypointVerticalOffset(clientConfig.getWaypointVerticalOffset());
-                OptimizedWaypointRenderer.setWaypointBgAlpha(clientConfig.getWaypointBackgroundAlpha());
-                OptimizedWaypointRenderer.setViewDistance(clientConfig.getViewDistance());
+                OptimizedWaypointRenderer.enableRendering(
+                    clientConfig.isEnableWaypointRender()
+                );
+                OptimizedWaypointRenderer.setWaypointScalingFactor(
+                    clientConfig.getWaypointScalingFactor()
+                );
+                OptimizedWaypointRenderer.setWaypointVerticalOffset(
+                    clientConfig.getWaypointVerticalOffset()
+                );
+                OptimizedWaypointRenderer.setWaypointBgAlpha(
+                    clientConfig.getWaypointBackgroundAlpha()
+                );
+                OptimizedWaypointRenderer.setViewDistance(
+                    clientConfig.getViewDistance()
+                );
             } catch (IOException e) {
                 LOGGER.error("Failed to load client config", e);
                 clientConfig = GSON.fromJson("{}", ClientConfig.class);
@@ -140,14 +178,18 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         return true;
     }
 
-    public void forEachWaypointFileManager(@NotNull Consumer<@NotNull WaypointFileManager> consumer) {
+    public void forEachWaypointFileManager(
+        @NotNull Consumer<@NotNull WaypointFileManager> consumer
+    ) {
         for (WaypointFileManager fileManager : this.fileManagerMap.values()) {
             if (fileManager != null) consumer.accept(fileManager);
         }
     }
 
     public void removeDimension(String dimensionName) {
-        WaypointFileManager fileManager = this.fileManagerMap.get(dimensionName);
+        WaypointFileManager fileManager = this.fileManagerMap.get(
+            dimensionName
+        );
         if (fileManager != null) {
             fileManager.deleteDimensionFile();
         }
@@ -163,21 +205,31 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             for (WaypointList waypointList : manager.getWaypointLists()) {
                 listSyncIds.add(waypointList.getIdentifier());
             }
-            dimensionSyncIds.add(new DimensionSyncIdentifier(dimensionName, listSyncIds));
+            dimensionSyncIds.add(
+                new DimensionSyncIdentifier(dimensionName, listSyncIds)
+            );
         }
-        return new UpdateRequestC2SPayload(new ClientUpdateRequestBuffer(dimensionSyncIds));
+        return new UpdateRequestC2SPayload(
+            new ClientUpdateRequestBuffer(dimensionSyncIds)
+        );
     }
 
     /**
      * change the reference of {@link _959.server_waypoint.core.WaypointFilesManagerCore#fileManagerMap fileManagerMap} and release the old one
      * */
-    public void changeFileManagerMap(Map<String, WaypointFileManager> fileManagerMap) {
+    public void changeFileManagerMap(
+        Map<String, WaypointFileManager> fileManagerMap
+    ) {
         this.fileManagerMap = fileManagerMap;
     }
 
     @NotNull
-    public @Unmodifiable List<WaypointList> getWaypointListsByDimensionName(String dimensionName) {
-        WaypointFileManager fileManager = this.fileManagerMap.get(dimensionName);
+    public @Unmodifiable List<WaypointList> getWaypointListsByDimensionName(
+        String dimensionName
+    ) {
+        WaypointFileManager fileManager = this.fileManagerMap.get(
+            dimensionName
+        );
         return fileManager == null ? List.of() : fileManager.getWaypointLists();
     }
 
@@ -186,14 +238,18 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
      * */
     @NotNull
     public @Unmodifiable List<String> getDimensionNames() {
-        List<String> dimensionNames = new ArrayList<>(this.fileManagerMap.keySet());
+        List<String> dimensionNames = new ArrayList<>(
+            this.fileManagerMap.keySet()
+        );
         dimensionNames.sort(VanillaDimensionNames::dimensionNameComparator);
         return dimensionNames.stream().toList();
     }
 
     @NotNull
     public @Unmodifiable List<WaypointList> getCurrentWaypointLists() {
-        WaypointFileManager WaypointFileManager = this.fileManagerMap.get(currentDimensionName);
+        WaypointFileManager WaypointFileManager = this.fileManagerMap.get(
+            currentDimensionName
+        );
         if (WaypointFileManager == null) {
             return List.of();
         }
@@ -202,16 +258,29 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
 
     public static void onDimensionChange(String dimensionName) {
         currentDimensionName = dimensionName;
-        LOGGER.info("dimensionName: {}, state: {}", dimensionName, networkState);
+        LOGGER.info(
+            "dimensionName: {}, state: {}",
+            dimensionName,
+            networkState
+        );
         if (networkState != ClientNetworkState.NOT_READY) {
             OptimizedWaypointRenderer.clearScene();
-            WaypointFileManager waypointFileManager;
+            final List<WaypointList> waypointLists;
             if (WaypointServerMod.runsWithClient()) {
-                waypointFileManager = WaypointServerMod.getInstance().getOrCreateWaypointFileManager(dimensionName);
+                waypointLists = WaypointServerMod.getInstance()
+                    .getOrCreateWaypointFileManager(dimensionName)
+                    .getWaypointLists();
             } else {
-                waypointFileManager = INSTANCE.getOrCreateWaypointFileManager(dimensionName);
+                WaypointFileManager waypointFileManager =
+                    INSTANCE.getWaypointFileManager(dimensionName);
+                // The waypoint files directory may not be loaded yet when the dimension changes right after a
+                // server transfer (e.g. via Velocity): the server handshake/sync has not completed, so there is
+                // nothing to render. Creating a manager here would NPE against the not-yet-set directory.
+                waypointLists =
+                    waypointFileManager == null
+                        ? List.of()
+                        : waypointFileManager.getWaypointLists();
             }
-            final List<WaypointList> waypointLists = waypointFileManager.getWaypointLists();
             OptimizedWaypointRenderer.loadScene(waypointLists);
             WaypointManagerScreen.updateCurrentView();
         }
@@ -231,7 +300,13 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             LOGGER.warn("current server entry is null");
             return false;
         }
-        changeWaypointFilesDir(asClientFromRemoteServer(this.gameRoot, currentServerEntry.ip, serverId));
+        changeWaypointFilesDir(
+            asClientFromRemoteServer(
+                this.gameRoot,
+                currentServerEntry.ip,
+                serverId
+            )
+        );
         return true;
     }
 
@@ -244,19 +319,34 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
 
     public void onJoinServer() {
         LOGGER.info("join server");
+        // Switching servers through a proxy (e.g. Velocity) does not trigger the disconnect that normally runs
+        // onLeaveServer(), so flush any pending edits from the previous server to its own file before we
+        // rebind to the new server. Otherwise edits are only saved at the final real disconnect.
+        if (!WaypointServerMod.runsWithClient()) {
+            this.saveAllWaypointFiles();
+        }
         networkState = ClientNetworkState.NOT_READY;
         OptimizedWaypointRenderer.clearScene();
         if (WaypointServerMod.runsWithClient()) {
-            changeFileManagerMap(WaypointServerMod.getInstance().getFileManagerMap());
+            changeFileManagerMap(
+                WaypointServerMod.getInstance().getFileManagerMap()
+            );
             OptimizedWaypointRenderer.loadScene(getCurrentWaypointLists());
             this.waypointFilesDir = null;
             networkState = ClientNetworkState.SYNC_FINISHED;
         } else {
+            // A server's id is only known after its plugin answers the handshake, so reset the server-local
+            // caches now. A server without the plugin never answers, and without this reset it would keep
+            // reading from and writing into the previous server's cache directory (cross-server data
+            // pollution). The directory and map are bound again once the new server's handshake arrives.
+            this.fileManagerMap = new ConcurrentHashMap<>();
+            this.waypointFilesDir = null;
             // send handshake to server -> onServerHandShake
             networkState = ClientNetworkState.NO_SERVERSIDE_SUPPORT;
             sendPayloadToServer(clientHandshake);
         }
     }
+
     @Override
     public void onServerHandshake(ServerHandshakeBuffer buffer) {
         networkState = ClientNetworkState.HANDSHAKE_FINISHED;
@@ -275,7 +365,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
     public void onUpdatesBundle(UpdatesBundleBuffer buffer) {
         for (DimensionWaypointBuffer dimensionBuffer : buffer) {
             String dimensionName = dimensionBuffer.dimensionName();
-            WaypointFileManager fileManager = this.getWaypointFileManager(dimensionName);
+            WaypointFileManager fileManager = this.getWaypointFileManager(
+                dimensionName
+            );
             List<WaypointList> listsUpdates = dimensionBuffer.waypointLists();
             if (listsUpdates.isEmpty()) {
                 // remove dimension
@@ -288,8 +380,12 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                 } else {
                     for (WaypointList listOnServer : listsUpdates) {
                         String listName = listOnServer.name();
-                        WaypointList listOnClient = fileManager.getWaypointListByName(listName);
-                        if (listOnServer.getSyncNum() == WaypointList.REMOVE_LIST) {
+                        WaypointList listOnClient =
+                            fileManager.getWaypointListByName(listName);
+                        if (
+                            listOnServer.getSyncNum() ==
+                            WaypointList.REMOVE_LIST
+                        ) {
                             // remove list
                             if (listOnClient != null) {
                                 fileManager.removeWaypointListByName(listName);
@@ -303,7 +399,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                 try {
                     fileManager.saveDimension();
                 } catch (IOException e) {
-                    LOGGER.error("Failed to save dimension: {} at {}", dimensionName, fileManager.getDimensionFile());
+                    LOGGER.error(
+                        "Failed to save dimension: {} at {}",
+                        dimensionName,
+                        fileManager.getDimensionFile()
+                    );
                 }
             }
         }
@@ -319,27 +419,41 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         if (WaypointServerMod.runsWithClient()) return;
         String dimensionName = buffer.dimensionName();
         boolean inCurrentDimension = currentDimensionName.equals(dimensionName);
-        WaypointFileManager fileManager = this.getOrCreateWaypointFileManager(dimensionName);
+        WaypointFileManager fileManager = this.getOrCreateWaypointFileManager(
+            dimensionName
+        );
         WaypointList newList = buffer.waypointList();
-        WaypointList oldList = fileManager.getWaypointListByName(newList.name());
+        WaypointList oldList = fileManager.getWaypointListByName(
+            newList.name()
+        );
         fileManager.addWaypointList(newList);
         try {
             fileManager.saveDimension();
         } catch (IOException e) {
-            LOGGER.error("Failed to save dimension: {} at {}", dimensionName, fileManager.getDimensionFile());
+            LOGGER.error(
+                "Failed to save dimension: {} at {}",
+                dimensionName,
+                fileManager.getDimensionFile()
+            );
             throw new RuntimeException(e);
         }
         if (inCurrentDimension) {
-            if (oldList != null) OptimizedWaypointRenderer.removeList(oldList.simpleWaypoints());
+            if (oldList != null) OptimizedWaypointRenderer.removeList(
+                oldList.simpleWaypoints()
+            );
             OptimizedWaypointRenderer.addList(newList.simpleWaypoints());
-            WaypointManagerScreen.updateCurrentWaypointLists(fileManager.getWaypointLists());
+            WaypointManagerScreen.updateCurrentWaypointLists(
+                fileManager.getWaypointLists()
+            );
         }
     }
 
     @Override
     public void onDimensionWaypoint(DimensionWaypointBuffer buffer) {
         if (WaypointServerMod.runsWithClient()) return;
-        WaypointFileManager fileManager = this.fileManagerMap.get(buffer.dimensionName());
+        WaypointFileManager fileManager = this.fileManagerMap.get(
+            buffer.dimensionName()
+        );
         if (fileManager == null) {
             fileManager = this.addWaypointFileManager(buffer.dimensionName());
         }
@@ -347,7 +461,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         try {
             fileManager.saveDimension();
         } catch (IOException e) {
-            LOGGER.error("Failed to save dimension: {} at {}", buffer.dimensionName(), fileManager.getDimensionFile());
+            LOGGER.error(
+                "Failed to save dimension: {} at {}",
+                buffer.dimensionName(),
+                fileManager.getDimensionFile()
+            );
             throw new RuntimeException(e);
         }
         if (currentDimensionName.equals(buffer.dimensionName())) {
@@ -371,8 +489,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         boolean found = false;
         for (DimensionWaypointBuffer dimensionWaypoint : buffer) {
             String dimensionName = dimensionWaypoint.dimensionName();
-            WaypointFileManager fileManager = this.addWaypointFileManager(dimensionName);
-            List<WaypointList> waypointLists = dimensionWaypoint.waypointLists();
+            WaypointFileManager fileManager = this.addWaypointFileManager(
+                dimensionName
+            );
+            List<WaypointList> waypointLists =
+                dimensionWaypoint.waypointLists();
             if (!found && currentDimensionName.equals(dimensionName)) {
                 found = true;
                 for (WaypointList list : waypointLists) {
@@ -387,7 +508,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             try {
                 fileManager.saveDimension();
             } catch (IOException e) {
-                LOGGER.error("failed to save waypoints for dimension: {}", dimensionName, e);
+                LOGGER.error(
+                    "failed to save waypoints for dimension: {}",
+                    dimensionName,
+                    e
+                );
             }
         }
         networkState = ClientNetworkState.SYNC_FINISHED;
@@ -400,10 +525,13 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             return;
         }
         //? if >= 1.21.11 {
-        currentDimensionName = this.mc.level.dimension().identifier().toString();
+        currentDimensionName = this.mc.level
+            .dimension()
+            .identifier()
+            .toString();
         //?} else {
         /*currentDimensionName = this.mc.level.dimension().location().toString();
-         *///?}
+         */ //?}
     }
 
     @Override
@@ -412,7 +540,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         if (networkState != ClientNetworkState.SYNC_FINISHED) return;
         String dimensionName = buffer.dimensionName();
         String listName = buffer.listName();
-        WaypointFileManager fileManager = this.getWaypointFileManager(dimensionName);
+        WaypointFileManager fileManager = this.getWaypointFileManager(
+            dimensionName
+        );
         WaypointModificationType modificationType = buffer.type();
 
         try {
@@ -420,10 +550,13 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
             switch (modificationType) {
                 case ADD -> {
                     if (fileManager == null) {
-                        fileManager = this.addWaypointFileManager(dimensionName);
+                        fileManager = this.addWaypointFileManager(
+                            dimensionName
+                        );
                         WaypointManagerScreen.updateDimensionList();
                     }
-                    WaypointList waypointList = fileManager.getWaypointListByName(listName);
+                    WaypointList waypointList =
+                        fileManager.getWaypointListByName(listName);
                     int syncId = buffer.syncId();
                     if (waypointList == null) {
                         waypointList = WaypointList.build(listName, syncId);
@@ -434,36 +567,46 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                     if (dimensionName.equals(currentDimensionName)) {
                         OptimizedWaypointRenderer.add(waypoint);
                     }
-                    WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
+                    WaypointManagerScreen.updateWaypointLists(
+                        dimensionName,
+                        fileManager.getWaypointLists()
+                    );
                 }
                 case REMOVE -> {
                     if (fileManager == null) {
                         return;
                     }
-                    WaypointList waypointList = fileManager.getWaypointListByName(listName);
+                    WaypointList waypointList =
+                        fileManager.getWaypointListByName(listName);
                     if (waypointList == null) {
                         return;
                     }
                     String waypointName = buffer.waypointName();
-                    SimpleWaypoint wpToRemove = waypointList.getWaypointByName(waypointName);
+                    SimpleWaypoint wpToRemove = waypointList.getWaypointByName(
+                        waypointName
+                    );
                     if (wpToRemove != null) {
                         waypointList.remove(wpToRemove, buffer.syncId());
                         fileManager.saveDimension();
                         if (dimensionName.equals(currentDimensionName)) {
                             OptimizedWaypointRenderer.remove(wpToRemove);
                         }
-                        WaypointManagerScreen.refreshWaypointLists(dimensionName);
+                        WaypointManagerScreen.refreshWaypointLists(
+                            dimensionName
+                        );
                     }
                 }
                 case UPDATE -> {
                     if (fileManager == null) {
                         return;
                     }
-                    WaypointList waypointList = fileManager.getWaypointListByName(listName);
+                    WaypointList waypointList =
+                        fileManager.getWaypointListByName(listName);
                     if (waypointList == null) {
                         return;
                     }
-                    SimpleWaypoint waypointFound = waypointList.getWaypointByName(buffer.waypointName());
+                    SimpleWaypoint waypointFound =
+                        waypointList.getWaypointByName(buffer.waypointName());
                     if (waypointFound == null) {
                         return;
                     }
@@ -476,33 +619,47 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
                 }
                 case ADD_LIST -> {
                     if (fileManager == null) {
-                        fileManager = this.addWaypointFileManager(dimensionName);
+                        fileManager = this.addWaypointFileManager(
+                            dimensionName
+                        );
                         WaypointManagerScreen.updateDimensionList();
                     }
-                    WaypointList waypointList = fileManager.getWaypointListByName(listName);
+                    WaypointList waypointList =
+                        fileManager.getWaypointListByName(listName);
                     if (waypointList == null) {
                         waypointList = WaypointList.buildByServer(listName);
                         fileManager.addWaypointList(waypointList);
                     }
-                    WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
+                    WaypointManagerScreen.updateWaypointLists(
+                        dimensionName,
+                        fileManager.getWaypointLists()
+                    );
                     fileManager.saveDimension();
                 }
                 case REMOVE_LIST -> {
                     if (fileManager == null) {
                         return;
                     }
-                    WaypointList waypointList = fileManager.getWaypointListByName(listName);
+                    WaypointList waypointList =
+                        fileManager.getWaypointListByName(listName);
                     if (waypointList == null) {
                         return;
                     } else {
                         fileManager.removeWaypointListByName(listName);
                     }
-                    WaypointManagerScreen.updateWaypointLists(dimensionName, fileManager.getWaypointLists());
+                    WaypointManagerScreen.updateWaypointLists(
+                        dimensionName,
+                        fileManager.getWaypointLists()
+                    );
                     fileManager.saveDimension();
                 }
             }
         } catch (IOException e) {
-            LOGGER.error("failed to save waypoints for dimension: {}", dimensionName, e);
+            LOGGER.error(
+                "failed to save waypoints for dimension: {}",
+                dimensionName,
+                e
+            );
         }
     }
 
@@ -511,6 +668,6 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Buffe
         HANDSHAKE_FINISHED, // handshake finished, can start syncing waypoints
         SYNC_FINISHED, // syncing finished, allows all functionalities
         NO_SERVERSIDE_SUPPORT, // only loads local stored waypoint
-        INCOMPATIBLE_PROTOCOL // can view previously cached waypoints but cannot handle packets from server
+        INCOMPATIBLE_PROTOCOL, // can view previously cached waypoints but cannot handle packets from server
     }
 }
