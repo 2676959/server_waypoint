@@ -172,6 +172,7 @@ tasks.shadowJar {
 tasks.remapJar {
     inputFile.set(tasks.shadowJar.flatMap { it.archiveFile })
     archiveClassifier.set("")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     dependsOn(tasks.shadowJar)
 }
 

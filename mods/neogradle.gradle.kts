@@ -48,7 +48,6 @@ sourceSets.main {
     }
     resources {
         exclude("fabric.mod.json")
-        exclude("META-INF/neoforge.mods.toml")
         exclude("pack.mcmeta")
     }
 }
