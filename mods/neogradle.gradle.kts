@@ -2,6 +2,7 @@ plugins {
     id("java-library")
     id("net.neoforged.gradle.userdev")
     id("com.gradleup.shadow")
+    id("com.modrinth.minotaur")
 }
 
 val minecraft = stonecutter.current.version

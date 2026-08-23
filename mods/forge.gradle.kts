@@ -9,6 +9,7 @@ plugins {
     id("net.minecraftforge.renamer")
     id("net.minecraftforge.gradle")
     id("com.gradleup.shadow")
+    id("com.modrinth.minotaur")
 }
 
 val minecraftVersion = stonecutter.current.version

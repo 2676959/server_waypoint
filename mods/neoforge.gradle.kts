@@ -1,6 +1,7 @@
 plugins {
     id("net.neoforged.moddev")
     id("com.gradleup.shadow")
+    id("com.modrinth.minotaur")
 }
 
 val minecraft = stonecutter.current.version

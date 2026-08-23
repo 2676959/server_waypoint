@@ -1,6 +1,7 @@
 plugins {
     id("net.fabricmc.fabric-loom")
     id("com.gradleup.shadow")
+    id("com.modrinth.minotaur")
 }
 
 val minecraft = stonecutter.current.version
