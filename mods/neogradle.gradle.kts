@@ -91,6 +91,8 @@ runs {
     configureEach {
         workingDirectory = file("run")
     }
+    register("client")
+    register("server")
 }
 
 tasks.processResources {
