@@ -1,0 +1,68 @@
+name: create release draft
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Release tag to create (defaults to mod_version)
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: build and create draft release
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: validate gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: setup jdk
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: microsoft
+
+      - name: make gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: build
+        run: ./gradlew build -Dorg.gradle.java.home="$JAVA_HOME"
+
+      - name: collect build artifacts
+        run: ./move_builds.sh
+
+      - name: create draft release with all builds
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG_INPUT: ${{ inputs.tag_name }}
+        run: |
+          set -euo pipefail
+
+          release_tag="${RELEASE_TAG_INPUT:-}"
+          if [[ -z "$release_tag" ]]; then
+            release_tag="$(sed -n 's/^mod_version=//p' gradle.properties)"
+          fi
+
+          if [[ -z "$release_tag" ]]; then
+            echo "Could not determine a release tag from the workflow input or gradle.properties." >&2
+            exit 1
+          fi
+
+          mapfile -d '' release_assets < <(find builds -type f -name '*.jar' -print0 | sort -z)
+          if (( ${#release_assets[@]} == 0 )); then
+            echo "No build JARs were collected." >&2
+            exit 1
+          fi
+
+          gh release create "$release_tag" \
+            "${release_assets[@]}" \
+            --draft \
+            --generate-notes \
+            --target "$GITHUB_SHA" \
+            --title "Server Waypoint $release_tag"

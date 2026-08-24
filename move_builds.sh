@@ -22,11 +22,12 @@ for version_dir in "$VERSIONS_DIR"/*/ ; do
         if [ -d "$build_libs_dir" ]; then
             echo "Moving builds from $version_name..."
             
-            # Move all jar files except *-dev.jar and *-sources.jar
+            # Move release jar files, excluding development and source artifacts
             for jar in "$build_libs_dir"/*.jar; do
                 if [ -f "$jar" ]; then
                     # Skip dev and sources jars
                     if [[ "$jar" != *"-dev.jar"
+                    && "$jar" != *"-dev-jarjar.jar"
                     && "$jar" != *"-sources.jar"
                     && "$jar" != *"-transformProductionFabric.jar"
                     && "$jar" != *"-sources.jar"
