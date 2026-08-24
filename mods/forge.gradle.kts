@@ -10,6 +10,7 @@ plugins {
     id("net.minecraftforge.gradle")
     id("com.gradleup.shadow")
     id("com.modrinth.minotaur")
+    id("net.darkhax.curseforgegradle")
 }
 
 val minecraftVersion = stonecutter.current.version

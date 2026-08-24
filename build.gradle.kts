@@ -1,5 +1,6 @@
 import com.modrinth.minotaur.ModrinthExtension
 import com.modrinth.minotaur.dependencies.ModDependency
+import net.darkhax.curseforgegradle.TaskPublishCurseForge
 import org.gradle.api.plugins.BasePluginExtension
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
@@ -14,15 +15,36 @@ plugins {
     id("net.neoforged.gradle.userdev") version "7.1.27" apply false
     id("com.gradleup.shadow") version "9.4.1" apply false
     id("com.modrinth.minotaur") version "2.9.0" apply false
+    id("net.darkhax.curseforgegradle") version "1.1.28" apply false
 }
 
+// Xaero's Minimap has no 1.21.2 build, so these 1.21.3 targets are retained only as
+// development environments for testing the identical 1.21.2-1.21.4 integration code.
+// The overlapping 1.21.2 targets provide the published artifacts for that full range.
+// Forge 1.21.3 remains publishable because Forge does not provide a 1.21.2 loader.
+val developmentOnlyProjectPaths = setOf(
+    ":mods:1.21.3-fabric",
+    ":mods:1.21.3-neoforge",
+)
 val modrinthProjectPaths = listOf(project(":mods"), project(":paper"))
     .flatMap { it.subprojects }
     .map { it.path }
+    .filterNot(developmentOnlyProjectPaths::contains)
     .sorted()
 val modrinthUploadLock = gradle.sharedServices.registerIfAbsent(
     "modrinthUploadLock",
     ModrinthUploadLock::class,
+) {
+    maxParallelUsages.set(1)
+}
+val curseForgeProjectPaths = project(":mods")
+    .subprojects
+    .map { it.path }
+    .filterNot(developmentOnlyProjectPaths::contains)
+    .sorted()
+val curseForgeUploadLock = gradle.sharedServices.registerIfAbsent(
+    "curseForgeUploadLock",
+    CurseForgeUploadLock::class,
 ) {
     maxParallelUsages.set(1)
 }
@@ -36,6 +58,7 @@ allprojects {
         tasks.named("modrinth") {
             group = "publishing"
             description = "Builds and uploads the ${project.name} artifact to Modrinth."
+            enabled = project.path !in developmentOnlyProjectPaths
             dependsOn("build")
             usesService(modrinthUploadLock)
         }
@@ -104,6 +127,71 @@ allprojects {
             }
         }
     }
+
+    pluginManager.withPlugin("net.darkhax.curseforgegradle") {
+        tasks.register<TaskPublishCurseForge>("curseforge") {
+            group = "publishing"
+            description = "Builds and uploads the ${project.name} artifact to CurseForge."
+            enabled = project.path !in developmentOnlyProjectPaths
+            dependsOn("build")
+            usesService(curseForgeUploadLock)
+
+            val targetLoader = when {
+                project.name.endsWith("-fabric") -> "fabric"
+                project.name.endsWith("-forge") -> "forge"
+                project.name.endsWith("-neoforge") -> "neoforge"
+                else -> error("Cannot determine the CurseForge loader for ${project.path}")
+            }
+            val curseForgeProjectId = project.property("curseforge_project_id") as String
+            val minecraftVersionRange = project.property("mcVersionRange") as String
+            val minecraftVersions = expandMinecraftVersionRange(minecraftVersionRange)
+            val archiveName = project.extensions.getByType<BasePluginExtension>().archivesName
+            val uploadArtifact = project.layout.buildDirectory.file(archiveName.map { "libs/$it.jar" })
+            val isDebug = project.providers.gradleProperty("curseforgeDebug")
+                .map(String::toBoolean)
+                .getOrElse(false)
+            val curseForgeToken = project.providers.environmentVariable("CURSEFORGE_TOKEN")
+                .orElse(project.providers.gradleProperty("curseforgeToken"))
+
+            apiToken = curseForgeToken.orElse("").get()
+            debugMode = isDebug
+            disableVersionDetection()
+            doFirst {
+                if (curseForgeToken.orNull.isNullOrBlank()) {
+                    throw GradleException(
+                        "Set CURSEFORGE_TOKEN or -PcurseforgeToken before running ${project.path}:curseforge."
+                    )
+                }
+            }
+
+            val mainFile = upload(curseForgeProjectId, uploadArtifact)
+            mainFile.changelog = project.providers.gradleProperty("curseforgeChangelog")
+                .orElse(project.providers.environmentVariable("MODRINTH_CHANGELOG"))
+                .orElse("No changelog was provided.")
+                .get()
+            mainFile.changelogType = "markdown"
+            mainFile.releaseType = project.providers.gradleProperty("curseforgeReleaseType")
+                .orElse("release")
+                .get()
+            mainFile.addGameVersion(*minecraftVersions.toTypedArray())
+            mainFile.addEnvironment("Client", "Server")
+            when (targetLoader) {
+                "fabric" -> {
+                    mainFile.addModLoader("Fabric", "Quilt")
+                    mainFile.addRequirement("fabric-api")
+                    mainFile.addOptional("luckperms", "xaeros-minimap")
+                }
+                "forge" -> {
+                    mainFile.addModLoader("Forge")
+                    mainFile.addOptional("xaeros-minimap")
+                }
+                "neoforge" -> {
+                    mainFile.addModLoader("NeoForge")
+                    mainFile.addOptional("xaeros-minimap")
+                }
+            }
+        }
+    }
 }
 
 subprojects {
@@ -140,6 +228,30 @@ tasks.register("publishModrinth") {
     )
 }
 
+fun registerCurseForgeBranchTask(taskName: String, loader: String, displayName: String) = tasks.register(taskName) {
+    group = "publishing"
+    description = "Builds and uploads every supported $displayName artifact to CurseForge."
+    dependsOn(
+        curseForgeProjectPaths
+            .filter { it.endsWith("-$loader") }
+            .map { "$it:curseforge" }
+    )
+}
+
+val publishCurseForgeFabric = registerCurseForgeBranchTask("publishCurseForgeFabric", "fabric", "Fabric")
+val publishCurseForgeForge = registerCurseForgeBranchTask("publishCurseForgeForge", "forge", "Forge")
+val publishCurseForgeNeoForge = registerCurseForgeBranchTask("publishCurseForgeNeoForge", "neoforge", "NeoForge")
+
+tasks.register("publishCurseForge") {
+    group = "publishing"
+    description = "Builds and uploads every supported mod artifact to CurseForge. Debug mode still requires CURSEFORGE_TOKEN."
+    dependsOn(
+        publishCurseForgeFabric,
+        publishCurseForgeForge,
+        publishCurseForgeNeoForge,
+    )
+}
+
 fun expandMinecraftVersionRange(versionRange: String): List<String> {
     val bounds = versionRange.split('-', limit = 2)
     if (bounds.size == 1) {
@@ -160,5 +272,9 @@ fun expandMinecraftVersionRange(versionRange: String): List<String> {
 }
 
 abstract class ModrinthUploadLock : BuildService<BuildServiceParameters.None>, AutoCloseable {
+    override fun close() = Unit
+}
+
+abstract class CurseForgeUploadLock : BuildService<BuildServiceParameters.None>, AutoCloseable {
     override fun close() = Unit
 }
