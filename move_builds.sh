@@ -15,6 +15,13 @@ for version_dir in "$VERSIONS_DIR"/*/ ; do
     if [ -d "$version_dir" ]; then
         # Get the version name from directory path
         version_name=$(basename "$version_dir")
+
+        case "$version_name" in
+            1.21.3-fabric|1.21.3-neoforge)
+                echo "Skipping development-only builds from $version_name..."
+                continue
+                ;;
+        esac
         
         # Path to build/libs in this version directory
         build_libs_dir="$version_dir/build/libs"
