@@ -6,6 +6,7 @@ import _959.server_waypoint.common.network.ModChatMessageHandler;
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
 import _959.server_waypoint.common.network.payload.c2s.MessageChunkC2SPayload;
+import _959.server_waypoint.common.network.payload.c2s.UploadChunkC2SPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.common.server.command.WaypointCommand;
@@ -54,7 +55,7 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
 @Mod(ModInfo.MOD_ID)
 public class ServerWaypointNeoForge implements IPlatformConfigPath {
-    private static final String NETWORK_PROTOCOL_VERSION = "7";
+    private static final String NETWORK_PROTOCOL_VERSION = "8";
 //? if = 1.20.2 {
     /^public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
             modId("main"),
@@ -185,6 +186,9 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         registrar.playToServer(MessageChunkC2SPayload.ID, MessageChunkC2SPayload.PACKET_CODEC, (payload, context) ->
                 context.enqueueWork(() -> this.c2sPacketHandler.onMessageChunk((ServerPlayer) context.player(), payload.messageChunk()))
         );
+        registrar.playToServer(UploadChunkC2SPayload.ID, UploadChunkC2SPayload.PACKET_CODEC, (payload, context) ->
+                context.enqueueWork(() -> this.c2sPacketHandler.onUploadChunk((ServerPlayer) context.player(), payload.uploadChunk()))
+        );
     }
 //?} elif = 1.20.4 {
     /^private void registerPayloads(RegisterPayloadHandlerEvent event) {
@@ -205,6 +209,13 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                 handler.server((payload, context) -> context.workHandler().execute(() -> {
                     if (context.player().orElse(null) instanceof ServerPlayer player) {
                         this.c2sPacketHandler.onMessageChunk(player, payload.messageChunk());
+                    }
+                }))
+        );
+        registrar.play(UploadChunkC2SPayload.UPLOAD_CHUNK_PAYLOAD_ID, UploadChunkC2SPayload::new, handler ->
+                handler.server((payload, context) -> context.workHandler().execute(() -> {
+                    if (context.player().orElse(null) instanceof ServerPlayer player) {
+                        this.c2sPacketHandler.onUploadChunk(player, payload.uploadChunk());
                     }
                 }))
         );
@@ -242,6 +253,16 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                     ServerPlayer player = context.getSender();
                     if (player != null) {
                         this.c2sPacketHandler.onMessageChunk(player, payload.messageChunk());
+                    }
+                })
+                .add();
+        PACKET_CHANNEL.messageBuilder(UploadChunkC2SPayload.class, 6, PlayNetworkDirection.PLAY_TO_SERVER)
+                .encoder((payload, buf) -> payload.write(buf))
+                .decoder(UploadChunkC2SPayload::new)
+                .consumerMainThread((payload, context) -> {
+                    ServerPlayer player = context.getSender();
+                    if (player != null) {
+                        this.c2sPacketHandler.onUploadChunk(player, payload.uploadChunk());
                     }
                 })
                 .add();

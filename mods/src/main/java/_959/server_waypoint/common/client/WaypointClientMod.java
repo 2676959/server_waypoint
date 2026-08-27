@@ -11,10 +11,12 @@ import _959.server_waypoint.common.client.integrations.MapModIntegrations;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
 import _959.server_waypoint.common.network.payload.c2s.MessageChunkC2SPayload;
+import _959.server_waypoint.common.network.payload.c2s.UploadChunkC2SPayload;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.ChunkedMessageSendResult;
 import _959.server_waypoint.core.network.DimensionSyncIdentifier;
 import _959.server_waypoint.core.network.MessageEncodingException;
 import _959.server_waypoint.core.network.WaypointListSyncIdentifier;
@@ -49,6 +51,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import static _959.server_waypoint.ModInfo.MOD_ID;
@@ -331,13 +334,36 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
 
     public boolean sendChunkedMessageToServer(ChunkedMessage message) {
         try {
-            this.chunkedMessages.send(
+            if (message instanceof WaypointData waypointData
+                    && waypointData.type() == WaypointData.Type.UPLOAD) {
+                UUID requestId = waypointData.uploadData().requestId();
+                for (MessageChunkBuffer packet : ChunkedMessageManager.createTransfer(
+                        message,
+                        this.compressChunkedMessages,
+                        0L
+                )) {
+                    sendPayloadToServer(new UploadChunkC2SPayload(
+                            new UploadChunkBuffer(requestId, packet)
+                    ));
+                }
+                return true;
+            }
+            ChunkedMessageSendResult result = this.chunkedMessages.send(
                     "server",
                     message,
                     this.compressChunkedMessages,
                     packet -> sendPayloadToServer(new MessageChunkC2SPayload(packet))
             );
-            return true;
+            if (result.queued()) {
+                return true;
+            }
+            LOGGER.warn(
+                    "Chunked message type {} was not queued: {}",
+                    message.getClass().getSimpleName(),
+                    result
+            );
+            this.displayNetworkError();
+            return false;
         } catch (MessageEncodingException exception) {
             LOGGER.warn(
                     "Failed to encode client chunked message type {}",

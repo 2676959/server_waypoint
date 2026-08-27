@@ -2,6 +2,7 @@ package _959.server_waypoint.core.network.codec;
 
 import _959.server_waypoint.core.network.ChunkedMessage;
 import _959.server_waypoint.core.network.ChunkedMessageRegistry;
+import _959.server_waypoint.core.network.ChunkedMessageSendResult;
 import _959.server_waypoint.core.network.DecodingContext;
 import _959.server_waypoint.core.network.EncodingContext;
 import _959.server_waypoint.core.network.MessageEncodingException;
@@ -53,7 +54,7 @@ public final class ChunkedMessageManager<P> {
     private final Map<P, TreeMap<Long, CompletedMessage>> orderedMessages = new HashMap<>();
     private final Map<P, OrderingGap> orderingGaps = new HashMap<>();
 
-    public synchronized UUID send(
+    public synchronized ChunkedMessageSendResult send(
             P peer,
             ChunkedMessage message,
             boolean compressionEnabled,
@@ -62,13 +63,13 @@ public final class ChunkedMessageManager<P> {
         long now = System.nanoTime();
         this.cleanupExpiredCaches(now);
         if (this.countTransfers(this.outgoing, peer) >= MAX_ACTIVE_TRANSFERS_PER_PEER) {
-            throw new IllegalStateException("Too many outgoing chunked-message transfers for peer");
+            return ChunkedMessageSendResult.PEER_BUSY;
         }
         long logicalSequence = this.nextOutgoingSequences.getOrDefault(peer, 0L);
         List<MessageChunkBuffer> packets = createTransfer(message, compressionEnabled, logicalSequence);
         int retainedBytes = packets.stream().mapToInt(MessageChunkBuffer::dataLength).sum();
         if (this.retainedOutgoingBytes(peer) + retainedBytes > MAX_MESSAGE_BYTES) {
-            throw new IllegalStateException("Too many outgoing chunked-message bytes retained for peer");
+            return ChunkedMessageSendResult.PEER_BUSY;
         }
         this.nextOutgoingSequences.put(peer, incrementSequence(logicalSequence));
         UUID transferId = packets.get(0).transferId();
@@ -79,7 +80,7 @@ public final class ChunkedMessageManager<P> {
         for (MessageChunkBuffer packet : packets) {
             packetSender.accept(packet);
         }
-        return transferId;
+        return ChunkedMessageSendResult.QUEUED;
     }
 
     public synchronized List<ChunkedMessage> receive(
@@ -204,7 +205,7 @@ public final class ChunkedMessageManager<P> {
         this.orderingGaps.clear();
     }
 
-    static List<MessageChunkBuffer> createTransfer(
+    public static List<MessageChunkBuffer> createTransfer(
             ChunkedMessage message,
             boolean compressionEnabled,
             long logicalSequence

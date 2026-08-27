@@ -29,15 +29,14 @@ public interface PlatformMessageSender<S, P> {
     }
     Component getSenderName(S source);
 
-    default boolean sendPlayerChunkedMessage(P player, ChunkedMessage message) {
+    default ChunkedMessageSendResult sendPlayerChunkedMessage(P player, ChunkedMessage message) {
         try {
-            this.chunkedMessageManager().send(
+            return this.chunkedMessageManager().send(
                 player,
                 message,
                 CONFIG.Features().compressChunkedMessages(),
                 packet -> this.sendPlayerPacket(player, packet)
             );
-            return true;
         } catch (MessageEncodingException exception) {
             WaypointServerCore.LOGGER.warn(
                     "Failed to encode chunked message type {} within the {}-byte logical-message budget for one recipient",
@@ -49,8 +48,23 @@ public interface PlatformMessageSender<S, P> {
                     player,
                     Component.translatable("waypoint.network.encoding_failed")
             );
-            return false;
+            return ChunkedMessageSendResult.ENCODING_FAILED;
+        } catch (RuntimeException exception) {
+            this.chunkedMessageManager().clear(player);
+            WaypointServerCore.LOGGER.warn(
+                    "Failed to deliver chunked message type {}",
+                    message.getClass().getSimpleName(),
+                    exception
+            );
+            return ChunkedMessageSendResult.DELIVERY_FAILED;
         }
+    }
+
+    default void setChunkedMessageCapable(P player, boolean capable) {
+    }
+
+    default boolean canSendChunkedMessage(P player) {
+        return true;
     }
 
     default void broadcastChunkedMessage(ChunkedMessage message) {

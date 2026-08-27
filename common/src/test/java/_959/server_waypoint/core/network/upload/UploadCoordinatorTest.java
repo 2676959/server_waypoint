@@ -37,6 +37,79 @@ class UploadCoordinatorTest {
     private Path tempDir;
 
     @Test
+    void oneGlobalLeaseRejectsOtherClientsUntilReleased() {
+        UploadCoordinator<String> coordinator = coordinator(server());
+        UploadCoordinator.BeginResult first = coordinator.begin(
+                "first",
+                UploadScope.DIMENSION,
+                UploadConflictPolicy.LOCAL,
+                false,
+                List.of("minecraft:overworld"),
+                null,
+                null
+        );
+
+        UploadCoordinator.BeginResult second = coordinator.begin(
+                "second",
+                UploadScope.DIMENSION,
+                UploadConflictPolicy.LOCAL,
+                false,
+                List.of("minecraft:overworld"),
+                null,
+                null
+        );
+
+        assertEquals(UploadCoordinator.BeginStatus.STARTED, first.status());
+        assertEquals(UploadCoordinator.BeginStatus.BUSY, second.status());
+        assertTrue(!coordinator.tryBeginEditRequest());
+        assertTrue(coordinator.acceptsUploadChunk("first", first.request().requestId()));
+        assertTrue(!coordinator.acceptsUploadChunk("second", first.request().requestId()));
+
+        coordinator.onDisconnect("first");
+        UploadCoordinator.BeginResult afterRelease = coordinator.begin(
+                "second",
+                UploadScope.DIMENSION,
+                UploadConflictPolicy.LOCAL,
+                false,
+                List.of("minecraft:overworld"),
+                null,
+                null
+        );
+        assertEquals(UploadCoordinator.BeginStatus.STARTED, afterRelease.status());
+        coordinator.onDisconnect("second");
+    }
+
+    @Test
+    void pairingReturnsBusyWhileAnEditIsAlreadyAdmitted() {
+        UploadCoordinator<String> coordinator = coordinator(server());
+        assertTrue(coordinator.tryBeginEditRequest());
+
+        UploadCoordinator.BeginResult blocked = coordinator.begin(
+                "player",
+                UploadScope.DIMENSION,
+                UploadConflictPolicy.LOCAL,
+                false,
+                List.of("minecraft:overworld"),
+                null,
+                null
+        );
+        assertEquals(UploadCoordinator.BeginStatus.BUSY, blocked.status());
+
+        coordinator.finishEditRequest();
+        UploadCoordinator.BeginResult started = coordinator.begin(
+                "player",
+                UploadScope.DIMENSION,
+                UploadConflictPolicy.LOCAL,
+                false,
+                List.of("minecraft:overworld"),
+                null,
+                null
+        );
+        assertEquals(UploadCoordinator.BeginStatus.STARTED, started.status());
+        coordinator.onDisconnect("player");
+    }
+
+    @Test
     void deleteMissingRequiresLocalConflictPolicyOnTheServer() {
         UploadCoordinator<String> coordinator = coordinator(server());
 
@@ -99,7 +172,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 "",
                 ""
-        );
+        ).request();
         SimpleWaypoint clientWaypoint = new SimpleWaypoint(
                 "",
                 "Injected display name",
@@ -140,7 +213,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 "list",
                 null
-        );
+        ).request();
 
         coordinator.onUpload(
                 "player",
@@ -171,7 +244,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 "list",
                 null
-        );
+        ).request();
 
         coordinator.onDisconnect("player");
         coordinator.onUpload(
@@ -201,7 +274,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 null,
                 null
-        );
+        ).request();
         server.addWaypoint(
                 "minecraft:overworld",
                 "list",
@@ -249,7 +322,7 @@ class UploadCoordinatorTest {
                 List.of("minecraft:overworld"),
                 "list",
                 "target"
-        );
+        ).request();
 
         coordinator.onUpload(
                 "player",

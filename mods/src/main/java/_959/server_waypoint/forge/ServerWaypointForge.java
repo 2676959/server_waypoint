@@ -6,6 +6,7 @@ import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
 import _959.server_waypoint.common.network.payload.c2s.MessageChunkC2SPayload;
+import _959.server_waypoint.common.network.payload.c2s.UploadChunkC2SPayload;
 import _959.server_waypoint.common.network.payload.s2c.ServerHandshakeS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.MessageChunkS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.XaerosWorldIdS2CPayload;
@@ -64,7 +65,7 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
 @Mod(ModInfo.MOD_ID)
 public class ServerWaypointForge implements IPlatformConfigPath {
-    private static final String NETWORK_PROTOCOL_VERSION = "7";
+    private static final String NETWORK_PROTOCOL_VERSION = "8";
 //? if <= 1.20.1 {
     /*public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
             modId("main"),
@@ -221,6 +222,16 @@ public class ServerWaypointForge implements IPlatformConfigPath {
             //?}
             if (player != null) {
                 this.c2sPacketHandler.onMessageChunk(player, payload.messageChunk());
+            }
+        });
+        registerC2S(UploadChunkC2SPayload.class, 6, /*? if >= 1.20.5 {*/ UploadChunkC2SPayload.PACKET_CODEC /*?} else {*/ /*UploadChunkC2SPayload::new *//*?}*/, (payload, context) -> {
+//? if <= 1.20.1 {
+            /*ServerPlayer player = context.get().getSender();
+*///?} else {
+            ServerPlayer player = context.getSender();
+            //?}
+            if (player != null) {
+                this.c2sPacketHandler.onUploadChunk(player, payload.uploadChunk());
             }
         });
     }

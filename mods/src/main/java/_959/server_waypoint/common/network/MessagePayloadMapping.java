@@ -24,6 +24,8 @@ public final class MessagePayloadMapping {
             );
             case CLIENT_HANDSHAKE_CHANNEL ->
                     throw new IllegalArgumentException("Cannot send a clientbound client-handshake payload");
+            case UPLOAD_CHUNK_CHANNEL ->
+                    throw new IllegalArgumentException("Cannot send a clientbound upload-chunk payload");
         };
     }
 }

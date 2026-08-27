@@ -279,9 +279,9 @@ class C2SPacketHandlerTest {
         }
 
         @Override
-        public boolean sendPlayerChunkedMessage(String player, ChunkedMessage message) {
+        public ChunkedMessageSendResult sendPlayerChunkedMessage(String player, ChunkedMessage message) {
             this.packets.add(message);
-            return true;
+            return ChunkedMessageSendResult.QUEUED;
         }
 
         @Override
@@ -304,9 +304,11 @@ class C2SPacketHandlerTest {
         }
 
         @Override
-        public boolean sendPlayerChunkedMessage(String player, ChunkedMessage message) {
+        public ChunkedMessageSendResult sendPlayerChunkedMessage(String player, ChunkedMessage message) {
             this.attemptedRecipients.add(player);
-            return !player.equals("first");
+            return player.equals("first")
+                    ? ChunkedMessageSendResult.PEER_BUSY
+                    : ChunkedMessageSendResult.QUEUED;
         }
     }
 }

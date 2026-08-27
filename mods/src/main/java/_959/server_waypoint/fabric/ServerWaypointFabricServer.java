@@ -5,6 +5,7 @@ import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
 import _959.server_waypoint.common.network.payload.c2s.MessageChunkC2SPayload;
+import _959.server_waypoint.common.network.payload.c2s.UploadChunkC2SPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.common.server.command.WaypointCommand;
 import _959.server_waypoint.config.Features;
@@ -118,12 +119,18 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         ServerPlayNetworking.registerGlobalReceiver(MessageChunkC2SPayload.ID, (payload, context) ->
                 c2sPacketHandler.onMessageChunk(context.player(), payload.messageChunk())
         );
+        ServerPlayNetworking.registerGlobalReceiver(UploadChunkC2SPayload.ID, (payload, context) ->
+                c2sPacketHandler.onUploadChunk(context.player(), payload.uploadChunk())
+        );
         //?} else if fabric {
         /*ServerPlayNetworking.registerGlobalReceiver(ClientHandshakeC2SPayload.ID, (packet, player, responseSender) ->
                 c2sPacketHandler.onClientHandshake(player, packet.clientHandshakeBuffer()
                 ));
         ServerPlayNetworking.registerGlobalReceiver(MessageChunkC2SPayload.ID, (packet, player, responseSender) ->
                 c2sPacketHandler.onMessageChunk(player, packet.messageChunk()
+                ));
+        ServerPlayNetworking.registerGlobalReceiver(UploadChunkC2SPayload.ID, (packet, player, responseSender) ->
+                c2sPacketHandler.onUploadChunk(player, packet.uploadChunk()
                 ));
         *///?}
     }
@@ -151,6 +158,10 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         //$ payload_c2s_registry_swap
         serverboundPlay
         ().register(MessageChunkC2SPayload.ID, MessageChunkC2SPayload.PACKET_CODEC);
+        PayloadTypeRegistry.
+        //$ payload_c2s_registry_swap
+        serverboundPlay
+        ().register(UploadChunkC2SPayload.ID, UploadChunkC2SPayload.PACKET_CODEC);
         //?}
     }
 

@@ -5,6 +5,7 @@ import _959.server_waypoint.core.network.C2SPacketHandler;
 import _959.server_waypoint.core.network.PayloadID;
 import _959.server_waypoint.core.network.codec.ClientHandshakeCodec;
 import _959.server_waypoint.core.network.codec.MessageChunkCodec;
+import _959.server_waypoint.core.network.codec.UploadChunkCodec;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.listener.ChatMessageListenerPaperMC;
 import _959.server_waypoint.listener.NavigationProtectionListener;
@@ -192,6 +193,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         // register for incoming
         messenger.registerIncomingPluginChannel(this, CLIENT_HANDSHAKE_CHANNEL.ID, this);
         messenger.registerIncomingPluginChannel(this, MESSAGE_CHUNK_CHANNEL.ID, this);
+        messenger.registerIncomingPluginChannel(this, UPLOAD_CHUNK_CHANNEL.ID, this);
 
         // register for xaero's minimap mod
         messenger.registerOutgoingPluginChannel(this, XAEROS_WORLD_ID_CHANNEL.ID);
@@ -212,6 +214,11 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                             this.c2sPacketHandler.onMessageChunk(
                                     player,
                                     MessageChunkCodec.decode(buf)
+                            );
+                    case ModInfo.MOD_ID + ":" + PayloadID.UPLOAD_CHUNK ->
+                            this.c2sPacketHandler.onUploadChunk(
+                                    player,
+                                    UploadChunkCodec.decode(buf)
                             );
                 }
                 if (buf.isReadable()) {

@@ -5,4 +5,5 @@ public class PayloadID {
     public static final String CLIENT_HANDSHAKE = "client_handshake";
     public static final String SERVER_HANDSHAKE = "server_handshake";
     public static final String UPLOAD_REQUEST = "upload_request";
+    public static final String UPLOAD_CHUNK = "upload_chunk";
 }

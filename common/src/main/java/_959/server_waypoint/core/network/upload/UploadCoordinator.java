@@ -27,7 +27,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -63,7 +64,9 @@ public final class UploadCoordinator<P> {
     private final Predicate<P> permissionChecker;
     private final Predicate<P> deletePermissionChecker;
     private final NavigationService<P> navigationService;
-    private final Map<P, PendingUpload> pendingUploads = new ConcurrentHashMap<>();
+    private final AtomicReference<PendingUpload<P>> activeUpload = new AtomicReference<>();
+    private final Object admissionMonitor = new Object();
+    private int activeEditRequests;
 
     public UploadCoordinator(
             WaypointServerCore waypointServer,
@@ -81,8 +84,8 @@ public final class UploadCoordinator<P> {
         this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
     }
 
-    public UploadRequestBuffer begin(P player, UploadScope scope, UploadConflictPolicy conflictPolicy, boolean deleteMissing,
-                                     List<String> dimensionNames, String listName, String waypointName) {
+    public BeginResult begin(P player, UploadScope scope, UploadConflictPolicy conflictPolicy, boolean deleteMissing,
+                             List<String> dimensionNames, String listName, String waypointName) {
         if (deleteMissing && conflictPolicy != UploadConflictPolicy.LOCAL) {
             throw new IllegalArgumentException("Only force-local uploads can delete missing waypoints");
         }
@@ -96,7 +99,8 @@ public final class UploadCoordinator<P> {
                     this.waypointServer.captureDimensionRevision(dimensionName)
             );
         }
-        PendingUpload pending = new PendingUpload(
+        PendingUpload<P> pending = new PendingUpload<>(
+                player,
                 request,
                 scope,
                 conflictPolicy,
@@ -104,123 +108,175 @@ public final class UploadCoordinator<P> {
                 Instant.now().plus(REQUEST_TIMEOUT),
                 revisions
         );
-        PendingUpload replaced = this.pendingUploads.put(player, pending);
-        if (replaced != null) {
-            replaced.cancelExpiry();
+        synchronized (this.admissionMonitor) {
+            PendingUpload<P> active = this.activeUpload.get();
+            if (active != null && (!active.expired() || active.applying.get())) {
+                return BeginResult.busy();
+            }
+            if (active != null) {
+                this.finishPending(active);
+            }
+            if (this.activeEditRequests != 0
+                    || !this.activeUpload.compareAndSet(null, pending)) {
+                return BeginResult.busy();
+            }
         }
         pending.expiryTask = EXPIRY_EXECUTOR.schedule(
-                () -> this.pendingUploads.remove(player, pending),
+                () -> {
+                    if (!pending.applying.get()) {
+                        this.finishPending(pending);
+                    }
+                },
                 REQUEST_TIMEOUT.toMillis(),
                 TimeUnit.MILLISECONDS
         );
-        return request;
+        return BeginResult.started(request);
     }
 
     public void onDisconnect(P player) {
-        PendingUpload pending = this.pendingUploads.remove(player);
-        if (pending != null) {
-            pending.cancelExpiry();
+        PendingUpload<P> pending = this.activeUpload.get();
+        if (pending != null && Objects.equals(pending.player, player)) {
+            this.finishPending(pending);
         }
+    }
+
+    public boolean tryBeginEditRequest() {
+        synchronized (this.admissionMonitor) {
+            PendingUpload<P> pending = this.activeUpload.get();
+            if (pending != null && pending.expired() && !pending.applying.get()) {
+                this.finishPending(pending);
+                pending = this.activeUpload.get();
+            }
+            if (pending != null) {
+                return false;
+            }
+            this.activeEditRequests++;
+            return true;
+        }
+    }
+
+    public void finishEditRequest() {
+        synchronized (this.admissionMonitor) {
+            if (this.activeEditRequests <= 0) {
+                throw new IllegalStateException("Upload edit admission underflow");
+            }
+            this.activeEditRequests--;
+        }
+    }
+
+    public boolean acceptsUploadChunk(P player, UUID requestId) {
+        PendingUpload<P> pending = this.activeUpload.get();
+        if (pending == null || pending.expired()) {
+            if (pending != null && !pending.applying.get()) {
+                this.finishPending(pending);
+            }
+            return false;
+        }
+        return !pending.applying.get()
+                && Objects.equals(pending.player, player)
+                && pending.request.requestId().equals(requestId);
     }
 
     public void onUpload(P player, WaypointData waypointData) {
         WaypointData.Upload upload = waypointData.uploadData();
-        PendingUpload pending = this.pendingUploads.get(player);
-        if (pending == null || !pending.request.requestId().equals(upload.requestId())) {
+        PendingUpload<P> pending = this.activeUpload.get();
+        if (pending == null
+                || !Objects.equals(pending.player, player)
+                || !pending.request.requestId().equals(upload.requestId())
+                || !pending.applying.compareAndSet(false, true)) {
             this.playerMessageSender.send(player, translatable("waypoint.upload.request.invalid"));
             return;
         }
-        if (pending.expiresAt.isBefore(Instant.now())) {
-            this.removePending(player, pending);
-            this.playerMessageSender.send(player, translatable("waypoint.upload.request.expired"));
-            return;
-        }
-        if (!this.permissionChecker.test(player)) {
-            this.removePending(player, pending);
-            this.playerMessageSender.send(player, translatable("waypoint.upload.permission.revoked"));
-            return;
-        }
-        if (pending.deleteMissing && !this.deletePermissionChecker.test(player)) {
-            this.removePending(player, pending);
-            this.playerMessageSender.send(player, translatable("waypoint.upload.delete.permission.revoked"));
-            return;
-        }
-        if (upload.status() != UploadStatus.SUCCESS) {
-            this.removePending(player, pending);
-            this.playerMessageSender.send(player, switch (upload.status()) {
-                case XAERO_NOT_INSTALLED -> translatable("waypoint.upload.xaero.missing");
-                case XAERO_NOT_READY -> translatable("waypoint.upload.xaero.not-ready");
-                case FAILED -> translatable("waypoint.upload.client.failed");
-                case SUCCESS -> throw new IllegalStateException("Handled above");
-            });
-            return;
-        }
-
         try {
-            appendUpload(pending, waypointData.dimensions());
-        } catch (IllegalArgumentException exception) {
-            this.removePending(player, pending);
-            this.playerMessageSender.send(player, translatable("waypoint.upload.request.invalid"));
-            return;
-        }
+            if (pending.expired()) {
+                this.playerMessageSender.send(player, translatable("waypoint.upload.request.expired"));
+                return;
+            }
+            if (!this.permissionChecker.test(player)) {
+                this.playerMessageSender.send(player, translatable("waypoint.upload.permission.revoked"));
+                return;
+            }
+            if (pending.deleteMissing && !this.deletePermissionChecker.test(player)) {
+                this.playerMessageSender.send(player, translatable("waypoint.upload.delete.permission.revoked"));
+                return;
+            }
+            if (upload.status() != UploadStatus.SUCCESS) {
+                this.playerMessageSender.send(player, switch (upload.status()) {
+                    case XAERO_NOT_INSTALLED -> translatable("waypoint.upload.xaero.missing");
+                    case XAERO_NOT_READY -> translatable("waypoint.upload.xaero.not-ready");
+                    case FAILED -> translatable("waypoint.upload.client.failed");
+                    case SUCCESS -> throw new IllegalStateException("Handled above");
+                });
+                return;
+            }
 
-        this.removePending(player, pending);
-        MergeSummary summary;
-        try {
-            summary = this.merge(pending);
-        } catch (MessageEncodingException exception) {
-            WaypointServerCore.LOGGER.warn(
-                    "Rejected waypoint upload because its update could not be encoded within the {}-byte logical-message budget",
-                    ChunkedMessageManager.MAX_MESSAGE_BYTES,
-                    exception
-            );
-            this.playerMessageSender.send(
-                    player,
-                    translatable("waypoint.network.encoding_failed")
-            );
-            return;
-        } catch (RuntimeException exception) {
-            WaypointServerCore.LOGGER.warn("Failed to apply waypoint upload", exception);
-            this.playerMessageSender.send(player, translatable("waypoint.upload.client.failed"));
-            return;
-        }
-        if (!summary.dimensionUpdates.isEmpty()) {
-            this.waypointDataBroadcaster.accept(WaypointData.updates(summary.dimensionUpdates));
-        }
-        for (NavigationReplacement replacement : summary.navigationReplacements) {
-            this.navigationService.refreshTarget(replacement.previous(), replacement.updated());
-        }
-        this.playerMessageSender.send(player, translatable(
-                "waypoint.upload.complete",
-                text(summary.added), text(summary.replaced), text(summary.deleted),
-                text(summary.unchanged), text(summary.conflicts), text(summary.skipped)
-        ));
-        this.playerMessageSender.send(player, translatable("waypoint.upload.legend"));
-        if (summary.conflicts > 0 && pending.conflictPolicy == UploadConflictPolicy.SERVER) {
+            try {
+                appendUpload(pending, waypointData.dimensions());
+            } catch (IllegalArgumentException exception) {
+                this.playerMessageSender.send(player, translatable("waypoint.upload.request.invalid"));
+                return;
+            }
+
+            MergeSummary summary;
+            try {
+                summary = this.merge(pending);
+            } catch (MessageEncodingException exception) {
+                WaypointServerCore.LOGGER.warn(
+                        "Rejected waypoint upload because its update could not be encoded within the {}-byte logical-message budget",
+                        ChunkedMessageManager.MAX_MESSAGE_BYTES,
+                        exception
+                );
+                this.playerMessageSender.send(
+                        player,
+                        translatable("waypoint.network.encoding_failed")
+                );
+                return;
+            } catch (RuntimeException exception) {
+                WaypointServerCore.LOGGER.warn("Failed to apply waypoint upload", exception);
+                this.playerMessageSender.send(player, translatable("waypoint.upload.client.failed"));
+                return;
+            }
+            if (!summary.dimensionUpdates.isEmpty()) {
+                this.waypointDataBroadcaster.accept(WaypointData.updates(summary.dimensionUpdates));
+            }
+            for (NavigationReplacement replacement : summary.navigationReplacements) {
+                this.navigationService.refreshTarget(replacement.previous(), replacement.updated());
+            }
             this.playerMessageSender.send(player, translatable(
-                    "waypoint.upload.conflicts.server-kept",
-                    text(summary.conflicts),
-                    TextButtonBuilder.uploadPreferLocalButton(pending.scope, pending.request)
+                    "waypoint.upload.complete",
+                    text(summary.added), text(summary.replaced), text(summary.deleted),
+                    text(summary.unchanged), text(summary.conflicts), text(summary.skipped)
             ));
-        }
-        if (summary.staleDimensions > 0) {
-            this.playerMessageSender.send(player, translatable(
-                    "waypoint.upload.request.stale",
-                    text(summary.staleDimensions)
-            ));
-        }
-        if (summary.saveFailed) {
-            this.playerMessageSender.send(player, translatable("waypoint.upload.save.failed"));
+            this.playerMessageSender.send(player, translatable("waypoint.upload.legend"));
+            if (summary.conflicts > 0 && pending.conflictPolicy == UploadConflictPolicy.SERVER) {
+                this.playerMessageSender.send(player, translatable(
+                        "waypoint.upload.conflicts.server-kept",
+                        text(summary.conflicts),
+                        TextButtonBuilder.uploadPreferLocalButton(pending.scope, pending.request)
+                ));
+            }
+            if (summary.staleDimensions > 0) {
+                this.playerMessageSender.send(player, translatable(
+                        "waypoint.upload.request.stale",
+                        text(summary.staleDimensions)
+                ));
+            }
+            if (summary.saveFailed) {
+                this.playerMessageSender.send(player, translatable("waypoint.upload.save.failed"));
+            }
+        } finally {
+            this.finishPending(pending);
         }
     }
 
-    private void removePending(P player, PendingUpload pending) {
-        this.pendingUploads.remove(player, pending);
-        pending.cancelExpiry();
+    private void finishPending(PendingUpload<P> pending) {
+        if (this.activeUpload.compareAndSet(pending, null)) {
+            pending.cancelExpiry();
+        }
     }
 
     private static void appendUpload(
-            PendingUpload pending,
+            PendingUpload<?> pending,
             List<DimensionWaypointData> uploadedDimensions
     ) {
         for (DimensionWaypointData dimension : uploadedDimensions) {
@@ -270,7 +326,7 @@ public final class UploadCoordinator<P> {
         }
     }
 
-    private MergeSummary merge(PendingUpload pending) {
+    private MergeSummary merge(PendingUpload<?> pending) {
         MergeSummary summary = new MergeSummary();
         for (String dimensionName : new LinkedHashSet<>(pending.request.dimensionNames())) {
             WaypointFilesManagerCore.DimensionRevision expectedRevision =
@@ -323,7 +379,7 @@ public final class UploadCoordinator<P> {
     }
 
     private static DimensionMergeSummary mergeDimension(
-            PendingUpload pending,
+            PendingUpload<?> pending,
             String dimensionName,
             WaypointFileManager.AtomicMutation mutation
     ) {
@@ -433,7 +489,7 @@ public final class UploadCoordinator<P> {
     }
 
     private static void deleteMissingServerWaypoints(
-            PendingUpload pending,
+            PendingUpload<?> pending,
             String dimensionName,
             WaypointFileManager.AtomicMutation mutation,
             DimensionMergeSummary summary
@@ -477,7 +533,7 @@ public final class UploadCoordinator<P> {
         }
     }
 
-    private static Set<String> getUploadedListNames(PendingUpload pending, String dimensionName) {
+    private static Set<String> getUploadedListNames(PendingUpload<?> pending, String dimensionName) {
         Set<String> listNames = new HashSet<>();
         for (UploadListKey key : pending.uploadedWaypoints.keySet()) {
             if (dimensionName.equals(key.dimensionName)) {
@@ -585,7 +641,23 @@ public final class UploadCoordinator<P> {
         void send(P player, Component message);
     }
 
-    private static final class PendingUpload {
+    public enum BeginStatus {
+        STARTED,
+        BUSY
+    }
+
+    public record BeginResult(BeginStatus status, UploadRequestBuffer request) {
+        private static BeginResult started(UploadRequestBuffer request) {
+            return new BeginResult(BeginStatus.STARTED, request);
+        }
+
+        private static BeginResult busy() {
+            return new BeginResult(BeginStatus.BUSY, null);
+        }
+    }
+
+    private static final class PendingUpload<P> {
+        private final P player;
         private final UploadRequestBuffer request;
         private final UploadScope scope;
         private final UploadConflictPolicy conflictPolicy;
@@ -595,9 +667,11 @@ public final class UploadCoordinator<P> {
         private final Map<UploadListKey, List<SimpleWaypoint>> uploadedWaypoints = new LinkedHashMap<>();
         private int waypointCount;
         private long retainedBytes;
+        private final AtomicBoolean applying = new AtomicBoolean();
         private volatile ScheduledFuture<?> expiryTask;
 
         private PendingUpload(
+                P player,
                 UploadRequestBuffer request,
                 UploadScope scope,
                 UploadConflictPolicy conflictPolicy,
@@ -605,12 +679,17 @@ public final class UploadCoordinator<P> {
                 Instant expiresAt,
                 Map<String, WaypointFilesManagerCore.DimensionRevision> dimensionRevisions
         ) {
+            this.player = Objects.requireNonNull(player, "player");
             this.request = request;
             this.scope = scope;
             this.conflictPolicy = conflictPolicy;
             this.deleteMissing = deleteMissing;
             this.expiresAt = expiresAt;
             this.dimensionRevisions = Map.copyOf(dimensionRevisions);
+        }
+
+        private boolean expired() {
+            return !this.expiresAt.isAfter(Instant.now());
         }
 
         private void cancelExpiry() {

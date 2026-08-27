@@ -21,6 +21,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.io.IOException;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
@@ -34,6 +35,8 @@ public class C2SPacketHandler<S, K, P> {
     private final PermissionManager<S, K, P> permissionManager;
     private final NavigationService<P> navigationService;
     private final UploadCoordinator<P> uploadCoordinator;
+    private final ChunkedMessageManager<P> uploadChunkedMessages = new ChunkedMessageManager<>();
+    private final AtomicReference<UUID> activeUploadTransportRequest = new AtomicReference<>();
 
     public C2SPacketHandler(
             PlatformMessageSender<S, P> messageSender,
@@ -51,9 +54,11 @@ public class C2SPacketHandler<S, K, P> {
 
     public void onClientHandshake(P player, ClientHandshakeBuffer buffer) {
         int clientVersion = buffer.version();
+        boolean compatible = clientVersion == ProtocolVersion.PROTOCOL_VERSION;
+        this.sender.setChunkedMessageCapable(player, compatible);
         LOGGER.info("client join with protocol version: {}", clientVersion);
 
-        if (clientVersion == ProtocolVersion.PROTOCOL_VERSION) {
+        if (compatible) {
             this.sender.sendPlayerPacket(player, new ServerHandshakeBuffer(
                     CONFIG.getServerId(),
                     CONFIG.Features().compressChunkedMessages()
@@ -127,6 +132,18 @@ public class C2SPacketHandler<S, K, P> {
     }
 
     public void onWaypointEditRequest(P player, WaypointEditRequestMessage request) {
+        if (!this.uploadCoordinator.tryBeginEditRequest()) {
+            this.sendEditResult(player, request, EditResultStatus.UPLOAD_BUSY, null, 0);
+            return;
+        }
+        try {
+            this.onAdmittedWaypointEditRequest(player, request);
+        } finally {
+            this.uploadCoordinator.finishEditRequest();
+        }
+    }
+
+    private void onAdmittedWaypointEditRequest(P player, WaypointEditRequestMessage request) {
         if (!this.permissionManager.checkPlayerPermission(
                 player,
                 this.permissionManager.keys.edit(),
@@ -256,6 +273,11 @@ public class C2SPacketHandler<S, K, P> {
     }
 
     public void onMessageChunk(P player, MessageChunkBuffer buffer) {
+        if (buffer.operation() == MessageChunkBuffer.Operation.CHUNK
+                && buffer.messageTypeId() == ChunkedMessageRegistry.WAYPOINT_DATA.id()) {
+            LOGGER.warn("Ignoring serverbound waypoint data on the general chunk channel");
+            return;
+        }
         try {
             for (ChunkedMessage message : this.sender.receiveChunkedMessage(
                     player,
@@ -267,14 +289,10 @@ public class C2SPacketHandler<S, K, P> {
                 } else if (message instanceof WaypointEditRequestMessage editRequest) {
                     this.onWaypointEditRequest(player, editRequest);
                 } else if (message instanceof WaypointData data) {
-                    if (data.type() == WaypointData.Type.UPLOAD) {
-                        this.uploadCoordinator.onUpload(player, data);
-                    } else {
-                        LOGGER.warn(
-                                "Ignoring non-upload waypoint data received from client: {}",
-                                data.type()
-                        );
-                    }
+                    LOGGER.warn(
+                            "Ignoring waypoint data received on the general client channel: {}",
+                            data.type()
+                    );
                 } else {
                     LOGGER.warn(
                             "Ignoring serverbound chunked message type {}",
@@ -285,6 +303,49 @@ public class C2SPacketHandler<S, K, P> {
         } catch (IllegalArgumentException | IllegalStateException exception) {
             LOGGER.warn("Rejected malformed chunked-message transfer", exception);
         }
+    }
+
+    public void onUploadChunk(P player, UploadChunkBuffer buffer) {
+        if (!this.uploadCoordinator.acceptsUploadChunk(player, buffer.requestId())) {
+            return;
+        }
+        UUID activeRequest = this.activeUploadTransportRequest.get();
+        if (!buffer.requestId().equals(activeRequest)
+                && this.activeUploadTransportRequest.compareAndSet(activeRequest, buffer.requestId())) {
+            this.uploadChunkedMessages.clearAll();
+        }
+        try {
+            for (ChunkedMessage message : this.uploadChunkedMessages.receive(
+                    player,
+                    buffer.messageChunk(),
+                    ignored -> {
+                    },
+                    () -> this.failUploadTransport(player)
+            )) {
+                if (!(message instanceof WaypointData data)
+                        || data.type() != WaypointData.Type.UPLOAD
+                        || !data.uploadData().requestId().equals(buffer.requestId())) {
+                    this.failUploadTransport(player);
+                    return;
+                }
+                try {
+                    this.uploadCoordinator.onUpload(player, data);
+                } finally {
+                    this.uploadChunkedMessages.clear(player);
+                    this.activeUploadTransportRequest.compareAndSet(buffer.requestId(), null);
+                }
+            }
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            LOGGER.warn("Rejected malformed upload transfer", exception);
+            this.failUploadTransport(player);
+        }
+    }
+
+    private void failUploadTransport(P player) {
+        this.uploadChunkedMessages.clear(player);
+        this.activeUploadTransportRequest.set(null);
+        this.uploadCoordinator.onDisconnect(player);
+        this.sender.sendPlayerMessage(player, translatable("waypoint.upload.request.invalid"));
     }
 
     private void recoverFromOrderedMessageFailure(P player) {
@@ -302,6 +363,7 @@ public class C2SPacketHandler<S, K, P> {
 
     public void onDisconnect(P player) {
         this.sender.disconnectChunkedMessages(player);
+        this.uploadChunkedMessages.clear(player);
         this.uploadCoordinator.onDisconnect(player);
     }
 }

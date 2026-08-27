@@ -2,6 +2,7 @@ package _959.server_waypoint.core.network.codec;
 
 import _959.server_waypoint.core.network.ChunkedMessage;
 import _959.server_waypoint.core.network.MessageEncodingException;
+import _959.server_waypoint.core.network.ChunkedMessageSendResult;
 import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
 import _959.server_waypoint.core.network.buffer.MessageChunkBuffer;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
@@ -29,6 +30,25 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ChunkedMessageManagerTest {
+    @Test
+    void outgoingSaturationReturnsTypedBackpressure() {
+        ChunkedMessageManager<String> manager = new ChunkedMessageManager<>();
+        ChunkedMessage message = messageWithDescription("small");
+
+        for (int i = 0; i < ChunkedMessageManager.MAX_ACTIVE_TRANSFERS_PER_PEER; i++) {
+            assertEquals(
+                    ChunkedMessageSendResult.QUEUED,
+                    manager.send("peer", message, false, ignored -> {
+                    })
+            );
+        }
+
+        assertEquals(
+                ChunkedMessageSendResult.PEER_BUSY,
+                manager.send("peer", message, false, ignored -> {
+                })
+        );
+    }
     @Test
     void compressionAndOutOfOrderChunksReassemble() {
         WaypointData source = messageWithDescription("compressible".repeat(20_000));

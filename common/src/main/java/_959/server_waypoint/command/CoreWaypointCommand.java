@@ -1890,6 +1890,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             this.sender.sendError(source, translatable("waypoint.upload.player-only"));
             return;
         }
+        if (!this.sender.canSendChunkedMessage(player)) {
+            this.sender.sendError(source, translatable("waypoint.upload.client.incompatible"));
+            return;
+        }
 
         List<String> dimensions;
         if (scope == UploadScope.WORLD) {
@@ -1907,9 +1911,14 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             return;
         }
 
-        UploadRequestBuffer request = this.uploadCoordinator.begin(
+        UploadCoordinator.BeginResult beginResult = this.uploadCoordinator.begin(
                 player, scope, conflictPolicy, deleteMissing, dimensions, listName, waypointName
         );
+        if (beginResult.status() == UploadCoordinator.BeginStatus.BUSY) {
+            this.sender.sendError(source, translatable("waypoint.upload.busy"));
+            return;
+        }
+        UploadRequestBuffer request = Objects.requireNonNull(beginResult.request());
         this.sender.sendPlayerPacket(player, request);
         this.sender.sendMessage(source, translatable(deleteMissing
                 ? "waypoint.upload.requested.force-delete"
