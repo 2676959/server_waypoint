@@ -11,30 +11,24 @@ import java.util.UUID;
 
 import static _959.server_waypoint.core.network.MessageChannelID.MESSAGE_CHUNK_CHANNEL;
 
-/** One data or recovery-control frame on the shared physical chunk channel. */
+/** One immutable data frame on the shared physical chunk channel. */
 public record MessageChunkBuffer(
         UUID transferId,
-        Operation operation,
-        long logicalSequence,
         int messageTypeId,
         int sequence,
         int chunkCount,
         boolean compressed,
         int uncompressedSize,
         int checksum,
-        byte[] data,
-        int[] missingSequences
+        byte[] data
 ) implements SinglePacketMessage {
     public MessageChunkBuffer {
         Objects.requireNonNull(transferId, "transferId");
-        Objects.requireNonNull(operation, "operation");
         data = Arrays.copyOf(data, data.length);
-        missingSequences = Arrays.copyOf(missingSequences, missingSequences.length);
     }
 
     public static MessageChunkBuffer chunk(
             UUID transferId,
-            long logicalSequence,
             int messageTypeId,
             int sequence,
             int chunkCount,
@@ -45,44 +39,13 @@ public record MessageChunkBuffer(
     ) {
         return new MessageChunkBuffer(
                 transferId,
-                Operation.CHUNK,
-                logicalSequence,
                 messageTypeId,
                 sequence,
                 chunkCount,
                 compressed,
                 uncompressedSize,
                 checksum,
-                data,
-                new int[0]
-        );
-    }
-
-    public static MessageChunkBuffer acknowledgement(UUID transferId) {
-        return control(transferId, Operation.ACKNOWLEDGEMENT, new int[0]);
-    }
-
-    public static MessageChunkBuffer retry(UUID transferId, int[] missingSequences) {
-        return control(transferId, Operation.RETRY, missingSequences);
-    }
-
-    private static MessageChunkBuffer control(
-            UUID transferId,
-            Operation operation,
-            int[] missingSequences
-    ) {
-        return new MessageChunkBuffer(
-                transferId,
-                operation,
-                -1,
-                -1,
-                0,
-                0,
-                false,
-                0,
-                0,
-                new byte[0],
-                missingSequences
+                data
         );
     }
 
@@ -95,9 +58,8 @@ public record MessageChunkBuffer(
         return this.data.length;
     }
 
-    @Override
-    public int[] missingSequences() {
-        return Arrays.copyOf(this.missingSequences, this.missingSequences.length);
+    public void writeData(ByteBuf byteBuf) {
+        byteBuf.writeBytes(this.data);
     }
 
     @Override
@@ -108,11 +70,5 @@ public record MessageChunkBuffer(
     @Override
     public void encode(ByteBuf byteBuf) {
         MessageChunkCodec.encode(byteBuf, this);
-    }
-
-    public enum Operation {
-        CHUNK,
-        ACKNOWLEDGEMENT,
-        RETRY
     }
 }

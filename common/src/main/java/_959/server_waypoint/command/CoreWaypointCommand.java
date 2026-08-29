@@ -1084,9 +1084,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                 before.name(),
                                 after
                         );
-                        for (P player : this.sender.getBroadcastPlayers(source)) {
-                            this.sender.sendPlayerChunkedMessage(player, update);
-                        }
+                        this.sender.broadcastChunkedMessage(
+                                this.sender.getBroadcastPlayers(source),
+                                update
+                        );
                         this.sender.sendMessage(
                                 source,
                                 _959.server_waypoint.text.WaypointDetailsTextBuilder.listDetails(
@@ -1157,9 +1158,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                 WaypointModificationType.UPDATE,
                                 result.syncNum()
                         );
-                        for (P player : this.sender.getBroadcastPlayers(source)) {
-                            this.sender.sendPlayerChunkedMessage(player, update);
-                        }
+                        this.sender.broadcastChunkedMessage(
+                                this.sender.getBroadcastPlayers(source),
+                                update
+                        );
                         this.sender.sendMessage(
                                 source,
                                 _959.server_waypoint.text.WaypointDetailsTextBuilder.waypointDetails(

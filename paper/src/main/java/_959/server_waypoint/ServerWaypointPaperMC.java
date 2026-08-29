@@ -44,6 +44,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
@@ -148,6 +149,13 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 permissionManager,
                 this.navigationService,
                 uploadCoordinator
+        );
+        server.getAsyncScheduler().runAtFixedRate(
+                this,
+                ignored -> this.c2sPacketHandler.tickUploadTransport(),
+                50L,
+                50L,
+                TimeUnit.MILLISECONDS
         );
         LiteralCommandNode<CommandSourceStack> command = waypointCommand.build();
         // register

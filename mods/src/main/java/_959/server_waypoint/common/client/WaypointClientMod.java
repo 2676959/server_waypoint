@@ -16,6 +16,7 @@ import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.ChunkedMessageRegistry;
 import _959.server_waypoint.core.network.ChunkedMessageSendResult;
 import _959.server_waypoint.core.network.DimensionSyncIdentifier;
 import _959.server_waypoint.core.network.MessageEncodingException;
@@ -67,6 +68,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     private static ClientConfig clientConfig;
     private final ClientHandshakeC2SPayload clientHandshake = new ClientHandshakeC2SPayload(new ClientHandshakeBuffer());
     private final ChunkedMessageManager<String> chunkedMessages = new ChunkedMessageManager<>();
+    private final ChunkedMessageManager<String> uploadChunkedMessages = new ChunkedMessageManager<>();
     private boolean compressChunkedMessages;
     // TODO: add a local waypoint manager for using waypoints on an unsupported server
 //    private final WaypointFilesManagerCore localManager;
@@ -258,6 +260,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
 
     public void onLeaveServer() {
         this.chunkedMessages.clearAll();
+        this.uploadChunkedMessages.clearAll();
         this.compressChunkedMessages = false;
         OptimizedWaypointRenderer.clearScene();
         if (!WaypointServerMod.runsWithClient()) {
@@ -286,6 +289,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     public void onJoinServer() {
         LOGGER.info("join server");
         this.chunkedMessages.clearAll();
+        this.uploadChunkedMessages.clearAll();
         this.compressChunkedMessages = false;
         WaypointManagerScreen.resetSessionWidgetStates();
         networkState = ClientNetworkState.NOT_READY;
@@ -318,13 +322,23 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
 
     @Override
     public void onMessageChunk(MessageChunkBuffer buffer) {
+        if ((networkState != ClientNetworkState.HANDSHAKE_FINISHED
+                && networkState != ClientNetworkState.SYNC_FINISHED)
+                || !isAllowedClientboundMessageType(buffer.messageTypeId())) {
+            return;
+        }
         try {
             for (ChunkedMessage message : this.chunkedMessages.receive(
                     "server",
                     buffer,
-                    response -> sendPayloadToServer(new MessageChunkC2SPayload(response)),
-                    this::recoverFromOrderedMessageFailure
+                    this::recoverFromChunkedMessageFailure
             )) {
+                if (message instanceof WaypointData waypointData
+                        && waypointData.type() == WaypointData.Type.UPLOAD) {
+                    throw new IllegalArgumentException(
+                            "Upload waypoint data is not valid on the clientbound channel"
+                    );
+                }
                 this.applyChunkedMessage(message);
             }
         } catch (IllegalArgumentException | IllegalStateException exception) {
@@ -337,33 +351,31 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             if (message instanceof WaypointData waypointData
                     && waypointData.type() == WaypointData.Type.UPLOAD) {
                 UUID requestId = waypointData.uploadData().requestId();
-                for (MessageChunkBuffer packet : ChunkedMessageManager.createTransfer(
+                ChunkedMessageSendResult result = this.uploadChunkedMessages.send(
+                        "server",
                         message,
                         this.compressChunkedMessages,
-                        0L
-                )) {
-                    sendPayloadToServer(new UploadChunkC2SPayload(
-                            new UploadChunkBuffer(requestId, packet)
-                    ));
-                }
-                return true;
+                        packets -> {
+                            for (MessageChunkBuffer packet : packets) {
+                                sendPayloadToServer(new UploadChunkC2SPayload(
+                                        new UploadChunkBuffer(requestId, packet)
+                                ));
+                            }
+                        }
+                );
+                return this.handleChunkedSendResult(message, result);
             }
             ChunkedMessageSendResult result = this.chunkedMessages.send(
                     "server",
                     message,
                     this.compressChunkedMessages,
-                    packet -> sendPayloadToServer(new MessageChunkC2SPayload(packet))
+                    packets -> {
+                        for (MessageChunkBuffer packet : packets) {
+                            sendPayloadToServer(new MessageChunkC2SPayload(packet));
+                        }
+                    }
             );
-            if (result.queued()) {
-                return true;
-            }
-            LOGGER.warn(
-                    "Chunked message type {} was not queued: {}",
-                    message.getClass().getSimpleName(),
-                    result
-            );
-            this.displayNetworkError();
-            return false;
+            return this.handleChunkedSendResult(message, result);
         } catch (MessageEncodingException exception) {
             LOGGER.warn(
                     "Failed to encode client chunked message type {}",
@@ -388,6 +400,23 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
 
     public void tickChunkedMessages() {
         this.chunkedMessages.tick();
+        this.uploadChunkedMessages.tick();
+    }
+
+    private boolean handleChunkedSendResult(
+            ChunkedMessage message,
+            ChunkedMessageSendResult result
+    ) {
+        if (result.queued()) {
+            return true;
+        }
+        LOGGER.warn(
+                "Chunked message type {} was not queued: {}",
+                message.getClass().getSimpleName(),
+                result
+        );
+        this.displayNetworkError();
+        return false;
     }
 
     public static void tickChunkedMessagesIfInitialized() {
@@ -413,6 +442,13 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         }
     }
 
+    private static boolean isAllowedClientboundMessageType(int messageTypeId) {
+        return messageTypeId == ChunkedMessageRegistry.WAYPOINT_DATA.id()
+                || messageTypeId == ChunkedMessageRegistry.WAYPOINT_EDIT_RESULT.id()
+                || messageTypeId == ChunkedMessageRegistry.WAYPOINT_MODIFICATION.id()
+                || messageTypeId == ChunkedMessageRegistry.WAYPOINT_LIST_UPDATE.id();
+    }
+
     private void applyWaypointData(WaypointData waypointData) {
         switch (waypointData.type()) {
             case UPDATES -> this.onUpdatesBundle(waypointData.dimensions());
@@ -423,8 +459,8 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         }
     }
 
-    private void recoverFromOrderedMessageFailure() {
-        LOGGER.warn("Ordered message delivery failed; requesting waypoint resynchronization");
+    private void recoverFromChunkedMessageFailure() {
+        LOGGER.warn("Chunked message delivery failed; requesting waypoint resynchronization");
         this.displayNetworkError();
         networkState = ClientNetworkState.HANDSHAKE_FINISHED;
         if (!this.requestUpdates()) {

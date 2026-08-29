@@ -18,6 +18,9 @@ import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 import static _959.server_waypoint.common.network.MessagePayloadMapping.getPayload;
@@ -38,6 +41,7 @@ import net.minecraftforge.network.PacketDistributor;
 
 public class ModMessageSender implements PlatformMessageSender<CommandSourceStack, ServerPlayer> {
     private static final ModMessageSender INSTANCE = new ModMessageSender();
+    private final Set<UUID> chunkedMessageCapablePlayers = ConcurrentHashMap.newKeySet();
 
     public static ModMessageSender getInstance() {
         return INSTANCE;
@@ -121,8 +125,10 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
     @Override
     public void broadcastChunkedMessage(ChunkedMessage message) {
         if (WaypointServerMod.MINECRAFT_SERVER != null) {
-            WaypointServerMod.MINECRAFT_SERVER.getPlayerList().getPlayers()
-                    .forEach(player -> sendPlayerChunkedMessage(player, message));
+            this.broadcastChunkedMessage(
+                    WaypointServerMod.MINECRAFT_SERVER.getPlayerList().getPlayers(),
+                    message
+            );
         }
     }
 
@@ -173,5 +179,26 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
         if (player != null) {
             this.sendPlayerChunkedMessage(player, message);
         }
+    }
+
+    @Override
+    public void setChunkedMessageCapable(ServerPlayer player, boolean capable) {
+        UUID playerId = player.getUUID();
+        if (capable) {
+            this.chunkedMessageCapablePlayers.add(playerId);
+        } else {
+            this.chunkedMessageCapablePlayers.remove(playerId);
+            PlatformMessageSender.super.disconnectChunkedMessages(player);
+        }
+    }
+
+    @Override
+    public boolean canSendChunkedMessage(ServerPlayer player) {
+        return this.chunkedMessageCapablePlayers.contains(player.getUUID());
+    }
+
+    @Override
+    public void disconnectChunkedMessages(ServerPlayer player) {
+        this.setChunkedMessageCapable(player, false);
     }
 }

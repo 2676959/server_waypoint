@@ -19,7 +19,6 @@ class UploadChunkCodecTest {
                 UUID.randomUUID(),
                 0,
                 0,
-                0,
                 1,
                 false,
                 3,
@@ -34,7 +33,8 @@ class UploadChunkCodecTest {
 
             assertEquals(requestId, decoded.requestId());
             assertEquals(chunk.transferId(), decoded.messageChunk().transferId());
-            assertEquals(chunk.logicalSequence(), decoded.messageChunk().logicalSequence());
+            assertEquals(chunk.messageTypeId(), decoded.messageChunk().messageTypeId());
+            assertEquals(chunk.sequence(), decoded.messageChunk().sequence());
             assertArrayEquals(chunk.data(), decoded.messageChunk().data());
         } finally {
             buffer.release();

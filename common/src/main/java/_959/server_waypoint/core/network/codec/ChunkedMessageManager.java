@@ -13,24 +13,32 @@ import io.netty.buffer.Unpooled;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.zip.CRC32;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 /**
- * Encodes, chunks, reassembles, retries, and sequence-orders logical messages.
- * Public operations are synchronized because loader network and tick threads may
- * share one manager.
+ * Encodes, fragments, queues, and reassembles logical messages.
+ *
+ * <p>Minecraft's connection already provides reliable ordered delivery, so the
+ * chunk layer deliberately has no acknowledgement or retry protocol. Expensive
+ * encoding and decoding happens outside transport state locks. Each peer has a
+ * small independent state lock, while one short accounting lock bounds the
+ * immutable bodies shared by outbound peers and the declared size of inbound
+ * transfers.</p>
  */
 public final class ChunkedMessageManager<P> {
     public static final int MAX_CHUNK_DATA_SIZE = 24 * 1_024;
@@ -39,177 +47,261 @@ public final class ChunkedMessageManager<P> {
             (MAX_MESSAGE_BYTES + MAX_CHUNK_DATA_SIZE - 1) / MAX_CHUNK_DATA_SIZE;
     public static final int MAX_ACTIVE_TRANSFERS_PER_PEER = 8;
     public static final int MAX_DECODED_OBJECTS = 1_000_000;
-    private static final int MAX_COMPLETED_TRANSFERS_PER_PEER = 64;
-    private static final long RETRY_DELAY_NANOS = TimeUnit.SECONDS.toNanos(2);
+    public static final long MAX_GLOBAL_RETAINED_BYTES = 256L * 1_024L * 1_024L;
+    public static final int MAX_FRAMES_PER_PEER_TICK = 8;
+    public static final int MAX_BYTES_PER_PEER_TICK =
+            MAX_FRAMES_PER_PEER_TICK * MAX_CHUNK_DATA_SIZE;
     private static final long TRANSFER_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(30);
-    private static final int MAX_RETRY_REQUESTS = 3;
+    public static final ReceiveLimits DEFAULT_RECEIVE_LIMITS = new ReceiveLimits(
+            MAX_MESSAGE_BYTES,
+            MAX_DECODED_OBJECTS
+    );
 
-    private final Map<TransferKey<P>, OutgoingTransfer> outgoing = new HashMap<>();
-    private final Map<TransferKey<P>, IncomingTransfer> incoming = new HashMap<>();
-    private final Map<TransferKey<P>, CompletedTransfer> completedTransfers = new HashMap<>();
-    private final Map<SequenceKey<P>, UUID> activeIncomingSequences = new HashMap<>();
-    private final Map<SequenceKey<P>, RecentSequence> recentSequences = new HashMap<>();
-    private final Map<P, Long> nextOutgoingSequences = new HashMap<>();
-    private final Map<P, Long> nextIncomingSequences = new HashMap<>();
-    private final Map<P, TreeMap<Long, CompletedMessage>> orderedMessages = new HashMap<>();
-    private final Map<P, OrderingGap> orderingGaps = new HashMap<>();
+    private final ConcurrentHashMap<P, PeerState> peers = new ConcurrentHashMap<>();
+    private final ReentrantLock accountingLock = new ReentrantLock();
+    private final IdentityHashMap<PreparedMessage, Integer> outgoingBodyReferences =
+            new IdentityHashMap<>();
+    private final long maxGlobalRetainedBytes;
+    private final int maxFramesPerPeerTick;
+    private final int maxBytesPerPeerTick;
+    private long globallyRetainedBytes;
 
-    public synchronized ChunkedMessageSendResult send(
+    public ChunkedMessageManager() {
+        this(
+                MAX_GLOBAL_RETAINED_BYTES,
+                MAX_FRAMES_PER_PEER_TICK,
+                MAX_BYTES_PER_PEER_TICK
+        );
+    }
+
+    ChunkedMessageManager(
+            long maxGlobalRetainedBytes,
+            int maxFramesPerPeerTick,
+            int maxBytesPerPeerTick
+    ) {
+        if (maxGlobalRetainedBytes <= 0
+                || maxFramesPerPeerTick <= 0
+                || maxBytesPerPeerTick <= 0) {
+            throw new IllegalArgumentException("Chunked-message limits must be positive");
+        }
+        this.maxGlobalRetainedBytes = maxGlobalRetainedBytes;
+        this.maxFramesPerPeerTick = maxFramesPerPeerTick;
+        this.maxBytesPerPeerTick = maxBytesPerPeerTick;
+    }
+
+    public ChunkedMessageSendResult send(
             P peer,
             ChunkedMessage message,
             boolean compressionEnabled,
-            Consumer<MessageChunkBuffer> packetSender
+            Consumer<List<MessageChunkBuffer>> batchSender
     ) {
-        long now = System.nanoTime();
-        this.cleanupExpiredCaches(now);
-        if (this.countTransfers(this.outgoing, peer) >= MAX_ACTIVE_TRANSFERS_PER_PEER) {
-            return ChunkedMessageSendResult.PEER_BUSY;
-        }
-        long logicalSequence = this.nextOutgoingSequences.getOrDefault(peer, 0L);
-        List<MessageChunkBuffer> packets = createTransfer(message, compressionEnabled, logicalSequence);
-        int retainedBytes = packets.stream().mapToInt(MessageChunkBuffer::dataLength).sum();
-        if (this.retainedOutgoingBytes(peer) + retainedBytes > MAX_MESSAGE_BYTES) {
-            return ChunkedMessageSendResult.PEER_BUSY;
-        }
-        this.nextOutgoingSequences.put(peer, incrementSequence(logicalSequence));
-        UUID transferId = packets.get(0).transferId();
-        this.outgoing.put(
-                new TransferKey<>(peer, transferId),
-                new OutgoingTransfer(packets, packetSender, retainedBytes, now)
-        );
-        for (MessageChunkBuffer packet : packets) {
-            packetSender.accept(packet);
-        }
-        return ChunkedMessageSendResult.QUEUED;
+        return this.send(peer, prepare(message, compressionEnabled), batchSender);
     }
 
-    public synchronized List<ChunkedMessage> receive(
+    public ChunkedMessageSendResult send(
+            P peer,
+            PreparedMessage message,
+            Consumer<List<MessageChunkBuffer>> batchSender
+    ) {
+        Objects.requireNonNull(peer, "peer");
+        Objects.requireNonNull(message, "message");
+        Objects.requireNonNull(batchSender, "batchSender");
+        PeerState state;
+        while (true) {
+            state = this.peers.computeIfAbsent(peer, ignored -> new PeerState());
+            state.stateLock.lock();
+            try {
+                if (state.closed) {
+                    this.peers.remove(peer, state);
+                    continue;
+                }
+                if (state.outgoing.size() >= MAX_ACTIVE_TRANSFERS_PER_PEER
+                        || state.outgoingRetainedBytes + message.retainedBytes
+                        > MAX_MESSAGE_BYTES) {
+                    return ChunkedMessageSendResult.PEER_BUSY;
+                }
+                if (!this.retainOutgoingBody(message)) {
+                    return ChunkedMessageSendResult.PEER_BUSY;
+                }
+                state.outgoing.addLast(new OutgoingTransfer(message, batchSender));
+                state.outgoingRetainedBytes += message.retainedBytes;
+                break;
+            } finally {
+                state.stateLock.unlock();
+            }
+        }
+        return this.drainPeer(peer, state) == DrainResult.FAILED
+                ? ChunkedMessageSendResult.DELIVERY_FAILED
+                : ChunkedMessageSendResult.QUEUED;
+    }
+
+    public List<ChunkedMessage> receive(
             P peer,
             MessageChunkBuffer packet,
-            Consumer<MessageChunkBuffer> responseSender,
-            Runnable orderingFailureHandler
+            Runnable failureHandler
     ) {
-        long now = System.nanoTime();
-        this.cleanupExpiredCaches(now);
-        TransferKey<P> key = new TransferKey<>(peer, packet.transferId());
-        return switch (packet.operation()) {
-            case ACKNOWLEDGEMENT -> {
-                this.outgoing.remove(key);
-                yield List.of();
-            }
-            case RETRY -> {
-                this.resendMissing(key, packet.missingSequences(), responseSender, now);
-                yield List.of();
-            }
-            case CHUNK -> this.receiveChunk(
-                    key,
-                    packet,
-                    responseSender,
-                    orderingFailureHandler,
-                    now
-            );
-        };
+        return this.receive(peer, packet, failureHandler, DEFAULT_RECEIVE_LIMITS);
     }
 
-    public synchronized void tick() {
+    public List<ChunkedMessage> receive(
+            P peer,
+            MessageChunkBuffer packet,
+            Runnable failureHandler,
+            ReceiveLimits limits
+    ) {
+        Objects.requireNonNull(peer, "peer");
+        Objects.requireNonNull(packet, "packet");
+        Objects.requireNonNull(failureHandler, "failureHandler");
+        Objects.requireNonNull(limits, "limits");
+        validateChunk(packet, limits);
+        long now = System.nanoTime();
+        PeerState state;
+        IncomingTransfer completed;
+        while (true) {
+            state = this.peers.computeIfAbsent(peer, ignored -> new PeerState());
+            state.stateLock.lock();
+            try {
+                if (state.closed) {
+                    this.peers.remove(peer, state);
+                    continue;
+                }
+                try {
+                    IncomingTransfer transfer = state.incoming.get(packet.transferId());
+                    if (transfer == null) {
+                        if (state.incoming.size() >= MAX_ACTIVE_TRANSFERS_PER_PEER) {
+                            throw new IllegalStateException(
+                                    "Too many incoming chunked-message transfers for peer"
+                            );
+                        }
+                        if (state.incomingDeclaredBytes + packet.uncompressedSize()
+                                > MAX_MESSAGE_BYTES) {
+                            throw new IllegalStateException(
+                                    "Too many incoming chunked-message bytes retained for peer"
+                            );
+                        }
+                        long reservedBytes = incomingReservation(packet.uncompressedSize());
+                        if (!this.reserveIncomingBytes(reservedBytes)) {
+                            throw new IllegalStateException(
+                                    "Global chunked-message retained-byte budget exhausted"
+                            );
+                        }
+                        transfer = new IncomingTransfer(
+                                packet,
+                                failureHandler,
+                                limits,
+                                now,
+                                reservedBytes
+                        );
+                        state.incoming.put(packet.transferId(), transfer);
+                        state.incomingDeclaredBytes += transfer.uncompressedSize;
+                    } else {
+                        transfer.validateMetadata(packet, limits);
+                        transfer.failureHandler = failureHandler;
+                    }
+                    transfer.accept(packet);
+                    if (!transfer.complete()) {
+                        return List.of();
+                    }
+                    state.incoming.remove(packet.transferId());
+                    state.incomingDeclaredBytes -= transfer.uncompressedSize;
+                    completed = transfer;
+                    break;
+                } catch (RuntimeException exception) {
+                    IncomingTransfer failed = state.incoming.remove(packet.transferId());
+                    if (failed != null) {
+                        state.incomingDeclaredBytes -= failed.uncompressedSize;
+                        this.releaseIncomingBytes(failed.reservedBytes);
+                    }
+                    throw exception;
+                }
+            } finally {
+                state.stateLock.unlock();
+            }
+        }
+
+        state.decodeLock.lock();
+        try {
+            return List.of(completed.decode());
+        } finally {
+            state.decodeLock.unlock();
+            this.releaseIncomingBytes(completed.reservedBytes);
+        }
+    }
+
+    public void tick() {
         this.tick(System.nanoTime());
     }
 
-    synchronized void tick(long now) {
-        List<Runnable> actions = new ArrayList<>();
-        Iterator<Map.Entry<TransferKey<P>, OutgoingTransfer>> outgoingIterator =
-                this.outgoing.entrySet().iterator();
-        while (outgoingIterator.hasNext()) {
-            OutgoingTransfer transfer = outgoingIterator.next().getValue();
-            if (now - transfer.createdNanos >= TRANSFER_TIMEOUT_NANOS) {
-                outgoingIterator.remove();
-                continue;
-            }
-            if (now - transfer.lastActivityNanos < RETRY_DELAY_NANOS) {
-                continue;
-            }
-            if (transfer.retryAttempts >= MAX_RETRY_REQUESTS) {
-                outgoingIterator.remove();
-                continue;
-            }
-            MessageChunkBuffer probe = transfer.packets.get(0);
-            actions.add(() -> transfer.packetSender.accept(probe));
-            transfer.lastActivityNanos = now;
-            transfer.retryAttempts++;
+    public void tick(P peer) {
+        PeerState state = this.peers.get(peer);
+        if (state == null) {
+            return;
         }
-
-        Iterator<Map.Entry<TransferKey<P>, IncomingTransfer>> incomingIterator =
-                this.incoming.entrySet().iterator();
-        Map<P, Runnable> failedPeers = new HashMap<>();
-        while (incomingIterator.hasNext()) {
-            Map.Entry<TransferKey<P>, IncomingTransfer> entry = incomingIterator.next();
-            IncomingTransfer transfer = entry.getValue();
-            if (now - transfer.createdNanos >= TRANSFER_TIMEOUT_NANOS) {
-                incomingIterator.remove();
-                this.activeIncomingSequences.remove(
-                        new SequenceKey<>(entry.getKey().peer, transfer.logicalSequence)
-                );
-                failedPeers.put(entry.getKey().peer, transfer.orderingFailureHandler);
-                continue;
-            }
-            if (now - transfer.lastProgressNanos < RETRY_DELAY_NANOS
-                    || now - transfer.lastRetryNanos < RETRY_DELAY_NANOS) {
-                continue;
-            }
-            if (transfer.retryRequests >= MAX_RETRY_REQUESTS) {
-                continue;
-            }
-            MessageChunkBuffer retry = MessageChunkBuffer.retry(
-                    entry.getKey().transferId,
-                    transfer.missingSequences()
-            );
-            actions.add(() -> transfer.responseSender.accept(retry));
-            transfer.lastRetryNanos = now;
-            transfer.retryRequests++;
-        }
-
-        for (Map.Entry<P, OrderingGap> entry : this.orderingGaps.entrySet()) {
-            if (now - entry.getValue().createdNanos >= TRANSFER_TIMEOUT_NANOS) {
-                failedPeers.put(entry.getKey(), entry.getValue().failureHandler);
-            }
-        }
-        for (Map.Entry<P, Runnable> entry : failedPeers.entrySet()) {
-            this.cancelOrderedQueue(entry.getKey());
-            actions.add(entry.getValue());
-        }
-        this.cleanupExpiredCaches(now);
-        actions.forEach(Runnable::run);
+        long now = System.nanoTime();
+        this.expireIncoming(peer, state, now);
+        this.drainPeer(peer, state);
     }
 
-    public synchronized void clear(P peer) {
-        this.outgoing.keySet().removeIf(key -> java.util.Objects.equals(key.peer, peer));
-        this.incoming.keySet().removeIf(key -> java.util.Objects.equals(key.peer, peer));
-        this.completedTransfers.keySet().removeIf(key -> java.util.Objects.equals(key.peer, peer));
-        this.activeIncomingSequences.keySet().removeIf(key -> java.util.Objects.equals(key.peer, peer));
-        this.recentSequences.keySet().removeIf(key -> java.util.Objects.equals(key.peer, peer));
-        this.nextOutgoingSequences.remove(peer);
-        this.nextIncomingSequences.remove(peer);
-        this.orderedMessages.remove(peer);
-        this.orderingGaps.remove(peer);
+    public boolean hasPending(P peer) {
+        PeerState state = this.peers.get(peer);
+        if (state == null) {
+            return false;
+        }
+        state.stateLock.lock();
+        try {
+            return !state.closed
+                    && (!state.outgoing.isEmpty() || !state.incoming.isEmpty());
+        } finally {
+            state.stateLock.unlock();
+        }
     }
 
-    public synchronized void clearAll() {
-        this.outgoing.clear();
-        this.incoming.clear();
-        this.completedTransfers.clear();
-        this.activeIncomingSequences.clear();
-        this.recentSequences.clear();
-        this.nextOutgoingSequences.clear();
-        this.nextIncomingSequences.clear();
-        this.orderedMessages.clear();
-        this.orderingGaps.clear();
+    void tick(long now) {
+        for (Map.Entry<P, PeerState> entry : this.peers.entrySet()) {
+            this.expireIncoming(entry.getKey(), entry.getValue(), now);
+            this.drainPeer(entry.getKey(), entry.getValue());
+        }
     }
 
-    public static List<MessageChunkBuffer> createTransfer(
+    public void clear(P peer) {
+        PeerState state = this.peers.remove(peer);
+        if (state == null) {
+            return;
+        }
+        List<PreparedMessage> outgoingBodies = new ArrayList<>();
+        long incomingBytes = 0;
+        state.stateLock.lock();
+        try {
+            state.closed = true;
+            for (OutgoingTransfer transfer : state.outgoing) {
+                outgoingBodies.add(transfer.message);
+            }
+            state.outgoing.clear();
+            state.outgoingRetainedBytes = 0;
+            for (IncomingTransfer transfer : state.incoming.values()) {
+                incomingBytes += transfer.reservedBytes;
+            }
+            state.incoming.clear();
+            state.incomingDeclaredBytes = 0;
+            state.inFlight = null;
+        } finally {
+            state.stateLock.unlock();
+        }
+        outgoingBodies.forEach(this::releaseOutgoingBody);
+        this.releaseIncomingBytes(incomingBytes);
+    }
+
+    public void clearAll() {
+        for (P peer : List.copyOf(this.peers.keySet())) {
+            this.clear(peer);
+        }
+    }
+
+    public static PreparedMessage prepare(
             ChunkedMessage message,
-            boolean compressionEnabled,
-            long logicalSequence
+            boolean compressionEnabled
     ) {
+        Objects.requireNonNull(message, "message");
         byte[] uncompressed = encodeMessage(message);
         byte[] compressed = compressionEnabled ? compress(uncompressed) : uncompressed;
         boolean useCompression = compressionEnabled && compressed.length < uncompressed.length;
@@ -225,13 +317,12 @@ public final class ChunkedMessageManager<P> {
         crc32.update(uncompressed);
         int checksum = (int) crc32.getValue();
         UUID transferId = UUID.randomUUID();
-        List<MessageChunkBuffer> result = new ArrayList<>(chunkCount);
+        List<MessageChunkBuffer> frames = new ArrayList<>(chunkCount);
         for (int sequence = 0; sequence < chunkCount; sequence++) {
             int from = sequence * MAX_CHUNK_DATA_SIZE;
             int to = Math.min(from + MAX_CHUNK_DATA_SIZE, transmitted.length);
-            result.add(MessageChunkBuffer.chunk(
+            frames.add(MessageChunkBuffer.chunk(
                     transferId,
-                    logicalSequence,
                     message.getType().id(),
                     sequence,
                     chunkCount,
@@ -241,293 +332,192 @@ public final class ChunkedMessageManager<P> {
                     Arrays.copyOfRange(transmitted, from, to)
             ));
         }
-        return List.copyOf(result);
+        return new PreparedMessage(frames, transmitted.length);
+    }
+
+    public static List<MessageChunkBuffer> createTransfer(
+            ChunkedMessage message,
+            boolean compressionEnabled
+    ) {
+        return prepare(message, compressionEnabled).frames;
     }
 
     public static void validateEncodable(ChunkedMessage message) {
         encodeMessage(message);
     }
 
-    private List<ChunkedMessage> receiveChunk(
-            TransferKey<P> key,
-            MessageChunkBuffer packet,
-            Consumer<MessageChunkBuffer> responseSender,
-            Runnable orderingFailureHandler,
-            long now
-    ) {
-        CompletedTransfer completed = this.completedTransfers.get(key);
-        if (completed != null && completed.expiresAt > now) {
-            if (!completed.matches(packet)) {
-                throw new IllegalArgumentException("Conflicting completed message chunk");
-            }
-            responseSender.accept(MessageChunkBuffer.acknowledgement(packet.transferId()));
-            return List.of();
+    long globallyRetainedBytes() {
+        this.accountingLock.lock();
+        try {
+            return this.globallyRetainedBytes;
+        } finally {
+            this.accountingLock.unlock();
         }
-        validateChunk(packet);
-        SequenceKey<P> sequenceKey = new SequenceKey<>(key.peer, packet.logicalSequence());
-        TreeMap<Long, CompletedMessage> completedQueue = this.orderedMessages.get(key.peer);
-        CompletedMessage queued = completedQueue == null
-                ? null
-                : completedQueue.get(packet.logicalSequence());
-        if (queued != null) {
-            if (!queued.matches(packet)) {
-                throw new IllegalArgumentException("Conflicting queued logical message sequence");
-            }
-            responseSender.accept(MessageChunkBuffer.acknowledgement(packet.transferId()));
-            return List.of();
-        }
-        RecentSequence recent = this.recentSequences.get(sequenceKey);
-        if (recent != null) {
-            if (!recent.transferId.equals(packet.transferId())) {
-                throw new IllegalArgumentException("Conflicting duplicate logical message sequence");
-            }
-            responseSender.accept(MessageChunkBuffer.acknowledgement(packet.transferId()));
-            return List.of();
-        }
-        UUID activeTransferId = this.activeIncomingSequences.get(sequenceKey);
-        if (activeTransferId != null && !activeTransferId.equals(packet.transferId())) {
-            throw new IllegalArgumentException("Conflicting active logical message sequence");
-        }
-        long expectedSequence = this.nextIncomingSequences.getOrDefault(key.peer, 0L);
-        if (packet.logicalSequence() < expectedSequence) {
-            throw new IllegalArgumentException("Stale logical message sequence");
-        }
+    }
 
-        IncomingTransfer transfer = this.incoming.get(key);
-        if (transfer == null) {
-            if (this.countTransfers(this.incoming, key.peer) >= MAX_ACTIVE_TRANSFERS_PER_PEER) {
-                throw new IllegalStateException("Too many incoming chunked-message transfers for peer");
+    private DrainResult drainPeer(P peer, PeerState state) {
+        PendingBatch pending;
+        state.stateLock.lock();
+        try {
+            if (state.closed || state.inFlight != null) {
+                return DrainResult.NONE;
             }
-            if (this.declaredIncomingBytes(key.peer) + packet.uncompressedSize() > MAX_MESSAGE_BYTES) {
-                throw new IllegalStateException("Too many incoming chunked-message bytes retained for peer");
+            OutgoingTransfer transfer = state.outgoing.peekFirst();
+            if (transfer == null) {
+                return DrainResult.NONE;
             }
-            transfer = new IncomingTransfer(
-                    packet,
-                    responseSender,
-                    orderingFailureHandler,
-                    now
+            int start = transfer.nextFrame;
+            int end = start;
+            int bytes = 0;
+            List<MessageChunkBuffer> frames = transfer.message.frames;
+            while (end < frames.size() && end - start < this.maxFramesPerPeerTick) {
+                int frameBytes = frames.get(end).dataLength();
+                if (end > start && bytes + frameBytes > this.maxBytesPerPeerTick) {
+                    break;
+                }
+                bytes += frameBytes;
+                end++;
+            }
+            pending = new PendingBatch(
+                    transfer,
+                    end,
+                    List.copyOf(frames.subList(start, end))
             );
-            this.incoming.put(key, transfer);
-            this.activeIncomingSequences.put(sequenceKey, packet.transferId());
-        } else {
-            transfer.validateMetadata(packet);
-            transfer.responseSender = responseSender;
-            transfer.orderingFailureHandler = orderingFailureHandler;
+            state.inFlight = pending;
+        } finally {
+            state.stateLock.unlock();
         }
-        transfer.accept(packet, now);
-        if (!transfer.complete()) {
-            if (packet.sequence() == packet.chunkCount() - 1
-                    && transfer.retryRequests < MAX_RETRY_REQUESTS) {
-                responseSender.accept(MessageChunkBuffer.retry(
-                        packet.transferId(),
-                        transfer.missingSequences()
-                ));
-                transfer.lastRetryNanos = now;
-                transfer.retryRequests++;
+
+        try {
+            pending.transfer.batchSender.accept(pending.frames);
+        } catch (RuntimeException exception) {
+            this.clear(peer);
+            return DrainResult.FAILED;
+        }
+
+        PreparedMessage completedBody = null;
+        state.stateLock.lock();
+        try {
+            if (state.closed || state.inFlight != pending) {
+                return DrainResult.SENT;
             }
-            this.noteOrderingGap(key.peer, packet.logicalSequence(), orderingFailureHandler, now);
-            return List.of();
+            pending.transfer.nextFrame = pending.nextFrame;
+            if (pending.transfer.nextFrame == pending.transfer.message.frames.size()) {
+                OutgoingTransfer removed = state.outgoing.removeFirst();
+                if (removed != pending.transfer) {
+                    throw new IllegalStateException("Chunked-message outbound queue changed unexpectedly");
+                }
+                state.outgoingRetainedBytes -= removed.message.retainedBytes;
+                completedBody = removed.message;
+            }
+            state.inFlight = null;
+        } finally {
+            state.stateLock.unlock();
         }
-
-        this.incoming.remove(key);
-        this.activeIncomingSequences.remove(sequenceKey);
-        ChunkedMessage message = transfer.decode();
-        this.rememberCompleted(key, sequenceKey, transfer, now + TRANSFER_TIMEOUT_NANOS);
-        responseSender.accept(MessageChunkBuffer.acknowledgement(packet.transferId()));
-
-        TreeMap<Long, CompletedMessage> queue =
-                this.orderedMessages.computeIfAbsent(key.peer, ignored -> new TreeMap<>());
-        CompletedMessage previous = queue.putIfAbsent(
-                packet.logicalSequence(),
-                new CompletedMessage(
-                        packet.transferId(),
-                        message,
-                        transfer.uncompressedSize,
-                        transfer.messageTypeId,
-                        transfer.chunkCount,
-                        transfer.compressed,
-                        transfer.checksum
-                )
-        );
-        if (previous != null && !previous.transferId.equals(packet.transferId())) {
-            throw new IllegalArgumentException("Conflicting completed logical message sequence");
+        if (completedBody != null) {
+            this.releaseOutgoingBody(completedBody);
         }
-        if (queue.size() > MAX_COMPLETED_TRANSFERS_PER_PEER
-                || this.orderedRetainedBytes(key.peer) > MAX_MESSAGE_BYTES) {
-            this.cancelOrderedQueue(key.peer);
-            orderingFailureHandler.run();
-            return List.of();
-        }
-        return this.drainOrderedMessages(key.peer, orderingFailureHandler, now);
+        return DrainResult.SENT;
     }
 
-    private List<ChunkedMessage> drainOrderedMessages(
-            P peer,
-            Runnable orderingFailureHandler,
-            long now
-    ) {
-        TreeMap<Long, CompletedMessage> queue = this.orderedMessages.get(peer);
-        if (queue == null) {
-            return List.of();
-        }
-        long expected = this.nextIncomingSequences.getOrDefault(peer, 0L);
-        List<ChunkedMessage> result = new ArrayList<>();
-        CompletedMessage completed;
-        while ((completed = queue.remove(expected)) != null) {
-            result.add(completed.message);
-            expected = incrementSequence(expected);
-        }
-        this.nextIncomingSequences.put(peer, expected);
-        if (queue.isEmpty()) {
-            this.orderedMessages.remove(peer);
-            this.orderingGaps.remove(peer);
-        } else {
-            this.noteOrderingGap(peer, queue.firstKey(), orderingFailureHandler, now);
-        }
-        return List.copyOf(result);
-    }
-
-    private void noteOrderingGap(P peer, long observedSequence, Runnable failureHandler, long now) {
-        long expected = this.nextIncomingSequences.getOrDefault(peer, 0L);
-        if (observedSequence > expected) {
-            this.orderingGaps.putIfAbsent(peer, new OrderingGap(now, failureHandler));
-        }
-    }
-
-    private void cancelOrderedQueue(P peer) {
-        long highest = this.nextIncomingSequences.getOrDefault(peer, 0L) - 1;
-        TreeMap<Long, CompletedMessage> queue = this.orderedMessages.remove(peer);
-        if (queue != null && !queue.isEmpty()) {
-            highest = Math.max(highest, queue.lastKey());
-        }
-        Iterator<Map.Entry<TransferKey<P>, IncomingTransfer>> iterator = this.incoming.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<TransferKey<P>, IncomingTransfer> entry = iterator.next();
-            if (java.util.Objects.equals(entry.getKey().peer, peer)) {
-                highest = Math.max(highest, entry.getValue().logicalSequence);
-                this.activeIncomingSequences.remove(
-                        new SequenceKey<>(peer, entry.getValue().logicalSequence)
-                );
+    private void expireIncoming(P peer, PeerState state, long now) {
+        List<Runnable> failureHandlers = new ArrayList<>();
+        long releasedBytes = 0;
+        state.stateLock.lock();
+        try {
+            if (state.closed) {
+                return;
+            }
+            Iterator<IncomingTransfer> iterator = state.incoming.values().iterator();
+            while (iterator.hasNext()) {
+                IncomingTransfer transfer = iterator.next();
+                if (now - transfer.createdNanos < TRANSFER_TIMEOUT_NANOS) {
+                    continue;
+                }
                 iterator.remove();
+                state.incomingDeclaredBytes -= transfer.uncompressedSize;
+                releasedBytes += transfer.reservedBytes;
+                failureHandlers.add(transfer.failureHandler);
+            }
+        } finally {
+            state.stateLock.unlock();
+        }
+        this.releaseIncomingBytes(releasedBytes);
+        for (Runnable failureHandler : failureHandlers) {
+            try {
+                failureHandler.run();
+            } catch (RuntimeException ignored) {
+                this.clear(peer);
             }
         }
-        this.nextIncomingSequences.put(peer, incrementSequence(highest));
-        this.orderingGaps.remove(peer);
     }
 
-    private void resendMissing(
-            TransferKey<P> key,
-            int[] missingSequences,
-            Consumer<MessageChunkBuffer> packetSender,
-            long now
-    ) {
-        OutgoingTransfer transfer = this.outgoing.get(key);
-        if (transfer == null) {
+    private boolean retainOutgoingBody(PreparedMessage message) {
+        this.accountingLock.lock();
+        try {
+            Integer references = this.outgoingBodyReferences.get(message);
+            if (references == null) {
+                if (this.globallyRetainedBytes + message.retainedBytes
+                        > this.maxGlobalRetainedBytes) {
+                    return false;
+                }
+                this.globallyRetainedBytes += message.retainedBytes;
+                references = 0;
+            }
+            this.outgoingBodyReferences.put(message, references + 1);
+            return true;
+        } finally {
+            this.accountingLock.unlock();
+        }
+    }
+
+    private void releaseOutgoingBody(PreparedMessage message) {
+        this.accountingLock.lock();
+        try {
+            Integer references = this.outgoingBodyReferences.get(message);
+            if (references == null) {
+                return;
+            }
+            if (references == 1) {
+                this.outgoingBodyReferences.remove(message);
+                this.globallyRetainedBytes -= message.retainedBytes;
+            } else {
+                this.outgoingBodyReferences.put(message, references - 1);
+            }
+        } finally {
+            this.accountingLock.unlock();
+        }
+    }
+
+    private boolean reserveIncomingBytes(long bytes) {
+        this.accountingLock.lock();
+        try {
+            if (this.globallyRetainedBytes + bytes > this.maxGlobalRetainedBytes) {
+                return false;
+            }
+            this.globallyRetainedBytes += bytes;
+            return true;
+        } finally {
+            this.accountingLock.unlock();
+        }
+    }
+
+    private void releaseIncomingBytes(long bytes) {
+        if (bytes == 0) {
             return;
         }
-        transfer.lastActivityNanos = now;
-        boolean[] sent = new boolean[transfer.packets.size()];
-        for (int missingSequence : missingSequences) {
-            if (missingSequence < 0 || missingSequence >= transfer.packets.size()) {
-                throw new IllegalArgumentException("Invalid missing message-chunk sequence: " + missingSequence);
+        this.accountingLock.lock();
+        try {
+            this.globallyRetainedBytes -= bytes;
+            if (this.globallyRetainedBytes < 0) {
+                throw new IllegalStateException("Chunked-message retained-byte accounting underflow");
             }
-            if (!sent[missingSequence]) {
-                packetSender.accept(transfer.packets.get(missingSequence));
-                sent[missingSequence] = true;
-            }
+        } finally {
+            this.accountingLock.unlock();
         }
     }
 
-    private void cleanupExpiredCaches(long now) {
-        this.outgoing.entrySet().removeIf(entry ->
-                now - entry.getValue().createdNanos >= TRANSFER_TIMEOUT_NANOS);
-        this.completedTransfers.entrySet().removeIf(entry -> entry.getValue().expiresAt <= now);
-        this.recentSequences.entrySet().removeIf(entry -> entry.getValue().expiresAt <= now);
-    }
-
-    private <T> int countTransfers(Map<TransferKey<P>, T> transfers, P peer) {
-        int count = 0;
-        for (TransferKey<P> key : transfers.keySet()) {
-            if (java.util.Objects.equals(key.peer, peer)) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    private long declaredIncomingBytes(P peer) {
-        long bytes = 0;
-        for (Map.Entry<TransferKey<P>, IncomingTransfer> entry : this.incoming.entrySet()) {
-            if (java.util.Objects.equals(entry.getKey().peer, peer)) {
-                bytes += entry.getValue().uncompressedSize;
-            }
-        }
-        return bytes;
-    }
-
-    private long retainedOutgoingBytes(P peer) {
-        long bytes = 0;
-        for (Map.Entry<TransferKey<P>, OutgoingTransfer> entry : this.outgoing.entrySet()) {
-            if (java.util.Objects.equals(entry.getKey().peer, peer)) {
-                bytes += entry.getValue().retainedBytes;
-            }
-        }
-        return bytes;
-    }
-
-    private long orderedRetainedBytes(P peer) {
-        TreeMap<Long, CompletedMessage> queue = this.orderedMessages.get(peer);
-        if (queue == null) {
-            return 0;
-        }
-        long bytes = 0;
-        for (CompletedMessage message : queue.values()) {
-            bytes += message.retainedBytes;
-        }
-        return bytes;
-    }
-
-    private void rememberCompleted(
-            TransferKey<P> transferKey,
-            SequenceKey<P> sequenceKey,
-            IncomingTransfer transfer,
-            long expiresAt
-    ) {
-        if (this.countTransfers(this.completedTransfers, transferKey.peer)
-                >= MAX_COMPLETED_TRANSFERS_PER_PEER) {
-            TransferKey<P> oldestKey = null;
-            long oldestExpiry = Long.MAX_VALUE;
-            for (Map.Entry<TransferKey<P>, CompletedTransfer> entry
-                    : this.completedTransfers.entrySet()) {
-                if (java.util.Objects.equals(entry.getKey().peer, transferKey.peer)
-                        && entry.getValue().expiresAt < oldestExpiry) {
-                    oldestKey = entry.getKey();
-                    oldestExpiry = entry.getValue().expiresAt;
-                }
-            }
-            if (oldestKey != null) {
-                this.completedTransfers.remove(oldestKey);
-                UUID removedTransferId = oldestKey.transferId;
-                this.recentSequences.entrySet().removeIf(entry ->
-                        java.util.Objects.equals(entry.getKey().peer, transferKey.peer)
-                                && entry.getValue().transferId.equals(removedTransferId)
-                );
-            }
-        }
-        this.completedTransfers.put(
-                transferKey,
-                CompletedTransfer.from(transfer, expiresAt)
-        );
-        this.recentSequences.put(
-                sequenceKey,
-                new RecentSequence(transferKey.transferId, expiresAt)
-        );
-    }
-
-    private static void validateChunk(MessageChunkBuffer packet) {
-        if (packet.logicalSequence() < 0) {
-            throw new IllegalArgumentException("Invalid logical message sequence");
-        }
+    private static void validateChunk(MessageChunkBuffer packet, ReceiveLimits limits) {
         ChunkedMessageRegistry.get(packet.messageTypeId());
         if (packet.chunkCount() <= 0 || packet.chunkCount() > MAX_CHUNKS_PER_TRANSFER) {
             throw new IllegalArgumentException("Invalid message chunk count: " + packet.chunkCount());
@@ -535,7 +525,8 @@ public final class ChunkedMessageManager<P> {
         if (packet.sequence() < 0 || packet.sequence() >= packet.chunkCount()) {
             throw new IllegalArgumentException("Invalid message chunk sequence: " + packet.sequence());
         }
-        if (packet.uncompressedSize() < 0 || packet.uncompressedSize() > MAX_MESSAGE_BYTES) {
+        if (packet.uncompressedSize() < 0
+                || packet.uncompressedSize() > limits.maxMessageBytes()) {
             throw new IllegalArgumentException("Invalid chunked-message size: " + packet.uncompressedSize());
         }
         int dataLength = packet.dataLength();
@@ -545,9 +536,14 @@ public final class ChunkedMessageManager<P> {
         if (packet.uncompressedSize() > 0 && dataLength == 0) {
             throw new IllegalArgumentException("Non-empty logical message has an empty chunk");
         }
-        if (packet.sequence() < packet.chunkCount() - 1 && dataLength != MAX_CHUNK_DATA_SIZE) {
+        if (packet.sequence() < packet.chunkCount() - 1
+                && dataLength != MAX_CHUNK_DATA_SIZE) {
             throw new IllegalArgumentException("Non-final message chunk has invalid length");
         }
+    }
+
+    private static long incomingReservation(int uncompressedSize) {
+        return Math.multiplyExact((long) uncompressedSize, 3L);
     }
 
     private static byte[] encodeMessage(ChunkedMessage message) {
@@ -571,20 +567,30 @@ public final class ChunkedMessageManager<P> {
         }
     }
 
-    private static ChunkedMessage decodeMessage(int typeId, byte[] bytes) {
+    private static ChunkedMessage decodeMessage(
+            int typeId,
+            byte[] bytes,
+            ReceiveLimits limits
+    ) {
         ByteBuf buffer = Unpooled.wrappedBuffer(bytes);
         try {
             ChunkedMessage result = ChunkedMessageRegistry.decode(
                     typeId,
                     buffer,
-                    new DecodingContext(MAX_MESSAGE_BYTES, MAX_DECODED_OBJECTS)
+                    new DecodingContext(
+                            limits.maxMessageBytes(),
+                            limits.maxDecodedObjects()
+                    )
             );
             if (buffer.isReadable()) {
                 throw new IllegalArgumentException("Chunked message has trailing bytes");
             }
             return result;
         } catch (IndexOutOfBoundsException exception) {
-            throw new IllegalArgumentException("Chunked message ended before decoding completed", exception);
+            throw new IllegalArgumentException(
+                    "Chunked message ended before decoding completed",
+                    exception
+            );
         } catch (IllegalArgumentException exception) {
             throw exception;
         } catch (RuntimeException exception) {
@@ -633,155 +639,124 @@ public final class ChunkedMessageManager<P> {
         }
     }
 
-    private static long incrementSequence(long sequence) {
-        if (sequence == Long.MAX_VALUE) {
-            throw new IllegalStateException("Logical message sequence exhausted");
+    public static final class PreparedMessage {
+        private final List<MessageChunkBuffer> frames;
+        private final int retainedBytes;
+
+        private PreparedMessage(List<MessageChunkBuffer> frames, int retainedBytes) {
+            this.frames = List.copyOf(frames);
+            this.retainedBytes = retainedBytes;
         }
-        return sequence + 1;
+
+        public List<MessageChunkBuffer> frames() {
+            return this.frames;
+        }
+
+        public int retainedBytes() {
+            return this.retainedBytes;
+        }
     }
 
-    private record TransferKey<P>(P peer, UUID transferId) {
-    }
-
-    private record SequenceKey<P>(P peer, long logicalSequence) {
-    }
-
-    private record RecentSequence(UUID transferId, long expiresAt) {
-    }
-
-    private record CompletedTransfer(
-            long logicalSequence,
-            int messageTypeId,
-            int chunkCount,
-            boolean compressed,
-            int uncompressedSize,
-            int checksum,
-            int[] chunkHashes,
-            long expiresAt
-    ) {
-        private static CompletedTransfer from(IncomingTransfer transfer, long expiresAt) {
-            int[] chunkHashes = new int[transfer.chunks.length];
-            for (int sequence = 0; sequence < transfer.chunks.length; sequence++) {
-                chunkHashes[sequence] = Arrays.hashCode(transfer.chunks[sequence]);
+    public record ReceiveLimits(int maxMessageBytes, int maxDecodedObjects) {
+        public ReceiveLimits {
+            if (maxMessageBytes <= 0 || maxMessageBytes > MAX_MESSAGE_BYTES) {
+                throw new IllegalArgumentException(
+                        "Receive byte limit must be between 1 and " + MAX_MESSAGE_BYTES
+                );
             }
-            return new CompletedTransfer(
-                    transfer.logicalSequence,
-                    transfer.messageTypeId,
-                    transfer.chunkCount,
-                    transfer.compressed,
-                    transfer.uncompressedSize,
-                    transfer.checksum,
-                    chunkHashes,
-                    expiresAt
-            );
-        }
-
-        private boolean matches(MessageChunkBuffer packet) {
-            return this.logicalSequence == packet.logicalSequence()
-                    && this.messageTypeId == packet.messageTypeId()
-                    && this.chunkCount == packet.chunkCount()
-                    && this.compressed == packet.compressed()
-                    && this.uncompressedSize == packet.uncompressedSize()
-                    && this.checksum == packet.checksum()
-                    && packet.sequence() >= 0
-                    && packet.sequence() < this.chunkHashes.length
-                    && this.chunkHashes[packet.sequence()] == Arrays.hashCode(packet.data());
+            if (maxDecodedObjects <= 0 || maxDecodedObjects > MAX_DECODED_OBJECTS) {
+                throw new IllegalArgumentException(
+                        "Receive object limit must be between 1 and " + MAX_DECODED_OBJECTS
+                );
+            }
         }
     }
 
-    private record CompletedMessage(
-            UUID transferId,
-            ChunkedMessage message,
-            int retainedBytes,
-            int messageTypeId,
-            int chunkCount,
-            boolean compressed,
-            int checksum
-    ) {
-        private boolean matches(MessageChunkBuffer packet) {
-            return this.transferId.equals(packet.transferId())
-                    && this.messageTypeId == packet.messageTypeId()
-                    && this.chunkCount == packet.chunkCount()
-                    && this.compressed == packet.compressed()
-                    && this.retainedBytes == packet.uncompressedSize()
-                    && this.checksum == packet.checksum();
-        }
+    private enum DrainResult {
+        NONE,
+        SENT,
+        FAILED
     }
 
-    private record OrderingGap(long createdNanos, Runnable failureHandler) {
+    private static final class PeerState {
+        private final ReentrantLock stateLock = new ReentrantLock();
+        private final ReentrantLock decodeLock = new ReentrantLock();
+        private final ArrayDeque<OutgoingTransfer> outgoing = new ArrayDeque<>();
+        private final Map<UUID, IncomingTransfer> incoming = new java.util.HashMap<>();
+        private long outgoingRetainedBytes;
+        private long incomingDeclaredBytes;
+        private PendingBatch inFlight;
+        private boolean closed;
     }
 
     private static final class OutgoingTransfer {
-        private final List<MessageChunkBuffer> packets;
-        private final Consumer<MessageChunkBuffer> packetSender;
-        private final int retainedBytes;
-        private final long createdNanos;
-        private long lastActivityNanos;
-        private int retryAttempts;
+        private final PreparedMessage message;
+        private final Consumer<List<MessageChunkBuffer>> batchSender;
+        private int nextFrame;
 
         private OutgoingTransfer(
-                List<MessageChunkBuffer> packets,
-                Consumer<MessageChunkBuffer> packetSender,
-                int retainedBytes,
-                long now
+                PreparedMessage message,
+                Consumer<List<MessageChunkBuffer>> batchSender
         ) {
-            this.packets = packets;
-            this.packetSender = packetSender;
-            this.retainedBytes = retainedBytes;
-            this.createdNanos = now;
-            this.lastActivityNanos = now;
+            this.message = message;
+            this.batchSender = batchSender;
         }
     }
 
+    private record PendingBatch(
+            OutgoingTransfer transfer,
+            int nextFrame,
+            List<MessageChunkBuffer> frames
+    ) {
+    }
+
     private static final class IncomingTransfer {
-        private final long logicalSequence;
         private final int messageTypeId;
         private final int chunkCount;
         private final boolean compressed;
         private final int uncompressedSize;
         private final int checksum;
+        private final ReceiveLimits limits;
+        private final long reservedBytes;
         private final byte[][] chunks;
         private final long createdNanos;
         private int receivedChunks;
         private int retainedBytes;
-        private long lastProgressNanos;
-        private long lastRetryNanos;
-        private int retryRequests;
-        private Consumer<MessageChunkBuffer> responseSender;
-        private Runnable orderingFailureHandler;
+        private Runnable failureHandler;
 
         private IncomingTransfer(
                 MessageChunkBuffer first,
-                Consumer<MessageChunkBuffer> responseSender,
-                Runnable orderingFailureHandler,
-                long now
+                Runnable failureHandler,
+                ReceiveLimits limits,
+                long now,
+                long reservedBytes
         ) {
-            this.logicalSequence = first.logicalSequence();
             this.messageTypeId = first.messageTypeId();
             this.chunkCount = first.chunkCount();
             this.compressed = first.compressed();
             this.uncompressedSize = first.uncompressedSize();
             this.checksum = first.checksum();
+            this.limits = limits;
+            this.reservedBytes = reservedBytes;
             this.chunks = new byte[this.chunkCount][];
             this.createdNanos = now;
-            this.responseSender = responseSender;
-            this.orderingFailureHandler = orderingFailureHandler;
-            this.lastProgressNanos = now;
-            this.lastRetryNanos = now;
+            this.failureHandler = failureHandler;
         }
 
-        private void validateMetadata(MessageChunkBuffer packet) {
-            if (packet.logicalSequence() != this.logicalSequence
-                    || packet.messageTypeId() != this.messageTypeId
+        private void validateMetadata(MessageChunkBuffer packet, ReceiveLimits limits) {
+            if (packet.messageTypeId() != this.messageTypeId
                     || packet.chunkCount() != this.chunkCount
                     || packet.compressed() != this.compressed
                     || packet.uncompressedSize() != this.uncompressedSize
-                    || packet.checksum() != this.checksum) {
-                throw new IllegalArgumentException("Conflicting chunked-message transfer metadata");
+                    || packet.checksum() != this.checksum
+                    || !limits.equals(this.limits)) {
+                throw new IllegalArgumentException(
+                        "Conflicting chunked-message transfer metadata"
+                );
             }
         }
 
-        private void accept(MessageChunkBuffer packet, long now) {
+        private void accept(MessageChunkBuffer packet) {
             byte[] data = packet.data();
             byte[] existing = this.chunks[packet.sequence()];
             if (existing != null) {
@@ -790,28 +765,18 @@ public final class ChunkedMessageManager<P> {
                 }
                 return;
             }
-            if (this.retainedBytes + data.length > MAX_MESSAGE_BYTES) {
-                throw new IllegalArgumentException("Chunked message exceeds retained-byte limit");
+            if (this.retainedBytes + data.length > this.uncompressedSize) {
+                throw new IllegalArgumentException(
+                        "Chunked message exceeds retained-byte limit"
+                );
             }
             this.chunks[packet.sequence()] = data;
             this.receivedChunks++;
             this.retainedBytes += data.length;
-            this.lastProgressNanos = now;
         }
 
         private boolean complete() {
             return this.receivedChunks == this.chunkCount;
-        }
-
-        private int[] missingSequences() {
-            int[] missing = new int[this.chunkCount - this.receivedChunks];
-            int index = 0;
-            for (int sequence = 0; sequence < this.chunks.length; sequence++) {
-                if (this.chunks[sequence] == null) {
-                    missing[index++] = sequence;
-                }
-            }
-            return missing;
         }
 
         private ChunkedMessage decode() {
@@ -825,7 +790,9 @@ public final class ChunkedMessageManager<P> {
                 uncompressed = decompress(transmitted, this.uncompressedSize);
             } else {
                 if (transmitted.length != this.uncompressedSize) {
-                    throw new IllegalArgumentException("Chunked message does not match declared size");
+                    throw new IllegalArgumentException(
+                            "Chunked message does not match declared size"
+                    );
                 }
                 uncompressed = transmitted;
             }
@@ -834,7 +801,7 @@ public final class ChunkedMessageManager<P> {
             if ((int) crc32.getValue() != this.checksum) {
                 throw new IllegalArgumentException("Chunked-message checksum mismatch");
             }
-            return decodeMessage(this.messageTypeId, uncompressed);
+            return decodeMessage(this.messageTypeId, uncompressed, this.limits);
         }
     }
 }

@@ -11,6 +11,7 @@ import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.core.network.buffer.*;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
+import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveLimits;
 import _959.server_waypoint.core.network.message.*;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
@@ -20,9 +21,10 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.io.IOException;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
@@ -30,6 +32,22 @@ import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 
 public class C2SPacketHandler<S, K, P> {
+    private static final int MAX_SERVERBOUND_IDENTIFIER_BYTES = 1_024;
+    private static final int MAX_UPDATE_REQUEST_DIMENSIONS = 1_024;
+    private static final int MAX_UPDATE_REQUEST_LISTS = 16_384;
+    private static final ReceiveLimits UPDATE_REQUEST_LIMITS = new ReceiveLimits(
+            1 * 1_024 * 1_024,
+            20_000
+    );
+    private static final ReceiveLimits EDIT_REQUEST_LIMITS = new ReceiveLimits(
+            64 * 1_024,
+            64
+    );
+    private static final ReceiveLimits UPLOAD_REQUEST_LIMITS = new ReceiveLimits(
+            16 * 1_024 * 1_024,
+            8_192
+    );
+
     private final PlatformMessageSender<S, P> sender;
     private final WaypointServerCore waypointServer;
     private final PermissionManager<S, K, P> permissionManager;
@@ -273,30 +291,33 @@ public class C2SPacketHandler<S, K, P> {
     }
 
     public void onMessageChunk(P player, MessageChunkBuffer buffer) {
-        if (buffer.operation() == MessageChunkBuffer.Operation.CHUNK
-                && buffer.messageTypeId() == ChunkedMessageRegistry.WAYPOINT_DATA.id()) {
-            LOGGER.warn("Ignoring serverbound waypoint data on the general chunk channel");
+        if (!this.sender.canSendChunkedMessage(player)) {
+            return;
+        }
+        ReceiveLimits limits = generalServerboundLimits(buffer.messageTypeId());
+        if (limits == null) {
+            LOGGER.warn(
+                    "Ignoring disallowed serverbound chunked-message type {}",
+                    buffer.messageTypeId()
+            );
             return;
         }
         try {
             for (ChunkedMessage message : this.sender.receiveChunkedMessage(
                     player,
                     buffer,
-                    () -> this.recoverFromOrderedMessageFailure(player)
+                    () -> this.recoverFromChunkedMessageFailure(player),
+                    limits
             )) {
                 if (message instanceof ClientUpdateRequestMessage updateRequest) {
+                    validateClientUpdateRequest(updateRequest);
                     this.onClientUpdateRequest(player, updateRequest);
                 } else if (message instanceof WaypointEditRequestMessage editRequest) {
+                    validateWaypointEditRequest(editRequest);
                     this.onWaypointEditRequest(player, editRequest);
-                } else if (message instanceof WaypointData data) {
-                    LOGGER.warn(
-                            "Ignoring waypoint data received on the general client channel: {}",
-                            data.type()
-                    );
                 } else {
-                    LOGGER.warn(
-                            "Ignoring serverbound chunked message type {}",
-                            message.getClass().getSimpleName()
+                    throw new IllegalArgumentException(
+                            "Decoded a disallowed serverbound chunked-message type"
                     );
                 }
             }
@@ -306,7 +327,12 @@ public class C2SPacketHandler<S, K, P> {
     }
 
     public void onUploadChunk(P player, UploadChunkBuffer buffer) {
-        if (!this.uploadCoordinator.acceptsUploadChunk(player, buffer.requestId())) {
+        if (!this.sender.canSendChunkedMessage(player)
+                || !this.uploadCoordinator.acceptsUploadChunk(player, buffer.requestId())) {
+            return;
+        }
+        if (buffer.messageChunk().messageTypeId() != ChunkedMessageRegistry.WAYPOINT_DATA.id()) {
+            this.failUploadTransport(player);
             return;
         }
         UUID activeRequest = this.activeUploadTransportRequest.get();
@@ -318,9 +344,8 @@ public class C2SPacketHandler<S, K, P> {
             for (ChunkedMessage message : this.uploadChunkedMessages.receive(
                     player,
                     buffer.messageChunk(),
-                    ignored -> {
-                    },
-                    () -> this.failUploadTransport(player)
+                    () -> this.failUploadTransport(player),
+                    UPLOAD_REQUEST_LIMITS
             )) {
                 if (!(message instanceof WaypointData data)
                         || data.type() != WaypointData.Type.UPLOAD
@@ -348,8 +373,8 @@ public class C2SPacketHandler<S, K, P> {
         this.sender.sendPlayerMessage(player, translatable("waypoint.upload.request.invalid"));
     }
 
-    private void recoverFromOrderedMessageFailure(P player) {
-        LOGGER.warn("Serverbound ordered message delivery failed; resynchronizing the client");
+    private void recoverFromChunkedMessageFailure(P player) {
+        LOGGER.warn("Serverbound chunked message delivery failed; resynchronizing the client");
         this.sender.sendPlayerMessage(
                 player,
                 translatable("waypoint.network.resynchronizing")
@@ -365,5 +390,60 @@ public class C2SPacketHandler<S, K, P> {
         this.sender.disconnectChunkedMessages(player);
         this.uploadChunkedMessages.clear(player);
         this.uploadCoordinator.onDisconnect(player);
+    }
+
+    public void tickUploadTransport() {
+        this.uploadChunkedMessages.tick();
+    }
+
+    private static ReceiveLimits generalServerboundLimits(int messageTypeId) {
+        if (messageTypeId == ChunkedMessageRegistry.CLIENT_UPDATE_REQUEST.id()) {
+            return UPDATE_REQUEST_LIMITS;
+        }
+        if (messageTypeId == ChunkedMessageRegistry.WAYPOINT_EDIT_REQUEST.id()) {
+            return EDIT_REQUEST_LIMITS;
+        }
+        return null;
+    }
+
+    private static void validateClientUpdateRequest(ClientUpdateRequestMessage request) {
+        if (request.dimensionSyncIds().size() > MAX_UPDATE_REQUEST_DIMENSIONS) {
+            throw new IllegalArgumentException("Client update request exceeds dimension limit");
+        }
+        Set<String> dimensions = new HashSet<>();
+        int listCount = 0;
+        for (DimensionSyncIdentifier dimension : request.dimensionSyncIds()) {
+            validateServerboundIdentifier(dimension.dimensionName(), false);
+            if (!dimensions.add(dimension.dimensionName())) {
+                throw new IllegalArgumentException("Client update request contains a duplicate dimension");
+            }
+            listCount = Math.addExact(listCount, dimension.listSyncIds().size());
+            if (listCount > MAX_UPDATE_REQUEST_LISTS) {
+                throw new IllegalArgumentException("Client update request exceeds waypoint-list limit");
+            }
+            Set<String> lists = new HashSet<>();
+            for (WaypointListSyncIdentifier list : dimension.listSyncIds()) {
+                validateServerboundIdentifier(list.listName(), true);
+                if (!lists.add(list.listName())) {
+                    throw new IllegalArgumentException(
+                            "Client update request contains a duplicate waypoint list"
+                    );
+                }
+            }
+        }
+    }
+
+    private static void validateWaypointEditRequest(WaypointEditRequestMessage request) {
+        validateServerboundIdentifier(request.dimensionName(), false);
+        validateServerboundIdentifier(request.listIdentifier(), true);
+        validateServerboundIdentifier(request.waypointIdentifier(), true);
+    }
+
+    private static void validateServerboundIdentifier(String value, boolean allowEmpty) {
+        if ((!allowEmpty && value.isEmpty())
+                || value.getBytes(StandardCharsets.UTF_8).length > MAX_SERVERBOUND_IDENTIFIER_BYTES
+                || value.chars().anyMatch(Character::isISOControl)) {
+            throw new IllegalArgumentException("Invalid serverbound identifier");
+        }
     }
 }

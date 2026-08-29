@@ -4,6 +4,8 @@ import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.buffer.MessageChunkBuffer;
 import _959.server_waypoint.core.network.message.WaypointModificationMessage;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
+import _959.server_waypoint.core.network.codec.ChunkedMessageManager.PreparedMessage;
+import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveLimits;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import net.kyori.adventure.text.Component;
 
@@ -30,12 +32,13 @@ public interface PlatformMessageSender<S, P> {
     Component getSenderName(S source);
 
     default ChunkedMessageSendResult sendPlayerChunkedMessage(P player, ChunkedMessage message) {
+        if (!this.canSendChunkedMessage(player)) {
+            return ChunkedMessageSendResult.UNSUPPORTED;
+        }
         try {
-            return this.chunkedMessageManager().send(
-                player,
-                message,
-                CONFIG.Features().compressChunkedMessages(),
-                packet -> this.sendPlayerPacket(player, packet)
+            return this.sendPlayerPreparedChunkedMessage(
+                    player,
+                    this.prepareChunkedMessage(message)
             );
         } catch (MessageEncodingException exception) {
             WaypointServerCore.LOGGER.warn(
@@ -49,14 +52,42 @@ public interface PlatformMessageSender<S, P> {
                     Component.translatable("waypoint.network.encoding_failed")
             );
             return ChunkedMessageSendResult.ENCODING_FAILED;
+        }
+    }
+
+    default ChunkedMessageSendResult sendPlayerPreparedChunkedMessage(
+            P player,
+            PreparedMessage message
+    ) {
+        if (!this.canSendChunkedMessage(player)) {
+            return ChunkedMessageSendResult.UNSUPPORTED;
+        }
+        try {
+            return this.chunkedMessageManager().send(
+                    player,
+                    message,
+                    packets -> this.sendPlayerPackets(player, packets)
+            );
         } catch (RuntimeException exception) {
             this.chunkedMessageManager().clear(player);
             WaypointServerCore.LOGGER.warn(
-                    "Failed to deliver chunked message type {}",
-                    message.getClass().getSimpleName(),
+                    "Failed to queue chunked message for one recipient",
                     exception
             );
             return ChunkedMessageSendResult.DELIVERY_FAILED;
+        }
+    }
+
+    default PreparedMessage prepareChunkedMessage(ChunkedMessage message) {
+        return ChunkedMessageManager.prepare(
+                message,
+                CONFIG.Features().compressChunkedMessages()
+        );
+    }
+
+    default void sendPlayerPackets(P player, List<MessageChunkBuffer> packets) {
+        for (MessageChunkBuffer packet : packets) {
+            this.sendPlayerPacket(player, packet);
         }
     }
 
@@ -71,24 +102,58 @@ public interface PlatformMessageSender<S, P> {
         throw new UnsupportedOperationException("This platform cannot broadcast chunked messages");
     }
 
+    default void broadcastChunkedMessage(
+            Iterable<? extends P> recipients,
+            ChunkedMessage message
+    ) {
+        PreparedMessage prepared;
+        try {
+            prepared = this.prepareChunkedMessage(message);
+        } catch (MessageEncodingException exception) {
+            WaypointServerCore.LOGGER.warn(
+                    "Failed to encode chunked broadcast type {} within the {}-byte logical-message budget",
+                    message.getClass().getSimpleName(),
+                    ChunkedMessageManager.MAX_MESSAGE_BYTES,
+                    exception
+            );
+            return;
+        }
+        for (P recipient : recipients) {
+            this.sendPlayerPreparedChunkedMessage(recipient, prepared);
+        }
+    }
+
     default List<ChunkedMessage> receiveChunkedMessage(P player, MessageChunkBuffer packet) {
         return this.receiveChunkedMessage(
                 player,
                 packet,
-                () -> this.onChunkedMessageSequenceFailure(player)
+                () -> this.onChunkedMessageFailure(player)
         );
     }
 
     default List<ChunkedMessage> receiveChunkedMessage(
             P player,
             MessageChunkBuffer packet,
-            Runnable orderingFailureHandler
+            Runnable failureHandler
     ) {
         return this.chunkedMessageManager().receive(
                 player,
                 packet,
-                response -> this.sendPlayerPacket(player, response),
-                orderingFailureHandler
+                failureHandler
+        );
+    }
+
+    default List<ChunkedMessage> receiveChunkedMessage(
+            P player,
+            MessageChunkBuffer packet,
+            Runnable failureHandler,
+            ReceiveLimits limits
+    ) {
+        return this.chunkedMessageManager().receive(
+                player,
+                packet,
+                failureHandler,
+                limits
         );
     }
 
@@ -96,11 +161,19 @@ public interface PlatformMessageSender<S, P> {
         this.chunkedMessageManager().tick();
     }
 
+    default void tickChunkedMessages(P player) {
+        this.chunkedMessageManager().tick(player);
+    }
+
+    default boolean hasPendingChunkedMessages(P player) {
+        return this.chunkedMessageManager().hasPending(player);
+    }
+
     default void disconnectChunkedMessages(P player) {
         this.chunkedMessageManager().clear(player);
     }
 
-    default void onChunkedMessageSequenceFailure(P player) {
+    default void onChunkedMessageFailure(P player) {
         this.sendPlayerMessage(
                 player,
                 Component.translatable("waypoint.network.resynchronizing")
@@ -113,16 +186,15 @@ public interface PlatformMessageSender<S, P> {
 
     default void broadcastWaypointModification(S source, WaypointModificationMessage modification) {
         Component info = this.getModificationMessage(this.getSenderName(source), modification);
-        for (P player : this.getBroadcastPlayers(source)) {
+        Iterable<? extends P> recipients = this.getBroadcastPlayers(source);
+        for (P player : recipients) {
             this.sendPlayerMessage(player, info);
-            this.sendPlayerChunkedMessage(player, modification);
         }
+        this.broadcastChunkedMessage(recipients, modification);
     }
 
     default void broadcastChunkedMessageFromPlayer(P player, ChunkedMessage message) {
-        for (P recipient : this.getBroadcastPlayersFromPlayer(player)) {
-            this.sendPlayerChunkedMessage(recipient, message);
-        }
+        this.broadcastChunkedMessage(this.getBroadcastPlayersFromPlayer(player), message);
     }
 
     default Component getModificationMessage(Component senderName, WaypointModificationMessage modification) {

@@ -18,9 +18,6 @@ public record UploadChunkBuffer(
     public UploadChunkBuffer {
         Objects.requireNonNull(requestId, "requestId");
         Objects.requireNonNull(messageChunk, "messageChunk");
-        if (messageChunk.operation() != MessageChunkBuffer.Operation.CHUNK) {
-            throw new IllegalArgumentException("Upload transport only accepts data chunks");
-        }
     }
 
     @Override

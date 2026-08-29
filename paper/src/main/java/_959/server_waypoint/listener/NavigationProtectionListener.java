@@ -432,6 +432,7 @@ public final class NavigationProtectionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent event) {
+        this.waypointDataDisconnect.accept(event.getPlayer());
         this.restorePlayer(event.getPlayer());
     }
 

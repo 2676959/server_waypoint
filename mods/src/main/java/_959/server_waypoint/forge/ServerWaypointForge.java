@@ -65,7 +65,7 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
 @Mod(ModInfo.MOD_ID)
 public class ServerWaypointForge implements IPlatformConfigPath {
-    private static final String NETWORK_PROTOCOL_VERSION = "8";
+    private static final String NETWORK_PROTOCOL_VERSION = "9";
 //? if <= 1.20.1 {
     /*public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
             modId("main"),
@@ -161,17 +161,20 @@ public class ServerWaypointForge implements IPlatformConfigPath {
         if (event.phase == TickEvent.Phase.END) {
             this.waypointServer.navigation().tick();
             ModMessageSender.getInstance().tickChunkedMessages();
+            this.c2sPacketHandler.tickUploadTransport();
         }
     }
     *///?} else {
     private void onServerTick(TickEvent.ServerTickEvent.Post event) {
         this.waypointServer.navigation().tick();
         ModMessageSender.getInstance().tickChunkedMessages();
+        this.c2sPacketHandler.tickUploadTransport();
     }
     //?}
 
     private void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
+            ModMessageSender.getInstance().disconnectChunkedMessages(player);
             this.waypointServer.navigation().onPlayerJoin(player);
         }
     }

@@ -10,6 +10,11 @@ import _959.server_waypoint.core.edit.WaypointPatch;
 import _959.server_waypoint.core.network.message.WaypointEditRequestMessage;
 import _959.server_waypoint.core.network.message.WaypointEditResultMessage;
 import _959.server_waypoint.core.network.message.WaypointModificationMessage;
+import _959.server_waypoint.core.network.message.ClientUpdateRequestMessage;
+import _959.server_waypoint.core.network.buffer.ClientHandshakeBuffer;
+import _959.server_waypoint.core.network.buffer.MessageChunkBuffer;
+import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
+import _959.server_waypoint.core.network.codec.ChunkedMessageManager.PreparedMessage;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.navigation.NavigationPlatform;
 import _959.server_waypoint.navigation.NavigationService;
@@ -29,7 +34,9 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class C2SPacketHandlerTest {
     @TempDir
@@ -135,6 +142,102 @@ class C2SPacketHandlerTest {
         sender.broadcastWaypointModification("source", modification);
 
         assertEquals(List.of("first", "second"), sender.attemptedRecipients);
+        assertEquals(1, sender.prepareCalls);
+    }
+
+    @Test
+    void generalChunksRequireACompatibleHandshake() {
+        TestSender sender = new TestSender();
+        sender.capable = false;
+        C2SPacketHandler<String, String, String> handler = handler(sender);
+
+        for (MessageChunkBuffer frame : frames(new ClientUpdateRequestMessage(List.of()))) {
+            handler.onMessageChunk("player", frame);
+        }
+
+        assertEquals(0, sender.receivedChunks);
+        assertTrue(sender.packets.isEmpty());
+    }
+
+    @Test
+    void handshakeCapabilityIsClearedOnDisconnect() {
+        TestSender sender = new TestSender();
+        sender.capable = false;
+        C2SPacketHandler<String, String, String> handler = handler(sender);
+
+        handler.onClientHandshake("player", new ClientHandshakeBuffer());
+        assertTrue(sender.capable);
+
+        handler.onDisconnect("player");
+        assertFalse(sender.capable);
+    }
+
+    @Test
+    void outboundChunkedMessagesAreRejectedUntilHandshake() {
+        TestSender sender = new TestSender();
+        sender.capable = false;
+
+        ChunkedMessageSendResult result = sender.sendPlayerChunkedMessage(
+                "player",
+                new ClientUpdateRequestMessage(List.of())
+        );
+
+        assertEquals(ChunkedMessageSendResult.UNSUPPORTED, result);
+        assertTrue(sender.packets.isEmpty());
+    }
+
+    @Test
+    void generalChannelRejectsClientboundMessageTypesBeforeReassembly() {
+        TestSender sender = new TestSender();
+        C2SPacketHandler<String, String, String> handler = handler(sender);
+        MessageChunkBuffer frame = MessageChunkBuffer.chunk(
+                UUID.randomUUID(),
+                ChunkedMessageRegistry.WAYPOINT_EDIT_RESULT.id(),
+                0,
+                1,
+                false,
+                1,
+                0,
+                new byte[]{0}
+        );
+
+        handler.onMessageChunk("player", frame);
+
+        assertEquals(0, sender.receivedChunks);
+        assertTrue(sender.packets.isEmpty());
+    }
+
+    @Test
+    void updateRequestRejectsDuplicateDimensionsBeforeServerQueries() {
+        TestSender sender = new TestSender();
+        C2SPacketHandler<String, String, String> handler = handler(sender);
+        ClientUpdateRequestMessage request = new ClientUpdateRequestMessage(List.of(
+                new DimensionSyncIdentifier("minecraft:overworld", List.of()),
+                new DimensionSyncIdentifier("minecraft:overworld", List.of())
+        ));
+
+        for (MessageChunkBuffer frame : frames(request)) {
+            handler.onMessageChunk("player", frame);
+        }
+
+        assertEquals(1, sender.receivedChunks);
+        assertTrue(sender.packets.isEmpty());
+    }
+
+    private C2SPacketHandler<String, String, String> handler(TestSender sender) {
+        WaypointServerCore server = new WaypointServerCore(this.tempDir) {
+        };
+        return new C2SPacketHandler<>(
+                sender,
+                server,
+                new TestPermissionManager(true),
+                navigationService(),
+                uploadCoordinator(server)
+        );
+    }
+
+    private static List<MessageChunkBuffer> frames(ChunkedMessage message) {
+        return ChunkedMessageManager.prepare(message, false).frames();
     }
 
     private static WaypointEditRequestMessage request() {
@@ -242,6 +345,8 @@ class C2SPacketHandlerTest {
 
     private static class TestSender implements PlatformMessageSender<String, String> {
         private final List<NetworkMessage> packets = new ArrayList<>();
+        private boolean capable = true;
+        private int receivedChunks;
 
         private WaypointEditResultMessage lastResult() {
             return (WaypointEditResultMessage) this.packets.get(this.packets.size() - 1);
@@ -280,8 +385,43 @@ class C2SPacketHandlerTest {
 
         @Override
         public ChunkedMessageSendResult sendPlayerChunkedMessage(String player, ChunkedMessage message) {
+            if (!this.capable) {
+                return PlatformMessageSender.super.sendPlayerChunkedMessage(player, message);
+            }
             this.packets.add(message);
             return ChunkedMessageSendResult.QUEUED;
+        }
+
+        @Override
+        public void setChunkedMessageCapable(String player, boolean capable) {
+            this.capable = capable;
+        }
+
+        @Override
+        public boolean canSendChunkedMessage(String player) {
+            return this.capable;
+        }
+
+        @Override
+        public void disconnectChunkedMessages(String player) {
+            this.capable = false;
+            PlatformMessageSender.super.disconnectChunkedMessages(player);
+        }
+
+        @Override
+        public List<ChunkedMessage> receiveChunkedMessage(
+                String player,
+                MessageChunkBuffer packet,
+                Runnable failureHandler,
+                ChunkedMessageManager.ReceiveLimits limits
+        ) {
+            this.receivedChunks++;
+            return PlatformMessageSender.super.receiveChunkedMessage(
+                    player,
+                    packet,
+                    failureHandler,
+                    limits
+            );
         }
 
         @Override
@@ -297,6 +437,13 @@ class C2SPacketHandlerTest {
 
     private static final class FailingBroadcastSender extends TestSender {
         private final List<String> attemptedRecipients = new ArrayList<>();
+        private int prepareCalls;
+
+        @Override
+        public PreparedMessage prepareChunkedMessage(ChunkedMessage message) {
+            this.prepareCalls++;
+            return super.prepareChunkedMessage(message);
+        }
 
         @Override
         public Iterable<? extends String> getBroadcastPlayers(String source) {
@@ -304,7 +451,10 @@ class C2SPacketHandlerTest {
         }
 
         @Override
-        public ChunkedMessageSendResult sendPlayerChunkedMessage(String player, ChunkedMessage message) {
+        public ChunkedMessageSendResult sendPlayerPreparedChunkedMessage(
+                String player,
+                PreparedMessage message
+        ) {
             this.attemptedRecipients.add(player);
             return player.equals("first")
                     ? ChunkedMessageSendResult.PEER_BUSY

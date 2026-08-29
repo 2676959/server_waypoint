@@ -95,9 +95,13 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             waypointServer.navigation().tick();
             messageSender.tickChunkedMessages();
+            c2sPacketHandler.tickUploadTransport();
         });
         ServerPlayConnectionEvents.JOIN.register(
-                (listener, sender, server) -> waypointServer.navigation().onPlayerJoin(listener.player)
+                (listener, sender, server) -> {
+                    messageSender.disconnectChunkedMessages(listener.player);
+                    waypointServer.navigation().onPlayerJoin(listener.player);
+                }
         );
         ServerPlayConnectionEvents.DISCONNECT.register(
                 (listener, server) -> {
