@@ -249,7 +249,6 @@
   "waypoint.edit.error.upload_busy": "Waypoint editing is temporarily unavailable while an upload is in progress",
   "waypoint.edit.error.success": "The edit succeeded",
   "waypoint.network.encoding_failed": "The waypoint message is too large or could not be encoded",
-  "waypoint.network.resynchronizing": "Waypoint message ordering was interrupted; resynchronizing",
   "waypoint.restore.invalid": "This restore token is invalid or expired",
   "waypoint.restore.list_missing": "The original waypoint list is missing; the restore token remains available",
   "waypoint.restore.collision": "That waypoint identifier is already in use; the restore token remains available",

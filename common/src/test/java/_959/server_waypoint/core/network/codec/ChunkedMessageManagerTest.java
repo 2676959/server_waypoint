@@ -1,6 +1,7 @@
 package _959.server_waypoint.core.network.codec;
 
 import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.ChunkedMessageRegistry;
 import _959.server_waypoint.core.network.ChunkedMessageSendResult;
 import _959.server_waypoint.core.network.DimensionSyncIdentifier;
 import _959.server_waypoint.core.network.MessageEncodingException;
@@ -26,7 +27,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.CRC32;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -70,8 +70,7 @@ class ChunkedMessageManagerTest {
         ChunkedMessageManager<String> receiver = new ChunkedMessageManager<>();
         List<ChunkedMessage> delivered = new ArrayList<>();
         for (MessageChunkBuffer packet : shuffled) {
-            delivered.addAll(receiver.receive("server", wire(packet), () -> {
-            }));
+            delivered.addAll(receiver.receive("server", wire(packet)));
         }
 
         assertEquals(List.of(source), delivered);
@@ -85,8 +84,7 @@ class ChunkedMessageManagerTest {
         List<ChunkedMessage> delivered = new ArrayList<>();
 
         for (MessageChunkBuffer packet : packets) {
-            delivered.addAll(receiver.receive("peer", wire(packet), () -> {
-            }));
+            delivered.addAll(receiver.receive("peer", wire(packet)));
         }
 
         assertTrue(packets.size() > 1);
@@ -107,18 +105,15 @@ class ChunkedMessageManagerTest {
         MessageChunkBuffer first = packets.get(0);
         ChunkedMessageManager<String> receiver = new ChunkedMessageManager<>();
 
-        assertTrue(receiver.receive("peer", first, () -> {
-        }).isEmpty());
-        assertTrue(receiver.receive("peer", first, () -> {
-        }).isEmpty());
+        assertTrue(receiver.receive("peer", first).isEmpty());
+        assertTrue(receiver.receive("peer", first).isEmpty());
 
         byte[] conflictingData = first.data();
         conflictingData[0] ^= 1;
         MessageChunkBuffer conflicting = copyChunk(first, conflictingData, first.messageTypeId());
         assertThrows(
                 IllegalArgumentException.class,
-                () -> receiver.receive("peer", conflicting, () -> {
-                })
+                () -> receiver.receive("peer", conflicting)
         );
 
         MessageChunkBuffer conflictingType = copyChunk(
@@ -127,12 +122,15 @@ class ChunkedMessageManagerTest {
                 _959.server_waypoint.core.network.ChunkedMessageRegistry.WAYPOINT_MODIFICATION.id()
         );
         ChunkedMessageManager<String> metadataReceiver = new ChunkedMessageManager<>();
-        assertTrue(metadataReceiver.receive("peer", first, () -> {
-        }).isEmpty());
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> metadataReceiver.receive("peer", conflictingType, () -> {
-                })
+        assertTrue(metadataReceiver.receive("peer", first).isEmpty());
+        ChunkedMessageManager.ReceiveException metadataFailure = assertThrows(
+                ChunkedMessageManager.ReceiveException.class,
+                () -> metadataReceiver.receive("peer", conflictingType)
+        );
+        assertEquals(first.messageTypeId(), metadataFailure.messageTypeId());
+        assertEquals(
+                ChunkedMessageManager.FailureReason.MALFORMED,
+                metadataFailure.reason()
         );
     }
 
@@ -258,24 +256,231 @@ class ChunkedMessageManagerTest {
     }
 
     @Test
-    void incompleteTransferExpiresAndReleasesItsReservation() {
+    void acceptedProgressPreventsIdleExpiry() {
         List<MessageChunkBuffer> packets = ChunkedMessageManager.createTransfer(
-                messageWithDescription("x".repeat(40_000)),
+                messageWithDescription("x".repeat(100_000)),
                 false
         );
         ChunkedMessageManager<String> receiver = new ChunkedMessageManager<>();
-        AtomicInteger failures = new AtomicInteger();
 
         assertTrue(receiver.receive(
                 "peer",
                 packets.get(0),
-                failures::incrementAndGet
+                ChunkedMessageManager.DEFAULT_RECEIVE_LIMITS,
+                0
         ).isEmpty());
-        assertTrue(receiver.globallyRetainedBytes() > 0);
-        receiver.tick(System.nanoTime() + TimeUnit.SECONDS.toNanos(31));
+        assertTrue(receiver.tick(TimeUnit.SECONDS.toNanos(29)).isEmpty());
+        assertTrue(receiver.receive(
+                "peer",
+                packets.get(1),
+                ChunkedMessageManager.DEFAULT_RECEIVE_LIMITS,
+                TimeUnit.SECONDS.toNanos(29)
+        ).isEmpty());
 
-        assertEquals(1, failures.get());
+        assertTrue(receiver.tick(TimeUnit.SECONDS.toNanos(58)).isEmpty());
+        assertTrue(receiver.hasPending("peer"));
+        assertTrue(receiver.globallyRetainedBytes() > 0);
+    }
+
+    @Test
+    void duplicateChunkDoesNotCountAsProgress() {
+        MessageChunkBuffer first = ChunkedMessageManager.createTransfer(
+                messageWithDescription("x".repeat(40_000)),
+                false
+        ).get(0);
+        ChunkedMessageManager<String> receiver = new ChunkedMessageManager<>();
+
+        receiver.receive("peer", first, ChunkedMessageManager.DEFAULT_RECEIVE_LIMITS, 0);
+        receiver.receive(
+                "peer",
+                first,
+                ChunkedMessageManager.DEFAULT_RECEIVE_LIMITS,
+                TimeUnit.SECONDS.toNanos(29)
+        );
+        List<ChunkedMessageManager.ReceiveFailure<String>> failures = receiver.tick(
+                TimeUnit.SECONDS.toNanos(31)
+        );
+
+        assertEquals(1, failures.size());
+        assertEquals(
+                ChunkedMessageManager.FailureReason.IDLE_TIMEOUT,
+                failures.get(0).reason()
+        );
+    }
+
+    @Test
+    void absoluteLifetimeExpiresSlowDripTransfer() {
+        List<MessageChunkBuffer> packets = ChunkedMessageManager.createTransfer(
+                messageWithDescription("x".repeat(400_000)),
+                false
+        );
+        ChunkedMessageManager<String> receiver = new ChunkedMessageManager<>();
+
+        for (int i = 0; i <= 10; i++) {
+            assertTrue(receiver.receive(
+                    "peer",
+                    packets.get(i),
+                    ChunkedMessageManager.DEFAULT_RECEIVE_LIMITS,
+                    TimeUnit.SECONDS.toNanos(29L * i)
+            ).isEmpty());
+        }
+        List<ChunkedMessageManager.ReceiveFailure<String>> failures = receiver.tick(
+                ChunkedMessageManager.MAX_LIFETIME_NANOS + TimeUnit.SECONDS.toNanos(1)
+        );
+
+        assertEquals(1, failures.size());
+        assertEquals(
+                ChunkedMessageManager.FailureReason.LIFETIME_TIMEOUT,
+                failures.get(0).reason()
+        );
         assertEquals(0, receiver.globallyRetainedBytes());
+    }
+
+    @Test
+    void oneExpiryClearsAllIncomingTransfersForThePeer() {
+        MessageChunkBuffer first = ChunkedMessageManager.createTransfer(
+                messageWithDescription("x".repeat(40_000)),
+                false
+        ).get(0);
+        MessageChunkBuffer second = ChunkedMessageManager.createTransfer(
+                modificationWithDescription("x".repeat(40_000)),
+                false
+        ).get(0);
+        ChunkedMessageManager<String> receiver = new ChunkedMessageManager<>();
+
+        receiver.receive("peer", first, ChunkedMessageManager.DEFAULT_RECEIVE_LIMITS, 0);
+        receiver.receive(
+                "peer",
+                second,
+                ChunkedMessageManager.DEFAULT_RECEIVE_LIMITS,
+                TimeUnit.SECONDS.toNanos(20)
+        );
+        List<ChunkedMessageManager.ReceiveFailure<String>> failures = receiver.tick(
+                TimeUnit.SECONDS.toNanos(31)
+        );
+
+        assertEquals(2, failures.size());
+        assertTrue(failures.stream().allMatch(failure ->
+                failure.reason() == ChunkedMessageManager.FailureReason.IDLE_TIMEOUT));
+        assertEquals(
+                java.util.Set.of(
+                        ChunkedMessageRegistry.WAYPOINT_DATA.id(),
+                        ChunkedMessageRegistry.WAYPOINT_MODIFICATION.id()
+                ),
+                failures.stream()
+                        .map(ChunkedMessageManager.ReceiveFailure::messageTypeId)
+                        .collect(java.util.stream.Collectors.toSet())
+        );
+        assertFalse(receiver.hasPending("peer"));
+        assertEquals(0, receiver.globallyRetainedBytes());
+    }
+
+    @Test
+    void timeoutFailuresAreDeduplicatedByMessageTypeAndReason() {
+        List<MessageChunkBuffer> first = ChunkedMessageManager.createTransfer(
+                messageWithDescription("x".repeat(40_000)),
+                false
+        );
+        List<MessageChunkBuffer> second = ChunkedMessageManager.createTransfer(
+                messageWithDescription("y".repeat(40_000)),
+                false
+        );
+        ChunkedMessageManager<String> receiver = new ChunkedMessageManager<>();
+
+        receiver.receive("peer", first.get(0), ChunkedMessageManager.DEFAULT_RECEIVE_LIMITS, 0);
+        receiver.receive("peer", second.get(0), ChunkedMessageManager.DEFAULT_RECEIVE_LIMITS, 0);
+        List<ChunkedMessageManager.ReceiveFailure<String>> failures = receiver.tick(
+                TimeUnit.SECONDS.toNanos(31)
+        );
+
+        assertEquals(1, failures.size());
+        assertEquals(ChunkedMessageRegistry.WAYPOINT_DATA.id(), failures.get(0).messageTypeId());
+        assertEquals(
+                ChunkedMessageManager.FailureReason.IDLE_TIMEOUT,
+                failures.get(0).reason()
+        );
+        assertEquals(0, receiver.globallyRetainedBytes());
+    }
+
+    @Test
+    void incomingExpiryDoesNotClearOutgoingState() {
+        ChunkedMessageManager.PreparedMessage outgoing = ChunkedMessageManager.prepare(
+                messageWithDescription("outgoing".repeat(20_000)),
+                false
+        );
+        ChunkedMessageManager<String> manager = new ChunkedMessageManager<>(
+                ChunkedMessageManager.MAX_GLOBAL_RETAINED_BYTES,
+                1,
+                ChunkedMessageManager.MAX_CHUNK_DATA_SIZE
+        );
+        manager.send("peer", outgoing, ignored -> {
+        });
+        MessageChunkBuffer incoming = ChunkedMessageManager.createTransfer(
+                modificationWithDescription("incoming".repeat(10_000)),
+                false
+        ).get(0);
+        manager.receive("peer", incoming, ChunkedMessageManager.DEFAULT_RECEIVE_LIMITS, 0);
+
+        assertEquals(1, manager.tick(TimeUnit.SECONDS.toNanos(31)).size());
+
+        assertTrue(manager.hasPending("peer"));
+        assertEquals(outgoing.retainedBytes(), manager.globallyRetainedBytes());
+        manager.clear("peer");
+        assertEquals(0, manager.globallyRetainedBytes());
+    }
+
+    @Test
+    void checksumAndDecodeFailuresExposeMessageType() {
+        MessageChunkBuffer original = ChunkedMessageManager.createTransfer(
+                messageWithDescription("checksum"),
+                false
+        ).get(0);
+        MessageChunkBuffer badChecksum = MessageChunkBuffer.chunk(
+                original.transferId(),
+                original.messageTypeId(),
+                0,
+                1,
+                false,
+                original.uncompressedSize(),
+                original.checksum() + 1,
+                original.data()
+        );
+
+        ChunkedMessageManager.ReceiveException checksumFailure = assertThrows(
+                ChunkedMessageManager.ReceiveException.class,
+                () -> new ChunkedMessageManager<String>().receive("peer", badChecksum)
+        );
+        assertEquals(ChunkedMessageRegistry.WAYPOINT_DATA.id(), checksumFailure.messageTypeId());
+        assertEquals(
+                ChunkedMessageManager.FailureReason.MALFORMED,
+                checksumFailure.reason()
+        );
+
+        byte[] invalidMessage = new byte[]{0};
+        CRC32 crc32 = new CRC32();
+        crc32.update(invalidMessage);
+        MessageChunkBuffer invalidDecode = MessageChunkBuffer.chunk(
+                java.util.UUID.randomUUID(),
+                ChunkedMessageRegistry.WAYPOINT_MODIFICATION.id(),
+                0,
+                1,
+                false,
+                invalidMessage.length,
+                (int) crc32.getValue(),
+                invalidMessage
+        );
+        ChunkedMessageManager.ReceiveException decodeFailure = assertThrows(
+                ChunkedMessageManager.ReceiveException.class,
+                () -> new ChunkedMessageManager<String>().receive("peer", invalidDecode)
+        );
+        assertEquals(
+                ChunkedMessageRegistry.WAYPOINT_MODIFICATION.id(),
+                decodeFailure.messageTypeId()
+        );
+        assertEquals(
+                ChunkedMessageManager.FailureReason.DECODE_FAILED,
+                decodeFailure.reason()
+        );
     }
 
     @Test
@@ -303,9 +508,7 @@ class ChunkedMessageManagerTest {
                 IllegalArgumentException.class,
                 () -> new ChunkedMessageManager<String>().receive(
                         "peer",
-                        malformed,
-                        () -> {
-                        }
+                        malformed
                 )
         );
     }
@@ -330,8 +533,7 @@ class ChunkedMessageManagerTest {
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> receiver.receive("peer", malformed, () -> {
-                })
+                () -> receiver.receive("peer", malformed)
         );
         assertFalse(receiver.hasPending("peer"));
         assertEquals(0, receiver.globallyRetainedBytes());
@@ -350,8 +552,6 @@ class ChunkedMessageManagerTest {
                 () -> receiver.receive(
                         "peer",
                         packet,
-                        () -> {
-                        },
                         new ChunkedMessageManager.ReceiveLimits(128, 16)
                 )
         );
@@ -373,8 +573,6 @@ class ChunkedMessageManagerTest {
                 () -> receiver.receive(
                         "peer",
                         packet,
-                        () -> {
-                        },
                         new ChunkedMessageManager.ReceiveLimits(1_024, 1)
                 )
         );

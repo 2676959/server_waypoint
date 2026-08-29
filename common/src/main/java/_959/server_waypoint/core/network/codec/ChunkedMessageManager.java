@@ -17,10 +17,11 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +52,8 @@ public final class ChunkedMessageManager<P> {
     public static final int MAX_FRAMES_PER_PEER_TICK = 8;
     public static final int MAX_BYTES_PER_PEER_TICK =
             MAX_FRAMES_PER_PEER_TICK * MAX_CHUNK_DATA_SIZE;
-    private static final long TRANSFER_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(30);
+    static final long IDLE_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(30);
+    static final long MAX_LIFETIME_NANOS = TimeUnit.MINUTES.toNanos(5);
     public static final ReceiveLimits DEFAULT_RECEIVE_LIMITS = new ReceiveLimits(
             MAX_MESSAGE_BYTES,
             MAX_DECODED_OBJECTS
@@ -137,24 +139,42 @@ public final class ChunkedMessageManager<P> {
 
     public List<ChunkedMessage> receive(
             P peer,
-            MessageChunkBuffer packet,
-            Runnable failureHandler
+            MessageChunkBuffer packet
     ) {
-        return this.receive(peer, packet, failureHandler, DEFAULT_RECEIVE_LIMITS);
+        return this.receive(peer, packet, DEFAULT_RECEIVE_LIMITS);
     }
 
     public List<ChunkedMessage> receive(
             P peer,
             MessageChunkBuffer packet,
-            Runnable failureHandler,
             ReceiveLimits limits
+    ) {
+        return this.receive(peer, packet, limits, System.nanoTime());
+    }
+
+    List<ChunkedMessage> receive(
+            P peer,
+            MessageChunkBuffer packet,
+            ReceiveLimits limits,
+            long now
     ) {
         Objects.requireNonNull(peer, "peer");
         Objects.requireNonNull(packet, "packet");
-        Objects.requireNonNull(failureHandler, "failureHandler");
         Objects.requireNonNull(limits, "limits");
-        validateChunk(packet, limits);
-        long now = System.nanoTime();
+        try {
+            validateChunk(packet, limits);
+        } catch (RuntimeException exception) {
+            IncomingTransfer failed = this.removeIncomingTransfer(peer, packet.transferId());
+            if (failed != null) {
+                throw new ReceiveException(
+                        failed.messageTypeId,
+                        FailureReason.MALFORMED,
+                        failed.transferId,
+                        exception
+                );
+            }
+            throw receiveException(packet, FailureReason.MALFORMED, exception);
+        }
         PeerState state;
         IncomingTransfer completed;
         while (true) {
@@ -187,7 +207,6 @@ public final class ChunkedMessageManager<P> {
                         }
                         transfer = new IncomingTransfer(
                                 packet,
-                                failureHandler,
                                 limits,
                                 now,
                                 reservedBytes
@@ -196,9 +215,8 @@ public final class ChunkedMessageManager<P> {
                         state.incomingDeclaredBytes += transfer.uncompressedSize;
                     } else {
                         transfer.validateMetadata(packet, limits);
-                        transfer.failureHandler = failureHandler;
                     }
-                    transfer.accept(packet);
+                    transfer.accept(packet, now);
                     if (!transfer.complete()) {
                         return List.of();
                     }
@@ -212,7 +230,18 @@ public final class ChunkedMessageManager<P> {
                         state.incomingDeclaredBytes -= failed.uncompressedSize;
                         this.releaseIncomingBytes(failed.reservedBytes);
                     }
-                    throw exception;
+                    if (exception instanceof ReceiveException receiveException) {
+                        throw receiveException;
+                    }
+                    if (failed != null) {
+                        throw new ReceiveException(
+                                failed.messageTypeId,
+                                FailureReason.MALFORMED,
+                                failed.transferId,
+                                exception
+                        );
+                    }
+                    throw receiveException(packet, FailureReason.MALFORMED, exception);
                 }
             } finally {
                 state.stateLock.unlock();
@@ -221,25 +250,46 @@ public final class ChunkedMessageManager<P> {
 
         state.decodeLock.lock();
         try {
-            return List.of(completed.decode());
+            byte[] bytes;
+            try {
+                bytes = completed.reassemble();
+            } catch (RuntimeException exception) {
+                throw new ReceiveException(
+                        completed.messageTypeId,
+                        FailureReason.MALFORMED,
+                        completed.transferId,
+                        exception
+                );
+            }
+            try {
+                return List.of(decodeMessage(completed.messageTypeId, bytes, completed.limits));
+            } catch (RuntimeException exception) {
+                throw new ReceiveException(
+                        completed.messageTypeId,
+                        FailureReason.DECODE_FAILED,
+                        completed.transferId,
+                        exception
+                );
+            }
         } finally {
             state.decodeLock.unlock();
             this.releaseIncomingBytes(completed.reservedBytes);
         }
     }
 
-    public void tick() {
-        this.tick(System.nanoTime());
+    public List<ReceiveFailure<P>> tick() {
+        return this.tick(System.nanoTime());
     }
 
-    public void tick(P peer) {
+    public List<ReceiveFailure<P>> tick(P peer) {
         PeerState state = this.peers.get(peer);
         if (state == null) {
-            return;
+            return List.of();
         }
         long now = System.nanoTime();
-        this.expireIncoming(peer, state, now);
+        List<ReceiveFailure<P>> failures = this.expireIncoming(peer, state, now);
         this.drainPeer(peer, state);
+        return failures;
     }
 
     public boolean hasPending(P peer) {
@@ -256,11 +306,13 @@ public final class ChunkedMessageManager<P> {
         }
     }
 
-    void tick(long now) {
+    List<ReceiveFailure<P>> tick(long now) {
+        List<ReceiveFailure<P>> failures = new ArrayList<>();
         for (Map.Entry<P, PeerState> entry : this.peers.entrySet()) {
-            this.expireIncoming(entry.getKey(), entry.getValue(), now);
+            failures.addAll(this.expireIncoming(entry.getKey(), entry.getValue(), now));
             this.drainPeer(entry.getKey(), entry.getValue());
         }
+        return List.copyOf(failures);
     }
 
     public void clear(P peer) {
@@ -420,36 +472,91 @@ public final class ChunkedMessageManager<P> {
         return DrainResult.SENT;
     }
 
-    private void expireIncoming(P peer, PeerState state, long now) {
-        List<Runnable> failureHandlers = new ArrayList<>();
+    private List<ReceiveFailure<P>> expireIncoming(P peer, PeerState state, long now) {
+        List<IncomingTransfer> clearedTransfers;
+        FailureReason fallbackReason = null;
         long releasedBytes = 0;
         state.stateLock.lock();
         try {
             if (state.closed) {
-                return;
+                return List.of();
             }
-            Iterator<IncomingTransfer> iterator = state.incoming.values().iterator();
-            while (iterator.hasNext()) {
-                IncomingTransfer transfer = iterator.next();
-                if (now - transfer.createdNanos < TRANSFER_TIMEOUT_NANOS) {
-                    continue;
+            for (IncomingTransfer transfer : state.incoming.values()) {
+                FailureReason reason = transfer.expirationReason(now);
+                if (reason == FailureReason.LIFETIME_TIMEOUT) {
+                    fallbackReason = reason;
+                    break;
                 }
-                iterator.remove();
+                if (reason != null) {
+                    fallbackReason = reason;
+                }
+            }
+            if (fallbackReason == null) {
+                return List.of();
+            }
+            clearedTransfers = List.copyOf(state.incoming.values());
+            state.incoming.clear();
+            for (IncomingTransfer transfer : clearedTransfers) {
                 state.incomingDeclaredBytes -= transfer.uncompressedSize;
                 releasedBytes += transfer.reservedBytes;
-                failureHandlers.add(transfer.failureHandler);
             }
         } finally {
             state.stateLock.unlock();
         }
         this.releaseIncomingBytes(releasedBytes);
-        for (Runnable failureHandler : failureHandlers) {
-            try {
-                failureHandler.run();
-            } catch (RuntimeException ignored) {
-                this.clear(peer);
+
+        Map<FailureKey, ReceiveFailure<P>> failures = new LinkedHashMap<>();
+        for (IncomingTransfer transfer : clearedTransfers) {
+            FailureReason reason = transfer.expirationReason(now);
+            if (reason == null) {
+                reason = fallbackReason;
             }
+            FailureKey key = new FailureKey(transfer.messageTypeId, reason);
+            failures.putIfAbsent(key, new ReceiveFailure<>(
+                    peer,
+                    transfer.messageTypeId,
+                    reason,
+                    Optional.of(transfer.transferId)
+            ));
         }
+        return List.copyOf(failures.values());
+    }
+
+    private static ReceiveException receiveException(
+            MessageChunkBuffer packet,
+            FailureReason reason,
+            RuntimeException cause
+    ) {
+        return new ReceiveException(
+                packet.messageTypeId(),
+                reason,
+                packet.transferId(),
+                cause
+        );
+    }
+
+    private IncomingTransfer removeIncomingTransfer(P peer, UUID transferId) {
+        PeerState state = this.peers.get(peer);
+        if (state == null) {
+            return null;
+        }
+        IncomingTransfer removed;
+        state.stateLock.lock();
+        try {
+            if (state.closed) {
+                return null;
+            }
+            removed = state.incoming.remove(transferId);
+            if (removed != null) {
+                state.incomingDeclaredBytes -= removed.uncompressedSize;
+            }
+        } finally {
+            state.stateLock.unlock();
+        }
+        if (removed != null) {
+            this.releaseIncomingBytes(removed.reservedBytes);
+        }
+        return removed;
     }
 
     private boolean retainOutgoingBody(PreparedMessage message) {
@@ -672,6 +779,60 @@ public final class ChunkedMessageManager<P> {
         }
     }
 
+    public enum FailureReason {
+        IDLE_TIMEOUT,
+        LIFETIME_TIMEOUT,
+        MALFORMED,
+        DECODE_FAILED
+    }
+
+    public record ReceiveFailure<P>(
+            P peer,
+            int messageTypeId,
+            FailureReason reason,
+            Optional<UUID> transferId
+    ) {
+        public ReceiveFailure {
+            Objects.requireNonNull(peer, "peer");
+            Objects.requireNonNull(reason, "reason");
+            Objects.requireNonNull(transferId, "transferId");
+        }
+    }
+
+    public static final class ReceiveException extends IllegalArgumentException {
+        private final int messageTypeId;
+        private final FailureReason reason;
+        private final UUID transferId;
+
+        private ReceiveException(
+                int messageTypeId,
+                FailureReason reason,
+                UUID transferId,
+                Throwable cause
+        ) {
+            super(
+                    "Failed to receive chunked message type " + messageTypeId
+                            + " (" + reason + ")",
+                    cause
+            );
+            this.messageTypeId = messageTypeId;
+            this.reason = Objects.requireNonNull(reason, "reason");
+            this.transferId = transferId;
+        }
+
+        public int messageTypeId() {
+            return this.messageTypeId;
+        }
+
+        public FailureReason reason() {
+            return this.reason;
+        }
+
+        public Optional<UUID> transferId() {
+            return Optional.ofNullable(this.transferId);
+        }
+    }
+
     private enum DrainResult {
         NONE,
         SENT,
@@ -710,7 +871,11 @@ public final class ChunkedMessageManager<P> {
     ) {
     }
 
+    private record FailureKey(int messageTypeId, FailureReason reason) {
+    }
+
     private static final class IncomingTransfer {
+        private final UUID transferId;
         private final int messageTypeId;
         private final int chunkCount;
         private final boolean compressed;
@@ -720,17 +885,17 @@ public final class ChunkedMessageManager<P> {
         private final long reservedBytes;
         private final byte[][] chunks;
         private final long createdNanos;
+        private long lastProgressNanos;
         private int receivedChunks;
         private int retainedBytes;
-        private Runnable failureHandler;
 
         private IncomingTransfer(
                 MessageChunkBuffer first,
-                Runnable failureHandler,
                 ReceiveLimits limits,
                 long now,
                 long reservedBytes
         ) {
+            this.transferId = first.transferId();
             this.messageTypeId = first.messageTypeId();
             this.chunkCount = first.chunkCount();
             this.compressed = first.compressed();
@@ -740,7 +905,7 @@ public final class ChunkedMessageManager<P> {
             this.reservedBytes = reservedBytes;
             this.chunks = new byte[this.chunkCount][];
             this.createdNanos = now;
-            this.failureHandler = failureHandler;
+            this.lastProgressNanos = now;
         }
 
         private void validateMetadata(MessageChunkBuffer packet, ReceiveLimits limits) {
@@ -756,7 +921,7 @@ public final class ChunkedMessageManager<P> {
             }
         }
 
-        private void accept(MessageChunkBuffer packet) {
+        private void accept(MessageChunkBuffer packet, long now) {
             byte[] data = packet.data();
             byte[] existing = this.chunks[packet.sequence()];
             if (existing != null) {
@@ -773,13 +938,24 @@ public final class ChunkedMessageManager<P> {
             this.chunks[packet.sequence()] = data;
             this.receivedChunks++;
             this.retainedBytes += data.length;
+            this.lastProgressNanos = now;
         }
 
         private boolean complete() {
             return this.receivedChunks == this.chunkCount;
         }
 
-        private ChunkedMessage decode() {
+        private FailureReason expirationReason(long now) {
+            if (now - this.createdNanos >= MAX_LIFETIME_NANOS) {
+                return FailureReason.LIFETIME_TIMEOUT;
+            }
+            if (now - this.lastProgressNanos >= IDLE_TIMEOUT_NANOS) {
+                return FailureReason.IDLE_TIMEOUT;
+            }
+            return null;
+        }
+
+        private byte[] reassemble() {
             ByteArrayOutputStream output = new ByteArrayOutputStream(this.retainedBytes);
             for (byte[] chunk : this.chunks) {
                 output.write(chunk, 0, chunk.length);
@@ -801,7 +977,7 @@ public final class ChunkedMessageManager<P> {
             if ((int) crc32.getValue() != this.checksum) {
                 throw new IllegalArgumentException("Chunked-message checksum mismatch");
             }
-            return decodeMessage(this.messageTypeId, uncompressed, this.limits);
+            return uncompressed;
         }
     }
 }

@@ -156,6 +156,5 @@
   "waypoint.edit.error.malformed_request": "服务器拒绝了此编辑请求。",
   "waypoint.edit.error.duplicate_keyword": "一个路径点不能包含重复的关键词。",
   "waypoint.edit.error.encoding_failed": "更新内容过大，无法同步。",
-  "waypoint.network.encoding_failed": "路径点消息过大或无法编码。",
-  "waypoint.network.resynchronizing": "路径点消息顺序中断，正在重新同步。"
+  "waypoint.network.encoding_failed": "路径点消息过大或无法编码。"
 }

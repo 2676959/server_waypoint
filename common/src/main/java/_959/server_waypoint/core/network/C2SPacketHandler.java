@@ -11,6 +11,8 @@ import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.core.network.buffer.*;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
+import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveException;
+import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveFailure;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveLimits;
 import _959.server_waypoint.core.network.message.*;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
@@ -306,7 +308,6 @@ public class C2SPacketHandler<S, K, P> {
             for (ChunkedMessage message : this.sender.receiveChunkedMessage(
                     player,
                     buffer,
-                    () -> this.recoverFromChunkedMessageFailure(player),
                     limits
             )) {
                 if (message instanceof ClientUpdateRequestMessage updateRequest) {
@@ -321,8 +322,15 @@ public class C2SPacketHandler<S, K, P> {
                     );
                 }
             }
+        } catch (ReceiveException exception) {
+            LOGGER.warn(
+                    "Rejected serverbound chunked-message type {}: {}",
+                    exception.messageTypeId(),
+                    exception.reason(),
+                    exception
+            );
         } catch (IllegalArgumentException | IllegalStateException exception) {
-            LOGGER.warn("Rejected malformed chunked-message transfer", exception);
+            LOGGER.warn("Rejected decoded serverbound chunked message", exception);
         }
     }
 
@@ -332,7 +340,11 @@ public class C2SPacketHandler<S, K, P> {
             return;
         }
         if (buffer.messageChunk().messageTypeId() != ChunkedMessageRegistry.WAYPOINT_DATA.id()) {
-            this.failUploadTransport(player);
+            LOGGER.warn(
+                    "Ignoring disallowed upload chunked-message type {}",
+                    buffer.messageChunk().messageTypeId()
+            );
+            this.discardUploadTransport(player, buffer.requestId());
             return;
         }
         UUID activeRequest = this.activeUploadTransportRequest.get();
@@ -344,13 +356,13 @@ public class C2SPacketHandler<S, K, P> {
             for (ChunkedMessage message : this.uploadChunkedMessages.receive(
                     player,
                     buffer.messageChunk(),
-                    () -> this.failUploadTransport(player),
                     UPLOAD_REQUEST_LIMITS
             )) {
                 if (!(message instanceof WaypointData data)
                         || data.type() != WaypointData.Type.UPLOAD
                         || !data.uploadData().requestId().equals(buffer.requestId())) {
-                    this.failUploadTransport(player);
+                    LOGGER.warn("Ignoring invalid decoded upload transport message");
+                    this.discardUploadTransport(player, buffer.requestId());
                     return;
                 }
                 try {
@@ -360,30 +372,23 @@ public class C2SPacketHandler<S, K, P> {
                     this.activeUploadTransportRequest.compareAndSet(buffer.requestId(), null);
                 }
             }
+        } catch (ReceiveException exception) {
+            LOGGER.warn(
+                    "Rejected upload chunked-message type {}: {}",
+                    exception.messageTypeId(),
+                    exception.reason(),
+                    exception
+            );
+            this.discardUploadTransport(player, buffer.requestId());
         } catch (IllegalArgumentException | IllegalStateException exception) {
-            LOGGER.warn("Rejected malformed upload transfer", exception);
-            this.failUploadTransport(player);
+            LOGGER.warn("Rejected decoded upload message", exception);
+            this.discardUploadTransport(player, buffer.requestId());
         }
     }
 
-    private void failUploadTransport(P player) {
+    private void discardUploadTransport(P player, UUID requestId) {
         this.uploadChunkedMessages.clear(player);
-        this.activeUploadTransportRequest.set(null);
-        this.uploadCoordinator.onDisconnect(player);
-        this.sender.sendPlayerMessage(player, translatable("waypoint.upload.request.invalid"));
-    }
-
-    private void recoverFromChunkedMessageFailure(P player) {
-        LOGGER.warn("Serverbound chunked message delivery failed; resynchronizing the client");
-        this.sender.sendPlayerMessage(
-                player,
-                translatable("waypoint.network.resynchronizing")
-        );
-        WaypointData waypointData = this.waypointServer.toWorldWaypointData();
-        this.sender.sendPlayerChunkedMessage(
-                player,
-                waypointData == null ? WaypointData.world(List.of()) : waypointData
-        );
+        this.activeUploadTransportRequest.compareAndSet(requestId, null);
     }
 
     public void onDisconnect(P player) {
@@ -393,7 +398,19 @@ public class C2SPacketHandler<S, K, P> {
     }
 
     public void tickUploadTransport() {
-        this.uploadChunkedMessages.tick();
+        List<ReceiveFailure<P>> failures = this.uploadChunkedMessages.tick();
+        for (ReceiveFailure<P> failure : failures) {
+            LOGGER.warn(
+                    "Discarded incomplete upload chunked-message type {} from peer {}: {} (transfer {})",
+                    failure.messageTypeId(),
+                    failure.peer(),
+                    failure.reason(),
+                    failure.transferId().map(Object::toString).orElse("unknown")
+            );
+        }
+        if (!failures.isEmpty()) {
+            this.activeUploadTransportRequest.set(null);
+        }
     }
 
     private static ReceiveLimits generalServerboundLimits(int messageTypeId) {

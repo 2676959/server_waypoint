@@ -5,6 +5,7 @@ import _959.server_waypoint.core.network.buffer.MessageChunkBuffer;
 import _959.server_waypoint.core.network.message.WaypointModificationMessage;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.PreparedMessage;
+import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveFailure;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveLimits;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import net.kyori.adventure.text.Component;
@@ -124,45 +125,27 @@ public interface PlatformMessageSender<S, P> {
     }
 
     default List<ChunkedMessage> receiveChunkedMessage(P player, MessageChunkBuffer packet) {
-        return this.receiveChunkedMessage(
-                player,
-                packet,
-                () -> this.onChunkedMessageFailure(player)
-        );
+        return this.chunkedMessageManager().receive(player, packet);
     }
 
     default List<ChunkedMessage> receiveChunkedMessage(
             P player,
             MessageChunkBuffer packet,
-            Runnable failureHandler
-    ) {
-        return this.chunkedMessageManager().receive(
-                player,
-                packet,
-                failureHandler
-        );
-    }
-
-    default List<ChunkedMessage> receiveChunkedMessage(
-            P player,
-            MessageChunkBuffer packet,
-            Runnable failureHandler,
             ReceiveLimits limits
     ) {
-        return this.chunkedMessageManager().receive(
-                player,
-                packet,
-                failureHandler,
-                limits
-        );
+        return this.chunkedMessageManager().receive(player, packet, limits);
     }
 
-    default void tickChunkedMessages() {
-        this.chunkedMessageManager().tick();
+    default List<ReceiveFailure<P>> tickChunkedMessages() {
+        List<ReceiveFailure<P>> failures = this.chunkedMessageManager().tick();
+        failures.forEach(this::logChunkedMessageFailure);
+        return failures;
     }
 
-    default void tickChunkedMessages(P player) {
-        this.chunkedMessageManager().tick(player);
+    default List<ReceiveFailure<P>> tickChunkedMessages(P player) {
+        List<ReceiveFailure<P>> failures = this.chunkedMessageManager().tick(player);
+        failures.forEach(this::logChunkedMessageFailure);
+        return failures;
     }
 
     default boolean hasPendingChunkedMessages(P player) {
@@ -173,10 +156,13 @@ public interface PlatformMessageSender<S, P> {
         this.chunkedMessageManager().clear(player);
     }
 
-    default void onChunkedMessageFailure(P player) {
-        this.sendPlayerMessage(
-                player,
-                Component.translatable("waypoint.network.resynchronizing")
+    private void logChunkedMessageFailure(ReceiveFailure<P> failure) {
+        WaypointServerCore.LOGGER.warn(
+                "Discarded incomplete chunked message type {} from peer {}: {} (transfer {})",
+                failure.messageTypeId(),
+                failure.peer(),
+                failure.reason(),
+                failure.transferId().map(Object::toString).orElse("unknown")
         );
     }
 

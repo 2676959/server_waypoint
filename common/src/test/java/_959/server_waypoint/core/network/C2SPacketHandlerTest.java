@@ -224,6 +224,28 @@ class C2SPacketHandlerTest {
         assertTrue(sender.packets.isEmpty());
     }
 
+    @Test
+    void malformedGeneralTransferDoesNotEmitAutomaticSnapshot() {
+        TestSender sender = new TestSender();
+        C2SPacketHandler<String, String, String> handler = handler(sender);
+        MessageChunkBuffer original = frames(new ClientUpdateRequestMessage(List.of())).get(0);
+        MessageChunkBuffer badChecksum = MessageChunkBuffer.chunk(
+                original.transferId(),
+                original.messageTypeId(),
+                original.sequence(),
+                original.chunkCount(),
+                original.compressed(),
+                original.uncompressedSize(),
+                original.checksum() + 1,
+                original.data()
+        );
+
+        handler.onMessageChunk("player", badChecksum);
+
+        assertEquals(1, sender.receivedChunks);
+        assertTrue(sender.packets.isEmpty());
+    }
+
     private C2SPacketHandler<String, String, String> handler(TestSender sender) {
         WaypointServerCore server = new WaypointServerCore(this.tempDir) {
         };
@@ -412,14 +434,12 @@ class C2SPacketHandlerTest {
         public List<ChunkedMessage> receiveChunkedMessage(
                 String player,
                 MessageChunkBuffer packet,
-                Runnable failureHandler,
                 ChunkedMessageManager.ReceiveLimits limits
         ) {
             this.receivedChunks++;
             return PlatformMessageSender.super.receiveChunkedMessage(
                     player,
                     packet,
-                    failureHandler,
                     limits
             );
         }

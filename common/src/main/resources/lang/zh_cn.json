@@ -249,7 +249,6 @@
   "waypoint.edit.error.upload_busy": "路径点上传期间暂时无法编辑路径点",
   "waypoint.edit.error.success": "编辑成功",
   "waypoint.network.encoding_failed": "路径点消息过大或无法编码",
-  "waypoint.network.resynchronizing": "路径点消息顺序中断，正在重新同步",
   "waypoint.restore.invalid": "恢复令牌无效或已过期",
   "waypoint.restore.list_missing": "原路径点列表不存在；恢复令牌仍然可用",
   "waypoint.restore.collision": "该路径点标识符已被占用；恢复令牌仍然可用",
