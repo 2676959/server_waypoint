@@ -1,8 +1,8 @@
 # Upload and Chunk Transport Progress
 
 Last updated: 2026-08-29
-Branch baseline: `feature/upload-3.1.0` after `9a21f20` with the protocol 9
-transport redesign in the working tree
+Branch baseline: `feature/upload-3.1.0` at `b553c78`, including the committed
+protocol 9 transport, passive failure handling, and upload lifecycle changes
 
 ## Goal
 
@@ -31,6 +31,8 @@ operational issues that remain open.
 | Cross-platform client capability | Resolved | Paper and the mod loaders admit chunked traffic only after a matching protocol handshake. Capability is reset on join and cleared on disconnect; Paper also checks the live `getListeningPluginChannels()` set before opening an S2C transfer. |
 | Directional channel admission | Resolved | The general C2S channel accepts only update and edit requests from negotiated peers. The upload channel accepts only waypoint data for the active negotiated lease, and the client accepts only the defined S2C message types after a compatible server handshake. |
 | Serverbound decode limits | Resolved | Update, edit, and upload messages have channel-specific logical-byte and decoded-object budgets. Update requests additionally reject excessive or duplicate dimensions/lists and oversized or control-character identifiers before querying server state. |
+| Passive timeout cleanup | Resolved | Incomplete inbound transfers expire after progress inactivity or an absolute lifetime. Expiry clears the peer's incomplete receive lane, releases accounting, reports typed failures, and never requests an automatic snapshot recovery. |
+| Client divergence detection | Resolved | State-affecting transport failures mark the session uncertain. Revision gaps mark the affected list out of sync, and later incrementals for that list are refused until an authoritative replacement arrives; healthy lists continue normally. |
 | Saturation containment | Resolved at the networking boundary | Active-transfer and retained-byte exhaustion return `PEER_BUSY`; encoding and delivery failures return typed results. A saturated recipient no longer throws through a broadcast and aborts later recipients after a mutation. |
 | Paper/Folia ownership dispatch | Resolved | Player work uses the entity scheduler, maintenance uses the async scheduler, and no legacy `Bukkit.getScheduler()` or `BukkitScheduler` usage is present. |
 | Scheduler submissions | Partially resolved | Paper's maintenance pass schedules at most one outstanding entity-owned batch per active peer, but initial non-owner dispatch can still retain a prepared body outside manager admission until its entity task runs. |
@@ -79,21 +81,20 @@ on their normal server/client ticks. Paper uses async maintenance to find active
 peers, permits at most one outstanding entity-scheduler handoff per peer, and
 emits the batch only from that player's owning region.
 
-## Remaining issues, in resolution order
+## Completed follow-up resolutions
+
+| Resolution | Commit | Result |
+| --- | --- | --- |
+| Passive timeout and client divergence handling | `e35af70` | Removed automatic recovery, added inactivity and lifetime expiry, propagated message type and transfer identity in failures, and added revision-aware client refusal. |
+| Request-scoped upload ownership and lifecycle cleanup | `b553c78` | Bound player, request, and transfer identity; reserved leases before revision capture; added exact cancellation, lifecycle reset, and per-player cooldown. |
+
+## Remaining issues, in execution order
 
 | Order | Issue | Priority | Is it necessary? | Recommended trade-off or next step |
 | ---: | --- | --- | --- | --- |
-| 1 | Replace automatic timeout recovery with passive cleanup | P1 | Yes | Track inactivity plus an absolute lifetime, clear incomplete peer state, release accounting, and remove automatic snapshot resynchronization callbacks. |
 | 2 | Separate outbound admission from owner-thread delivery | P1/P2 | Yes for user workflows | Admit prepared bodies before scheduling, return an asynchronous final result, cancel failed upload requests exactly, and add an edit-screen response deadline. |
 | 3 | Add end-to-end global resource grants | P1 under load | Yes before scale sign-off | Round-robin active peers under one global tick budget and retain inbound accounting through synchronous message application. |
-| 4 | Complete automated and live Folia coverage | Release blocker | Yes | Test each boundary above, then run multi-region, disconnect, malformed, saturation, incompatible-client, and low-TPS large-transfer smoke tests. |
-
-### 1. Passive timeout cleanup
-
-Remove per-transfer recovery callbacks from the transport manager while retaining
-expiry and memory reclamation. Expiry should use progress inactivity plus a longer
-absolute lifetime. When a transfer expires or becomes malformed, clear incomplete
-state for that peer and do not automatically enqueue another world snapshot.
+| 4 | Complete automated and live Folia coverage | Release blocker | Yes, after resolutions 2 and 3 | Test each boundary above, then run multi-region, disconnect, malformed, saturation, incompatible-client, and low-TPS large-transfer smoke tests. |
 
 ### 2. Two-stage outbound dispatch
 
@@ -118,13 +119,20 @@ with compatible and incompatible clients in different regions, stalled and
 malformed transfers, disconnects, saturation, and a progressing large transfer
 under low TPS.
 
-## Validation completed for the current baseline
+## Validation status
+
+Focused checks refreshed at `b553c78`:
 
 - `:common:test`
-- representative Fabric, Forge, NeoForge, and Paper compilation from Minecraft
-  1.20.1 through 26.2
-- JSON parsing for the changed language files
+- `:mods:26.1.2-fabric:test`
+- `:paper:26.2-paper:compileJava`
 - `git diff --check`
 
-These checks validate compilation and focused state-machine behavior. They do
-not replace the live Folia tests listed above.
+Broader representative Fabric, Forge, NeoForge, and Paper compilation from
+Minecraft 1.20.1 through 26.2, plus JSON parsing for the changed language files,
+was completed during the preceding implementation work. It has not been
+re-run as part of the latest focused refresh.
+
+These checks validate compilation and focused state-machine behavior only. No
+live Folia result has been recorded, so resolution 4 remains open regardless of
+the automated checks above.
