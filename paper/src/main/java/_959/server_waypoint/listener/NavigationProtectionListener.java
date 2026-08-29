@@ -1,7 +1,6 @@
 package _959.server_waypoint.listener;
 
 import _959.server_waypoint.PaperScheduler;
-import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.navigation.NavigationMethod;
 import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationSession;
@@ -70,8 +69,8 @@ public final class NavigationProtectionListener implements Listener {
     private final NavigationService<Player> navigationService;
     private final PaperNavigationPlatform navigationPlatform;
     private final PaperNavigationItemManager itemManager;
-    private final UploadCoordinator<Player> uploadCoordinator;
     private final Consumer<Player> waypointDataDisconnect;
+    private final Consumer<Player> playerDisconnect;
     private final PaperScheduler scheduler;
     private final Map<NavigationMethod, PaperItemNavigationHandler> itemHandlers;
     private final Set<UUID> reconciling = ConcurrentHashMap.newKeySet();
@@ -85,15 +84,15 @@ public final class NavigationProtectionListener implements Listener {
             PaperNavigationPlatform navigationPlatform,
             PaperNavigationItemManager itemManager,
             List<? extends PaperItemNavigationHandler> itemHandlers,
-            UploadCoordinator<Player> uploadCoordinator,
-            Consumer<Player> waypointDataDisconnect
+            Consumer<Player> waypointDataDisconnect,
+            Consumer<Player> playerDisconnect
     ) {
         this.waypointServer = waypointServer;
         this.navigationService = navigationService;
         this.navigationPlatform = navigationPlatform;
         this.itemManager = itemManager;
-        this.uploadCoordinator = uploadCoordinator;
         this.waypointDataDisconnect = waypointDataDisconnect;
+        this.playerDisconnect = playerDisconnect;
         this.scheduler = new PaperScheduler(plugin);
         this.itemHandlers = new EnumMap<>(NavigationMethod.class);
         for (PaperItemNavigationHandler handler : itemHandlers) {
@@ -446,8 +445,7 @@ public final class NavigationProtectionListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        this.waypointDataDisconnect.accept(player);
-        this.uploadCoordinator.onDisconnect(player);
+        this.playerDisconnect.accept(player);
         ScheduledTask tickTask = this.navigationTickTasks.remove(player.getUniqueId());
         if (tickTask != null) {
             tickTask.cancel();

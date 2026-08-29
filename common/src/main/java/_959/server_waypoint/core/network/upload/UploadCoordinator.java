@@ -16,6 +16,7 @@ import _959.server_waypoint.text.TextButtonBuilder;
 import net.kyori.adventure.text.Component;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -25,15 +26,12 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static net.kyori.adventure.text.Component.text;
@@ -45,26 +43,25 @@ import static net.kyori.adventure.text.Component.translatable;
  */
 public final class UploadCoordinator<P> {
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration REACQUISITION_COOLDOWN = Duration.ofSeconds(5);
     private static final int MAX_WAYPOINTS_PER_REQUEST = 4_096;
     private static final int MAX_LISTS_PER_REQUEST = 1_024;
     private static final long MAX_RETAINED_BYTES_PER_REQUEST = 16L * 1_024L * 1_024L;
     private static final int MAX_ABSOLUTE_COORDINATE = 30_000_000;
     private static final int MIN_Y = -2_048;
     private static final int MAX_Y = 4_096;
-    private static final ScheduledExecutorService EXPIRY_EXECUTOR =
-            Executors.newSingleThreadScheduledExecutor(runnable -> {
-                Thread thread = new Thread(runnable, "server-waypoint-upload-expiry");
-                thread.setDaemon(true);
-                return thread;
-            });
-
     private final WaypointServerCore waypointServer;
     private final PlayerMessageSender<P> playerMessageSender;
     private final Consumer<WaypointData> waypointDataBroadcaster;
     private final Predicate<P> permissionChecker;
     private final Predicate<P> deletePermissionChecker;
     private final NavigationService<P> navigationService;
+    private final Function<P, UUID> playerUuidExtractor;
+    private final Clock clock;
+    private final Duration requestTimeout;
+    private final Duration reacquisitionCooldown;
     private final AtomicReference<PendingUpload<P>> activeUpload = new AtomicReference<>();
+    private final Map<UUID, Instant> cooldowns = new LinkedHashMap<>();
     private final Object admissionMonitor = new Object();
     private int activeEditRequests;
 
@@ -74,7 +71,34 @@ public final class UploadCoordinator<P> {
             Consumer<WaypointData> waypointDataBroadcaster,
             Predicate<P> permissionChecker,
             Predicate<P> deletePermissionChecker,
-            NavigationService<P> navigationService
+            NavigationService<P> navigationService,
+            Function<P, UUID> playerUuidExtractor
+    ) {
+        this(
+                waypointServer,
+                playerMessageSender,
+                waypointDataBroadcaster,
+                permissionChecker,
+                deletePermissionChecker,
+                navigationService,
+                playerUuidExtractor,
+                Clock.systemUTC(),
+                REQUEST_TIMEOUT,
+                REACQUISITION_COOLDOWN
+        );
+    }
+
+    UploadCoordinator(
+            WaypointServerCore waypointServer,
+            PlayerMessageSender<P> playerMessageSender,
+            Consumer<WaypointData> waypointDataBroadcaster,
+            Predicate<P> permissionChecker,
+            Predicate<P> deletePermissionChecker,
+            NavigationService<P> navigationService,
+            Function<P, UUID> playerUuidExtractor,
+            Clock clock,
+            Duration requestTimeout,
+            Duration reacquisitionCooldown
     ) {
         this.waypointServer = Objects.requireNonNull(waypointServer, "waypointServer");
         this.playerMessageSender = Objects.requireNonNull(playerMessageSender, "playerMessageSender");
@@ -82,6 +106,10 @@ public final class UploadCoordinator<P> {
         this.permissionChecker = Objects.requireNonNull(permissionChecker, "permissionChecker");
         this.deletePermissionChecker = Objects.requireNonNull(deletePermissionChecker, "deletePermissionChecker");
         this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
+        this.playerUuidExtractor = Objects.requireNonNull(playerUuidExtractor, "playerUuidExtractor");
+        this.clock = Objects.requireNonNull(clock, "clock");
+        this.requestTimeout = requirePositive(requestTimeout, "requestTimeout");
+        this.reacquisitionCooldown = requirePositive(reacquisitionCooldown, "reacquisitionCooldown");
     }
 
     public BeginResult begin(P player, UploadScope scope, UploadConflictPolicy conflictPolicy, boolean deleteMissing,
@@ -89,65 +117,96 @@ public final class UploadCoordinator<P> {
         if (deleteMissing && conflictPolicy != UploadConflictPolicy.LOCAL) {
             throw new IllegalArgumentException("Only force-local uploads can delete missing waypoints");
         }
-        UploadRequestBuffer request = new UploadRequestBuffer(
-                UUID.randomUUID(), dimensionNames, listName, waypointName
+        UUID playerUuid = Objects.requireNonNull(
+                this.playerUuidExtractor.apply(player),
+                "playerUuidExtractor result"
         );
-        Map<String, WaypointFilesManagerCore.DimensionRevision> revisions = new LinkedHashMap<>();
-        for (String dimensionName : request.dimensionNames()) {
-            revisions.putIfAbsent(
-                    dimensionName,
-                    this.waypointServer.captureDimensionRevision(dimensionName)
-            );
-        }
+        Instant now = this.clock.instant();
+        UploadRequestBuffer request = new UploadRequestBuffer(UUID.randomUUID(), dimensionNames, listName, waypointName);
         PendingUpload<P> pending = new PendingUpload<>(
                 player,
+                playerUuid,
                 request,
                 scope,
                 conflictPolicy,
                 deleteMissing,
-                Instant.now().plus(REQUEST_TIMEOUT),
-                revisions
+                now.plus(this.requestTimeout)
         );
         synchronized (this.admissionMonitor) {
-            PendingUpload<P> active = this.activeUpload.get();
-            if (active != null && (!active.expired() || active.applying.get())) {
-                return BeginResult.busy();
+            this.removeExpiredCooldowns(now);
+            Instant cooldownEndsAt = this.cooldowns.get(playerUuid);
+            if (cooldownEndsAt != null) {
+                return BeginResult.cooldown(Duration.between(now, cooldownEndsAt));
             }
-            if (active != null) {
-                this.finishPending(active);
-            }
-            if (this.activeEditRequests != 0
-                    || !this.activeUpload.compareAndSet(null, pending)) {
+            if (this.activeEditRequests != 0 || !this.activeUpload.compareAndSet(null, pending)) {
                 return BeginResult.busy();
             }
         }
-        pending.expiryTask = EXPIRY_EXECUTOR.schedule(
-                () -> {
-                    if (!pending.applying.get()) {
-                        this.finishPending(pending);
-                    }
-                },
-                REQUEST_TIMEOUT.toMillis(),
-                TimeUnit.MILLISECONDS
-        );
+        Map<String, WaypointFilesManagerCore.DimensionRevision> revisions = new LinkedHashMap<>();
+        try {
+            for (String dimensionName : request.dimensionNames()) {
+                revisions.putIfAbsent(
+                        dimensionName,
+                        this.waypointServer.captureDimensionRevision(dimensionName)
+                );
+            }
+        } catch (RuntimeException exception) {
+            this.finishPending(pending, false);
+            throw exception;
+        }
+        pending.dimensionRevisions = Map.copyOf(revisions);
+        if (pending.expired(this.clock.instant())
+                || !pending.phase.compareAndSet(RequestPhase.RESERVING, RequestPhase.RECEIVING)) {
+            this.finishPending(pending, false);
+            return BeginResult.busy();
+        }
         return BeginResult.started(request);
     }
 
     public void onDisconnect(P player) {
         PendingUpload<P> pending = this.activeUpload.get();
-        if (pending != null && Objects.equals(pending.player, player)) {
-            this.finishPending(pending);
+        if (pending != null && this.matchesPlayer(pending, player)) {
+            this.finishPending(pending, false);
+        }
+    }
+
+    public boolean cancel(P player, UUID requestId, String reason) {
+        Objects.requireNonNull(requestId, "requestId");
+        Objects.requireNonNull(reason, "reason");
+        PendingUpload<P> pending = this.activeUpload.get();
+        return pending != null
+                && this.matchesPlayer(pending, player)
+                && pending.request.requestId().equals(requestId)
+                && this.finishPending(pending, false);
+    }
+
+    public Optional<UUID> tick() {
+        Instant now = this.clock.instant();
+        PendingUpload<P> pending = this.activeUpload.get();
+        UUID expiredRequestId = pending != null
+                && pending.expired(now)
+                && this.finishPending(pending, false)
+                ? pending.request.requestId()
+                : null;
+        synchronized (this.admissionMonitor) {
+            this.removeExpiredCooldowns(now);
+        }
+        return Optional.ofNullable(expiredRequestId);
+    }
+
+    public void resetSession() {
+        synchronized (this.admissionMonitor) {
+            PendingUpload<P> pending = this.activeUpload.getAndSet(null);
+            if (pending != null) {
+                pending.phase.set(RequestPhase.FINISHED);
+            }
+            this.cooldowns.clear();
         }
     }
 
     public boolean tryBeginEditRequest() {
         synchronized (this.admissionMonitor) {
-            PendingUpload<P> pending = this.activeUpload.get();
-            if (pending != null && pending.expired() && !pending.applying.get()) {
-                this.finishPending(pending);
-                pending = this.activeUpload.get();
-            }
-            if (pending != null) {
+            if (this.activeUpload.get() != null) {
                 return false;
             }
             this.activeEditRequests++;
@@ -166,14 +225,10 @@ public final class UploadCoordinator<P> {
 
     public boolean acceptsUploadChunk(P player, UUID requestId) {
         PendingUpload<P> pending = this.activeUpload.get();
-        if (pending == null || pending.expired()) {
-            if (pending != null && !pending.applying.get()) {
-                this.finishPending(pending);
-            }
-            return false;
-        }
-        return !pending.applying.get()
-                && Objects.equals(pending.player, player)
+        return pending != null
+                && !pending.expired(this.clock.instant())
+                && pending.phase.get() == RequestPhase.RECEIVING
+                && this.matchesPlayer(pending, player)
                 && pending.request.requestId().equals(requestId);
     }
 
@@ -181,17 +236,21 @@ public final class UploadCoordinator<P> {
         WaypointData.Upload upload = waypointData.uploadData();
         PendingUpload<P> pending = this.activeUpload.get();
         if (pending == null
-                || !Objects.equals(pending.player, player)
-                || !pending.request.requestId().equals(upload.requestId())
-                || !pending.applying.compareAndSet(false, true)) {
+                || !this.matchesPlayer(pending, player)
+                || !pending.request.requestId().equals(upload.requestId())) {
+            this.playerMessageSender.send(player, translatable("waypoint.upload.request.invalid"));
+            return;
+        }
+        if (pending.expired(this.clock.instant())) {
+            this.finishPending(pending, false);
+            this.playerMessageSender.send(player, translatable("waypoint.upload.request.expired"));
+            return;
+        }
+        if (!pending.phase.compareAndSet(RequestPhase.RECEIVING, RequestPhase.APPLYING)) {
             this.playerMessageSender.send(player, translatable("waypoint.upload.request.invalid"));
             return;
         }
         try {
-            if (pending.expired()) {
-                this.playerMessageSender.send(player, translatable("waypoint.upload.request.expired"));
-                return;
-            }
             if (!this.permissionChecker.test(player)) {
                 this.playerMessageSender.send(player, translatable("waypoint.upload.permission.revoked"));
                 return;
@@ -265,14 +324,44 @@ public final class UploadCoordinator<P> {
                 this.playerMessageSender.send(player, translatable("waypoint.upload.save.failed"));
             }
         } finally {
-            this.finishPending(pending);
+            this.finishPending(pending, true);
         }
     }
 
-    private void finishPending(PendingUpload<P> pending) {
-        if (this.activeUpload.compareAndSet(pending, null)) {
-            pending.cancelExpiry();
+    private boolean finishPending(PendingUpload<P> pending, boolean applyingMayFinish) {
+        synchronized (this.admissionMonitor) {
+            if (this.activeUpload.get() != pending) {
+                return false;
+            }
+            RequestPhase phase = pending.phase.get();
+            if (phase == RequestPhase.FINISHED
+                    || (!applyingMayFinish && phase == RequestPhase.APPLYING)
+                    || !pending.phase.compareAndSet(phase, RequestPhase.FINISHED)
+                    || !this.activeUpload.compareAndSet(pending, null)) {
+                return false;
+            }
+            this.cooldowns.put(
+                    pending.playerUuid,
+                    this.clock.instant().plus(this.reacquisitionCooldown)
+            );
+            return true;
         }
+    }
+
+    private boolean matchesPlayer(PendingUpload<P> pending, P player) {
+        return pending.playerUuid.equals(this.playerUuidExtractor.apply(player));
+    }
+
+    private void removeExpiredCooldowns(Instant now) {
+        this.cooldowns.values().removeIf(cooldownEndsAt -> !cooldownEndsAt.isAfter(now));
+    }
+
+    private static Duration requirePositive(Duration duration, String name) {
+        Objects.requireNonNull(duration, name);
+        if (duration.isZero() || duration.isNegative()) {
+            throw new IllegalArgumentException(name + " must be positive");
+        }
+        return duration;
     }
 
     private static void appendUpload(
@@ -643,61 +732,70 @@ public final class UploadCoordinator<P> {
 
     public enum BeginStatus {
         STARTED,
-        BUSY
+        BUSY,
+        COOLDOWN
     }
 
-    public record BeginResult(BeginStatus status, UploadRequestBuffer request) {
+    public record BeginResult(
+            BeginStatus status,
+            UploadRequestBuffer request,
+            Duration cooldownRemaining
+    ) {
         private static BeginResult started(UploadRequestBuffer request) {
-            return new BeginResult(BeginStatus.STARTED, request);
+            return new BeginResult(BeginStatus.STARTED, request, Duration.ZERO);
         }
 
         private static BeginResult busy() {
-            return new BeginResult(BeginStatus.BUSY, null);
+            return new BeginResult(BeginStatus.BUSY, null, Duration.ZERO);
+        }
+
+        private static BeginResult cooldown(Duration remaining) {
+            return new BeginResult(BeginStatus.COOLDOWN, null, remaining);
         }
     }
 
     private static final class PendingUpload<P> {
-        private final P player;
+        private final UUID playerUuid;
         private final UploadRequestBuffer request;
         private final UploadScope scope;
         private final UploadConflictPolicy conflictPolicy;
         private final boolean deleteMissing;
         private final Instant expiresAt;
-        private final Map<String, WaypointFilesManagerCore.DimensionRevision> dimensionRevisions;
+        private volatile Map<String, WaypointFilesManagerCore.DimensionRevision> dimensionRevisions = Map.of();
         private final Map<UploadListKey, List<SimpleWaypoint>> uploadedWaypoints = new LinkedHashMap<>();
         private int waypointCount;
         private long retainedBytes;
-        private final AtomicBoolean applying = new AtomicBoolean();
-        private volatile ScheduledFuture<?> expiryTask;
+        private final AtomicReference<RequestPhase> phase =
+                new AtomicReference<>(RequestPhase.RESERVING);
 
         private PendingUpload(
                 P player,
+                UUID playerUuid,
                 UploadRequestBuffer request,
                 UploadScope scope,
                 UploadConflictPolicy conflictPolicy,
                 boolean deleteMissing,
-                Instant expiresAt,
-                Map<String, WaypointFilesManagerCore.DimensionRevision> dimensionRevisions
+                Instant expiresAt
         ) {
-            this.player = Objects.requireNonNull(player, "player");
+            Objects.requireNonNull(player, "player");
+            this.playerUuid = Objects.requireNonNull(playerUuid, "playerUuid");
             this.request = request;
             this.scope = scope;
             this.conflictPolicy = conflictPolicy;
             this.deleteMissing = deleteMissing;
             this.expiresAt = expiresAt;
-            this.dimensionRevisions = Map.copyOf(dimensionRevisions);
         }
 
-        private boolean expired() {
-            return !this.expiresAt.isAfter(Instant.now());
+        private boolean expired(Instant now) {
+            return !this.expiresAt.isAfter(now);
         }
+    }
 
-        private void cancelExpiry() {
-            ScheduledFuture<?> task = this.expiryTask;
-            if (task != null) {
-                task.cancel(false);
-            }
-        }
+    private enum RequestPhase {
+        RESERVING,
+        RECEIVING,
+        APPLYING,
+        FINISHED
     }
 
     private record UploadListKey(String dimensionName, String listName) {

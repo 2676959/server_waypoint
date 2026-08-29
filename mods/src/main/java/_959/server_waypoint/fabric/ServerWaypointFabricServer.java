@@ -56,7 +56,8 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
                 messageSender::broadcastChunkedMessage,
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete()),
-                waypointServer.navigation().service()
+                waypointServer.navigation().service(),
+                ServerPlayer::getUUID
         );
         C2SPacketHandler<CommandSourceStack, String, ServerPlayer> c2sPacketHandler = new C2SPacketHandler<>(
                 messageSender,
@@ -91,7 +92,10 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
         // register waypoint command
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, registrationEnvironment) -> waypointCommand.register(dispatcher));
         ServerLifecycleEvents.SERVER_STARTING.register(waypointServer::load);
-        ServerLifecycleEvents.SERVER_STOPPING.register(server -> waypointServer.unload());
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            c2sPacketHandler.resetSession();
+            waypointServer.unload();
+        });
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             waypointServer.navigation().tick();
             messageSender.tickChunkedMessages();

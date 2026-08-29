@@ -715,7 +715,8 @@ class CoreWaypointCommandNavigationTest {
                             },
                             player -> true,
                             player -> true,
-                            navigationService
+                            navigationService,
+                            TestPlayer::uuid
                     ),
                     StringArgumentType::string,
                     StringArgumentType::string

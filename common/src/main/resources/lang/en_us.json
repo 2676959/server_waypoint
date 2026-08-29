@@ -51,6 +51,7 @@
   "waypoint.upload.request.expired": "The waypoint upload request expired",
   "waypoint.upload.request.stale": "Waypoints changed during the upload. No upload changes were applied to {0} affected dimension(s); retry to use the current server data.",
   "waypoint.upload.busy": "Another waypoint upload is already in progress",
+  "waypoint.upload.cooldown": "Wait %s seconds before starting another waypoint upload",
   "waypoint.upload.permission.revoked": "You no longer have permission to upload waypoints",
   "waypoint.upload.delete.permission.revoked": "You no longer have permission to force-delete waypoints",
   "waypoint.upload.xaero.missing": "Xaero''s Minimap is not installed on your client",

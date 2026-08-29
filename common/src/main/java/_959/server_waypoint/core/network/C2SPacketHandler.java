@@ -56,7 +56,8 @@ public class C2SPacketHandler<S, K, P> {
     private final NavigationService<P> navigationService;
     private final UploadCoordinator<P> uploadCoordinator;
     private final ChunkedMessageManager<P> uploadChunkedMessages = new ChunkedMessageManager<>();
-    private final AtomicReference<UUID> activeUploadTransportRequest = new AtomicReference<>();
+    private final AtomicReference<UploadTransportSession<P>> activeUploadTransportSession =
+            new AtomicReference<>();
 
     public C2SPacketHandler(
             PlatformMessageSender<S, P> messageSender,
@@ -339,18 +340,21 @@ public class C2SPacketHandler<S, K, P> {
                 || !this.uploadCoordinator.acceptsUploadChunk(player, buffer.requestId())) {
             return;
         }
+        UploadTransportSession<P> session = this.bindUploadTransportSession(player, buffer);
+        if (session == null) {
+            LOGGER.warn(
+                    "Ignoring upload chunk for a second or mismatched transfer {}",
+                    buffer.messageChunk().transferId()
+            );
+            return;
+        }
         if (buffer.messageChunk().messageTypeId() != ChunkedMessageRegistry.WAYPOINT_DATA.id()) {
             LOGGER.warn(
                     "Ignoring disallowed upload chunked-message type {}",
                     buffer.messageChunk().messageTypeId()
             );
-            this.discardUploadTransport(player, buffer.requestId());
+            this.failUploadTransport(session, "disallowed message type");
             return;
-        }
-        UUID activeRequest = this.activeUploadTransportRequest.get();
-        if (!buffer.requestId().equals(activeRequest)
-                && this.activeUploadTransportRequest.compareAndSet(activeRequest, buffer.requestId())) {
-            this.uploadChunkedMessages.clearAll();
         }
         try {
             for (ChunkedMessage message : this.uploadChunkedMessages.receive(
@@ -362,14 +366,14 @@ public class C2SPacketHandler<S, K, P> {
                         || data.type() != WaypointData.Type.UPLOAD
                         || !data.uploadData().requestId().equals(buffer.requestId())) {
                     LOGGER.warn("Ignoring invalid decoded upload transport message");
-                    this.discardUploadTransport(player, buffer.requestId());
+                    this.failUploadTransport(session, "invalid decoded upload");
                     return;
                 }
                 try {
                     this.uploadCoordinator.onUpload(player, data);
                 } finally {
                     this.uploadChunkedMessages.clear(player);
-                    this.activeUploadTransportRequest.compareAndSet(buffer.requestId(), null);
+                    this.activeUploadTransportSession.compareAndSet(session, null);
                 }
             }
         } catch (ReceiveException exception) {
@@ -379,22 +383,55 @@ public class C2SPacketHandler<S, K, P> {
                     exception.reason(),
                     exception
             );
-            this.discardUploadTransport(player, buffer.requestId());
+            UUID failedTransferId = exception.transferId().orElse(buffer.messageChunk().transferId());
+            if (session.transferId().equals(failedTransferId)) {
+                this.failUploadTransport(session, exception.reason().name());
+            }
         } catch (IllegalArgumentException | IllegalStateException exception) {
             LOGGER.warn("Rejected decoded upload message", exception);
-            this.discardUploadTransport(player, buffer.requestId());
+            this.failUploadTransport(session, "decoded upload handler failure");
         }
     }
 
-    private void discardUploadTransport(P player, UUID requestId) {
-        this.uploadChunkedMessages.clear(player);
-        this.activeUploadTransportRequest.compareAndSet(requestId, null);
+    private UploadTransportSession<P> bindUploadTransportSession(P player, UploadChunkBuffer buffer) {
+        UploadTransportSession<P> candidate = new UploadTransportSession<>(
+                player,
+                buffer.requestId(),
+                buffer.messageChunk().transferId()
+        );
+        while (true) {
+            UploadTransportSession<P> active = this.activeUploadTransportSession.get();
+            if (active != null) {
+                return active.equals(candidate) ? active : null;
+            }
+            if (this.activeUploadTransportSession.compareAndSet(null, candidate)) {
+                return candidate;
+            }
+        }
+    }
+
+    private void failUploadTransport(UploadTransportSession<P> session, String reason) {
+        if (!this.activeUploadTransportSession.compareAndSet(session, null)) {
+            return;
+        }
+        this.uploadChunkedMessages.clear(session.player());
+        this.uploadCoordinator.cancel(session.player(), session.requestId(), reason);
     }
 
     public void onDisconnect(P player) {
         this.sender.disconnectChunkedMessages(player);
         this.uploadChunkedMessages.clear(player);
+        UploadTransportSession<P> session = this.activeUploadTransportSession.get();
+        if (session != null && Objects.equals(session.player(), player)) {
+            this.activeUploadTransportSession.compareAndSet(session, null);
+        }
         this.uploadCoordinator.onDisconnect(player);
+    }
+
+    public void resetSession() {
+        this.uploadChunkedMessages.clearAll();
+        this.activeUploadTransportSession.set(null);
+        this.uploadCoordinator.resetSession();
     }
 
     public void tickUploadTransport() {
@@ -407,9 +444,29 @@ public class C2SPacketHandler<S, K, P> {
                     failure.reason(),
                     failure.transferId().map(Object::toString).orElse("unknown")
             );
+            this.onUploadTransportFailure(failure);
         }
-        if (!failures.isEmpty()) {
-            this.activeUploadTransportRequest.set(null);
+        this.uploadCoordinator.tick().ifPresent(this::clearExpiredUploadTransport);
+    }
+
+    private void clearExpiredUploadTransport(UUID requestId) {
+        UploadTransportSession<P> session = this.activeUploadTransportSession.get();
+        if (session != null
+                && session.requestId().equals(requestId)
+                && this.activeUploadTransportSession.compareAndSet(session, null)) {
+            this.uploadChunkedMessages.clear(session.player());
+        }
+    }
+
+    void onUploadTransportFailure(ReceiveFailure<P> failure) {
+        if (failure.messageTypeId() != ChunkedMessageRegistry.WAYPOINT_DATA.id()) {
+            return;
+        }
+        UploadTransportSession<P> session = this.activeUploadTransportSession.get();
+        if (session != null
+                && Objects.equals(session.player(), failure.peer())
+                && failure.transferId().filter(session.transferId()::equals).isPresent()) {
+            this.failUploadTransport(session, failure.reason().name());
         }
     }
 
@@ -421,6 +478,14 @@ public class C2SPacketHandler<S, K, P> {
             return EDIT_REQUEST_LIMITS;
         }
         return null;
+    }
+
+    private record UploadTransportSession<P>(P player, UUID requestId, UUID transferId) {
+        private UploadTransportSession {
+            Objects.requireNonNull(player, "player");
+            Objects.requireNonNull(requestId, "requestId");
+            Objects.requireNonNull(transferId, "transferId");
+        }
     }
 
     private static void validateClientUpdateRequest(ClientUpdateRequestMessage request) {

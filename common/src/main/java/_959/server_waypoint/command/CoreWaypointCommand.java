@@ -1920,6 +1920,17 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             this.sender.sendError(source, translatable("waypoint.upload.busy"));
             return;
         }
+        if (beginResult.status() == UploadCoordinator.BeginStatus.COOLDOWN) {
+            long remainingSeconds = Math.max(
+                    1L,
+                    (beginResult.cooldownRemaining().toMillis() + 999L) / 1_000L
+            );
+            this.sender.sendError(source, translatable(
+                    "waypoint.upload.cooldown",
+                    text(remainingSeconds)
+            ));
+            return;
+        }
         UploadRequestBuffer request = Objects.requireNonNull(beginResult.request());
         this.sender.sendPlayerPacket(player, request);
         this.sender.sendMessage(source, translatable(deleteMissing

@@ -81,7 +81,8 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                 messageSender::broadcastChunkedMessage,
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete()),
-                this.waypointServer.navigation().service()
+                this.waypointServer.navigation().service(),
+                ServerPlayer::getUUID
         );
         this.c2sPacketHandler = new C2SPacketHandler<>(
                 messageSender,
@@ -125,6 +126,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
     }
 
     private void onServerStopping(ServerStoppingEvent event) {
+        this.c2sPacketHandler.resetSession();
         this.waypointServer.unload();
     }
 

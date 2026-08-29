@@ -13,9 +13,15 @@ import _959.server_waypoint.core.network.message.WaypointModificationMessage;
 import _959.server_waypoint.core.network.message.ClientUpdateRequestMessage;
 import _959.server_waypoint.core.network.buffer.ClientHandshakeBuffer;
 import _959.server_waypoint.core.network.buffer.MessageChunkBuffer;
+import _959.server_waypoint.core.network.buffer.UploadChunkBuffer;
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.PreparedMessage;
+import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
+import _959.server_waypoint.core.network.upload.UploadConflictPolicy;
+import _959.server_waypoint.core.network.upload.UploadScope;
+import _959.server_waypoint.core.network.upload.UploadStatus;
 import _959.server_waypoint.navigation.NavigationPlatform;
 import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationSnapshot;
@@ -30,6 +36,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -246,20 +253,206 @@ class C2SPacketHandlerTest {
         assertTrue(sender.packets.isEmpty());
     }
 
+    @Test
+    void uploadTransportBindsExactPlayerRequestAndFirstTransfer() {
+        TestSender sender = new TestSender();
+        HandlerFixture fixture = handlerFixture(sender);
+        UploadRequestBuffer request = beginUpload(fixture.coordinator(), "player");
+        UUID firstTransfer = UUID.randomUUID();
+        UUID secondTransfer = UUID.randomUUID();
+
+        fixture.handler().onUploadChunk(
+                "player",
+                new UploadChunkBuffer(request.requestId(), partialUploadFrame(firstTransfer))
+        );
+        fixture.handler().onUploadChunk(
+                "other",
+                new UploadChunkBuffer(request.requestId(), partialUploadFrame(firstTransfer))
+        );
+        fixture.handler().onUploadChunk(
+                "player",
+                new UploadChunkBuffer(request.requestId(), partialUploadFrame(secondTransfer))
+        );
+        fixture.handler().onUploadTransportFailure(uploadFailure("player", secondTransfer));
+
+        assertTrue(fixture.coordinator().acceptsUploadChunk("player", request.requestId()));
+
+        fixture.handler().onUploadTransportFailure(uploadFailure("player", firstTransfer));
+        assertFalse(fixture.coordinator().acceptsUploadChunk("player", request.requestId()));
+    }
+
+    @Test
+    void staleUploadFailureCannotCancelReplacementSession() {
+        TestSender sender = new TestSender();
+        HandlerFixture fixture = handlerFixture(sender);
+        UploadRequestBuffer oldRequest = beginUpload(fixture.coordinator(), "old-player");
+        UUID oldTransfer = UUID.randomUUID();
+        fixture.handler().onUploadChunk(
+                "old-player",
+                new UploadChunkBuffer(oldRequest.requestId(), partialUploadFrame(oldTransfer))
+        );
+        fixture.handler().onDisconnect("old-player");
+        sender.capable = true;
+
+        UploadRequestBuffer replacement = beginUpload(fixture.coordinator(), "new-player");
+        UUID replacementTransfer = UUID.randomUUID();
+        fixture.handler().onUploadChunk(
+                "new-player",
+                new UploadChunkBuffer(replacement.requestId(), partialUploadFrame(replacementTransfer))
+        );
+        fixture.handler().onUploadTransportFailure(uploadFailure("old-player", oldTransfer));
+
+        assertTrue(fixture.coordinator().acceptsUploadChunk("new-player", replacement.requestId()));
+        fixture.handler().onUploadTransportFailure(uploadFailure("new-player", replacementTransfer));
+    }
+
+    @Test
+    void matchingMalformedTransferClearsTransportAndCoordinator() {
+        TestSender sender = new TestSender();
+        HandlerFixture fixture = handlerFixture(sender);
+        UploadRequestBuffer request = beginUpload(fixture.coordinator(), "player");
+        UUID transferId = UUID.randomUUID();
+        fixture.handler().onUploadChunk(
+                "player",
+                new UploadChunkBuffer(request.requestId(), partialUploadFrame(transferId))
+        );
+
+        fixture.handler().onUploadChunk(
+                "player",
+                new UploadChunkBuffer(request.requestId(), conflictingUploadFrame(transferId))
+        );
+
+        assertFalse(fixture.coordinator().acceptsUploadChunk("player", request.requestId()));
+        beginUpload(fixture.coordinator(), "other");
+        fixture.handler().resetSession();
+    }
+
+    @Test
+    void successfulUploadClearsMatchingTransportSession() {
+        TestSender sender = new TestSender();
+        HandlerFixture fixture = handlerFixture(sender);
+        UploadRequestBuffer first = beginUpload(fixture.coordinator(), "first");
+        sendCompletedUpload(fixture.handler(), "first", first);
+
+        UploadRequestBuffer second = beginUpload(fixture.coordinator(), "second");
+        sendCompletedUpload(fixture.handler(), "second", second);
+
+        assertFalse(fixture.coordinator().acceptsUploadChunk("second", second.requestId()));
+    }
+
+    @Test
+    void disconnectAndResetClearDedicatedUploadTransport() {
+        TestSender sender = new TestSender();
+        HandlerFixture fixture = handlerFixture(sender);
+        UploadRequestBuffer disconnected = beginUpload(fixture.coordinator(), "first");
+        fixture.handler().onUploadChunk(
+                "first",
+                new UploadChunkBuffer(disconnected.requestId(), partialUploadFrame(UUID.randomUUID()))
+        );
+
+        fixture.handler().onDisconnect("first");
+        sender.capable = true;
+        UploadRequestBuffer replacement = beginUpload(fixture.coordinator(), "second");
+        fixture.handler().onUploadChunk(
+                "second",
+                new UploadChunkBuffer(replacement.requestId(), partialUploadFrame(UUID.randomUUID()))
+        );
+
+        fixture.handler().resetSession();
+        UploadRequestBuffer afterReset = beginUpload(fixture.coordinator(), "second");
+        sendCompletedUpload(fixture.handler(), "second", afterReset);
+        assertFalse(fixture.coordinator().acceptsUploadChunk("second", afterReset.requestId()));
+    }
+
     private C2SPacketHandler<String, String, String> handler(TestSender sender) {
+        return this.handlerFixture(sender).handler();
+    }
+
+    private HandlerFixture handlerFixture(TestSender sender) {
         WaypointServerCore server = new WaypointServerCore(this.tempDir) {
         };
-        return new C2SPacketHandler<>(
+        UploadCoordinator<String> coordinator = uploadCoordinator(server);
+        return new HandlerFixture(new C2SPacketHandler<>(
                 sender,
                 server,
                 new TestPermissionManager(true),
                 navigationService(),
-                uploadCoordinator(server)
-        );
+                coordinator
+        ), coordinator);
     }
 
     private static List<MessageChunkBuffer> frames(ChunkedMessage message) {
         return ChunkedMessageManager.prepare(message, false).frames();
+    }
+
+    private static UploadRequestBuffer beginUpload(
+            UploadCoordinator<String> coordinator,
+            String player
+    ) {
+        UploadCoordinator.BeginResult result = coordinator.begin(
+                player,
+                UploadScope.DIMENSION,
+                UploadConflictPolicy.LOCAL,
+                false,
+                List.of("minecraft:overworld"),
+                null,
+                null
+        );
+        assertEquals(UploadCoordinator.BeginStatus.STARTED, result.status());
+        return result.request();
+    }
+
+    private static MessageChunkBuffer partialUploadFrame(UUID transferId) {
+        return MessageChunkBuffer.chunk(
+                transferId,
+                ChunkedMessageRegistry.WAYPOINT_DATA.id(),
+                0,
+                2,
+                false,
+                ChunkedMessageManager.MAX_CHUNK_DATA_SIZE + 1,
+                0,
+                new byte[ChunkedMessageManager.MAX_CHUNK_DATA_SIZE]
+        );
+    }
+
+    private static MessageChunkBuffer conflictingUploadFrame(UUID transferId) {
+        return MessageChunkBuffer.chunk(
+                transferId,
+                ChunkedMessageRegistry.WAYPOINT_DATA.id(),
+                1,
+                2,
+                false,
+                ChunkedMessageManager.MAX_CHUNK_DATA_SIZE + 1,
+                1,
+                new byte[]{0}
+        );
+    }
+
+    private static ChunkedMessageManager.ReceiveFailure<String> uploadFailure(
+            String player,
+            UUID transferId
+    ) {
+        return new ChunkedMessageManager.ReceiveFailure<>(
+                player,
+                ChunkedMessageRegistry.WAYPOINT_DATA.id(),
+                ChunkedMessageManager.FailureReason.MALFORMED,
+                Optional.of(transferId)
+        );
+    }
+
+    private static void sendCompletedUpload(
+            C2SPacketHandler<String, String, String> handler,
+            String player,
+            UploadRequestBuffer request
+    ) {
+        WaypointData data = WaypointData.upload(
+                request.requestId(),
+                UploadStatus.XAERO_NOT_READY,
+                List.of()
+        );
+        for (MessageChunkBuffer frame : frames(data)) {
+            handler.onUploadChunk(player, new UploadChunkBuffer(request.requestId(), frame));
+        }
     }
 
     private static WaypointEditRequestMessage request() {
@@ -300,7 +493,8 @@ class C2SPacketHandlerTest {
                 },
                 player -> true,
                 player -> true,
-                navigationService()
+                navigationService(),
+                player -> UUID.nameUUIDFromBytes(player.getBytes(java.nio.charset.StandardCharsets.UTF_8))
         );
     }
 
@@ -363,6 +557,12 @@ class C2SPacketHandlerTest {
         protected PermissionKey createUploadDeletePermissionKey() {
             return new PermissionKey("upload.delete");
         }
+    }
+
+    private record HandlerFixture(
+            C2SPacketHandler<String, String, String> handler,
+            UploadCoordinator<String> coordinator
+    ) {
     }
 
     private static class TestSender implements PlatformMessageSender<String, String> {

@@ -118,7 +118,8 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 sender::broadcastChunkedMessage,
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete()),
-                this.navigationService
+                this.navigationService,
+                Player::getUniqueId
         );
 
         waypointCommand = new WaypointCommand(
@@ -133,6 +134,13 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 new PaperChatMessageHandler(server, sender, permissionManager)
         );
         PlayerRegisterChannelListener channelRegisterListener = new PlayerRegisterChannelListener();
+        this.c2sPacketHandler = new C2SPacketHandler<>(
+                sender,
+                waypointServer,
+                permissionManager,
+                this.navigationService,
+                uploadCoordinator
+        );
         NavigationProtectionListener navigationListener = new NavigationProtectionListener(
                 this,
                 waypointServer,
@@ -140,15 +148,8 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 navigationPlatform,
                 this.navigationItemManager,
                 List.<PaperItemNavigationHandler>of(compassHandler, mapHandler),
-                uploadCoordinator,
-                sender::disconnectChunkedMessages
-        );
-        this.c2sPacketHandler = new C2SPacketHandler<>(
-                sender,
-                waypointServer,
-                permissionManager,
-                this.navigationService,
-                uploadCoordinator
+                sender::disconnectChunkedMessages,
+                this.c2sPacketHandler::onDisconnect
         );
         server.getAsyncScheduler().runAtFixedRate(
                 this,
@@ -170,6 +171,9 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
 
     @Override
     public void onDisable() {
+        if (this.c2sPacketHandler != null) {
+            this.c2sPacketHandler.resetSession();
+        }
         if (this.messageSender != null) {
             this.getServer().getOnlinePlayers()
                     .forEach(this.messageSender::disconnectChunkedMessages);

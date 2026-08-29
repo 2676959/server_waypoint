@@ -872,7 +872,8 @@ class CoreWaypointCommandListTest {
                             },
                             player -> true,
                             player -> true,
-                            navigationService()
+                            navigationService(),
+                            player -> new UUID(0L, 0L)
                     ),
                     StringArgumentType::string,
                     StringArgumentType::string
