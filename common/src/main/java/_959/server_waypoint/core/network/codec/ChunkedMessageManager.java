@@ -1,6 +1,7 @@
 package _959.server_waypoint.core.network.codec;
 
 import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.ChunkedMessageDelivery;
 import _959.server_waypoint.core.network.ChunkedMessageRegistry;
 import _959.server_waypoint.core.network.ChunkedMessageSendResult;
 import _959.server_waypoint.core.network.DecodingContext;
@@ -24,9 +25,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.zip.CRC32;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -100,14 +104,58 @@ public final class ChunkedMessageManager<P> {
         return this.send(peer, prepare(message, compressionEnabled), batchSender);
     }
 
+    public ChunkedMessageDelivery sendTracked(
+            P peer,
+            ChunkedMessage message,
+            boolean compressionEnabled,
+            Function<List<MessageChunkBuffer>, CompletionStage<ChunkedMessageSendResult>> batchSender
+    ) {
+        return this.sendTracked(peer, prepare(message, compressionEnabled), batchSender);
+    }
+
     public ChunkedMessageSendResult send(
             P peer,
             PreparedMessage message,
             Consumer<List<MessageChunkBuffer>> batchSender
     ) {
+        ChunkedMessageDelivery delivery = this.sendTracked(
+                peer,
+                message,
+                frames -> {
+                    try {
+                        batchSender.accept(frames);
+                        return CompletableFuture.completedFuture(
+                                ChunkedMessageSendResult.DELIVERED
+                        );
+                    } catch (RuntimeException exception) {
+                        return CompletableFuture.completedFuture(
+                                ChunkedMessageSendResult.DELIVERY_FAILED
+                        );
+                    }
+                }
+        );
+        CompletableFuture<ChunkedMessageSendResult> completion =
+                delivery.completion().toCompletableFuture();
+        if (completion.isDone()) {
+            ChunkedMessageSendResult result = completion.getNow(
+                    ChunkedMessageSendResult.DELIVERY_FAILED
+            );
+            if (!result.delivered()) {
+                return result;
+            }
+        }
+        return delivery.admissionResult();
+    }
+
+    public ChunkedMessageDelivery sendTracked(
+            P peer,
+            PreparedMessage message,
+            Function<List<MessageChunkBuffer>, CompletionStage<ChunkedMessageSendResult>> batchSender
+    ) {
         Objects.requireNonNull(peer, "peer");
         Objects.requireNonNull(message, "message");
         Objects.requireNonNull(batchSender, "batchSender");
+        CompletableFuture<ChunkedMessageSendResult> completion = new CompletableFuture<>();
         PeerState state;
         while (true) {
             state = this.peers.computeIfAbsent(peer, ignored -> new PeerState());
@@ -120,21 +168,24 @@ public final class ChunkedMessageManager<P> {
                 if (state.outgoing.size() >= MAX_ACTIVE_TRANSFERS_PER_PEER
                         || state.outgoingRetainedBytes + message.retainedBytes
                         > MAX_MESSAGE_BYTES) {
-                    return ChunkedMessageSendResult.PEER_BUSY;
+                    return ChunkedMessageDelivery.rejected(ChunkedMessageSendResult.PEER_BUSY);
                 }
                 if (!this.retainOutgoingBody(message)) {
-                    return ChunkedMessageSendResult.PEER_BUSY;
+                    return ChunkedMessageDelivery.rejected(ChunkedMessageSendResult.PEER_BUSY);
                 }
-                state.outgoing.addLast(new OutgoingTransfer(message, batchSender));
+                state.outgoing.addLast(new OutgoingTransfer(
+                        message,
+                        batchSender,
+                        completion
+                ));
                 state.outgoingRetainedBytes += message.retainedBytes;
                 break;
             } finally {
                 state.stateLock.unlock();
             }
         }
-        return this.drainPeer(peer, state) == DrainResult.FAILED
-                ? ChunkedMessageSendResult.DELIVERY_FAILED
-                : ChunkedMessageSendResult.QUEUED;
+        this.drainPeer(peer, state);
+        return ChunkedMessageDelivery.queued(completion);
     }
 
     public List<ChunkedMessage> receive(
@@ -316,17 +367,32 @@ public final class ChunkedMessageManager<P> {
     }
 
     public void clear(P peer) {
-        PeerState state = this.peers.remove(peer);
+        this.clear(peer, null, ChunkedMessageSendResult.DELIVERY_FAILED);
+    }
+
+    private void clear(
+            P peer,
+            PeerState expectedState,
+            ChunkedMessageSendResult result
+    ) {
+        PeerState state;
+        if (expectedState == null) {
+            state = this.peers.remove(peer);
+        } else if (this.peers.remove(peer, expectedState)) {
+            state = expectedState;
+        } else {
+            state = null;
+        }
         if (state == null) {
             return;
         }
-        List<PreparedMessage> outgoingBodies = new ArrayList<>();
+        List<OutgoingTransfer> outgoingTransfers = new ArrayList<>();
         long incomingBytes = 0;
         state.stateLock.lock();
         try {
             state.closed = true;
             for (OutgoingTransfer transfer : state.outgoing) {
-                outgoingBodies.add(transfer.message);
+                outgoingTransfers.add(transfer);
             }
             state.outgoing.clear();
             state.outgoingRetainedBytes = 0;
@@ -339,7 +405,10 @@ public final class ChunkedMessageManager<P> {
         } finally {
             state.stateLock.unlock();
         }
-        outgoingBodies.forEach(this::releaseOutgoingBody);
+        for (OutgoingTransfer transfer : outgoingTransfers) {
+            this.releaseOutgoingBody(transfer.message);
+            transfer.completion.complete(result);
+        }
         this.releaseIncomingBytes(incomingBytes);
     }
 
@@ -407,16 +476,16 @@ public final class ChunkedMessageManager<P> {
         }
     }
 
-    private DrainResult drainPeer(P peer, PeerState state) {
+    private void drainPeer(P peer, PeerState state) {
         PendingBatch pending;
         state.stateLock.lock();
         try {
             if (state.closed || state.inFlight != null) {
-                return DrainResult.NONE;
+                return;
             }
             OutgoingTransfer transfer = state.outgoing.peekFirst();
             if (transfer == null) {
-                return DrainResult.NONE;
+                return;
             }
             int start = transfer.nextFrame;
             int end = start;
@@ -440,18 +509,46 @@ public final class ChunkedMessageManager<P> {
             state.stateLock.unlock();
         }
 
+        CompletionStage<ChunkedMessageSendResult> delivery;
         try {
-            pending.transfer.batchSender.accept(pending.frames);
+            delivery = Objects.requireNonNull(
+                    pending.transfer.batchSender.apply(pending.frames),
+                    "batch delivery"
+            );
         } catch (RuntimeException exception) {
-            this.clear(peer);
-            return DrainResult.FAILED;
+            this.clear(peer, state, ChunkedMessageSendResult.DELIVERY_FAILED);
+            return;
         }
+        delivery.whenComplete((result, exception) -> this.completeBatch(
+                peer,
+                state,
+                pending,
+                exception == null ? result : ChunkedMessageSendResult.DELIVERY_FAILED
+        ));
+    }
 
+    private void completeBatch(
+            P peer,
+            PeerState state,
+            PendingBatch pending,
+            ChunkedMessageSendResult result
+    ) {
+        if (result == null || !result.delivered()) {
+            this.clear(
+                    peer,
+                    state,
+                    result == null || result.queued()
+                            ? ChunkedMessageSendResult.DELIVERY_FAILED
+                            : result
+            );
+            return;
+        }
         PreparedMessage completedBody = null;
+        CompletableFuture<ChunkedMessageSendResult> completedTransfer = null;
         state.stateLock.lock();
         try {
             if (state.closed || state.inFlight != pending) {
-                return DrainResult.SENT;
+                return;
             }
             pending.transfer.nextFrame = pending.nextFrame;
             if (pending.transfer.nextFrame == pending.transfer.message.frames.size()) {
@@ -461,6 +558,7 @@ public final class ChunkedMessageManager<P> {
                 }
                 state.outgoingRetainedBytes -= removed.message.retainedBytes;
                 completedBody = removed.message;
+                completedTransfer = removed.completion;
             }
             state.inFlight = null;
         } finally {
@@ -468,8 +566,8 @@ public final class ChunkedMessageManager<P> {
         }
         if (completedBody != null) {
             this.releaseOutgoingBody(completedBody);
+            completedTransfer.complete(ChunkedMessageSendResult.DELIVERED);
         }
-        return DrainResult.SENT;
     }
 
     private List<ReceiveFailure<P>> expireIncoming(P peer, PeerState state, long now) {
@@ -833,12 +931,6 @@ public final class ChunkedMessageManager<P> {
         }
     }
 
-    private enum DrainResult {
-        NONE,
-        SENT,
-        FAILED
-    }
-
     private static final class PeerState {
         private final ReentrantLock stateLock = new ReentrantLock();
         private final ReentrantLock decodeLock = new ReentrantLock();
@@ -852,15 +944,24 @@ public final class ChunkedMessageManager<P> {
 
     private static final class OutgoingTransfer {
         private final PreparedMessage message;
-        private final Consumer<List<MessageChunkBuffer>> batchSender;
+        private final Function<
+                List<MessageChunkBuffer>,
+                CompletionStage<ChunkedMessageSendResult>
+        > batchSender;
+        private final CompletableFuture<ChunkedMessageSendResult> completion;
         private int nextFrame;
 
         private OutgoingTransfer(
                 PreparedMessage message,
-                Consumer<List<MessageChunkBuffer>> batchSender
+                Function<
+                        List<MessageChunkBuffer>,
+                        CompletionStage<ChunkedMessageSendResult>
+                > batchSender,
+                CompletableFuture<ChunkedMessageSendResult> completion
         ) {
             this.message = message;
             this.batchSender = batchSender;
+            this.completion = completion;
         }
     }
 

@@ -1,8 +1,8 @@
 # Upload and Chunk Transport Progress
 
 Last updated: 2026-08-29
-Branch baseline: `feature/upload-3.1.0` at `b553c78`, including the committed
-protocol 9 transport, passive failure handling, and upload lifecycle changes
+Branch baseline: `feature/upload-3.1.0` at `b553c78`, with two-stage outbound
+delivery implemented in the working tree
 
 ## Goal
 
@@ -35,9 +35,10 @@ operational issues that remain open.
 | Client divergence detection | Resolved | State-affecting transport failures mark the session uncertain. Revision gaps mark the affected list out of sync, and later incrementals for that list are refused until an authoritative replacement arrives; healthy lists continue normally. |
 | Saturation containment | Resolved at the networking boundary | Active-transfer and retained-byte exhaustion return `PEER_BUSY`; encoding and delivery failures return typed results. A saturated recipient no longer throws through a broadcast and aborts later recipients after a mutation. |
 | Paper/Folia ownership dispatch | Resolved | Player work uses the entity scheduler, maintenance uses the async scheduler, and no legacy `Bukkit.getScheduler()` or `BukkitScheduler` usage is present. |
-| Scheduler submissions | Partially resolved | Paper's maintenance pass schedules at most one outstanding entity-owned batch per active peer, but initial non-owner dispatch can still retain a prepared body outside manager admission until its entity task runs. |
+| Scheduler submissions | Resolved | Prepared bodies enter manager accounting before Paper schedules owner-thread delivery. One asynchronous batch remains in flight per peer, and disconnect or scheduler failure completes the exact delivery without clearing replacement state. |
+| Workflow delivery results | Resolved | Delivery tickets separate immediate admission from final delivery. Downloads report success only after completion, failed upload-request packets cancel the exact lease, edit-result failures are logged, and the edit screen restores its controls after a 30-second response deadline. |
 | Manager-wide blocking | Resolved | Encoding, compression, decompression, decoding, and platform callbacks run outside transport-state locks. Unrelated peers have independent state and decode locks; only aggregate byte accounting uses one short lock. |
-| Aggregate broadcast resources | Partially resolved | Broadcast bodies are shared and admitted to a 256 MiB manager budget, but deferred Paper dispatch, decoded-object application lifetime, and aggregate multi-peer throughput are not yet covered end to end. |
+| Aggregate broadcast resources | Partially resolved | Broadcast bodies and deferred Paper dispatch are admitted to a 256 MiB manager budget, but decoded-object application lifetime and aggregate multi-peer throughput are not yet covered end to end. |
 | Frame pacing | Partially resolved | Each peer emits at most 8 frames and 192 KiB per tick, but there is no manager-wide frame/byte grant across all peers. |
 | Request-scoped upload cleanup | Resolved | The first accepted upload frame binds player, request ID, and transfer ID. Timeout, malformed, and decode failures cancel only that exact session; disconnect and every loader shutdown clear the dedicated manager and coordinator state. |
 | Lease reacquisition fairness | Resolved | A stable player UUID receives a five-second cooldown whenever an admitted lease terminates. Other players remain immediately eligible and no queue is introduced. |
@@ -87,21 +88,14 @@ emits the batch only from that player's owning region.
 | --- | --- | --- |
 | Passive timeout and client divergence handling | `e35af70` | Removed automatic recovery, added inactivity and lifetime expiry, propagated message type and transfer identity in failures, and added revision-aware client refusal. |
 | Request-scoped upload ownership and lifecycle cleanup | `b553c78` | Bound player, request, and transfer identity; reserved leases before revision capture; added exact cancellation, lifecycle reset, and per-player cooldown. |
+| Two-stage outbound delivery | Working tree | Admitted messages before owner-thread scheduling, added exact asynchronous completion, connected user workflows to final outcomes, and bounded edit-screen waiting. |
 
 ## Remaining issues, in execution order
 
 | Order | Issue | Priority | Is it necessary? | Recommended trade-off or next step |
 | ---: | --- | --- | --- | --- |
-| 2 | Separate outbound admission from owner-thread delivery | P1/P2 | Yes for user workflows | Admit prepared bodies before scheduling, return an asynchronous final result, cancel failed upload requests exactly, and add an edit-screen response deadline. |
 | 3 | Add end-to-end global resource grants | P1 under load | Yes before scale sign-off | Round-robin active peers under one global tick budget and retain inbound accounting through synchronous message application. |
-| 4 | Complete automated and live Folia coverage | Release blocker | Yes, after resolutions 2 and 3 | Test each boundary above, then run multi-region, disconnect, malformed, saturation, incompatible-client, and low-TPS large-transfer smoke tests. |
-
-### 2. Two-stage outbound dispatch
-
-Manager admission should happen before a Paper entity-scheduler handoff. Return a
-ticket with immediate admission and asynchronous final completion so broadcasts
-can remain best effort while upload, download, and edit workflows receive exact
-failure handling. The edit screen also needs a response deadline.
+| 4 | Complete automated and live Folia coverage | Release blocker | Yes, after resolution 3 | Test each boundary above, then run multi-region, disconnect, malformed, saturation, incompatible-client, and low-TPS large-transfer smoke tests. |
 
 ### 3. Global resource grants
 
@@ -113,25 +107,24 @@ same accounting boundary.
 ### 4. Runtime Folia and stress coverage
 
 Request identity, lifecycle shutdown, exact upload transport binding, cooldown,
-and stale-failure races now have focused coverage. Add asynchronous delivery
-completion and global pacing tests, then run a Folia smoke test
+asynchronous delivery completion, and stale-failure races now have focused
+coverage. Add global pacing and application-lifetime accounting tests, then run a Folia smoke test
 with compatible and incompatible clients in different regions, stalled and
 malformed transfers, disconnects, saturation, and a progressing large transfer
 under low TPS.
 
 ## Validation status
 
-Focused checks refreshed at `b553c78`:
+Focused checks for the current working tree:
 
 - `:common:test`
 - `:mods:26.1.2-fabric:test`
-- `:paper:26.2-paper:compileJava`
+- `:paper:26.2-paper:test`
+- representative old and new Fabric, Forge, NeoForge, and Paper compilation
 - `git diff --check`
 
-Broader representative Fabric, Forge, NeoForge, and Paper compilation from
-Minecraft 1.20.1 through 26.2, plus JSON parsing for the changed language files,
-was completed during the preceding implementation work. It has not been
-re-run as part of the latest focused refresh.
+The representative compilation refresh covers Minecraft 1.20.1 through 26.2.
+The changed language files also pass JSON parsing.
 
 These checks validate compilation and focused state-machine behavior only. No
 live Folia result has been recorded, so resolution 4 remains open regardless of

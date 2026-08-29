@@ -28,6 +28,8 @@ dependencies {
     paperweight.paperDevBundle(paperApiVersion)
     implementation("org.bstats:bstats-bukkit:3.2.1")
     implementation(project(":common"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks {

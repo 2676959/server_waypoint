@@ -4,6 +4,8 @@ package _959.server_waypoint.common.network;
 /*import _959.server_waypoint.access.PlayerLocaleAccessor;*/
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.ChunkedMessageDelivery;
+import _959.server_waypoint.core.network.ChunkedMessageSendResult;
 import _959.server_waypoint.core.network.MessageEncodingException;
 import _959.server_waypoint.core.network.SinglePacketMessage;
 import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
@@ -20,6 +22,8 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -134,6 +138,14 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
 
     @Override
     public void sendPlayerPacket(ServerPlayer player, SinglePacketMessage message) {
+        this.sendPlayerPacketTracked(player, message);
+    }
+
+    @Override
+    public CompletionStage<ChunkedMessageSendResult> sendPlayerPacketTracked(
+            ServerPlayer player,
+            SinglePacketMessage message
+    ) {
         try {
             byte[] encodedMessage = SinglePacketMessageEncoder.encode(message);
         //? if fabric {
@@ -151,6 +163,7 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
         *///?} else {
         /*PacketDistributor.sendToPlayer(player, getPayload(message, encodedMessage));
          *///?}
+            return CompletableFuture.completedFuture(ChunkedMessageSendResult.DELIVERED);
         } catch (MessageEncodingException exception) {
             WaypointServerMod.LOGGER.warn(
                     "Failed to encode single-packet message type {} within the {}-byte packet budget",
@@ -158,9 +171,17 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
                     SinglePacketMessageEncoder.MAX_ENCODED_BYTES,
                     exception
             );
-            this.sendPlayerMessage(
-                    player,
-                    Component.translatable("waypoint.network.encoding_failed")
+            return CompletableFuture.completedFuture(
+                    ChunkedMessageSendResult.ENCODING_FAILED
+            );
+        } catch (RuntimeException exception) {
+            WaypointServerMod.LOGGER.warn(
+                    "Failed to deliver single-packet message type {}",
+                    message.getClass().getSimpleName(),
+                    exception
+            );
+            return CompletableFuture.completedFuture(
+                    ChunkedMessageSendResult.DELIVERY_FAILED
             );
         }
     }
@@ -174,11 +195,15 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
     }
 
     @Override
-    public void sendChunkedMessage(CommandSourceStack source, ChunkedMessage message) {
+    public ChunkedMessageDelivery sendChunkedMessage(
+            CommandSourceStack source,
+            ChunkedMessage message
+    ) {
         ServerPlayer player = source.getPlayer();
         if (player != null) {
-            this.sendPlayerChunkedMessage(player, message);
+            return this.sendPlayerChunkedMessageTracked(player, message);
         }
+        return ChunkedMessageDelivery.rejected(ChunkedMessageSendResult.UNSUPPORTED);
     }
 
     @Override

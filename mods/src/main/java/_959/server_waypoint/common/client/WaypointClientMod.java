@@ -16,6 +16,7 @@ import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.ChunkedMessageDelivery;
 import _959.server_waypoint.core.network.ChunkedMessageRegistry;
 import _959.server_waypoint.core.network.ChunkedMessageSendResult;
 import _959.server_waypoint.core.network.DimensionSyncIdentifier;
@@ -54,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import static _959.server_waypoint.ModInfo.MOD_ID;
@@ -364,7 +366,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             if (message instanceof WaypointData waypointData
                     && waypointData.type() == WaypointData.Type.UPLOAD) {
                 UUID requestId = waypointData.uploadData().requestId();
-                ChunkedMessageSendResult result = this.uploadChunkedMessages.send(
+                ChunkedMessageDelivery delivery = this.uploadChunkedMessages.sendTracked(
                         "server",
                         message,
                         this.compressChunkedMessages,
@@ -374,11 +376,15 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                                         new UploadChunkBuffer(requestId, packet)
                                 ));
                             }
+                            return CompletableFuture.completedFuture(
+                                    ChunkedMessageSendResult.DELIVERED
+                            );
                         }
                 );
-                return this.handleChunkedSendResult(message, result);
+                this.trackChunkedSend(message, delivery);
+                return this.handleChunkedSendResult(message, delivery.admissionResult());
             }
-            ChunkedMessageSendResult result = this.chunkedMessages.send(
+            ChunkedMessageDelivery delivery = this.chunkedMessages.sendTracked(
                     "server",
                     message,
                     this.compressChunkedMessages,
@@ -386,9 +392,13 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                         for (MessageChunkBuffer packet : packets) {
                             sendPayloadToServer(new MessageChunkC2SPayload(packet));
                         }
+                        return CompletableFuture.completedFuture(
+                                ChunkedMessageSendResult.DELIVERED
+                        );
                     }
             );
-            return this.handleChunkedSendResult(message, result);
+            this.trackChunkedSend(message, delivery);
+            return this.handleChunkedSendResult(message, delivery.admissionResult());
         } catch (MessageEncodingException exception) {
             LOGGER.warn(
                     "Failed to encode client chunked message type {}",
@@ -409,6 +419,36 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             }
             return false;
         }
+    }
+
+    private void trackChunkedSend(
+            ChunkedMessage message,
+            ChunkedMessageDelivery delivery
+    ) {
+        if (!delivery.queued()) {
+            return;
+        }
+        delivery.completion().whenComplete((result, exception) -> {
+            if (exception == null && result != null && result.delivered()) {
+                return;
+            }
+            LOGGER.warn(
+                    "Chunked message type {} failed after admission: {}",
+                    message.getClass().getSimpleName(),
+                    exception == null ? result : exception.getClass().getSimpleName()
+            );
+            this.displayNetworkError();
+            if (message instanceof WaypointData waypointData
+                    && waypointData.type() == WaypointData.Type.UPLOAD
+                    && waypointData.uploadData().status()
+                    != _959.server_waypoint.core.network.upload.UploadStatus.FAILED) {
+                this.mc.execute(() -> this.sendChunkedMessageToServer(WaypointData.upload(
+                        waypointData.uploadData().requestId(),
+                        _959.server_waypoint.core.network.upload.UploadStatus.FAILED,
+                        List.of()
+                )));
+            }
+        });
     }
 
     public void tickChunkedMessages() {

@@ -993,7 +993,13 @@ class CoreWaypointCommandNavigationTest {
         }
 
         @Override
-        public void sendChunkedMessage(TestSource source, ChunkedMessage message) {
+        public _959.server_waypoint.core.network.ChunkedMessageDelivery sendChunkedMessage(
+                TestSource source,
+                ChunkedMessage message
+        ) {
+            return _959.server_waypoint.core.network.ChunkedMessageDelivery.rejected(
+                    _959.server_waypoint.core.network.ChunkedMessageSendResult.UNSUPPORTED
+            );
         }
 
         @Override

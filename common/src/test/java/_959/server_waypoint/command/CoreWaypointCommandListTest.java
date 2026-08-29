@@ -6,6 +6,8 @@ import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.ChunkedMessageDelivery;
+import _959.server_waypoint.core.network.ChunkedMessageSendResult;
 import _959.server_waypoint.core.network.SinglePacketMessage;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
@@ -35,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -82,6 +85,31 @@ class CoreWaypointCommandListTest {
     @AfterEach
     void tearDown() {
         WaypointServerCore.CONFIG = this.originalConfig;
+    }
+
+    @Test
+    void downloadReportsSuccessOnlyAfterFinalDelivery() throws CommandSyntaxException {
+        CompletableFuture<ChunkedMessageSendResult> completion = new CompletableFuture<>();
+        this.sender.chunkedDelivery = ChunkedMessageDelivery.queued(completion);
+
+        this.dispatcher.execute("wp download", this.source);
+
+        assertTrue(this.sender.messages.isEmpty());
+        completion.complete(ChunkedMessageSendResult.DELIVERED);
+        assertTrue(translationKeys(lastMessage()).contains("waypoint.download.all"));
+    }
+
+    @Test
+    void downloadReportsAsynchronousDeliveryFailure() throws CommandSyntaxException {
+        CompletableFuture<ChunkedMessageSendResult> completion = new CompletableFuture<>();
+        this.sender.chunkedDelivery = ChunkedMessageDelivery.queued(completion);
+
+        this.dispatcher.execute("wp download", this.source);
+        completion.complete(ChunkedMessageSendResult.DELIVERY_FAILED);
+
+        assertTrue(translationKeys(
+                this.sender.errors.get(this.sender.errors.size() - 1)
+        ).contains("waypoint.network.delivery_failed"));
     }
 
     @Test
@@ -1033,6 +1061,9 @@ class CoreWaypointCommandListTest {
     private static final class TestMessageSender implements PlatformMessageSender<TestSource, Object> {
         private final List<Component> messages = new ArrayList<>();
         private final List<Component> errors = new ArrayList<>();
+        private ChunkedMessageDelivery chunkedDelivery = ChunkedMessageDelivery.rejected(
+                ChunkedMessageSendResult.UNSUPPORTED
+        );
 
         @Override
         public void sendMessage(TestSource source, Component component) {
@@ -1061,7 +1092,11 @@ class CoreWaypointCommandListTest {
         }
 
         @Override
-        public void sendChunkedMessage(TestSource source, ChunkedMessage message) {
+        public ChunkedMessageDelivery sendChunkedMessage(
+                TestSource source,
+                ChunkedMessage message
+        ) {
+            return this.chunkedDelivery;
         }
 
         @Override

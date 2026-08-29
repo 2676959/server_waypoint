@@ -156,5 +156,6 @@
   "waypoint.edit.error.malformed_request": "The server rejected this edit request.",
   "waypoint.edit.error.duplicate_keyword": "A waypoint cannot contain duplicate keywords.",
   "waypoint.edit.error.encoding_failed": "The update is too large to synchronize.",
+  "waypoint.edit.error.response_timeout": "The server did not confirm the edit in time. Verify the waypoint before retrying.",
   "waypoint.network.encoding_failed": "The waypoint message is too large or could not be encoded."
 }

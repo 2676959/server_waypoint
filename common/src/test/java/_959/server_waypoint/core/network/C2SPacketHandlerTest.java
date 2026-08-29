@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -601,17 +602,36 @@ class C2SPacketHandlerTest {
         }
 
         @Override
-        public void sendChunkedMessage(String source, ChunkedMessage message) {
+        public ChunkedMessageDelivery sendChunkedMessage(
+                String source,
+                ChunkedMessage message
+        ) {
             this.packets.add(message);
+            return ChunkedMessageDelivery.queued(CompletableFuture.completedFuture(
+                    ChunkedMessageSendResult.DELIVERED
+            ));
         }
 
         @Override
         public ChunkedMessageSendResult sendPlayerChunkedMessage(String player, ChunkedMessage message) {
+            return this.sendPlayerChunkedMessageTracked(player, message).admissionResult();
+        }
+
+        @Override
+        public ChunkedMessageDelivery sendPlayerChunkedMessageTracked(
+                String player,
+                ChunkedMessage message
+        ) {
             if (!this.capable) {
-                return PlatformMessageSender.super.sendPlayerChunkedMessage(player, message);
+                return PlatformMessageSender.super.sendPlayerChunkedMessageTracked(
+                        player,
+                        message
+                );
             }
             this.packets.add(message);
-            return ChunkedMessageSendResult.QUEUED;
+            return ChunkedMessageDelivery.queued(CompletableFuture.completedFuture(
+                    ChunkedMessageSendResult.DELIVERED
+            ));
         }
 
         @Override

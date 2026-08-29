@@ -282,7 +282,7 @@ public class C2SPacketHandler<S, K, P> {
             _959.server_waypoint.core.waypoint.SimpleWaypoint waypoint,
             int revision
     ) {
-        this.sender.sendPlayerChunkedMessage(player, new WaypointEditResultMessage(
+        WaypointEditResultMessage message = new WaypointEditResultMessage(
                 request.requestId(),
                 status,
                 request.dimensionName(),
@@ -290,7 +290,20 @@ public class C2SPacketHandler<S, K, P> {
                 request.waypointIdentifier(),
                 waypoint,
                 revision
-        ));
+        );
+        this.sender.sendPlayerChunkedMessageTracked(player, message)
+                .completion()
+                .whenComplete((result, exception) -> {
+                    if (exception == null && result != null && result.delivered()) {
+                        return;
+                    }
+                    LOGGER.warn(
+                            "Failed to deliver waypoint edit result for request {} to {}: {}",
+                            request.requestId(),
+                            player,
+                            exception == null ? result : exception.getClass().getSimpleName()
+                    );
+                });
     }
 
     public void onMessageChunk(P player, MessageChunkBuffer buffer) {

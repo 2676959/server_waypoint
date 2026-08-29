@@ -11,6 +11,8 @@ import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import net.kyori.adventure.text.Component;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
@@ -25,7 +27,7 @@ public interface PlatformMessageSender<S, P> {
     void sendPacket(S source, SinglePacketMessage message);
     void sendPlayerPacket(P player, SinglePacketMessage message);
     void broadcastPacket(SinglePacketMessage message);
-    void sendChunkedMessage(S source, ChunkedMessage message);
+    ChunkedMessageDelivery sendChunkedMessage(S source, ChunkedMessage message);
     Iterable<? extends P> getBroadcastPlayers(S source);
     default Iterable<? extends P> getBroadcastPlayersFromPlayer(P player) {
         return List.of(player);
@@ -33,11 +35,18 @@ public interface PlatformMessageSender<S, P> {
     Component getSenderName(S source);
 
     default ChunkedMessageSendResult sendPlayerChunkedMessage(P player, ChunkedMessage message) {
+        return this.sendPlayerChunkedMessageTracked(player, message).admissionResult();
+    }
+
+    default ChunkedMessageDelivery sendPlayerChunkedMessageTracked(
+            P player,
+            ChunkedMessage message
+    ) {
         if (!this.canSendChunkedMessage(player)) {
-            return ChunkedMessageSendResult.UNSUPPORTED;
+            return ChunkedMessageDelivery.rejected(ChunkedMessageSendResult.UNSUPPORTED);
         }
         try {
-            return this.sendPlayerPreparedChunkedMessage(
+            return this.sendPlayerPreparedChunkedMessageTracked(
                     player,
                     this.prepareChunkedMessage(message)
             );
@@ -52,7 +61,9 @@ public interface PlatformMessageSender<S, P> {
                     player,
                     Component.translatable("waypoint.network.encoding_failed")
             );
-            return ChunkedMessageSendResult.ENCODING_FAILED;
+            return ChunkedMessageDelivery.rejected(
+                    ChunkedMessageSendResult.ENCODING_FAILED
+            );
         }
     }
 
@@ -60,14 +71,24 @@ public interface PlatformMessageSender<S, P> {
             P player,
             PreparedMessage message
     ) {
+        return this.sendPlayerPreparedChunkedMessageTracked(
+                player,
+                message
+        ).admissionResult();
+    }
+
+    default ChunkedMessageDelivery sendPlayerPreparedChunkedMessageTracked(
+            P player,
+            PreparedMessage message
+    ) {
         if (!this.canSendChunkedMessage(player)) {
-            return ChunkedMessageSendResult.UNSUPPORTED;
+            return ChunkedMessageDelivery.rejected(ChunkedMessageSendResult.UNSUPPORTED);
         }
         try {
-            return this.chunkedMessageManager().send(
+            return this.chunkedMessageManager().sendTracked(
                     player,
                     message,
-                    packets -> this.sendPlayerPackets(player, packets)
+                    packets -> this.sendPlayerPacketBatch(player, packets)
             );
         } catch (RuntimeException exception) {
             this.chunkedMessageManager().clear(player);
@@ -75,7 +96,9 @@ public interface PlatformMessageSender<S, P> {
                     "Failed to queue chunked message for one recipient",
                     exception
             );
-            return ChunkedMessageSendResult.DELIVERY_FAILED;
+            return ChunkedMessageDelivery.rejected(
+                    ChunkedMessageSendResult.DELIVERY_FAILED
+            );
         }
     }
 
@@ -89,6 +112,34 @@ public interface PlatformMessageSender<S, P> {
     default void sendPlayerPackets(P player, List<MessageChunkBuffer> packets) {
         for (MessageChunkBuffer packet : packets) {
             this.sendPlayerPacket(player, packet);
+        }
+    }
+
+    default CompletionStage<ChunkedMessageSendResult> sendPlayerPacketBatch(
+            P player,
+            List<MessageChunkBuffer> packets
+    ) {
+        try {
+            this.sendPlayerPackets(player, packets);
+            return CompletableFuture.completedFuture(ChunkedMessageSendResult.DELIVERED);
+        } catch (RuntimeException exception) {
+            return CompletableFuture.completedFuture(
+                    ChunkedMessageSendResult.DELIVERY_FAILED
+            );
+        }
+    }
+
+    default CompletionStage<ChunkedMessageSendResult> sendPlayerPacketTracked(
+            P player,
+            SinglePacketMessage message
+    ) {
+        try {
+            this.sendPlayerPacket(player, message);
+            return CompletableFuture.completedFuture(ChunkedMessageSendResult.DELIVERED);
+        } catch (RuntimeException exception) {
+            return CompletableFuture.completedFuture(
+                    ChunkedMessageSendResult.DELIVERY_FAILED
+            );
         }
     }
 

@@ -1,6 +1,7 @@
 package _959.server_waypoint.core.network.codec;
 
 import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.ChunkedMessageDelivery;
 import _959.server_waypoint.core.network.ChunkedMessageRegistry;
 import _959.server_waypoint.core.network.ChunkedMessageSendResult;
 import _959.server_waypoint.core.network.DimensionSyncIdentifier;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -35,6 +37,116 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ChunkedMessageManagerTest {
+    @Test
+    void trackedDeliveryRetainsAdmissionUntilOwnedBatchCompletes() {
+        ChunkedMessageManager.PreparedMessage prepared = ChunkedMessageManager.prepare(
+                messageWithDescription("tracked"),
+                false
+        );
+        ChunkedMessageManager<String> manager = new ChunkedMessageManager<>();
+        CompletableFuture<ChunkedMessageSendResult> batch = new CompletableFuture<>();
+
+        ChunkedMessageDelivery delivery = manager.sendTracked(
+                "peer",
+                prepared,
+                ignored -> batch
+        );
+
+        assertEquals(ChunkedMessageSendResult.QUEUED, delivery.admissionResult());
+        assertFalse(delivery.completion().toCompletableFuture().isDone());
+        assertEquals(prepared.retainedBytes(), manager.globallyRetainedBytes());
+
+        batch.complete(ChunkedMessageSendResult.DELIVERED);
+
+        assertEquals(
+                ChunkedMessageSendResult.DELIVERED,
+                delivery.completion().toCompletableFuture().join()
+        );
+        assertEquals(0, manager.globallyRetainedBytes());
+    }
+
+    @Test
+    void trackedSchedulerFailureCompletesExactlyAndReleasesAdmission() {
+        ChunkedMessageManager.PreparedMessage prepared = ChunkedMessageManager.prepare(
+                messageWithDescription("failed"),
+                false
+        );
+        ChunkedMessageManager<String> manager = new ChunkedMessageManager<>();
+        CompletableFuture<ChunkedMessageSendResult> batch = new CompletableFuture<>();
+        ChunkedMessageDelivery delivery = manager.sendTracked(
+                "peer",
+                prepared,
+                ignored -> batch
+        );
+
+        batch.complete(ChunkedMessageSendResult.DELIVERY_FAILED);
+
+        assertEquals(
+                ChunkedMessageSendResult.DELIVERY_FAILED,
+                delivery.completion().toCompletableFuture().join()
+        );
+        assertEquals(0, manager.globallyRetainedBytes());
+        assertFalse(manager.hasPending("peer"));
+    }
+
+    @Test
+    void disconnectCompletesOutstandingTrackedDelivery() {
+        ChunkedMessageManager<String> manager = new ChunkedMessageManager<>();
+        CompletableFuture<ChunkedMessageSendResult> batch = new CompletableFuture<>();
+        ChunkedMessageDelivery delivery = manager.sendTracked(
+                "peer",
+                ChunkedMessageManager.prepare(messageWithDescription("pending"), false),
+                ignored -> batch
+        );
+
+        manager.clear("peer");
+
+        assertEquals(
+                ChunkedMessageSendResult.DELIVERY_FAILED,
+                delivery.completion().toCompletableFuture().join()
+        );
+        batch.complete(ChunkedMessageSendResult.DELIVERED);
+        assertEquals(
+                ChunkedMessageSendResult.DELIVERY_FAILED,
+                delivery.completion().toCompletableFuture().join()
+        );
+        assertEquals(0, manager.globallyRetainedBytes());
+    }
+
+    @Test
+    void staleBatchFailureCannotClearReplacementPeerState() {
+        ChunkedMessageManager<String> manager = new ChunkedMessageManager<>();
+        CompletableFuture<ChunkedMessageSendResult> oldBatch = new CompletableFuture<>();
+        ChunkedMessageDelivery oldDelivery = manager.sendTracked(
+                "peer",
+                ChunkedMessageManager.prepare(messageWithDescription("old"), false),
+                ignored -> oldBatch
+        );
+        manager.clear("peer");
+        CompletableFuture<ChunkedMessageSendResult> replacementBatch =
+                new CompletableFuture<>();
+        ChunkedMessageDelivery replacement = manager.sendTracked(
+                "peer",
+                ChunkedMessageManager.prepare(messageWithDescription("replacement"), false),
+                ignored -> replacementBatch
+        );
+
+        oldBatch.complete(ChunkedMessageSendResult.DELIVERY_FAILED);
+
+        assertEquals(
+                ChunkedMessageSendResult.DELIVERY_FAILED,
+                oldDelivery.completion().toCompletableFuture().join()
+        );
+        assertTrue(manager.hasPending("peer"));
+        assertFalse(replacement.completion().toCompletableFuture().isDone());
+
+        replacementBatch.complete(ChunkedMessageSendResult.DELIVERED);
+        assertEquals(
+                ChunkedMessageSendResult.DELIVERED,
+                replacement.completion().toCompletableFuture().join()
+        );
+    }
+
     @Test
     void outgoingSaturationReturnsTypedBackpressure() {
         ChunkedMessageManager<String> manager = new ChunkedMessageManager<>(

@@ -45,6 +45,7 @@
 
   "waypoint.upload.requested": "已请求客户端中的 Xaero 小地图路径点",
   "waypoint.upload.requested.force-delete": "已请求客户端中的 Xaero 小地图路径点。本地数据将在所选范围内替换并删除服务器路径点。",
+  "waypoint.upload.request.delivery_failed": "无法发送路径点上传请求，上传已取消",
   "waypoint.upload.player-only": "此命令只能由玩家执行",
   "waypoint.upload.client.incompatible": "你的客户端尚未协商兼容的路径点上传支持",
   "waypoint.upload.request.invalid": "路径点上传请求无效或不完整",
@@ -248,8 +249,10 @@
   "waypoint.edit.error.duplicate_keyword": "一个路径点不能包含重复的关键词",
   "waypoint.edit.error.encoding_failed": "更新内容过大，无法同步",
   "waypoint.edit.error.upload_busy": "路径点上传期间暂时无法编辑路径点",
+  "waypoint.edit.error.response_timeout": "服务器未能及时确认编辑，请检查路径点后再重试",
   "waypoint.edit.error.success": "编辑成功",
   "waypoint.network.encoding_failed": "路径点消息过大或无法编码",
+  "waypoint.network.delivery_failed": "无法发送路径点消息",
   "waypoint.restore.invalid": "恢复令牌无效或已过期",
   "waypoint.restore.list_missing": "原路径点列表不存在；恢复令牌仍然可用",
   "waypoint.restore.collision": "该路径点标识符已被占用；恢复令牌仍然可用",
