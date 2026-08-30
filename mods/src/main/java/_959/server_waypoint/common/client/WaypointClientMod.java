@@ -336,10 +336,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             return;
         }
         try {
-            for (ChunkedMessage message : this.chunkedMessages.receive(
-                    "server",
-                    buffer
-            )) {
+            this.chunkedMessages.receiveAndApply("server", buffer, message -> {
                 if (message instanceof WaypointData waypointData
                         && waypointData.type() == WaypointData.Type.UPLOAD) {
                     throw new IllegalArgumentException(
@@ -347,7 +344,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
                     );
                 }
                 this.applyChunkedMessage(message);
-            }
+            });
         } catch (ReceiveException exception) {
             this.handleChunkedReceiveFailure(exception.messageTypeId());
             LOGGER.warn(

@@ -17,17 +17,20 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -44,6 +47,15 @@ import java.util.zip.InflaterInputStream;
  * small independent state lock, while one short accounting lock bounds the
  * immutable bodies shared by outbound peers and the declared size of inbound
  * transfers.</p>
+ *
+ * <p>Outbound transmission is decoupled from admission: {@code sendTracked}
+ * only queues a transfer and schedules its peer on a round-robin rotation.
+ * Each manager-wide {@link #tick()} grants every visited peer at most one
+ * batch, bounded by both the per-peer limits and one shared global frame and
+ * byte budget, so aggregate throughput stays bounded no matter how many peers
+ * are active. Inbound reservations stay charged through reassembly, decoding,
+ * and the synchronous application callback, keeping decoded object graphs
+ * inside the same retained-byte budget.</p>
  */
 public final class ChunkedMessageManager<P> {
     public static final int MAX_CHUNK_DATA_SIZE = 24 * 1_024;
@@ -56,6 +68,9 @@ public final class ChunkedMessageManager<P> {
     public static final int MAX_FRAMES_PER_PEER_TICK = 8;
     public static final int MAX_BYTES_PER_PEER_TICK =
             MAX_FRAMES_PER_PEER_TICK * MAX_CHUNK_DATA_SIZE;
+    public static final int MAX_FRAMES_PER_TICK = 32;
+    public static final int MAX_BYTES_PER_TICK =
+            MAX_FRAMES_PER_TICK * MAX_CHUNK_DATA_SIZE;
     static final long IDLE_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(30);
     static final long MAX_LIFETIME_NANOS = TimeUnit.MINUTES.toNanos(5);
     public static final ReceiveLimits DEFAULT_RECEIVE_LIMITS = new ReceiveLimits(
@@ -67,9 +82,16 @@ public final class ChunkedMessageManager<P> {
     private final ReentrantLock accountingLock = new ReentrantLock();
     private final IdentityHashMap<PreparedMessage, Integer> outgoingBodyReferences =
             new IdentityHashMap<>();
+    private final ReentrantLock schedulingLock = new ReentrantLock();
+    private final ArrayDeque<ScheduledPeer<P>> scheduledPeers = new ArrayDeque<>();
+    private final Set<PeerState> scheduledPeerSet = Collections.newSetFromMap(
+            new IdentityHashMap<>()
+    );
     private final long maxGlobalRetainedBytes;
     private final int maxFramesPerPeerTick;
     private final int maxBytesPerPeerTick;
+    private final int maxFramesPerTick;
+    private final long maxBytesPerTick;
     private long globallyRetainedBytes;
 
     public ChunkedMessageManager() {
@@ -85,14 +107,34 @@ public final class ChunkedMessageManager<P> {
             int maxFramesPerPeerTick,
             int maxBytesPerPeerTick
     ) {
+        this(
+                maxGlobalRetainedBytes,
+                maxFramesPerPeerTick,
+                maxBytesPerPeerTick,
+                MAX_FRAMES_PER_TICK,
+                MAX_BYTES_PER_TICK
+        );
+    }
+
+    ChunkedMessageManager(
+            long maxGlobalRetainedBytes,
+            int maxFramesPerPeerTick,
+            int maxBytesPerPeerTick,
+            int maxFramesPerTick,
+            long maxBytesPerTick
+    ) {
         if (maxGlobalRetainedBytes <= 0
                 || maxFramesPerPeerTick <= 0
-                || maxBytesPerPeerTick <= 0) {
+                || maxBytesPerPeerTick <= 0
+                || maxFramesPerTick <= 0
+                || maxBytesPerTick <= 0) {
             throw new IllegalArgumentException("Chunked-message limits must be positive");
         }
         this.maxGlobalRetainedBytes = maxGlobalRetainedBytes;
         this.maxFramesPerPeerTick = maxFramesPerPeerTick;
         this.maxBytesPerPeerTick = maxBytesPerPeerTick;
+        this.maxFramesPerTick = maxFramesPerTick;
+        this.maxBytesPerTick = maxBytesPerTick;
     }
 
     public ChunkedMessageSendResult send(
@@ -184,34 +226,46 @@ public final class ChunkedMessageManager<P> {
                 state.stateLock.unlock();
             }
         }
-        this.drainPeer(peer, state);
+        this.enqueuePeer(peer, state);
         return ChunkedMessageDelivery.queued(completion);
     }
 
-    public List<ChunkedMessage> receive(
-            P peer,
-            MessageChunkBuffer packet
-    ) {
-        return this.receive(peer, packet, DEFAULT_RECEIVE_LIMITS);
-    }
-
-    public List<ChunkedMessage> receive(
+    /**
+     * Buffers one inbound frame and synchronously applies the decoded message
+     * while its reassembly reservation is still charged.
+     *
+     * @return true when the packet completed a transfer and the handler was
+     *         invoked; false when the frame was buffered for an incomplete
+     *         transfer
+     */
+    public boolean receiveAndApply(
             P peer,
             MessageChunkBuffer packet,
-            ReceiveLimits limits
+            Consumer<ChunkedMessage> handler
     ) {
-        return this.receive(peer, packet, limits, System.nanoTime());
+        return this.receiveAndApply(peer, packet, DEFAULT_RECEIVE_LIMITS, handler);
     }
 
-    List<ChunkedMessage> receive(
+    public boolean receiveAndApply(
             P peer,
             MessageChunkBuffer packet,
             ReceiveLimits limits,
-            long now
+            Consumer<ChunkedMessage> handler
+    ) {
+        return this.receiveAndApply(peer, packet, limits, System.nanoTime(), handler);
+    }
+
+    boolean receiveAndApply(
+            P peer,
+            MessageChunkBuffer packet,
+            ReceiveLimits limits,
+            long now,
+            Consumer<ChunkedMessage> handler
     ) {
         Objects.requireNonNull(peer, "peer");
         Objects.requireNonNull(packet, "packet");
         Objects.requireNonNull(limits, "limits");
+        Objects.requireNonNull(handler, "handler");
         try {
             validateChunk(packet, limits);
         } catch (RuntimeException exception) {
@@ -228,6 +282,7 @@ public final class ChunkedMessageManager<P> {
         }
         PeerState state;
         IncomingTransfer completed;
+        long applicationSequence;
         while (true) {
             state = this.peers.computeIfAbsent(peer, ignored -> new PeerState());
             state.stateLock.lock();
@@ -269,11 +324,15 @@ public final class ChunkedMessageManager<P> {
                     }
                     transfer.accept(packet, now);
                     if (!transfer.complete()) {
-                        return List.of();
+                        return false;
                     }
+                    // Detach the finished transfer; its reservation stays charged
+                    // through decoding and application and is released exactly once
+                    // by the finally block below.
                     state.incoming.remove(packet.transferId());
                     state.incomingDeclaredBytes -= transfer.uncompressedSize;
                     completed = transfer;
+                    applicationSequence = state.nextCompletedApplicationSequence++;
                     break;
                 } catch (RuntimeException exception) {
                     IncomingTransfer failed = state.incoming.remove(packet.transferId());
@@ -301,6 +360,9 @@ public final class ChunkedMessageManager<P> {
 
         state.decodeLock.lock();
         try {
+            while (applicationSequence != state.nextApplicationSequence) {
+                state.decodeOrder.awaitUninterruptibly();
+            }
             byte[] bytes;
             try {
                 bytes = completed.reassemble();
@@ -312,8 +374,9 @@ public final class ChunkedMessageManager<P> {
                         exception
                 );
             }
+            ChunkedMessage message;
             try {
-                return List.of(decodeMessage(completed.messageTypeId, bytes, completed.limits));
+                message = decodeMessage(completed.messageTypeId, bytes, completed.limits);
             } catch (RuntimeException exception) {
                 throw new ReceiveException(
                         completed.messageTypeId,
@@ -322,25 +385,48 @@ public final class ChunkedMessageManager<P> {
                         exception
                 );
             }
+            // Application exceptions propagate separately from transport
+            // ReceiveExceptions; the reservation is still charged until the
+            // handler returns or throws.
+            handler.accept(message);
         } finally {
+            state.nextApplicationSequence++;
+            state.decodeOrder.signalAll();
             state.decodeLock.unlock();
             this.releaseIncomingBytes(completed.reservedBytes);
         }
+        return true;
+    }
+
+    /** Collecting variant used only by focused codec tests. */
+    List<ChunkedMessage> receive(
+            P peer,
+            MessageChunkBuffer packet
+    ) {
+        return this.receive(peer, packet, DEFAULT_RECEIVE_LIMITS);
+    }
+
+    List<ChunkedMessage> receive(
+            P peer,
+            MessageChunkBuffer packet,
+            ReceiveLimits limits
+    ) {
+        return this.receive(peer, packet, limits, System.nanoTime());
+    }
+
+    List<ChunkedMessage> receive(
+            P peer,
+            MessageChunkBuffer packet,
+            ReceiveLimits limits,
+            long now
+    ) {
+        List<ChunkedMessage> received = new ArrayList<>(1);
+        this.receiveAndApply(peer, packet, limits, now, received::add);
+        return received;
     }
 
     public List<ReceiveFailure<P>> tick() {
         return this.tick(System.nanoTime());
-    }
-
-    public List<ReceiveFailure<P>> tick(P peer) {
-        PeerState state = this.peers.get(peer);
-        if (state == null) {
-            return List.of();
-        }
-        long now = System.nanoTime();
-        List<ReceiveFailure<P>> failures = this.expireIncoming(peer, state, now);
-        this.drainPeer(peer, state);
-        return failures;
     }
 
     public boolean hasPending(P peer) {
@@ -357,13 +443,54 @@ public final class ChunkedMessageManager<P> {
         }
     }
 
+    /**
+     * Expires stale inbound transfers for every peer, then dispatches one
+     * outbound grant round across the active peers under this manager's global
+     * frame and byte budgets using round-robin order.
+     */
     List<ReceiveFailure<P>> tick(long now) {
+        List<ScheduledPeer<P>> scheduled = this.pollScheduledPeers();
         List<ReceiveFailure<P>> failures = new ArrayList<>();
         for (Map.Entry<P, PeerState> entry : this.peers.entrySet()) {
             failures.addAll(this.expireIncoming(entry.getKey(), entry.getValue(), now));
-            this.drainPeer(entry.getKey(), entry.getValue());
         }
+        this.dispatchOutboundGrants(scheduled);
         return List.copyOf(failures);
+    }
+
+    private void dispatchOutboundGrants(List<ScheduledPeer<P>> scheduled) {
+        long remainingFrames = this.maxFramesPerTick;
+        long remainingBytes = this.maxBytesPerTick;
+        Set<PeerState> grantedStates = Collections.newSetFromMap(new IdentityHashMap<>());
+        try {
+            for (ScheduledPeer<P> scheduledPeer : scheduled) {
+                P peer = scheduledPeer.peer();
+                PeerState state = scheduledPeer.state();
+                if (this.peers.get(peer) != state) {
+                    continue;
+                }
+                if (remainingFrames > 0 && remainingBytes > 0) {
+                    int grantFrames = (int) Math.min(
+                            remainingFrames,
+                            this.maxFramesPerPeerTick
+                    );
+                    long grantBytes = Math.min(remainingBytes, this.maxBytesPerPeerTick);
+                    Emitted emittedBatch = this.emitPendingBatch(
+                            peer,
+                            state,
+                            grantFrames,
+                            grantBytes
+                    );
+                    remainingFrames -= emittedBatch.frames();
+                    remainingBytes -= emittedBatch.bytes();
+                    if (emittedBatch.frames() > 0) {
+                        grantedStates.add(state);
+                    }
+                }
+            }
+        } finally {
+            this.finishScheduledPeers(scheduled, grantedStates);
+        }
     }
 
     public void clear(P peer) {
@@ -386,6 +513,7 @@ public final class ChunkedMessageManager<P> {
         if (state == null) {
             return;
         }
+        this.dequeuePeer(state);
         List<OutgoingTransfer> outgoingTransfers = new ArrayList<>();
         long incomingBytes = 0;
         state.stateLock.lock();
@@ -476,33 +604,42 @@ public final class ChunkedMessageManager<P> {
         }
     }
 
-    private void drainPeer(P peer, PeerState state) {
+    private Emitted emitPendingBatch(
+            P peer,
+            PeerState state,
+            int maxFrames,
+            long maxBytes
+    ) {
         PendingBatch pending;
         state.stateLock.lock();
         try {
             if (state.closed || state.inFlight != null) {
-                return;
+                return Emitted.NONE;
             }
             OutgoingTransfer transfer = state.outgoing.peekFirst();
             if (transfer == null) {
-                return;
+                return Emitted.NONE;
             }
             int start = transfer.nextFrame;
             int end = start;
-            int bytes = 0;
+            long bytes = 0;
             List<MessageChunkBuffer> frames = transfer.message.frames;
-            while (end < frames.size() && end - start < this.maxFramesPerPeerTick) {
+            while (end < frames.size() && end - start < maxFrames) {
                 int frameBytes = frames.get(end).dataLength();
-                if (end > start && bytes + frameBytes > this.maxBytesPerPeerTick) {
+                if (bytes + frameBytes > maxBytes) {
                     break;
                 }
                 bytes += frameBytes;
                 end++;
             }
+            if (end == start) {
+                return Emitted.NONE;
+            }
             pending = new PendingBatch(
                     transfer,
                     end,
-                    List.copyOf(frames.subList(start, end))
+                    List.copyOf(frames.subList(start, end)),
+                    bytes
             );
             state.inFlight = pending;
         } finally {
@@ -517,7 +654,7 @@ public final class ChunkedMessageManager<P> {
             );
         } catch (RuntimeException exception) {
             this.clear(peer, state, ChunkedMessageSendResult.DELIVERY_FAILED);
-            return;
+            return new Emitted(pending.frames.size(), pending.byteLength);
         }
         delivery.whenComplete((result, exception) -> this.completeBatch(
                 peer,
@@ -525,6 +662,7 @@ public final class ChunkedMessageManager<P> {
                 pending,
                 exception == null ? result : ChunkedMessageSendResult.DELIVERY_FAILED
         ));
+        return new Emitted(pending.frames.size(), pending.byteLength);
     }
 
     private void completeBatch(
@@ -747,7 +885,7 @@ public final class ChunkedMessageManager<P> {
         }
     }
 
-    private static long incomingReservation(int uncompressedSize) {
+    static long incomingReservation(int uncompressedSize) {
         return Math.multiplyExact((long) uncompressedSize, 3L);
     }
 
@@ -934,10 +1072,13 @@ public final class ChunkedMessageManager<P> {
     private static final class PeerState {
         private final ReentrantLock stateLock = new ReentrantLock();
         private final ReentrantLock decodeLock = new ReentrantLock();
+        private final Condition decodeOrder = this.decodeLock.newCondition();
         private final ArrayDeque<OutgoingTransfer> outgoing = new ArrayDeque<>();
         private final Map<UUID, IncomingTransfer> incoming = new java.util.HashMap<>();
         private long outgoingRetainedBytes;
         private long incomingDeclaredBytes;
+        private long nextCompletedApplicationSequence;
+        private long nextApplicationSequence;
         private PendingBatch inFlight;
         private boolean closed;
     }
@@ -968,11 +1109,111 @@ public final class ChunkedMessageManager<P> {
     private record PendingBatch(
             OutgoingTransfer transfer,
             int nextFrame,
-            List<MessageChunkBuffer> frames
+            List<MessageChunkBuffer> frames,
+            long byteLength
     ) {
     }
 
+    private record Emitted(int frames, long bytes) {
+        private static final Emitted NONE = new Emitted(0, 0);
+    }
+
+    private void enqueuePeer(P peer, PeerState state) {
+        this.schedulingLock.lock();
+        try {
+            if (this.scheduledPeerSet.add(state)) {
+                this.scheduledPeers.addLast(new ScheduledPeer<>(peer, state));
+            }
+        } finally {
+            this.schedulingLock.unlock();
+        }
+    }
+
+    private void dequeuePeer(PeerState state) {
+        this.schedulingLock.lock();
+        try {
+            if (this.scheduledPeerSet.remove(state)) {
+                this.scheduledPeers.removeIf(scheduledPeer ->
+                        scheduledPeer.state() == state);
+            }
+        } finally {
+            this.schedulingLock.unlock();
+        }
+    }
+
+    /**
+     * Removes the currently queued peers from the rotation. Peers admitted
+     * while this tick runs stay queued and begin on the next tick.
+     */
+    private List<ScheduledPeer<P>> pollScheduledPeers() {
+        this.schedulingLock.lock();
+        try {
+            int count = this.scheduledPeers.size();
+            List<ScheduledPeer<P>> scheduled = new ArrayList<>(count);
+            for (int i = 0; i < count; i++) {
+                ScheduledPeer<P> scheduledPeer = this.scheduledPeers.pollFirst();
+                if (scheduledPeer == null) {
+                    break;
+                }
+                scheduled.add(scheduledPeer);
+            }
+            return scheduled;
+        } finally {
+            this.schedulingLock.unlock();
+        }
+    }
+
+    /**
+     * Restores unfinished peers ahead of peers admitted after this tick's
+     * snapshot. Membership remains generation-specific for the whole tick, so
+     * admissions for an already-active state cannot create duplicates.
+     */
+    private void finishScheduledPeers(
+            List<ScheduledPeer<P>> scheduled,
+            Set<PeerState> grantedStates
+    ) {
+        this.schedulingLock.lock();
+        try {
+            List<ScheduledPeer<P>> skipped = new ArrayList<>(scheduled.size());
+            List<ScheduledPeer<P>> granted = new ArrayList<>(scheduled.size());
+            for (ScheduledPeer<P> scheduledPeer : scheduled) {
+                if (!this.scheduledPeerSet.contains(scheduledPeer.state())
+                        || this.peers.get(scheduledPeer.peer()) != scheduledPeer.state()
+                        || !this.hasPendingOutboundWork(scheduledPeer.state())) {
+                    this.scheduledPeerSet.remove(scheduledPeer.state());
+                } else if (grantedStates.contains(scheduledPeer.state())) {
+                    granted.add(scheduledPeer);
+                } else {
+                    skipped.add(scheduledPeer);
+                }
+            }
+            skipped.addAll(granted);
+            // Initial peers return ahead of peers admitted after the snapshot.
+            for (int index = skipped.size() - 1; index >= 0; index--) {
+                ScheduledPeer<P> scheduledPeer = skipped.get(index);
+                if (this.scheduledPeerSet.contains(scheduledPeer.state())) {
+                    this.scheduledPeers.addFirst(scheduledPeer);
+                }
+            }
+        } finally {
+            this.schedulingLock.unlock();
+        }
+    }
+
+    private boolean hasPendingOutboundWork(PeerState state) {
+        state.stateLock.lock();
+        try {
+            return !state.closed
+                    && (!state.outgoing.isEmpty() || state.inFlight != null);
+        } finally {
+            state.stateLock.unlock();
+        }
+    }
+
     private record FailureKey(int messageTypeId, FailureReason reason) {
+    }
+
+    private record ScheduledPeer<P>(P peer, PeerState state) {
     }
 
     private static final class IncomingTransfer {

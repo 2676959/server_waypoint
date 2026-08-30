@@ -27,13 +27,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 @SuppressWarnings("UnstableApiUsage")
 public class PaperMessageSender implements PlatformMessageSender<CommandSourceStack, Player> {
     private final JavaPlugin plugin;
     private final PaperScheduler scheduler;
     private final Set<UUID> chunkedMessageCapablePlayers = ConcurrentHashMap.newKeySet();
-    private final Map<UUID, Player> chunkedMessagePlayers = new ConcurrentHashMap<>();
     private final Map<UUID, Object> chunkedMessageSessions = new ConcurrentHashMap<>();
     private final OwnerThreadDispatcher<Player> ownerThreadDispatcher;
 
@@ -46,23 +46,36 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
         );
         plugin.getServer().getAsyncScheduler().runAtFixedRate(
                 plugin,
-                ignored -> this.tickChunkedMessagePlayers(),
+                ignored -> this.tickChunkedMessageMaintenance(),
                 50L,
                 50L,
                 TimeUnit.MILLISECONDS
         );
     }
 
-    private void tickChunkedMessagePlayers() {
-        for (Map.Entry<UUID, Player> entry : this.chunkedMessagePlayers.entrySet()) {
-            Player player = entry.getValue();
-            try {
-                if (this.hasPendingChunkedMessages(player)) {
-                    this.tickChunkedMessages(player);
-                }
-            } catch (RuntimeException exception) {
-                this.disconnectChunkedMessages(player);
-            }
+    /**
+     * One manager-wide maintenance tick per period: expiry, then a round-robin
+     * outbound grant round bounded by one global frame and byte budget. Batch
+     * emission still hops to each player's owning region through the
+     * {@link OwnerThreadDispatcher}.
+     */
+    private void tickChunkedMessageMaintenance() {
+        runChunkedMessageMaintenance(
+                () -> this.tickChunkedMessages(),
+                message -> this.plugin.getLogger().warning(message)
+        );
+    }
+
+    static void runChunkedMessageMaintenance(
+            Runnable managerTick,
+            Consumer<String> warningLogger
+    ) {
+        try {
+            managerTick.run();
+        } catch (RuntimeException exception) {
+            warningLogger.accept(
+                    "Chunked-message maintenance tick failed: " + exception
+            );
         }
     }
 
@@ -115,11 +128,9 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
             PlatformMessageSender.super.disconnectChunkedMessages(player);
             this.chunkedMessageSessions.put(playerId, new Object());
             this.chunkedMessageCapablePlayers.add(playerId);
-            this.chunkedMessagePlayers.put(playerId, player);
         } else {
             this.chunkedMessageSessions.remove(playerId);
             this.chunkedMessageCapablePlayers.remove(playerId);
-            this.chunkedMessagePlayers.remove(playerId);
             PlatformMessageSender.super.disconnectChunkedMessages(player);
         }
     }

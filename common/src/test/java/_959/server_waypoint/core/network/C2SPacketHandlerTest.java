@@ -651,16 +651,18 @@ class C2SPacketHandlerTest {
         }
 
         @Override
-        public List<ChunkedMessage> receiveChunkedMessage(
+        public boolean receiveChunkedMessage(
                 String player,
                 MessageChunkBuffer packet,
-                ChunkedMessageManager.ReceiveLimits limits
+                ChunkedMessageManager.ReceiveLimits limits,
+                Consumer<ChunkedMessage> handler
         ) {
             this.receivedChunks++;
             return PlatformMessageSender.super.receiveChunkedMessage(
                     player,
                     packet,
-                    limits
+                    limits,
+                    handler
             );
         }
 

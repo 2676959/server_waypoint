@@ -13,6 +13,7 @@ import net.kyori.adventure.text.Component;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
@@ -175,26 +176,25 @@ public interface PlatformMessageSender<S, P> {
         }
     }
 
-    default List<ChunkedMessage> receiveChunkedMessage(P player, MessageChunkBuffer packet) {
-        return this.chunkedMessageManager().receive(player, packet);
-    }
-
-    default List<ChunkedMessage> receiveChunkedMessage(
+    default boolean receiveChunkedMessage(
             P player,
             MessageChunkBuffer packet,
-            ReceiveLimits limits
+            Consumer<ChunkedMessage> handler
     ) {
-        return this.chunkedMessageManager().receive(player, packet, limits);
+        return this.chunkedMessageManager().receiveAndApply(player, packet, handler);
+    }
+
+    default boolean receiveChunkedMessage(
+            P player,
+            MessageChunkBuffer packet,
+            ReceiveLimits limits,
+            Consumer<ChunkedMessage> handler
+    ) {
+        return this.chunkedMessageManager().receiveAndApply(player, packet, limits, handler);
     }
 
     default List<ReceiveFailure<P>> tickChunkedMessages() {
         List<ReceiveFailure<P>> failures = this.chunkedMessageManager().tick();
-        failures.forEach(this::logChunkedMessageFailure);
-        return failures;
-    }
-
-    default List<ReceiveFailure<P>> tickChunkedMessages(P player) {
-        List<ReceiveFailure<P>> failures = this.chunkedMessageManager().tick(player);
         failures.forEach(this::logChunkedMessageFailure);
         return failures;
     }

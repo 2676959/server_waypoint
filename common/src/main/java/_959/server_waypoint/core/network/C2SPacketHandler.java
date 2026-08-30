@@ -319,23 +319,24 @@ public class C2SPacketHandler<S, K, P> {
             return;
         }
         try {
-            for (ChunkedMessage message : this.sender.receiveChunkedMessage(
+            this.sender.receiveChunkedMessage(
                     player,
                     buffer,
-                    limits
-            )) {
-                if (message instanceof ClientUpdateRequestMessage updateRequest) {
-                    validateClientUpdateRequest(updateRequest);
-                    this.onClientUpdateRequest(player, updateRequest);
-                } else if (message instanceof WaypointEditRequestMessage editRequest) {
-                    validateWaypointEditRequest(editRequest);
-                    this.onWaypointEditRequest(player, editRequest);
-                } else {
-                    throw new IllegalArgumentException(
-                            "Decoded a disallowed serverbound chunked-message type"
-                    );
-                }
-            }
+                    limits,
+                    message -> {
+                        if (message instanceof ClientUpdateRequestMessage updateRequest) {
+                            validateClientUpdateRequest(updateRequest);
+                            this.onClientUpdateRequest(player, updateRequest);
+                        } else if (message instanceof WaypointEditRequestMessage editRequest) {
+                            validateWaypointEditRequest(editRequest);
+                            this.onWaypointEditRequest(player, editRequest);
+                        } else {
+                            throw new IllegalArgumentException(
+                                    "Decoded a disallowed serverbound chunked-message type"
+                            );
+                        }
+                    }
+            );
         } catch (ReceiveException exception) {
             LOGGER.warn(
                     "Rejected serverbound chunked-message type {}: {}",
@@ -370,24 +371,24 @@ public class C2SPacketHandler<S, K, P> {
             return;
         }
         try {
-            for (ChunkedMessage message : this.uploadChunkedMessages.receive(
+            boolean applied = this.uploadChunkedMessages.receiveAndApply(
                     player,
                     buffer.messageChunk(),
-                    UPLOAD_REQUEST_LIMITS
-            )) {
-                if (!(message instanceof WaypointData data)
-                        || data.type() != WaypointData.Type.UPLOAD
-                        || !data.uploadData().requestId().equals(buffer.requestId())) {
-                    LOGGER.warn("Ignoring invalid decoded upload transport message");
-                    this.failUploadTransport(session, "invalid decoded upload");
-                    return;
-                }
-                try {
-                    this.uploadCoordinator.onUpload(player, data);
-                } finally {
-                    this.uploadChunkedMessages.clear(player);
-                    this.activeUploadTransportSession.compareAndSet(session, null);
-                }
+                    UPLOAD_REQUEST_LIMITS,
+                    message -> {
+                        if (!(message instanceof WaypointData data)
+                                || data.type() != WaypointData.Type.UPLOAD
+                                || !data.uploadData().requestId().equals(buffer.requestId())) {
+                            throw new InvalidUploadMessageException(
+                                    "Invalid decoded upload transport message"
+                            );
+                        }
+                        this.uploadCoordinator.onUpload(player, data);
+                    }
+            );
+            if (applied) {
+                this.uploadChunkedMessages.clear(player);
+                this.activeUploadTransportSession.compareAndSet(session, null);
             }
         } catch (ReceiveException exception) {
             LOGGER.warn(
@@ -400,6 +401,9 @@ public class C2SPacketHandler<S, K, P> {
             if (session.transferId().equals(failedTransferId)) {
                 this.failUploadTransport(session, exception.reason().name());
             }
+        } catch (InvalidUploadMessageException exception) {
+            LOGGER.warn("Ignoring invalid decoded upload transport message");
+            this.failUploadTransport(session, "invalid decoded upload");
         } catch (IllegalArgumentException | IllegalStateException exception) {
             LOGGER.warn("Rejected decoded upload message", exception);
             this.failUploadTransport(session, "decoded upload handler failure");
@@ -498,6 +502,13 @@ public class C2SPacketHandler<S, K, P> {
             Objects.requireNonNull(player, "player");
             Objects.requireNonNull(requestId, "requestId");
             Objects.requireNonNull(transferId, "transferId");
+        }
+    }
+
+    /** Marks a decoded upload payload that violates the upload transport contract. */
+    private static final class InvalidUploadMessageException extends IllegalArgumentException {
+        private InvalidUploadMessageException(String message) {
+            super(message);
         }
     }
 

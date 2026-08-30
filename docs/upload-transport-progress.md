@@ -38,8 +38,8 @@ operational issues that remain open.
 | Scheduler submissions | Resolved | Prepared bodies enter manager accounting before Paper schedules owner-thread delivery. One asynchronous batch remains in flight per peer, and disconnect or scheduler failure completes the exact delivery without clearing replacement state. |
 | Workflow delivery results | Resolved | Delivery tickets separate immediate admission from final delivery. Downloads report success only after completion, failed upload-request packets cancel the exact lease, edit-result failures are logged, and the edit screen restores its controls after a 30-second response deadline. |
 | Manager-wide blocking | Resolved | Encoding, compression, decompression, decoding, and platform callbacks run outside transport-state locks. Unrelated peers have independent state and decode locks; only aggregate byte accounting uses one short lock. |
-| Aggregate broadcast resources | Partially resolved | Broadcast bodies and deferred Paper dispatch are admitted to a 256 MiB manager budget, but decoded-object application lifetime and aggregate multi-peer throughput are not yet covered end to end. |
-| Frame pacing | Partially resolved | Each peer emits at most 8 frames and 192 KiB per tick, but there is no manager-wide frame/byte grant across all peers. |
+| Aggregate broadcast resources | Resolved | Broadcast bodies, inbound reassembly, and deferred Paper dispatch are admitted to a 256 MiB manager budget. Inbound reservations stay charged through decoding and the synchronous application callback, so decoded object graphs remain inside the same accounting boundary. |
+| Frame pacing | Resolved | Each peer emits at most 8 frames and 192 KiB per tick, and one manager-wide round-robin grant bounds all peers together to 32 frames and 768 KiB per tick. Admission no longer transmits; peers admitted during a tick begin on the next tick, and in-flight batches receive no additional grant. |
 | Request-scoped upload cleanup | Resolved | The first accepted upload frame binds player, request ID, and transfer ID. Timeout, malformed, and decode failures cancel only that exact session; disconnect and every loader shutdown clear the dedicated manager and coordinator state. |
 | Lease reacquisition fairness | Resolved | A stable player UUID receives a five-second cooldown whenever an admitted lease terminates. Other players remain immediately eligible and no queue is introduced. |
 | Live Folia verification | Unresolved | Unit tests and representative loader compiles passed, but the pairing, multi-region broadcast, disconnect, timeout, and saturation paths have not been exercised on a running Folia server. |
@@ -73,14 +73,23 @@ reassembly/decoding reservations to 256 MiB.
 
 Every peer has an independent state lock and decode lock. Encoding and
 compression happen before admission; completed bodies are detached and decoded
-outside the state lock; batch callbacks also run unlocked. A blocked or malformed
-transfer for one peer therefore cannot hold transport state for unrelated Folia
-regions.
+outside the state lock; completed inbound messages are decoded and handed to a
+synchronous application callback under the peer's decode lock while their
+reservation stays charged. A blocked or malformed transfer for one peer
+therefore cannot hold transport state for unrelated Folia regions, and a slow
+application callback holds only its own reservation plus its peer's decode
+lock.
 
-Delivery is limited to eight frames and 192 KiB per peer tick. Mod loaders drain
-on their normal server/client ticks. Paper uses async maintenance to find active
-peers, permits at most one outstanding entity-scheduler handoff per peer, and
-emits the batch only from that player's owning region.
+Transmission is decoupled from admission. `sendTracked` only queues a transfer
+and schedules the peer on a round-robin rotation, so aggregate throughput is
+bounded by one global grant per manager tick: at most 32 frames and 768 KiB
+across all peers, with each visited peer receiving at most its own 8-frame and
+192 KiB budget. Peers left without a grant rotate ahead of granted peers, so
+continuously active peers all progress without starvation, and peers admitted
+during a tick begin on the next tick. Mod loaders drain on their normal
+server/client ticks. Paper runs one manager-wide maintenance tick on its async
+scheduler, permits at most one outstanding entity-scheduler handoff per peer,
+and emits each batch only from that player's owning region.
 
 ## Completed follow-up resolutions
 
@@ -88,43 +97,48 @@ emits the batch only from that player's owning region.
 | --- | --- | --- |
 | Passive timeout and client divergence handling | `e35af70` | Removed automatic recovery, added inactivity and lifetime expiry, propagated message type and transfer identity in failures, and added revision-aware client refusal. |
 | Request-scoped upload ownership and lifecycle cleanup | `b553c78` | Bound player, request, and transfer identity; reserved leases before revision capture; added exact cancellation, lifecycle reset, and per-player cooldown. |
-| Two-stage outbound delivery | Working tree | Admitted messages before owner-thread scheduling, added exact asynchronous completion, connected user workflows to final outcomes, and bounded edit-screen waiting. |
+| Two-stage outbound delivery | `2acd1b7` | Admitted messages before owner-thread scheduling, added exact asynchronous completion, connected user workflows to final outcomes, and bounded edit-screen waiting. |
+| End-to-end global resource grants | Working tree | Added manager-wide frame/byte grants over a fair round-robin rotation, made admission queue-only, replaced the list-returning receive API with synchronous application inside the accounting boundary, and removed every per-peer outbound bypass. |
 
 ## Remaining issues, in execution order
 
 | Order | Issue | Priority | Is it necessary? | Recommended trade-off or next step |
 | ---: | --- | --- | --- | --- |
-| 3 | Add end-to-end global resource grants | P1 under load | Yes before scale sign-off | Round-robin active peers under one global tick budget and retain inbound accounting through synchronous message application. |
-| 4 | Complete automated and live Folia coverage | Release blocker | Yes, after resolution 3 | Test each boundary above, then run multi-region, disconnect, malformed, saturation, incompatible-client, and low-TPS large-transfer smoke tests. |
+| 4 | Complete automated and live Folia coverage | Release blocker | Yes | Run multi-region, disconnect, malformed, saturation, incompatible-client, and low-TPS large-transfer smoke tests on a live Folia server. |
 
-### 3. Global resource grants
+### 3. Global resource grants (resolved)
 
-Keep the existing per-peer limits, but assign frame and byte grants from one
-round-robin global budget per tick. Retain inbound reservations until decoding and
-synchronous handler application finish so decoded object graphs remain inside the
-same accounting boundary.
+The general and upload managers each carry their own global tick budget and
+round-robin rotation, and the upload manager stays additionally constrained by
+its upload lease. Inbound reservations remain charged until decoding and the
+synchronous handler finish, so decoded object graphs are inside the same
+retained-byte budget; cleanup races cannot underflow or double-release the
+accounting.
 
 ### 4. Runtime Folia and stress coverage
 
 Request identity, lifecycle shutdown, exact upload transport binding, cooldown,
-asynchronous delivery completion, and stale-failure races now have focused
-coverage. Add global pacing and application-lifetime accounting tests, then run a Folia smoke test
-with compatible and incompatible clients in different regions, stalled and
-malformed transfers, disconnects, saturation, and a progressing large transfer
-under low TPS.
+asynchronous delivery completion, stale-failure races, global pacing, and
+application-lifetime accounting now have focused coverage. Remaining work is a
+Folia smoke test with compatible and incompatible clients in different regions,
+stalled and malformed transfers, disconnects, saturation, and a progressing
+large transfer under low TPS.
 
 ## Validation status
 
-Focused checks for the current working tree:
+Focused checks for the global-resource-grant working tree:
 
-- `:common:test`
-- `:mods:26.1.2-fabric:test`
-- `:paper:26.2-paper:test`
-- representative old and new Fabric, Forge, NeoForge, and Paper compilation
+- `:common:test` — 283 tests including the chunked-transport outbound pacing,
+  fairness, and inbound application-lifetime suites
+- `:mods:26.1.2-fabric:test` — 193 tests covering chunk application and edit
+  deadlines
+- `:paper:26.2-paper:test` — scheduler dispatch and manager-wide maintenance tests
+- representative old and new Fabric (1.20.1, 26.2), Forge (1.20.1, 1.21.11,
+  26.2), NeoForge (1.20.2 NeoGradle, 1.21.11, 26.2), and Paper (1.21, 1.21.11,
+  26.2) compilation
 - `git diff --check`
 
 The representative compilation refresh covers Minecraft 1.20.1 through 26.2.
-The changed language files also pass JSON parsing.
 
 These checks validate compilation and focused state-machine behavior only. No
 live Folia result has been recorded, so resolution 4 remains open regardless of
