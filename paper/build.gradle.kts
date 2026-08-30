@@ -72,6 +72,24 @@ tasks.test {
     useJUnitPlatform()
 }
 
+if (stonecutter.current.version == "1.21.11") {
+    val foliaLiveTestLoad = sourceSets.create("foliaLiveTestLoad") {
+        java.setSrcDirs(listOf(rootProject.file("paper/src/foliaLiveTestLoad/java")))
+        resources.setSrcDirs(listOf(rootProject.file("paper/src/foliaLiveTestLoad/resources")))
+        compileClasspath += sourceSets.main.get().compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+
+    tasks.register<Jar>("foliaLiveTestLoadJar") {
+        group = "verification"
+        description = "Builds the development-only bounded Folia region-load plugin."
+        archiveBaseName.set("server-waypoint-folia-live-test-load")
+        archiveVersion.set("")
+        from(foliaLiveTestLoad.output)
+        dependsOn(tasks.named("foliaLiveTestLoadClasses"))
+    }
+}
+
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))

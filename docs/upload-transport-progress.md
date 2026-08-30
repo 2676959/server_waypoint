@@ -1,8 +1,8 @@
 # Upload and Chunk Transport Progress
 
 Last updated: 2026-08-29
-Branch baseline: `feature/upload-3.1.0` at `b553c78`, with two-stage outbound
-delivery implemented in the working tree
+Branch baseline: `feature/upload-3.1.0` at `17c59d9`, with resolutions 1 through
+3 committed and runtime Folia verification remaining
 
 ## Goal
 
@@ -98,7 +98,7 @@ and emits each batch only from that player's owning region.
 | Passive timeout and client divergence handling | `e35af70` | Removed automatic recovery, added inactivity and lifetime expiry, propagated message type and transfer identity in failures, and added revision-aware client refusal. |
 | Request-scoped upload ownership and lifecycle cleanup | `b553c78` | Bound player, request, and transfer identity; reserved leases before revision capture; added exact cancellation, lifecycle reset, and per-player cooldown. |
 | Two-stage outbound delivery | `2acd1b7` | Admitted messages before owner-thread scheduling, added exact asynchronous completion, connected user workflows to final outcomes, and bounded edit-screen waiting. |
-| End-to-end global resource grants | Working tree | Added manager-wide frame/byte grants over a fair round-robin rotation, made admission queue-only, replaced the list-returning receive API with synchronous application inside the accounting boundary, and removed every per-peer outbound bypass. |
+| End-to-end global resource grants | `17c59d9` | Added manager-wide frame/byte grants over a fair round-robin rotation, made admission queue-only, replaced the list-returning receive API with synchronous application inside the accounting boundary, and removed every per-peer outbound bypass. |
 
 ## Remaining issues, in execution order
 
@@ -124,9 +124,85 @@ Folia smoke test with compatible and incompatible clients in different regions,
 stalled and malformed transfers, disconnects, saturation, and a progressing
 large transfer under low TPS.
 
+#### 4A. Prepare the live-test environment
+
+This first part prepares a repeatable, disposable environment for the runtime
+matrix. It does not count any scenario as passed; execution and evidence
+collection belong to the next part of resolution 4.
+
+Working-tree support for this phase lives under `tools/folia-live-test/`, with
+test-only fixture, Fabric probe, and Paper region-load source sets. The launcher
+requires an explicit Folia JAR and existing MCC executable, refuses repository
+or existing roots, builds the direct 1.21.11 version projects, and records
+checksums and roles before launch. These tools do not make any gate below pass
+until their generated environment is exercised and its evidence is reviewed.
+
+Use Minecraft 1.21.11 for the primary run because this repository has matching
+Paper and Fabric projects and the previous live Folia validation used that
+version. Record the exact Folia build and Java runtime in the result. Build the
+server plugin and compatible client directly from their version projects without
+switching either Stonecutter active project:
+
+```shell
+./gradlew --no-daemon --no-parallel --max-workers=2 \
+    :paper:1.21.11-paper:shadowJar \
+    :mods:1.21.11-fabric:build
+```
+
+Prepare the environment in this order:
+
+1. Create a temporary Folia server directory outside every checked-in or
+   user-owned run directory. Configure a dedicated port, offline test identities,
+   accepted EULA, and a disposable world, then install only the newly built
+   ServerWaypoint plugin and required server-side test tooling.
+2. Create two isolated compatible Fabric client launch directories with distinct
+   offline usernames. Keep their configuration, Xaero data, logs, and game
+   directories separate from existing user data. Add the existing MCC executable
+   as the incompatible vanilla client.
+3. Place the two compatible players far enough apart that Folia assigns them to
+   independent ticking regions. Record their dimensions and coordinates so the
+   placement can be reproduced before every run.
+4. Generate disposable server and Xaero fixtures large enough that one logical
+   transfer requires multiple manager ticks. Include a smaller control fixture
+   whose expected lists, waypoint counts, revisions, and final contents can be
+   compared exactly.
+5. Add a development-only protocol probe that negotiates protocol 9 and can send
+   a valid transfer, stop after a selected frame, corrupt a checksum or header,
+   open transfers until admission returns `PEER_BUSY`, and disconnect at a
+   selected frame. Reuse production codecs where possible, but keep the probe and
+   its controls out of distributable JARs and do not add a production debug
+   command or alternate wire protocol.
+6. Add a repeatable low-TPS control scoped to the disposable server. Prefer a
+   test-only region load tool whose duration and target region are explicit;
+   verify that removing the load returns the server to normal operation.
+7. Define one launch script or runbook that records the repository commit, plugin
+   checksum, Folia build, Java version, client roles, fixture checksum, commands,
+   timestamps, and locations of all server and client logs.
+
+Environment preparation is complete only when all of these gates pass:
+
+- Folia starts with the newly built plugin and reports no unsupported scheduler
+  or ownership exception during startup.
+- Both compatible clients negotiate protocol 9 from separate Folia regions, and
+  MCC remains connected without negotiating the custom transport.
+- The control fixture completes in both directions and its final revisions and
+  waypoint contents match exactly.
+- The development probe can deterministically produce partial, malformed,
+  saturated, and mid-transfer disconnect inputs without modifying production
+  code or user-owned data.
+- The large fixture spans multiple transport ticks, and the low-TPS control is
+  repeatable and reversible.
+- A clean restart removes temporary leases and transfers while preserving only
+  the expected committed waypoint state.
+
+After these gates pass, resolution 4 can proceed to the scenario matrix:
+multi-region broadcast, incompatible-client containment, timeout and malformed
+cleanup, disconnect races, saturation fairness, and large-transfer progress
+under low TPS.
+
 ## Validation status
 
-Focused checks for the global-resource-grant working tree:
+Focused checks for the committed global-resource-grant implementation:
 
 - `:common:test` — 283 tests including the chunked-transport outbound pacing,
   fairness, and inbound application-lifetime suites

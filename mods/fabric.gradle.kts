@@ -67,6 +67,51 @@ sourceSets.main {
     }
 }
 
+if (minecraft == "1.21.11") {
+    val liveTestGameDirectory = providers.gradleProperty("foliaLiveTestGameDir")
+    val liveTestUsername = providers.gradleProperty("foliaLiveTestUsername")
+    val liveTestHost = providers.gradleProperty("foliaLiveTestHost").orElse("127.0.0.1")
+    val liveTestPort = providers.gradleProperty("foliaLiveTestPort").orElse("25611")
+
+    if (liveTestGameDirectory.isPresent) {
+        loom.runs.named("client") {
+            runDir(liveTestGameDirectory.get())
+            if (liveTestUsername.isPresent) {
+                programArgs("--username", liveTestUsername.get())
+            }
+            programArgs("--server", liveTestHost.get(), "--port", liveTestPort.get())
+        }
+    }
+
+    val foliaLiveTestProbe = sourceSets.create("foliaLiveTestProbe") {
+        java.setSrcDirs(listOf(rootProject.file("mods/src/foliaLiveTestProbe/java")))
+        resources.setSrcDirs(listOf(rootProject.file("mods/src/foliaLiveTestProbe/resources")))
+        compileClasspath += sourceSets.main.get().compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+
+    loom.runs.create("foliaLiveTestProbe") {
+        client()
+        name("Folia Live Test Probe")
+        source(foliaLiveTestProbe)
+        runDir(liveTestGameDirectory.orElse(
+            rootProject.layout.buildDirectory.dir("folia-live-test/probe").map { it.asFile.absolutePath }
+        ).get())
+        programArgs(
+            "--username", liveTestUsername.orElse("SWProbe").get(),
+            "--server", liveTestHost.get(),
+            "--port", liveTestPort.get()
+        )
+        property("serverWaypointProbe.mode", providers.gradleProperty("foliaLiveTestProbeMode").orElse("valid").get())
+        property("serverWaypointProbe.selectedFrame", providers.gradleProperty("foliaLiveTestProbeFrame").orElse("1").get())
+        property("serverWaypointProbe.waypoints", providers.gradleProperty("foliaLiveTestProbeWaypoints").orElse("4096").get())
+    }
+
+    tasks.named("compileFoliaLiveTestProbeJava") {
+        dependsOn("stonecutterGenerate")
+    }
+}
+
 if (minecraft == "1.21.2") {
     configurations.configureEach {
         if (name == "modCompileClasspathMainMapped") {

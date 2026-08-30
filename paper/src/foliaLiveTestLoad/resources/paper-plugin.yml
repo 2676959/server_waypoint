@@ -1,0 +1,14 @@
+name: ServerWaypointFoliaLiveTestLoad
+version: '1.0.0'
+main: _959.server_waypoint.live.FoliaRegionLoadPlugin
+api-version: '1.21.11'
+folia-supported: true
+description: Development-only bounded per-region load control for Server Waypoint live tests.
+commands:
+  swregionload:
+    description: Start, stop, or inspect a bounded load on one player's Folia region.
+    usage: /swregionload <start <seconds> <busy-millis> [player]|stop [player]|status>
+    permission: server_waypoint.live_test.load
+permissions:
+  server_waypoint.live_test.load:
+    default: op
