@@ -41,10 +41,13 @@ for version_dir in "$VERSIONS_DIR"/*/ ; do
                     && "$jar" != *"-shadow.jar"
                     && "$jar" != *"-transformProductionNeoForge.jar"
                     && "$jar" != *"-thin.jar"
+                    && "$jar" != *"folia-live-test"*
                     ]]; then
                         # Move the file to output directory
                         mv "$jar" "$OUTPUT_DIR/"
                         echo "  Moved $(basename "$jar")"
+                    else
+                        echo "  Skipped development-only $(basename "$jar")"
                     fi
                 fi
             done
@@ -69,9 +72,12 @@ for version_dir in "$PAPER_VERSIONS_DIR"/*/ ; do
                     if [[ "$jar" != *"-dev.jar"
                     && "$jar" != *"-sources.jar"
                     && "$jar" != *"-shadow.jar"
+                    && "$jar" != *"folia-live-test"*
                     ]]; then
                         mv "$jar" "$OUTPUT_DIR/"
                         echo "  Moved $(basename "$jar")"
+                    else
+                        echo "  Skipped development-only $(basename "$jar")"
                     fi
                 fi
             done

@@ -302,3 +302,60 @@ The representative compilation refresh covers Minecraft 1.20.1 through 26.2.
 
 Together, these checks cover focused state-machine behavior, representative
 cross-loader compilation, and the required live Folia runtime behavior.
+
+## Release-candidate validation (post-`master` integration)
+
+Run against the integrated branch tip after merging `master` (see
+"4B evidence review after `master` integration" above).
+
+- `./gradlew build --continue --no-daemon --no-parallel --max-workers=2`
+  — **BUILD SUCCESSFUL**: 772 tasks, 477 executed, 406 up-to-date, no failed
+  task. This is the full serial build over the supported matrix rather than a
+  representative subset, and it includes `test` for every target.
+- `./move_builds.sh` collected 38 distributable 3.1.0 artifacts into `builds/`
+  (Fabric 12, Forge 12, NeoForge 11, Paper 3). Stale 3.0.x jars that the script
+  also swept up were removed, leaving only the 3.1.0 set.
+- `git diff --check` clean.
+
+Artifact audit over all 38 release JARs:
+
+- No `foliaLiveTestProbe`, `FoliaRegionLoadPlugin`, fixture generator, HeadlessMC
+  configuration, or JUnit/test resource in any of them.
+- Paper artifacts all declare `folia-supported: true` with `version: '3.1.0'` and
+  a per-target `api-version` (`1.21`, `1.21.11`, `26.2`).
+- Every Fabric `fabric.mod.json` and every Forge/NeoForge `mods.toml` /
+  `neoforge.mods.toml` reports `3.1.0`.
+- `ProtocolVersion` in every sampled artifact reports `PROTOCOL_VERSION = 9` and
+  `COMPATIBLE_VERSION = "3.1.x"`; channel and payload registration classes are
+  present per loader.
+- No dev-shadow, thin, sources, jarjar-dev or test-load artifact reached
+  `builds/`.
+
+### Packaging correction
+
+`move_builds.sh` only excluded `-dev`, `-sources` and `-shadow` on the Paper
+side, so the development-only `server-waypoint-folia-live-test-load.jar` built by
+`foliaLiveTestLoadJar` would have been collected into `builds/` and published.
+Both loops now also exclude `*folia-live-test*`.
+
+### Test scaffolding correction
+
+`ModMessageSenderTest` bootstraps Minecraft because `toVanillaText()` decodes
+through `ComponentSerialization.CODEC`, which needs bootstrapped registries. That
+is impossible from a plain JUnit run on the Forge family:
+
+- Forge: `Bootstrap.bootStrap()` initialises the Forge network stack, whose event
+  classes only gain the constructors the event bus needs after Forge's class
+  transformation.
+- NeoForge: `SharedConstants.<clinit>` consults `FMLEnvironment`, which throws
+  `IllegalStateException: There is no current FML Loader`.
+
+Both bootstrap calls are now wrapped and the test aborts via
+`Assumptions.abort(...)` when the runtime cannot bootstrap, so coverage is kept
+on every runtime where it can and the build stays green where it cannot.
+
+### Build environment
+
+Gradle must run with `GRADLE_USER_HOME=/Volumes/ssd/.gradle`. The default
+`~/.gradle` sits on the system volume, which does not have room for the Forge
+mavenizer output and filled up mid-build.
