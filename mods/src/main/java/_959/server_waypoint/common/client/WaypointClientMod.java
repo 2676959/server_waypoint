@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import static _959.server_waypoint.ModInfo.MOD_ID;
@@ -94,6 +95,15 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     public static WaypointClientMod getInstance() {
         if (INSTANCE == null) throw new IllegalStateException("WaypointClient has not been initialized");
         return INSTANCE;
+    }
+
+    /**
+     * return false if there is no instance of WaypointClientMod
+     * */
+    public static boolean ifPresent(Consumer<WaypointClientMod> action) {
+        if (INSTANCE == null) return false;
+        action.accept(INSTANCE);
+        return true;
     }
 
     public static ClientNetworkState getNetworkState() {
@@ -252,13 +262,18 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         LOGGER.info("dimensionName: {}, state: {}", dimensionName, networkState);
         if (networkState != ClientNetworkState.NOT_READY) {
             OptimizedWaypointRenderer.clearScene();
-            WaypointFileManager waypointFileManager;
+            final List<WaypointList> waypointLists;
             if (WaypointServerMod.runsWithClient()) {
-                waypointFileManager = WaypointServerMod.getInstance().getOrCreateWaypointFileManager(dimensionName);
+                waypointLists = WaypointServerMod.getInstance()
+                        .getOrCreateWaypointFileManager(dimensionName)
+                        .getWaypointLists();
             } else {
-                waypointFileManager = INSTANCE.getOrCreateWaypointFileManager(dimensionName);
+                WaypointFileManager waypointFileManager = INSTANCE.getWaypointFileManager(dimensionName);
+                // The waypoint files directory may not be loaded yet when the dimension changes right after a
+                // server transfer (e.g. via Velocity): the server handshake/sync has not completed, so there is
+                // nothing to render. Creating a manager here would NPE against the not-yet-set directory.
+                waypointLists = waypointFileManager == null ? List.of() : waypointFileManager.getWaypointLists();
             }
-            final List<WaypointList> waypointLists = waypointFileManager.getWaypointLists();
             OptimizedWaypointRenderer.loadScene(waypointLists);
             WaypointManagerScreen.updateAllWidgets();
         }
@@ -295,6 +310,12 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
 
     public void onJoinServer() {
         LOGGER.info("join server");
+        // Switching servers through a proxy (e.g. Velocity) does not trigger the disconnect that normally runs
+        // onLeaveServer(), so flush any pending edits from the previous server to its own file before we
+        // rebind to the new server. Otherwise edits are only saved at the final real disconnect.
+        if (!WaypointServerMod.runsWithClient()) {
+            this.saveAllWaypointFiles();
+        }
         this.chunkedMessages.clearAll();
         this.uploadChunkedMessages.clearAll();
         this.synchronizationTracker.clearAll();
@@ -308,6 +329,12 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             this.waypointFilesDir = null;
             networkState = ClientNetworkState.SYNC_FINISHED;
         } else {
+            // A server's id is only known after its plugin answers the handshake, so reset the server-local
+            // caches now. A server without the plugin never answers, and without this reset it would keep
+            // reading from and writing into the previous server's cache directory (cross-server data
+            // pollution). The directory and map are bound again once the new server's handshake arrives.
+            this.fileManagerMap = new ConcurrentHashMap<>();
+            this.waypointFilesDir = null;
             // send handshake to server -> onServerHandShake
             networkState = ClientNetworkState.NO_SERVERSIDE_SUPPORT;
             sendPayloadToServer(clientHandshake);

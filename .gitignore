@@ -48,3 +48,4 @@ builds/
 /TODO.md
 /minecraft_source_code/
 /.zed/
+/mods/versions/*/logs/
