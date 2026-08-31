@@ -1,8 +1,8 @@
 # Upload and Chunk Transport Progress
 
-Last updated: 2026-08-29
-Branch baseline: `feature/upload-3.1.0` at `17c59d9`, with resolutions 1 through
-3 committed and runtime Folia verification remaining
+Last updated: 2026-08-30
+Branch baseline: `feature/upload-3.1.0` at `0da0865`, with resolutions 1 through
+4 complete
 
 ## Goal
 
@@ -17,8 +17,8 @@ payloads. The selected model is an exclusive server-issued upload pairing:
 - server-side revision checks still protect against mutations that do not enter
   through the client edit protocol.
 
-This document distinguishes implemented safety and scaling work from the smaller
-operational issues that remain open.
+This document records the implemented safety and scaling work and the completed
+runtime verification used to close the plan.
 
 ## Current status
 
@@ -42,7 +42,7 @@ operational issues that remain open.
 | Frame pacing | Resolved | Each peer emits at most 8 frames and 192 KiB per tick, and one manager-wide round-robin grant bounds all peers together to 32 frames and 768 KiB per tick. Admission no longer transmits; peers admitted during a tick begin on the next tick, and in-flight batches receive no additional grant. |
 | Request-scoped upload cleanup | Resolved | The first accepted upload frame binds player, request ID, and transfer ID. Timeout, malformed, and decode failures cancel only that exact session; disconnect and every loader shutdown clear the dedicated manager and coordinator state. |
 | Lease reacquisition fairness | Resolved | A stable player UUID receives a five-second cooldown whenever an admitted lease terminates. Other players remain immediately eligible and no queue is introduced. |
-| Live Folia verification | Unresolved | Unit tests and representative loader compiles passed, but the pairing, multi-region broadcast, disconnect, timeout, and saturation paths have not been exercised on a running Folia server. |
+| Live Folia verification | Resolved | The 2026-08-30 Folia 1.21.11 matrix passed with two protocol-9 HeadlessMC clients in separate regions and an incompatible MCC client. It covered exact fixture round trips, multi-region broadcast, timeout and malformed cleanup, disconnect recovery, saturation fairness, a low-TPS large transfer, and clean restart. |
 
 ## What the pairing model intentionally does not guarantee
 
@@ -99,12 +99,14 @@ and emits each batch only from that player's owning region.
 | Request-scoped upload ownership and lifecycle cleanup | `b553c78` | Bound player, request, and transfer identity; reserved leases before revision capture; added exact cancellation, lifecycle reset, and per-player cooldown. |
 | Two-stage outbound delivery | `2acd1b7` | Admitted messages before owner-thread scheduling, added exact asynchronous completion, connected user workflows to final outcomes, and bounded edit-screen waiting. |
 | End-to-end global resource grants | `17c59d9` | Added manager-wide frame/byte grants over a fair round-robin rotation, made admission queue-only, replaced the list-returning receive API with synchronous application inside the accounting boundary, and removed every per-peer outbound bypass. |
+| Live Folia test environment | `0da0865` | Added the disposable fixture generator, protocol probe, bounded region-load plugin, launcher/runbook, verification task, and evidence recorder used by the live matrix. |
+| Live Folia scenario matrix | Recorded against `0da0865` | Executed and audited the complete 4B matrix on Folia 1.21.11; all release gates passed. |
 
-## Remaining issues, in execution order
+## Resolution status
 
-| Order | Issue | Priority | Is it necessary? | Recommended trade-off or next step |
-| ---: | --- | --- | --- | --- |
-| 4 | Complete automated and live Folia coverage | Release blocker | Yes | Run multi-region, disconnect, malformed, saturation, incompatible-client, and low-TPS large-transfer smoke tests on a live Folia server. |
+| Resolution | Status | Result |
+| ---: | --- | --- |
+| 4 | Complete | Automated coverage and the live Folia scenario matrix passed. No upload-transport release blocker remains in this plan. |
 
 ### 3. Global resource grants (resolved)
 
@@ -119,10 +121,10 @@ accounting.
 
 Request identity, lifecycle shutdown, exact upload transport binding, cooldown,
 asynchronous delivery completion, stale-failure races, global pacing, and
-application-lifetime accounting now have focused coverage. Remaining work is a
-Folia smoke test with compatible and incompatible clients in different regions,
-stalled and malformed transfers, disconnects, saturation, and a progressing
-large transfer under low TPS.
+application-lifetime accounting have focused automated coverage. The live Folia
+matrix below additionally exercised compatible and incompatible clients in
+different regions, stalled and malformed transfers, disconnects, saturation,
+and a progressing large transfer under low TPS.
 
 #### 4A. Prepare the live-test environment
 
@@ -130,12 +132,12 @@ This first part prepares a repeatable, disposable environment for the runtime
 matrix. It does not count any scenario as passed; execution and evidence
 collection belong to the next part of resolution 4.
 
-Working-tree support for this phase lives under `tools/folia-live-test/`, with
-test-only fixture, Fabric probe, and Paper region-load source sets. The launcher
-requires an explicit Folia JAR and existing MCC executable, refuses repository
-or existing roots, builds the direct 1.21.11 version projects, and records
-checksums and roles before launch. These tools do not make any gate below pass
-until their generated environment is exercised and its evidence is reviewed.
+Commit `0da0865` provides this phase under `tools/folia-live-test/`, with test-only
+fixture, Fabric probe, and Paper region-load source sets. The launcher requires
+an explicit Folia JAR and existing MCC executable, refuses repository or
+existing roots, builds the direct 1.21.11 version projects, and records checksums
+and roles before launch. These tools do not make any gate below pass until their
+generated environment is exercised and its evidence is reviewed.
 
 Use Minecraft 1.21.11 for the primary run because this repository has matching
 Paper and Fabric projects and the previous live Folia validation used that
@@ -195,10 +197,31 @@ Environment preparation is complete only when all of these gates pass:
 - A clean restart removes temporary leases and transfers while preserving only
   the expected committed waypoint state.
 
-After these gates pass, resolution 4 can proceed to the scenario matrix:
-multi-region broadcast, incompatible-client containment, timeout and malformed
-cleanup, disconnect races, saturation fairness, and large-transfer progress
-under low TPS.
+#### 4B. Live Folia scenario results
+
+The matrix ran on 2026-08-30 against repository commit `0da0865f1ad14da81cfefe07932c9ce540943f2b`,
+Folia `1.21.11-14-ver/1.21.11@529aabc`, and OpenJDK 21.0.11. `SWAlpha` and
+`SWBravo` used Fabric Loader 0.18.2 through isolated HeadlessMC 2.10.0 launchers;
+`SWVanilla` used MCC 26.2 with Minecraft protocol v774. The disposable evidence
+root is `/private/tmp/server-waypoint-folia-4b-rerun-0da0865`.
+
+| Scenario | Result | Recorded evidence |
+| --- | --- | --- |
+| Baseline and capability isolation | Pass | Alpha and Bravo negotiated protocol 9 from regions centered near `(0, 0)` and `(8192, 8192)`. MCC remained connected without a custom handshake. Both compatible clients downloaded the fixture and uploaded `control` with 0 added, 0 replaced, 0 deleted, 4 unchanged, 0 conflicts, and 0 skipped. Fixture verification confirmed revision 7 and the exact four expected waypoints. |
+| Multi-region broadcast | Pass | A `broadcast-headless` mutation reached both compatible clients at revision 20 with identical overworld contents and SHA-256 `4aa2bf56c39952895ab6003d3da048eb48461d010df4bdf1605443422f9b1553`. MCC was unaffected and the server reported no scheduler or ownership exception. |
+| Partial timeout cleanup | Pass | `partial 2` sent 2 of 43 frames and remained idle beyond 30 seconds. Only that transfer and upload lease expired; waypoint state did not mutate. A fresh valid 43-frame upload then completed with 4,096 unchanged waypoints. |
+| Malformed cleanup | Pass | `bad-checksum` was rejected for checksum mismatch and `bad-header` for invalid sequence 43. Neither mutated state or corrupted another lane. A valid 43-frame upload passed after each rejection with 4,096 unchanged waypoints. |
+| Disconnect cleanup | Pass | `disconnect 2` closed after 2 of 43 frames. A newly negotiated session completed all 43 frames with 4,096 unchanged waypoints and no stale completion interference. |
+| Saturation and fairness | Pass | Nine same-tick downloads hit the eight-transfer peer cap: the ninth returned the delivery failure corresponding to `PEER_BUSY`, while all eight admitted 28-frame transfers progressed to completion. A concurrent Alpha transfer also completed, and MCC plus the server remained responsive. |
+| Low-TPS large transfer | Pass | A bounded 90 ms/tick load ran for 30 seconds in Alpha's owned region. Alpha's multi-tick large download and Bravo's independent download both completed and persisted while the load was active. The load expired automatically, `swregionload status` returned no active loads, and both regions remained responsive. |
+| Clean restart and audit | Pass | Folia stopped cleanly, fixture verification passed, and restart loaded the expected 5,462 overworld waypoints without retaining a lease or incomplete transfer. Alpha and Bravo renegotiated protocol 9, MCC rejoined without custom transport, and a fresh valid 43-frame probe completed with 4,096 unchanged waypoints. `record` captured the final waypoint SHA-256 `40949ed2d2fb8dc74cd088b97480bd859cf84fc73431fa55be4f20ee131c7366`. |
+
+The log audit found only the two intentionally injected `MALFORMED` receive
+exceptions, expected offline-client authentication warnings, and discarded
+environment-setup diagnostics that were rerun after their tooling fixes. The
+accepted scenario logs contain no unexpected transport exception, Folia
+ownership violation, unsupported scheduler call, unexpected disconnect, or
+persistence mismatch. Resolution 4 is complete.
 
 ## Validation status
 
@@ -212,10 +235,11 @@ Focused checks for the committed global-resource-grant implementation:
 - representative old and new Fabric (1.20.1, 26.2), Forge (1.20.1, 1.21.11,
   26.2), NeoForge (1.20.2 NeoGradle, 1.21.11, 26.2), and Paper (1.21, 1.21.11,
   26.2) compilation
+- live Folia 1.21.11 scenario matrix recorded on 2026-08-30, including the
+  post-restart fixture verifier and a fresh valid 43-frame upload
 - `git diff --check`
 
 The representative compilation refresh covers Minecraft 1.20.1 through 26.2.
 
-These checks validate compilation and focused state-machine behavior only. No
-live Folia result has been recorded, so resolution 4 remains open regardless of
-the automated checks above.
+Together, these checks cover focused state-machine behavior, representative
+cross-loader compilation, and the required live Folia runtime behavior.

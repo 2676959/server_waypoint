@@ -164,11 +164,12 @@ public final class FoliaLiveTestFixtureTool {
     }
 
     private static List<SimpleWaypoint> controlWaypoints() {
+        // Xaero persists a 16-color palette, so these must survive a download/upload unchanged.
         return List.of(
-                new SimpleWaypoint("alpha-home", "AH", new WaypointPos(12, 72, -30), 0xD95F59, 0, false),
-                new SimpleWaypoint("bravo-home", "BH", new WaypointPos(8_204, 80, 8_180), 0x5B8FF9, 90, false),
-                new SimpleWaypoint("shared-spawn", "SS", new WaypointPos(0, 96, 0), 0x61DDAA, -90, true),
-                new SimpleWaypoint("probe-anchor", "PA", new WaypointPos(16_384, 70, 0), 0xF6BD16, 180, false)
+                new SimpleWaypoint("alpha-home", "AH", new WaypointPos(12, 72, -30), 0xFF5555, 0, false),
+                new SimpleWaypoint("bravo-home", "BH", new WaypointPos(8_204, 80, 8_180), 0x5555FF, 90, false),
+                new SimpleWaypoint("shared-spawn", "SS", new WaypointPos(0, 96, 0), 0xAAAAAA, -90, true),
+                new SimpleWaypoint("probe-anchor", "PA", new WaypointPos(16_384, 70, 0), 0xFFAA00, 180, false)
         );
     }
 

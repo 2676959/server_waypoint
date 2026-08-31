@@ -28,6 +28,16 @@ timestamp() {
     date -u +%Y%m%dT%H%M%SZ
 }
 
+compatible_client_log() {
+    local role="$1"
+    local headless_log="$ENVIRONMENT_ROOT/clients/headless-$role/logs/latest.log"
+    if [[ -f "$headless_log" ]]; then
+        printf '%s\n' "$headless_log"
+    else
+        printf '%s\n' "$ENVIRONMENT_ROOT/clients/$role/logs/latest.log"
+    fi
+}
+
 run_compatible_client() {
     local role="$1"
     local username="$2"
@@ -44,7 +54,7 @@ run_compatible_client() {
 case "$ACTION" in
     server)
         cd -- "$SERVER_DIRECTORY"
-        java -Xms2G -Xmx2G -jar folia.jar nogui \
+        java -Xms2G -Xmx2G -jar folia.jar nogui --nojline \
             2>&1 | tee "$ENVIRONMENT_ROOT/logs/server-$(timestamp).log"
         ;;
     alpha)
@@ -68,6 +78,8 @@ case "$ACTION" in
         ;;
     mcc)
         cd -- "$ENVIRONMENT_ROOT/clients/mcc"
+        mkdir -p -- "$ENVIRONMENT_ROOT/clients/mcc/.dotnet_bundle"
+        export DOTNET_BUNDLE_EXTRACT_BASE_DIR="$ENVIRONMENT_ROOT/clients/mcc/.dotnet_bundle"
         exec "$MCC_EXECUTABLE" SWVanilla - "$SERVER_HOST:$SERVER_PORT"
         ;;
     verify)
@@ -82,8 +94,8 @@ case "$ACTION" in
             printf 'recorded_at_utc=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
             printf 'repository_commit=%s\n' "$(git -C "$REPOSITORY_ROOT" rev-parse HEAD)"
             printf 'server_logs=%s\n' "$ENVIRONMENT_ROOT/logs"
-            printf 'alpha_log=%s\n' "$ENVIRONMENT_ROOT/clients/alpha/logs/latest.log"
-            printf 'bravo_log=%s\n' "$ENVIRONMENT_ROOT/clients/bravo/logs/latest.log"
+            printf 'alpha_log=%s\n' "$(compatible_client_log alpha)"
+            printf 'bravo_log=%s\n' "$(compatible_client_log bravo)"
             printf 'probe_log=%s\n' "$ENVIRONMENT_ROOT/clients/probe/logs/latest.log"
             printf 'server_waypoint_sha256=%s\n' "$(shasum -a 256 "$SERVER_DIRECTORY/plugins/ServerWaypoint/waypoints/minecraft\$overworld.json" | awk '{print $1}')"
         } >> "$ENVIRONMENT_ROOT/evidence/runtime-records.txt"

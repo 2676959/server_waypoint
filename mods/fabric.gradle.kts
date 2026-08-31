@@ -72,14 +72,22 @@ if (minecraft == "1.21.11") {
     val liveTestUsername = providers.gradleProperty("foliaLiveTestUsername")
     val liveTestHost = providers.gradleProperty("foliaLiveTestHost").orElse("127.0.0.1")
     val liveTestPort = providers.gradleProperty("foliaLiveTestPort").orElse("25611")
+    val liveTestRunDirectory = liveTestGameDirectory.orElse(
+        rootProject.layout.buildDirectory.dir("folia-live-test/probe").map { it.asFile.absolutePath }
+    ).map { path ->
+        project.projectDir.toPath().relativize(file(path).toPath()).toString()
+    }
 
     if (liveTestGameDirectory.isPresent) {
         loom.runs.named("client") {
-            runDir(liveTestGameDirectory.get())
+            runDir(liveTestRunDirectory.get())
             if (liveTestUsername.isPresent) {
                 programArgs("--username", liveTestUsername.get())
             }
-            programArgs("--server", liveTestHost.get(), "--port", liveTestPort.get())
+            programArgs(
+                "--quickPlayMultiplayer",
+                "${liveTestHost.get()}:${liveTestPort.get()}"
+            )
         }
     }
 
@@ -87,20 +95,17 @@ if (minecraft == "1.21.11") {
         java.setSrcDirs(listOf(rootProject.file("mods/src/foliaLiveTestProbe/java")))
         resources.setSrcDirs(listOf(rootProject.file("mods/src/foliaLiveTestProbe/resources")))
         compileClasspath += sourceSets.main.get().compileClasspath
-        runtimeClasspath += output + compileClasspath
+        runtimeClasspath += output + sourceSets.main.get().runtimeClasspath.minus(sourceSets.main.get().output)
     }
 
     loom.runs.create("foliaLiveTestProbe") {
         client()
         name("Folia Live Test Probe")
         source(foliaLiveTestProbe)
-        runDir(liveTestGameDirectory.orElse(
-            rootProject.layout.buildDirectory.dir("folia-live-test/probe").map { it.asFile.absolutePath }
-        ).get())
+        runDir(liveTestRunDirectory.get())
         programArgs(
             "--username", liveTestUsername.orElse("SWProbe").get(),
-            "--server", liveTestHost.get(),
-            "--port", liveTestPort.get()
+            "--quickPlayMultiplayer", "${liveTestHost.get()}:${liveTestPort.get()}"
         )
         property("serverWaypointProbe.mode", providers.gradleProperty("foliaLiveTestProbeMode").orElse("valid").get())
         property("serverWaypointProbe.selectedFrame", providers.gradleProperty("foliaLiveTestProbeFrame").orElse("1").get())

@@ -51,6 +51,7 @@ public final class FoliaLiveTestProbe implements ClientModInitializer {
     private static final int MAX_FRAMES_PER_TICK = 8;
     private static final int MAX_BYTES_PER_TICK = 192 * 1_024;
     private static final int SATURATION_DOWNLOADS = 9;
+    private static final int COMMAND_FALLBACK_TICKS = 20;
 
     private final Queue<UploadChunkBuffer> pendingFrames = new ArrayDeque<>();
     private final ProbeMode mode = ProbeMode.parse(System.getProperty("serverWaypointProbe.mode", "valid"));
@@ -58,6 +59,7 @@ public final class FoliaLiveTestProbe implements ClientModInitializer {
     private final int waypointCount = boundedProperty("serverWaypointProbe.waypoints", 4_096, 1, 4_096);
     private boolean disconnectAfterQueue;
     private boolean commandIssued;
+    private int connectedTicks;
     private int sentFrames;
 
     @Override
@@ -89,6 +91,7 @@ public final class FoliaLiveTestProbe implements ClientModInitializer {
             this.sentFrames = 0;
             this.commandIssued = false;
             this.disconnectAfterQueue = false;
+            this.connectedTicks = 0;
             ClientPlayNetworking.send(new ClientHandshakePayload(new ClientHandshakeBuffer()));
             LOGGER.info(
                     "SW_PROBE event=client_handshake version={} mode={} selectedFrame={} waypoints={}",
@@ -98,7 +101,19 @@ public final class FoliaLiveTestProbe implements ClientModInitializer {
                     this.waypointCount
             );
         });
-        ClientTickEvents.END_CLIENT_TICK.register(client -> this.drainFrames(client));
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client.getConnection() != null) {
+                this.connectedTicks++;
+                if (!this.commandIssued && this.connectedTicks >= COMMAND_FALLBACK_TICKS) {
+                    LOGGER.warn(
+                            "SW_PROBE event=server_handshake_timeout ticks={} action=ordered_command_fallback",
+                            this.connectedTicks
+                    );
+                    this.issueProbeCommand("ordered_fallback");
+                }
+            }
+            this.drainFrames(client);
+        });
     }
 
     private static void registerPayloadTypes() {
@@ -139,7 +154,11 @@ public final class FoliaLiveTestProbe implements ClientModInitializer {
             );
             return;
         }
-        if (this.commandIssued) {
+        this.issueProbeCommand("server_handshake");
+    }
+
+    private void issueProbeCommand(String trigger) {
+        if (this.commandIssued || Minecraft.getInstance().getConnection() == null) {
             return;
         }
         this.commandIssued = true;
@@ -148,12 +167,16 @@ public final class FoliaLiveTestProbe implements ClientModInitializer {
                 Minecraft.getInstance().getConnection().sendCommand("wp download");
             }
             LOGGER.info(
-                    "SW_PROBE event=saturation_commands command=wp_download count={}",
-                    SATURATION_DOWNLOADS
+                    "SW_PROBE event=saturation_commands command=wp_download count={} trigger={}",
+                    SATURATION_DOWNLOADS,
+                    trigger
             );
         } else {
             Minecraft.getInstance().getConnection().sendCommand("wp upload");
-            LOGGER.info("SW_PROBE event=upload_command command=wp_upload");
+            LOGGER.info(
+                    "SW_PROBE event=upload_command command=wp_upload trigger={}",
+                    trigger
+            );
         }
     }
 
