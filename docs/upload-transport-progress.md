@@ -240,6 +240,48 @@ them only after the 3.1.0 release review closes; until then they are the only
 record of the live Folia run and are needed to answer review questions about the
 recorded SHA-256 values, region placement, and probe modes above.
 
+### 4B evidence review after `master` integration
+
+**Open item — needs a maintainer decision before release sign-off.**
+
+Integrating `master` brought in `9bf8054` ("fix waypoint cache handling across
+proxy transfers"), which changes client-side code this plan also touches:
+
+- `WaypointClientMod.onJoinServer()` now saves pending waypoint files before
+  rebinding and clears `fileManagerMap`/`waypointFilesDir` until the new server's
+  handshake binds them;
+- `WaypointClientMod.onDimensionChange()` no longer creates a waypoint manager
+  before the cache directory is available;
+- `MinecraftClientMixin` calls `onLeaveServer()` via the new `ifPresent` helper
+  when a level is torn down.
+
+The 4B matrix above was recorded against `a6cbd97`, which does not contain
+`9bf8054`. The integration deliberately re-applied only its substantive parts on
+top of this branch's protocol-9 client; the rest of that commit is cosmetic
+reformatting and was not adopted.
+
+Assessment supporting retention of the recorded evidence:
+
+- The protocol-9 wire format is unchanged: no message type, channel, payload
+  layout, bound or checksum behaviour was altered.
+- Paper/Folia scheduler ownership is unchanged: no scheduler call site, region
+  dispatch path or maintenance-tick wiring was touched.
+- Transport Gradle wiring is unchanged: the integration only added publishing
+  plugins and migrated Stonecutter `vers()` to `version()`.
+- The matrix connected clients **directly** to Folia with no Velocity proxy, so
+  the two paths `9bf8054` changes are not exercised: there is no seamless
+  server switch, and no dimension change racing an unfinished handshake.
+- On a fresh join the added save is a no-op over an empty map and the reset is
+  undone by the handshake that follows, so join, disconnect and restart
+  scenarios behave as recorded.
+
+Because the changed paths are not covered by the matrix, the recorded evidence is
+retained rather than re-run, and this reasoning is recorded here for review. If a
+maintainer wants direct coverage of the merged client, re-run at least
+*Baseline and capability isolation*, *Disconnect cleanup*, and *Clean restart and
+audit* against the integrated commit, ideally with a proxy transfer added to the
+runbook.
+
 ## Validation status
 
 Focused checks for the committed global-resource-grant implementation:
