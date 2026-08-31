@@ -1,8 +1,13 @@
 # Upload and Chunk Transport Progress
 
 Last updated: 2026-08-30
-Branch baseline: `feature/upload-3.1.0` at `0da0865`, with resolutions 1 through
+Branch baseline: `feature/upload-3.1.0` at `a6cbd97`, with resolutions 1 through
 4 complete
+
+`a6cbd97` is the live-matrix completion commit: it closes the 4B scenario matrix
+recorded against the `0da0865` test environment. The disposable Folia evidence
+root is retained until release review finishes; see
+[Disposable evidence retention](#disposable-evidence-retention).
 
 ## Goal
 
@@ -100,7 +105,7 @@ and emits each batch only from that player's owning region.
 | Two-stage outbound delivery | `2acd1b7` | Admitted messages before owner-thread scheduling, added exact asynchronous completion, connected user workflows to final outcomes, and bounded edit-screen waiting. |
 | End-to-end global resource grants | `17c59d9` | Added manager-wide frame/byte grants over a fair round-robin rotation, made admission queue-only, replaced the list-returning receive API with synchronous application inside the accounting boundary, and removed every per-peer outbound bypass. |
 | Live Folia test environment | `0da0865` | Added the disposable fixture generator, protocol probe, bounded region-load plugin, launcher/runbook, verification task, and evidence recorder used by the live matrix. |
-| Live Folia scenario matrix | Recorded against `0da0865` | Executed and audited the complete 4B matrix on Folia 1.21.11; all release gates passed. |
+| Live Folia scenario matrix | `a6cbd97` | Executed and audited the complete 4B matrix on Folia 1.21.11 against the `0da0865` test environment; all release gates passed. |
 
 ## Resolution status
 
@@ -199,11 +204,14 @@ Environment preparation is complete only when all of these gates pass:
 
 #### 4B. Live Folia scenario results
 
-The matrix ran on 2026-08-30 against repository commit `0da0865f1ad14da81cfefe07932c9ce540943f2b`,
+The matrix ran on 2026-08-30 against repository commit `a6cbd97390c1c36550f3a59fdbc2cfab61b3d381`,
 Folia `1.21.11-14-ver/1.21.11@529aabc`, and OpenJDK 21.0.11. `SWAlpha` and
 `SWBravo` used Fabric Loader 0.18.2 through isolated HeadlessMC 2.10.0 launchers;
 `SWVanilla` used MCC 26.2 with Minecraft protocol v774. The disposable evidence
 root is `/private/tmp/server-waypoint-folia-4b-rerun-0da0865`.
+
+The matrix was executed on the `0da0865` test environment, which is the parent of
+`a6cbd97`; the evidence root therefore keeps its original `0da0865` suffix.
 
 | Scenario | Result | Recorded evidence |
 | --- | --- | --- |
@@ -222,6 +230,15 @@ environment-setup diagnostics that were rerun after their tooling fixes. The
 accepted scenario logs contain no unexpected transport exception, Folia
 ownership violation, unsupported scheduler call, unexpected disconnect, or
 persistence mismatch. Resolution 4 is complete.
+
+### Disposable evidence retention
+
+The evidence root `/private/tmp/server-waypoint-folia-4b-rerun-0da0865` and the
+earlier `server-waypoint-folia-4b-0da0865` root are retained for the duration of
+release review. They live outside the repository and are never committed. Delete
+them only after the 3.1.0 release review closes; until then they are the only
+record of the live Folia run and are needed to answer review questions about the
+recorded SHA-256 values, region placement, and probe modes above.
 
 ## Validation status
 
