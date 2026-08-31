@@ -242,7 +242,8 @@ recorded SHA-256 values, region placement, and probe modes above.
 
 ### 4B evidence review after `master` integration
 
-**Open item — needs a maintainer decision before release sign-off.**
+**Resolved — runtime verification is complete against release candidate
+`99cc415e3e74f0fc5a4724553db39179636c8694`.**
 
 Integrating `master` brought in `9bf8054` ("fix waypoint cache handling across
 proxy transfers"), which changes client-side code this plan also touches:
@@ -275,12 +276,60 @@ Assessment supporting retention of the recorded evidence:
   undone by the handshake that follows, so join, disconnect and restart
   scenarios behave as recorded.
 
-Because the changed paths are not covered by the matrix, the recorded evidence is
-retained rather than re-run, and this reasoning is recorded here for review. If a
-maintainer wants direct coverage of the merged client, re-run at least
-*Baseline and capability isolation*, *Disconnect cleanup*, and *Clean restart and
-audit* against the integrated commit, ideally with a proxy transfer added to the
-runbook.
+The post-integration closure run on 2026-08-31 supplied that missing direct
+coverage. It used this isolated topology:
+
+- Velocity 4.1.1 build 24 on `127.0.0.1:25620`, running on Temurin 25.0.4.1;
+- Folia backend A on `127.0.0.1:25621`, server ID 41001, with only
+  `server-a-only` revision 101 and waypoint `a-fixture`;
+- Folia backend B on `127.0.0.1:25622`, server ID 42002, with only
+  `server-b-only` revision 202 and waypoint `b-fixture`;
+- Folia `1.21.11-14-ver/1.21.11@529aabc`, Minecraft 1.21.11, and Java 21.0.11
+  on both backends;
+- the production 3.1.0 Fabric JAR in HeadlessMC 2.10.0, Fabric Loader 0.18.2,
+  and the offline identity `SWLifecycle`, with separate launcher, Minecraft
+  store, game, cache, world, and log directories.
+
+The frozen executable checksums were:
+
+| Component | SHA-256 |
+| --- | --- |
+| Production Fabric 1.21.11 JAR | `167dadffa6d1f9079fc9fc147842d6eaf658d8e9952b471912af415a61049bbb` |
+| Production Paper 1.21.11 JAR | `c91f517d894cda1c7ac67f45fd6e8e171caf288df37e048f23e6f47f484bc150` |
+| Folia 1.21.11 JAR | `f52c408490a0225611e67907a3ca19f7e6da2c6bc899e715d5f46844e7103c39` |
+| Velocity 4.1.1 build 24 JAR | `846411d2d0560fed0f23496ffb89681be528d2c0650ecdcf21724d2d7bd9c1ee` |
+| HeadlessMC 2.10.0 launcher | `52bd5006f478377b3893011d458562977d38c65ead6d2b31089beb4d614f13cd` |
+| Temurin 25 archive | `61979887f7506a24a57439ff99adb8b3a7fc89977d9cfe3b8984f58a981b7b9d` |
+| Development-only lifecycle control JAR | `46b011e96885cb02b413245e09871740ce243039902a8887c9d23d80213f926b` |
+
+| Closure scenario | Result | Recorded evidence |
+| --- | --- | --- |
+| A to B to A proxy transfer | Pass | Protocol 9 negotiated on every join. A's pending marker was memory-only before transfer, then persisted only under proxy server ID 41001. The handshake-pending dimension changes passed, join state had no bound cache or old manager, and transport, synchronization, and renderer state were cleared. B exposed only `server-b-only` revision 202; returning to A exposed only `server-a-only` revision 101 with the pending marker. |
+| Direct disconnect and reconnect | Pass | The client downloaded A's fixture, left cleanly, tolerated the pre-handshake dimension change, rebound the same A cache, and renegotiated protocol 9 with the exact revision 101 fixture. |
+| Clean backend restart | Pass | Backend A stopped cleanly, reloaded one list and one waypoint, and the client rebound the A cache after restart with protocol 9 and the exact revision 101 fixture. |
+
+The proxy caches are distinct: A is
+`_127.0.0.1_25620/server/41001/minecraft$overworld.json` with SHA-256
+`ef4a28a4c0e15c6d4b131a4bd3cb12ec7b11fec9c9c4b680643ac03218245a60`,
+and B is `_127.0.0.1_25620/server/42002/minecraft$overworld.json` with
+SHA-256
+`7d2b4ca796bfc290b31413edb70d44f1354deebcd88f43e4c70e578e54f7faf0`.
+The accepted HeadlessMC command tests all exited successfully with explicit
+structured assertions. Their client logs, the Velocity log, both backend logs,
+cache records, checksums, and audit are retained at
+`/private/tmp/server-waypoint-step5-99cc415`. The audit found no
+`UnsupportedOperationException`, lifecycle NPE, ownership violation,
+unexpected disconnect, failed assertion, wrong-cache write, fixture/revision
+leak, or production-JAR inclusion of the development control. The original 4B
+evidence trees retained their frozen aggregate SHA-256 values unchanged.
+
+One pre-scenario launch diagnosed incorrect accessor descriptors in the
+development-only control, and one direct-reconnect diagnostic showed that
+HeadlessMC 2.10.0 treats a standalone `WAIT` step as a failed command test. Both
+diagnostics are retained and excluded from accepted evidence; after fixing the
+test control and JSON, the affected baseline plus scenario passed. No production
+code changed. This closes the final evidence decision and marks runtime
+verification complete for the integrated release candidate.
 
 ## Validation status
 
@@ -296,6 +345,9 @@ Focused checks for the committed global-resource-grant implementation:
   26.2) compilation
 - live Folia 1.21.11 scenario matrix recorded on 2026-08-30, including the
   post-restart fixture verifier and a fresh valid 43-frame upload
+- post-integration Velocity/Folia client-lifecycle closure recorded on
+  2026-08-31 against `99cc415`, including A-to-B-to-A proxy transfer, direct
+  reconnect, and clean backend restart
 - `git diff --check`
 
 The representative compilation refresh covers Minecraft 1.20.1 through 26.2.
@@ -305,13 +357,16 @@ cross-loader compilation, and the required live Folia runtime behavior.
 
 ## Release-candidate validation (post-`master` integration)
 
-Run against the integrated branch tip after merging `master` (see
+The production branch baseline and final runtime-tested commit is
+`99cc415e3e74f0fc5a4724553db39179636c8694`. Run against the integrated branch
+tip after merging `master` (see
 "4B evidence review after `master` integration" above).
 
 - `./gradlew build --continue --no-daemon --no-parallel --max-workers=2`
-  — **BUILD SUCCESSFUL**: 772 tasks, 477 executed, 406 up-to-date, no failed
-  task. This is the full serial build over the supported matrix rather than a
-  representative subset, and it includes `test` for every target.
+  — **BUILD SUCCESSFUL**: 772 tasks with no failed task. This is the full serial
+  build over the supported matrix rather than a representative subset, and it
+  includes `test` for every target. The earlier executed/up-to-date breakdown
+  was removed because its counts did not sum to the recorded task total.
 - `./move_builds.sh` collected 38 distributable 3.1.0 artifacts into `builds/`
   (Fabric 12, Forge 12, NeoForge 11, Paper 3). Stale 3.0.x jars that the script
   also swept up were removed, leaving only the 3.1.0 set.
@@ -328,6 +383,15 @@ Artifact audit over all 38 release JARs:
 - `ProtocolVersion` in every sampled artifact reports `PROTOCOL_VERSION = 9` and
   `COMPATIBLE_VERSION = "3.1.x"`; channel and payload registration classes are
   present per loader.
+
+Step 5 added only disposable scripts, documentation, and a development-only
+1.21.11 Fabric source set. Proportional revalidation rebuilt
+`:paper:1.21.11-paper:shadowJar`, `:mods:1.21.11-fabric:build`, and
+`:mods:1.21.11-fabric:remapProxyLifecycleTestJar`. Script syntax and
+`git diff --check` passed. A repeated content scan found exactly 38 release
+artifacts and no lifecycle-control, Folia-probe, HeadlessMC, or JUnit entry in
+any production JAR; the lifecycle control is built only by its explicit
+verification task.
 - No dev-shadow, thin, sources, jarjar-dev or test-load artifact reached
   `builds/`.
 

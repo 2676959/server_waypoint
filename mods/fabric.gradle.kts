@@ -116,6 +116,42 @@ if (minecraft == "1.21.11") {
     tasks.named("compileFoliaLiveTestProbeJava") {
         dependsOn("stonecutterGenerate")
     }
+
+    val proxyLifecycleTest = sourceSets.create("proxyLifecycleTest") {
+        java.setSrcDirs(listOf(rootProject.file("mods/src/proxyLifecycleTest/java")))
+        resources.setSrcDirs(listOf(rootProject.file("mods/src/proxyLifecycleTest/resources")))
+        compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
+        runtimeClasspath += output + sourceSets.main.get().runtimeClasspath
+    }
+
+    val proxyLifecycleTestJar = tasks.register<Jar>("proxyLifecycleTestJar") {
+        group = "verification"
+        description = "Builds the development-only proxy lifecycle control mod."
+        archiveBaseName.set("server-waypoint-proxy-lifecycle-test")
+        archiveVersion.set("")
+        archiveClassifier.set("dev")
+        from(proxyLifecycleTest.output)
+        dependsOn(tasks.named("proxyLifecycleTestClasses"))
+    }
+
+    tasks.register<net.fabricmc.loom.task.RemapJarTask>("remapProxyLifecycleTestJar") {
+        group = "verification"
+        description = "Remaps the development-only proxy lifecycle control mod."
+        inputFile.set(proxyLifecycleTestJar.flatMap { it.archiveFile })
+        archiveBaseName.set("server-waypoint-proxy-lifecycle-test")
+        archiveVersion.set("")
+        archiveClassifier.set("")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        sourceNamespace.set("named")
+        targetNamespace.set("intermediary")
+        classpath.from(proxyLifecycleTest.compileClasspath)
+        addNestedDependencies.set(false)
+        dependsOn(proxyLifecycleTestJar)
+    }
+
+    tasks.named("compileProxyLifecycleTestJava") {
+        dependsOn("stonecutterGenerate")
+    }
 }
 
 if (minecraft == "1.21.2") {
