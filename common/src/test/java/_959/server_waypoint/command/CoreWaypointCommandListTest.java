@@ -165,7 +165,9 @@ class CoreWaypointCommandListTest {
         String helpText = plainText(help);
         assertTrue(helpText.contains("/wp list"));
         assertTrue(helpText.contains("/wp download [<dimension> [<list-identifier> [<waypoint-identifier>]]]"));
-        assertTrue(helpText.contains("/wp upload [<dimension> [<list> [<waypoint>]]]"));
+        assertTrue(helpText.contains(
+                "/wp upload <xaero|voxelmap> [force [server|local [delete]]] [<dimension> [<list> [<waypoint>]]]"
+        ));
         assertTrue(helpText.contains("/wp add"));
         assertTrue(helpText.contains("/wp edit"));
         assertTrue(helpText.contains("/wp navigate"));
@@ -391,6 +393,26 @@ class CoreWaypointCommandListTest {
                 "wp details waypoint overworld \"\" \"\"",
                 this.source
         ));
+    }
+
+    @Test
+    void uploadRequiresSourceAndSuggestsSupportedTargets() throws CommandSyntaxException {
+        List<String> suggestions = this.dispatcher.getCompletionSuggestions(
+                        this.dispatcher.parse("wp upload ", this.source)
+                ).join().getList().stream()
+                .map(suggestion -> suggestion.getText())
+                .toList();
+
+        assertEquals(2, suggestions.size());
+        assertTrue(suggestions.containsAll(List.of("xaero", "voxelmap")));
+        assertThrows(
+                CommandSyntaxException.class,
+                () -> this.dispatcher.execute("wp upload", this.source)
+        );
+
+        this.dispatcher.execute("wp upload unsupported", this.source);
+        assertTrue(translationKeys(this.sender.errors.get(0))
+                .contains("waypoint.upload.source.invalid"));
     }
 
     @Test

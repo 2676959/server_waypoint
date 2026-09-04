@@ -172,7 +172,7 @@ public final class FoliaLiveTestProbe implements ClientModInitializer {
                     trigger
             );
         } else {
-            Minecraft.getInstance().getConnection().sendCommand("wp upload");
+            Minecraft.getInstance().getConnection().sendCommand("wp upload xaero");
             LOGGER.info(
                     "SW_PROBE event=upload_command command=wp_upload trigger={}",
                     trigger

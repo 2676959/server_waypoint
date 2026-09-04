@@ -26,6 +26,7 @@ import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.core.network.upload.UploadConflictPolicy;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.network.upload.UploadScope;
+import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import _959.server_waypoint.navigation.NavigationMethod;
@@ -132,6 +133,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String UPLOAD_SERVER_COMMAND = "server";
     public static final String UPLOAD_LOCAL_COMMAND = "local";
     public static final String UPLOAD_DELETE_COMMAND = "delete";
+    public static final String UPLOAD_SOURCE_ARG = "source";
     public static final String TP_COMMAND = "tp";
     public static final String RELOAD_COMMAND = "reload";
     public static final String NAVIGATE_COMMAND = "navigate";
@@ -292,6 +294,15 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     private ArgumentBuilder<S, ?> dimensionNode() {
         return argument(DIMENSION_ARG, this.dimensionArgumentProvider.get());
+    }
+
+    private RequiredArgumentBuilder<S, String> sourceNode() {
+        return RequiredArgumentBuilder.<S, String>argument(UPLOAD_SOURCE_ARG, StringArgumentType.word())
+                .suggests((context, builder) -> {
+                    builder.suggest("xaero");
+                    builder.suggest("voxelmap");
+                    return builder.buildFuture();
+                });
     }
 
     @SuppressWarnings("unchecked")
@@ -788,39 +799,46 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private LiteralArgumentBuilder<S> uploadCommandNode() {
         LiteralArgumentBuilder<S> upload = literal(UPLOAD_COMMAND);
         upload.requires(this::hasUploadPermission);
-        upload.executes(context -> executeUploadAndReturn(
-                context.getSource(), UploadConflictPolicy.SERVER, false, UploadScope.WORLD, null, null, null
+        RequiredArgumentBuilder<S, String> source = sourceNode();
+        source.executes(context -> executeUploadAndReturn(
+                context.getSource(), getString(context, UPLOAD_SOURCE_ARG),
+                UploadConflictPolicy.SERVER, false, UploadScope.WORLD, null, null, null
         ));
-        upload.then(uploadSelectorArguments(UploadConflictPolicy.SERVER, false));
+        source.then(uploadSelectorArguments(UploadConflictPolicy.SERVER, false));
 
         LiteralArgumentBuilder<S> force = literal(UPLOAD_FORCE_COMMAND);
         LiteralArgumentBuilder<S> server = literal(UPLOAD_SERVER_COMMAND);
         server.executes(context -> executeUploadAndReturn(
-                context.getSource(), UploadConflictPolicy.SERVER, false, UploadScope.WORLD, null, null, null
+                context.getSource(), getString(context, UPLOAD_SOURCE_ARG),
+                UploadConflictPolicy.SERVER, false, UploadScope.WORLD, null, null, null
         ));
         server.then(uploadSelectorArguments(UploadConflictPolicy.SERVER, false));
         force.then(server);
 
         LiteralArgumentBuilder<S> local = literal(UPLOAD_LOCAL_COMMAND);
         local.executes(context -> executeUploadAndReturn(
-                context.getSource(), UploadConflictPolicy.LOCAL, false, UploadScope.WORLD, null, null, null
+                context.getSource(), getString(context, UPLOAD_SOURCE_ARG),
+                UploadConflictPolicy.LOCAL, false, UploadScope.WORLD, null, null, null
         ));
         local.then(uploadSelectorArguments(UploadConflictPolicy.LOCAL, false));
 
         LiteralArgumentBuilder<S> delete = literal(UPLOAD_DELETE_COMMAND);
         delete.requires(this::hasUploadDeletePermission);
         delete.executes(context -> executeUploadAndReturn(
-                context.getSource(), UploadConflictPolicy.LOCAL, true, UploadScope.WORLD, null, null, null
+                context.getSource(), getString(context, UPLOAD_SOURCE_ARG),
+                UploadConflictPolicy.LOCAL, true, UploadScope.WORLD, null, null, null
         ));
         delete.then(uploadSelectorArguments(UploadConflictPolicy.LOCAL, true));
         local.then(delete);
         force.then(local);
-        upload.then(force);
+        source.then(force);
+        upload.then(source);
         return upload;
     }
 
     private int executeUploadAndReturn(
             S source,
+            String uploadSource,
             UploadConflictPolicy conflictPolicy,
             boolean deleteMissing,
             UploadScope scope,
@@ -828,7 +846,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             @Nullable String listName,
             @Nullable String waypointName
     ) {
-        executeUpload(source, conflictPolicy, deleteMissing, scope, dimensionArgument, listName, waypointName);
+        executeUpload(
+                source, uploadSource, conflictPolicy, deleteMissing,
+                scope, dimensionArgument, listName, waypointName
+        );
         return Command.SINGLE_SUCCESS;
     }
 
@@ -1902,18 +1923,18 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private ArgumentBuilder<S, ?> uploadSelectorArguments(UploadConflictPolicy conflictPolicy, boolean deleteMissing) {
         return dimensionNode()
                 .executes(context -> executeUploadAndReturn(
-                        context.getSource(), conflictPolicy, deleteMissing,
+                        context.getSource(), getString(context, UPLOAD_SOURCE_ARG), conflictPolicy, deleteMissing,
                         UploadScope.DIMENSION, getArgument(context, DIMENSION_ARG), null, null
                 ))
                 .then(listNameNode()
                         .executes(context -> executeUploadAndReturn(
-                                context.getSource(), conflictPolicy, deleteMissing,
+                                context.getSource(), getString(context, UPLOAD_SOURCE_ARG), conflictPolicy, deleteMissing,
                                 UploadScope.LIST, getArgument(context, DIMENSION_ARG),
                                 getString(context, LIST_NAME_ARG), null
                         ))
                         .then(waypointNameNode()
                                 .executes(context -> executeUploadAndReturn(
-                                        context.getSource(), conflictPolicy, deleteMissing,
+                                        context.getSource(), getString(context, UPLOAD_SOURCE_ARG), conflictPolicy, deleteMissing,
                                         UploadScope.WAYPOINT, getArgument(context, DIMENSION_ARG),
                                         getString(context, LIST_NAME_ARG), getString(context, WAYPOINT_NAME_ARG)
                                 ))
@@ -1923,6 +1944,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
 
     private void executeUpload(
             S source,
+            String uploadSource,
             UploadConflictPolicy conflictPolicy,
             boolean deleteMissing,
             UploadScope scope,
@@ -1930,6 +1952,16 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             @Nullable String listName,
             @Nullable String waypointName
     ) {
+        UploadTarget target;
+        try {
+            target = UploadTarget.valueOf(uploadSource.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException exception) {
+            this.sender.sendError(
+                    source,
+                    translatable("waypoint.upload.source.invalid", text(uploadSource))
+            );
+            return;
+        }
         P player = getPlayer(source);
         if (player == null) {
             this.sender.sendError(source, translatable("waypoint.upload.player-only"));
@@ -1957,7 +1989,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         }
 
         UploadCoordinator.BeginResult beginResult = this.uploadCoordinator.begin(
-                player, scope, conflictPolicy, deleteMissing, dimensions, listName, waypointName
+                player, target, scope, conflictPolicy, deleteMissing, dimensions, listName, waypointName
         );
         if (beginResult.status() == UploadCoordinator.BeginStatus.BUSY) {
             this.sender.sendError(source, translatable("waypoint.upload.busy"));

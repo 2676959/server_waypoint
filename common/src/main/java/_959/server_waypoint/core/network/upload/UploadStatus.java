@@ -5,5 +5,7 @@ public enum UploadStatus {
     SUCCESS,
     XAERO_NOT_INSTALLED,
     XAERO_NOT_READY,
-    FAILED
+    FAILED,
+    VOXELMAP_NOT_INSTALLED,
+    VOXELMAP_NOT_READY
 }

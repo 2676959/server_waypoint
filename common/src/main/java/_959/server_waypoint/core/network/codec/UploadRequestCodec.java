@@ -3,6 +3,7 @@ package _959.server_waypoint.core.network.codec;
 import _959.server_waypoint.core.network.DecodingContext;
 import _959.server_waypoint.core.network.EncodingContext;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.upload.UploadTarget;
 import io.netty.buffer.ByteBuf;
 
 import java.util.List;
@@ -18,16 +19,25 @@ public final class UploadRequestCodec {
         ListCodec.encode(buf, request.dimensionNames(), UtfStringCodec::encode, context);
         encodeOptionalString(buf, request.listName(), context);
         encodeOptionalString(buf, request.waypointName(), context);
+        buf.writeByte(request.target().ordinal());
     }
 
     public static UploadRequestBuffer decode(ByteBuf buf, DecodingContext context) {
         UUID requestId = new UUID(buf.readLong(), buf.readLong());
         List<String> dimensionNames = ListCodec.decode(buf, UtfStringCodec::decode, context);
+        String listName = decodeOptionalString(buf, context);
+        String waypointName = decodeOptionalString(buf, context);
+        int targetId = buf.readUnsignedByte();
+        UploadTarget[] targets = UploadTarget.values();
+        if (targetId >= targets.length) {
+            throw new IllegalArgumentException("Invalid upload target: " + targetId);
+        }
         return new UploadRequestBuffer(
                 requestId,
                 dimensionNames,
-                decodeOptionalString(buf, context),
-                decodeOptionalString(buf, context)
+                listName,
+                waypointName,
+                targets[targetId]
         );
     }
 

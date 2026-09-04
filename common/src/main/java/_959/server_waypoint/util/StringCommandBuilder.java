@@ -77,6 +77,7 @@ public class StringCommandBuilder {
     public static String uploadLocalCmd(UploadScope scope, UploadRequestBuffer request) {
         StringBuilder command = new StringBuilder(WAYPOINT_COMMAND_WITH_SLASH)
                 .append(' ').append(UPLOAD_COMMAND)
+                .append(' ').append(request.target().name().toLowerCase(Locale.ROOT))
                 .append(" force local");
         if (scope == UploadScope.WORLD) {
             return command.toString();

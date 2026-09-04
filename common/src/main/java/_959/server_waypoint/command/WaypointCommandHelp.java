@@ -61,7 +61,7 @@ final class WaypointCommandHelp {
                 ));
         if (withUpload) {
             help = help.append(commandEntry(
-                    "/wp upload [<dimension> [<list> [<waypoint>]]]",
+                    "/wp upload <xaero|voxelmap> [force [server|local [delete]]] [<dimension> [<list> [<waypoint>]]]",
                     UPLOAD_COMMAND_PREFIX,
                     "waypoint.help.upload"
             ));

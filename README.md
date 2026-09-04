@@ -45,7 +45,7 @@ Optional:
 - `/wp download` download waypoints and add to Xaero's Minimap (will not work without client installation).
 - `/wp details list <dimension> <list-identifier>` and `/wp details waypoint <dimension> <list-identifier> <waypoint-identifier>` show every property and its available actions.
 - `/wp edit list ...` and `/wp edit waypoint ...` set one property at a time or clear an optional property. Run `/wp help edit` for the complete grammar.
-- `/wp upload` imports waypoints from Xaero’s Minimap on the executing player’s client. See [Uploading from Xaero’s Minimap](#uploading-from-xaeros-minimap) for conflict, force, and delete behavior.
+- `/wp upload <xaero|voxelmap>` imports waypoints from the selected map mod on the executing player’s client. See [Uploading from client map mods](#uploading-from-client-map-mods) for conflict, force, and delete behavior.
 - `/wp list` lists waypoints in the current dimension. Use `all`, a dimension, or a dimension plus list name to change the scope. Results are split using the server's configured page limit (10 by default), with clickable sorting and page controls.
   - Add `search <query>` to filter by waypoint name.
   - Add `sort <default|name|distance|color>` and, for non-default sorts, optionally `order <ascending|descending>` to sort the result.
@@ -56,37 +56,37 @@ Optional:
 - `/wp restore <token>` restores a recently removed waypoint while its temporary token remains valid.
 - `/wp tp` teleport the executor player to a waypoint
 
-## Uploading from Xaero’s Minimap
+## Uploading from client map mods
 
-Upload is initiated by the server but reads Xaero data from the executing player’s client. The client must have both Server Waypoint and Xaero’s Minimap installed and ready. The server accepts only the dimensions and optional list/waypoint selected by the command.
+Upload is initiated by the server but reads map data from the executing player’s client. The required `<source>` is `xaero` or `voxelmap`; the client must have both Server Waypoint and the selected map mod installed and ready. The server accepts only the dimensions and optional list/waypoint selected by the command.
 
-Only normal, enabled, non-temporary Xaero waypoints are imported. Upload synchronizes the waypoint name, initials, coordinates, Xaero color, yaw, and local/global visibility. Xaero does not store Server Waypoint’s display name, keywords, or description; those server-only fields are preserved when an existing waypoint is updated. New waypoints use their name as the display name and start with empty keywords and description.
+For Xaero, only normal, enabled, non-temporary waypoints are imported. Upload synchronizes the waypoint name, initials, coordinates, Xaero color, yaw, and local/global visibility. For VoxelMap, disabled and coordinate-highlight waypoints are skipped. Server-synced VoxelMap names are restored to their original list and waypoint identifiers; other VoxelMap waypoints are imported into a fixed `VoxelMap` list. VoxelMap coordinates are converted back from its dimension scale, while initials and yaw use empty/zero values and visibility is local. Server-only display names, keywords, and descriptions are preserved when an existing waypoint is updated.
 
 Every mode accepts the same optional scope:
 
 - No selector: every server dimension available to the command executor.
-- `<dimension>`: every waypoint set in that dimension.
-- `<dimension> <list>`: one Xaero waypoint set.
+- `<dimension>`: every map-mod waypoint in that dimension.
+- `<dimension> <list>`: one waypoint list (`VoxelMap` for local VoxelMap waypoints).
 - `<dimension> <list> <waypoint>`: one waypoint.
 
 ### Normal upload / force server
 
-`/wp upload [<dimension> [<list> [<waypoint>]]]` and `/wp upload force server [<dimension> [<list> [<waypoint>]]]` have identical behavior. Missing server waypoints are added. Matching waypoints are left unchanged. If the same name exists with different Xaero-supported properties, the server version wins and the command reports a conflict. Nothing is deleted.
+`/wp upload <source> [<dimension> [<list> [<waypoint>]]]` and `/wp upload <source> force server [<dimension> [<list> [<waypoint>]]]` have identical behavior. Missing server waypoints are added. Matching waypoints are left unchanged. If the same name exists with different map-supported properties, the server version wins and the command reports a conflict. Nothing is deleted.
 
 ### Force local
 
-`/wp upload force local [<dimension> [<list> [<waypoint>]]]` adds missing waypoints and replaces conflicting Xaero-supported properties with the client values. Server-only display names, keywords, and descriptions are preserved. Nothing is deleted.
+`/wp upload <source> force local [<dimension> [<list> [<waypoint>]]]` adds missing waypoints and replaces conflicting map-supported properties with the client values. Server-only display names, keywords, and descriptions are preserved. Nothing is deleted.
 
 ### Force local delete
 
-`/wp upload force local delete [<dimension> [<list> [<waypoint>]]]` first applies `force local`, then mirrors the selected scope by deleting server data that is absent from Xaero:
+`/wp upload <source> force local delete [<dimension> [<list> [<waypoint>]]]` first applies `force local`, then mirrors the selected scope by deleting server data that is absent from the selected map mod:
 
 - World scope removes absent waypoint sets and waypoints across all selected dimensions.
 - Dimension scope removes absent waypoint sets and waypoints in that dimension.
-- List scope removes absent waypoints from that set, or removes the server list if the Xaero set is absent.
+- List scope removes absent waypoints from that list, or removes the server list if the map-mod list is absent.
 - Waypoint scope removes only the selected server waypoint if it is absent locally.
 
-Disabled, temporary, and non-normal Xaero waypoints are not exported. In `force local delete` they therefore count as absent and can cause the corresponding server waypoint to be deleted. Use this mode only when the selected Xaero scope is intended to be the authoritative copy.
+Skipped map-mod waypoints count as absent in `force local delete` and can therefore cause the corresponding server waypoint to be deleted. Use this mode only when the selected source scope is intended to be the authoritative copy.
 
 Upload uses `server_waypoint.command.upload` (vanilla permission level 2 by default). The destructive delete mode additionally requires `server_waypoint.command.upload.delete` (level 4 by default).
 
@@ -193,9 +193,9 @@ Some changes made in `config.json` may take effects after server restarts.
       "tp": 2,
       // /wp reload
       "reload": 2,
-      // /wp upload
+      // /wp upload xaero
       "upload": 2,
-      // /wp upload force local delete
+      // /wp upload xaero force local delete
       "uploadDelete": 4
     }
   }

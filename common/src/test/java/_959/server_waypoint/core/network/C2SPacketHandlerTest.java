@@ -21,6 +21,7 @@ import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.network.upload.UploadConflictPolicy;
 import _959.server_waypoint.core.network.upload.UploadScope;
+import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.network.upload.UploadStatus;
 import _959.server_waypoint.navigation.NavigationPlatform;
 import _959.server_waypoint.navigation.NavigationService;
@@ -392,6 +393,7 @@ class C2SPacketHandlerTest {
     ) {
         UploadCoordinator.BeginResult result = coordinator.begin(
                 player,
+                UploadTarget.XAERO,
                 UploadScope.DIMENSION,
                 UploadConflictPolicy.LOCAL,
                 false,

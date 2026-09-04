@@ -53,6 +53,7 @@ class UploadCoordinatorTest {
         UploadCoordinator<String> coordinator = coordinator(server());
         UploadCoordinator.BeginResult first = coordinator.begin(
                 "first",
+                UploadTarget.XAERO,
                 UploadScope.DIMENSION,
                 UploadConflictPolicy.LOCAL,
                 false,
@@ -63,6 +64,7 @@ class UploadCoordinatorTest {
 
         UploadCoordinator.BeginResult second = coordinator.begin(
                 "second",
+                UploadTarget.XAERO,
                 UploadScope.DIMENSION,
                 UploadConflictPolicy.LOCAL,
                 false,
@@ -80,6 +82,7 @@ class UploadCoordinatorTest {
         coordinator.onDisconnect("first");
         UploadCoordinator.BeginResult afterRelease = coordinator.begin(
                 "second",
+                UploadTarget.XAERO,
                 UploadScope.DIMENSION,
                 UploadConflictPolicy.LOCAL,
                 false,
@@ -98,6 +101,7 @@ class UploadCoordinatorTest {
 
         UploadCoordinator.BeginResult blocked = coordinator.begin(
                 "player",
+                UploadTarget.XAERO,
                 UploadScope.DIMENSION,
                 UploadConflictPolicy.LOCAL,
                 false,
@@ -110,6 +114,7 @@ class UploadCoordinatorTest {
         coordinator.finishEditRequest();
         UploadCoordinator.BeginResult started = coordinator.begin(
                 "player",
+                UploadTarget.XAERO,
                 UploadScope.DIMENSION,
                 UploadConflictPolicy.LOCAL,
                 false,
@@ -301,11 +306,31 @@ class UploadCoordinatorTest {
     }
 
     @Test
+    void beginIncludesRequestedUploadTarget() {
+        UploadCoordinator<String> coordinator = coordinator(server());
+
+        UploadCoordinator.BeginResult result = coordinator.begin(
+                "player",
+                UploadTarget.VOXELMAP,
+                UploadScope.DIMENSION,
+                UploadConflictPolicy.SERVER,
+                false,
+                List.of("minecraft:overworld"),
+                null,
+                null
+        );
+
+        assertEquals(UploadTarget.VOXELMAP, result.request().target());
+        coordinator.onDisconnect("player");
+    }
+
+    @Test
     void deleteMissingRequiresLocalConflictPolicyOnTheServer() {
         UploadCoordinator<String> coordinator = coordinator(server());
 
         assertThrows(IllegalArgumentException.class, () -> coordinator.begin(
                 "player",
+                UploadTarget.XAERO,
                 UploadScope.DIMENSION,
                 UploadConflictPolicy.SERVER,
                 true,
@@ -357,6 +382,7 @@ class UploadCoordinatorTest {
         UploadCoordinator<String> coordinator = coordinator(server);
         UploadRequestBuffer request = coordinator.begin(
                 "player",
+                UploadTarget.XAERO,
                 UploadScope.WAYPOINT,
                 UploadConflictPolicy.LOCAL,
                 false,
@@ -398,6 +424,7 @@ class UploadCoordinatorTest {
         UploadCoordinator<String> coordinator = coordinator(server);
         UploadRequestBuffer request = coordinator.begin(
                 "player",
+                UploadTarget.XAERO,
                 UploadScope.LIST,
                 UploadConflictPolicy.LOCAL,
                 false,
@@ -429,6 +456,7 @@ class UploadCoordinatorTest {
         UploadCoordinator<String> coordinator = coordinator(server);
         UploadRequestBuffer request = coordinator.begin(
                 "player",
+                UploadTarget.XAERO,
                 UploadScope.LIST,
                 UploadConflictPolicy.LOCAL,
                 false,
@@ -459,6 +487,7 @@ class UploadCoordinatorTest {
         UploadCoordinator<String> coordinator = coordinator(server);
         UploadRequestBuffer request = coordinator.begin(
                 "player",
+                UploadTarget.XAERO,
                 UploadScope.DIMENSION,
                 UploadConflictPolicy.LOCAL,
                 true,
@@ -507,6 +536,7 @@ class UploadCoordinatorTest {
         UploadCoordinator<String> coordinator = coordinator(server, navigationService);
         UploadRequestBuffer request = coordinator.begin(
                 "player",
+                UploadTarget.XAERO,
                 UploadScope.WAYPOINT,
                 UploadConflictPolicy.LOCAL,
                 false,
@@ -599,6 +629,7 @@ class UploadCoordinatorTest {
     ) {
         return coordinator.begin(
                 player,
+                UploadTarget.XAERO,
                 UploadScope.DIMENSION,
                 UploadConflictPolicy.LOCAL,
                 false,

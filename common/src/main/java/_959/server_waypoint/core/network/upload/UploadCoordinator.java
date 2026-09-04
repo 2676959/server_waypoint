@@ -112,7 +112,8 @@ public final class UploadCoordinator<P> {
         this.reacquisitionCooldown = requirePositive(reacquisitionCooldown, "reacquisitionCooldown");
     }
 
-    public BeginResult begin(P player, UploadScope scope, UploadConflictPolicy conflictPolicy, boolean deleteMissing,
+    public BeginResult begin(P player, UploadTarget target, UploadScope scope,
+                             UploadConflictPolicy conflictPolicy, boolean deleteMissing,
                              List<String> dimensionNames, String listName, String waypointName) {
         if (deleteMissing && conflictPolicy != UploadConflictPolicy.LOCAL) {
             throw new IllegalArgumentException("Only force-local uploads can delete missing waypoints");
@@ -122,7 +123,9 @@ public final class UploadCoordinator<P> {
                 "playerUuidExtractor result"
         );
         Instant now = this.clock.instant();
-        UploadRequestBuffer request = new UploadRequestBuffer(UUID.randomUUID(), dimensionNames, listName, waypointName);
+        UploadRequestBuffer request = new UploadRequestBuffer(
+                UUID.randomUUID(), dimensionNames, listName, waypointName, target
+        );
         PendingUpload<P> pending = new PendingUpload<>(
                 player,
                 playerUuid,
@@ -263,6 +266,8 @@ public final class UploadCoordinator<P> {
                 this.playerMessageSender.send(player, switch (upload.status()) {
                     case XAERO_NOT_INSTALLED -> translatable("waypoint.upload.xaero.missing");
                     case XAERO_NOT_READY -> translatable("waypoint.upload.xaero.not-ready");
+                    case VOXELMAP_NOT_INSTALLED -> translatable("waypoint.upload.voxelmap.missing");
+                    case VOXELMAP_NOT_READY -> translatable("waypoint.upload.voxelmap.not-ready");
                     case FAILED -> translatable("waypoint.upload.client.failed");
                     case SUCCESS -> throw new IllegalStateException("Handled above");
                 });

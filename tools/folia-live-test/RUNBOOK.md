@@ -88,7 +88,7 @@ On `SWAlpha`:
 
 1. Run `/wp download` and confirm the `control` and `large` sets appear in
    Xaero.
-2. Run `/wp upload minecraft:overworld control` without editing the set. The
+2. Run `/wp upload xaero minecraft:overworld control` without editing the set. The
    normal server-preferred merge must report every control waypoint unchanged.
 3. Verify the server file while the server is stopped, or after a clean save and
    shutdown:
@@ -120,7 +120,7 @@ tools/folia-live-test/run.sh <environment-root> probe saturate
 tools/folia-live-test/run.sh <environment-root> probe disconnect 2
 ```
 
-- `valid` negotiates version 9, runs `/wp upload`, and sends a valid 4,096
+- `valid` negotiates version 9, runs `/wp upload xaero`, and sends a valid 4,096
   waypoint uncompressed upload over multiple ticks.
 - `partial N` stops after exactly `N` frames and remains connected for timeout
   observation.

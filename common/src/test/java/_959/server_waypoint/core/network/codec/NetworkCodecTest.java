@@ -16,6 +16,7 @@ import _959.server_waypoint.core.network.message.WaypointEditResultMessage;
 import _959.server_waypoint.core.network.message.WaypointListUpdateMessage;
 import _959.server_waypoint.core.network.message.WaypointModificationMessage;
 import _959.server_waypoint.core.network.upload.UploadStatus;
+import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
@@ -270,11 +271,31 @@ class NetworkCodecTest {
                 UUID.randomUUID(),
                 List.of("minecraft:overworld", "minecraft:the_nether"),
                 "Bases",
-                null
+                null,
+                UploadTarget.VOXELMAP
         );
         ByteBuf requestBuffer = Unpooled.buffer();
         UploadRequestCodec.encode(requestBuffer, request, encoding());
         assertEquals(request, UploadRequestCodec.decode(requestBuffer, decoding()));
+    }
+
+    @Test
+    void uploadRequestRejectsInvalidTargetOrdinal() {
+        UploadRequestBuffer request = new UploadRequestBuffer(
+                UUID.randomUUID(),
+                List.of("minecraft:overworld"),
+                null,
+                null,
+                UploadTarget.XAERO
+        );
+        ByteBuf buffer = Unpooled.buffer();
+        UploadRequestCodec.encode(buffer, request, encoding());
+        buffer.setByte(buffer.writerIndex() - 1, 255);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> UploadRequestCodec.decode(buffer, decoding())
+        );
     }
 
     private static SimpleWaypoint waypoint(String name) {
