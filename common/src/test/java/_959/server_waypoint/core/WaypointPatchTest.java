@@ -5,6 +5,7 @@ import _959.server_waypoint.core.edit.EditTarget;
 import _959.server_waypoint.core.edit.PatchField;
 import _959.server_waypoint.core.edit.WaypointListPatch;
 import _959.server_waypoint.core.edit.WaypointPatch;
+import _959.server_waypoint.core.network.MessageEncodingException;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
@@ -17,6 +18,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WaypointPatchTest {
@@ -208,6 +210,28 @@ class WaypointPatchTest {
         assertEquals(EditResultStatus.SUCCESS, result.status());
         assertTrue(result.afterSnapshot().hasDisplayNameOverride());
         assertEquals("", result.afterSnapshot().displayName());
+    }
+
+    @Test
+    void failedEncodingPreflightRollsBackTheMutation() {
+        WaypointFilesManagerCore manager = populatedManager();
+        int revision = list(manager, "source").getSyncNum();
+
+        assertThrows(MessageEncodingException.class, () -> manager.updateWaypoint(
+                EditTarget.waypoint(DIMENSION, "source", "original"),
+                revision,
+                patchIdentifier("must-not-commit"),
+                ignored -> {
+                    throw new MessageEncodingException("simulated encoding failure");
+                },
+                ignored -> {
+                }
+        ));
+
+        WaypointList restored = list(manager, "source");
+        assertEquals(revision, restored.getSyncNum());
+        assertEquals("Original display", restored.getWaypointByName("original").displayName());
+        assertNull(restored.getWaypointByName("must-not-commit"));
     }
 
     private WaypointFilesManagerCore populatedManager() {

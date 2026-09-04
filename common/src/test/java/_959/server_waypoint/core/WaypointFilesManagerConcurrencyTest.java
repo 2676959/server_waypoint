@@ -1,6 +1,9 @@
 package _959.server_waypoint.core;
 
-import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
+import _959.server_waypoint.core.network.codec.DimensionWaypointCodec;
+import _959.server_waypoint.core.network.DecodingContext;
+import _959.server_waypoint.core.network.EncodingContext;
+import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.edit.EditResultStatus;
 import _959.server_waypoint.core.edit.EditTarget;
 import _959.server_waypoint.core.edit.PatchField;
@@ -11,6 +14,8 @@ import _959.server_waypoint.core.waypoint.WaypointPos;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -705,7 +710,7 @@ class WaypointFilesManagerConcurrencyTest {
                 }
         );
         WaypointFileManager fileManager = filesManager.getWaypointFileManager(DIMENSION);
-        DimensionWaypointBuffer captured = fileManager.toDimensionWaypoint();
+        DimensionWaypointData captured = fileManager.toDimensionWaypointData();
 
         filesManager.updateWaypointProperties(
                 DIMENSION,
@@ -735,8 +740,12 @@ class WaypointFilesManagerConcurrencyTest {
         assertEquals(WaypointList.SERVER_N + 3, currentList.getSyncNum());
 
         assertCapturedInitialState(captured);
-        DimensionWaypointBuffer decoded =
-                (DimensionWaypointBuffer) captured.decode(captured.encode());
+        ByteBuf buffer = Unpooled.buffer();
+        DimensionWaypointCodec.encode(buffer, captured, new EncodingContext(1_024 * 1_024));
+        DimensionWaypointData decoded = DimensionWaypointCodec.decode(
+                buffer,
+                new DecodingContext(1_024 * 1_024, 10_000)
+        );
         assertCapturedInitialState(decoded);
     }
 
@@ -1190,7 +1199,7 @@ class WaypointFilesManagerConcurrencyTest {
         }
     }
 
-    private static void assertCapturedInitialState(DimensionWaypointBuffer buffer) {
+    private static void assertCapturedInitialState(DimensionWaypointData buffer) {
         assertEquals(DIMENSION, buffer.dimensionName());
         assertEquals(1, buffer.waypointLists().size());
         WaypointList capturedList = buffer.waypointLists().get(0);

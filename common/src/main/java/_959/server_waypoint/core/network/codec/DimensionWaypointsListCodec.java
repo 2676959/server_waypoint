@@ -1,18 +1,25 @@
 package _959.server_waypoint.core.network.codec;
 
-import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
-import _959.server_waypoint.core.network.buffer.DimensionWaypointsList;
+import _959.server_waypoint.core.network.DecodingContext;
+import _959.server_waypoint.core.network.EncodingContext;
+import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import io.netty.buffer.ByteBuf;
 
 import java.util.List;
-import java.util.function.Function;
 
-public class DimensionWaypointsListCodec {
-    public static void encode(ByteBuf buffer, List<DimensionWaypointBuffer> dimensionWaypointsList) {
-        ListCodec.encode(buffer, dimensionWaypointsList, DimensionWaypointCodec::encode);
+public final class DimensionWaypointsListCodec {
+    private DimensionWaypointsListCodec() {
     }
 
-    public static <T extends DimensionWaypointsList> T decode(ByteBuf buffer, Function<List<DimensionWaypointBuffer>, T> constructor) {
-        return constructor.apply(ListCodec.decode(buffer, DimensionWaypointCodec::decode));
+    public static void encode(
+            ByteBuf buffer,
+            List<DimensionWaypointData> dimensionWaypointsList,
+            EncodingContext context
+    ) {
+        ListCodec.encode(buffer, dimensionWaypointsList, DimensionWaypointCodec::encode, context);
+    }
+
+    public static List<DimensionWaypointData> decode(ByteBuf buffer, DecodingContext context) {
+        return ListCodec.decode(buffer, DimensionWaypointCodec::decode, context);
     }
 }

@@ -2,6 +2,7 @@ package _959.server_waypoint.core.waypoint;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import org.junit.jupiter.api.Test;
 
@@ -77,5 +78,53 @@ class SimpleWaypointExtraInfoTest {
         );
 
         assertThrows(UnsupportedOperationException.class, () -> waypoint.keywords().add("other"));
+    }
+
+    @Test
+    void deserializesLegacyWaypointWithoutExtraInfo() {
+        Gson gson = waypointGson();
+        JsonObject json = gson.toJsonTree(waypointWithExtraInfo()).getAsJsonObject();
+        json.remove("keywords");
+        json.remove("description");
+
+        SimpleWaypoint waypoint = gson.fromJson(json, SimpleWaypoint.class);
+        SimpleWaypoint snapshot = new SimpleWaypoint(waypoint);
+
+        assertEquals(List.of(), snapshot.keywords());
+        assertEquals("", snapshot.description());
+    }
+
+    @Test
+    void normalizesExplicitNullLegacyExtraInfo() {
+        Gson gson = waypointGson();
+        JsonObject json = gson.toJsonTree(waypointWithExtraInfo()).getAsJsonObject();
+        json.add("keywords", JsonNull.INSTANCE);
+        json.add("description", JsonNull.INSTANCE);
+
+        SimpleWaypoint waypoint = gson.fromJson(json, SimpleWaypoint.class);
+
+        assertEquals(List.of(), waypoint.keywords());
+        assertEquals("", waypoint.description());
+        assertEquals(0, gson.toJsonTree(waypoint).getAsJsonObject().getAsJsonArray("keywords").size());
+        assertEquals("", gson.toJsonTree(waypoint).getAsJsonObject().get("description").getAsString());
+    }
+
+    private static Gson waypointGson() {
+        return new GsonBuilder()
+                .excludeFieldsWithoutExposeAnnotation()
+                .create();
+    }
+
+    private static SimpleWaypoint waypointWithExtraInfo() {
+        return new SimpleWaypoint(
+                "Home",
+                "H",
+                new WaypointPos(1, 2, 3),
+                0xFFFFFF,
+                0,
+                true,
+                List.of("base"),
+                "description"
+        );
     }
 }

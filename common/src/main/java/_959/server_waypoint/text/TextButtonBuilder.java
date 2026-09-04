@@ -1,6 +1,8 @@
 package _959.server_waypoint.text;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.upload.UploadScope;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import _959.server_waypoint.util.StringCommandBuilder.ListOptions;
 import _959.server_waypoint.util.StringCommandBuilder.ListTarget;
@@ -62,6 +64,31 @@ public class TextButtonBuilder {
                 TextDecoration.State.NOT_SET,
                 ClickEvent.suggestCommand(command),
                 hoverText
+        );
+    }
+
+    private static Component buildRunButton(
+            NamedTextColor color,
+            String command,
+            String label,
+            Component hoverText
+    ) {
+        return buildButton(
+                text(label),
+                color,
+                TextDecoration.State.TRUE,
+                TextDecoration.State.NOT_SET,
+                ClickEvent.runCommand(command),
+                hoverText
+        );
+    }
+
+    public static Component uploadPreferLocalButton(UploadScope scope, UploadRequestBuffer request) {
+        return buildRunButton(
+                NamedTextColor.YELLOW,
+                uploadLocalCmd(scope, request),
+                "FORCE LOCAL",
+                translatable("button.upload.prefer.local")
         );
     }
 

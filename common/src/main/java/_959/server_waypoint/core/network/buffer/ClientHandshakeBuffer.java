@@ -2,13 +2,12 @@ package _959.server_waypoint.core.network.buffer;
 
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.core.network.MessageChannelID;
+import _959.server_waypoint.core.network.SinglePacketMessage;
 import _959.server_waypoint.core.network.codec.ClientHandshakeCodec;
 import io.netty.buffer.ByteBuf;
 
-/**
- * First packet in the communication between client and server
- * */
-public record ClientHandshakeBuffer(int version) implements MessageBuffer {
+/** The fixed-size client protocol handshake. */
+public record ClientHandshakeBuffer(int version) implements SinglePacketMessage {
     public ClientHandshakeBuffer() {
         this(ProtocolVersion.PROTOCOL_VERSION);
     }
@@ -19,12 +18,7 @@ public record ClientHandshakeBuffer(int version) implements MessageBuffer {
     }
 
     @Override
-    public void encoderFunction(ByteBuf byteBuf) {
-        ClientHandshakeCodec.encode(byteBuf);
-    }
-
-    @Override
-    public MessageBuffer decoderFunction(ByteBuf byteBuf) {
-        return ClientHandshakeCodec.decode(byteBuf);
+    public void encode(ByteBuf byteBuf) {
+        ClientHandshakeCodec.encode(byteBuf, this);
     }
 }

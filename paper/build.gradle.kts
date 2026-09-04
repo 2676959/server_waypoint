@@ -3,6 +3,7 @@ plugins {
     id("xyz.jpenilla.run-paper") version "3.0.2"
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.21"
     id("com.gradleup.shadow")
+    id("com.modrinth.minotaur")
 }
 
 group = "_959.server_waypoint"
@@ -28,6 +29,8 @@ dependencies {
     paperweight.paperDevBundle(paperApiVersion)
     implementation("org.bstats:bstats-bukkit:3.2.1")
     implementation(project(":common"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks {
@@ -68,6 +71,24 @@ tasks.processResources {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+if (stonecutter.current.version == "1.21.11") {
+    val foliaLiveTestLoad = sourceSets.create("foliaLiveTestLoad") {
+        java.setSrcDirs(listOf(rootProject.file("paper/src/foliaLiveTestLoad/java")))
+        resources.setSrcDirs(listOf(rootProject.file("paper/src/foliaLiveTestLoad/resources")))
+        compileClasspath += sourceSets.main.get().compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+
+    tasks.register<Jar>("foliaLiveTestLoadJar") {
+        group = "verification"
+        description = "Builds the development-only bounded Folia region-load plugin."
+        archiveBaseName.set("server-waypoint-folia-live-test-load")
+        archiveVersion.set("")
+        from(foliaLiveTestLoad.output)
+        dependsOn(tasks.named("foliaLiveTestLoadClasses"))
+    }
 }
 
 java {

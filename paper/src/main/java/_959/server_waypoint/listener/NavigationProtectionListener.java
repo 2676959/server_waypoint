@@ -57,6 +57,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
@@ -68,6 +69,8 @@ public final class NavigationProtectionListener implements Listener {
     private final NavigationService<Player> navigationService;
     private final PaperNavigationPlatform navigationPlatform;
     private final PaperNavigationItemManager itemManager;
+    private final Consumer<Player> waypointDataDisconnect;
+    private final Consumer<Player> playerDisconnect;
     private final PaperScheduler scheduler;
     private final Map<NavigationMethod, PaperItemNavigationHandler> itemHandlers;
     private final Set<UUID> reconciling = ConcurrentHashMap.newKeySet();
@@ -80,12 +83,16 @@ public final class NavigationProtectionListener implements Listener {
             NavigationService<Player> navigationService,
             PaperNavigationPlatform navigationPlatform,
             PaperNavigationItemManager itemManager,
-            List<? extends PaperItemNavigationHandler> itemHandlers
+            List<? extends PaperItemNavigationHandler> itemHandlers,
+            Consumer<Player> waypointDataDisconnect,
+            Consumer<Player> playerDisconnect
     ) {
         this.waypointServer = waypointServer;
         this.navigationService = navigationService;
         this.navigationPlatform = navigationPlatform;
         this.itemManager = itemManager;
+        this.waypointDataDisconnect = waypointDataDisconnect;
+        this.playerDisconnect = playerDisconnect;
         this.scheduler = new PaperScheduler(plugin);
         this.itemHandlers = new EnumMap<>(NavigationMethod.class);
         for (PaperItemNavigationHandler handler : itemHandlers) {
@@ -424,6 +431,7 @@ public final class NavigationProtectionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent event) {
+        this.waypointDataDisconnect.accept(event.getPlayer());
         this.restorePlayer(event.getPlayer());
     }
 
@@ -437,6 +445,7 @@ public final class NavigationProtectionListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        this.playerDisconnect.accept(player);
         ScheduledTask tickTask = this.navigationTickTasks.remove(player.getUniqueId());
         if (tickTask != null) {
             tickTask.cancel();

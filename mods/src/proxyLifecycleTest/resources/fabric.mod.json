@@ -1,0 +1,22 @@
+{
+    "schemaVersion": 1,
+    "id": "server_waypoint_proxy_lifecycle_test",
+    "version": "1.0.0",
+    "name": "Server Waypoint Proxy Lifecycle Test Control",
+    "description": "Development-only lifecycle assertions for the disposable Velocity test.",
+    "environment": "client",
+    "entrypoints": {
+        "client": [
+            "_959.server_waypoint.live.ProxyLifecycleTestControl"
+        ]
+    },
+    "mixins": [
+        "server_waypoint-proxy-lifecycle-test.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.16.10",
+        "fabric-api": "*",
+        "minecraft": "1.21.11",
+        "server_waypoint": "3.1.0"
+    }
+}

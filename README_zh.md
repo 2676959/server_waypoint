@@ -8,10 +8,10 @@
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/server_waypoint?style=flat-square&logo=modrinth&logoColor=%2300AF5C&label=Modrinth%20Downloads&color=%2300AF5C)](https://modrinth.com/plugin/server_waypoint)
 [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1416929?style=flat-square&logo=curseforge&logoColor=%23F16436&label=CurseForge%20Downloads&color=%23F16436)](https://www.curseforge.com/minecraft/mc-mods/server-waypoint)
 
-[![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1.x-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
-[![Forge](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1.x-555555?style=flat-square&label=Forge&labelColor=959eef)](https://modrinth.com/plugin/server_waypoint/versions?l=forge)
-[![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1.x-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
-[![Paper](https://img.shields.io/badge/1.21.x%20%2026.1.x-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
+[![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
+[![Forge](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=Forge&labelColor=959eef)](https://modrinth.com/plugin/server_waypoint/versions?l=forge)
+[![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
+[![Paper](https://img.shields.io/badge/1.21.x%20%2026.1--26.2-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
 
 [![discord-singular](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/social/discord-singular_vector.svg)](https://discord.com/invite/tKtSSYDkHx)
 [![crowdin](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/translate/crowdin_vector.svg)](https://crowdin.com/project/server-waypoint)
@@ -43,6 +43,7 @@
 - `/wp add` 添加新路径点。无法添加同名路径点。会提示用户使用 `/wp edit` 替换现有路径点。
   - `/wp add <维度> <列表>` 添加一个路径点列表。
 - `/wp download` 下载路径点并添加到 Xaero 小地图（需客户端安装本模组才生效）。
+- `/wp upload <xaero|voxelmap>` 从执行玩家客户端上所选的地图模组导入路径点。冲突、强制覆盖和删除行为详见[从客户端地图模组上传](#从客户端地图模组上传)。
 - `/wp edit` 编辑路径点。
 - `/wp list` 列出当前维度中的路径点。可使用 `all`、维度，或维度加列表名称来更改范围。结果按照服务端配置的每页数量分页（默认 10 个），并提供可点击的排序和翻页按钮。
   - 添加 `search <查询内容>` 可按路径点名称筛选。
@@ -52,6 +53,40 @@
 - `/wp remove` 按名称删除路径点。显示已删除的路径点，点击该消息可恢复该路径点。
   - `/wp remove <维度> <列表>` 删除一个空的路径点列表。
 - `/wp tp` 将执行该命令的玩家传送至指定路径点。
+
+## 从客户端地图模组上传
+
+上传由服务器发起，但读取的是执行命令玩家客户端中的地图模组数据。必填的 `<source>` 为 `xaero` 或 `voxelmap`；客户端必须已安装并正确加载 Server Waypoint 和所选地图模组。服务器只接受命令所选维度以及可选列表/路径点范围内的数据。
+
+Xaero 只导入普通、已启用且非临时的路径点，并同步名称、缩写、坐标、颜色、yaw 和本地/全局可见性。VoxelMap 会跳过已禁用和坐标高亮路径点；服务器同步的名称会还原为原始列表和路径点名称，其他本地路径点会放入固定的 `VoxelMap` 列表，坐标会从维度缩放中还原，缩写和 yaw 使用空值/零值且可见性为本地。更新已有路径点时会保留服务器专有的显示名称、关键词和描述。
+
+所有模式都支持相同的可选范围：
+
+- 不指定选择器：命令执行者可用的所有服务器维度。
+- `<维度>`：该维度中地图模组的所有路径点。
+- `<维度> <列表>`：一个路径点列表（VoxelMap 本地路径点使用 `VoxelMap`）。
+- `<维度> <列表> <路径点>`：一个路径点。
+
+### 普通上传 / force server
+
+`/wp upload <source> [<维度> [<列表> [<路径点>]]]` 与 `/wp upload <source> force server [<维度> [<列表> [<路径点>]]]` 行为相同：添加服务器上缺少的路径点；相同路径点保持不变；如果同名路径点中地图模组支持的属性不同，则保留服务器版本并报告冲突。不会删除任何数据。
+
+### Force local
+
+`/wp upload <source> force local [<维度> [<列表> [<路径点>]]]` 会添加缺少的路径点，并用客户端值替换冲突路径点中地图模组支持的属性。服务器专有的显示名称、关键词和描述会被保留。不会删除任何数据。
+
+### Force local delete
+
+`/wp upload <source> force local delete [<维度> [<列表> [<路径点>]]]` 会先执行 `force local`，然后删除所选地图模组中不存在的服务器数据，使所选范围与本地数据一致：
+
+- 世界范围：在所有所选维度中删除缺少的路径点集和路径点。
+- 维度范围：在该维度中删除缺少的路径点集和路径点。
+- 列表范围：从该路径点列表中删除缺少的路径点；如果地图模组列表不存在，则删除整个服务器列表。
+- 路径点范围：仅在本地不存在时删除所选服务器路径点。
+
+地图模组中被跳过的路径点在 `force local delete` 中会被视为不存在，并可能导致对应服务器路径点被删除。仅当所选来源范围应作为权威副本时使用此模式。
+
+上传使用 `server_waypoint.command.upload`（默认原版权限等级 2）。破坏性的删除模式还需要 `server_waypoint.command.upload.delete`（默认等级 4）。
 
 ## 翻译
 此模组发送的消息和命令反馈将根据玩家客户端的语言设置自动翻译。此功能完全在服务器端运行；玩家无需在客户端安装此模组即可看到翻译后的消息。目前，该模组支持英语和简体中文翻译。如果您有兴趣，可以在 [Crowdin](https://crowdin.com/project/server-waypoint) 上添加翻译，帮助我们完善翻译。
@@ -104,18 +139,22 @@
     "defaultPageLimit": 10
   }
   ```
-- ### 默认导航方式 Default Navigation Selection
-  设置新会话在使用 `/wp navigate <dimension> <list> <waypoint>` 且未指定 `using` 时启用的导航方式。可用值为 `compass`、`map`、`bossbar`、`actionbar` 和 `all`，默认值为 `actionbar`。
+- ### 默认导航方式 Default Navigation Methods
+  设置新会话在使用 `/wp navigate <dimension> <list> <waypoint>` 且未指定 `using` 时启用的一种或多种导航方式。该值必须是非空数组，其中可填写 `compass`、`map`、`bossbar`、`actionbar` 或 `text_display`。默认值为 `actionbar`。
 
   ```json5
   {
-    "defaultNavigationSelection": "actionbar"
+    "defaultNavigationMethods": [
+      "actionbar"
+    ]
   }
   ```
 - ### 命令权限 Command Permission
   修改执行命令所需的[原版权限等级](https://minecraft.wiki/w/Permission_level)。
   
   这将被 [LuckPerms](https://modrinth.com/plugin/luckperms) 设置的权限覆盖。
+
+  上传默认需要等级 2。具有破坏性的 `force local delete` 需要等级 4，也可通过 `server_waypoint.command.upload.delete` 单独授予；普通上传使用 `server_waypoint.command.upload`。
   
   默认值：
   ```json5
@@ -132,7 +171,11 @@
       // /wp tp
       "tp": 2,
       // /wp reload
-      "reload": 2
+      "reload": 2,
+      // /wp upload xaero
+      "upload": 2,
+      // /wp upload xaero force local delete
+      "uploadDelete": 4
     }
   }
 - ### 功能 Features
@@ -178,7 +221,7 @@
 - #### 自动同步至Xaero的小地图模组
   默认值：`true`
   
-  需要安装Xaero的小地图模组。
+  需要安装Xaero的小地图模组。服务端管理的 Xaero 路径点集合使用内部 `sw␟` 前缀，因此自动同步仅更新这些集合并保留个人集合；上传时会将这些管理名称映射回服务端的列表和路径点名称。
 - #### 手动同步至Xaero的小地图模组
   默认值：`无`
 

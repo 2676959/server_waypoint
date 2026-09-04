@@ -1,9 +1,15 @@
 package _959.server_waypoint.common.client.handlers;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.integrations.MapModIntegrations;
 import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
+import _959.server_waypoint.core.network.SinglePacketMessage;
 import _959.server_waypoint.core.network.buffer.*;
+import _959.server_waypoint.core.network.data.WaypointData;
+import _959.server_waypoint.core.network.upload.UploadStatus;
+
+import java.util.List;
 
 //? if fabric && >= 1.20.5 {
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -16,9 +22,9 @@ import net.minecraft.client.player.LocalPlayer;
  * handle mod custom payloads for fabric and neoforge
  * */
 public class S2CPayloadHandler {
-    public interface CustomPayloadHandler<B extends MessageBuffer, P extends ModPayload> {
-        void bufferHandler(B buffer);
-        B payloadToBuffer(P payload);
+    public interface CustomPayloadHandler<M extends SinglePacketMessage, P extends ModPayload> {
+        void messageHandler(M message);
+        M payloadToMessage(P payload);
         default void handle(
                 P payload,
                 //? if fabric && >= 1.20.5 {
@@ -30,103 +36,58 @@ public class S2CPayloadHandler {
                 /*Object context
                 *///?}
         ) {
-            this.bufferHandler(this.payloadToBuffer(payload));
+            this.messageHandler(this.payloadToMessage(payload));
         }
     }
 
     public static class ServerHandshakeHandler implements CustomPayloadHandler<ServerHandshakeBuffer, ServerHandshakeS2CPayload> {
         @Override
-        public ServerHandshakeBuffer payloadToBuffer(ServerHandshakeS2CPayload payload) {
+        public ServerHandshakeBuffer payloadToMessage(ServerHandshakeS2CPayload payload) {
             return payload.serverHandshakeBuffer();
         }
 
         @Override
-        public void bufferHandler(ServerHandshakeBuffer buffer) {
+        public void messageHandler(ServerHandshakeBuffer buffer) {
             WaypointClientMod.getInstance().onServerHandshake(buffer);
         }
     }
 
-    public static class UpdatesBundleHandler implements CustomPayloadHandler<UpdatesBundleBuffer, UpdatesBundleS2CPayload> {
+    public static class MessageChunkHandler implements CustomPayloadHandler<MessageChunkBuffer, MessageChunkS2CPayload> {
         @Override
-        public UpdatesBundleBuffer payloadToBuffer(UpdatesBundleS2CPayload payload) {
-            return payload.updatesBundleBuffer();
+        public MessageChunkBuffer payloadToMessage(MessageChunkS2CPayload payload) {
+            return payload.messageChunk();
         }
 
         @Override
-        public void bufferHandler(UpdatesBundleBuffer buffer) {
-            WaypointClientMod.getInstance().onUpdatesBundle(buffer);
+        public void messageHandler(MessageChunkBuffer buffer) {
+            WaypointClientMod.getInstance().onMessageChunk(buffer);
         }
     }
 
-    public static class WaypointListHandler implements CustomPayloadHandler<WaypointListBuffer, WaypointListS2CPayload> {
+    public static class UploadRequestHandler implements CustomPayloadHandler<UploadRequestBuffer, UploadRequestS2CPayload> {
         @Override
-        public WaypointListBuffer payloadToBuffer(WaypointListS2CPayload payload) {
-            return payload.waypointListBuffer();
+        public UploadRequestBuffer payloadToMessage(UploadRequestS2CPayload payload) {
+            return payload.uploadRequestBuffer();
         }
 
         @Override
-        public void bufferHandler(WaypointListBuffer buffer) {
-            WaypointClientMod.getInstance().onWaypointList(buffer);
+        public void messageHandler(UploadRequestBuffer buffer) {
+            MapModIntegrations.findUploadCollector(buffer.target())
+                    .ifPresentOrElse(
+                            integration -> integration.uploadToServer(buffer),
+                            () -> sendMissingUploadTarget(buffer)
+                    );
+        }
+
+        private static void sendMissingUploadTarget(UploadRequestBuffer buffer) {
+            UploadStatus status = switch (buffer.target()) {
+                case XAERO -> UploadStatus.XAERO_NOT_INSTALLED;
+                case VOXELMAP -> UploadStatus.VOXELMAP_NOT_INSTALLED;
+            };
+            WaypointClientMod.getInstance().sendChunkedMessageToServer(WaypointData.upload(
+                    buffer.requestId(), status, List.of()
+            ));
         }
     }
 
-    public static class DimensionWaypointHandler implements CustomPayloadHandler<DimensionWaypointBuffer, DimensionWaypointS2CPayload> {
-        @Override
-        public DimensionWaypointBuffer payloadToBuffer(DimensionWaypointS2CPayload payload) {
-            return payload.dimensionWaypointBuffer();
-        }
-
-        @Override
-        public void bufferHandler(DimensionWaypointBuffer buffer) {
-            WaypointClientMod.getInstance().onDimensionWaypoint(buffer);
-        }
-    }
-
-    public static class WorldWaypointHandler implements CustomPayloadHandler<WorldWaypointBuffer, WorldWaypointS2CPayload> {
-        @Override
-        public WorldWaypointBuffer payloadToBuffer(WorldWaypointS2CPayload payload) {
-            return payload.worldWaypointBuffer();
-        }
-
-        @Override
-        public void bufferHandler(WorldWaypointBuffer buffer) {
-            WaypointClientMod.getInstance().onWorldWaypoint(buffer);
-        }
-    }
-
-    public static class WaypointModificationHandler implements CustomPayloadHandler<WaypointModificationBuffer, WaypointModificationS2CPayload> {
-        @Override
-        public WaypointModificationBuffer payloadToBuffer(WaypointModificationS2CPayload payload) {
-            return payload.waypointModification();
-        }
-
-        @Override
-        public void bufferHandler(WaypointModificationBuffer buffer) {
-            WaypointClientMod.getInstance().onWaypointModification(buffer);
-        }
-    }
-
-    public static class WaypointListUpdateHandler implements CustomPayloadHandler<WaypointListUpdateBuffer, WaypointListUpdateS2CPayload> {
-        @Override
-        public WaypointListUpdateBuffer payloadToBuffer(WaypointListUpdateS2CPayload payload) {
-            return payload.update();
-        }
-
-        @Override
-        public void bufferHandler(WaypointListUpdateBuffer buffer) {
-            WaypointClientMod.getInstance().onWaypointListUpdate(buffer);
-        }
-    }
-
-    public static class WaypointEditResultHandler implements CustomPayloadHandler<WaypointEditResultBuffer, WaypointEditResultS2CPayload> {
-        @Override
-        public WaypointEditResultBuffer payloadToBuffer(WaypointEditResultS2CPayload payload) {
-            return payload.result();
-        }
-
-        @Override
-        public void bufferHandler(WaypointEditResultBuffer buffer) {
-            WaypointClientMod.getInstance().onWaypointEditResult(buffer);
-        }
-    }
 }

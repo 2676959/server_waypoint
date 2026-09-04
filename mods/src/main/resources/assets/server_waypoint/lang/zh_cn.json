@@ -154,5 +154,8 @@
   "waypoint.edit.error.identical": "没有字段发生变化。",
   "waypoint.edit.error.permission_denied": "你没有编辑权限。",
   "waypoint.edit.error.malformed_request": "服务器拒绝了此编辑请求。",
-  "waypoint.edit.error.duplicate_keyword": "一个路径点不能包含重复的关键词。"
+  "waypoint.edit.error.duplicate_keyword": "一个路径点不能包含重复的关键词。",
+  "waypoint.edit.error.encoding_failed": "更新内容过大，无法同步。",
+  "waypoint.edit.error.response_timeout": "服务器未能及时确认编辑，请检查路径点后再重试。",
+  "waypoint.network.encoding_failed": "路径点消息过大或无法编码。"
 }

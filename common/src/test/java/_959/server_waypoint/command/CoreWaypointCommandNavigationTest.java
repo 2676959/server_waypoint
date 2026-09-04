@@ -5,7 +5,9 @@ import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
-import _959.server_waypoint.core.network.buffer.MessageBuffer;
+import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.SinglePacketMessage;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
@@ -705,6 +707,17 @@ class CoreWaypointCommandNavigationTest {
                     sender,
                     permissionManager,
                     navigationService,
+                    new UploadCoordinator<>(
+                            server,
+                            (player, message) -> {
+                            },
+                            packet -> {
+                            },
+                            player -> true,
+                            player -> true,
+                            navigationService,
+                            TestPlayer::uuid
+                    ),
                     StringArgumentType::string,
                     StringArgumentType::string
             );
@@ -769,6 +782,11 @@ class CoreWaypointCommandNavigationTest {
         @Override
         protected Message getMessageFromComponent(Component component) {
             return component::toString;
+        }
+
+        @Override
+        protected List<String> getAvailableDimensionNames(TestSource source) {
+            return List.of("overworld");
         }
     }
 
@@ -839,6 +857,16 @@ class CoreWaypointCommandNavigationTest {
         @Override
         protected PermissionKey createReloadPermissionKey() {
             return new PermissionKey("reload");
+        }
+
+        @Override
+        protected PermissionKey createUploadPermissionKey() {
+            return new PermissionKey("upload");
+        }
+
+        @Override
+        protected PermissionKey createUploadDeletePermissionKey() {
+            return new PermissionKey("upload.delete");
         }
     }
 
@@ -953,11 +981,25 @@ class CoreWaypointCommandNavigationTest {
         }
 
         @Override
-        public void sendPacket(TestSource source, MessageBuffer packet) {
+        public void sendPacket(TestSource source, SinglePacketMessage message) {
         }
 
         @Override
-        public void sendPlayerPacket(TestPlayer player, MessageBuffer packet) {
+        public void sendPlayerPacket(TestPlayer player, SinglePacketMessage message) {
+        }
+
+        @Override
+        public void broadcastPacket(SinglePacketMessage message) {
+        }
+
+        @Override
+        public _959.server_waypoint.core.network.ChunkedMessageDelivery sendChunkedMessage(
+                TestSource source,
+                ChunkedMessage message
+        ) {
+            return _959.server_waypoint.core.network.ChunkedMessageDelivery.rejected(
+                    _959.server_waypoint.core.network.ChunkedMessageSendResult.UNSUPPORTED
+            );
         }
 
         @Override

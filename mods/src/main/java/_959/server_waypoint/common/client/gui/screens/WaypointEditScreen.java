@@ -6,13 +6,12 @@ import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.ScalableText;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.util.ColorHelper;
-import _959.server_waypoint.common.network.payload.c2s.WaypointEditRequestC2SPayload;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.edit.EditResultStatus;
 import _959.server_waypoint.core.edit.PatchField;
 import _959.server_waypoint.core.edit.WaypointPatch;
-import _959.server_waypoint.core.network.buffer.WaypointEditRequestBuffer;
-import _959.server_waypoint.core.network.buffer.WaypointEditResultBuffer;
+import _959.server_waypoint.core.network.message.WaypointEditRequestMessage;
+import _959.server_waypoint.core.network.message.WaypointEditResultMessage;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
@@ -27,7 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static _959.server_waypoint.common.client.util.NetworkHelper.sendPayloadToServer;
 import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
 import static _959.server_waypoint.text.FormattedTextHelper.plainText;
 import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
@@ -41,7 +39,7 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     private TranslucentButton resetButton;
     private TranslucentButton clearDisplayNameButton;
     private boolean clearDisplayName;
-    private long pendingRequestId = -1;
+    private final EditResponseDeadline responseDeadline = new EditResponseDeadline();
 
     @Override
     protected @NotNull WidgetStack createTitleRow() {
@@ -180,7 +178,7 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
         this.buttonRow.setXOffset(CONTENT_WIDTH);
     }
 
-    public static void handleResult(WaypointEditResultBuffer result) {
+    public static void handleResult(WaypointEditResultMessage result) {
         //? if >=26.2 {
         /*Screen screen = Minecraft.getInstance().gui.screen();
         *///?} else {
@@ -192,7 +190,7 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     }
 
     private void sendEditRequest() {
-        if (this.pendingRequestId >= 0) {
+        if (this.responseDeadline.pending()) {
             return;
         }
         WaypointPos resolvedPos = this.resolveCoordinateFields();
@@ -207,17 +205,22 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
                 PatchField.unchanged(),
                 PatchField.unchanged()
         );
-        this.pendingRequestId = NEXT_REQUEST_ID.incrementAndGet();
+        long requestId = NEXT_REQUEST_ID.incrementAndGet();
+        this.responseDeadline.begin(requestId, System.nanoTime());
         this.updateButton.active = false;
         this.clearFieldErrors();
-        sendPayloadToServer(new WaypointEditRequestC2SPayload(new WaypointEditRequestBuffer(
-                this.pendingRequestId,
+        boolean sent = WaypointClientMod.getInstance().sendChunkedMessageToServer(new WaypointEditRequestMessage(
+                requestId,
                 this.dimensionName,
                 this.listName,
                 this.waypointName,
                 this.expectedListRevision,
                 patch
-        )));
+        ));
+        if (!sent) {
+            this.responseDeadline.clear();
+            this.updateButton.active = true;
+        }
     }
 
     private PatchField<String> displayNamePatch() {
@@ -230,11 +233,10 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
         return PatchField.unchanged();
     }
 
-    private void acceptResult(WaypointEditResultBuffer result) {
-        if (result.requestId() != this.pendingRequestId) {
+    private void acceptResult(WaypointEditResultMessage result) {
+        if (!this.responseDeadline.clearIfMatches(result.requestId())) {
             return;
         }
-        this.pendingRequestId = -1;
         this.updateButton.active = true;
         if (result.status() == EditResultStatus.SUCCESS) {
             this.onClose();
@@ -289,9 +291,21 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     @Override
     protected void onSwatchClosed() {
         this.syncDisplayNameClearState();
-        if (this.pendingRequestId >= 0) {
+        if (this.responseDeadline.pending()) {
             this.updateButton.active = false;
         }
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (!this.responseDeadline.expire(System.nanoTime())) {
+            return;
+        }
+        this.updateButton.active = true;
+        this.updateButton.setTooltip(Tooltip.create(
+                Component.translatable("waypoint.edit.error.response_timeout")
+        ));
     }
 
     private void clearFieldErrors() {

@@ -29,6 +29,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
@@ -90,6 +91,56 @@ public class WaypointFilesManagerCore {
 
     public @Nullable WaypointFileManager getWaypointFileManager(String dimensionName) {
         return this.readLifecycle(() -> this.fileManagerMap.get(dimensionName));
+    }
+
+    public DimensionRevision captureDimensionRevision(String dimensionName) {
+        return this.readLifecycle(() -> {
+            WaypointFileManager fileManager = this.fileManagerMap.get(dimensionName);
+            return fileManager == null
+                    ? DimensionRevision.missing()
+                    : new DimensionRevision(fileManager, fileManager.snapshotListRevisions());
+        });
+    }
+
+    public <T> RevisionedDimensionMutationResult<T> applyDimensionMutationIfRevision(
+            String dimensionName,
+            DimensionRevision expectedRevision,
+            Function<WaypointFileManager.AtomicMutation, T> action
+    ) {
+        Objects.requireNonNull(expectedRevision, "expectedRevision");
+        Objects.requireNonNull(action, "action");
+        return this.mutateDimension(dimensionName, () -> {
+            WaypointFileManager fileManager = this.fileManagerMap.get(dimensionName);
+            if (!expectedRevision.matches(fileManager)) {
+                return RevisionedDimensionMutationResult.stale();
+            }
+            if (fileManager == null) {
+                fileManager = this.getOrCreateWaypointFileManagerLocked(
+                        dimensionName,
+                        new AtomicBoolean()
+                );
+            }
+            WaypointFileManager.AtomicMutationResult<T> mutationResult =
+                    fileManager.applyAtomicMutation(action);
+            boolean saveFailed = false;
+            if (mutationResult.changed()) {
+                try {
+                    this.saveWaypointFileLocked(fileManager);
+                } catch (IOException exception) {
+                    LOGGER.error(
+                            "Failed to save atomic waypoint mutation for dimension {}",
+                            dimensionName,
+                            exception
+                    );
+                    saveFailed = true;
+                }
+            }
+            return RevisionedDimensionMutationResult.applied(
+                    mutationResult.value(),
+                    mutationResult.changed(),
+                    saveFailed
+            );
+        });
     }
 
     public @NotNull WaypointFileManager getOrCreateWaypointFileManager(String dimensionName) {
@@ -207,6 +258,23 @@ public class WaypointFilesManagerCore {
             WaypointListPatch patch,
             Consumer<WaypointListEditResult> resultAction
     ) {
+        return this.updateWaypointList(
+                target,
+                expectedSyncNum,
+                patch,
+                ignored -> {
+                },
+                resultAction
+        );
+    }
+
+    public WaypointListEditResult updateWaypointList(
+            EditTarget target,
+            @Nullable Integer expectedSyncNum,
+            WaypointListPatch patch,
+            Consumer<WaypointListEditResult> preCommitAction,
+            Consumer<WaypointListEditResult> resultAction
+    ) {
         if (target.type() != EditTarget.Type.LIST) {
             throw new IllegalArgumentException("Expected a waypoint-list edit target");
         }
@@ -224,7 +292,8 @@ public class WaypointFilesManagerCore {
                             : fileManager.updateWaypointList(
                                     target.listIdentifier(),
                                     expectedSyncNum,
-                                    patch
+                                    patch,
+                                    preCommitAction
                             );
                 },
                 resultAction
@@ -235,6 +304,23 @@ public class WaypointFilesManagerCore {
             EditTarget target,
             @Nullable Integer expectedSyncNum,
             WaypointPatch patch,
+            Consumer<WaypointEditResult> resultAction
+    ) {
+        return this.updateWaypoint(
+                target,
+                expectedSyncNum,
+                patch,
+                ignored -> {
+                },
+                resultAction
+        );
+    }
+
+    public WaypointEditResult updateWaypoint(
+            EditTarget target,
+            @Nullable Integer expectedSyncNum,
+            WaypointPatch patch,
+            Consumer<WaypointEditResult> preCommitAction,
             Consumer<WaypointEditResult> resultAction
     ) {
         if (target.type() != EditTarget.Type.WAYPOINT) {
@@ -257,7 +343,8 @@ public class WaypointFilesManagerCore {
                                     target.listIdentifier(),
                                     target.requiredWaypointIdentifier(),
                                     expectedSyncNum,
-                                    patch
+                                    patch,
+                                    preCommitAction
                             );
                 },
                 resultAction
@@ -1206,6 +1293,67 @@ public class WaypointFilesManagerCore {
     public enum AddWaypointStatus {
         ADDED,
         DUPLICATE
+    }
+
+    public static final class DimensionRevision {
+        private final @Nullable WaypointFileManager fileManager;
+        private final Map<String, Integer> listRevisions;
+
+        private DimensionRevision(
+                @Nullable WaypointFileManager fileManager,
+                Map<String, Integer> listRevisions
+        ) {
+            this.fileManager = fileManager;
+            this.listRevisions = Map.copyOf(listRevisions);
+        }
+
+        private static DimensionRevision missing() {
+            return new DimensionRevision(null, Map.of());
+        }
+
+        public boolean exists() {
+            return this.fileManager != null;
+        }
+
+        private boolean matches(@Nullable WaypointFileManager currentManager) {
+            return this.fileManager == currentManager
+                    && (currentManager == null
+                    || this.listRevisions.equals(currentManager.snapshotListRevisions()));
+        }
+    }
+
+    public enum RevisionedDimensionMutationStatus {
+        APPLIED,
+        STALE_REVISION
+    }
+
+    public record RevisionedDimensionMutationResult<T>(
+            RevisionedDimensionMutationStatus status,
+            @Nullable T value,
+            boolean changed,
+            boolean saveFailed
+    ) {
+        private static <T> RevisionedDimensionMutationResult<T> stale() {
+            return new RevisionedDimensionMutationResult<>(
+                    RevisionedDimensionMutationStatus.STALE_REVISION,
+                    null,
+                    false,
+                    false
+            );
+        }
+
+        private static <T> RevisionedDimensionMutationResult<T> applied(
+                T value,
+                boolean changed,
+                boolean saveFailed
+        ) {
+            return new RevisionedDimensionMutationResult<>(
+                    RevisionedDimensionMutationStatus.APPLIED,
+                    value,
+                    changed,
+                    saveFailed
+            );
+        }
     }
 
     public record AddWaypointResult(

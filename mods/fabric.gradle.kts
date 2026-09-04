@@ -1,6 +1,8 @@
 plugins {
     id("net.fabricmc.fabric-loom-remap")
     id("com.gradleup.shadow")
+    id("com.modrinth.minotaur")
+    id("net.darkhax.curseforgegradle")
 }
 
 val minecraft = stonecutter.current.version
@@ -37,20 +39,19 @@ stonecutter {
         else -> "mouseScrolled($1, $2, $3, $4)"
     }
 
-    replacements.regex("gui_graphics_26", usesTwentySixApi) {
-        replace("\\bGuiGraphics\\b", "GuiGraphicsExtractor")
-        reverse("\\bGuiGraphicsExtractor\\b", "GuiGraphics")
+    replacements.regex(usesTwentySixApi, "gui_graphics_26") {
+        replace("\\bGuiGraphics\\b", "GuiGraphicsExtractor", "\\bGuiGraphicsExtractor\\b", "GuiGraphics")
     }
-    replacements.string("gui_render_state_26", usesTwentySixApi) {
+    replacements.string(usesTwentySixApi, "gui_render_state_26") {
         replace("net.minecraft.client.gui.render.state.GuiElementRenderState", "net.minecraft.client.renderer.state.gui.GuiElementRenderState")
     }
-    replacements.string("resource_location_import", usesResourceLocation) {
+    replacements.string(usesResourceLocation, "resource_location_import") {
         replace("net.minecraft.resources.Identifier", "net.minecraft.resources.ResourceLocation")
     }
-    replacements.string("fabric_key_mapping_import_26", usesTwentySixApi) {
+    replacements.string(usesTwentySixApi, "fabric_key_mapping_import_26") {
         replace("net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper", "net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper")
     }
-    replacements.string("fabric_key_mapping_call_26", usesTwentySixApi) {
+    replacements.string(usesTwentySixApi, "fabric_key_mapping_call_26") {
         replace("KeyBindingHelper.registerKeyBinding", "KeyMappingHelper.registerKeyMapping")
     }
 }
@@ -64,6 +65,92 @@ sourceSets.main {
         exclude("META-INF")
         exclude("pack.mcmeta")
         exclude("server_waypoint-official.accesswidener")
+    }
+}
+
+if (minecraft == "1.21.11") {
+    val liveTestGameDirectory = providers.gradleProperty("foliaLiveTestGameDir")
+    val liveTestUsername = providers.gradleProperty("foliaLiveTestUsername")
+    val liveTestHost = providers.gradleProperty("foliaLiveTestHost").orElse("127.0.0.1")
+    val liveTestPort = providers.gradleProperty("foliaLiveTestPort").orElse("25611")
+    val liveTestRunDirectory = liveTestGameDirectory.orElse(
+        rootProject.layout.buildDirectory.dir("folia-live-test/probe").map { it.asFile.absolutePath }
+    ).map { path ->
+        project.projectDir.toPath().relativize(file(path).toPath()).toString()
+    }
+
+    if (liveTestGameDirectory.isPresent) {
+        loom.runs.named("client") {
+            runDir(liveTestRunDirectory.get())
+            if (liveTestUsername.isPresent) {
+                programArgs("--username", liveTestUsername.get())
+            }
+            programArgs(
+                "--quickPlayMultiplayer",
+                "${liveTestHost.get()}:${liveTestPort.get()}"
+            )
+        }
+    }
+
+    val foliaLiveTestProbe = sourceSets.create("foliaLiveTestProbe") {
+        java.setSrcDirs(listOf(rootProject.file("mods/src/foliaLiveTestProbe/java")))
+        resources.setSrcDirs(listOf(rootProject.file("mods/src/foliaLiveTestProbe/resources")))
+        compileClasspath += sourceSets.main.get().compileClasspath
+        runtimeClasspath += output + sourceSets.main.get().runtimeClasspath.minus(sourceSets.main.get().output)
+    }
+
+    loom.runs.create("foliaLiveTestProbe") {
+        client()
+        name("Folia Live Test Probe")
+        source(foliaLiveTestProbe)
+        runDir(liveTestRunDirectory.get())
+        programArgs(
+            "--username", liveTestUsername.orElse("SWProbe").get(),
+            "--quickPlayMultiplayer", "${liveTestHost.get()}:${liveTestPort.get()}"
+        )
+        property("serverWaypointProbe.mode", providers.gradleProperty("foliaLiveTestProbeMode").orElse("valid").get())
+        property("serverWaypointProbe.selectedFrame", providers.gradleProperty("foliaLiveTestProbeFrame").orElse("1").get())
+        property("serverWaypointProbe.waypoints", providers.gradleProperty("foliaLiveTestProbeWaypoints").orElse("4096").get())
+    }
+
+    tasks.named("compileFoliaLiveTestProbeJava") {
+        dependsOn("stonecutterGenerate")
+    }
+
+    val proxyLifecycleTest = sourceSets.create("proxyLifecycleTest") {
+        java.setSrcDirs(listOf(rootProject.file("mods/src/proxyLifecycleTest/java")))
+        resources.setSrcDirs(listOf(rootProject.file("mods/src/proxyLifecycleTest/resources")))
+        compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
+        runtimeClasspath += output + sourceSets.main.get().runtimeClasspath
+    }
+
+    val proxyLifecycleTestJar = tasks.register<Jar>("proxyLifecycleTestJar") {
+        group = "verification"
+        description = "Builds the development-only proxy lifecycle control mod."
+        archiveBaseName.set("server-waypoint-proxy-lifecycle-test")
+        archiveVersion.set("")
+        archiveClassifier.set("dev")
+        from(proxyLifecycleTest.output)
+        dependsOn(tasks.named("proxyLifecycleTestClasses"))
+    }
+
+    tasks.register<net.fabricmc.loom.task.RemapJarTask>("remapProxyLifecycleTestJar") {
+        group = "verification"
+        description = "Remaps the development-only proxy lifecycle control mod."
+        inputFile.set(proxyLifecycleTestJar.flatMap { it.archiveFile })
+        archiveBaseName.set("server-waypoint-proxy-lifecycle-test")
+        archiveVersion.set("")
+        archiveClassifier.set("")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        sourceNamespace.set("named")
+        targetNamespace.set("intermediary")
+        classpath.from(proxyLifecycleTest.compileClasspath)
+        addNestedDependencies.set(false)
+        dependsOn(proxyLifecycleTestJar)
+    }
+
+    tasks.named("compileProxyLifecycleTestJava") {
+        dependsOn("stonecutterGenerate")
     }
 }
 

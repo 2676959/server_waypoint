@@ -8,14 +8,9 @@ import _959.server_waypoint.common.client.handlers.S2CPayloadHandler;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.network.payload.ModPayload;
-import _959.server_waypoint.common.network.payload.s2c.DimensionWaypointS2CPayload;
 import _959.server_waypoint.common.network.payload.s2c.ServerHandshakeS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.UpdatesBundleS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.WaypointListS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.WaypointModificationS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.WorldWaypointS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.WaypointEditResultS2CPayload;
-import _959.server_waypoint.common.network.payload.s2c.WaypointListUpdateS2CPayload;
+import _959.server_waypoint.common.network.payload.s2c.MessageChunkS2CPayload;
+import _959.server_waypoint.common.network.payload.s2c.UploadRequestS2CPayload;
 import com.mojang.blaze3d.platform.InputConstants;
 //? if >= 1.20.5
 import io.netty.buffer.ByteBuf;
@@ -91,6 +86,7 @@ public class ServerWaypointForgeClient {
             return;
         }
         ensureClientStarted();
+        WaypointClientMod.tickChunkedMessagesIfInitialized();
         while (keyBinding != null && keyBinding.consumeClick()) {
             net.minecraft.client.Minecraft.getInstance().setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance()));
         }
@@ -98,6 +94,7 @@ public class ServerWaypointForgeClient {
 *///?} else {
     private static void onClientTick(TickEvent.ClientTickEvent.Post event) {
         ensureClientStarted();
+        WaypointClientMod.tickChunkedMessagesIfInitialized();
         while (keyBinding != null && keyBinding.consumeClick()) {
             MinecraftClientHelper.setScreen(new WaypointManagerScreen(WaypointClientMod.getInstance()));
         }
@@ -121,23 +118,13 @@ public class ServerWaypointForgeClient {
     }
 
     public static void registerClientPayloadHandlers() {
-        S2CPayloadHandler.WaypointListHandler waypointListHandler = new S2CPayloadHandler.WaypointListHandler();
-        S2CPayloadHandler.DimensionWaypointHandler dimensionWaypointHandler = new S2CPayloadHandler.DimensionWaypointHandler();
-        S2CPayloadHandler.WorldWaypointHandler worldWaypointHandler = new S2CPayloadHandler.WorldWaypointHandler();
-        S2CPayloadHandler.WaypointModificationHandler waypointModificationHandler = new S2CPayloadHandler.WaypointModificationHandler();
+        S2CPayloadHandler.MessageChunkHandler messageChunkHandler = new S2CPayloadHandler.MessageChunkHandler();
         S2CPayloadHandler.ServerHandshakeHandler serverHandshakeHandler = new S2CPayloadHandler.ServerHandshakeHandler();
-        S2CPayloadHandler.UpdatesBundleHandler updatesBundleHandler = new S2CPayloadHandler.UpdatesBundleHandler();
-        S2CPayloadHandler.WaypointEditResultHandler waypointEditResultHandler = new S2CPayloadHandler.WaypointEditResultHandler();
-        S2CPayloadHandler.WaypointListUpdateHandler waypointListUpdateHandler = new S2CPayloadHandler.WaypointListUpdateHandler();
+        S2CPayloadHandler.UploadRequestHandler uploadRequestHandler = new S2CPayloadHandler.UploadRequestHandler();
 
-        registerClientPayload(WaypointListS2CPayload.class, 0, /*? if >= 1.20.5 {*/ WaypointListS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointListS2CPayload::new *//*?}*/, waypointListHandler);
-        registerClientPayload(DimensionWaypointS2CPayload.class, 1, /*? if >= 1.20.5 {*/ DimensionWaypointS2CPayload.PACKET_CODEC /*?} else {*/ /*DimensionWaypointS2CPayload::new *//*?}*/, dimensionWaypointHandler);
-        registerClientPayload(WorldWaypointS2CPayload.class, 2, /*? if >= 1.20.5 {*/ WorldWaypointS2CPayload.PACKET_CODEC /*?} else {*/ /*WorldWaypointS2CPayload::new *//*?}*/, worldWaypointHandler);
-        registerClientPayload(WaypointModificationS2CPayload.class, 3, /*? if >= 1.20.5 {*/ WaypointModificationS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointModificationS2CPayload::new *//*?}*/, waypointModificationHandler);
-        registerClientPayload(UpdatesBundleS2CPayload.class, 4, /*? if >= 1.20.5 {*/ UpdatesBundleS2CPayload.PACKET_CODEC /*?} else {*/ /*UpdatesBundleS2CPayload::new *//*?}*/, updatesBundleHandler);
-        registerClientPayload(ServerHandshakeS2CPayload.class, 5, /*? if >= 1.20.5 {*/ ServerHandshakeS2CPayload.PACKET_CODEC /*?} else {*/ /*ServerHandshakeS2CPayload::new *//*?}*/, serverHandshakeHandler);
-        registerClientPayload(WaypointEditResultS2CPayload.class, 9, /*? if >= 1.20.5 {*/ WaypointEditResultS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointEditResultS2CPayload::new *//*?}*/, waypointEditResultHandler);
-        registerClientPayload(WaypointListUpdateS2CPayload.class, 10, /*? if >= 1.20.5 {*/ WaypointListUpdateS2CPayload.PACKET_CODEC /*?} else {*/ /*WaypointListUpdateS2CPayload::new *//*?}*/, waypointListUpdateHandler);
+        registerClientPayload(MessageChunkS2CPayload.class, 0, /*? if >= 1.20.5 {*/ MessageChunkS2CPayload.PACKET_CODEC /*?} else {*/ /*MessageChunkS2CPayload::new *//*?}*/, messageChunkHandler);
+        registerClientPayload(ServerHandshakeS2CPayload.class, 1, /*? if >= 1.20.5 {*/ ServerHandshakeS2CPayload.PACKET_CODEC /*?} else {*/ /*ServerHandshakeS2CPayload::new *//*?}*/, serverHandshakeHandler);
+        registerClientPayload(UploadRequestS2CPayload.class, 2, /*? if >= 1.20.5 {*/ UploadRequestS2CPayload.PACKET_CODEC /*?} else {*/ /*UploadRequestS2CPayload::new *//*?}*/, uploadRequestHandler);
     }
 
     private static <P extends ModPayload> void registerClientPayload(

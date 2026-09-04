@@ -1,10 +1,9 @@
 package _959.server_waypoint.core.network.codec;
 
+import _959.server_waypoint.core.network.DecodingContext;
+import _959.server_waypoint.core.network.EncodingContext;
 import _959.server_waypoint.core.edit.PatchField;
 import io.netty.buffer.ByteBuf;
-
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 public final class PatchFieldCodec {
     private PatchFieldCodec() {
@@ -13,17 +12,19 @@ public final class PatchFieldCodec {
     public static <T> void encode(
             ByteBuf buf,
             PatchField<T> field,
-            BiConsumer<ByteBuf, T> valueEncoder
+            MessageCodec.Encoder<T> valueEncoder,
+            EncodingContext context
     ) {
         buf.writeByte(field.operation().ordinal());
         if (field.isSet()) {
-            valueEncoder.accept(buf, field.requiredValue());
+            valueEncoder.encode(buf, field.requiredValue(), context);
         }
     }
 
     public static <T> PatchField<T> decode(
             ByteBuf buf,
-            Function<ByteBuf, T> valueDecoder
+            MessageCodec.Decoder<T> valueDecoder,
+            DecodingContext context
     ) {
         int operationIndex = buf.readUnsignedByte();
         PatchField.Operation[] operations = PatchField.Operation.values();
@@ -32,7 +33,7 @@ public final class PatchFieldCodec {
         }
         return switch (operations[operationIndex]) {
             case UNCHANGED -> PatchField.unchanged();
-            case SET -> PatchField.set(valueDecoder.apply(buf));
+            case SET -> PatchField.set(valueDecoder.decode(buf, context));
             case CLEAR -> PatchField.clear();
         };
     }
