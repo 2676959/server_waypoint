@@ -1,13 +1,13 @@
 # Upload and Chunk Transport Progress
 
-Last updated: 2026-08-30
+Last updated: 2026-09-04
 Branch baseline: `feature/upload-3.1.0` at `a6cbd97`, with resolutions 1 through
 4 complete
 
 `a6cbd97` is the live-matrix completion commit: it closes the 4B scenario matrix
 recorded against the `0da0865` test environment. The disposable Folia evidence
-root is retained until release review finishes; see
-[Disposable evidence retention](#disposable-evidence-retention).
+roots were not retained through final release review; see
+[Runtime evidence availability](#runtime-evidence-availability).
 
 ## Goal
 
@@ -231,19 +231,22 @@ accepted scenario logs contain no unexpected transport exception, Folia
 ownership violation, unsupported scheduler call, unexpected disconnect, or
 persistence mismatch. Resolution 4 is complete.
 
-### Disposable evidence retention
+### Runtime evidence availability
 
-The evidence root `/private/tmp/server-waypoint-folia-4b-rerun-0da0865` and the
-earlier `server-waypoint-folia-4b-0da0865` root are retained for the duration of
-release review. They live outside the repository and are never committed. Delete
-them only after the 3.1.0 release review closes; until then they are the only
-record of the live Folia run and are needed to answer review questions about the
-recorded SHA-256 values, region placement, and probe modes above.
+The evidence roots `/private/tmp/server-waypoint-folia-4b-rerun-0da0865` and
+`/private/tmp/server-waypoint-folia-4b-0da0865` were the only complete records of
+the live Folia run, but they were not retained through the final release review
+on 2026-09-04. The recorded results above remain historical test results, but
+their logs, environment metadata, and checksums are no longer independently
+auditable. Release sign-off therefore requires recovering a durable copy or
+rerunning the complete 4B matrix and archiving its evidence outside temporary
+storage.
 
 ### 4B evidence review after `master` integration
 
-**Resolved — runtime verification is complete against release candidate
-`99cc415e3e74f0fc5a4724553db39179636c8694`.**
+**Historically recorded as resolved against release candidate
+`99cc415e3e74f0fc5a4724553db39179636c8694`; the evidence-availability gate
+above now applies.**
 
 Integrating `master` brought in `9bf8054` ("fix waypoint cache handling across
 proxy transfers"), which changes client-side code this plan also touches:
@@ -316,12 +319,14 @@ SHA-256
 `7d2b4ca796bfc290b31413edb70d44f1354deebcd88f43e4c70e578e54f7faf0`.
 The accepted HeadlessMC command tests all exited successfully with explicit
 structured assertions. Their client logs, the Velocity log, both backend logs,
-cache records, checksums, and audit are retained at
-`/private/tmp/server-waypoint-step5-99cc415`. The audit found no
-`UnsupportedOperationException`, lifecycle NPE, ownership violation,
+cache records, checksums, and audit were originally stored at
+`/private/tmp/server-waypoint-step5-99cc415`, but that temporary evidence root
+was also absent during final release review on 2026-09-04. The recorded audit
+found no `UnsupportedOperationException`, lifecycle NPE, ownership violation,
 unexpected disconnect, failed assertion, wrong-cache write, fixture/revision
 leak, or production-JAR inclusion of the development control. The original 4B
-evidence trees retained their frozen aggregate SHA-256 values unchanged.
+evidence trees had retained their frozen aggregate SHA-256 values unchanged at
+the time of that audit.
 
 One pre-scenario launch diagnosed incorrect accessor descriptors in the
 development-only control, and one direct-reconnect diagnostic showed that

@@ -42,6 +42,7 @@ for version_dir in "$VERSIONS_DIR"/*/ ; do
                     && "$jar" != *"-transformProductionNeoForge.jar"
                     && "$jar" != *"-thin.jar"
                     && "$jar" != *"folia-live-test"*
+                    && "$jar" != *"proxy-lifecycle-test"*
                     ]]; then
                         # Move the file to output directory
                         mv "$jar" "$OUTPUT_DIR/"

@@ -25,7 +25,10 @@ jobs:
       - name: setup jdk
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: |
+            17
+            21
+            25
           distribution: microsoft
 
       - name: make gradle wrapper executable
@@ -36,6 +39,9 @@ jobs:
 
       - name: collect build artifacts
         run: ./move_builds.sh
+
+      - name: verify release artifacts
+        run: bash ./tools/verify-release-artifacts.sh
 
       - name: create draft release with all builds
         env:
@@ -55,10 +61,6 @@ jobs:
           fi
 
           mapfile -d '' release_assets < <(find builds -type f -name '*.jar' -print0 | sort -z)
-          if (( ${#release_assets[@]} == 0 )); then
-            echo "No build JARs were collected." >&2
-            exit 1
-          fi
 
           gh release create "$release_tag" \
             "${release_assets[@]}" \

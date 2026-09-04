@@ -139,12 +139,14 @@
     "defaultPageLimit": 10
   }
   ```
-- ### 默认导航方式 Default Navigation Selection
-  设置新会话在使用 `/wp navigate <dimension> <list> <waypoint>` 且未指定 `using` 时启用的导航方式。可用值为 `compass`、`map`、`bossbar`、`actionbar` 和 `all`，默认值为 `actionbar`。
+- ### 默认导航方式 Default Navigation Methods
+  设置新会话在使用 `/wp navigate <dimension> <list> <waypoint>` 且未指定 `using` 时启用的一种或多种导航方式。该值必须是非空数组，其中可填写 `compass`、`map`、`bossbar`、`actionbar` 或 `text_display`。默认值为 `actionbar`。
 
   ```json5
   {
-    "defaultNavigationSelection": "actionbar"
+    "defaultNavigationMethods": [
+      "actionbar"
+    ]
   }
   ```
 - ### 命令权限 Command Permission

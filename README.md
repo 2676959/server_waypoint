@@ -160,12 +160,14 @@ Some changes made in `config.json` may take effects after server restarts.
     "defaultPageLimit": 10
   }
   ```
-- ### Default Navigation Selection
-  Sets the method enabled when `/wp navigate <dimension> <list> <waypoint>` starts a new session without `using`. Supported values are `compass`, `map`, `bossbar`, `actionbar`, and `all`. The default is `actionbar`.
+- ### Default Navigation Methods
+  Sets one or more methods enabled when `/wp navigate <dimension> <list> <waypoint>` starts a new session without `using`. The value must be a non-empty array containing `compass`, `map`, `bossbar`, `actionbar`, or `text_display`. The default is `actionbar`.
 
   ```json5
   {
-    "defaultNavigationSelection": "actionbar"
+    "defaultNavigationMethods": [
+      "actionbar"
+    ]
   }
   ```
 - ### Command Permission
