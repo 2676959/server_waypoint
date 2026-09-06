@@ -6,17 +6,22 @@ This document plans cross-server waypoint discovery and teleportation for compat
 Waypoint installations connected through Velocity. The proxy hosts the coordinator and performs
 every player server switch.
 
-The first implementation uses a certificate-free secure TCP channel based on a reviewed Noise
-implementation with X25519, AES-256-GCM, SHA-256, and a unique 256-bit pre-shared key for each
-backend. The wire format reserves cryptographic-suite negotiation and variable-length handshake
+The default transport is certificate-free `NOISE_KK`, using a reviewed Noise implementation
+with X25519, AES-256-GCM, and SHA-256. Each backend and the coordinator owns a static key pair;
+pairing exchanges public keys, with no per-backend PSKs. An explicitly selected `PLAINTEXT` mode
+provides unencrypted, unauthenticated TCP on loopback only for trusted same-host deployments. The wire format reserves cryptographic-suite negotiation and variable-length handshake
 messages so a future hybrid X25519 plus ML-KEM suite can be added without changing application
 messages.
+
+Implementation status is tracked in [the progress record](cross-server-waypoint-teleportation-progress.md).
+This revision changes the design only; KK and plaintext runtime support are not implemented.
 
 ## Scope
 
 ### Included
 
-- Register compatible backend servers with a coordinator over an authenticated encrypted channel.
+- Register compatible backends over authenticated encrypted KK connections by default.
+- Offer explicit loopback-only plaintext connections under the trusted-host model described below.
 - Publish each backend's configured read-only waypoint catalog.
 - Cache remote catalogs for commands, command suggestions, and the client waypoint manager.
 - Identify every remote waypoint by server, dimension, list, and waypoint identity.
@@ -50,7 +55,7 @@ All backends make outbound connections to one coordinator:
                          Coordinator
                   catalog + handoff registry
                      /         |         \
-                secure TCP  secure TCP  secure TCP
+                    TCP        TCP        TCP
                    /            |            \
               Backend A     Backend B     Backend C
 ```
@@ -58,7 +63,7 @@ All backends make outbound connections to one coordinator:
 - The Velocity plugin hosts the coordinator and its platform transfer adapter.
 - The coordinator is control-plane state, not waypoint authority. Each backend remains
   authoritative for its own waypoint files and final teleport.
-- Only the coordinator TCP port listens for secure-channel connections. Backend agents connect
+- Only the coordinator TCP port listens for backend connections. Backend agents connect
   outbound, simplifying firewall configuration.
 
 ### Separate local and remote waypoint state
@@ -170,55 +175,61 @@ and adapter, not changes to backend messages, catalog storage, handoff state, or
 
 ## Cross-server protocol
 
-### Layering
+### Transport modes and layering
+
+`transportMode` defaults to `NOISE_KK`. The feature itself remains disabled by default.
 
 ```text
-TCP connection
-  -> bounded handshake framing
-  -> Noise secure session
-  -> bounded encrypted application frames
-  -> request/response and event messages
-  -> catalog and handoff services
+TCP -> bounded mode/version preface
+    -> NOISE_KK: bounded KK handshake -> encrypted Noise records
+    -> PLAINTEXT: explicit loopback-only session -> unencrypted records
+    -> bounded application frames -> catalog and handoff services
 ```
 
-The existing Minecraft `ChunkedMessageManager` remains responsible for delivery over Minecraft
-custom payloads. The coordinator TCP connection gets a separate transport implementation because
-TCP already supplies reliable ordered bytes and has different framing, backpressure, and lifecycle
-requirements. Reuse canonical waypoint codecs where appropriate instead of translating through
-localized command text or JSON waypoint files.
+A listener has one configured mode. Both endpoints must explicitly agree; reject mode mismatches.
+Plaintext is not a cryptographic suite and must never be offered through suite negotiation or used
+as an automatic retry after a failed encrypted connection.
 
-### Handshake fields
+In `PLAINTEXT`, require literal loopback IP addresses for the coordinator bind and backend target
+(`127.0.0.1` or `[::1]`, for example), and verify accepted/connected socket addresses are loopback.
+Reject wildcard, non-loopback, and hostname endpoints in this mode. Do not provide a non-loopback
+bypass. No keys or pairing are required. Configured server IDs and proxy mappings still apply,
+but a local process can impersonate an allowed backend. This mode trusts processes on the host;
+permissions and proxy UUID/source checks do not repair missing transport authentication.
+Network attackers, tampering, and confidentiality are protected against only in `NOISE_KK` mode.
 
-- Magic bytes and transport version.
-- Ordered list of supported cryptographic suite IDs.
-- Selected suite ID.
-- Stable backend server ID.
-- Application-protocol version and capabilities.
-- Fresh session nonces.
-- Noise handshake messages.
+Both modes enforce application validation, request/sequence budgets, timeouts, duplicate-ID checks,
+proxy player verification, permissions, and prepare/claim/arrival checks. Track the actual mode
+on the session; never label a plaintext backend as cryptographically authenticated.
 
-The suite negotiation, protocol versions, server ID, and capabilities must be bound into the
-authenticated handshake transcript. Unknown or disallowed suites fail closed. Never silently retry
-with a weaker suite.
+The Minecraft `ChunkedMessageManager` remains separate. TCP framing uses canonical codecs and
+bounded application reassembly, not localized command text or JSON waypoint files.
 
-Initial suite:
+### KK handshake and key selection
 
-```text
-NOISE_NKPSK0_25519_AESGCM_SHA256
-```
+- Preface: magic, transport mode/version, application version, stable server ID, capabilities,
+  fresh session nonces, offered suite IDs, and selected suite ID.
+- The server ID is initially an untrusted lookup hint into the coordinator's enabled backend
+  registry. Reject unknown/disabled IDs; do not try every key or authorize the claimed ID yet.
+- Pairing must already have pinned the coordinator public key on the backend and registered the
+  backend public key against that exact ID on the coordinator.
+- Bind the complete preface and negotiation to the authenticated Noise prologue. Accept identity
+  only after successful key authentication and confirmation. Reject unknown/disallowed suites.
+- Keep the two KK handshake payloads empty. Require the backend's first encrypted transport
+  confirmation before accepting operational requests or sending coordinator catalogs. This avoids
+  treating replayable early handshake data as an authenticated application operation.
 
-Reserved future suite:
+Initial symbolic suite ID: `NOISE_KK_25519_AESGCM_SHA256`.
+Its Noise protocol name and configuration value are `Noise_KK_25519_AESGCM_SHA256`.
 
-```text
-HYBRID_X25519_MLKEM768_AESGCM_SHA256_PSK
-```
-
-The future suite name is a reservation, not an implementation promise. It must not be advertised
-until a reviewed Java 17-compatible implementation and test vectors are selected.
+Reserve extensible suite IDs and variable-length handshake framing for a future hybrid
+X25519/ML-KEM design. Its authentication pattern and exact name remain undecided; do not retain
+or advertise the former PSK-based reservation as an approved KK successor. No hybrid suite ships
+in v1. The historical `NKpsk0` spike is not a compatibility mode.
 
 ### Application envelope
 
-Every encrypted message contains:
+Every application message, encrypted under KK or cleartext under plaintext mode, contains:
 
 - Message type ID.
 - Request UUID or event sequence.
@@ -247,9 +258,12 @@ ERROR
 
 Start with conservative configurable limits:
 
-- Handshake frame: 64 KiB, leaving room for future ML-KEM material.
+- Outer handshake frame: 64 KiB; each initial-suite Noise message is at most 65,535 bytes.
 - Application frame: 1 MiB.
 - Catalog chunk: 256 KiB.
+- KK transport record: at most 65,535 bytes, including the 16-byte tag. Fragment larger application
+  frames across records with bounded reassembly; never raise the Noise record limit.
+- Plaintext records use bounded framing too; cleartext sequence fields do not prevent forgery.
 - Pending requests per peer: 64.
 - Pending handoffs per player: one.
 - Handshake timeout: 10 seconds.
@@ -262,44 +276,104 @@ logging a bounded diagnostic without secrets.
 
 ## Pairing and configuration
 
-### Coordinator configuration
+The examples below are the planned `cross-server.json` format, not implemented configuration.
+Paths are relative to the component's configuration directory. Public keys use Base64-encoded
+X.509 SubjectPublicKeyInfo; private-key files use binary PKCS#8 with owner-only permissions where
+supported. Public pins may appear in ordinary configuration; private keys and temporary pairing
+secrets must not appear in configuration dumps, logs, or `toString()` output.
+
+### KK coordinator configuration
 
 ```json
 {
-    "crossServer": {
-        "enabled": true,
-        "role": "coordinator",
-        "listen": "127.0.0.1:25580",
-        "allowedSuites": ["NOISE_NKPSK0_25519_AESGCM_SHA256"],
-        "catalogCacheLimitBytes": 67108864
+    "enabled": true,
+    "transportMode": "NOISE_KK",
+    "listen": "127.0.0.1:25580",
+    "protocolVersion": 1,
+    "requiredSuite": "Noise_KK_25519_AESGCM_SHA256",
+    "privateKeyFile": "credentials/coordinator.key",
+    "backends": {
+        "survival": {
+            "enabled": true,
+            "velocityServer": "survival",
+            "publicKey": "<base64 X25519 public key>"
+        }
+    },
+    "catalogCacheLimitBytes": 67108864
+}
+```
+
+### KK backend configuration
+
+```json
+{
+    "enabled": true,
+    "transportMode": "NOISE_KK",
+    "serverId": "survival",
+    "coordinator": "127.0.0.1:25580",
+    "protocolVersion": 1,
+    "requiredSuite": "Noise_KK_25519_AESGCM_SHA256",
+    "privateKeyFile": "credentials/backend.key",
+    "coordinatorPublicKey": "<base64 X25519 coordinator public key>",
+    "catalogExport": "PUBLIC"
+}
+```
+
+For separate hosts, KK may use reachable private-network addresses. `velocityServer` maps the
+stable waypoint server ID to a configured Velocity server. Each backend owns a unique private
+key; the coordinator stores only its public key.
+
+### Plaintext same-host configuration
+
+Coordinator:
+
+```json
+{
+    "enabled": true,
+    "transportMode": "PLAINTEXT",
+    "listen": "127.0.0.1:25580",
+    "backends": {
+        "survival": {
+            "enabled": true,
+            "velocityServer": "survival"
+        }
     }
 }
 ```
 
-### Backend configuration
+Backend:
 
 ```json
 {
-    "crossServer": {
-        "enabled": true,
-        "serverId": "survival",
-        "coordinator": "127.0.0.1:25580",
-        "requiredSuite": "NOISE_NKPSK0_25519_AESGCM_SHA256",
-        "catalogExport": "PUBLIC"
-    }
+    "enabled": true,
+    "transportMode": "PLAINTEXT",
+    "serverId": "survival",
+    "coordinator": "127.0.0.1:25580",
+    "catalogExport": "PUBLIC"
 }
 ```
 
-Secrets and pinned keys belong in a separate generated credential file, not in logs or `toString()`
-output. Store one random 256-bit PSK per backend.
+Omitted `protocolVersion` is 1. Plaintext requires no suite, key files, pins, or pairing; reject
+crypto configuration fields in that mode to avoid a false impression of authentication. An
+operator chooses this trust model explicitly on both sides. Switching modes requires deliberate
+configuration changes and new sessions; there is no downgrade or compatibility retry.
 
-Provide an administrative pairing workflow:
+### KK pairing and revocation
 
-1. Coordinator generates its static key on first startup.
-2. `/serverwaypoint pair <server-id>` creates a short-lived one-time pairing code.
-3. The backend imports the code and stores the coordinator public key and per-server PSK.
-4. The coordinator marks the code consumed and records the backend identity.
-5. `/serverwaypoint revoke <server-id>` invalidates only that backend's credential.
+1. Coordinator and backend each generate their own static X25519 key pair locally.
+2. `/serverwaypoint pair <server-id>` creates a short-lived one-time pairing code bound to the ID.
+3. A separately reviewed bootstrap exchange authenticates that code and binds both public keys
+   and the server ID before installing either pin. Define and test this bootstrap in step 7;
+   KK cannot pair previously unknown keys by itself. Never use unauthenticated key exchange or
+   plaintext mode as a remote pairing shortcut.
+4. The backend stores the coordinator public pin; the coordinator stores the backend public key
+   against its server ID and Velocity mapping. Private keys never leave their owning component.
+5. Consume the code atomically. No pairing code or PSK remains in the final runtime configuration.
+6. `/serverwaypoint revoke <server-id>` disables that registration, closes its sessions, and clears
+   its pending handoffs. Rotate keys only through an authenticated administrative/pairing workflow.
+
+In plaintext mode, disabling a configured backend and closing its sessions provides administrative
+removal only; it cannot prevent a local process from claiming another enabled server ID.
 
 ## Catalog publication and synchronization
 
@@ -319,7 +393,8 @@ an explicit, revisioned empty snapshot is required to remove all entries.
 
 ### Coordinator behavior
 
-- Validate server identity against the authenticated secure session.
+- Validate server identity against the KK-authenticated session, or the explicitly configured
+  trusted-loopback registration in plaintext mode; preserve that security distinction.
 - Maintain one latest immutable snapshot per server ID.
 - Reject revisions older than the current snapshot.
 - Mark a catalog stale when its backend disconnects; remove it only after configured expiry or an
@@ -389,7 +464,8 @@ A remote teleport requires all of the following:
 
 1. Source player has the existing teleport permission.
 2. Source player has `server_waypoint.command.remote.tp`.
-3. Source backend is authenticated and authorized to request handoffs.
+3. Source backend is admitted under the configured transport mode and authorized to request
+   handoffs: KK requires cryptographic authentication; plaintext explicitly trusts the local host.
 4. Destination exports the selected waypoint.
 5. Destination waypoint still exists when the player arrives.
 6. Destination player passes its final local teleport permission check.
@@ -433,7 +509,7 @@ its current local waypoint data after arrival. A removed or renamed waypoint fai
    the correct owning thread.
 6. Destination reports completion; coordinator consumes the handoff and clears the reservation.
 
-Proxy plugin messaging is not the secure catalog transport. If it is used for a local notification,
+Proxy plugin messaging is not the coordinator catalog transport. If it is used for a local notification,
 handlers must verify the source and consume the channel so a client cannot impersonate the proxy.
 
 ### Failure behavior
@@ -473,22 +549,24 @@ different servers remain distinct.
 
 ### Step 2: select and prove the Noise dependency
 
-Investigation recorded in [Noise dependency selection](cross-server-noise-dependency-decision.md)
-with a reproducible [isolated spike](../tools/noise-spike/README.md). **Selection gate blocked:**
-no evaluated implementation was approved for production adoption as-is. Standalone relocation,
-vectors, and two-process handshake checks pass; platform integration approval remains pending.
-Do not treat this investigation as completion of the dependency gate or advance the transport.
+The prior [selection investigation](cross-server-noise-dependency-decision.md) and
+[isolated spike](../tools/noise-spike/README.md) tested `NKpsk0`. That evidence is historical.
+Selection is reopened for KK; Noise-Java's lack of `NKpsk0` no longer disqualifies it, but KK
+implementation suitability has not been verified. No production dependency is approved yet.
 
-- Evaluate maintained Java 17-compatible implementations for `NKpsk0`, AES-GCM, test vectors,
-  licensing, dependency size, and thread-safety.
-- Prove a loopback handshake, bidirectional encrypted messages, wrong-PSK rejection, wrong pinned-key
-  rejection, reconnect, and clean shutdown.
-- Verify dependency relocation/shading for Paper, Fabric, Forge, NeoForge, and Velocity.
+- Evaluate maintained Java 17-compatible implementations for `KK`, AES-GCM, exact-suite vectors,
+  licensing, dependency size, thread-safety, key lifecycle, and nonce-exhaustion behavior.
+- Prove two-process encrypted exchanges, wrong coordinator pin, wrong backend key, unknown/revoked
+  identity, transcript tampering, confirmation gating, reconnect, and clean shutdown.
+- Verify standalone relocation and document all platform packaging routes. Carry the final
+  artifact/classloader matrix into step 3 once the Velocity module exists.
 
-Deliverable: an isolated dependency spike and written selection decision.
+Deliverable: isolated KK dependency spike and reviewed selection decision. Preserve historical
+NKpsk0 results as such; do not relabel those tests as KK evidence.
 
-Verification: two Java processes exchange authenticated messages; every negative handshake test
-fails closed. Do not continue if no suitable reviewed implementation is found.
+Verification: exact KK vectors and two-process tests pass; all negative cases fail closed. Do not
+advance past dependency selection without a suitable reviewed implementation. The plaintext option
+does not waive this gate for the default encrypted transport.
 
 ### Step 3: add project modules and future-proof proxy interfaces
 
@@ -498,6 +576,8 @@ fails closed. Do not continue if no suitable reviewed implementation is found.
 - Define stable success/failure results and asynchronous operations without Velocity-specific
   exceptions, scheduler types, or connection objects.
 - Add fake in-memory implementations and proxy-adapter contract tests.
+- Complete the selected dependency's final relocation/shading and classloader checks for Paper,
+  Fabric, Forge, NeoForge, and the new Velocity module before proceeding to production transport.
 
 Deliverable: all new modules build while containing only lifecycle skeletons and interfaces.
 
@@ -530,17 +610,20 @@ Deliverable: round-trippable message types with no socket implementation.
 Verification: deterministic codec tests cover every message, unknown type IDs, truncation, trailing
 bytes, oversized strings/collections, and malformed waypoint data.
 
-### Step 6: implement bounded secure TCP framing
+### Step 6: implement bounded TCP framing for both modes
 
-- Implement handshake framing, suite negotiation, encrypted application framing, and separate
-  inbound/outbound sequence state.
+- Implement explicit mode matching, KK handshake/confirmation, encrypted records, bounded
+  application reassembly, and separate inbound/outbound sequence state.
+- Implement loopback-only plaintext framing with the same application budgets; reject remote or
+  wildcard addresses, mode mismatch, and any attempt to fall back from KK to plaintext.
 - Authenticate suite selection, protocol versions, server ID, and capabilities in the handshake
   transcript.
-- Advertise only `NOISE_NKPSK0_25519_AESGCM_SHA256`; parse but do not advertise reserved future
+- Advertise only `NOISE_KK_25519_AESGCM_SHA256`; parse but do not advertise reserved future
   suites.
 - Enforce handshake, frame, request, retained-byte, timeout, and connection limits.
 
-Deliverable: reusable secure coordinator/backend channels independent of Minecraft lifecycle.
+Deliverable: reusable coordinator/backend channels with explicit transport mode, independent of
+Minecraft lifecycle.
 
 Verification: malformed frames, invalid tags, replay, duplicate IDs, oversized input, downgrade
 attempts, slow handshakes, and disconnect storms remain bounded.
@@ -548,7 +631,9 @@ attempts, slow handshakes, and disconnect storms remain bounded.
 ### Step 7: implement pairing and credential management
 
 - Generate the coordinator static key on first startup.
-- Generate a unique random 256-bit PSK for each backend.
+- Generate a unique backend static key pair locally and register only its public key.
+- Prove the authenticated pairing bootstrap before installing pins; bind the code, ID, and keys.
+- Plaintext configuration skips pairing and keys, but enforces the trusted-loopback restrictions.
 - Implement one-time expiring pairing codes, pinned coordinator keys, revocation, and rotation.
 - Store credentials outside ordinary config output and ensure logs never include secrets.
 
@@ -560,11 +645,12 @@ permissions are restricted where supported, and secret-scanning tests cover logs
 ### Step 8: implement connection lifecycle and server registration
 
 - Connect backend agents outbound to the coordinator with bounded exponential backoff.
-- Register stable server ID, protocol version, and catalog capabilities after secure authentication.
+- Register stable server ID, protocol version, and catalog capabilities after KK confirmation or
+  explicit plaintext admission. Record the mode on each session and in administrative status.
 - Add heartbeat, duplicate-ID rejection, graceful shutdown, reconnect, and connection metrics.
 - Keep socket threads isolated from Minecraft state; dispatch platform operations through adapters.
 
-Deliverable: authenticated backend presence in the coordinator registry.
+Deliverable: backend presence with explicit KK-authenticated or trusted-loopback status.
 
 Verification: duplicate server IDs fail, reconnect restores registration, coordinator restart is
 recoverable, and no connection operation blocks the server tick thread.
@@ -584,7 +670,7 @@ outside mutation locks, and failed publication preserves the previous coordinato
 
 ### Step 10: aggregate and distribute catalogs
 
-- Maintain one immutable latest snapshot per authenticated server ID in the coordinator.
+- Maintain one immutable latest snapshot per admitted server ID in the coordinator, retaining its transport mode.
 - Reject old revisions and server-ID mismatches.
 - Fan out changed metadata, snapshots, and deltas to connected backends.
 - Bound global/per-server cache size and mark disconnected catalogs stale until expiry.
@@ -716,7 +802,8 @@ exact server identity survives selection, sorting, filtering, and action executi
   tests.
 - Add rate-limit, retained-byte, slow-peer, reconnect, and credential-revocation tests.
 - Run the complete version and integration matrix below.
-- Document binding/firewall rules, pairing, rotation, revocation, proxy server mappings,
+- Document both transport modes, plaintext local-process trust, binding/firewall rules, KK pairing,
+  rotation, revocation, proxy server mappings,
   permissions, recovery, and troubleshooting.
 - Add release notes explaining that the feature is opt-in and disabled by default.
 
@@ -733,7 +820,11 @@ and documented, and a new administrator can pair two servers without manually cr
 - Catalog revisions, deltas, explicit deletion, stale state, and snapshot atomicity.
 - Codec round trips and malformed/oversized input rejection.
 - Noise known-answer tests supplied by the selected implementation.
-- Wrong PSK, wrong pinned key, replay, nonce exhaustion, and authenticated downgrade rejection.
+- Wrong coordinator/backend key, unknown/revoked ID, replay, nonce exhaustion, transcript tampering,
+  and authenticated downgrade rejection for KK.
+- No application operations before backend transport confirmation.
+- Plaintext requires explicit matching modes, no keys, and loopback socket endpoints; reject
+  wildcard/non-loopback addresses and prove KK failure never triggers plaintext fallback.
 - Handoff prepare/claim races, timeout, cancellation, disconnect, and idempotency.
 - Permission denied at source and destination.
 - No secret, credential, or pairing code appears in configuration `toString()`, exceptions, or logs.
@@ -759,7 +850,10 @@ matrix.
 - Waypoint edit/removal between selection and arrival.
 - Permission revocation between preparation and arrival.
 - Coordinator restart and backend republish.
-- Compromised/revoked backend credential cannot register or claim handoffs.
+- Revoked KK backend key cannot register or claim handoffs; a valid compromised key remains a
+  compromised identity until revoked.
+- Explicit same-host plaintext catalog/handoff flow, including mode and endpoint rejection; this
+  does not prove resistance to impersonation by local processes.
 
 ## Release boundaries
 
@@ -783,7 +877,8 @@ until the complete prepare-transfer-claim-validate flow and at least one transfe
 - Coordinates are never trusted from a stale source cache or handoff record.
 - Player transfer is replaceable; catalog and authorization semantics are shared.
 - Cryptographic negotiation is authenticated and cannot silently downgrade.
-- Per-server secrets are independently revocable.
+- KK backend key registrations are independently revocable; private keys stay with their owners.
+- Plaintext is explicit and loopback-only, never an automatic fallback or authenticated identity.
 - Post-quantum support is an explicit future suite, not unfinished cryptography inside v1.
 
 ## References

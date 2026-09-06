@@ -1,6 +1,7 @@
 # Noise dependency spike
 
-Step-2 investigation only. **No production dependency is selected; the adoption gate is blocked.**
+Historical NKpsk0 investigation only. The revised plan selects KK; this spike has not been
+converted or rerun for KK and its passing tests do not validate the new design. **No production dependency is selected; the adoption gate is blocked.**
 See the [selection decision](../../docs/cross-server-noise-dependency-decision.md).
 This standalone Gradle build is not included in the repository's root settings or release tasks.
 

@@ -1,5 +1,15 @@
 # Noise dependency selection: step 2
 
+## Historical scope after the KK decision
+
+The plan now selects `NOISE_KK` by default and explicit loopback-only `PLAINTEXT` as an option.
+The investigation below records the earlier NKpsk0 requirement and has not been rerun for KK.
+Noise-Java/Signal pattern incompatibility with NKpsk0 no longer disqualifies them for the revised
+plan. KK source review, vectors, rejection cases, and dependency approval are pending; the known
+jchambers nonce result remains specific evidence about that candidate. Do not interpret the old
+no-go as a completed KK evaluation. Final platform artifact/classloader checks now belong to
+step 3 after its modules exist; step 2 retains selection and standalone relocation checks.
+
 Decision date: 2026-09-06. **No-go for production adoption.** The isolated spike works, but no
 evaluated implementation satisfies the maintained, reviewed, exact-suite dependency gate as-is.
 Step 2 remains blocked at selection and platform integration approval. Do not advance the secure

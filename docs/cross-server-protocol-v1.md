@@ -15,8 +15,9 @@ networking, register commands or permissions, or transfer players.
   matching `[a-z0-9][a-z0-9_-]{0,63}`. No trimming, case conversion, or Unicode normalization
   is allowed. Null and invalid values MUST be rejected. It MUST NOT derive from the random
   integer `Config.serverId`, a display name, or a connection address.
-- The coordinator MUST bind each ID to its authenticated backend credential and reject
-  duplicate active registrations. Local syntax validation alone does not prove uniqueness.
+- In `NOISE_KK`, the coordinator MUST bind each ID to its registered backend public key.
+  In explicit `PLAINTEXT`, the ID is only a configured claim under the trusted-host model below.
+  Both modes MUST reject duplicate active registrations; syntax alone does not prove identity.
 - `RemoteWaypointKey(serverId, dimensionName, listName, waypointName)` is an immutable tuple.
   Every component MUST be non-null. Dimension, list, and waypoint strings MUST be preserved
   exactly, including case, whitespace, Unicode, and empty strings; existence and export
@@ -81,12 +82,32 @@ only its configured server identity; it MUST NOT authorize impersonating another
 choosing an arbitrary player. A compromised coordinator or authoritative destination is outside
 the protection provided by this protocol.
 
-Subsequent transport implementation MUST authenticate and encrypt backend/coordinator traffic,
-bind versions, suite negotiation, server identity, and capabilities into the handshake, reject
-replay and downgrade attempts, and bound input sizes, retained objects, requests, and timeouts.
-The planned initial suite is `NOISE_NKPSK0_25519_AESGCM_SHA256`, subject to the step-2 reviewed
-dependency gate. The reserved hybrid suite MUST NOT be advertised or implemented in v1.
-Per-backend PSKs and pinned coordinator keys MUST be independently revocable and kept out of logs.
+The default `transportMode` is `NOISE_KK`; the feature remains disabled by default. The initial
+symbolic suite is `NOISE_KK_25519_AESGCM_SHA256`, using the Noise protocol/configuration value
+`Noise_KK_25519_AESGCM_SHA256`. Each side MUST own its private key and securely pin the other's
+public key during pairing. No per-backend PSK is required. Backend public keys MUST bind to exact
+server IDs and be independently revocable. Pairing MUST authenticate the bootstrap exchange;
+KK alone cannot establish trust in previously unknown keys.
+
+KK MUST bind mode, versions, suite negotiation, ID, nonces, and capabilities into its transcript.
+The initial ID is only a key lookup hint. Keep handshake payloads empty and require the backend's
+first encrypted transport confirmation before operational requests or coordinator catalogs.
+Reject replay, invalid tags, exhausted nonces, and downgrade attempts. Serialize session crypto
+operations and enforce byte/object/request/time budgets. Noise records MUST NOT exceed 65,535
+bytes; larger application frames require bounded reassembly. Hybrid suite design is reserved
+for later work and MUST NOT be advertised in v1. KK dependency selection remains unverified;
+the historical NKpsk0 experiment is not evidence that KK passes.
+
+`PLAINTEXT` is an explicit exception to transport encryption/authentication, not a negotiated
+suite. Both endpoints MUST select it explicitly, use literal loopback IP addresses, and validate
+actual socket endpoints as loopback. Reject hostnames, wildcard/non-loopback endpoints, and mode
+mismatches. No key files, pins, or pairing are required; reject crypto configuration fields in
+this mode. Never retry an encrypted connection as plaintext. Any local process with listener
+access can impersonate an enabled backend; this mode trusts the host's processes and MUST NOT
+be described as cryptographically authenticated. The credential isolation guarantee above
+applies to KK only. The same application validation, budgets, proxy checks, player permissions,
+and handoff lifecycle MUST apply in both modes; those checks cannot restore missing transport
+identity or confidentiality in plaintext mode.
 
 The proxy MUST obtain the authenticated player's UUID and verify the current source backend.
 Any feature-owned plugin-message channel MUST be consumed and its source checked. Destination
