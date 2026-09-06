@@ -473,6 +473,12 @@ different servers remain distinct.
 
 ### Step 2: select and prove the Noise dependency
 
+Investigation recorded in [Noise dependency selection](cross-server-noise-dependency-decision.md)
+with a reproducible [isolated spike](../tools/noise-spike/README.md). **Selection gate blocked:**
+no evaluated implementation was approved for production adoption as-is. Standalone relocation,
+vectors, and two-process handshake checks pass; platform integration approval remains pending.
+Do not treat this investigation as completion of the dependency gate or advance the transport.
+
 - Evaluate maintained Java 17-compatible implementations for `NKpsk0`, AES-GCM, test vectors,
   licensing, dependency size, and thread-safety.
 - Prove a loopback handshake, bidirectional encrypted messages, wrong-PSK rejection, wrong pinned-key
