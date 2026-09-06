@@ -456,6 +456,10 @@ start a player transfer until the destination has successfully prepared a handof
 
 ### Step 1: freeze the feature contract
 
+Implemented contract: [Cross-server protocol v1](cross-server-protocol-v1.md), with constants,
+validated identities, catalog/export enums, and identity tests in `common`'s `crossserver` package.
+This step adds no runtime networking or command registration.
+
 - Record cross-server protocol version 1 separately from the Minecraft custom-payload protocol.
 - Freeze the stable server-ID rules, `RemoteWaypointKey`, command grammar, permission nodes, catalog
   status values, and first-release public export policy.
