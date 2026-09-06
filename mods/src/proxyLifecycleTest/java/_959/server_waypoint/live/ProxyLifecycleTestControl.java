@@ -207,7 +207,7 @@ public final class ProxyLifecycleTestControl implements ClientModInitializer {
     public static void beforeHandshake(WaypointClientMod client, ServerHandshakeBuffer handshake) {
         Role target = roleFor(handshake.serverId());
         require(target != Role.UNKNOWN, "handshake used an unexpected server id " + handshake.serverId());
-        require(handshake.version() == ProtocolVersion.PROTOCOL_VERSION, "handshake did not negotiate protocol 9");
+        require(handshake.version() == ProtocolVersion.PROTOCOL_VERSION, "handshake did not negotiate protocol " + ProtocolVersion.PROTOCOL_VERSION);
         require(client.getWaypointFilesDir() == null, "handshake began with a cache already bound");
         require(managerMap(client).isEmpty(), "handshake began with a waypoint manager already bound");
         if (transferAudit != null) {

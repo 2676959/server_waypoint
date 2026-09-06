@@ -73,7 +73,7 @@ version
 ```
 
 Record the dimension and coordinates from `client-roles.tsv`. Confirm in the
-server and client logs that `SWAlpha` and `SWBravo` negotiated protocol 9. The
+server and client logs that `SWAlpha` and `SWBravo` negotiated protocol 10. The
 absence of that handshake for `SWVanilla`, while MCC remains connected, is the
 incompatible-client gate.
 
@@ -104,7 +104,7 @@ second isolated Xaero directory.
 ## Development protocol probe
 
 The probe is a separate Fabric client source set. It registers the production
-protocol 9 channel IDs, uses the production `common` codecs, sends at most eight
+protocol 10 channel IDs, uses the production `common` codecs, sends at most eight
 frames and 192 KiB per client tick, and logs structured `SW_PROBE` events. It
 does not load the Server Waypoint production client mod and cannot be packaged
 by `build`, `shadowJar`, or `remapJar`.
@@ -120,7 +120,7 @@ tools/folia-live-test/run.sh <environment-root> probe saturate
 tools/folia-live-test/run.sh <environment-root> probe disconnect 2
 ```
 
-- `valid` negotiates version 9, runs `/wp upload xaero`, and sends a valid 4,096
+- `valid` negotiates version 10, runs `/wp upload xaero`, and sends a valid 4,096
   waypoint uncompressed upload over multiple ticks.
 - `partial N` stops after exactly `N` frames and remains connected for timeout
   observation.
@@ -158,7 +158,7 @@ confirm:
 
 - no lease or incomplete transfer survives;
 - only the expected committed waypoint file remains;
-- both compatible clients renegotiate protocol 9;
+- both compatible clients renegotiate protocol 10;
 - startup contains no unsupported scheduler or ownership exception.
 
 Append paths and final waypoint checksum to the evidence record:

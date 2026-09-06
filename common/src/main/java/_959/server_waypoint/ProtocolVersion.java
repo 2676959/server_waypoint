@@ -1,7 +1,7 @@
 package _959.server_waypoint;
 
 public final class ProtocolVersion {
-    // Logical messages now use stable type IDs and the shared ordered chunk channel.
-    public static final int PROTOCOL_VERSION = 9;
+    // Upload requests include an explicit map-mod target; protocol 9 candidates lack this byte.
+    public static final int PROTOCOL_VERSION = 10;
     public static final String COMPATIBLE_VERSION = "3.1.x";
 }

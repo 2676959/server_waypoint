@@ -2,6 +2,7 @@
 /*package _959.server_waypoint.neoforge;
 
 import _959.server_waypoint.ModInfo;
+import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.common.network.ModChatMessageHandler;
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.network.payload.c2s.ClientHandshakeC2SPayload;
@@ -55,7 +56,7 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
 @Mod(ModInfo.MOD_ID)
 public class ServerWaypointNeoForge implements IPlatformConfigPath {
-    private static final String NETWORK_PROTOCOL_VERSION = "9";
+    private static final String NETWORK_PROTOCOL_VERSION = Integer.toString(ProtocolVersion.PROTOCOL_VERSION);
 //? if = 1.20.2 {
     /^public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
             modId("main"),

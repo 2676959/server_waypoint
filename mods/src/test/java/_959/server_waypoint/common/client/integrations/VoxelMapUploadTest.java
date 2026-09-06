@@ -4,6 +4,8 @@ package _959.server_waypoint.common.client.integrations;
 import _959.server_waypoint.common.util.SyncedWaypointName;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
+import _959.server_waypoint.core.network.data.WaypointData;
+import _959.server_waypoint.core.network.upload.UploadStatus;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
@@ -92,6 +94,63 @@ class VoxelMapUploadTest {
         assertEquals(List.of("Keep"), bases.simpleWaypoints().stream()
                 .map(SimpleWaypoint::name)
                 .toList());
+    }
+
+    @Test
+    void excludesOtherSubworldsWithoutExcludingOtherDimensions() {
+        Waypoint foreign = waypoint("Other backend", 1, 64, 2, true, 1, 0, 0);
+        foreign.inWorld = false;
+        Waypoint currentWorld = waypoint("Current backend", 3, 64, 4, true, 0, 1, 0);
+        currentWorld.inDimension = false;
+
+        DimensionWaypointData result = VoxelMapWaypointHelper.collectUploadDimension(
+                request("minecraft:the_nether", null, null),
+                "minecraft:the_nether",
+                List.of(foreign, currentWorld),
+                ignored -> false,
+                8.0
+        );
+
+        assertEquals(List.of("Current backend"), list(result, "VoxelMap").simpleWaypoints()
+                .stream().map(SimpleWaypoint::name).toList());
+    }
+
+    @Test
+    void unavailableLaterDimensionAbortsTheWholeExportInsteadOfReturningAnEmptyManifest() {
+        UploadRequestBuffer request = new UploadRequestBuffer(
+                UUID.randomUUID(), List.of("minecraft:overworld", "example:unvisited"),
+                null, null, UploadTarget.VOXELMAP
+        );
+        WaypointData result = VoxelMapWaypointHelper.collectUploadData(
+                request, List.of(), ignored -> false,
+                dimension -> dimension.equals("minecraft:overworld") ? 1.0 : null
+        );
+
+        assertEquals(request.requestId(), result.uploadData().requestId());
+        assertEquals(UploadStatus.VOXELMAP_NOT_READY, result.uploadData().status());
+        assertEquals(List.of(), result.dimensions());
+    }
+
+    @Test
+    void invalidDimensionScalesAreNotExported() {
+        for (double scale : new double[]{0, -1, Double.NaN, Double.POSITIVE_INFINITY}) {
+            WaypointData result = VoxelMapWaypointHelper.collectUploadData(
+                    request("example:scaled", null, null), List.of(), ignored -> false, ignored -> scale
+            );
+
+            assertEquals(UploadStatus.VOXELMAP_NOT_READY, result.uploadData().status());
+            assertEquals(List.of(), result.dimensions());
+        }
+    }
+
+    @Test
+    void knownEmptyDimensionRemainsASuccessfulEmptyManifest() {
+        WaypointData result = VoxelMapWaypointHelper.collectUploadData(
+                request("minecraft:the_nether", null, null), List.of(), ignored -> false, ignored -> 8.0
+        );
+
+        assertEquals(UploadStatus.SUCCESS, result.uploadData().status());
+        assertEquals(List.of(new DimensionWaypointData("minecraft:the_nether", List.of())), result.dimensions());
     }
 
     @Test

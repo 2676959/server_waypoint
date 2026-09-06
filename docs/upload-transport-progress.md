@@ -1,6 +1,6 @@
 # Upload and Chunk Transport Progress
 
-Last updated: 2026-09-04
+Last updated: 2026-09-06
 Branch baseline: `feature/upload-3.1.0` at `a6cbd97`, with resolutions 1 through
 4 complete
 
@@ -8,6 +8,60 @@ Branch baseline: `feature/upload-3.1.0` at `a6cbd97`, with resolutions 1 through
 recorded against the `0da0865` test environment. The disposable Folia evidence
 roots were not retained through final release review; see
 [Runtime evidence availability](#runtime-evidence-availability).
+
+## Production review corrections (2026-09-06)
+
+The current candidate uses **protocol 10**. The protocol-9 runtime results below
+are historical and do not certify this candidate. Earlier protocol-9 candidates
+must be replaced; no compatibility decoder is provided for their upload requests.
+Forge and NeoForge derive their registration version from the common protocol
+constant.
+
+The production review identified and corrected three upload defects:
+
+- VoxelMap exports now exclude waypoints outside the active subworld without
+  excluding other requested dimensions. The regression uses an enabled waypoint
+  with `inWorld=false` and a same-subworld waypoint with `inDimension=false`.
+- A requested dimension with an unavailable or invalid coordinate scale aborts
+  the complete VoxelMap export with `VOXELMAP_NOT_READY`. It cannot become a
+  successful empty manifest or silently use scale 1. Known empty dimensions
+  remain valid empty manifests.
+- An encoding or mutation failure in a later dimension preserves the earlier
+  committed snapshots and navigation replacements. These are published before
+  partial-result feedback. The accumulated broadcast is validated before each
+  dimension commits, so it cannot exceed the logical message limit after commit
+  and still uses one transfer slot per recipient.
+
+The subworld and later-dimension failure regressions were first run against the
+unfixed implementation and failed, then passed after the corrections. Focused
+common and Fabric 26.1.2 tests also cover unavailable scales, valid empty
+manifests, and partial-result feedback.
+
+Validation of the corrected working tree based on `418cff0`:
+
+- `rtk ./gradlew :common:test --max-workers=2`: 291 tests passed, including a
+  real 64 MiB broadcast-boundary regression using two 33 MiB server descriptions.
+  The dimension that exceeds the combined limit rolls back while the earlier
+  dimension remains committed and is broadcast with partial-result feedback.
+- Fabric 26.1.2: 200 tests passed, with no skipped tests.
+- `rtk ./gradlew build :mods:1.21.11-fabric:remapProxyLifecycleTestJar
+  :mods:1.21.11-fabric:foliaLiveTestProbeClasses --max-workers=2`: successful,
+  506 tasks (121 executed, 385 up to date), without switching active projects.
+- Clean staging: 38 release JARs (Fabric 12, Forge 12, NeoForge 11, Paper 3),
+  all with protocol 10 and required common upload classes. Forge serializer
+  contents and development/test exclusions passed the artifact audit.
+- Changed locale JSON parses successfully; `git diff --check` is clean.
+
+Build logs, regression results, the source patch, and SHA-256 artifact manifest
+are retained at
+`/Volumes/ssd/server-waypoint-validation/2026-09-06-upload-fixes-g155z5aj`.
+This archive contains automated validation only; no live gameplay was run for
+these corrections.
+
+Release sign-off remains open: retain a complete Folia/proxy runtime evidence
+archive for protocol 10 and execute live VoxelMap missing/not-ready, scoped
+upload, subworld isolation, conflict/`FORCE LOCAL`, and scaled-dimension
+round-trip scenarios. A passing build does not close these gates.
 
 ## Goal
 

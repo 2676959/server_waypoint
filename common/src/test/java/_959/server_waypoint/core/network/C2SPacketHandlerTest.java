@@ -169,6 +169,21 @@ class C2SPacketHandlerTest {
     }
 
     @Test
+    void protocolNineCandidateCannotRetainChunkCapability() {
+        TestSender sender = new TestSender();
+        C2SPacketHandler<String, String, String> handler = handler(sender);
+        handler.onClientHandshake("player", new ClientHandshakeBuffer());
+        assertTrue(sender.capable);
+
+        handler.onClientHandshake("player", new ClientHandshakeBuffer(9));
+        assertFalse(sender.capable);
+        for (MessageChunkBuffer frame : frames(new ClientUpdateRequestMessage(List.of()))) {
+            handler.onMessageChunk("player", frame);
+        }
+        assertEquals(0, sender.receivedChunks);
+    }
+
+    @Test
     void handshakeCapabilityIsClearedOnDisconnect() {
         TestSender sender = new TestSender();
         sender.capable = false;

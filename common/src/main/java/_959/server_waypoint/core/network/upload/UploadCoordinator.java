@@ -281,33 +281,37 @@ public final class UploadCoordinator<P> {
                 return;
             }
 
-            MergeSummary summary;
+            MergeSummary summary = new MergeSummary();
+            Component failure = null;
             try {
-                summary = this.merge(pending);
+                this.merge(pending, summary);
             } catch (MessageEncodingException exception) {
                 WaypointServerCore.LOGGER.warn(
-                        "Rejected waypoint upload because its update could not be encoded within the {}-byte logical-message budget",
+                        "Stopped waypoint upload because a dimension update could not be encoded within the {}-byte logical-message budget",
                         ChunkedMessageManager.MAX_MESSAGE_BYTES,
                         exception
                 );
-                this.playerMessageSender.send(
-                        player,
-                        translatable("waypoint.network.encoding_failed")
-                );
-                return;
+                failure = translatable("waypoint.network.encoding_failed");
             } catch (RuntimeException exception) {
                 WaypointServerCore.LOGGER.warn("Failed to apply waypoint upload", exception);
-                this.playerMessageSender.send(player, translatable("waypoint.upload.client.failed"));
-                return;
+                failure = translatable("waypoint.upload.client.failed");
             }
+            // Dimensions commit independently. Publish the validated committed results even
+            // if a later dimension failed, without consuming one transfer slot per dimension.
             if (!summary.dimensionUpdates.isEmpty()) {
                 this.waypointDataBroadcaster.accept(WaypointData.updates(summary.dimensionUpdates));
             }
             for (NavigationReplacement replacement : summary.navigationReplacements) {
                 this.navigationService.refreshTarget(replacement.previous(), replacement.updated());
             }
+            if (failure != null) {
+                this.playerMessageSender.send(player, failure);
+                if (summary.dimensionUpdates.isEmpty()) {
+                    return;
+                }
+            }
             this.playerMessageSender.send(player, translatable(
-                    "waypoint.upload.complete",
+                    failure == null ? "waypoint.upload.complete" : "waypoint.upload.partial",
                     text(summary.added), text(summary.replaced), text(summary.deleted),
                     text(summary.unchanged), text(summary.conflicts), text(summary.skipped)
             ));
@@ -420,8 +424,7 @@ public final class UploadCoordinator<P> {
         }
     }
 
-    private MergeSummary merge(PendingUpload<?> pending) {
-        MergeSummary summary = new MergeSummary();
+    private void merge(PendingUpload<?> pending, MergeSummary summary) {
         for (String dimensionName : new LinkedHashSet<>(pending.request.dimensionNames())) {
             WaypointFilesManagerCore.DimensionRevision expectedRevision =
                     pending.dimensionRevisions.get(dimensionName);
@@ -442,14 +445,12 @@ public final class UploadCoordinator<P> {
                                 DimensionMergeSummary dimensionSummary =
                                         mergeDimension(pending, dimensionName, mutation);
                                 if (!dimensionSummary.listUpdates.isEmpty()) {
-                                    ChunkedMessageManager.validateEncodable(WaypointData.updates(
-                                            List.of(new DimensionWaypointData(
-                                                    dimensionName,
-                                                    List.copyOf(
-                                                            dimensionSummary.listUpdates.values()
-                                                    )
-                                            ))
+                                    List<DimensionWaypointData> updates = new ArrayList<>(summary.dimensionUpdates);
+                                    updates.add(new DimensionWaypointData(
+                                            dimensionName,
+                                            List.copyOf(dimensionSummary.listUpdates.values())
                                     ));
+                                    ChunkedMessageManager.validateEncodable(WaypointData.updates(updates));
                                 }
                                 return dimensionSummary;
                             }
@@ -469,7 +470,6 @@ public final class UploadCoordinator<P> {
                 ));
             }
         }
-        return summary;
     }
 
     private static DimensionMergeSummary mergeDimension(

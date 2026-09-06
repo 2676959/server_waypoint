@@ -62,6 +62,8 @@ Upload is initiated by the server but reads map data from the executing playerâ€
 
 For Xaero, only normal, enabled, non-temporary waypoints are imported. Upload synchronizes the waypoint name, initials, coordinates, Xaero color, yaw, and local/global visibility. For VoxelMap, disabled and coordinate-highlight waypoints are skipped. Server-synced VoxelMap names are restored to their original list and waypoint identifiers; other VoxelMap waypoints are imported into a fixed `VoxelMap` list. VoxelMap coordinates are converted back from its dimension scale, while initials and yaw use empty/zero values and visibility is local. Server-only display names, keywords, and descriptions are preserved when an existing waypoint is updated.
 
+VoxelMap uploads use the active subworld. If a requested dimension's coordinate scale is unavailable, the entire export is aborted; visit that dimension before retrying. Uploads commit one dimension at a time. If a later dimension fails, earlier changes remain applied and synchronized, and the command reports a partial result.
+
 Every mode accepts the same optional scope:
 
 - No selector: every server dimension available to the command executor.

@@ -1,7 +1,10 @@
 package _959.server_waypoint.core.network.upload;
 
 import _959.server_waypoint.core.WaypointFileManager;
+import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.WaypointServerCore;
+import _959.server_waypoint.core.network.MessageEncodingException;
+import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
@@ -26,6 +29,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -35,6 +39,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -559,6 +564,123 @@ class UploadCoordinatorTest {
     private WaypointServerCore server() {
         return new WaypointServerCore(this.tempDir) {
         };
+    }
+
+    @Test
+    void oversizedCombinedBroadcastRollsBackOnlyTheDimensionThatExceedsTheLimit() {
+        WaypointServerCore server = server();
+        List<String> dimensions = List.of("minecraft:overworld", "minecraft:the_nether");
+        String description = "x".repeat(33 * 1_024 * 1_024);
+        for (String dimension : dimensions) {
+            server.addWaypoint(dimension, "list", new SimpleWaypoint(
+                    "target", "T", new WaypointPos(0, 64, 0), 0x00FF00, 0, false,
+                    List.of(), description
+            ), ignored -> { });
+        }
+        List<WaypointData> broadcasts = new ArrayList<>();
+        List<String> feedback = new ArrayList<>();
+        UploadCoordinator<String> coordinator = new UploadCoordinator<>(
+                server,
+                (player, message) -> feedback.add(((net.kyori.adventure.text.TranslatableComponent) message).key()),
+                update -> {
+                    ChunkedMessageManager.validateEncodable(update);
+                    broadcasts.add(update);
+                },
+                player -> true, player -> true, navigationService(), player -> playerUuid()
+        );
+        UploadRequestBuffer request = coordinator.begin(
+                "player", UploadTarget.XAERO, UploadScope.WORLD, UploadConflictPolicy.LOCAL,
+                false, dimensions, null, null
+        ).request();
+        coordinator.onUpload("player", WaypointData.upload(
+                request.requestId(), UploadStatus.SUCCESS,
+                dimensions.stream().map(dimension -> new DimensionWaypointData(
+                        dimension, List.of(new WaypointList("list", WaypointList.SERVER_N, List.of(waypoint("target", 25))))
+                )).toList()
+        ));
+
+        assertEquals(25, server.getWaypointFileManager("minecraft:overworld")
+                .getWaypointListByName("list").getWaypointByName("target").x());
+        assertEquals(0, server.getWaypointFileManager("minecraft:the_nether")
+                .getWaypointListByName("list").getWaypointByName("target").x());
+        assertEquals(1, broadcasts.size());
+        assertEquals(List.of("minecraft:overworld"), broadcasts.get(0).dimensions()
+                .stream().map(DimensionWaypointData::dimensionName).toList());
+        assertTrue(feedback.contains("waypoint.network.encoding_failed"));
+        assertTrue(feedback.contains("waypoint.upload.partial"));
+        assertFalse(feedback.contains("waypoint.upload.complete"));
+    }
+
+    @Test
+    void laterEncodingFailurePublishesCommittedDimensionAndRefreshesNavigation() {
+        assertLaterDimensionFailurePublishesCommittedResult(
+                new MessageEncodingException("Injected second-dimension encoding failure")
+        );
+    }
+
+    @Test
+    void laterMutationFailurePublishesCommittedDimensionAndRefreshesNavigation() {
+        assertLaterDimensionFailurePublishesCommittedResult(
+                new IllegalStateException("Injected second-dimension mutation failure")
+        );
+    }
+
+    private void assertLaterDimensionFailurePublishesCommittedResult(RuntimeException failure) {
+        WaypointServerCore server = new WaypointServerCore(this.tempDir) {
+            @Override
+            public <T> WaypointFilesManagerCore.RevisionedDimensionMutationResult<T> applyDimensionMutationIfRevision(
+                    String dimensionName,
+                    WaypointFilesManagerCore.DimensionRevision expectedRevision,
+                    Function<WaypointFileManager.AtomicMutation, T> action
+            ) {
+                if (dimensionName.equals("minecraft:the_nether")) {
+                    throw failure;
+                }
+                return super.applyDimensionMutationIfRevision(dimensionName, expectedRevision, action);
+            }
+        };
+        SimpleWaypoint original = waypoint("target", 0);
+        server.addWaypoint("minecraft:overworld", "list", original, ignored -> { });
+        NavigationService<String> navigation = activeNavigationService();
+        navigation.navigate("player", new NavigationTarget(
+                "minecraft:overworld",
+                server.getWaypointFileManager("minecraft:overworld").getWaypointListByName("list"),
+                original
+        ));
+        List<WaypointData> broadcasts = new ArrayList<>();
+        List<String> feedback = new ArrayList<>();
+        UploadCoordinator<String> coordinator = new UploadCoordinator<>(
+                server,
+                (player, message) -> feedback.add(((net.kyori.adventure.text.TranslatableComponent) message).key()),
+                broadcasts::add,
+                player -> true,
+                player -> true,
+                navigation,
+                player -> playerUuid()
+        );
+        UploadRequestBuffer request = coordinator.begin(
+                "player", UploadTarget.XAERO, UploadScope.WORLD, UploadConflictPolicy.LOCAL, false,
+                List.of("minecraft:overworld", "minecraft:the_nether"), null, null
+        ).request();
+        coordinator.onUpload("player", WaypointData.upload(
+                request.requestId(), UploadStatus.SUCCESS,
+                request.dimensionNames().stream().map(dimension -> new DimensionWaypointData(
+                        dimension, List.of(new WaypointList("list", WaypointList.SERVER_N, List.of(waypoint("target", 25))))
+                )).toList()
+        ));
+
+        assertEquals(25, server.getWaypointFileManager("minecraft:overworld")
+                .getWaypointListByName("list").getWaypointByName("target").x());
+        assertEquals(1, broadcasts.size());
+        assertEquals("minecraft:overworld", broadcasts.get(0).dimensions().get(0).dimensionName());
+        assertEquals(25, broadcasts.get(0).dimensions().get(0).waypointLists().get(0)
+                .getWaypointByName("target").x());
+        assertEquals(25, navigation.findSession(playerUuid()).orElseThrow().target().position().x());
+        assertTrue(feedback.contains("waypoint.upload.partial"));
+        assertFalse(feedback.contains("waypoint.upload.complete"));
+        assertNull(server.getWaypointFileManager("minecraft:the_nether"));
+        assertTrue(coordinator.tryBeginEditRequest());
+        coordinator.finishEditRequest();
     }
 
     private static SimpleWaypoint waypoint(String name, int x) {
