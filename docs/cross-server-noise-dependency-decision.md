@@ -1,123 +1,136 @@
 # Noise dependency selection: step 2
 
-## Historical scope after the KK decision
+Decision date: 2026-09-06. **Select `org.signal.forks:noise-java:0.1.1` for
+`Noise_KK_25519_AESGCM_SHA256`. Step 2 is complete; proceed to step 3's module and final
+platform packaging/classloader checks.** This is dependency selection after a scoped source review
+and executable verification, not an independent cryptographic audit or production release approval.
+No production dependency or transport has been added by this step.
 
-The plan now selects `NOISE_KK` by default and explicit loopback-only `PLAINTEXT` as an option.
-The investigation below records the earlier NKpsk0 requirement and has not been rerun for KK.
-Noise-Java/Signal pattern incompatibility with NKpsk0 no longer disqualifies them for the revised
-plan. KK source review, vectors, rejection cases, and dependency approval are pending; the known
-jchambers nonce result remains specific evidence about that candidate. Do not interpret the old
-no-go as a completed KK evaluation. Final platform artifact/classloader checks now belong to
-step 3 after its modules exist; step 2 retains selection and standalone relocation checks.
+The [historical NKpsk0 investigation](cross-server-noise-nkpsk0-investigation.md) and its unchanged
+18-test probe remain available. Its no-go still applies to those candidates under that old suite.
+NKpsk0 is not an advertised suite, fallback, or compatibility mode. Explicit loopback plaintext
+remains later work and did not bypass this KK evaluation.
 
-Decision date: 2026-09-06. **No-go for production adoption.** The isolated spike works, but no
-evaluated implementation satisfies the maintained, reviewed, exact-suite dependency gate as-is.
-Step 2 remains blocked at selection and platform integration approval. Do not advance the secure
-transport implementation using this candidate. This records the plan's explicit stop condition;
-it does not change the v1 suite or substitute a different cryptographic protocol.
+## Candidate decision and maintenance
 
-## Candidates and source review
-
-| Candidate | Java / license / dependencies | Required suite and decision |
+| Candidate | Current KK assessment | Decision |
 | --- | --- | --- |
-| [rweather/noise-java](https://github.com/rweather/noise-java/tree/49377b6dfc6a1e75740bce2318118291a57c0d6e) | Java 8 source target; MIT; no runtime dependencies in its POM. Latest inspected commit: 2022-08-03. No release binary selected or size measured. | Provides AES-GCM but its pattern table lacks `NKpsk0`; PSKs use the older `NoisePSK` prefix. Rejected without modifying its cryptography. |
-| [Signal fork](https://github.com/signalapp/noise-java/tree/49af72520c711a173e77cfaeba85d68b0d644d02) / `org.signal.forks:noise-java:0.1.1` | Java 8 source target; MIT; no runtime dependencies. Published JAR: 127,167 bytes. Latest inspected source commit: 2024-02-29. | Retains the older pattern handling. The spike tests the published artifact and proves construction of `Noise_NKpsk0_25519_AESGCM_SHA256` throws. Rejected. |
-| [jchambers/java-noise](https://github.com/jchambers/java-noise/tree/4de5aefbf2bb19bf2efcfbe97d3d13231e693488) | Java 17; MIT; `jsr305:3.0.2` is the only runtime dependency (19,936 bytes). Locally compiled candidate: 78,169 bytes. Latest inspected commit: 2024-09-07. | Exact suite and Cacophony vector pass. Selected only for the isolated experiment; rejected for production adoption as-is for the reasons below. |
+| [Signal Noise-Java](https://github.com/signalapp/noise-java/tree/49af72520c711a173e77cfaeba85d68b0d644d02), `org.signal.forks:noise-java:0.1.1` | Released Maven artifact, MIT, Java 8 bytecode usable on Java 17, no runtime transitives. Exact KK vectors, both AES-GCM nonce guards, session failures, and standalone relocation pass. | Selected, subject to the integration requirements below. No local crypto fork or patch. |
+| [rweather/noise-java](https://github.com/rweather/noise-java/tree/49377b6dfc6a1e75740bce2318118291a57c0d6e) | KK is present; the old lack of NKpsk0 does not disqualify it. Original implementation from which Signal's artifact is derived. | Prefer the published Signal coordinate over introducing a source-built copy of the original. No separate original binary was tested. |
+| [jchambers/java-noise](https://github.com/jchambers/java-noise/tree/4de5aefbf2bb19bf2efcfbe97d3d13231e693488) | KK is supported, but the previously reproduced unguarded cipher nonce increment is shared across suites. Source remains unpublished and explicitly unaudited. | Not selected; the historical nonce characterization remains a rejection reason. No new KK process claim is made for this candidate. |
 
-The upstream heads were checked live for this investigation; the dates are evidence of the
-observed activity, not a claim that the authors have permanently abandoned their projects.
-No currently maintained exact-suite release was established by this search. The Signal/original
-AES-GCM implementation includes its own CTR/GHASH/fallback code. Their stateful handshake and cipher
-objects have mutable unsynchronized state and should not be shared concurrently; exact-suite
-incompatibility already disqualifies them, so no further security audit is claimed.
+Upstream HEADs were rechecked live and still match the commits linked above. Signal's repository
+is not archived or disabled; its latest inspected commit is 2024-02-29. The original's is 2022-08-03
+and jchambers' is 2024-09-07. Signal describes its fork as providing Maven releases and offering
+substantive changes upstream. These are sparse maintenance histories, not evidence of a recent
+release cadence, promised security response, or an independent audit.
 
-The jchambers review covered its builder/pattern parsing, PSK handling, `NoiseHandshake` split,
-`CipherState`, `NoiseTransportImpl`, JCE AES-GCM and X25519 components, POM, license, and vector
-tests. This was a scoped source review and executable experiment, not an independent security
-audit. Its [upstream status](https://github.com/jchambers/java-noise/tree/4de5aefbf2bb19bf2efcfbe97d3d13231e693488#license-and-status)
-explicitly describes it as unpublished and not independently audited.
+The selection accepts sparse upstream activity as a dependency risk: use the existing published
+release with a pinned hash and this reproducible review, rather than taking ownership of an
+unpublished crypto fork. Recheck upstream changes/advisories before release and review any upgrade
+with this same suite. No ongoing-maintenance guarantee is inferred from the Signal name.
 
-## Findings that prevent adoption as-is
+## Artifact and review provenance
 
-1. **Nonce exhaustion is not fail-closed.** `CipherState` increments a Java `long` without checking
-   the reserved all-ones value. The isolated characterization test sets that boundary and observes
-   encryption followed by wrap to zero. This is documented upstream, not a newly inferred exploit.
-   It conflicts with the plan's exhausted-sequence rejection requirement. A reviewed correction
-   or an explicitly reviewed outer lifetime/message budget is required before adoption; the spike
-   does not patch the dependency or silently treat the gap as safe because it is unlikely.
-2. **No maintained release/security-review basis was established for the exact-suite candidate.**
-   Pinning source and passing vectors gives reproducibility and interoperability evidence, not
-   maintenance ownership or a comprehensive security assessment. There is no selected released
-   Maven coordinate for this candidate. Shipping a source-built fork would require an explicit
-   dependency ownership and review decision beyond this spike.
+- Runtime coordinate: `org.signal.forks:noise-java:0.1.1`, from Maven Central, 127,167 bytes.
+- Runtime SHA-256: `2bbc531e5e31b3151269dbb7596548e3c884ded217ab6312c2d87591bfea543b`.
+- [Published sources](https://repo.maven.apache.org/maven2/org/signal/forks/noise-java/0.1.1/noise-java-0.1.1-sources.jar)
+  SHA-256: `f8ddea9f91659f8796e860ddeca51e90239b8cdb485b0a2ad69b3ffd20c86cba`.
+  All published Java source files match inspected Signal HEAD byte-for-byte.
+- The KK Gradle build verifies the artifact coordinate, sole runtime dependency, and SHA-256 before
+  compilation. GSON/JUnit are test-only; the historical jchambers candidate is absent from KK runtime.
+- The external Cacophony KK vector is read from the parent's pinned source archive (commit
+  `4de5aefbf2bb19bf2efcfbe97d3d13231e693488`, archive SHA-256
+  `e31e460651048e2f53a28d88da9ba417dbb9ba3da45bebd3335e5357eaaa4205`). It supplies expected ciphertext
+  and handshake hash independently of Signal's implementation.
 
-Additional integration constraints from source inspection:
+Review covered `Pattern`, `HandshakeState`, `SymmetricState`, `CipherStatePair`, `Noise`,
+`Curve25519DHState`, both AES-GCM cipher states, dependency metadata, and lifecycle/error call paths.
+It did not constitute a formal proof, side-channel audit, or audit of unused suites/primitives.
 
-- Handshake and transport instances are explicitly not thread-safe. Split reader/writer states
-  share a mutable cipher component; separate direction counters do not permit simultaneous calls.
-  Future integration must serialize all operations on one session or use a reviewed alternative.
-  The experiment keeps each peer session on one thread and each connection gets fresh state.
-- The implementation retains PSK arrays and exposes no explicit transport destruction API.
-  Clean socket/process exit is verified; guaranteed erasure of all JVM/JCE key copies is not.
-- The [Noise specification](https://noiseprotocol.org/noise.html#message-format) and candidate cap
-  each Noise record at 65,535 bytes, leaving 65,519 bytes of transport plaintext with a 16-byte tag.
-  The plan's 1 MiB application budget and 256 KiB catalog chunks cannot be single Noise records.
-  Step 6 must specify bounded fragmentation/reassembly above Noise or revise those budgets;
-  increasing the library's record limit is not part of this experiment.
-- The feature's symbolic suite ID `NOISE_NKPSK0_25519_AESGCM_SHA256` maps to the case-sensitive
-  Noise protocol name `Noise_NKpsk0_25519_AESGCM_SHA256`. This is a naming distinction, not a fallback.
+## Findings and mandatory integration requirements
+
+1. **Exact KK behavior.** Both static public keys are mixed as pre-messages; the pattern processes
+   `e, es, ss` then `e, ee, se`. Both handshake payloads must remain empty for this feature. Wrong
+   backend key or coordinator pin rejects at the responder's first read in the probe. A previously
+   valid first message can be replayed, so successful handshake processing alone must not admit
+   operations or release catalogs. Require the backend's encrypted transport confirmation using the
+   fresh session keys. The old-confirmation replay test verifies this distinction.
+2. **Nonce exhaustion fails closed.** Both `AESGCMOnCtrCipherState` and `AESGCMFallbackCipherState`
+   reject unsigned `2^64 - 1` before writing output. Tests use the last permitted nonce, then verify
+   repeated encryption/decryption rejection. Production must never expose `setNonce`, reset a live
+   cipher, or reuse old cipher state; close and reconnect before configured session/message budgets.
+3. **Caller owns terminal failures and limits.** A raw cipher is not a session state machine and
+   does not enforce the Noise message-size cap. Validate lengths before allocation, cap encrypted
+   records at 65,535 bytes / plaintext at 65,519, and discard the whole session on tag, framing,
+   timeout, sequence, or confirmation failure. Never retry a failed record on the same state.
+   Larger application frames require bounded fragmentation in step 6. The harness enforces these
+   rules; it is not the production codec or transport.
+4. **Single session owner.** Handshake/cipher instances are mutable and unsynchronized. Split makes
+   separate send/receive ciphers, but this review does not authorize concurrent use of a session.
+   Serialize all crypto and lifecycle actions per session; allocate fresh state per connection.
+   Do not expose mutable DH/cipher objects, `fallback()`, or the global `setForceFallbacks` test knob.
+5. **Key lifecycle.** Static private bytes are copied into per-handshake DH objects. DH generation
+   uses `SecureRandom`; ephemeral keys are newly generated for each handshake. Copy the handshake
+   hash before destroying handshake state immediately after split. Destroy both transport ciphers
+   on every exit. The harness guards calls after close because raw `destroy()` is not itself an
+   application terminal-state guard. Array clearing and JCE reinitialization are best effort, not
+   guaranteed erasure of all JVM/provider copies. Step 6/7 must implement the contract's canonical
+   SPKI public/PKCS#8 private import and validate pins; raw scalar fixtures are only test inputs.
+6. **Cryptographic implementation boundary.** This release uses its own Curve25519 and GHASH code;
+   AES-GCM normally combines JCE AES/CTR with GHASH, with a pure-Java AES fallback. It does not use
+   JDK X25519 or JCE AES/GCM directly. Both AES-GCM paths match the KK vector and nonce assertions;
+   this is not a constant-time certification. No native library or provider registration is needed.
+   Invalid X25519 DH inputs may yield zeros; this is permitted by the
+   [Noise 25519 definition](https://noiseprotocol.org/noise.html#the-25519-dh-functions), and must not
+   be confused with accepting arbitrary configured static pins or authenticating early messages.
+7. **Identity and transcript policy remain application responsibilities.** The fixture rejects
+   unknown/disabled IDs before creating a handshake and binds its ID, fixed mode/version/suite,
+   and fresh coordinator nonce into the prologue. Full negotiation binding, duplicate IDs, live
+   revocation, and configuration policy remain steps 6–8; no deployed registry or pairing system
+   is claimed by the spike.
 
 ## Executable evidence
 
-Run the [standalone spike](../tools/noise-spike/README.md):
-
 ```sh
-./gradlew -p tools/noise-spike check --console=plain
+./gradlew -p tools/noise-spike :kk:check --console=plain
+./gradlew -p tools/noise-spike check :kk:dependencies --configuration runtimeClasspath --console=plain
 ```
 
-Verified on macOS arm64 with OpenJDK 17.0.19 for compilation/test/child JVMs and the repository's
-Gradle 9.5.1 wrapper. All 18 tests pass: five candidate characterizations and thirteen packaging/
-process tests. Twelve process scenarios launch two distinct Java processes each. Both unshaded
-and relocated success scenarios exchange encrypted data in both directions over three connections;
-all ten negative process scenarios fail closed with the expected rejection/EOF behavior. Both
-peers exit normally and the listener is closed. The matching external vector proves exact bytes
-and handshake hash, rather than relying only on two copies of one implementation agreeing.
+Freshly verified on macOS arm64, OpenJDK 17.0.19 for compile/test/child JVMs, Gradle 9.5.1.
+All **35 KK checks** pass: eight candidate/harness cases plus 27 packaging/process cases.
+The combined command also reran all **18 historical NKpsk0 checks**, including its explicit
+known-defect characterization; these are separate results, not 53 KK acceptance checks.
 
-The source archive is pinned to commit `4de5aefbf2bb19bf2efcfbe97d3d13231e693488` and SHA-256
-`e31e460651048e2f53a28d88da9ba417dbb9ba3da45bebd3335e5357eaaa4205`.
-`dependencies --configuration runtimeClasspath` reports only `candidate -> jsr305:3.0.2`.
-GSON, JUnit, and the Signal comparison artifact are test-only. Reports are regenerated under
-`tools/noise-spike/build/`; no credentials or generated binaries are committed.
+The 26 KK process cases each launch two child JVMs. Success in both packaging forms uses three
+successive connections, fresh handshake hashes, bidirectional empty/small/maximum records, and
+clean shutdown. Negative scenarios cover wrong keys, unknown/revoked fixture IDs, transcript
+mismatch, tampered handshake/confirmation/transport, missing or operational initial confirmation,
+and replayed transport. A wrong-side or wrong-phase exception, timeout, or admitted application
+traffic fails the test. The unit replay test checks a repeated first handshake against a fresh
+responder and rejects the previous session's confirmation.
 
-## Relocation and platform packaging boundary
+See [KK spike README](../tools/noise-spike/kk/README.md) for report paths, test boundaries, fixture
+permissions, child cleanup, and commands. Whitespace checks pass. No root platform build was
+necessary or run for this isolated dependency change.
 
-The standalone spike uses the repository's Shadow 9.4.1 version. It relocates `com.eatthepath.noise`
-and `javax.annotation` to private `_959.server_waypoint.internal` packages, retains the upstream
-MIT notice and the JSR305 Apache 2.0 license, checks all class files are Java 17 compatible, and reruns the full two-process matrix
-using only the shaded executable JAR. No native code, extra JCE provider registration, or platform
-API is needed by this tested suite.
+## Standalone relocation and step-3 handoff
 
-This proves standalone relocation, **not final platform artifacts or live platform loading**.
-The following repository packaging routes were inspected; none was changed to ship a rejected
-dependency:
+Shadow 9.4.1 relocates `com.southernstorm.noise` to `_959.server_waypoint.internal.noisekk` and retains
+`META-INF/LICENSE-noise-java`. The executable JAR runs without original Noise classes and excludes
+historical/test dependencies. All class files are Java 17 compatible.
 
-| Platform | Inspected integration requirement | Remaining verification after a dependency passes selection |
-| --- | --- | --- |
-| Paper | `paper/build.gradle.kts` currently excludes dependencies other than `common` and bStats. Noise must be explicitly retained and relocated. | Build/audit each supported final plugin JAR and exercise its classloader. |
-| Fabric | Both Fabric scripts include only `common` and Adventure in Shadow. Regular Fabric feeds the shadow JAR through `remapJar`; unobfuscated Fabric publishes the shadow output. | Add the selected dependency to the filter, inspect final remapped/unobfuscated JARs and run the probe. |
-| Forge | `shadedDependencies` and Shadow filters must retain Noise; the shadow archive is merged into `shadowJarJar` and older targets use reobfuscation. | Verify the final jarjar/reobfuscated output retains relocated classes and notices. |
-| NeoForge | Both ModDev and legacy NeoGradle scripts filter shaded dependencies. | Verify both build routes and their final artifacts. |
-| Velocity | No Velocity subproject exists yet (step 3 owns its creation). | Add private relocation when that adapter exists and verify its final plugin/classloader. |
+The platform routes below were rechecked in this worktree. **Every final platform artifact and
+classloader check remains unperformed and belongs to step 3**, before production transport work.
 
-Platform builds, actual server/proxy startup, cross-loader interoperability, and a production
-connection lifecycle are **not performed or signed off** by step 2's no-go experiment. Changing
-the root builds or creating Velocity prematurely would bypass the selection stop condition.
+| Platform | Required packaging integration and check |
+| --- | --- |
+| Paper | Its dependency exclusion currently retains only common/bStats. Explicitly retain the selected Noise coordinate and relocate it; audit every supported final plugin JAR and exercise its classloader. |
+| Fabric | Both regular and unobfuscated scripts filter Shadow inputs to common/Adventure. Retain and relocate Noise; check regular `remapJar` and unobfuscated shadow outputs and load the final artifacts. |
+| Forge | Retain Noise in `shadedDependencies` and Shadow filters; verify `shadowJarJar` merges relocated classes/notices and older targets retain them after reobfuscation. |
+| NeoForge | Update both ModDev and legacy NeoGradle filters and verify their final artifacts/classloaders. |
+| Velocity | Step 3 creates the module; include private relocation there, audit its final plugin, and exercise the Velocity classloader. |
 
-## Reopening the gate
-
-Identify a maintained exact-suite release or explicitly take ownership of a pinned fork; obtain
-review of its handshake/key lifecycle and nonce handling; replace the defect characterization with
-a fail-closed assertion for the corrected candidate. Then rerun the vectors and process matrix and
-complete the platform artifact/classloader checks above. Only then mark step 2 complete and adopt
-the dependency. No alternative suite, hand-written cryptography, or backward-compatibility format
-was introduced by this investigation.
+Use one private relocation namespace consistently across adapters. Do not put the rejected
+NKpsk0 candidate or test harness classes into production artifacts. Step 3 creates only the planned
+modules/interfaces and packaging probes; production transport remains step 6.

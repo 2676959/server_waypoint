@@ -1,80 +1,84 @@
 # Cross-server waypoint teleportation progress
 
 Last updated: 2026-09-06.
-Implementation baseline: `e33cc62` on `feature/cross-server-tp`; original progress record: `b2f0c1c`.
-The KK/plaintext design revision below changes documentation only.
+Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
+KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
+The current change completes the isolated KK evaluation without adding production transport.
 
 ## Current status
 
-**Step 1 identity work is complete, with its transport contract revised to KK/plaintext.
-Step 2 has historical NKpsk0 evidence; KK dependency selection and verification are pending.**
+**Steps 1 and 2 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
+for `Noise_KK_25519_AESGCM_SHA256`, with 35 passing KK checks and a scoped source review.**
 Steps 3–19 have not started. No production cross-server networking, remote commands, catalog
 synchronization, player transfers, or remote GUI behavior has been enabled.
 
 The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
-The [protocol v1 contract](cross-server-protocol-v1.md) defines the frozen feature semantics.
-The [Noise selection decision](cross-server-noise-dependency-decision.md) records the dependency
-investigation, rejection reasons, and outstanding platform checks.
+The [protocol v1 contract](cross-server-protocol-v1.md) defines the feature semantics.
+The [dependency decision](cross-server-noise-dependency-decision.md) records the selected artifact,
+source-review findings, maintenance risk, integration requirements, and outstanding platform checks.
 
-## Accepted design revision
+## Accepted design
 
 - Default `NOISE_KK`: unique static key pairs, paired public pins, no backend PSKs/certificates.
 - Explicit `PLAINTEXT`: no encryption/authentication, no keys/pairing, literal loopback endpoints
   only, no automatic fallback. Local processes can impersonate enabled backend IDs.
 - KK requires transcript-bound key selection and backend transport confirmation before operations.
-- Step 2 selects/reviews a KK dependency and proves standalone relocation. Step 3 creates the
+- Step 2 selects/reviews the dependency and proves standalone relocation. Step 3 creates the
   modules and completes the final platform artifact/classloader matrix before production transport.
-- These are planned changes; neither mode nor the revised pairing workflow is implemented.
+- Neither production mode nor the revised pairing workflow is implemented.
 
-## Completed and partial work
+## Completed work
 
 | Step | Status | Implementation and evidence |
 | --- | --- | --- |
-| 1 — Freeze the feature contract | Complete | Commit `a0af646`: separate protocol version 1, stable server-ID validation, exact `RemoteWaypointKey`, catalog states, public export policy, permission constants, normative command/security contract, and identity tests. |
-| 2 — Select and prove the Noise dependency | Partial; KK evaluation pending | Commit `e33cc62`: isolated Java 17 spike, candidate evaluation, published-vector check, two-process loopback tests, standalone relocation checks, and a written no-go decision. No production dependency was selected; these tests target NKpsk0, not KK. |
-| 3–19 | Not started | Proxy modules/interfaces, catalog models beyond the step-1 identity/enums, codecs, production transport, pairing, registration, synchronization, commands, permissions, handoffs, Velocity integration, client/GUI integration, and release hardening remain pending. |
+| 1 — Freeze the feature contract | Complete | Commit `a0af646`: separate protocol version 1, stable server-ID validation, exact `RemoteWaypointKey`, catalog states, public export policy, permission constants, normative command/security contract, and identity tests. The transport contract was subsequently revised to KK/plaintext. |
+| 2 — Select and prove the Noise dependency | Complete | New isolated `tools/noise-spike/kk`: published Signal artifact pinned by SHA-256, source review, exact KK vectors, fail-closed nonce boundary tests, confirmation/replay checks, 26 two-process cases, and standalone relocation. Selected for step-3 integration, not production release approval. |
+| 3–19 | Not started | Proxy modules/interfaces, further catalog models, codecs, production transport, pairing, registration, synchronization, commands, permissions, handoffs, Velocity integration, client/GUI integration, and release hardening remain pending. |
 
-The spike lives under [`tools/noise-spike`](../tools/noise-spike/README.md) in a standalone Gradle
-build. It is not included in the root project's settings, runtime dependencies, or release tasks.
+The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
+runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
+historical no-go evidence from `e33cc62`; the new `kk` project has a separate runtime classpath.
 
-## Verification recorded so far
+## Verification from the KK continuation
 
-These results were obtained during implementation on 2026-09-06; this progress-file update did
-not rerun the tests.
+Freshly run on macOS arm64, OpenJDK 17.0.19 for compilation/tests/child JVMs, Gradle 9.5.1.
 
-| Verification | Recorded result | Scope and limitations |
+| Verification | Result | Scope and limitations |
 | --- | --- | --- |
-| `./gradlew :common:test --console=plain` | Passed, including all 25 identity cases | Rejects invalid IDs, preserves exact identity strings, and keeps identical local identities on different servers distinct. |
-| `./gradlew -p tools/noise-spike check --console=plain` | All 18 tests passed | Java 17 candidate tests and standalone packaging/process tests; not production approval. |
-| Exact-suite Cacophony vector | Passed | Checks both handshake messages, four transport messages, and handshake hash against published values. |
-| Two-process loopback matrix | Passed unshaded and relocated | Bidirectional encryption, three successive connections with fresh handshake state, clean shutdown, wrong PSK/pin/prologue, and tampered request/response rejection. |
-| Standalone shaded JAR | Passed | Runs without original Noise classes on the classpath; verifies relocation, Java 17 class versions, license inclusion, and exclusion of test dependencies. |
-| Nonce-exhaustion characterization | Known defect reproduced | This test passes when the candidate encrypts at the reserved nonce and wraps to zero. Its passing result is evidence against adoption as-is. |
-| Staged whitespace checks | Passed for both implementation commits | `git diff --cached --check`. |
+| `./gradlew -p tools/noise-spike :kk:check --console=plain` | 35 KK checks passed | Eight candidate/harness cases, one artifact audit, and 26 two-process cases. |
+| Cacophony exact KK vector | Passed on default and pure-Java fallback paths | Checks both handshake messages, four transport messages, and handshake hash against published values. |
+| Nonce exhaustion | Fail-closed assertions passed on both AES-GCM paths | Last permitted nonce succeeds; encryption/decryption reject the reserved nonce repeatedly without writing output. |
+| Two-process loopback matrix | Passed unshaded and relocated | Wrong keys, unknown/revoked fixture IDs, transcript mismatch, handshake/confirmation/transport tampering, early/missing confirmation, and replay reject. Success reconnects three times with fresh hashes, bounded bidirectional records, and clean shutdown. |
+| KK first-message replay | Passed | A repeated initial handshake cannot authenticate the previous transport confirmation with a fresh responder. |
+| Standalone shaded JAR | Passed | Runs without original Noise classes; checks Java 17 bytecode, private relocation, license, and exclusion of historical/test dependencies. |
+| `./gradlew -p tools/noise-spike check :kk:dependencies --configuration runtimeClasspath --console=plain` | Passed | Also freshly reran the 18 historical checks; KK checks were already current. KK runtime has only Signal Noise-Java 0.1.1. |
+| Source/artifact review | Completed | Published sources match inspected Signal HEAD; pinned runtime JAR hash verified. Sparse upstream activity remains a documented dependency risk, not a maintenance guarantee. |
+| `git diff --check` and new-file whitespace checks | Passed | Step-2 continuation. |
 
-The spike ran on macOS arm64 with OpenJDK 17.0.19 and Gradle 9.5.1. Test reports can be regenerated
-using the commands above. Actual Paper, Fabric, Forge, NeoForge, and Velocity artifact/classloader
-verification, server startup, and end-to-end cross-server integration have **not** been performed.
+No final Paper, Fabric, Forge, NeoForge, or Velocity artifact/classloader verification, server
+startup, pairing, production registry/revocation, or end-to-end cross-server integration was run.
+The fixture identity and confirmation checks do not implement these later services.
 
-## Outstanding step-2 work after the design revision
+## Historical evidence retained
 
-The original rejection was against NKpsk0. Noise-Java and Signal's fork support KK at the pattern
-level, so they need a fresh suitability evaluation rather than rejection for lacking NKpsk0.
-The existing 18-test result is historical and includes a known-defect characterization; it is not
-KK approval. No new runtime tests were run for this documentation revision.
+- Step 1: `./gradlew :common:test --console=plain` passed all 25 identity cases during the original
+  implementation. It was not rerun for this isolated dependency change.
+- NKpsk0: all 18 historical checks still pass, including a test that deliberately reproduces the
+  jchambers nonce-exhaustion defect. That is evidence against adopting that candidate, not KK
+  approval or production permission. See the [archived decision](cross-server-noise-nkpsk0-investigation.md).
+- Earlier implementation commits and this step-2 continuation passed their staged whitespace checks.
 
 ## Next work, in order
 
-1. Reevaluate Java 17 KK candidates for exact-suite correctness, maintenance, licensing, nonce
-   exhaustion, thread-safety, and key/session lifecycle. Record the selected version and review.
-2. Extend the isolated spike with KK vectors, two-process exchanges, wrong coordinator/backend
-   keys, unknown/revoked ID, tampering, confirmation gating, reconnect/shutdown, and relocation.
-3. If the dependency passes step 2, create step-3 modules and complete all final platform
-   artifact/classloader checks, including Velocity. The plaintext option does not bypass KK review.
-4. In step 6 implement both modes, endpoint/mode rejection, no downgrade, and bounded Noise record
-   fragmentation/reassembly. In step 7 prove the authenticated pairing bootstrap and key rotation.
-5. Continue the remaining catalog and handoff steps without claiming plaintext backend identity is
-   cryptographically authenticated.
+1. Step 3: create `proxy-common` and `velocity` modules and the planned proxy-neutral interfaces.
+   Integrate the selected dependency's private relocation and complete the final Paper/Fabric/
+   Forge/NeoForge/Velocity artifact/classloader matrix. Keep harness classes out of shipped JARs.
+2. Steps 4–5: implement immutable catalog/message models and bounded canonical codecs.
+3. Step 6: implement both transport modes, endpoint/mode rejection, transcript binding, confirmation
+   gating, serialized session lifecycle, terminal failures, no downgrade, and bounded fragmentation.
+4. Step 7: prove the authenticated pairing bootstrap, canonical key import, rotation, and revocation.
+5. Continue the remaining registration/catalog/handoff steps in order. Plaintext backend identity
+   must never be described as cryptographically authenticated.
 
 Update this file when a step's status changes, a blocker is resolved, or new validation is run.
 Keep completed implementation, experimental evidence, and unperformed validation separate.

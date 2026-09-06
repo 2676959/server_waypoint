@@ -549,10 +549,11 @@ different servers remain distinct.
 
 ### Step 2: select and prove the Noise dependency
 
-The prior [selection investigation](cross-server-noise-dependency-decision.md) and
-[isolated spike](../tools/noise-spike/README.md) tested `NKpsk0`. That evidence is historical.
-Selection is reopened for KK; Noise-Java's lack of `NKpsk0` no longer disqualifies it, but KK
-implementation suitability has not been verified. No production dependency is approved yet.
+Completed: the [selection decision](cross-server-noise-dependency-decision.md) selects
+`org.signal.forks:noise-java:0.1.1` after a scoped KK source review and 35 passing checks in the
+[isolated KK spike](../tools/noise-spike/kk/README.md). Historical NKpsk0 evidence is preserved
+separately. No runtime dependency has been added; final platform packaging/classloader checks
+remain step 3.
 
 - Evaluate maintained Java 17-compatible implementations for `KK`, AES-GCM, exact-suite vectors,
   licensing, dependency size, thread-safety, key lifecycle, and nonce-exhaustion behavior.

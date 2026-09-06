@@ -1,11 +1,16 @@
 # Noise dependency spike
 
-Historical NKpsk0 investigation only. The revised plan selects KK; this spike has not been
-converted or rerun for KK and its passing tests do not validate the new design. **No production dependency is selected; the adoption gate is blocked.**
+This standalone build contains two separate investigations:
+
+- The root/candidate projects preserve the historical NKpsk0 no-go experiment described below.
+- The new [`kk` subproject](kk/README.md) verifies the selected Signal Noise-Java release for KK.
+
+**Step 2 selects `org.signal.forks:noise-java:0.1.1` for KK; final platform checks remain step 3.**
+The historical tests below do not validate KK or approve the old candidate.
 See the [selection decision](../../docs/cross-server-noise-dependency-decision.md).
 This standalone Gradle build is not included in the repository's root settings or release tasks.
 
-From the repository root:
+From the repository root (`check` runs both investigations):
 
 ```sh
 ./gradlew -p tools/noise-spike check --console=plain
@@ -36,8 +41,8 @@ relocation, and absence of test dependencies from the executable JAR. A Signal-r
 that its pattern parser rejects the required suite.
 
 `recordsKnownNonceExhaustionGapInCandidate` is deliberately a **characterization of a defect**:
-it succeeds when the pinned candidate exhibits the documented missing guard. Green tests therefore
-mean the investigation is reproducible, not that the candidate is approved for deployment.
+it succeeds when the pinned candidate exhibits the documented missing guard. Green historical tests therefore
+mean the NKpsk0 investigation is reproducible, not that its candidate is approved for deployment.
 
 Reports: `build/reports/tests/test/index.html` and `build/test-results/test/`.
 Executable probe: `build/libs/server-waypoint-noise-spike-relocated.jar`.
