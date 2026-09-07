@@ -113,21 +113,23 @@ public class ServerWaypointNeoForgeClient {
         OptimizedWaypointRenderer.init();
     }
 
+//? if >=1.20.4 {
+    public static void handleMessageChunk(MessageChunkPayload payload) {
+        new S2CPayloadHandler.MessageChunkHandler().messageHandler(payload.messageChunk());
+    }
+//?}
+
 //? if >= 1.20.5 {
     public static void registerClientPayloadHandlers(PayloadRegistrar registrar) {
-        S2CPayloadHandler.MessageChunkHandler messageChunkHandler = new S2CPayloadHandler.MessageChunkHandler();
         S2CPayloadHandler.ServerHandshakeHandler serverHandshakeHandler = new S2CPayloadHandler.ServerHandshakeHandler();
         S2CPayloadHandler.UploadRequestHandler uploadRequestHandler = new S2CPayloadHandler.UploadRequestHandler();
         // S2C
-        registrar.playToClient(MessageChunkS2CPayload.ID, MessageChunkS2CPayload.PACKET_CODEC, messageChunkHandler::handle);
         registrar.playToClient(ServerHandshakeS2CPayload.ID, ServerHandshakeS2CPayload.PACKET_CODEC, serverHandshakeHandler::handle);
         registrar.playToClient(UploadRequestS2CPayload.ID, UploadRequestS2CPayload.PACKET_CODEC, uploadRequestHandler::handle);
     }
 //?} elif = 1.20.4 {
     /^public static void registerClientPayloadHandlers(IPayloadRegistrar registrar) {
-        S2CPayloadHandler.MessageChunkHandler messageChunkHandler = new S2CPayloadHandler.MessageChunkHandler();
         S2CPayloadHandler.ServerHandshakeHandler serverHandshakeHandler = new S2CPayloadHandler.ServerHandshakeHandler();
-        registrar.play(MessageChunkS2CPayload.MESSAGE_CHUNK_PAYLOAD_ID, MessageChunkS2CPayload::new, handler -> handler.client(messageChunkHandler::handle));
         registrar.play(ServerHandshakeS2CPayload.SERVER_HANDSHAKE_PAYLOAD, ServerHandshakeS2CPayload::new, handler -> handler.client(serverHandshakeHandler::handle));
         S2CPayloadHandler.UploadRequestHandler uploadRequestHandler = new S2CPayloadHandler.UploadRequestHandler();
         registrar.play(UploadRequestS2CPayload.UPLOAD_REQUEST_PAYLOAD_ID, UploadRequestS2CPayload::new, handler -> handler.client(uploadRequestHandler::handle));

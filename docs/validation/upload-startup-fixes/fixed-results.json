@@ -1,0 +1,28 @@
+[
+  {
+    "case": "forge-1.20.1",
+    "base_commit": "32d4498",
+    "with_fixes": true,
+    "artifact_sha256": "912c96a16ca34ef8f08193d11e822c1772ff094f58f8ec72c038ce27280f5c02",
+    "exit_code": 0,
+    "expected_failure": "@Shadow field container was not located",
+    "passed": true,
+    "log": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/upload-fixed-forge-1.20.1/console.log",
+    "retained_log": "fixed-forge-1.20.1.txt",
+    "raw_log_sha256": "0ce990257eb3f152267ac2e026bcb8b1e2563f848944fc9831c2db2643c9c29d",
+    "retained_log_sha256": "9511bbcf8a75650aba16a9911557f85655f71b707226d7d0b8a98073e097e536"
+  },
+  {
+    "case": "neoforge-26.2",
+    "base_commit": "32d4498",
+    "with_fixes": true,
+    "artifact_sha256": "4efdf2811f2a3eb489057c4e8e342989953c17e80646541f73de914a2dd6617b",
+    "exit_code": 0,
+    "expected_failure": "Cannot register payload server_waypoint:message_chunk as it is already registered.",
+    "passed": true,
+    "log": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/upload-fixed-neoforge-26.2/console.log",
+    "retained_log": "fixed-neoforge-26.2.txt",
+    "raw_log_sha256": "7960c18df9564b1af6de3553485b2c4726ca14f75bed209519e8c5bb3b591dfe",
+    "retained_log_sha256": "5fc1db098b72e938573079b043d2c138a67643b2f4a3ad1a17ac7d9e5f5b859f"
+  }
+]

@@ -12,7 +12,12 @@ public final class MessagePayloadMapping {
 
     public static ModPayload getPayload(SinglePacketMessage message, byte[] encodedMessage) {
         return switch (message.getChannelId()) {
-            case MESSAGE_CHUNK_CHANNEL -> new MessageChunkS2CPayload(
+            case MESSAGE_CHUNK_CHANNEL -> new
+                    //? if neoforge && >=1.20.4 {
+                    /*_959.server_waypoint.neoforge.MessageChunkPayload(
+                    *///?} else {
+                    MessageChunkS2CPayload(
+                    //?}
                     (MessageChunkBuffer) message,
                     encodedMessage
             );

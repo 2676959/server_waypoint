@@ -1,5 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.minecraftforge.gradle.shadow.net.minecraftforge.gradleutils.shared.ToolsExtension
+import net.minecraftforge.renamer.gradle.shadow.net.minecraftforge.srgutils.IMappingFile
 import org.gradle.jvm.tasks.Jar
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -76,6 +77,8 @@ val shadedDependencies by configurations.creating {
     isCanBeResolved = true
 }
 
+val generatedMixinMappings = layout.buildDirectory.file("tmp/compileJava/${mixinRefmap.removeSuffix(".refmap.json")}-mixins.tsrg")
+val mergedReobfMappings = layout.buildDirectory.file("mixin/combined-official-to-srg.tsrg")
 val unpackedMixinMappings = layout.buildDirectory.file("mixin/official-to-srg.tsrg")
 val unpackMixinMappings = if (needsSrgReobf) {
     val mixinMappingsArchive = providers.provider {
@@ -294,22 +297,25 @@ tasks.processResources {
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.release.set(targetJavaVersion)
-    val mixinCompilerArgs = mutableListOf(
-        "-Xlint:deprecation",
-        "-Xlint:unchecked",
-        "-AoutRefMapFile=${layout.buildDirectory.file("sourceSets/main/$mixinRefmap").get().asFile.absolutePath}",
-        "-AMSG_NO_OBFDATA_FOR_TARGET=warning",
-    )
-    if (needsSrgReobf) {
-        dependsOn(unpackMixinMappings!!)
-        mixinCompilerArgs.addAll(listOf(
-            "-AreobfTsrgFile=${unpackedMixinMappings.get().asFile.absolutePath}",
-            "-AoutTsrgFile=${layout.buildDirectory.file("tmp/compileJava/${mixinRefmap.removeSuffix(".refmap.json")}-mixins.tsrg").get().asFile.absolutePath}",
-            "-AmappingTypes=tsrg",
-            "-AdefaultObfuscationEnv=searge",
-        ))
+    if (name == "compileJava") {
+        val mixinCompilerArgs = mutableListOf(
+            "-Xlint:deprecation",
+            "-Xlint:unchecked",
+            "-AoutRefMapFile=${layout.buildDirectory.file("sourceSets/main/$mixinRefmap").get().asFile.absolutePath}",
+            "-AMSG_NO_OBFDATA_FOR_TARGET=warning",
+        )
+        if (needsSrgReobf) {
+            dependsOn(unpackMixinMappings!!)
+            outputs.file(generatedMixinMappings)
+            mixinCompilerArgs.addAll(listOf(
+                "-AreobfTsrgFile=${unpackedMixinMappings.get().asFile.absolutePath}",
+                "-AoutTsrgFile=${generatedMixinMappings.get().asFile.absolutePath}",
+                "-AmappingTypes=tsrg",
+                "-AdefaultObfuscationEnv=searge",
+            ))
+        }
+        options.compilerArgs.addAll(mixinCompilerArgs)
     }
-    options.compilerArgs.addAll(mixinCompilerArgs)
 }
 
 tasks.named("compileJava") {
@@ -369,14 +375,30 @@ val jarJarTask = tasks.named<Jar>("shadowJarJar") {
     from(shadowJarTask.flatMap { it.archiveFile }.map { zipTree(it.asFile) })
 }
 
+// Shadow members belong to mixin classes, so the vanilla mappings alone cannot rename them.
+val mergeMixinMappings = if (needsSrgReobf) {
+    tasks.register("mergeMixinMappings") {
+        dependsOn(unpackMixinMappings!!, tasks.named("compileJava"))
+        inputs.files(unpackedMixinMappings, generatedMixinMappings)
+        outputs.file(mergedReobfMappings)
+        doLast {
+            IMappingFile.load(unpackedMixinMappings.get().asFile)
+                .merge(IMappingFile.load(generatedMixinMappings.get().asFile))
+                .write(mergedReobfMappings.get().asFile.toPath(), IMappingFile.Format.TSRG2, false)
+        }
+    }
+} else {
+    null
+}
+
 val reobfShadowJar = if (needsSrgReobf) {
     extensions
         .getByType(net.minecraftforge.renamer.gradle.RenamerExtension::class.java)
         .classes("reobfShadowJar", jarJarTask) {
             archiveClassifier.set("")
             output.set(layout.buildDirectory.file("libs/${base.archivesName.get()}.jar"))
-            dependsOn(unpackMixinMappings!!)
-            setMappings(files(unpackedMixinMappings))
+            dependsOn(mergeMixinMappings!!)
+            setMappings(files(mergedReobfMappings))
         }
 } else {
     null

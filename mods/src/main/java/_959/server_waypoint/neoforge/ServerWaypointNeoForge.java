@@ -178,7 +178,6 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         if (isClientDist()) {
             ServerWaypointNeoForgeClient.registerClientPayloadHandlers(registrar);
         } else {
-            registrar.playToClient(MessageChunkS2CPayload.ID, MessageChunkS2CPayload.PACKET_CODEC, (payload, context) -> {});
             registrar.playToClient(ServerHandshakeS2CPayload.ID, ServerHandshakeS2CPayload.PACKET_CODEC, (payload, context) -> {});
             registrar.playToClient(UploadRequestS2CPayload.ID, UploadRequestS2CPayload.PACKET_CODEC, (payload, context) -> {});
         }
@@ -189,9 +188,24 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         registrar.playToServer(ClientHandshakeC2SPayload.ID, ClientHandshakeC2SPayload.PACKET_CODEC, (payload, context) ->
                 context.enqueueWork(() -> this.c2sPacketHandler.onClientHandshake((ServerPlayer) context.player(), payload.clientHandshakeBuffer()))
         );
-        registrar.playToServer(MessageChunkC2SPayload.ID, MessageChunkC2SPayload.PACKET_CODEC, (payload, context) ->
-                context.enqueueWork(() -> this.c2sPacketHandler.onMessageChunk((ServerPlayer) context.player(), payload.messageChunk()))
-        );
+        net.neoforged.neoforge.network.handling.IPayloadHandler<MessageChunkPayload> serverChunkHandler = (payload, context) ->
+                context.enqueueWork(() -> this.c2sPacketHandler.onMessageChunk((ServerPlayer) context.player(), payload.messageChunk()));
+        net.neoforged.neoforge.network.handling.IPayloadHandler<MessageChunkPayload> clientChunkHandler = (payload, context) -> {
+            if (isClientDist()) {
+                context.enqueueWork(() -> ServerWaypointNeoForgeClient.handleMessageChunk(payload));
+            }
+        };
+        //? if >=1.21.9 {
+        registrar.playBidirectional(MessageChunkPayload.ID, MessageChunkPayload.PACKET_CODEC, serverChunkHandler, clientChunkHandler);
+        //?} else {
+        /^registrar.playBidirectional(MessageChunkPayload.ID, MessageChunkPayload.PACKET_CODEC, (payload, context) -> {
+            if (context.flow() == net.minecraft.network.protocol.PacketFlow.SERVERBOUND) {
+                serverChunkHandler.handle(payload, context);
+            } else {
+                clientChunkHandler.handle(payload, context);
+            }
+        });
+        ^///?}
         registrar.playToServer(UploadChunkC2SPayload.ID, UploadChunkC2SPayload.PACKET_CODEC, (payload, context) ->
                 context.enqueueWork(() -> this.c2sPacketHandler.onUploadChunk((ServerPlayer) context.player(), payload.uploadChunk()))
         );
@@ -211,13 +225,18 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                     }
                 }))
         );
-        registrar.play(MessageChunkC2SPayload.MESSAGE_CHUNK_PAYLOAD_ID, MessageChunkC2SPayload::new, handler ->
-                handler.server((payload, context) -> context.workHandler().execute(() -> {
-                    if (context.player().orElse(null) instanceof ServerPlayer player) {
-                        this.c2sPacketHandler.onMessageChunk(player, payload.messageChunk());
-                    }
-                }))
-        );
+        registrar.play(MessageChunkPayload.MESSAGE_CHUNK_PAYLOAD_ID, MessageChunkPayload::new, handler -> {
+            handler.server((payload, context) -> context.workHandler().execute(() -> {
+                if (context.player().orElse(null) instanceof ServerPlayer player) {
+                    this.c2sPacketHandler.onMessageChunk(player, payload.messageChunk());
+                }
+            }));
+            handler.client((payload, context) -> {
+                if (isClientDist()) {
+                    context.workHandler().execute(() -> ServerWaypointNeoForgeClient.handleMessageChunk(payload));
+                }
+            });
+        });
         registrar.play(UploadChunkC2SPayload.UPLOAD_CHUNK_PAYLOAD_ID, UploadChunkC2SPayload::new, handler ->
                 handler.server((payload, context) -> context.workHandler().execute(() -> {
                     if (context.player().orElse(null) instanceof ServerPlayer player) {
@@ -228,7 +247,6 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
     }
 
     private static void registerNoopClientPayloadHandlers(IPayloadRegistrar registrar) {
-        registrar.play(MessageChunkS2CPayload.MESSAGE_CHUNK_PAYLOAD_ID, MessageChunkS2CPayload::new, handler -> handler.client((payload, context) -> {}));
         registrar.play(ServerHandshakeS2CPayload.SERVER_HANDSHAKE_PAYLOAD, ServerHandshakeS2CPayload::new, handler -> handler.client((payload, context) -> {}));
         registrar.play(UploadRequestS2CPayload.UPLOAD_REQUEST_PAYLOAD_ID, UploadRequestS2CPayload::new, handler -> handler.client((payload, context) -> {}));
         if (Features.noXaerosMod) {
