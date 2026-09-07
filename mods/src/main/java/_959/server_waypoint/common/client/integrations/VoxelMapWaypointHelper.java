@@ -33,22 +33,19 @@ public final class VoxelMapWaypointHelper {
     private VoxelMapWaypointHelper() {
     }
 
-    public static void uploadToServer(UploadRequestBuffer request) {
+    public static WaypointData collectUpload(UploadRequestBuffer request) {
         if (!ClientConfig.isVoxelMapLoaded) {
-            sendUploadResult(request, UploadStatus.VOXELMAP_NOT_INSTALLED, List.of());
-            return;
+            return WaypointData.upload(request.requestId(), UploadStatus.VOXELMAP_NOT_INSTALLED, List.of());
         }
         VoxelMap voxelMap = VoxelConstants.getVoxelMapInstance();
         if (voxelMap == null) {
-            sendUploadResult(request, UploadStatus.VOXELMAP_NOT_READY, List.of());
-            return;
+            return WaypointData.upload(request.requestId(), UploadStatus.VOXELMAP_NOT_READY, List.of());
         }
 
         try {
             WaypointManager manager = voxelMap.getWaypointManager();
             if (manager == null) {
-                sendUploadResult(request, UploadStatus.VOXELMAP_NOT_READY, List.of());
-                return;
+                return WaypointData.upload(request.requestId(), UploadStatus.VOXELMAP_NOT_READY, List.of());
             }
             // Older VoxelMap versions keep coordinate highlights outside getWaypoints().
             Predicate<Waypoint> coordinateHighlight = waypoint -> false;
@@ -64,10 +61,10 @@ public final class VoxelMapWaypointHelper {
                                 : dimension.type.coordinateScale();
                     }
             );
-            WaypointClientMod.getInstance().sendChunkedMessageToServer(upload);
+            return upload;
         } catch (Exception exception) {
             LOGGER.warn("Failed to export VoxelMap waypoints for upload", exception);
-            sendUploadResult(request, UploadStatus.FAILED, List.of());
+            return WaypointData.upload(request.requestId(), UploadStatus.FAILED, List.of());
         }
     }
 
@@ -144,16 +141,6 @@ public final class VoxelMapWaypointHelper {
                 ))
                 .toList();
         return new DimensionWaypointData(dimensionName, uploadedLists);
-    }
-
-    private static void sendUploadResult(
-            UploadRequestBuffer request,
-            UploadStatus status,
-            List<DimensionWaypointData> uploadedDimensions
-    ) {
-        WaypointClientMod.getInstance().sendChunkedMessageToServer(WaypointData.upload(
-                request.requestId(), status, uploadedDimensions
-        ));
     }
 
     public static void replaceAll(WaypointClientMod waypointClientMod) {

@@ -3,6 +3,7 @@ package _959.server_waypoint.common.client.integrations;
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 
 public final class XaerosMinimapIntegration implements MapModIntegration {
@@ -12,8 +13,8 @@ public final class XaerosMinimapIntegration implements MapModIntegration {
     }
 
     @Override
-    public void uploadToServer(UploadRequestBuffer request) {
-        XaerosMinimapWaypointHelper.uploadToServer(request);
+    public WaypointData collectUpload(UploadRequestBuffer request) {
+        return XaerosMinimapWaypointHelper.collectUpload(request);
     }
 
     @Override

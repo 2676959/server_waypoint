@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client;
 
+import _959.server_waypoint.common.client.integrations.IntegratedServerUpload;
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
@@ -117,6 +118,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         this.configPath = configDir.resolve(MOD_ID).resolve("client-config.json");
         this.widgetThemePath = configDir.resolve(MOD_ID).resolve("widget-theme.json");
         INSTANCE = this;
+        IntegratedServerUpload.register(mc);
     }
 
     private void resetNetworkState() {

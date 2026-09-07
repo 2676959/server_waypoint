@@ -29,6 +29,13 @@ import net.kyori.adventure.text.format.TextColor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.data.DimensionWaypointData;
+import _959.server_waypoint.core.network.data.WaypointData;
+import _959.server_waypoint.core.network.upload.UploadTarget;
+import _959.server_waypoint.core.network.upload.UploadStatus;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.StringReader;
@@ -393,6 +400,40 @@ class CoreWaypointCommandListTest {
                 "wp details waypoint overworld \"\" \"\"",
                 this.source
         ));
+    }
+
+    @ParameterizedTest
+    @EnumSource(UploadTarget.class)
+    void localUploadAppliesWithoutNetworkCapability(UploadTarget target) throws CommandSyntaxException {
+        TestWaypointCommand command = new TestWaypointCommand(this.server, this.sender);
+        command.player = new Object();
+        command.localUpload = true;
+        this.sender.capable = false;
+        CommandDispatcher<TestSource> localDispatcher = new CommandDispatcher<>();
+        command.register(localDispatcher);
+
+        localDispatcher.execute("wp upload " + target.name().toLowerCase(java.util.Locale.ROOT)
+                + " overworld", this.source);
+
+        assertEquals(target, command.collectedTarget);
+        assertNotNull(this.server.getWaypointFileManager("overworld").getWaypointListByName("imported"));
+        assertEquals(0, this.sender.sentPackets);
+        assertTrue(this.sender.errors.isEmpty());
+    }
+
+    @Test
+    void remoteUploadStillRequiresNetworkCapability() throws CommandSyntaxException {
+        TestWaypointCommand command = new TestWaypointCommand(this.server, this.sender);
+        command.player = new Object();
+        this.sender.capable = false;
+        CommandDispatcher<TestSource> remoteDispatcher = new CommandDispatcher<>();
+        command.register(remoteDispatcher);
+
+        remoteDispatcher.execute("wp upload xaero overworld", this.source);
+
+        assertTrue(translationKeys(this.sender.errors.get(0)).contains("waypoint.upload.client.incompatible"));
+        assertNull(command.collectedTarget);
+        assertEquals(0, this.sender.sentPackets);
     }
 
     @Test
@@ -900,6 +941,32 @@ class CoreWaypointCommandListTest {
 
     private static final class TestWaypointCommand
             extends CoreWaypointCommand<TestSource, String, Object, String, String> {
+        private Object player;
+        private boolean localUpload;
+        private UploadTarget collectedTarget;
+
+        @Override
+        protected boolean usesLocalUpload(TestSource source, Object player) {
+            return this.localUpload;
+        }
+
+        @Override
+        protected java.util.concurrent.CompletionStage<ChunkedMessageSendResult> dispatchUpload(
+                TestSource source, Object player, UploadRequestBuffer request,
+                java.util.function.Consumer<WaypointData> receiver
+        ) {
+            if (!this.localUpload) {
+                return super.dispatchUpload(source, player, request, receiver);
+            }
+            this.collectedTarget = request.target();
+            receiver.accept(WaypointData.upload(request.requestId(), UploadStatus.SUCCESS, List.of(
+                    new DimensionWaypointData("overworld", List.of(
+                            new WaypointList("imported", WaypointList.SERVER_N, waypoints("local", 1))
+                    ))
+            )));
+            return CompletableFuture.completedFuture(ChunkedMessageSendResult.DELIVERED);
+        }
+
         private TestWaypointCommand(WaypointServerCore server, TestMessageSender sender) {
             this(server, sender, permissionManager(true));
         }
@@ -986,7 +1053,7 @@ class CoreWaypointCommandListTest {
 
         @Override
         protected Object getPlayer(TestSource source) {
-            return null;
+            return this.player;
         }
 
         @Override
@@ -1083,6 +1150,13 @@ class CoreWaypointCommandListTest {
     private static final class TestMessageSender implements PlatformMessageSender<TestSource, Object> {
         private final List<Component> messages = new ArrayList<>();
         private final List<Component> errors = new ArrayList<>();
+        private boolean capable = true;
+        private int sentPackets;
+
+        @Override
+        public boolean canSendChunkedMessage(Object player) {
+            return this.capable;
+        }
         private ChunkedMessageDelivery chunkedDelivery = ChunkedMessageDelivery.rejected(
                 ChunkedMessageSendResult.UNSUPPORTED
         );
@@ -1107,6 +1181,7 @@ class CoreWaypointCommandListTest {
 
         @Override
         public void sendPlayerPacket(Object player, SinglePacketMessage message) {
+            this.sentPackets++;
         }
 
         @Override

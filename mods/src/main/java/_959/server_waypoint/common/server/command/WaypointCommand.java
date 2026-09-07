@@ -1,6 +1,10 @@
 //~ resource_location_import
 package _959.server_waypoint.common.server.command;
 
+import _959.server_waypoint.common.server.LocalWaypointUpload;
+import _959.server_waypoint.core.network.ChunkedMessageSendResult;
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.command.CoreWaypointCommand;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.common.network.ModMessageSender;
@@ -28,6 +32,8 @@ import org.jetbrains.annotations.Nullable;
 //? if >= 1.21.2
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 
 public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, ServerPlayer,
     //$ resource_location_type_swap
@@ -48,6 +54,33 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
                 DimensionArgument::dimension,
                 BlockPosArgument::blockPos
         );
+    }
+
+    @Override
+    protected boolean usesLocalUpload(CommandSourceStack source, ServerPlayer player) {
+        return LocalWaypointUpload.isAvailable()
+                && !source.getServer().isDedicatedServer()
+                && source.getServer().isSingleplayerOwner(
+                        //? if >=1.21.9 {
+                        new net.minecraft.server.players.NameAndId(player.getGameProfile())
+                        //?} else {
+                        /*player.getGameProfile()
+                        *///?}
+                );
+    }
+
+    @Override
+    protected CompletionStage<ChunkedMessageSendResult> dispatchUpload(
+            CommandSourceStack source, ServerPlayer player,
+            UploadRequestBuffer request,
+            Consumer<WaypointData> receiver
+    ) {
+        if (usesLocalUpload(source, player)) {
+            return LocalWaypointUpload.dispatch(
+                    source.getServer(), player, request, receiver
+            );
+        }
+        return super.dispatchUpload(source, player, request, receiver);
     }
 
     @Nullable

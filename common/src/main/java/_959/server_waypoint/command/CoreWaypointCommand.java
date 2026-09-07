@@ -11,6 +11,7 @@ import _959.server_waypoint.core.edit.PatchField;
 import _959.server_waypoint.core.edit.WaypointListPatch;
 import _959.server_waypoint.core.edit.WaypointPatch;
 import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.ChunkedMessageSendResult;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.MessageEncodingException;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
@@ -71,6 +72,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.*;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
@@ -1942,6 +1944,18 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 );
     }
 
+    /** Whether this player can upload without negotiated network transport. */
+    protected boolean usesLocalUpload(S source, P player) {
+        return false;
+    }
+
+    /** Local implementations must invoke the receiver on the owning server thread. */
+    protected CompletionStage<ChunkedMessageSendResult> dispatchUpload(
+            S source, P player, UploadRequestBuffer request, Consumer<WaypointData> receiver
+    ) {
+        return this.sender.sendPlayerPacketTracked(player, request);
+    }
+
     private void executeUpload(
             S source,
             String uploadSource,
@@ -1967,7 +1981,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             this.sender.sendError(source, translatable("waypoint.upload.player-only"));
             return;
         }
-        if (!this.sender.canSendChunkedMessage(player)) {
+        if (!usesLocalUpload(source, player) && !this.sender.canSendChunkedMessage(player)) {
             this.sender.sendError(source, translatable("waypoint.upload.client.incompatible"));
             return;
         }
@@ -2007,7 +2021,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
             return;
         }
         UploadRequestBuffer request = Objects.requireNonNull(beginResult.request());
-        this.sender.sendPlayerPacketTracked(player, request).whenComplete((result, exception) -> {
+        dispatchUpload(source, player, request, data -> this.uploadCoordinator.onUpload(player, data))
+                .whenComplete((result, exception) -> {
             if (exception == null && result != null && result.delivered()) {
                 return;
             }

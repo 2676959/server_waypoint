@@ -4,6 +4,10 @@ import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.data.WaypointData;
+import _959.server_waypoint.core.network.upload.UploadStatus;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +37,16 @@ public final class MapModIntegrations {
         return INTEGRATIONS.stream()
                 .filter(integration -> integration.uploadTarget() == target)
                 .findFirst();
+    }
+
+    /** Collects a detached snapshot; callers must run this on the Minecraft client thread. */
+    public static WaypointData collectUpload(UploadRequestBuffer request) {
+        return findUploadCollector(request.target())
+                .map(integration -> integration.collectUpload(request))
+                .orElseGet(() -> WaypointData.upload(request.requestId(), switch (request.target()) {
+                    case XAERO -> UploadStatus.XAERO_NOT_INSTALLED;
+                    case VOXELMAP -> UploadStatus.VOXELMAP_NOT_INSTALLED;
+                }, List.of()));
     }
 
     private static List<MapModIntegration> createIntegrations() {

@@ -6,10 +6,8 @@ import _959.server_waypoint.common.network.payload.ModPayload;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import _959.server_waypoint.core.network.SinglePacketMessage;
 import _959.server_waypoint.core.network.buffer.*;
-import _959.server_waypoint.core.network.data.WaypointData;
-import _959.server_waypoint.core.network.upload.UploadStatus;
+import net.minecraft.client.Minecraft;
 
-import java.util.List;
 
 //? if fabric && >= 1.20.5 {
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -72,21 +70,15 @@ public class S2CPayloadHandler {
 
         @Override
         public void messageHandler(UploadRequestBuffer buffer) {
-            MapModIntegrations.findUploadCollector(buffer.target())
-                    .ifPresentOrElse(
-                            integration -> integration.uploadToServer(buffer),
-                            () -> sendMissingUploadTarget(buffer)
+            Minecraft client = Minecraft.getInstance();
+            var connection = client.getConnection();
+            client.execute(() -> {
+                if (connection != null && client.getConnection() == connection) {
+                    WaypointClientMod.getInstance().sendChunkedMessageToServer(
+                            MapModIntegrations.collectUpload(buffer)
                     );
-        }
-
-        private static void sendMissingUploadTarget(UploadRequestBuffer buffer) {
-            UploadStatus status = switch (buffer.target()) {
-                case XAERO -> UploadStatus.XAERO_NOT_INSTALLED;
-                case VOXELMAP -> UploadStatus.VOXELMAP_NOT_INSTALLED;
-            };
-            WaypointClientMod.getInstance().sendChunkedMessageToServer(WaypointData.upload(
-                    buffer.requestId(), status, List.of()
-            ));
+                }
+            });
         }
     }
 
