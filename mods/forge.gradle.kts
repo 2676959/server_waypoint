@@ -33,7 +33,14 @@ val mixinConfig = "server_waypoint-common.mixins.json"
 val mixinRefmap = "server_waypoint-common.refmap.json"
 val needsSrgReobf = stonecutter.eval(minecraftVersion, "<1.20.6")
 
-jarJar.register("jarJar", tasks.named<ShadowJar>("shadowJar"))
+// JarJar replays its input task's CopySpec. Feed it an already-relocated archive, not
+// Shadow's raw inputs, or it reintroduces original Noise classes and unrelocated callers.
+val shadedJarInput = tasks.register<Jar>("shadedJar") {
+    archiveClassifier.set("jarjar-input")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(tasks.named<ShadowJar>("shadowJar").flatMap { it.archiveFile }.map { zipTree(it.asFile) })
+}
+jarJar.register("jarJar", shadedJarInput)
 
 evaluationDependsOn(":common")
 val commonMainSourceSet = project(":common")
@@ -356,8 +363,12 @@ tasks.jar {
 
 val shadowJarTask = tasks.named<ShadowJar>("shadowJar")
 shadowJarTask.configure {
+    relocate("com.southernstorm.noise", "_959.server_waypoint.internal.noisekk")
+    dependencies {
+        include(dependency("org.signal.forks:noise-java:.*"))
+    }
     configurations = listOf(shadedDependencies)
-    // Keep a distinct classifier on every version so the shadowJarJar output never collides with this archive.
+    // Keep a distinct classifier on every version so the shadedJarJar output never collides with this archive.
     archiveClassifier.set("shadow")
     addMultiReleaseAttribute.set(false)
     exclude("META-INF/*.DSA", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/MANIFEST.MF", "mappings/**")
@@ -367,12 +378,9 @@ shadowJarTask.configure {
     }
 }
 
-val jarJarTask = tasks.named<Jar>("shadowJarJar") {
+val jarJarTask = tasks.named<Jar>("shadedJarJar") {
     archiveClassifier.set(if (needsSrgReobf) "dev-jarjar" else "")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    // The jarjar plugin replays the shadowJar CopySpec, which misses the shaded dependencies
-    // (ShadowJar weaves them in during its copy action). Merge in the full shadow archive explicitly.
-    from(shadowJarTask.flatMap { it.archiveFile }.map { zipTree(it.asFile) })
 }
 
 // Shadow members belong to mixin classes, so the vanilla mappings alone cannot rename them.
@@ -436,3 +444,5 @@ fun DependencyHandlerScope.addAdventureSerializerDependency() {
     implementation(dependencyNotation)
     add(shadedDependencies.name, dependencyNotation)
 }
+
+apply(from = rootProject.file("gradle/noise-packaging.gradle.kts"))

@@ -1,0 +1,18 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+> Task :proxy-common:processResources NO-SOURCE
+> Task :common:updateModInfo UP-TO-DATE
+> Task :proxy-common:processTestResources NO-SOURCE
+> Task :common:compileJava UP-TO-DATE
+> Task :common:processResources UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+> Task :common:jar UP-TO-DATE
+> Task :proxy-common:compileJava UP-TO-DATE
+> Task :proxy-common:classes UP-TO-DATE
+> Task :proxy-common:compileTestJava
+> Task :proxy-common:testClasses
+> Task :proxy-common:test
+
+BUILD SUCCESSFUL in 1s
+7 actionable tasks: 2 executed, 5 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html

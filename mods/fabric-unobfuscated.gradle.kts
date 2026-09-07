@@ -173,6 +173,10 @@ tasks.jar {
 }
 
 tasks.shadowJar {
+    relocate("com.southernstorm.noise", "_959.server_waypoint.internal.noisekk")
+    dependencies {
+        include(dependency("org.signal.forks:noise-java:.*"))
+    }
     dependencies {
         include(project(":common"))
         include(dependency("net.kyori:.*"))
@@ -215,3 +219,5 @@ tasks.register<Copy>("buildAndCollect") {
 fun DependencyHandlerScope.addAdventureSerializerDependency() {
     implementation("net.kyori:adventure-text-serializer-gson:4.25.0")
 }
+
+apply(from = rootProject.file("gradle/noise-packaging.gradle.kts"))

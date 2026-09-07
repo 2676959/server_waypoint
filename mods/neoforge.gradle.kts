@@ -250,6 +250,10 @@ tasks.test {
 }
 
 tasks.shadowJar {
+    relocate("com.southernstorm.noise", "_959.server_waypoint.internal.noisekk")
+    dependencies {
+        include(dependency("org.signal.forks:noise-java:.*"))
+    }
     configurations = listOf(shadedDependencies)
     addMultiReleaseAttribute.set(false)
     dependencies {
@@ -289,3 +293,5 @@ fun DependencyHandlerScope.addAdventureSerializerDependency() {
     add(shadedDependencies.name, dependencyNotation)
     add(devRuntimeLibraries.name, dependencyNotation)
 }
+
+apply(from = rootProject.file("gradle/noise-packaging.gradle.kts"))

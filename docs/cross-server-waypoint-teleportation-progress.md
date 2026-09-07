@@ -3,13 +3,15 @@
 Last updated: 2026-09-06.
 Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
 KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
-The current change completes the isolated KK evaluation without adding production transport.
+Step 2 is now `fd3ba53` after rebasing onto upload-branch fix `f0d8281`.
+The current change implements step 3 without adding production transport.
 
 ## Current status
 
-**Steps 1 and 2 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
+**Steps 1–3 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
 for `Noise_KK_25519_AESGCM_SHA256`, with 35 passing KK checks and a scoped source review.**
-Steps 3–19 have not started. No production cross-server networking, remote commands, catalog
+Step 3 adds the proxy modules/contracts and private dependency packaging; all 41 artifact checks
+and 10 native runtime checks pass. Steps 4–19 have not started. No production cross-server networking, remote commands, catalog
 synchronization, player transfers, or remote GUI behavior has been enabled.
 
 The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
@@ -33,7 +35,8 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | --- | --- | --- |
 | 1 — Freeze the feature contract | Complete | Commit `a0af646`: separate protocol version 1, stable server-ID validation, exact `RemoteWaypointKey`, catalog states, public export policy, permission constants, normative command/security contract, and identity tests. The transport contract was subsequently revised to KK/plaintext. |
 | 2 — Select and prove the Noise dependency | Complete | New isolated `tools/noise-spike/kk`: published Signal artifact pinned by SHA-256, source review, exact KK vectors, fail-closed nonce boundary tests, confirmation/replay checks, 26 two-process cases, and standalone relocation. Selected for step-3 integration, not production release approval. |
-| 3–19 | Not started | Proxy modules/interfaces, further catalog models, codecs, production transport, pairing, registration, synchronization, commands, permissions, handoffs, Velocity integration, client/GUI integration, and release hardening remain pending. |
+| 3 — Modules and proxy interfaces | Complete | `proxy-common`, inert `velocity`, common transport/proxy-neutral lifecycle and transfer contracts, 11 fake-adapter contract tests, private Noise shading on all platforms, and development-only artifact/native-classloader probes. See [validation](cross-server-step3-validation.md). |
+| 4–19 | Not started | Catalog models, codecs, production transport, pairing, registration, synchronization, commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
@@ -55,9 +58,20 @@ Freshly run on macOS arm64, OpenJDK 17.0.19 for compilation/tests/child JVMs, Gr
 | Source/artifact review | Completed | Published sources match inspected Signal HEAD; pinned runtime JAR hash verified. Sparse upstream activity remains a documented dependency risk, not a maintenance guarantee. |
 | `git diff --check` and new-file whitespace checks | Passed | Step-2 continuation. |
 
-No final Paper, Fabric, Forge, NeoForge, or Velocity artifact/classloader verification, server
-startup, pairing, production registry/revocation, or end-to-end cross-server integration was run.
+The isolated step-2 run did not verify final platform artifacts or startup. Step-3 platform
+evidence is recorded separately below. Pairing, production registry/revocation, and end-to-end
+cross-server integration remain unimplemented.
 The fixture identity and confirmation checks do not implement these later services.
+
+## Step-3 verification
+
+The initial full build and all 41 final artifact checks passed. Eight of ten live platform runs
+passed startup, native-classloader cryptography, and clean shutdown. Two inherited startup defects
+were reproduced on `feature/upload-3.1.0`, fixed there in `f0d8281`, and the cross-server branch
+was rebased onto that commit at the user's direction. The post-rebase full build passed, with
+316 common tests and 11 proxy contract tests. All 41 final artifact checks and all 10 native
+startup/classloader/shutdown cases passed against matching artifact hashes. The final contract
+fixture refinement also passed all 11 tests. See [detailed evidence](cross-server-step3-validation.md).
 
 ## Historical evidence retained
 
@@ -70,14 +84,11 @@ The fixture identity and confirmation checks do not implement these later servic
 
 ## Next work, in order
 
-1. Step 3: create `proxy-common` and `velocity` modules and the planned proxy-neutral interfaces.
-   Integrate the selected dependency's private relocation and complete the final Paper/Fabric/
-   Forge/NeoForge/Velocity artifact/classloader matrix. Keep harness classes out of shipped JARs.
-2. Steps 4–5: implement immutable catalog/message models and bounded canonical codecs.
-3. Step 6: implement both transport modes, endpoint/mode rejection, transcript binding, confirmation
+1. Steps 4–5: implement immutable catalog/message models and bounded canonical codecs.
+2. Step 6: implement both transport modes, endpoint/mode rejection, transcript binding, confirmation
    gating, serialized session lifecycle, terminal failures, no downgrade, and bounded fragmentation.
-4. Step 7: prove the authenticated pairing bootstrap, canonical key import, rotation, and revocation.
-5. Continue the remaining registration/catalog/handoff steps in order. Plaintext backend identity
+3. Step 7: prove the authenticated pairing bootstrap, canonical key import, rotation, and revocation.
+4. Continue the remaining registration/catalog/handoff steps in order. Plaintext backend identity
    must never be described as cryptographically authenticated.
 
 Update this file when a step's status changes, a blocker is resolved, or new validation is run.

@@ -66,3 +66,6 @@ rootProject.name = "server_waypoint"
 include("common")
 include("mods")
 include("paper")
+
+include("proxy-common")
+include("velocity")

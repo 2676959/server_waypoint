@@ -1,8 +1,8 @@
 # Noise dependency selection: step 2
 
 Decision date: 2026-09-06. **Select `org.signal.forks:noise-java:0.1.1` for
-`Noise_KK_25519_AESGCM_SHA256`. Step 2 is complete; proceed to step 3's module and final
-platform packaging/classloader checks.** This is dependency selection after a scoped source review
+`Noise_KK_25519_AESGCM_SHA256`. Step 2 is complete; step 3's module and final
+platform packaging/classloader checks also pass (see its validation record).** This is dependency selection after a scoped source review
 and executable verification, not an independent cryptographic audit or production release approval.
 No production dependency or transport has been added by this step.
 
@@ -120,16 +120,16 @@ Shadow 9.4.1 relocates `com.southernstorm.noise` to `_959.server_waypoint.intern
 `META-INF/LICENSE-noise-java`. The executable JAR runs without original Noise classes and excludes
 historical/test dependencies. All class files are Java 17 compatible.
 
-The platform routes below were rechecked in this worktree. **Every final platform artifact and
-classloader check remains unperformed and belongs to step 3**, before production transport work.
+The platform routes below were rechecked in this worktree. The implementation and results now live in
+[step-3 platform validation](cross-server-step3-validation.md), before production transport work.
 
 | Platform | Required packaging integration and check |
 | --- | --- |
-| Paper | Its dependency exclusion currently retains only common/bStats. Explicitly retain the selected Noise coordinate and relocate it; audit every supported final plugin JAR and exercise its classloader. |
-| Fabric | Both regular and unobfuscated scripts filter Shadow inputs to common/Adventure. Retain and relocate Noise; check regular `remapJar` and unobfuscated shadow outputs and load the final artifacts. |
-| Forge | Retain Noise in `shadedDependencies` and Shadow filters; verify `shadowJarJar` merges relocated classes/notices and older targets retain them after reobfuscation. |
-| NeoForge | Update both ModDev and legacy NeoGradle filters and verify their final artifacts/classloaders. |
-| Velocity | Step 3 creates the module; include private relocation there, audit its final plugin, and exercise the Velocity classloader. |
+| Paper | Retains common/bStats and the selected Noise coordinate, with private relocation and license; checks all three final plugin artifacts/classloaders. |
+| Fabric | Both regular and unobfuscated scripts retain Noise alongside common/Adventure; checks cover regular `remapJar` and unobfuscated shadow outputs. |
+| Forge | Retains Noise through Shadow, then `shadedJar`/`shadedJarJar` consume the completed relocated archive. Older targets reobfuscate the result with vanilla and generated Mixin member mappings. |
+| NeoForge | Both ModDev and legacy NeoGradle retain/relocate Noise; checks include both final packaging routes. |
+| Velocity | The new inert plugin shades common, proxy-common, and relocated Noise, excluding proxy API/runtime libraries. |
 
 Use one private relocation namespace consistently across adapters. Do not put the rejected
 NKpsk0 candidate or test harness classes into production artifacts. Step 3 creates only the planned

@@ -1,0 +1,152 @@
+Downloading Minecraft server
+Installing Fabric Loader 0.17.3(1.20.1) on the server
+Downloading required files
+Downloading library org.ow2.asm:asm:9.9
+Downloading library org.ow2.asm:asm-analysis:9.9
+Downloading library org.ow2.asm:asm-commons:9.9
+Downloading library org.ow2.asm:asm-tree:9.9
+Downloading library org.ow2.asm:asm-util:9.9
+Downloading library net.fabricmc:sponge-mixin:0.16.5+mixin.0.8.7
+Downloading library net.fabricmc:intermediary:1.20.1
+Downloading library net.fabricmc:fabric-loader:0.17.3
+Generating server launch JAR
+Unpacking 1.20.1/server-1.20.1.jar (versions:1.20.1) to versions/1.20.1/server-1.20.1.jar
+Unpacking com/github/oshi/oshi-core/6.2.2/oshi-core-6.2.2.jar (libraries:com.github.oshi:oshi-core:6.2.2) to libraries/com/github/oshi/oshi-core/6.2.2/oshi-core-6.2.2.jar
+Unpacking com/google/code/gson/gson/2.10/gson-2.10.jar (libraries:com.google.code.gson:gson:2.10) to libraries/com/google/code/gson/gson/2.10/gson-2.10.jar
+Unpacking com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar (libraries:com.google.guava:failureaccess:1.0.1) to libraries/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar
+Unpacking com/google/guava/guava/31.1-jre/guava-31.1-jre.jar (libraries:com.google.guava:guava:31.1-jre) to libraries/com/google/guava/guava/31.1-jre/guava-31.1-jre.jar
+Unpacking com/mojang/authlib/4.0.43/authlib-4.0.43.jar (libraries:com.mojang:authlib:4.0.43) to libraries/com/mojang/authlib/4.0.43/authlib-4.0.43.jar
+Unpacking com/mojang/brigadier/1.1.8/brigadier-1.1.8.jar (libraries:com.mojang:brigadier:1.1.8) to libraries/com/mojang/brigadier/1.1.8/brigadier-1.1.8.jar
+Unpacking com/mojang/datafixerupper/6.0.8/datafixerupper-6.0.8.jar (libraries:com.mojang:datafixerupper:6.0.8) to libraries/com/mojang/datafixerupper/6.0.8/datafixerupper-6.0.8.jar
+Unpacking com/mojang/logging/1.1.1/logging-1.1.1.jar (libraries:com.mojang:logging:1.1.1) to libraries/com/mojang/logging/1.1.1/logging-1.1.1.jar
+Unpacking commons-io/commons-io/2.11.0/commons-io-2.11.0.jar (libraries:commons-io:commons-io:2.11.0) to libraries/commons-io/commons-io/2.11.0/commons-io-2.11.0.jar
+Unpacking io/netty/netty-buffer/4.1.82.Final/netty-buffer-4.1.82.Final.jar (libraries:io.netty:netty-buffer:4.1.82.Final) to libraries/io/netty/netty-buffer/4.1.82.Final/netty-buffer-4.1.82.Final.jar
+Unpacking io/netty/netty-codec/4.1.82.Final/netty-codec-4.1.82.Final.jar (libraries:io.netty:netty-codec:4.1.82.Final) to libraries/io/netty/netty-codec/4.1.82.Final/netty-codec-4.1.82.Final.jar
+Unpacking io/netty/netty-common/4.1.82.Final/netty-common-4.1.82.Final.jar (libraries:io.netty:netty-common:4.1.82.Final) to libraries/io/netty/netty-common/4.1.82.Final/netty-common-4.1.82.Final.jar
+Unpacking io/netty/netty-handler/4.1.82.Final/netty-handler-4.1.82.Final.jar (libraries:io.netty:netty-handler:4.1.82.Final) to libraries/io/netty/netty-handler/4.1.82.Final/netty-handler-4.1.82.Final.jar
+Unpacking io/netty/netty-resolver/4.1.82.Final/netty-resolver-4.1.82.Final.jar (libraries:io.netty:netty-resolver:4.1.82.Final) to libraries/io/netty/netty-resolver/4.1.82.Final/netty-resolver-4.1.82.Final.jar
+Unpacking io/netty/netty-transport/4.1.82.Final/netty-transport-4.1.82.Final.jar (libraries:io.netty:netty-transport:4.1.82.Final) to libraries/io/netty/netty-transport/4.1.82.Final/netty-transport-4.1.82.Final.jar
+Unpacking io/netty/netty-transport-classes-epoll/4.1.82.Final/netty-transport-classes-epoll-4.1.82.Final.jar (libraries:io.netty:netty-transport-classes-epoll:4.1.82.Final) to libraries/io/netty/netty-transport-classes-epoll/4.1.82.Final/netty-transport-classes-epoll-4.1.82.Final.jar
+Unpacking io/netty/netty-transport-native-epoll/4.1.82.Final/netty-transport-native-epoll-4.1.82.Final-linux-x86_64.jar (libraries:io.netty:netty-transport-native-epoll:4.1.82.Final:linux-x86_64) to libraries/io/netty/netty-transport-native-epoll/4.1.82.Final/netty-transport-native-epoll-4.1.82.Final-linux-x86_64.jar
+Unpacking io/netty/netty-transport-native-epoll/4.1.82.Final/netty-transport-native-epoll-4.1.82.Final-linux-aarch_64.jar (libraries:io.netty:netty-transport-native-epoll:4.1.82.Final:linux-aarch_64) to libraries/io/netty/netty-transport-native-epoll/4.1.82.Final/netty-transport-native-epoll-4.1.82.Final-linux-aarch_64.jar
+Unpacking io/netty/netty-transport-native-unix-common/4.1.82.Final/netty-transport-native-unix-common-4.1.82.Final.jar (libraries:io.netty:netty-transport-native-unix-common:4.1.82.Final) to libraries/io/netty/netty-transport-native-unix-common/4.1.82.Final/netty-transport-native-unix-common-4.1.82.Final.jar
+Unpacking it/unimi/dsi/fastutil/8.5.9/fastutil-8.5.9.jar (libraries:it.unimi.dsi:fastutil:8.5.9) to libraries/it/unimi/dsi/fastutil/8.5.9/fastutil-8.5.9.jar
+Unpacking net/java/dev/jna/jna/5.12.1/jna-5.12.1.jar (libraries:net.java.dev.jna:jna:5.12.1) to libraries/net/java/dev/jna/jna/5.12.1/jna-5.12.1.jar
+Unpacking net/java/dev/jna/jna-platform/5.12.1/jna-platform-5.12.1.jar (libraries:net.java.dev.jna:jna-platform:5.12.1) to libraries/net/java/dev/jna/jna-platform/5.12.1/jna-platform-5.12.1.jar
+Unpacking net/sf/jopt-simple/jopt-simple/5.0.4/jopt-simple-5.0.4.jar (libraries:net.sf.jopt-simple:jopt-simple:5.0.4) to libraries/net/sf/jopt-simple/jopt-simple/5.0.4/jopt-simple-5.0.4.jar
+Unpacking org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.jar (libraries:org.apache.commons:commons-lang3:3.12.0) to libraries/org/apache/commons/commons-lang3/3.12.0/commons-lang3-3.12.0.jar
+Unpacking org/apache/logging/log4j/log4j-api/2.19.0/log4j-api-2.19.0.jar (libraries:org.apache.logging.log4j:log4j-api:2.19.0) to libraries/org/apache/logging/log4j/log4j-api/2.19.0/log4j-api-2.19.0.jar
+Unpacking org/apache/logging/log4j/log4j-core/2.19.0/log4j-core-2.19.0.jar (libraries:org.apache.logging.log4j:log4j-core:2.19.0) to libraries/org/apache/logging/log4j/log4j-core/2.19.0/log4j-core-2.19.0.jar
+Unpacking org/apache/logging/log4j/log4j-slf4j2-impl/2.19.0/log4j-slf4j2-impl-2.19.0.jar (libraries:org.apache.logging.log4j:log4j-slf4j2-impl:2.19.0) to libraries/org/apache/logging/log4j/log4j-slf4j2-impl/2.19.0/log4j-slf4j2-impl-2.19.0.jar
+Unpacking org/joml/joml/1.10.5/joml-1.10.5.jar (libraries:org.joml:joml:1.10.5) to libraries/org/joml/joml/1.10.5/joml-1.10.5.jar
+Unpacking org/slf4j/slf4j-api/2.0.1/slf4j-api-2.0.1.jar (libraries:org.slf4j:slf4j-api:2.0.1) to libraries/org/slf4j/slf4j-api/2.0.1/slf4j-api-2.0.1.jar
+Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture
+[21:25:02] [main/INFO]: Loading Minecraft 1.20.1 with Fabric Loader 0.17.3
+[21:25:02] [main/INFO]: Fabric is preparing JARs on first launch, this may take a few seconds...
+[21:25:02] [main/INFO]: Loading 45 mods:
+    - fabric-api 0.92.6+1.20.1
+       |-- fabric-api-base 0.4.32+1802ada577
+       |-- fabric-api-lookup-api-v1 1.6.37+1802ada577
+       |-- fabric-biome-api-v1 13.0.14+1802ada577
+       |-- fabric-block-api-v1 1.0.12+1802ada577
+       |-- fabric-block-view-api-v2 1.0.3+924f046a77
+       |-- fabric-blockrenderlayer-v1 1.1.42+1802ada577
+       |-- fabric-client-tags-api-v1 1.1.3+1802ada577
+       |-- fabric-command-api-v1 1.2.35+f71b366f77
+       |-- fabric-command-api-v2 2.2.14+1802ada577
+       |-- fabric-commands-v0 0.2.52+df3654b377
+       |-- fabric-containers-v0 0.1.67+df3654b377
+       |-- fabric-content-registries-v0 4.0.13+1802ada577
+       |-- fabric-convention-tags-v1 1.5.6+1802ada577
+       |-- fabric-crash-report-info-v1 0.2.20+1802ada577
+       |-- fabric-data-attachment-api-v1 1.0.2+de0fd6d177
+       |-- fabric-data-generation-api-v1 12.3.7+1802ada577
+       |-- fabric-dimensions-v1 2.1.55+1802ada577
+       |-- fabric-entity-events-v1 1.6.1+1c78457f77
+       |-- fabric-events-interaction-v0 0.6.5+13a40c6677
+       |-- fabric-events-lifecycle-v0 0.2.64+df3654b377
+       |-- fabric-game-rule-api-v1 1.0.41+1802ada577
+       |-- fabric-item-api-v1 2.1.29+1802ada577
+       |-- fabric-item-group-api-v1 4.0.14+1802ada577
+       |-- fabric-key-binding-api-v1 1.0.38+1802ada577
+       |-- fabric-keybindings-v0 0.2.36+df3654b377
+       |-- fabric-lifecycle-events-v1 2.2.23+1802ada577
+       |-- fabric-loot-api-v2 1.2.3+1802ada577
+       |-- fabric-loot-tables-v1 1.1.47+9e7660c677
+       |-- fabric-message-api-v1 5.1.10+1802ada577
+       |-- fabric-mining-level-api-v1 2.1.52+1802ada577
+       |-- fabric-model-loading-api-v1 1.0.4+1802ada577
+       |-- fabric-models-v0 0.4.3+9386d8a777
+       |-- fabric-networking-api-v1 1.3.14+a158aa0477
+       |-- fabric-networking-v0 0.3.54+df3654b377
+       |-- fabric-object-builder-api-v1 11.1.5+e35120df77
+       |-- fabric-particles-v1 1.1.3+1802ada577
+       |-- fabric-recipe-api-v1 1.0.24+1802ada577
+       |-- fabric-registry-sync-v0 2.3.6+1802ada577
+       |-- fabric-renderer-api-v1 3.2.2+1802ada577
+       |-- fabric-renderer-indigo 1.5.3+85287f9f77
+       |-- fabric-renderer-registries-v1 3.2.47+df3654b377
+       |-- fabric-rendering-data-attachment-v1 0.3.39+92a0d36777
+       |-- fabric-rendering-fluids-v1 3.0.29+1802ada577
+       |-- fabric-rendering-v0 1.1.50+df3654b377
+       |-- fabric-rendering-v1 3.0.9+1802ada577
+       |-- fabric-resource-conditions-api-v1 2.3.9+1802ada577
+       |-- fabric-resource-loader-v0 0.11.12+fb82e9d777
+       |-- fabric-screen-api-v1 2.0.9+1802ada577
+       |-- fabric-screen-handler-api-v1 1.3.33+1802ada577
+       |-- fabric-sound-api-v1 1.0.14+1802ada577
+       |-- fabric-transfer-api-v1 3.3.6+8dd72ea377
+       \-- fabric-transitive-access-wideners-v1 4.3.2+1802ada577
+    - fabricloader 0.17.3
+       \-- mixinextras 0.5.0
+    - java 17
+    - minecraft 1.20.1
+    - server_waypoint 3.1.0
+[21:25:02] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/fabric-1.20.1/libraries/net/fabricmc/sponge-mixin/0.16.5+mixin.0.8.7/sponge-mixin-0.16.5+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
+[21:25:02] [main/INFO]: Compatibility level set to JAVA_16
+[21:25:02] [main/INFO]: Compatibility level set to JAVA_17
+[21:25:03] [main/WARN]: Reference map 'server_waypoint-common.refmap.json' for server_waypoint-common.mixins.json could not be read. If this is a development environment you can ignore this message
+[21:25:03] [main/WARN]: Reference map 'server_waypoint-common.refmap.json' for server_waypoint-voxelmap.mixins.json could not be read. If this is a development environment you can ignore this message
+[21:25:03] [main/INFO]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.0).
+[21:25:03] [main/WARN]: Failed sysctl call: hw.cpufrequency, Error code: 2
+[21:25:05] [main/INFO]: Internal translations: he_il, es_es, zh_tw, zh_hk, en_us, zh_cn
+[21:25:05] [main/INFO]: fabric-permissions-api is not loaded, use vanilla permission system
+[21:25:05] [main/INFO]: xaero's mod is not loaded, set sendXaerosWorldId to true by config.json
+[21:25:05] [main/WARN]: FileSystem for server_waypoint 3.1.0 has been closed unexpectedly, existing root path references may break!
+[21:25:05] [main/INFO]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[21:25:05] [server-waypoint-noise-classloader-probe/INFO]: [STDOUT]: SW_NOISE_PLATFORM PASS entrypoint=_959.server_waypoint.fabric.ServerWaypointFabricServer loader=net.fabricmc.loader.impl.launch.knot.KnotClassLoader source=file:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/fabric-1.20.1/mods/server_waypoint-3.1.0-fabric-mc1.20-1.20.1.jar
+[21:25:05] [main/ERROR]: No key layers in MapLike[{}]
+[21:25:05] [main/INFO]: Loaded 7 recipes
+[21:25:05] [main/INFO]: Loaded 1271 advancements
+[21:25:06] [main/INFO]: Applied 0 biome modifications to 0 of 64 new biomes in 519.4 μs
+[21:25:06] [Server thread/INFO]: Created config file at: ./config/server_waypoint/config.json
+[21:25:06] [Server thread/INFO]: Loaded 0 languages:
+[21:25:06] [Server thread/INFO]: Created waypoints directory at: ./config/server_waypoint/waypoints
+[21:25:06] [Server thread/INFO]: Starting minecraft server version 1.20.1
+[21:25:06] [Server thread/INFO]: Loading properties
+[21:25:06] [Server thread/INFO]: Default game type: SURVIVAL
+[21:25:06] [Server thread/INFO]: Generating keypair
+[21:25:06] [Server thread/INFO]: Starting Minecraft server on 127.0.0.1:25890
+[21:25:06] [Server thread/INFO]: Using default channel type
+[21:25:06] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[21:25:06] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
+[21:25:06] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[21:25:06] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[21:25:06] [Server thread/INFO]: Preparing level "world"
+[21:25:06] [Server thread/INFO]: Preparing start region for dimension minecraft:overworld
+[21:25:06] [Worker-Main-4/INFO]: Preparing spawn area: 0%
+[21:25:07] [Worker-Main-7/INFO]: Preparing spawn area: 21%
+[21:25:07] [Server thread/INFO]: Time elapsed: 968 ms
+[21:25:07] [Server thread/INFO]: Done (1.211s)! For help, type "help"
+[21:25:07] [Server thread/INFO]: Stopping the server
+[21:25:07] [Server thread/INFO]: Saved config file: ./config/server_waypoint/config.json
+[21:25:07] [Server thread/INFO]: Stopping server
+[21:25:07] [Server thread/INFO]: Saving players
+[21:25:07] [Server thread/INFO]: Saving worlds
+[21:25:07] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[21:25:07] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[21:25:07] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[21:25:07] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[21:25:07] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[21:25:07] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[21:25:07] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved

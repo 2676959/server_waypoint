@@ -552,8 +552,8 @@ different servers remain distinct.
 Completed: the [selection decision](cross-server-noise-dependency-decision.md) selects
 `org.signal.forks:noise-java:0.1.1` after a scoped KK source review and 35 passing checks in the
 [isolated KK spike](../tools/noise-spike/kk/README.md). Historical NKpsk0 evidence is preserved
-separately. No runtime dependency has been added; final platform packaging/classloader checks
-remain step 3.
+separately. Runtime dependency integration and final platform packaging/classloader evidence
+belong to [step 3](cross-server-step3-validation.md).
 
 - Evaluate maintained Java 17-compatible implementations for `KK`, AES-GCM, exact-suite vectors,
   licensing, dependency size, thread-safety, key lifecycle, and nonce-exhaustion behavior.
@@ -570,6 +570,10 @@ advance past dependency selection without a suitable reviewed implementation. Th
 does not waive this gate for the default encrypted transport.
 
 ### Step 3: add project modules and future-proof proxy interfaces
+
+Completed: [module contracts](cross-server-proxy-module-contracts.md), 11 passing proxy
+contract tests, and [platform validation](cross-server-step3-validation.md): 41 final artifacts
+and 10 native runtime cases pass after upload-branch fixes and rebase.
 
 - Add `proxy-common` and `velocity` Gradle subprojects.
 - Define `CoordinatorTransport`, `BackendTransport`, `ProxyPlayerRouter`, `TransferAdapter`, and

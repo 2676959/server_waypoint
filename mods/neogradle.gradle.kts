@@ -197,6 +197,10 @@ tasks.withType<Jar>().configureEach {
 }
 
 tasks.shadowJar {
+    relocate("com.southernstorm.noise", "_959.server_waypoint.internal.noisekk")
+    dependencies {
+        include(dependency("org.signal.forks:noise-java:.*"))
+    }
     configurations = listOf(shadedDependencies)
     addMultiReleaseAttribute.set(false)
     dependencies {
@@ -234,3 +238,5 @@ tasks.register<Copy>("buildAndCollect") {
     into(rootProject.layout.buildDirectory.file("libs/$mod_version"))
     dependsOn("build")
 }
+
+apply(from = rootProject.file("gradle/noise-packaging.gradle.kts"))

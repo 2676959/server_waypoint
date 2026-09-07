@@ -1,0 +1,252 @@
+[
+  {
+    "name": "paper-1.21",
+    "artifact_sha256": "9764869fb6e5de8e544c1954e4ace557372a1d55c39c37ba508458945c59d6f5",
+    "command": [
+      "/opt/homebrew/opt/openjdk@21/bin/java",
+      "-Xms128M",
+      "-Xmx1024M",
+      "-javaagent:/private/tmp/server-waypoint-step3-artifact-verified/probe.jar=_959.server_waypoint.ServerWaypointPaperMC|/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-paper-1.21/noise-evidence.txt",
+      "-jar",
+      "server.jar",
+      "nogui"
+    ],
+    "cwd": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-paper-1.21",
+    "status": "PASS",
+    "evidence": "PASS entrypoint=_959.server_waypoint.ServerWaypointPaperMC\nloader=io.papermc.paper.plugin.entrypoint.classloader.PaperPluginClassLoader\nsource=file:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-paper-1.21/plugins/server_waypoint-3.1.0-paper-mc1.21-1.21.10.jar\n",
+    "exit_code": 0,
+    "project": "paper:1.21-paper",
+    "runtime_sha256": "ab9bb1afc3cea6978a0c03ce8448aa654fe8a9c4dddf341e7cbda1b0edaa73f5",
+    "source_artifact": "/private/tmp/server-waypoint-cross-server-plan/paper/versions/1.21-paper/build/libs/server_waypoint-3.1.0-paper-mc1.21-1.21.10.jar",
+    "extra_runtime_dependencies": [],
+    "raw_log_sha256": "1b2cd3929910d5dc24c63b32b5e7f9401836a9c8d980b09ea26ef44ed0b8d1f4",
+    "retained_log": "paper-1.21.txt",
+    "retained_log_sha256": "d042db405da5553bf864685744688733ffe9e981907b5fd82f960280fc6978b2"
+  },
+  {
+    "name": "paper-1.21.11",
+    "artifact_sha256": "cb5892630dc710a223b87f6dad14756dd1f44bfd27041cac53fd64d37ad4df52",
+    "command": [
+      "/Volumes/ssd/gradle_home/jdks/eclipse_adoptium-25-aarch64-os_x.2/jdk-25.0.3+9/Contents/Home/bin/java",
+      "-Xms128M",
+      "-Xmx1024M",
+      "-javaagent:/private/tmp/server-waypoint-step3-artifact-verified/probe.jar=_959.server_waypoint.ServerWaypointPaperMC|/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-paper-1.21.11/noise-evidence.txt",
+      "-jar",
+      "server.jar",
+      "nogui"
+    ],
+    "cwd": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-paper-1.21.11",
+    "status": "PASS",
+    "evidence": "PASS entrypoint=_959.server_waypoint.ServerWaypointPaperMC\nloader=io.papermc.paper.plugin.entrypoint.classloader.PaperPluginClassLoader\nsource=file:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-paper-1.21.11/plugins/server_waypoint-3.1.0-paper-mc1.21.11-26.1.2.jar\n",
+    "exit_code": 0,
+    "project": "paper:1.21.11-paper",
+    "runtime_sha256": "82a487ab8c2d0f6f072b8dbaedc9218c85ae3a7d167808124462b248955beec3",
+    "source_artifact": "/private/tmp/server-waypoint-cross-server-plan/paper/versions/1.21.11-paper/build/libs/server_waypoint-3.1.0-paper-mc1.21.11-26.1.2.jar",
+    "extra_runtime_dependencies": [],
+    "raw_log_sha256": "a173651686b6123edfe07193808ce29e0de0e8f5d0d9eadb7e59d33a3819c186",
+    "retained_log": "paper-1.21.11.txt",
+    "retained_log_sha256": "53d35dab320b0f948d60e2c41f7d31e66593d143f7cf0fa858b0c5a97698881f"
+  },
+  {
+    "name": "paper-26.2",
+    "artifact_sha256": "eac1df840dd27bc3446fc34301a698944c200f08e507436f03cc85ae17d7ab11",
+    "command": [
+      "/Volumes/ssd/gradle_home/jdks/eclipse_adoptium-25-aarch64-os_x.2/jdk-25.0.3+9/Contents/Home/bin/java",
+      "-Xms128M",
+      "-Xmx1024M",
+      "-javaagent:/private/tmp/server-waypoint-step3-artifact-verified/probe.jar=_959.server_waypoint.ServerWaypointPaperMC|/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-paper-26.2/noise-evidence.txt",
+      "-jar",
+      "server.jar",
+      "nogui"
+    ],
+    "cwd": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-paper-26.2",
+    "status": "PASS",
+    "evidence": "PASS entrypoint=_959.server_waypoint.ServerWaypointPaperMC\nloader=io.papermc.paper.plugin.entrypoint.classloader.PaperPluginClassLoader\nsource=file:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-paper-26.2/plugins/server_waypoint-3.1.0-paper-mc26.2.jar\n",
+    "exit_code": 0,
+    "project": "paper:26.2-paper",
+    "runtime_sha256": "668ca744350ff08c27b5f51d2c929a1dc2b3c4b7cdc1408295c61211e6e924fc",
+    "source_artifact": "/private/tmp/server-waypoint-cross-server-plan/paper/versions/26.2-paper/build/libs/server_waypoint-3.1.0-paper-mc26.2.jar",
+    "extra_runtime_dependencies": [],
+    "raw_log_sha256": "b82018fb2be757b0c24425fbf575bff61a9330020221ae6c134e63d106fb50f4",
+    "retained_log": "paper-26.2.txt",
+    "retained_log_sha256": "e7591eb500b92dc8960db5748efea9c4daf78611fdc4ee9d935cd47f082257ce"
+  },
+  {
+    "name": "velocity-4.1.1",
+    "artifact_sha256": "1e167305fffb230acc0551fcb06f4713373d29b3efde31d997c9bf5c0a7591ab",
+    "command": [
+      "/Volumes/ssd/gradle_home/jdks/eclipse_adoptium-25-aarch64-os_x.2/jdk-25.0.3+9/Contents/Home/bin/java",
+      "-Xms128M",
+      "-Xmx1024M",
+      "-javaagent:/private/tmp/server-waypoint-step3-artifact-verified/probe.jar=_959.server_waypoint.velocity.ServerWaypointVelocity|/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-velocity-4.1.1/noise-evidence.txt",
+      "-jar",
+      "velocity.jar"
+    ],
+    "cwd": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-velocity-4.1.1",
+    "status": "PASS",
+    "evidence": "PASS entrypoint=_959.server_waypoint.velocity.ServerWaypointVelocity\nloader=com.velocitypowered.proxy.plugin.PluginClassLoader\nsource=file:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-velocity-4.1.1/plugins/server_waypoint-3.1.0-velocity.jar\n",
+    "exit_code": 0,
+    "project": "velocity",
+    "runtime_sha256": "846411d2d0560fed0f23496ffb89681be528d2c0650ecdcf21724d2d7bd9c1ee",
+    "source_artifact": "/private/tmp/server-waypoint-cross-server-plan/velocity/build/libs/server_waypoint-3.1.0-velocity.jar",
+    "extra_runtime_dependencies": [],
+    "raw_log_sha256": "e5b6370b403d5d6650b0c37f42b5f31abfb5295a0c30deddfe4da6778f7d45c2",
+    "retained_log": "velocity-4.1.1.txt",
+    "retained_log_sha256": "ae213725be0e3d6c95efe840fa09c970ef3a37c4e6180ad4eb3e67eb2426400d"
+  },
+  {
+    "name": "fabric-1.20.1",
+    "artifact_sha256": "028aba8f76ddf12c2044bf6b54f15cccbaf12cfb3becda00f3a30424a8b04c48",
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xms128M",
+      "-Xmx1024M",
+      "-javaagent:/private/tmp/server-waypoint-step3-artifact-verified/probe.jar=_959.server_waypoint.fabric.ServerWaypointFabricServer|/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-fabric-1.20.1/noise-evidence.txt",
+      "-jar",
+      "server.jar",
+      "nogui"
+    ],
+    "cwd": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-fabric-1.20.1",
+    "status": "PASS",
+    "evidence": "PASS entrypoint=_959.server_waypoint.fabric.ServerWaypointFabricServer\nloader=net.fabricmc.loader.impl.launch.knot.KnotClassLoader\nsource=file:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-fabric-1.20.1/mods/server_waypoint-3.1.0-fabric-mc1.20-1.20.1.jar\n",
+    "exit_code": 0,
+    "project": "mods:1.20.1-fabric",
+    "runtime_sha256": "3d2166e2b5ab0ae76ae22d62450bb542439c4615c5eec4b085db3897ca1219e0",
+    "source_artifact": "/private/tmp/server-waypoint-cross-server-plan/mods/versions/1.20.1-fabric/build/libs/server_waypoint-3.1.0-fabric-mc1.20-1.20.1.jar",
+    "extra_runtime_dependencies": [
+      {
+        "path": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-fabric-1.20.1/mods/fabric-api.jar",
+        "sha256": "0ece50476da3692111ab04b75945c5458e70d98cd069eefc044ab3e57977deeb"
+      }
+    ],
+    "raw_log_sha256": "634fc4b247ae32e3c4696951aaf85f8296f7b91e99e068079aec221e3f21204e",
+    "retained_log": "fabric-1.20.1.txt",
+    "retained_log_sha256": "3beabfc1e484c98e46216845749b61830d4d3d74bbd987025fab5536fac8763a"
+  },
+  {
+    "name": "fabric-26.2",
+    "artifact_sha256": "f0ffcfd47d99a71b9d7cbdadcee32fe90b225b43d538c7e1bd5fc10da536ea9f",
+    "command": [
+      "/Volumes/ssd/gradle_home/jdks/eclipse_adoptium-25-aarch64-os_x.2/jdk-25.0.3+9/Contents/Home/bin/java",
+      "-Xms128M",
+      "-Xmx1024M",
+      "-javaagent:/private/tmp/server-waypoint-step3-artifact-verified/probe.jar=_959.server_waypoint.fabric.ServerWaypointFabricServer|/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-fabric-26.2/noise-evidence.txt",
+      "-jar",
+      "server.jar",
+      "nogui"
+    ],
+    "cwd": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-fabric-26.2",
+    "status": "PASS",
+    "evidence": "PASS entrypoint=_959.server_waypoint.fabric.ServerWaypointFabricServer\nloader=net.fabricmc.loader.impl.launch.knot.KnotClassLoader\nsource=file:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-fabric-26.2/mods/server_waypoint-3.1.0-fabric-mc26.2.jar\n",
+    "exit_code": 0,
+    "project": "mods:26.2-fabric",
+    "runtime_sha256": "301f83aac36b23f2bc64cc58560edf98533cfaa30e53af002ba950c75f4100b4",
+    "source_artifact": "/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.2-fabric/build/libs/server_waypoint-3.1.0-fabric-mc26.2.jar",
+    "extra_runtime_dependencies": [
+      {
+        "path": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-fabric-26.2/mods/fabric-api.jar",
+        "sha256": "1083ce79231f9d358d7b172dd43553234e2f3834993a3ae42a1ec976af5ce418"
+      }
+    ],
+    "raw_log_sha256": "e579f403f4274d9a937ef5df74747eeb1cbdb1138c231d5544263a63b354b098",
+    "retained_log": "fabric-26.2.txt",
+    "retained_log_sha256": "885d5d1af098307140ef9c536ea183bc9055b41774f9246d665e17e085a4b2e1"
+  },
+  {
+    "name": "forge-1.20.1",
+    "artifact_sha256": "05d5b64ca6a0c27a0ddb374fae9d6a33f8ab145fc155d67b1aa742640abe643d",
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xms128M",
+      "-Xmx1024M",
+      "-javaagent:/private/tmp/server-waypoint-step3-artifact-verified/probe.jar=_959.server_waypoint.forge.ServerWaypointForge|/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/noise-evidence.txt",
+      "@/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/libraries/net/minecraftforge/forge/1.20.1-47.4.20/unix_args.txt",
+      "nogui"
+    ],
+    "cwd": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1",
+    "status": "PASS",
+    "evidence": "PASS entrypoint=_959.server_waypoint.forge.ServerWaypointForge\nloader=cpw.mods.modlauncher.TransformingClassLoader\nsource=union:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/mods/server_waypoint-3.1.0-forge-mc1.20-1.20.1.jar%23101!/\n",
+    "exit_code": 0,
+    "project": "mods:1.20.1-forge",
+    "runtime_sha256": "0ebcf198609f925e0018842a79473ef74fda78534f86d82f2c0fdb26449c1fa4",
+    "source_artifact": "/private/tmp/server-waypoint-cross-server-plan/mods/versions/1.20.1-forge/build/libs/server_waypoint-3.1.0-forge-mc1.20-1.20.1.jar",
+    "extra_runtime_dependencies": [],
+    "raw_log_sha256": "f6b21301e3ff7ceac91a655c8af18d9aa1147d3d049f01d3fb240c28498c7b99",
+    "retained_log": "forge-1.20.1.txt",
+    "retained_log_sha256": "b20fb13fc322c68f24aba358f8bababb28a5a213a664b096aeb20dc4ad50d5fc"
+  },
+  {
+    "name": "forge-26.2",
+    "artifact_sha256": "c7319df7c0593659e5644c80fae0a9310c4e6e3f5801702dbbd4a89f39532f4b",
+    "command": [
+      "/Volumes/ssd/gradle_home/jdks/eclipse_adoptium-25-aarch64-os_x.2/jdk-25.0.3+9/Contents/Home/bin/java",
+      "-Xms128M",
+      "-Xmx1024M",
+      "-javaagent:/private/tmp/server-waypoint-step3-artifact-verified/probe.jar=_959.server_waypoint.forge.ServerWaypointForge|/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-26.2/noise-evidence.txt",
+      "@/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-26.2/libraries/net/minecraftforge/forge/26.2-65.0.0/unix_args.txt",
+      "nogui"
+    ],
+    "cwd": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-26.2",
+    "status": "PASS",
+    "evidence": "PASS entrypoint=_959.server_waypoint.forge.ServerWaypointForge\nloader=cpw.mods.modlauncher.TransformingClassLoader\nsource=jar:file:///private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-26.2/mods/server_waypoint-3.1.0-forge-mc26.2.jar!/\n",
+    "exit_code": 0,
+    "project": "mods:26.2-forge",
+    "runtime_sha256": "683076136410174509e97c055086145f2bb7f41709bab8f3e1faf317d78e61dd",
+    "source_artifact": "/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.2-forge/build/libs/server_waypoint-3.1.0-forge-mc26.2.jar",
+    "extra_runtime_dependencies": [
+      {
+        "path": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-26.2/forge-26.2-65.0.0-shim.jar",
+        "sha256": "eb428326c68b430d9888c994170400ad0bd8d42335ceeecf82642a9c10784983"
+      }
+    ],
+    "raw_log_sha256": "d43db8623c09940fe0a45e68614e7d558b9549ee78f74a878fc7382668e831fc",
+    "retained_log": "forge-26.2.txt",
+    "retained_log_sha256": "01c9e564aedf8d76b6cef11ced31a2db3b466654ff449108b938ad33fb2aee5d"
+  },
+  {
+    "name": "neoforge-1.20.2",
+    "artifact_sha256": "4c8396d77b212a1b9180ee765625cb05a747d0864123bd600c140effe193f18f",
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xms128M",
+      "-Xmx1024M",
+      "-javaagent:/private/tmp/server-waypoint-step3-artifact-verified/probe.jar=_959.server_waypoint.neoforge.ServerWaypointNeoForge|/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-neoforge-1.20.2/noise-evidence.txt",
+      "@/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-neoforge-1.20.2/libraries/net/neoforged/neoforge/20.2.93/unix_args.txt",
+      "nogui"
+    ],
+    "cwd": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-neoforge-1.20.2",
+    "status": "PASS",
+    "evidence": "PASS entrypoint=_959.server_waypoint.neoforge.ServerWaypointNeoForge\nloader=cpw.mods.modlauncher.TransformingClassLoader\nsource=union:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-neoforge-1.20.2/mods/server_waypoint-3.1.0-neoforge-mc1.20.2.jar%23123!/\n",
+    "exit_code": 0,
+    "project": "mods:1.20.2-neoforge",
+    "runtime_sha256": "f2badd12f9e5d0cef4d2c9143d1ae2e008345fa7438e89cee629c13e33de00c7",
+    "source_artifact": "/private/tmp/server-waypoint-cross-server-plan/mods/versions/1.20.2-neoforge/build/libs/server_waypoint-3.1.0-neoforge-mc1.20.2.jar",
+    "extra_runtime_dependencies": [],
+    "raw_log_sha256": "c9038e6a14006398495a8363a992b87355921cf02f09325866589c65aa6f40e3",
+    "retained_log": "neoforge-1.20.2.txt",
+    "retained_log_sha256": "7bf618f9129744dfe76f8e1a88c3375743dc1e846c3441d9392ac5c650203b48"
+  },
+  {
+    "name": "neoforge-26.2",
+    "artifact_sha256": "e6d07d9267895a5253ce83b3c54c6d50256e24ab4e6f371b4a183ff93afb1ffc",
+    "command": [
+      "/Volumes/ssd/gradle_home/jdks/eclipse_adoptium-25-aarch64-os_x.2/jdk-25.0.3+9/Contents/Home/bin/java",
+      "-Xms128M",
+      "-Xmx1024M",
+      "-javaagent:/private/tmp/server-waypoint-step3-artifact-verified/probe.jar=_959.server_waypoint.neoforge.ServerWaypointNeoForge|/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-neoforge-26.2/noise-evidence.txt",
+      "@/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-neoforge-26.2/libraries/net/neoforged/neoforge/26.2.0.3-beta/unix_args.txt",
+      "nogui"
+    ],
+    "cwd": "/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-neoforge-26.2",
+    "status": "PASS",
+    "evidence": "PASS entrypoint=_959.server_waypoint.neoforge.ServerWaypointNeoForge\nloader=net.neoforged.fml.classloading.transformation.TransformingClassLoader\nsource=file:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-neoforge-26.2/mods/server_waypoint-3.1.0-neoforge-mc26.2.jar\n",
+    "exit_code": 0,
+    "project": "mods:26.2-neoforge",
+    "runtime_sha256": "90fad51778895f921182d6685719cba8a6d8caff69974d721bbdef750fe34c24",
+    "source_artifact": "/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.2-neoforge/build/libs/server_waypoint-3.1.0-neoforge-mc26.2.jar",
+    "extra_runtime_dependencies": [],
+    "raw_log_sha256": "10aa7232f5be1185532492ff987ba4a01e0a34cd8e558e2dfcc912a4557039ba",
+    "retained_log": "neoforge-26.2.txt",
+    "retained_log_sha256": "f06ed66250fc616c5571e778f8614513bdabeac49a54bd1e88e6f1e6bc772ac4"
+  }
+]
