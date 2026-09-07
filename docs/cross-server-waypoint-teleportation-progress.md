@@ -4,15 +4,15 @@ Last updated: 2026-09-07.
 Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
 KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
 Step 2 is now `fd3ba53` after rebasing onto upload-branch fix `f0d8281`.
-Step 3 was committed as `3fccc28`. The current change implements step 4 domain models.
+Step 3 was committed as `3fccc28`; step 4 as `6d7be5a`. The current change implements step 5 codecs.
 
 ## Current status
 
-**Steps 1–4 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
+**Steps 1–5 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
 for `Noise_KK_25519_AESGCM_SHA256`, with 35 passing KK checks and a scoped source review.**
 Step 3 adds the proxy modules/contracts and private dependency packaging; all 41 artifact checks
 and 10 native runtime checks pass. Step 4 adds immutable catalogs and reader views.
-Steps 5–19 have not started. No production cross-server networking, remote commands, catalog
+Step 5 adds canonical messages and bounded codecs. Steps 6–19 have not started. No production cross-server networking, remote commands, catalog
 synchronization, player transfers, or remote GUI behavior has been enabled.
 
 The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
@@ -38,7 +38,8 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 2 — Select and prove the Noise dependency | Complete | New isolated `tools/noise-spike/kk`: published Signal artifact pinned by SHA-256, source review, exact KK vectors, fail-closed nonce boundary tests, confirmation/replay checks, 26 two-process cases, and standalone relocation. Selected for step-3 integration, not production release approval. |
 | 3 — Modules and proxy interfaces | Complete | `proxy-common`, inert `velocity`, common transport/proxy-neutral lifecycle and transfer contracts, 11 fake-adapter contract tests, private Noise shading on all platforms, and development-only artifact/native-classloader probes. See [validation](cross-server-step3-validation.md). |
 | 4 — Identity and catalog models | Complete | Immutable nested snapshots, exact-key lookup, independent catalog/list revisions, receiver-local receipt time, and validated reader views. See [model contract](cross-server-catalog-models.md). |
-| 5–19 | Not started | Codecs, production transport, pairing, registration, synchronization, commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
+| 5 — Canonical messages and codecs | Complete | Fifteen typed message families with stable IDs, correlated/sequenced envelopes, strict canonical catalog encoding, bounded chunk/delta payloads, and malformed-input tests. See [wire specification](cross-server-application-codec-v1.md). |
+| 6–19 | Not started | Production transport, pairing, registration, synchronization, commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
@@ -84,6 +85,18 @@ and explicit new-file whitespace checks passed. See [model semantics](cross-serv
 No platform source/build configuration changed; the full artifact and live runtime matrix was
 not rerun for this domain-only step. The step-3 results above remain historical evidence.
 
+## Step-5 verification
+
+On 2026-09-07, `./gradlew :common:test :proxy-common:test --max-workers=2 --console=plain`
+passed: 385 common tests (including 60 new codec cases) and 11 proxy contract tests, with no
+failures or skips. Compilation used the common module's Java 17 toolchain. Tests cover all
+15 message families, every truncation prefix, canonical ordering, strict UTF-8, independent
+budgets, catalog/handoff validation, defensive ownership, and 2,000 seeded byte mutations.
+`git diff --check` and explicit new-file whitespace checks passed. See the
+[wire specification](cross-server-application-codec-v1.md) for payloads and exact limits.
+No runtime networking or platform configuration changed. Full artifact/native runtime checks were
+not repeated, and these codec tests do not establish transport, replay, reassembly, or handoff safety.
+
 ## Historical evidence retained
 
 - Step 1: `./gradlew :common:test --console=plain` passed all 25 identity cases during the original
@@ -95,11 +108,10 @@ not rerun for this domain-only step. The step-3 results above remain historical 
 
 ## Next work, in order
 
-1. Step 5: implement application message models and bounded canonical codecs using the immutable step-4 catalog types.
-2. Step 6: implement both transport modes, endpoint/mode rejection, transcript binding, confirmation
+1. Step 6: implement both transport modes, endpoint/mode rejection, transcript binding, confirmation
    gating, serialized session lifecycle, terminal failures, no downgrade, and bounded fragmentation.
-3. Step 7: prove the authenticated pairing bootstrap, canonical key import, rotation, and revocation.
-4. Continue the remaining registration/catalog/handoff steps in order. Plaintext backend identity
+2. Step 7: prove the authenticated pairing bootstrap, canonical key import, rotation, and revocation.
+3. Continue the remaining registration/catalog/handoff steps in order. Plaintext backend identity
    must never be described as cryptographically authenticated.
 
 Update this file when a step's status changes, a blocker is resolved, or new validation is run.

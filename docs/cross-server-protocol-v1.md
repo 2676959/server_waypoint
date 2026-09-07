@@ -2,7 +2,8 @@
 
 This is the normative feature contract for implementation-plan step 1. MUST, MUST NOT,
 and SHOULD express requirements for subsequent implementation steps. The constants and
-identity types in `common/.../crossserver` implement only this contract; they do not enable
+domain types and canonical codecs in `common/.../crossserver` implement the completed model/wire
+steps; they do not enable
 networking, register commands or permissions, or transfer players.
 
 ## Version and identity
@@ -10,7 +11,9 @@ networking, register commands or permissions, or transfer players.
 - `CrossServerProtocol.PROTOCOL_VERSION` is **1**. It versions the backend/coordinator
   application protocol independently of the Minecraft custom-payload `ProtocolVersion`.
   An unsupported application version MUST fail closed; v1 defines no compatibility fallback.
-  Transport framing and numeric message IDs will be specified in their implementation steps.
+  Numeric message IDs and canonical payloads are defined in the
+  [v1 application wire format](cross-server-application-codec-v1.md). Transport framing remains
+  a later implementation step.
 - `RemoteServerId` MUST be an explicitly configured, stable, 1–64 character ASCII string
   matching `[a-z0-9][a-z0-9_-]{0,63}`. No trimming, case conversion, or Unicode normalization
   is allowed. Null and invalid values MUST be rejected. It MUST NOT derive from the random
