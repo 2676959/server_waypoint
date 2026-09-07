@@ -1,17 +1,18 @@
 # Cross-server waypoint teleportation progress
 
-Last updated: 2026-09-06.
+Last updated: 2026-09-07.
 Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
 KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
 Step 2 is now `fd3ba53` after rebasing onto upload-branch fix `f0d8281`.
-The current change implements step 3 without adding production transport.
+Step 3 was committed as `3fccc28`. The current change implements step 4 domain models.
 
 ## Current status
 
-**Steps 1–3 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
+**Steps 1–4 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
 for `Noise_KK_25519_AESGCM_SHA256`, with 35 passing KK checks and a scoped source review.**
 Step 3 adds the proxy modules/contracts and private dependency packaging; all 41 artifact checks
-and 10 native runtime checks pass. Steps 4–19 have not started. No production cross-server networking, remote commands, catalog
+and 10 native runtime checks pass. Step 4 adds immutable catalogs and reader views.
+Steps 5–19 have not started. No production cross-server networking, remote commands, catalog
 synchronization, player transfers, or remote GUI behavior has been enabled.
 
 The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
@@ -36,7 +37,8 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 1 — Freeze the feature contract | Complete | Commit `a0af646`: separate protocol version 1, stable server-ID validation, exact `RemoteWaypointKey`, catalog states, public export policy, permission constants, normative command/security contract, and identity tests. The transport contract was subsequently revised to KK/plaintext. |
 | 2 — Select and prove the Noise dependency | Complete | New isolated `tools/noise-spike/kk`: published Signal artifact pinned by SHA-256, source review, exact KK vectors, fail-closed nonce boundary tests, confirmation/replay checks, 26 two-process cases, and standalone relocation. Selected for step-3 integration, not production release approval. |
 | 3 — Modules and proxy interfaces | Complete | `proxy-common`, inert `velocity`, common transport/proxy-neutral lifecycle and transfer contracts, 11 fake-adapter contract tests, private Noise shading on all platforms, and development-only artifact/native-classloader probes. See [validation](cross-server-step3-validation.md). |
-| 4–19 | Not started | Catalog models, codecs, production transport, pairing, registration, synchronization, commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
+| 4 — Identity and catalog models | Complete | Immutable nested snapshots, exact-key lookup, independent catalog/list revisions, receiver-local receipt time, and validated reader views. See [model contract](cross-server-catalog-models.md). |
+| 5–19 | Not started | Codecs, production transport, pairing, registration, synchronization, commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
@@ -73,6 +75,15 @@ was rebased onto that commit at the user's direction. The post-rebase full build
 startup/classloader/shutdown cases passed against matching artifact hashes. The final contract
 fixture refinement also passed all 11 tests. See [detailed evidence](cross-server-step3-validation.md).
 
+## Step-4 verification
+
+On 2026-09-07, `./gradlew :common:test :proxy-common:test --max-workers=2 --console=plain`
+passed: 325 common tests (including 9 new catalog-model cases) and 11 proxy contract tests,
+with no failures or skips. The common module uses the Java 17 toolchain. `git diff --check`
+and explicit new-file whitespace checks passed. See [model semantics](cross-server-catalog-models.md).
+No platform source/build configuration changed; the full artifact and live runtime matrix was
+not rerun for this domain-only step. The step-3 results above remain historical evidence.
+
 ## Historical evidence retained
 
 - Step 1: `./gradlew :common:test --console=plain` passed all 25 identity cases during the original
@@ -84,7 +95,7 @@ fixture refinement also passed all 11 tests. See [detailed evidence](cross-serve
 
 ## Next work, in order
 
-1. Steps 4–5: implement immutable catalog/message models and bounded canonical codecs.
+1. Step 5: implement application message models and bounded canonical codecs using the immutable step-4 catalog types.
 2. Step 6: implement both transport modes, endpoint/mode rejection, transcript binding, confirmation
    gating, serialized session lifecycle, terminal failures, no downgrade, and bounded fragmentation.
 3. Step 7: prove the authenticated pairing bootstrap, canonical key import, rotation, and revocation.
