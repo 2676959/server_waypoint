@@ -44,7 +44,8 @@ collector. The unshaded diagnostic JAR is not deployable. Release wiring for Vel
 Noise is an `implementation` dependency of `common`, pinned by `noise_version=0.1.1`. Every platform
 explicitly retains it in its final shading route. `gradle/noise-packaging.gradle.kts` checks the
 reviewed JAR SHA-256 before packaging and includes its MIT notice. All platforms use the private
-`_959.server_waypoint.internal.noisekk` namespace. Runtime code does not yet call Noise.
+`_959.server_waypoint.internal.noisekk` namespace. Step 3 did not call Noise at runtime; the shared [step-6 channels](cross-server-tcp-transport-v1.md)
+now do, without enabling platform lifecycle startup.
 
 Forge requires an additional packaging boundary: `shadedJar` reads the finished `shadowJar`, and
 `shadedJarJar` adds jar-in-jar dependencies to that relocated input. Older targets then reobfuscate
@@ -63,5 +64,5 @@ The [test tools](../tools/noise-platform-test/README.md) remain outside release 
 ./gradlew build --max-workers=2 --console=plain
 ```
 
-No active Stonecutter project switch is needed. The next model/codec work remains steps 4 and 5;
+No active Stonecutter project switch is needed. Model/codec work was subsequently completed in steps 4 and 5;
 production transport must not bypass unresolved platform verification gates.

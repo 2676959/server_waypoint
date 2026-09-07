@@ -24,7 +24,8 @@ UUID. All phases of one handoff preserve the original prepare UUID. Multiple sna
 a publication request UUID and snapshot UUID but have distinct sender sequences. Step 6 must enforce
 monotonic sequences without wrapping, and later request handlers must reject duplicate operations
 without rejecting legitimate correlated responses/phases. UUID syntax and decoding alone provide
-no replay protection. Nothing about plaintext sequencing authenticates its sender.
+no replay protection. Step 6 now implements the transport rules described in the
+[TCP specification](cross-server-tcp-transport-v1.md). Nothing about plaintext sequencing authenticates its sender.
 
 Primitive formats:
 
@@ -148,4 +149,4 @@ all truncation prefixes, trailing bytes (including declared trailing payload), e
 receiver timestamps, canonical order and duplicate rejection, strict UTF-8, numeric and collection
 malformations, independent resource limits, binary/delta ownership, invalid handoff/delta values,
 and 2,000 deterministic byte mutations. Encoder/decoder object-budget agreement is checked for
-all messages across budgets 1–200. Production framing and runtime integration remain unimplemented.
+all messages across budgets 1–200. Production framing is implemented in step 6; platform runtime integration remains pending.

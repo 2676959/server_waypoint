@@ -4,16 +4,17 @@ Last updated: 2026-09-07.
 Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
 KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
 Step 2 is now `fd3ba53` after rebasing onto upload-branch fix `f0d8281`.
-Step 3 was committed as `3fccc28`; step 4 as `6d7be5a`. The current change implements step 5 codecs.
+Step 3 was committed as `3fccc28`; step 4 as `6d7be5a`. Step 5 codecs are complete. The current change implements step 6 TCP channels.
 
 ## Current status
 
-**Steps 1–5 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
+**Steps 1–6 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
 for `Noise_KK_25519_AESGCM_SHA256`, with 35 passing KK checks and a scoped source review.**
 Step 3 adds the proxy modules/contracts and private dependency packaging; all 41 artifact checks
 and 10 native runtime checks pass. Step 4 adds immutable catalogs and reader views.
-Step 5 adds canonical messages and bounded codecs. Steps 6–19 have not started. No production cross-server networking, remote commands, catalog
-synchronization, player transfers, or remote GUI behavior has been enabled.
+Step 5 adds canonical messages and bounded codecs. Step 6 adds reusable bounded TCP channels in both
+modes. Steps 7–19 have not started. No platform lifecycle starts these channels, and no remote commands,
+catalog synchronization service, player transfers, or remote GUI behavior has been enabled.
 
 The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
 The [protocol v1 contract](cross-server-protocol-v1.md) defines the feature semantics.
@@ -28,7 +29,7 @@ source-review findings, maintenance risk, integration requirements, and outstand
 - KK requires transcript-bound key selection and backend transport confirmation before operations.
 - Step 2 selects/reviews the dependency and proves standalone relocation. Step 3 creates the
   modules and completes the final platform artifact/classloader matrix before production transport.
-- Neither production mode nor the revised pairing workflow is implemented.
+- Both transport modes are implemented as reusable channels; platform startup and the revised pairing workflow remain pending.
 
 ## Completed work
 
@@ -39,7 +40,8 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 3 — Modules and proxy interfaces | Complete | `proxy-common`, inert `velocity`, common transport/proxy-neutral lifecycle and transfer contracts, 11 fake-adapter contract tests, private Noise shading on all platforms, and development-only artifact/native-classloader probes. See [validation](cross-server-step3-validation.md). |
 | 4 — Identity and catalog models | Complete | Immutable nested snapshots, exact-key lookup, independent catalog/list revisions, receiver-local receipt time, and validated reader views. See [model contract](cross-server-catalog-models.md). |
 | 5 — Canonical messages and codecs | Complete | Fifteen typed message families with stable IDs, correlated/sequenced envelopes, strict canonical catalog encoding, bounded chunk/delta payloads, and malformed-input tests. See [wire specification](cross-server-application-codec-v1.md). |
-| 6–19 | Not started | Production transport, pairing, registration, synchronization, commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
+| 6 — Bounded TCP transport | Complete | Explicit KK/plaintext modes, transcript-bound handshake and confirmation, bounded records/catalog assembly, sequence/replay tracking, admission limits, absolute deadlines and terminal cleanup. See [transport contract](cross-server-tcp-transport-v1.md). |
+| 7–19 | Not started | Pairing, lifecycle/registration, synchronization, commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
@@ -97,6 +99,18 @@ budgets, catalog/handoff validation, defensive ownership, and 2,000 seeded byte 
 No runtime networking or platform configuration changed. Full artifact/native runtime checks were
 not repeated, and these codec tests do not establish transport, replay, reassembly, or handoff safety.
 
+## Step-6 verification
+
+On 2026-09-07, `./gradlew :common:test :proxy-common:test --max-workers=2 --console=plain`
+passed 433 common tests (48 new transport cases) and 11 proxy tests, without failures or skips.
+Real loopback sockets exercise both modes, KK confirmation and transcript rejection, framing,
+replay, resource ceilings, concurrent directions, stalled peers and cleanup. See the
+[transport specification](cross-server-tcp-transport-v1.md) for exact scope and limits.
+`:velocity:build` also passed; the final JAR contains the new Java 17 Noise caller with private
+relocation and no original Noise namespace. Tracked/new-file whitespace checks passed.
+The full backend artifact/native runtime matrix was not repeated. No game lifecycle starts these
+channels; pairing/reconnect and live feature integration remain pending.
+
 ## Historical evidence retained
 
 - Step 1: `./gradlew :common:test --console=plain` passed all 25 identity cases during the original
@@ -108,10 +122,9 @@ not repeated, and these codec tests do not establish transport, replay, reassemb
 
 ## Next work, in order
 
-1. Step 6: implement both transport modes, endpoint/mode rejection, transcript binding, confirmation
-   gating, serialized session lifecycle, terminal failures, no downgrade, and bounded fragmentation.
-2. Step 7: prove the authenticated pairing bootstrap, canonical key import, rotation, and revocation.
-3. Continue the remaining registration/catalog/handoff steps in order. Plaintext backend identity
+1. Step 7: prove the authenticated pairing bootstrap, canonical key import, rotation, and revocation.
+2. Step 8: wrap the blocking channels in bounded lifecycle workers, with reconnect, registration and heartbeat.
+3. Continue the remaining catalog/handoff steps in order. Plaintext backend identity
    must never be described as cryptographically authenticated.
 
 Update this file when a step's status changes, a blocker is resolved, or new validation is run.

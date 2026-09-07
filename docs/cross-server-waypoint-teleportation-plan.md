@@ -14,7 +14,8 @@ messages so a future hybrid X25519 plus ML-KEM suite can be added without changi
 messages.
 
 Implementation status is tracked in [the progress record](cross-server-waypoint-teleportation-progress.md).
-This revision changes the design only; KK and plaintext runtime support are not implemented.
+Steps 1–6 now include reusable KK/plaintext TCP channels; platform startup and the remaining
+services are not implemented. See the progress record for current evidence.
 
 ## Scope
 
@@ -616,6 +617,9 @@ Verification: deterministic codec tests cover every message, unknown type IDs, t
 bytes, oversized strings/collections, and malformed waypoint data.
 
 ### Step 6: implement bounded TCP framing for both modes
+
+Completed as reusable channels: [transport contract and verification](cross-server-tcp-transport-v1.md).
+Platform lifecycle/reconnect remains step 8.
 
 - Implement explicit mode matching, KK handshake/confirmation, encrypted records, bounded
   application reassembly, and separate inbound/outbound sequence state.
