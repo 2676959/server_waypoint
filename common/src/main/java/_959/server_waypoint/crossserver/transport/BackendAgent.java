@@ -1,6 +1,7 @@
 package _959.server_waypoint.crossserver.transport;
 
 import _959.server_waypoint.crossserver.RemoteServerId;
+import _959.server_waypoint.crossserver.catalog.CatalogPublisher;
 import _959.server_waypoint.crossserver.protocol.*;
 import java.io.IOException;
 import java.net.Socket;
@@ -21,6 +22,8 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
     private final TcpLimits limits;
     private final ProtocolLimits protocol;
     private final LifecycleSettings settings;
+    private final CatalogPublisher publisher;
+    private ScheduledThreadPoolExecutor publications;
     private final ConnectionMetrics metrics = new ConnectionMetrics();
     private final Object retry = new Object();
     private ExecutorService reader;
@@ -35,7 +38,15 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
     public BackendAgent(TcpEndpoint endpoint, TransportMode mode, RemoteServerId id, Set<Integer> capabilities,
                         NoiseKeys keys, byte[] coordinatorPin, TcpLimits limits, ProtocolLimits protocol,
                         LifecycleSettings settings) {
+        this(endpoint, mode, id, capabilities, keys, coordinatorPin, limits, protocol, settings, null);
+    }
+
+    public BackendAgent(TcpEndpoint endpoint, TransportMode mode, RemoteServerId id, Set<Integer> capabilities,
+                        NoiseKeys keys, byte[] coordinatorPin, TcpLimits limits, ProtocolLimits protocol,
+                        LifecycleSettings settings, CatalogPublisher publisher) {
         super("server-waypoint-backend-control");
+        if (publisher != null && !publisher.serverId().equals(id)) throw new IllegalArgumentException("Publisher identity mismatch");
+        this.publisher = publisher;
         this.endpoint = Objects.requireNonNull(endpoint);
         this.mode = Objects.requireNonNull(mode);
         this.id = Objects.requireNonNull(id);
@@ -66,6 +77,10 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
         endpoint.validate(mode);
         writer = new ScheduledThreadPoolExecutor(1, daemonThreads("server-waypoint-backend-heartbeat"));
         writer.setRemoveOnCancelPolicy(true);
+        if (publisher != null) {
+            publications = new ScheduledThreadPoolExecutor(1, daemonThreads("server-waypoint-backend-catalog"));
+            publications.setRemoveOnCancelPolicy(true);
+        }
         reader = Executors.newSingleThreadExecutor(daemonThreads("server-waypoint-backend-reader"));
         reader.execute(this::run);
         return TransportResult.SUCCESS;
@@ -77,6 +92,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
             boolean heartbeatReceived = false;
             long connectedAt = 0;
             ScheduledFuture<?> heartbeat = null;
+            ScheduledFuture<?> publication = null;
             TcpChannel current = null;
             try {
                 state = State.CONNECTING;
@@ -103,8 +119,19 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
                 TcpChannel session = current;
                 heartbeat = writer.scheduleWithFixedDelay(() -> sendHeartbeat(session), settings.heartbeatMillis(),
                         settings.heartbeatMillis(), TimeUnit.MILLISECONDS);
+                if (publisher != null) {
+                    publisher.requestFullSnapshot();
+                    publication = publications.scheduleWithFixedDelay(() -> {
+                        if (stopping || session.isClosed()) return;
+                        try { publisher.publish(session); } catch (IOException failure) { session.close(); }
+                    }, 0, publisher.intervalMillis(), TimeUnit.MILLISECONDS);
+                }
                 while (!stopping) {
                     ApplicationEnvelope envelope = current.receive().envelope();
+                    if (publisher != null && envelope.message() instanceof ApplicationMessage.Error error
+                            && error.reason() == ApplicationMessage.Result.STALE_CATALOG) {
+                        publisher.requestFullSnapshot(); continue;
+                    }
                     if (!(envelope.message() instanceof ApplicationMessage.Heartbeat)) throw new IOException("Unexpected presence message");
                     metrics.receivedHeartbeat(); heartbeatReceived = true;
                 }
@@ -112,6 +139,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
                 if (!stopping) metrics.failed();
             } finally {
                 if (heartbeat != null) heartbeat.cancel(false);
+                if (publication != null) publication.cancel(false);
                 if (current != null) current.close();
                 Socket socket = connecting;
                 if (socket != null) TcpWire.close(socket);
@@ -145,6 +173,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
         if (current != null) current.close();
         terminate(reader);
         terminate(writer);
+        terminate(publications);
         if (keys != null) keys.close();
         presence = null; state = State.STOPPED;
     }

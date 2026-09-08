@@ -67,8 +67,8 @@ application message. ID and capability set must exactly match the admitted hands
 application version must be 1. A missing, malformed or mismatched registration never becomes
 visible presence. Duplicate transport IDs reject without displacing the existing session. The
 coordinator sends the correlated successful result before exposing the immutable presence entry.
-Only heartbeats are accepted after registration at this step; catalog/handoff handlers are not
-installed early.
+Step 8 accepted only heartbeats after registration. [Step 9](cross-server-catalog-publication.md)
+now adds backend catalog publication/receipt; handoff handlers remain absent.
 
 `BackendPresence` contains the stable ID, actual mode, defensive capability set, registration time
 and a monotonically increasing generation local to that agent. `authenticated()` is true only
@@ -91,7 +91,8 @@ operation timeout. Each endpoint continuously reads; the existing absolute recei
 a silent peer even while outbound heartbeats are succeeding. Heartbeat writes use the channel's
 bounded write deadline and close the session on failure.
 
-A backend uses one reader, one heartbeat worker and one control owner. A coordinator uses at most
+A backend uses one reader, one heartbeat worker and one control owner. Step 9 adds one optional
+publication worker when a CatalogPublisher is supplied. A coordinator uses at most
 `TcpLimits.connections()` readers, at most four heartbeat workers and one control owner. Reader
 jobs are fixed for the lifecycle; heartbeat jobs are at most one per active peer and canceled jobs
 are removed. There is no application outbound queue or executor growth under reconnect storms.
@@ -118,6 +119,6 @@ no credentials/DNS, start/stop idempotence, a blocked factory proving nonblockin
 bounded admin commands with a reserved stop slot, configuration/bind failures and external listener
 closure. Existing pairing/revocation, framing, replay and malformed-message tests also pass.
 
-These tests do not boot Minecraft or wire a Velocity plugin. Catalog publication is step 9;
+These tests do not boot Minecraft or wire a Velocity plugin. Catalog publication is now implemented in [step 9](cross-server-catalog-publication.md);
 registration of platform lifecycle/commands and the bootstrap network dispatcher remain integration
 work. The step-7 bootstrap API is not routed onto the operational KK listener by this change.

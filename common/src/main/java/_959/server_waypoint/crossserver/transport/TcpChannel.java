@@ -55,6 +55,8 @@ public final class TcpChannel implements AutoCloseable {
         }
     }
 
+    public ProtocolLimits protocolLimits() { return protocol; }
+
     public TransportMode mode() { return mode; }
     public boolean authenticated() { return mode == TransportMode.NOISE_KK; }
     public RemoteServerId serverId() { return serverId; }

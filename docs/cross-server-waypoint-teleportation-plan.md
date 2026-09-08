@@ -14,7 +14,7 @@ messages so a future hybrid X25519 plus ML-KEM suite can be added without changi
 messages.
 
 Implementation status is tracked in [the progress record](cross-server-waypoint-teleportation-progress.md).
-Steps 1–8 now include transport, pairing/credentials and connection/registration agents; platform startup and the remaining
+Steps 1–9 now include transport, pairing/credentials, lifecycle agents and backend catalog publication; platform startup and the remaining
 services are not implemented. See the progress record for current evidence.
 
 ## Scope
@@ -671,6 +671,9 @@ Verification: duplicate server IDs fail, reconnect restores registration, coordi
 recoverable, and no connection operation blocks the server tick thread.
 
 ### Step 9: publish authoritative backend catalogs
+
+Completed as reusable publisher/receiver services: [publication contract and verification](cross-server-catalog-publication.md).
+Coordinator-wide aggregation/fan-out remains Step 10.
 
 - Snapshot waypoint data atomically from each backend.
 - Apply the server-configured export policy before encoding.

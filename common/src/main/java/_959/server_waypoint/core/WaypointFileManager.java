@@ -53,6 +53,18 @@ public class WaypointFileManager {
         this.waypointListMap = new HashMap<>();
     }
 
+    int snapshotObjectCount(int maximum) {
+        return this.readState(() -> {
+            long count = this.waypointListMap.size();
+            if (count > maximum) throw new IllegalArgumentException("Waypoint snapshot budget exceeded");
+            for (WaypointList list : this.waypointListMap.values()) {
+                count += list.size();
+                if (count > maximum) throw new IllegalArgumentException("Waypoint snapshot budget exceeded");
+            }
+            return (int) count;
+        });
+    }
+
     public DimensionWaypointData toDimensionWaypointData() {
         return new DimensionWaypointData(this.dimensionName, this.snapshotWaypointLists());
     }

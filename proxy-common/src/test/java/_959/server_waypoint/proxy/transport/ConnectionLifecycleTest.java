@@ -228,8 +228,7 @@ class ConnectionLifecycleTest {
                 raw.send(UUID.randomUUID(), new ApplicationMessage.RegisterServer(ID, 1, Set.of()));
                 raw.receive();
                 await(() -> coordinator.status().backends().containsKey(ID));
-                await(() -> coordinator.status().backends().isEmpty());
-                assertTrue(coordinator.status().metrics().disconnects() >= 1);
+                await(() -> coordinator.status().backends().isEmpty() && coordinator.status().metrics().disconnects() >= 1);
             }
         }
     }

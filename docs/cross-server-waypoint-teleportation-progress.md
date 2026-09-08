@@ -1,22 +1,23 @@
 # Cross-server waypoint teleportation progress
 
-Last updated: 2026-09-07.
+Last updated: 2026-09-08.
 Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
 KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
 Step 2 is now `fd3ba53` after rebasing onto upload-branch fix `f0d8281`.
 Step 3 was committed as `3fccc28`; step 4 as `6d7be5a`; step 5 as `4e806fa`; step 6 as `8752aaa`.
-Step 7 was committed as `1858582`. The current change implements step 8 connection lifecycle and registration.
+Step 7 was committed as `1858582`; step 8 as `b8a372d`. The current change implements step 9 catalog publication.
 
 ## Current status
 
-**Steps 1–8 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
+**Steps 1–9 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
 for `Noise_KK_25519_AESGCM_SHA256`, with 35 passing KK checks and a scoped source review.**
 Step 3 adds the proxy modules/contracts and private dependency packaging; all 41 artifact checks
 and 10 native runtime checks pass. Step 4 adds immutable catalogs and reader views.
 Step 5 adds canonical messages and bounded codecs. Step 6 adds reusable bounded TCP channels in both
 modes. Step 7 adds authenticated pairing, credential persistence, rotation and live revocation.
 Step 8 adds asynchronous agents, registered presence, heartbeat and bounded reconnect.
-Steps 9–19 have not started. No platform lifecycle starts these channels, and no remote commands,
+Step 9 adds authoritative full/delta publication and stale-safe coordinator receipt.
+Steps 10–19 have not started. No platform lifecycle starts these channels, and no remote commands,
 catalog synchronization service, player transfers, or remote GUI behavior has been enabled.
 
 The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
@@ -46,7 +47,8 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 6 — Bounded TCP transport | Complete | Explicit KK/plaintext modes, transcript-bound handshake and confirmation, bounded records/catalog assembly, sequence/replay tracking, admission limits, absolute deadlines and terminal cleanup. See [transport contract](cross-server-tcp-transport-v1.md). |
 | 7 — Pairing and credentials | Complete | One-time authenticated bootstrap, canonical key import, private credential files, expected-pin rotation and durable per-ID/live-session revocation. See [bootstrap contract and review](cross-server-pairing-v1.md). |
 | 8 — Lifecycle and registration | Complete | Asynchronous backend/coordinator owners, transcript-matched registration, explicit mode/status, heartbeat timeouts, bounded backoff, duplicate rejection, metrics and graceful shutdown. See [lifecycle contract](cross-server-connection-lifecycle.md). |
-| 9–19 | Not started | Catalog publication/synchronization, commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
+| 9 — Backend catalog publication | Complete | Atomic detached capture, exact PUBLIC selection, durable catalog/list revisions, bounded full/delta publication, gap resynchronization and stale-preserving receiver validation. See [publication contract](cross-server-catalog-publication.md). |
+| 10–19 | Not started | Coordinator catalog aggregation/fan-out, commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
@@ -141,6 +143,17 @@ Final Velocity JAR inspection confirms both agents use Java 17 bytecode. Tracked
 whitespace checks pass. No platform lifecycle or bootstrap network dispatcher has been enabled.
 The full backend artifact and live game/proxy matrix was not repeated.
 
+## Step-9 verification
+
+On 2026-09-08, `./gradlew :common:test :proxy-common:test :velocity:build --max-workers=2 --console=plain`
+passed 444 common tests and 61 proxy tests, with zero failures/errors/skips. The 13 new cases cover
+actual model edits, atomic detached export, independent list revisions, persistent high-water marks,
+full/delta publication in both modes, missed-delta resynchronization, bounded full fallback,
+explicit empty catalogs and preservation of stale data on publication failure. Two pre-existing
+cleanup tests now wait for asynchronous cleanup/accounting as well as socket/presence closure.
+See [publication ownership and limits](cross-server-catalog-publication.md). Full backend artifact
+and native game/proxy integration checks were not repeated; no platform feature has been enabled.
+
 ## Historical evidence retained
 
 - Step 1: `./gradlew :common:test --console=plain` passed all 25 identity cases during the original
@@ -152,8 +165,8 @@ The full backend artifact and live game/proxy matrix was not repeated.
 
 ## Next work, in order
 
-1. Step 9: publish authoritative immutable backend catalogs, bounded snapshots and revisioned deltas.
-2. Continue the remaining synchronization/command/handoff/platform steps in order. Plaintext backend identity
+1. Step 10: build the coordinator catalog index, bound cache/expiry policy, and fan out catalogs to backends.
+2. Continue the remaining command/handoff/platform steps in order. Plaintext backend identity
    must never be described as cryptographically authenticated.
 
 Update this file when a step's status changes, a blocker is resolved, or new validation is run.

@@ -339,7 +339,7 @@ class TcpTransportTest {
             Future<TcpChannel> next = f.accept();
             try (TcpChannel backend = f.connect(); TcpChannel channel = next.get()) {
                 long until = System.nanoTime() + TimeUnit.SECONDS.toNanos(2);
-                while (!channel.isClosed() && System.nanoTime() < until) Thread.sleep(5);
+                while ((!channel.isClosed() || f.listener.connectionCount() != 0) && System.nanoTime() < until) Thread.sleep(5);
                 assertTrue(channel.isClosed());
                 assertEquals(0, f.listener.connectionCount());
             }

@@ -1,6 +1,7 @@
 package _959.server_waypoint.proxy.transport;
 
 import _959.server_waypoint.crossserver.RemoteServerId;
+import _959.server_waypoint.proxy.catalog.CatalogReceiver;
 import _959.server_waypoint.crossserver.protocol.*;
 import _959.server_waypoint.crossserver.transport.*;
 import java.io.IOException;
@@ -29,6 +30,7 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
     private final LifecycleSettings settings;
     private final ConnectionMetrics metrics = new ConnectionMetrics();
     private final ConcurrentMap<RemoteServerId, Live> peers = new ConcurrentHashMap<>();
+    private final Map<RemoteServerId, CatalogReceiver> catalogs = new HashMap<>();
     private final AtomicLong generation = new AtomicLong();
     private ExecutorService readers;
     private ScheduledThreadPoolExecutor writers;
@@ -54,6 +56,14 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
                 new ConnectionMetrics.Snapshot(current == null ? 0 : current.acceptedConnections(), counters.registrations(),
                         counters.disconnects(), counters.failures(), counters.sentHeartbeats(), counters.receivedHeartbeats()));
     }
+    public Map<RemoteServerId, CatalogReceiver.View> catalogs() {
+        synchronized (catalogs) {
+            Map<RemoteServerId, CatalogReceiver.View> result = new HashMap<>();
+            catalogs.forEach((id, receiver) -> result.put(id, receiver.view()));
+            return Map.copyOf(result);
+        }
+    }
+
     @Override protected TransportResult startResources() throws Exception {
         if (!settings.enabled()) return TransportResult.DISABLED;
         listener = factory.open();
@@ -69,6 +79,7 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
         while (!stopping && running) {
             TcpChannel channel = null;
             Live live = null;
+            CatalogReceiver catalog = null;
             ScheduledFuture<?> heartbeat = null;
             try {
                 channel = listener.accept();
@@ -82,6 +93,15 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
                 if (stopping || next == Long.MAX_VALUE) throw new IOException("Coordinator stopped or exhausted");
                 live = new Live(channel, new BackendPresence(channel.serverId(), channel.mode(), channel.capabilities(), next, Instant.now()));
                 if (peers.putIfAbsent(channel.serverId(), live) != null) throw new IOException("Duplicate registered ID");
+                synchronized (catalogs) {
+                    catalog = catalogs.get(channel.serverId());
+                    if (catalog == null) {
+                        if (catalogs.size() >= limits.connections()) throw new IOException("Retained catalog slot limit");
+                        catalog = new CatalogReceiver(channel.serverId(), channel.protocolLimits());
+                        catalog.connected(channel, channel.mode());
+                        catalogs.put(channel.serverId(), catalog);
+                    } else catalog.connected(channel, channel.mode());
+                }
                 channel.send(envelope.requestId(), new ApplicationMessage.RegisterResult(channel.serverId(), ApplicationMessage.Result.SUCCESS));
                 live.registered = true;
                 metrics.registered();
@@ -89,9 +109,12 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
                 heartbeat = writers.scheduleWithFixedDelay(() -> sendHeartbeat(session), settings.heartbeatMillis(),
                         settings.heartbeatMillis(), TimeUnit.MILLISECONDS);
                 while (!stopping && running) {
-                    ApplicationEnvelope nextEnvelope = channel.receive().envelope();
-                    if (!(nextEnvelope.message() instanceof ApplicationMessage.Heartbeat)) throw new IOException("Unexpected presence message");
-                    metrics.receivedHeartbeat();
+                    TcpChannel.Received received = channel.receive();
+                    ApplicationEnvelope nextEnvelope = received.envelope();
+                    if (nextEnvelope.message() instanceof ApplicationMessage.Heartbeat) metrics.receivedHeartbeat();
+                    else if (catalog.receive(channel, received)) {
+                        channel.send(nextEnvelope.requestId(), new ApplicationMessage.Error(ApplicationMessage.Result.STALE_CATALOG));
+                    }
                 }
             } catch (Exception failure) {
                 if (!stopping && running) metrics.failed();
@@ -99,6 +122,7 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
             } finally {
                 if (heartbeat != null) heartbeat.cancel(false);
                 if (channel != null) channel.close();
+                if (catalog != null) catalog.disconnected(channel);
                 if (live != null && peers.remove(live.presence().serverId(), live) && live.registered) metrics.disconnected();
             }
         }
@@ -127,6 +151,7 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
         terminate(readers);
         terminate(writers);
         peers.clear();
+        synchronized (catalogs) { catalogs.clear(); }
         if (failure != null) throw failure;
     }
 }

@@ -109,9 +109,10 @@ the same list-map format as snapshots. The removed-list map maps dimension strin
 sets. New catalog revision must exceed base revision. Removing a dimension while also replacing
 or removing its lists is invalid; replacing and removing the same list is invalid. Empty
 replacement maps can represent empty dimensions. Applying a delta requires matching current base
-revision and validation of list revisions against authoritative state; that work remains in the
-catalog synchronization steps. Deltas too large for a frame require full snapshot publication.
-Invalidation is a state signal, never an implicit empty publication or permission grant.
+revision and validation of list revisions against authoritative state; that work is now implemented for backend publication in
+[step 9](cross-server-catalog-publication.md). Deltas too large for a frame require full snapshot publication.
+ERROR(STALE_CATALOG), correlated to a catalog delta, requests a complete snapshot when the receiver
+lacks the expected baseline. Invalidation is a state signal, never an implicit empty publication or permission grant.
 
 ## Independent bounds and failures
 
