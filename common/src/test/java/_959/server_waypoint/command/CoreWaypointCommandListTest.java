@@ -3,6 +3,19 @@ package _959.server_waypoint.command;
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.config.Config;
+import _959.server_waypoint.crossserver.catalog.CatalogIndex;
+import _959.server_waypoint.crossserver.catalog.CatalogCacheLimits;
+import _959.server_waypoint.crossserver.catalog.RemoteCatalogStore;
+import _959.server_waypoint.crossserver.RemoteServerId;
+import _959.server_waypoint.crossserver.RemoteRevision;
+import _959.server_waypoint.crossserver.RemoteCatalogSnapshot;
+import _959.server_waypoint.crossserver.transport.TransportMode;
+import _959.server_waypoint.crossserver.CatalogExportPolicy;
+import _959.server_waypoint.crossserver.protocol.ProtocolLimits;
+import _959.server_waypoint.crossserver.protocol.ApplicationCodec;
+import _959.server_waypoint.crossserver.protocol.ApplicationEnvelope;
+import _959.server_waypoint.crossserver.protocol.ApplicationMessage;
+import _959.server_waypoint.crossserver.transport.TcpChannel;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.ChunkedMessage;
@@ -92,6 +105,37 @@ class CoreWaypointCommandListTest {
     @AfterEach
     void tearDown() {
         WaypointServerCore.CONFIG = this.originalConfig;
+    }
+
+    @Test
+    void sharedRootReadsAttachedRemoteStoreWithoutChangingLocalLists() throws Exception {
+        var index = new CatalogIndex(
+                CatalogCacheLimits.DEFAULT);
+        var id = new RemoteServerId("remote-only");
+        var revision = new RemoteRevision(1);
+        Object owner = new Object();
+        index.connected(id, owner, TransportMode.NOISE_KK,
+                ProtocolLimits.DEFAULT);
+        var snapshot = new RemoteCatalogSnapshot(id, revision, java.util.Map.of(), java.time.Instant.EPOCH);
+        var codec = new ApplicationCodec(ProtocolLimits.DEFAULT);
+        byte[] bytes = codec.encodeCatalog(snapshot); UUID request = UUID.randomUUID();
+        index.receive(id, owner, new TcpChannel.Received(
+                new ApplicationEnvelope(0, request,
+                        new ApplicationMessage.CatalogMetadata(id, "Remote only", revision,
+                                CatalogExportPolicy.PUBLIC)), null));
+        index.receive(id, owner, new TcpChannel.Received(
+                new ApplicationEnvelope(1, request,
+                        new ApplicationMessage.CatalogSnapshot(id, revision, UUID.randomUUID(), 0,
+                                bytes.length, new ApplicationMessage.Bytes(bytes))), snapshot));
+        this.server.setRemoteCatalogStore(new RemoteCatalogStore(index));
+        this.dispatcher.execute("wp remote servers", this.source);
+        assertTrue(plainText(lastMessage()).contains("Remote only"));
+        this.dispatcher.execute("wp help remote", this.source);
+        assertTrue(translationKeys(lastMessage()).contains("waypoint.help.remote.summary"));
+        this.dispatcher.execute("wp list overworld bases", this.source);
+        assertTrue(plainText(lastMessage()).contains("base"));
+        assertFalse(plainText(lastMessage()).contains("remote-only"));
+        assertNull(this.server.getWaypointFileManager("remote-only"));
     }
 
     @Test
@@ -204,13 +248,15 @@ class CoreWaypointCommandListTest {
                 "/wp edit ",
                 "/wp remove ",
                 "/wp tp ",
-                "/wp reload"
+                "/wp reload",
+                "/wp remote "
         ), suggestedCommands(help));
         assertEquals(List.of(
                 "/wp help list",
                 "/wp help navigate",
                 "/wp help add",
-                "/wp help edit"
+                "/wp help edit",
+                "/wp help remote"
         ), runCommands(help));
     }
 
@@ -527,8 +573,8 @@ class CoreWaypointCommandListTest {
         restrictedDispatcher.execute("wp help", this.source);
 
         Component help = restrictedSender.messages.get(0);
-        assertEquals(List.of("/wp list ", "/wp download "), suggestedCommands(help));
-        assertEquals(List.of("/wp help list"), runCommands(help));
+        assertEquals(List.of("/wp list ", "/wp download ", "/wp remote "), suggestedCommands(help));
+        assertEquals(List.of("/wp help list", "/wp help remote"), runCommands(help));
         assertDoesNotThrow(() -> restrictedDispatcher.execute("wp help list", this.source));
         assertThrows(
                 CommandSyntaxException.class,

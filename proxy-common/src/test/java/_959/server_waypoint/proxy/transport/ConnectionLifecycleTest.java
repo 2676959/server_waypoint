@@ -121,7 +121,10 @@ class ConnectionLifecycleTest {
             await(() -> backend.status().presence() != null);
             long generation = backend.status().presence().generation();
             assertEquals(TransportResult.SUCCESS, result(coordinator.disconnect(ID)));
-            await(() -> backend.status().presence() != null && backend.status().presence().generation() > generation);
+            await(() -> {
+                BackendPresence presence = backend.status().presence();
+                return presence != null && presence.generation() > generation;
+            });
             assertEquals(TransportResult.SUCCESS, result(coordinator.disconnect(new RemoteServerId("absent"))));
         }
     }

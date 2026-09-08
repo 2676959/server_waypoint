@@ -25,6 +25,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
     private final LifecycleSettings settings;
     private final CatalogPublisher publisher;
     private final CatalogIndex remoteCatalogs;
+    private final RemoteCatalogStore remoteCatalogStore;
     private ScheduledThreadPoolExecutor publications;
     private final ConnectionMetrics metrics = new ConnectionMetrics();
     private final Object retry = new Object();
@@ -53,6 +54,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
                         LifecycleSettings settings, CatalogPublisher publisher, CatalogCacheLimits cacheLimits) {
         super("server-waypoint-backend-control");
         remoteCatalogs = new CatalogIndex(cacheLimits);
+        remoteCatalogStore = new RemoteCatalogStore(remoteCatalogs);
         if (publisher != null && !publisher.serverId().equals(id)) throw new IllegalArgumentException("Publisher identity mismatch");
         this.publisher = publisher;
         this.endpoint = Objects.requireNonNull(endpoint);
@@ -75,6 +77,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
         }
     }
     public Map<RemoteServerId, CatalogReceiver.View> remoteCatalogs() { return remoteCatalogs.views(); }
+    public RemoteCatalogStore remoteCatalogStore() { return remoteCatalogStore; }
     @Override public RemoteServerId serverId() { return id; }
     public Status status() {
         TcpChannel current = channel;

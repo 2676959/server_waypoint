@@ -1,6 +1,7 @@
 package _959.server_waypoint.core;
 
 import _959.server_waypoint.config.Config;
+import _959.server_waypoint.crossserver.catalog.RemoteCatalogStore;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.translation.AdventureTranslator;
@@ -40,6 +41,14 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
     private final LanguageFilesManager languageFilesManager;
     private final ReentrantLock configIoLock = new ReentrantLock(true);
     private volatile boolean resourcesLoaded;
+    private volatile RemoteCatalogStore remoteCatalogStore =
+            RemoteCatalogStore.empty();
+
+    /** Read-only service attachment; remote catalogs never enter the local waypoint file map. */
+    public void setRemoteCatalogStore(RemoteCatalogStore store) {
+        remoteCatalogStore = Objects.requireNonNull(store);
+    }
+    public RemoteCatalogStore remoteCatalogStore() { return remoteCatalogStore; }
 
     /**
      * constructor for a dedicated server </br>

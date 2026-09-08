@@ -244,6 +244,11 @@ public class StringCommandBuilder {
                 command.append(' ').append(escapeListName(listName));
             }
         }
+        return appendListOptions(command, filterText, sortMode, reversed, pageNumber, pageLimit, groupByLists);
+    }
+
+    private static String appendListOptions(StringBuilder command, String filterText, WaypointSorting.SortMode sortMode,
+                                            boolean reversed, int pageNumber, int pageLimit, boolean groupByLists) {
         if (!filterText.trim().isEmpty()) {
             command.append(' ').append(SEARCH_COMMAND).append(' ')
                     .append(StringArgumentType.escapeIfRequired(filterText));
@@ -261,6 +266,16 @@ public class StringCommandBuilder {
             command.append(' ').append(VIEW_COMMAND).append(' ').append(FLAT_VIEW);
         }
         return command.toString();
+    }
+
+    public static String remoteListPageCmd(String server, String dimension, String list, ListOptions options, int page) {
+        if (server == null && dimension != null || dimension == null && list != null) throw new IllegalArgumentException("Nonhierarchical scope");
+        StringBuilder command = new StringBuilder("/wp remote list");
+        if (server != null) command.append(' ').append(escapeListName(server));
+        if (dimension != null) command.append(' ').append(escapeListName(dimension));
+        if (list != null) command.append(' ').append(escapeListName(list));
+        return appendListOptions(command, options.filterText(), options.sortMode(), options.reversed(), page,
+                options.pageLimit(), options.groupByLists());
     }
 
     public static String listPageCmd(ListTarget target, ListOptions options, int pageNumber) {

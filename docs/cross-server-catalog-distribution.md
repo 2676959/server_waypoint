@@ -1,8 +1,8 @@
 # Catalog aggregation and distribution (step 10)
 
 Step 10 adds the coordinator-wide read-only catalog index and distributes validated publications
-to connected backends. These are reusable services: platform startup, remote queries/commands,
-permissions, GUI behavior and transfers remain later steps.
+to connected backends. These are reusable services: platform startup, permissions, GUI behavior
+and transfers remain later steps. [Step 11](cross-server-catalog-queries.md) now adds remote queries/commands.
 
 ## Ownership and identity
 
@@ -17,8 +17,8 @@ PLAINTEXT; a plaintext source is never described as authenticated.
 Each backend owns a separate bounded replica, exposed through `BackendAgent.remoteCatalogs()`.
 It receives catalogs only from its coordinator connection and rejects echoes of its own ID.
 No remote entry is installed in `WaypointFilesManagerCore`. Equal dimension, list or waypoint names
-on different servers remain separate under their exact `RemoteServerId` keys. Step 11 will add
-query adapters and commands on top of these replicas.
+on different servers remain separate under their exact `RemoteServerId` keys. Step 11 adds
+query adapters and commands on top of a read-only RemoteCatalogStore facade for these replicas.
 
 The existing metadata wire schema does not carry the source link's transport mode. Consequently
 backend replica views have a null/unknown source mode, even over a KK coordinator connection.

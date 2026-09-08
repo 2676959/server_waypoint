@@ -44,7 +44,10 @@ requires both. Omitted scopes mean all authorized remote entries within the supp
 The list options reuse local list search, sort/order, page, limit, and view syntax; they MUST
 NOT reinterpret remote coordinates as distances from a player on another server. Exact
 identity arguments MUST support quoting/escaping. Suggestions MUST use the local remote
-catalog cache without coordinator I/O. Local command behavior MUST remain unchanged.
+catalog cache without coordinator I/O. Local command behavior MUST remain unchanged. Step 11 implements this grammar in the shared
+backend command tree. `sort distance` returns an explicit localized error; it never calculates a
+cross-server distance. `/wp remote servers` additionally accepts `page <number> [limit <number>]`.
+See [query behavior and limits](cross-server-catalog-queries.md).
 
 | Operation | Permission node | Default level |
 | --- | --- | --- |

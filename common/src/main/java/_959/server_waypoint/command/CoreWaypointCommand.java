@@ -105,6 +105,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     protected final PlatformMessageSender<S, P> sender;
     private final WaypointServerCore waypointServer;
     private final WaypointQueryEngine waypointQueryEngine;
+    private final RemoteWaypointCommand<S> remoteCommand;
     private final PermissionKeys<K> permissionKeys;
     private final PermissionManager<S, K, P> permissionManager;
     private final NavigationService<P> navigationService;
@@ -192,6 +193,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         this.waypointServer = waypointServer;
         this.waypointQueryEngine = new WaypointQueryEngine(waypointServer);
         this.sender = sender;
+        this.remoteCommand = new RemoteWaypointCommand<>(waypointServer::remoteCatalogStore, sender::sendMessage,
+                sender::sendError, () -> CONFIG.defaultPageLimit());
         this.permissionManager = permissionManager;
         this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
         this.restoreRegistry = new WaypointRestoreRegistry<>();
@@ -577,6 +580,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                     return Command.SINGLE_SUCCESS;
                                 })
                         )
+                        .then(literal("remote").executes(context -> this.remoteCommand.help((S) context.getSource())))
                         .then(literal(NAVIGATE_COMMAND)
                                 .requires(source -> hasNavigatePermission((S) source))
                                 .executes(context -> {
@@ -784,6 +788,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                         )
                 )
                 .then((ArgumentBuilder<Object, ?>) (ArgumentBuilder<?, ?>) uploadCommandNode())
+                .then((ArgumentBuilder<Object, ?>) remoteCommand.build())
                 .then((ArgumentBuilder<Object, ?>) listCommandNode())
                 .then((ArgumentBuilder<Object, ?>) navigationCommandNode())
                 .then(literal(RELOAD_COMMAND)
@@ -2250,154 +2255,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     }
 
     private void configureListTarget(ArgumentBuilder<S, ?> targetNode, ListScope scope) {
-        targetNode.executes(listCommand(scope, WaypointSorting.SortMode.DEFAULT, false));
-        LiteralArgumentBuilder<S> searchNode = listSearchNode(scope);
-        LiteralArgumentBuilder<S> sortNode = listSortNode(scope);
-        LiteralArgumentBuilder<S> pageNode = listPageNode(
-                scope,
-                WaypointSorting.SortMode.DEFAULT,
-                false
-        );
-        LiteralArgumentBuilder<S> limitNode = listLimitNode(
-                scope,
-                WaypointSorting.SortMode.DEFAULT,
-                false
-        );
-        LiteralArgumentBuilder<S> viewNode = listViewNode(
-                scope,
-                WaypointSorting.SortMode.DEFAULT,
-                false
-        );
-        if (scope == ListScope.DIMENSION) {
-            searchNode.executes(reservedListCommand(SEARCH_COMMAND));
-            sortNode.executes(reservedListCommand(SORT_COMMAND));
-            pageNode.executes(reservedListCommand(PAGE_COMMAND));
-            limitNode.executes(reservedListCommand(LIMIT_COMMAND));
-            viewNode.executes(reservedListCommand(VIEW_COMMAND));
-        }
-        targetNode.then(searchNode);
-        targetNode.then(sortNode);
-        targetNode.then(pageNode);
-        targetNode.then(limitNode);
-        targetNode.then(viewNode);
-    }
-
-    private LiteralArgumentBuilder<S> listSearchNode(ListScope scope) {
-        RequiredArgumentBuilder<S, String> queryNode = argument(SEARCH_QUERY_ARG, string());
-        queryNode.executes(listCommand(scope, WaypointSorting.SortMode.DEFAULT, false));
-        queryNode.then(listSortNode(scope));
-        queryNode.then(listPageNode(scope, WaypointSorting.SortMode.DEFAULT, false));
-        queryNode.then(listLimitNode(scope, WaypointSorting.SortMode.DEFAULT, false));
-        queryNode.then(listViewNode(scope, WaypointSorting.SortMode.DEFAULT, false));
-        LiteralArgumentBuilder<S> searchNode = literal(SEARCH_COMMAND);
-        return searchNode.then(queryNode);
-    }
-
-    private LiteralArgumentBuilder<S> trailingListSearchNode(
-            ListScope scope,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed
-    ) {
-        return trailingListSearchNode(scope, sortMode, reversed, true);
-    }
-
-    private LiteralArgumentBuilder<S> trailingListSearchNode(
-            ListScope scope,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed,
-            boolean groupByLists
-    ) {
-        RequiredArgumentBuilder<S, String> queryNode = argument(SEARCH_QUERY_ARG, string());
-        queryNode.executes(listCommand(scope, sortMode, reversed, groupByLists));
-        LiteralArgumentBuilder<S> searchNode = literal(SEARCH_COMMAND);
-        return searchNode.then(queryNode);
-    }
-
-    private LiteralArgumentBuilder<S> listViewNode(
-            ListScope scope,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed
-    ) {
-        LiteralArgumentBuilder<S> treeNode = literal(TREE_VIEW);
-        treeNode.executes(listCommand(scope, sortMode, reversed, true));
-        treeNode.then(trailingListSearchNode(scope, sortMode, reversed, true));
-
-        LiteralArgumentBuilder<S> flatNode = literal(FLAT_VIEW);
-        flatNode.executes(listCommand(scope, sortMode, reversed, false));
-        flatNode.then(trailingListSearchNode(scope, sortMode, reversed, false));
-
-        LiteralArgumentBuilder<S> viewNode = literal(VIEW_COMMAND);
-        viewNode.then(treeNode);
-        viewNode.then(flatNode);
-        return viewNode;
-    }
-
-    private LiteralArgumentBuilder<S> listSortNode(ListScope scope) {
-        LiteralArgumentBuilder<S> sortNode = literal(SORT_COMMAND);
-        for (WaypointSorting.SortMode sortMode : WaypointSorting.SortMode.values()) {
-            LiteralArgumentBuilder<S> modeNode = literal(sortMode.name().toLowerCase(Locale.ROOT));
-            modeNode.executes(listCommand(scope, sortMode, false));
-            if (sortMode != WaypointSorting.SortMode.DEFAULT) {
-                modeNode.then(listOrderNode(scope, sortMode));
-            }
-            modeNode.then(trailingListSearchNode(scope, sortMode, false));
-            modeNode.then(listPageNode(scope, sortMode, false));
-            modeNode.then(listLimitNode(scope, sortMode, false));
-            modeNode.then(listViewNode(scope, sortMode, false));
-            sortNode.then(modeNode);
-        }
-        return sortNode;
-    }
-
-    private LiteralArgumentBuilder<S> listOrderNode(
-            ListScope scope,
-            WaypointSorting.SortMode sortMode
-    ) {
-        LiteralArgumentBuilder<S> orderNode = literal(ORDER_COMMAND);
-
-        LiteralArgumentBuilder<S> ascendingNode = literal("ascending");
-        ascendingNode.executes(listCommand(scope, sortMode, false));
-        ascendingNode.then(trailingListSearchNode(scope, sortMode, false));
-        ascendingNode.then(listPageNode(scope, sortMode, false));
-        ascendingNode.then(listLimitNode(scope, sortMode, false));
-        ascendingNode.then(listViewNode(scope, sortMode, false));
-        orderNode.then(ascendingNode);
-
-        LiteralArgumentBuilder<S> descendingNode = literal("descending");
-        descendingNode.executes(listCommand(scope, sortMode, true));
-        descendingNode.then(trailingListSearchNode(scope, sortMode, true));
-        descendingNode.then(listPageNode(scope, sortMode, true));
-        descendingNode.then(listLimitNode(scope, sortMode, true));
-        descendingNode.then(listViewNode(scope, sortMode, true));
-        orderNode.then(descendingNode);
-        return orderNode;
-    }
-
-    private LiteralArgumentBuilder<S> listPageNode(
-            ListScope scope,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed
-    ) {
-        RequiredArgumentBuilder<S, Integer> pageNode = argument(PAGE_NUMBER_ARG, integer(1));
-        pageNode.executes(listCommand(scope, sortMode, reversed));
-        pageNode.then(trailingListSearchNode(scope, sortMode, reversed));
-        pageNode.then(listLimitNode(scope, sortMode, reversed));
-        pageNode.then(listViewNode(scope, sortMode, reversed));
-        LiteralArgumentBuilder<S> pageLiteral = literal(PAGE_COMMAND);
-        return pageLiteral.then(pageNode);
-    }
-
-    private LiteralArgumentBuilder<S> listLimitNode(
-            ListScope scope,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed
-    ) {
-        RequiredArgumentBuilder<S, Integer> limitNode = argument(PAGE_LIMIT_ARG, integer(1, MAX_PAGE_LIMIT));
-        limitNode.executes(listCommand(scope, sortMode, reversed));
-        limitNode.then(trailingListSearchNode(scope, sortMode, reversed));
-        limitNode.then(listViewNode(scope, sortMode, reversed));
-        LiteralArgumentBuilder<S> limitLiteral = literal(LIMIT_COMMAND);
-        return limitLiteral.then(limitNode);
+        new ListCommandOptions<S>((mode, reversed, grouped) -> listCommand(scope, mode, reversed, grouped),
+                scope == ListScope.DIMENSION ? this::reservedListCommand : null).configure(targetNode);
     }
 
     private Command<S> listCommand(

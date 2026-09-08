@@ -144,6 +144,11 @@ public final class WaypointQueryEngine {
         return false;
     }
 
+    /** Shared identifier/keyword filtering for local and immutable remote query adapters. */
+    public static boolean matchesFilter(String text, String filterText) {
+        return matchesText(text, filterText == null ? "" : filterText.trim().toLowerCase(Locale.ROOT));
+    }
+
     private static boolean matchesText(String text, String filter) {
         if (text == null) {
             return false;

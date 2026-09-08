@@ -111,7 +111,17 @@ final class WaypointCommandHelp {
                     "waypoint.help.reload"
             ));
         }
-        return help;
+        return help.append(topicEntry("/wp remote", "/wp remote ", "/wp help remote", "waypoint.help.remote"));
+    }
+
+    static Component remoteHelp() {
+        return topicHeader("waypoint.help.remote.title", "waypoint.help.remote.summary")
+                .append(section("waypoint.help.section.usage"))
+                .append(usageEntry("/wp remote servers [page <number> [limit <number>]]", "/wp remote servers", "waypoint.help.remote.servers"))
+                .append(usageEntry("/wp remote list [<server> [<dimension> [<list>]]]", "/wp remote list ", "waypoint.help.remote.list"))
+                .append(usageEntry("search <query> / sort <mode> [order <direction>] / page <number> / limit <number> / view tree|flat",
+                        "/wp remote list ", "waypoint.help.remote.options"))
+                .append(backButton());
     }
 
     static Component addHelp() {

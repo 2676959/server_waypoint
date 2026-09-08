@@ -50,6 +50,10 @@ Optional:
   - Add `search <query>` to filter by waypoint name.
   - Add `sort <default|name|distance|color>` and, for non-default sorts, optionally `order <ascending|descending>` to sort the result.
   - Add `page <number>` and/or `limit <1-100>` to choose a page or change its size. Options follow the order `search`, `sort`, `order`, `page`, `limit`; quote multi-word values and list names that match an option word.
+- `/wp remote servers [page <number> [limit <1-100>]]` shows cached remote server identities and availability.
+- `/wp remote list [<server> [<dimension> [<list>]]]` browses cached remote waypoints. It uses the same search, sort/order, page, limit, and `view tree|flat` option syntax as `/wp list`. Quote exact identities, including names matching option words. Distance sorting reports that cross-server distances are unavailable.
+  - Results are read-only and work through ordinary server chat. Stale data is labeled; unavailable catalogs are distinct from successfully published empty catalogs. Run `/wp help remote` for help.
+  - This branch registers the commands, but transport startup still requires the later platform integration. Until a backend cache is attached, the commands report that no remote servers are cached. See [remote catalog queries](docs/cross-server-catalog-queries.md).
 - `/wp reload` reload `config.json` and translation files in `/config/server_waypoint/lang`, feature `sendXaerosWorldId` requires restarting to take effect.
 - `/wp remove` removes a waypoint by identifier and returns a temporary, single-use restore action.
   - `/wp remove <dimension> <list-identifier>` removes an empty waypoint list.
