@@ -44,7 +44,8 @@ final class WaypointCommandHelp {
             boolean withNavigate,
             boolean withTp,
             boolean withReload,
-            boolean withUpload
+            boolean withUpload,
+            boolean withRemoteList
     ) {
         Component help = translatable("waypoint.help.title", NamedTextColor.GOLD)
                 .decorate(TextDecoration.BOLD)
@@ -111,7 +112,10 @@ final class WaypointCommandHelp {
                     "waypoint.help.reload"
             ));
         }
-        return help.append(topicEntry("/wp remote", "/wp remote ", "/wp help remote", "waypoint.help.remote"));
+        if (withRemoteList) {
+            help = help.append(topicEntry("/wp remote", "/wp remote ", "/wp help remote", "waypoint.help.remote"));
+        }
+        return help;
     }
 
     static Component remoteHelp() {

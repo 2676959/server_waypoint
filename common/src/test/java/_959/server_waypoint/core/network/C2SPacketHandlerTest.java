@@ -575,6 +575,16 @@ class C2SPacketHandlerTest {
         protected PermissionKey createUploadDeletePermissionKey() {
             return new PermissionKey("upload.delete");
         }
+
+        @Override
+        protected PermissionKey createRemoteListPermissionKey() {
+            return new PermissionKey("remote.list");
+        }
+
+        @Override
+        protected PermissionKey createRemoteTpPermissionKey() {
+            return new PermissionKey("remote.tp");
+        }
     }
 
     private record HandlerFixture(

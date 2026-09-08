@@ -30,14 +30,16 @@ final class RemoteWaypointCommand<S> {
     private final Supplier<RemoteCatalogStore> store;
     private final BiConsumer<S, Component> send, error;
     private final IntSupplier defaultLimit;
+    private final Predicate<S> canList;
     private final RemoteCatalogQuery query = new RemoteCatalogQuery();
 
     RemoteWaypointCommand(Supplier<RemoteCatalogStore> store, BiConsumer<S, Component> send,
-                          BiConsumer<S, Component> error, IntSupplier defaultLimit) {
+                          BiConsumer<S, Component> error, IntSupplier defaultLimit, Predicate<S> canList) {
+        this.canList = Objects.requireNonNull(canList, "canList");
         this.store = store; this.send = send; this.error = error; this.defaultLimit = defaultLimit;
     }
     LiteralArgumentBuilder<S> build() {
-        LiteralArgumentBuilder<S> root = LiteralArgumentBuilder.<S>literal("remote").executes(context -> help(context.getSource()));
+        LiteralArgumentBuilder<S> root = LiteralArgumentBuilder.<S>literal("remote").requires(canList).executes(context -> help(context.getSource()));
         LiteralArgumentBuilder<S> servers = LiteralArgumentBuilder.<S>literal("servers").executes(this::servers);
         RequiredArgumentBuilder<S, Integer> page = RequiredArgumentBuilder.<S, Integer>argument(PAGE_NUMBER_ARG, integer(1)).executes(this::servers);
         page.then(LiteralArgumentBuilder.<S>literal("limit").then(RequiredArgumentBuilder.<S, Integer>argument(PAGE_LIMIT_ARG, integer(1, MAX_PAGE_LIMIT)).executes(this::servers)));
@@ -51,11 +53,13 @@ final class RemoteWaypointCommand<S> {
         list.suggests((context, builder) -> suggest(context, builder, 2));
         return root.then(lists.then(server.then(dimension.then(list))));
     }
-    int help(S source) { send.accept(source, WaypointCommandHelp.remoteHelp()); return Command.SINGLE_SUCCESS; }
+    boolean canList(S source) { return canList.test(source); }
+    int help(S source) { if (!canList.test(source)) return 0; send.accept(source, WaypointCommandHelp.remoteHelp()); return Command.SINGLE_SUCCESS; }
     private void configure(ArgumentBuilder<S, ?> node, int depth) {
         new ListCommandOptions<S>((mode, reversed, grouped) -> context -> execute(context, depth, mode, reversed, grouped), null).configure(node);
     }
     private CompletableFuture<Suggestions> suggest(CommandContext<S> context, SuggestionsBuilder builder, int depth) {
+        if (!canList.test(context.getSource())) return Suggestions.empty();
         Map<RemoteServerId, CatalogReceiver.View> cached = store.get().snapshot();
         Collection<String> candidates = List.of();
         if (depth == 0) candidates = cached.entrySet().stream().filter(entry -> entry.getValue().state() != RemoteCatalogState.UNAUTHORIZED)
@@ -81,6 +85,7 @@ final class RemoteWaypointCommand<S> {
         return builder.buildFuture();
     }
     private int execute(CommandContext<S> context, int depth, WaypointSorting.SortMode mode, boolean reversed, boolean grouped) {
+        if (!canList.test(context.getSource())) return 0;
         var scope = new RemoteCatalogQuery.Scope(depth > 0 ? getString(context, SERVER) : null,
                 depth > 1 ? getString(context, DIMENSION) : null, depth > 2 ? getString(context, LIST) : null);
         ListOptions options = new ListOptions(optionalString(context, SEARCH_QUERY_ARG), mode, reversed,
@@ -130,6 +135,7 @@ final class RemoteWaypointCommand<S> {
         send.accept(source, output); return Command.SINGLE_SUCCESS;
     }
     private int servers(CommandContext<S> context) {
+        if (!canList.test(context.getSource())) return 0;
         var entries = store.get().snapshot().entrySet().stream().sorted(Map.Entry.comparingByKey(Comparator.comparing(RemoteServerId::value))).toList();
         int page = optionalInt(context, PAGE_NUMBER_ARG, 1), limit = optionalInt(context, PAGE_LIMIT_ARG, defaultLimit.getAsInt());
         int pages = Math.max(1, (entries.size() + limit - 1) / limit);

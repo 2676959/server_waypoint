@@ -91,8 +91,8 @@ inherit a neighboring button's click action. Commands expose no edit, delete, do
 or teleport controls.
 
 Help and feedback keys are included in all six bundled locales: English, Spanish, Hebrew,
-Simplified Chinese, Traditional Chinese and Hong Kong Chinese. Step 12 will add dedicated remote
-permission nodes and authorization callbacks; this step retains the planned public read behavior.
+Simplified Chinese, Traditional Chinese and Hong Kong Chinese. [Step 12](cross-server-authorization.md)
+now gates browsing, help and catalog identity suggestions with the dedicated remote list permission.
 
 ## Verification
 

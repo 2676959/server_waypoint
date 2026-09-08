@@ -185,6 +185,15 @@ Some changes made in `config.json` may take effects after server restarts.
 
   Upload defaults to level 2. The destructive `force local delete` mode requires level 4 and can be granted separately with `server_waypoint.command.upload.delete`; normal upload uses `server_waypoint.command.upload`.
   
+  Remote browsing uses `server_waypoint.command.remote.list` (`remoteList`, level 0).
+  Remote teleport source authorization requires both `server_waypoint.command.tp` and
+  `server_waypoint.command.remote.tp` (`remoteTp`, level 2); the remote teleport command is not
+  enabled yet. Arrival rechecks the destination player's local teleport permission.
+  Paper currently falls back to `isOp()` for unset nodes, regardless of these configured levels;
+  grant explicit nodes to ordinary players and use explicit denials when needed. Fabric's permissions
+  API supports node overrides; the current Forge/NeoForge adapters use vanilla levels.
+  See [remote authorization](docs/cross-server-authorization.md) for the integration boundary.
+
   Default value:
   ```json5
   {
@@ -204,7 +213,11 @@ Some changes made in `config.json` may take effects after server restarts.
       // /wp upload xaero
       "upload": 2,
       // /wp upload xaero force local delete
-      "uploadDelete": 4
+      "uploadDelete": 4,
+      // /wp remote servers and /wp remote list
+      "remoteList": 0,
+      // Remote teleport source authorization (command not yet enabled)
+      "remoteTp": 2
     }
   }
   ```

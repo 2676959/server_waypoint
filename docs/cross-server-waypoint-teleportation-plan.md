@@ -14,7 +14,7 @@ messages so a future hybrid X25519 plus ML-KEM suite can be added without changi
 messages.
 
 Implementation status is tracked in [the progress record](cross-server-waypoint-teleportation-progress.md).
-Steps 1–11 now include transport, pairing/credentials, lifecycle agents, catalog distribution and read-only remote commands; platform startup and the remaining
+Steps 1–12 now include transport, pairing/credentials, lifecycle agents, catalog distribution, permission-gated remote commands and authorization callbacks; platform startup and the remaining
 services are not implemented. See the progress record for current evidence.
 
 ## Scope
@@ -707,7 +707,7 @@ commands or teleporting.
 ### Step 11: add backend remote-catalog queries and suggestions
 
 Completed in the shared backend command tree: [query contract and verification](cross-server-catalog-queries.md).
-Transport startup and permission nodes remain their later integration/authorization steps.
+Transport startup remains a later integration step; step 12 adds permission gates.
 
 - Add a bounded `RemoteCatalogStore` to each backend, separate from `WaypointFilesManagerCore`.
 - Add a query adapter that reuses filtering/sorting presentation logic without granting mutation
@@ -724,6 +724,8 @@ from empty catalogs, and local `/wp list` behavior is unchanged.
 This completes the second independently releasable boundary: read-only remote catalog commands.
 
 ### Step 12: add permissions and authorization callbacks
+
+Completed as backend permission gates and reusable callbacks: [authorization contract and verification](cross-server-authorization.md).
 
 - Add `server_waypoint.command.remote.list` with default level 0.
 - Add `server_waypoint.command.remote.tp` with default level 2.

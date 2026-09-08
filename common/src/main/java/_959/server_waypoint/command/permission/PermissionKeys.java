@@ -9,6 +9,8 @@ public abstract class PermissionKeys<K> {
     protected final PermissionKey reload;
     protected final PermissionKey upload;
     protected final PermissionKey uploadDelete;
+    protected final PermissionKey remoteList;
+    protected final PermissionKey remoteTp;
 
     protected abstract PermissionKey createAddPermissionKey();
     protected abstract PermissionKey createEditPermissionKey();
@@ -19,6 +21,9 @@ public abstract class PermissionKeys<K> {
     protected abstract PermissionKey createUploadPermissionKey();
     protected abstract PermissionKey createUploadDeletePermissionKey();
 
+    protected abstract PermissionKey createRemoteListPermissionKey();
+    protected abstract PermissionKey createRemoteTpPermissionKey();
+
     protected PermissionKeys() {
         this.add = createAddPermissionKey();
         this.edit = createEditPermissionKey();
@@ -28,6 +33,8 @@ public abstract class PermissionKeys<K> {
         this.reload = createReloadPermissionKey();
         this.upload = createUploadPermissionKey();
         this.uploadDelete = createUploadDeletePermissionKey();
+        this.remoteList = createRemoteListPermissionKey();
+        this.remoteTp = createRemoteTpPermissionKey();
     }
 
     public PermissionKey add() {
@@ -60,6 +67,14 @@ public abstract class PermissionKeys<K> {
 
     public PermissionKey uploadDelete() {
         return this.uploadDelete;
+    }
+
+    public PermissionKey remoteList() {
+        return this.remoteList;
+    }
+
+    public PermissionKey remoteTp() {
+        return this.remoteTp;
     }
 
     public class PermissionKey {

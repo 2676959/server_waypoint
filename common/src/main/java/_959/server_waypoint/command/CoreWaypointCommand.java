@@ -1,5 +1,7 @@
 package _959.server_waypoint.command;
 
+import _959.server_waypoint.crossserver.authorization.RemotePermissions;
+
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.config.Config;
@@ -194,7 +196,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         this.waypointQueryEngine = new WaypointQueryEngine(waypointServer);
         this.sender = sender;
         this.remoteCommand = new RemoteWaypointCommand<>(waypointServer::remoteCatalogStore, sender::sendMessage,
-                sender::sendError, () -> CONFIG.defaultPageLimit());
+                sender::sendError, () -> CONFIG.defaultPageLimit(),
+                new RemotePermissions<>(
+                        permissionManager, () -> CONFIG.CommandPermission(), this::getPlayer)::canList);
         this.permissionManager = permissionManager;
         this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
         this.restoreRegistry = new WaypointRestoreRegistry<>();
@@ -580,7 +584,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                     return Command.SINGLE_SUCCESS;
                                 })
                         )
-                        .then(literal("remote").executes(context -> this.remoteCommand.help((S) context.getSource())))
+                        .then(literal("remote").requires(source -> this.remoteCommand.canList((S) source))
+                                .executes(context -> this.remoteCommand.help((S) context.getSource())))
                         .then(literal(NAVIGATE_COMMAND)
                                 .requires(source -> hasNavigatePermission((S) source))
                                 .executes(context -> {
@@ -868,7 +873,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 hasNavigatePermission(source),
                 hasTpPermission(source),
                 hasReloadPermission(source),
-                hasUploadPermission(source)
+                hasUploadPermission(source),
+                remoteCommand.canList(source)
         ));
     }
 

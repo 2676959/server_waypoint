@@ -573,8 +573,11 @@ class CoreWaypointCommandListTest {
         restrictedDispatcher.execute("wp help", this.source);
 
         Component help = restrictedSender.messages.get(0);
-        assertEquals(List.of("/wp list ", "/wp download ", "/wp remote "), suggestedCommands(help));
-        assertEquals(List.of("/wp help list", "/wp help remote"), runCommands(help));
+        assertEquals(List.of("/wp list ", "/wp download "), suggestedCommands(help));
+        assertEquals(List.of("/wp help list"), runCommands(help));
+        for (String denied : List.of("wp remote", "wp remote servers", "wp remote list", "wp help remote")) {
+            assertThrows(CommandSyntaxException.class, () -> restrictedDispatcher.execute(denied, this.source));
+        }
         assertDoesNotThrow(() -> restrictedDispatcher.execute("wp help list", this.source));
         assertThrows(
                 CommandSyntaxException.class,
@@ -1169,6 +1172,16 @@ class CoreWaypointCommandListTest {
                 @Override
                 protected PermissionKey createUploadDeletePermissionKey() {
                     return new PermissionKey("upload.delete");
+                }
+
+                @Override
+                protected PermissionKey createRemoteListPermissionKey() {
+                    return new PermissionKey("remote.list");
+                }
+
+                @Override
+                protected PermissionKey createRemoteTpPermissionKey() {
+                    return new PermissionKey("remote.tp");
                 }
             };
             return new PermissionManager<>(keys) {

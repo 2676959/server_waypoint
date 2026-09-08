@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class RemoteWaypointCommandTest {
     private static final RemoteServerId A = new RemoteServerId("search"), B = new RemoteServerId("other");
     private static final String DIMENSION = "world \"quoted\"\\zone";
+    private boolean allowed = true;
     private final AtomicLong time = new AtomicLong();
     private final CatalogIndex index = new CatalogIndex(new CatalogCacheLimits(4, 100000, 400000, 10), time::get);
     private final Object owner = new Object();
@@ -28,8 +29,8 @@ class RemoteWaypointCommandTest {
     private final RemoteCatalogQuery queries = new RemoteCatalogQuery();
 
     @BeforeEach void setup() throws Exception {
-        var commands = new RemoteWaypointCommand<String>(() -> new RemoteCatalogStore(index), (source, text) -> messages.add(text),
-                (source, text) -> errors.add(text), () -> 5);
+        var commands = new RemoteWaypointCommand<String>(() -> { assertTrue(allowed, "Denied readers must not access the catalog"); return new RemoteCatalogStore(index); }, (source, text) -> messages.add(text),
+                (source, text) -> errors.add(text), () -> 5, source -> allowed);
         dispatcher.register(LiteralArgumentBuilder.<String>literal("wp").then(commands.build()));
         Map<String, RemoteWaypointSnapshot> waypoints = new HashMap<>();
         for (int i = 0; i < 12; i++) waypoints.put("base " + i, waypoint("Display " + i, i));
@@ -147,6 +148,20 @@ class RemoteWaypointCommandTest {
         assertTrue(keys(last()).contains("waypoint.help.remote.summary"));
         assertFalse(text(last()).contains("/wp remote tp"));
         assertNull(dispatcher.getRoot().getChild("wp").getChild("remote").getChild("tp"));
+    }
+    @Test void permissionDenialAndRevocationBlockCommandsAndCachedSuggestions() throws Exception {
+        var parsed = dispatcher.parse(target(), "console");
+        var suggestionParse = dispatcher.parse("wp remote list ", "console");
+        allowed = false;
+        assertThrows(com.mojang.brigadier.exceptions.CommandSyntaxException.class,
+                () -> dispatcher.execute("wp remote servers", "console"));
+        assertEquals(0, dispatcher.execute(parsed));
+        assertTrue(dispatcher.getCompletionSuggestions(suggestionParse).join().getList().stream()
+                .noneMatch(suggestion -> Set.of("\"search\"", "other").contains(suggestion.getText())));
+        assertTrue(messages.isEmpty());
+        assertTrue(errors.isEmpty());
+        allowed = true;
+        assertEquals(1, dispatcher.execute("wp remote servers", "console"));
     }
     @Test void unauthorizedViewsNeverExposeRetainedCoordinates() {
         var existing = index.views().get(A);
