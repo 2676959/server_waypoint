@@ -54,6 +54,8 @@ Optional:
 - `/wp remote list [<server> [<dimension> [<list>]]]` browses cached remote waypoints. It uses the same search, sort/order, page, limit, and `view tree|flat` option syntax as `/wp list`. Quote exact identities, including names matching option words. Distance sorting reports that cross-server distances are unavailable.
   - Results are read-only and work through ordinary server chat. Stale data is labeled; unavailable catalogs are distinct from successfully published empty catalogs. Run `/wp help remote` for help.
   - This branch registers the commands, but transport startup still requires the later platform integration. Until a backend cache is attached, the commands report that no remote servers are cached. See [remote catalog queries](docs/cross-server-catalog-queries.md).
+- `/wp remote tp <server> <dimension> <list> <waypoint>` requests a teleport using exact cached identities (quote names with spaces). Stale or missing targets fail before preparation; the player stays on the source until destination preparation and fresh permission checks succeed. See [remote teleport initiation](docs/cross-server-source-teleport.md).
+  - Command initiation is implemented through an adapter. Live Velocity/transport startup remains Step 16; without an installed transfer adapter, an otherwise valid request reports unsupported transfer. Suggestions use only the local cache.
 - `/wp reload` reload `config.json` and translation files in `/config/server_waypoint/lang`, feature `sendXaerosWorldId` requires restarting to take effect.
 - `/wp remove` removes a waypoint by identifier and returns a temporary, single-use restore action.
   - `/wp remove <dimension> <list-identifier>` removes an empty waypoint list.
@@ -187,8 +189,8 @@ Some changes made in `config.json` may take effects after server restarts.
   
   Remote browsing uses `server_waypoint.command.remote.list` (`remoteList`, level 0).
   Remote teleport source authorization requires both `server_waypoint.command.tp` and
-  `server_waypoint.command.remote.tp` (`remoteTp`, level 2); the remote teleport command is not
-  enabled yet. Arrival rechecks the destination player's local teleport permission.
+  `server_waypoint.command.remote.tp` (`remoteTp`, level 2). Remote teleport does not require the
+  separate browsing permission. Arrival rechecks the destination player's local teleport permission.
   Paper currently falls back to `isOp()` for unset nodes, regardless of these configured levels;
   grant explicit nodes to ordinary players and use explicit denials when needed. Fabric's permissions
   API supports node overrides; the current Forge/NeoForge adapters use vanilla levels.
@@ -216,7 +218,7 @@ Some changes made in `config.json` may take effects after server restarts.
       "uploadDelete": 4,
       // /wp remote servers and /wp remote list
       "remoteList": 0,
-      // Remote teleport source authorization (command not yet enabled)
+      // /wp remote tp source authorization
       "remoteTp": 2
     }
   }

@@ -112,3 +112,10 @@ the remote topic. A pre-existing reconnect test was corrected to use one immutab
 snapshot instead of reading a changing status twice. No native Minecraft or Velocity instance was
 booted, and the full backend artifact matrix was not run. Platform transport startup and live
 vanilla-client validation remain later integration gates.
+
+## Step-15 command extension
+
+`/wp remote tp <server> <dimension> <list> <waypoint>` now shares the exact cache-only identity
+suggestions, with waypoint completion and separate teleport permission checks. List results and
+pagination remain read-only. See [source teleport initiation](cross-server-source-teleport.md);
+this does not enable live platform startup.

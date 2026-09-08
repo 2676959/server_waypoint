@@ -59,7 +59,8 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 12 — Permissions and authorization | Complete | Remote list/tp nodes, current source-player checks, permission-gated commands/help/suggestions, destination export and final live-player callbacks. See [authorization contract](cross-server-authorization.md). |
 | 13 — Coordinator handoffs | Complete | Atomic prepare/reserve/claim/complete/cancel/expiry, session and proxy-player binding, bounded replay retention and audit, and backend-message handlers. See [handoff contract](cross-server-handoffs.md). |
 | 14 — Destination preparation and arrival | Complete | Bounded connection-scoped reservations, exact claim/player binding, fresh local export/coordinate resolution, final permission checks and mod/Paper owner adapters. See [destination contract](cross-server-destination.md). |
-| 15–19 | Not started | Remote tp command, real Velocity integration, client/GUI integration, and release hardening remain pending. |
+| 15 — Remote teleport command | Complete | Exact cached targets, permission-gated command/help/suggestions, bounded source preparation service and transfer adapter boundary. See [source teleport contract](cross-server-source-teleport.md). |
+| 16–19 | Not started | Real Velocity integration, client/GUI integration, and release hardening remain pending. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
@@ -223,6 +224,18 @@ for Fabric 1.20.1/26.1.2, NeoForge 1.21.2, Forge 26.1.2 and Paper 1.21/26.2. See
 No native game/proxy session or full release artifact matrix was run. Remote command registration,
 TCP lifecycle/claim dispatch and join integration remain steps 15–16.
 
+## Step-15 verification
+
+On 2026-09-08, `./gradlew :common:test :proxy-common:test :velocity:build --max-workers=2 --console=plain`
+passed 520 common tests and 90 proxy tests with no failures/errors/skips. The 36 new common cases
+cover remote command initiation, exact identities/revisions, permission/cache changes, all rejected
+preparation results, owner scheduling, cancellation, bounded expiry, disconnect and async failures.
+The existing two destination exchanges now run through source initiation and a fake transfer adapter
+in both modes, asserting PREPARED before switching. Six-locale keys/placeholders, packaged Java 17
+source-service bytecode and whitespace checks pass. See [source initiation](cross-server-source-teleport.md).
+No active version changed. Native game/proxy sessions and the full backend artifact matrix were
+not run; real lifecycle/TCP dispatch/Velocity switching remain Step 16.
+
 ## Historical evidence retained
 
 - Step 1: `./gradlew :common:test --console=plain` passed all 25 identity cases during the original
@@ -234,7 +247,7 @@ TCP lifecycle/claim dispatch and join integration remain steps 15–16.
 
 ## Next work, in order
 
-1. Step 15: add the remote teleport command.
+1. Step 16: implement the Velocity adapter and live lifecycle/transport wiring.
 2. Continue the remaining command/handoff/platform steps in order. Plaintext backend identity
    must never be described as cryptographically authenticated.
 

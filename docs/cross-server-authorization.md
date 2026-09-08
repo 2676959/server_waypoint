@@ -1,14 +1,14 @@
 # Remote permissions and authorization (step 12)
 
-Step 12 adds backend permission gates and reusable authorization callbacks. It does not register
-`/wp remote tp`, prepare a reservation, claim a handoff, switch a player, or teleport anyone.
-Platform startup and owning-thread handoff integration remain steps 13–16.
+Step 12 adds backend permission gates and reusable authorization callbacks. Steps 13–15 now add
+coordinator/destination handoff services and `/wp remote tp` initiation through adapters. Live
+platform startup and transfer integration remain Step 16. See [source initiation](cross-server-source-teleport.md).
 
 ## Permission contract
 
 | Operation | Required node | Configured vanilla fallback |
 | --- | --- | --- |
-| Remote servers/list/help and catalog identity suggestions | `server_waypoint.command.remote.list` | `CommandPermission.remoteList`: 0 |
+| Remote servers/list and their catalog identity suggestions | `server_waypoint.command.remote.list` | `CommandPermission.remoteList`: 0 |
 | Initiate a remote teleport | `server_waypoint.command.tp` **and** `server_waypoint.command.remote.tp` | `CommandPermission.tp`: 2 and `CommandPermission.remoteTp`: 2 |
 | Final destination teleport | Destination `server_waypoint.command.tp` | Destination `CommandPermission.tp`: 2 |
 
@@ -19,8 +19,9 @@ Teleport initiation resolves the actual source player and checks both nodes on t
 console or command-source permission cannot stand in for the player's permissions. A missing
 player denies initiation/arrival. Console browsing follows the platform's normal permission rules.
 
-`CoreWaypointCommand` gates the remote branch and its help topic. The main help menu omits remote
-browsing when denied. Execution and cache-backed suggestions check again, including when a
+`CoreWaypointCommand` gates browsing and teleport separately. The remote branch/help topic is
+available with either permission; help shows only allowed operations. Teleport suggestions require
+both teleport nodes, independently of browsing permission. Execution and cache-backed suggestions check again, including when a
 Brigadier parse was created before revocation. Denied readers do not touch the catalog store.
 Brigadier may still suggest static grammar words from an already parsed command; no catalog
 identities are returned. Existing local list commands retain their behavior.

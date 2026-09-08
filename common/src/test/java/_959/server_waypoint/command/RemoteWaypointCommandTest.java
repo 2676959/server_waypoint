@@ -1,6 +1,8 @@
 package _959.server_waypoint.command;
 
 import _959.server_waypoint.crossserver.*;
+import _959.server_waypoint.crossserver.handoff.*;
+import java.util.concurrent.*;
 import _959.server_waypoint.crossserver.catalog.*;
 import _959.server_waypoint.crossserver.protocol.*;
 import _959.server_waypoint.crossserver.transport.*;
@@ -20,7 +22,28 @@ import static org.junit.jupiter.api.Assertions.*;
 class RemoteWaypointCommandTest {
     private static final RemoteServerId A = new RemoteServerId("search"), B = new RemoteServerId("other");
     private static final String DIMENSION = "world \"quoted\"\\zone";
-    private boolean allowed = true;
+    private boolean allowed = true, tpAllowed;
+    private final UUID playerId = UUID.randomUUID();
+    private final CompletableFuture<ApplicationMessage> prepareReply = new CompletableFuture<>();
+    private ApplicationMessage.PrepareHandoff preparation;
+    private int transfers;
+    private final SourceHandoffService<String> handoffs = new SourceHandoffService<>(new RemoteServerId("source"), new SourceHandoffService.Platform<>() {
+        public boolean ownsThread(String source) { return true; }
+        public UUID playerId(String source) { return playerId; }
+        public boolean isCurrentPlayer(String source, UUID id) { return playerId.equals(id); }
+        public boolean canTeleport(String source) { return tpAllowed; }
+        public boolean execute(String source, Runnable task, Runnable retired) { task.run(); return true; }
+    }, new SourceHandoffService.Link() {
+        public CompletionStage<ApplicationMessage> prepare(UUID id, ApplicationMessage.PrepareHandoff request) {
+            preparation = request; return prepareReply;
+        }
+        public CompletionStage<ApplicationMessage.Result> transfer(UUID id, ApplicationMessage.HandoffBinding binding) {
+            transfers++; return CompletableFuture.completedFuture(ApplicationMessage.Result.SUCCESS);
+        }
+        public void cancel(UUID id, ApplicationMessage.CancelHandoff cancel) { }
+    });
+    @AfterEach void closeHandoffs() { handoffs.close(); }
+
     private final AtomicLong time = new AtomicLong();
     private final CatalogIndex index = new CatalogIndex(new CatalogCacheLimits(4, 100000, 400000, 10), time::get);
     private final Object owner = new Object();
@@ -29,8 +52,8 @@ class RemoteWaypointCommandTest {
     private final RemoteCatalogQuery queries = new RemoteCatalogQuery();
 
     @BeforeEach void setup() throws Exception {
-        var commands = new RemoteWaypointCommand<String>(() -> { assertTrue(allowed, "Denied readers must not access the catalog"); return new RemoteCatalogStore(index); }, (source, text) -> messages.add(text),
-                (source, text) -> errors.add(text), () -> 5, source -> allowed);
+        var commands = new RemoteWaypointCommand<String>(() -> { assertTrue(allowed || tpAllowed, "Denied readers must not access the catalog"); return new RemoteCatalogStore(index); }, (source, text) -> messages.add(text),
+                (source, text) -> errors.add(text), () -> 5, source -> allowed, source -> tpAllowed, handoffs);
         dispatcher.register(LiteralArgumentBuilder.<String>literal("wp").then(commands.build()));
         Map<String, RemoteWaypointSnapshot> waypoints = new HashMap<>();
         for (int i = 0; i < 12; i++) waypoints.put("base " + i, waypoint("Display " + i, i));
@@ -147,7 +170,7 @@ class RemoteWaypointCommandTest {
         dispatcher.execute("wp remote", "console");
         assertTrue(keys(last()).contains("waypoint.help.remote.summary"));
         assertFalse(text(last()).contains("/wp remote tp"));
-        assertNull(dispatcher.getRoot().getChild("wp").getChild("remote").getChild("tp"));
+        assertNotNull(dispatcher.getRoot().getChild("wp").getChild("remote").getChild("tp"));
     }
     @Test void permissionDenialAndRevocationBlockCommandsAndCachedSuggestions() throws Exception {
         var parsed = dispatcher.parse(target(), "console");
@@ -162,6 +185,58 @@ class RemoteWaypointCommandTest {
         assertTrue(errors.isEmpty());
         allowed = true;
         assertEquals(1, dispatcher.execute("wp remote servers", "console"));
+    }
+    private String tpTarget() { return target().replace("remote list", "remote tp") + " " + quote("base 0"); }
+    @Test void teleportCommandReachesFakeTransferOnlyAfterMatchingPreparation() throws Exception {
+        tpAllowed = true;
+        assertEquals(1, dispatcher.execute(tpTarget(), "player"));
+        assertNotNull(preparation); assertEquals(0, transfers);
+        assertEquals(new RemoteWaypointKey(A, DIMENSION, "search", "base 0"), preparation.target());
+        assertEquals(new RemoteRevision(1), preparation.observedCatalogRevision());
+        assertEquals(new RemoteRevision(1), preparation.observedListRevision());
+        assertEquals(playerId, preparation.playerId());
+        prepareReply.complete(new ApplicationMessage.HandoffPrepared(new ApplicationMessage.HandoffBinding(UUID.randomUUID(), playerId,
+                preparation.source(), preparation.target(), preparation.action(), System.currentTimeMillis() + 15000)));
+        assertEquals(1, transfers); assertTrue(keys(last()).contains("waypoint.remote.tp.success"));
+    }
+    @Test void teleportPreparationRejectionReportsExactReasonWithoutTransfer() throws Exception {
+        tpAllowed = true; dispatcher.execute(tpTarget(), "player");
+        prepareReply.complete(new ApplicationMessage.HandoffRejected(ApplicationMessage.Result.UNSUPPORTED));
+        assertEquals(0, transfers); assertTrue(keys(errors.get(0)).contains("waypoint.remote.tp.unsupported"));
+    }
+    @Test void teleportPermissionsAreIndependentAndRecheckedAfterParsing() throws Exception {
+        tpAllowed = true; allowed = false;
+        var parsed = dispatcher.parse(tpTarget(), "player");
+        var suggestionParse = dispatcher.parse("wp remote tp ", "player");
+        dispatcher.execute("wp remote", "player");
+        assertTrue(text(last()).contains("/wp remote tp")); assertFalse(text(last()).contains("/wp remote list"));
+        tpAllowed = false;
+        assertEquals(0, dispatcher.execute(parsed)); assertNull(preparation);
+        assertTrue(keys(errors.get(0)).contains("waypoint.remote.tp.unauthorized"));
+        assertTrue(dispatcher.getCompletionSuggestions(suggestionParse).join().getList().isEmpty());
+    }
+    @Test void teleportSuggestionsUseExactCachedWaypointNamesAndHideUnavailableData() throws Exception {
+        tpAllowed = true;
+        String prefix = target().replace("remote list", "remote tp") + " ";
+        assertTrue(suggestions(prefix).contains(quote("base 0")));
+        assertTrue(suggestions(prefix + "\"base").contains(quote("base 0")));
+        assertFalse(suggestions(prefix).contains(quote("Display 0")));
+        index.disconnected(A, owner); time.set(11_000_000); index.maintain();
+        assertTrue(suggestions(prefix).isEmpty());
+        assertEquals(0, dispatcher.execute(tpTarget(), "player"));
+        assertTrue(keys(errors.get(0)).contains("waypoint.remote.tp.unavailable"));
+    }
+    @Test void missingAndStaleTargetsNeverPrepare() throws Exception {
+        tpAllowed = true;
+        assertEquals(0, dispatcher.execute(tpTarget().replace("base 0", "Display 0"), "player"));
+        assertTrue(keys(errors.get(0)).contains("waypoint.remote.tp.not_found"));
+        index.disconnected(A, owner);
+        assertEquals(0, dispatcher.execute(tpTarget(), "player"));
+        assertTrue(keys(errors.get(1)).contains("waypoint.remote.tp.stale_catalog"));
+        time.set(11_000_000); index.maintain();
+        assertEquals(0, dispatcher.execute(tpTarget(), "player"));
+        assertTrue(keys(errors.get(2)).contains("waypoint.remote.tp.unavailable"));
+        assertNull(preparation); assertEquals(0, transfers);
     }
     @Test void unauthorizedViewsNeverExposeRetainedCoordinates() {
         var existing = index.views().get(A);

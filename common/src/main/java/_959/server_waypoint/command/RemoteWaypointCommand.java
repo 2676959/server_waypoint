@@ -2,6 +2,8 @@ package _959.server_waypoint.command;
 
 import _959.server_waypoint.crossserver.*;
 import _959.server_waypoint.crossserver.catalog.*;
+import _959.server_waypoint.crossserver.handoff.RemoteTeleportInitiator;
+import _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import _959.server_waypoint.util.StringCommandBuilder;
 import _959.server_waypoint.util.StringCommandBuilder.ListOptions;
@@ -24,42 +26,90 @@ import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
 import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
 import static net.kyori.adventure.text.Component.*;
 
-/** Vanilla-safe read-only commands. The only data dependency is a bounded local replica facade. */
+/** Vanilla-safe remote commands. Suggestions and target resolution use only the bounded local replica. */
 final class RemoteWaypointCommand<S> {
-    private static final String SERVER = "remote server", DIMENSION = "remote dimension", LIST = "remote list";
+    private static final String SERVER = "remote server", DIMENSION = "remote dimension", LIST = "remote list", WAYPOINT = "remote waypoint";
     private final Supplier<RemoteCatalogStore> store;
     private final BiConsumer<S, Component> send, error;
     private final IntSupplier defaultLimit;
-    private final Predicate<S> canList;
+    private final Predicate<S> canList, canTeleport;
+    private final RemoteTeleportInitiator<S> teleport;
     private final RemoteCatalogQuery query = new RemoteCatalogQuery();
 
     RemoteWaypointCommand(Supplier<RemoteCatalogStore> store, BiConsumer<S, Component> send,
-                          BiConsumer<S, Component> error, IntSupplier defaultLimit, Predicate<S> canList) {
+                          BiConsumer<S, Component> error, IntSupplier defaultLimit, Predicate<S> canList,
+                          Predicate<S> canTeleport, RemoteTeleportInitiator<S> teleport) {
         this.canList = Objects.requireNonNull(canList, "canList");
+        this.canTeleport = Objects.requireNonNull(canTeleport, "canTeleport");
+        this.teleport = Objects.requireNonNull(teleport, "teleport");
         this.store = store; this.send = send; this.error = error; this.defaultLimit = defaultLimit;
     }
     LiteralArgumentBuilder<S> build() {
-        LiteralArgumentBuilder<S> root = LiteralArgumentBuilder.<S>literal("remote").requires(canList).executes(context -> help(context.getSource()));
-        LiteralArgumentBuilder<S> servers = LiteralArgumentBuilder.<S>literal("servers").executes(this::servers);
+        LiteralArgumentBuilder<S> root = LiteralArgumentBuilder.<S>literal("remote").requires(this::canUse).executes(context -> help(context.getSource()));
+        LiteralArgumentBuilder<S> servers = LiteralArgumentBuilder.<S>literal("servers").requires(canList).executes(this::servers);
         RequiredArgumentBuilder<S, Integer> page = RequiredArgumentBuilder.<S, Integer>argument(PAGE_NUMBER_ARG, integer(1)).executes(this::servers);
         page.then(LiteralArgumentBuilder.<S>literal("limit").then(RequiredArgumentBuilder.<S, Integer>argument(PAGE_LIMIT_ARG, integer(1, MAX_PAGE_LIMIT)).executes(this::servers)));
         servers.then(LiteralArgumentBuilder.<S>literal("page").then(page)); root.then(servers);
-        LiteralArgumentBuilder<S> lists = literal("list"); configure(lists, 0);
+        LiteralArgumentBuilder<S> lists = LiteralArgumentBuilder.<S>literal("list").requires(canList); configure(lists, 0);
         RequiredArgumentBuilder<S, String> server = argument(SERVER, string()); configure(server, 1);
         server.suggests((context, builder) -> suggest(context, builder, 0));
         RequiredArgumentBuilder<S, String> dimension = argument(DIMENSION, string()); configure(dimension, 2);
         dimension.suggests((context, builder) -> suggest(context, builder, 1));
         RequiredArgumentBuilder<S, String> list = argument(LIST, string()); configure(list, 3);
         list.suggests((context, builder) -> suggest(context, builder, 2));
-        return root.then(lists.then(server.then(dimension.then(list))));
+        root.then(lists.then(server.then(dimension.then(list))));
+        RequiredArgumentBuilder<S, String> tpServer = argument(SERVER, string());
+        RequiredArgumentBuilder<S, String> tpDimension = argument(DIMENSION, string());
+        RequiredArgumentBuilder<S, String> tpList = argument(LIST, string());
+        RequiredArgumentBuilder<S, String> tpWaypoint = argument(WAYPOINT, string());
+        tpServer.suggests((context, builder) -> suggest(context, builder, 0, true));
+        tpDimension.suggests((context, builder) -> suggest(context, builder, 1, true));
+        tpList.suggests((context, builder) -> suggest(context, builder, 2, true));
+        tpWaypoint.suggests((context, builder) -> suggest(context, builder, 3, true)).executes(this::teleport);
+        return root.then(LiteralArgumentBuilder.<S>literal("tp").requires(canTeleport)
+                .then(tpServer.then(tpDimension.then(tpList.then(tpWaypoint)))));
     }
     boolean canList(S source) { return canList.test(source); }
-    int help(S source) { if (!canList.test(source)) return 0; send.accept(source, WaypointCommandHelp.remoteHelp()); return Command.SINGLE_SUCCESS; }
+    boolean canUse(S source) { return canList.test(source) || canTeleport.test(source); }
+    int help(S source) {
+        if (!canUse(source)) return 0;
+        send.accept(source, WaypointCommandHelp.remoteHelp(canList.test(source), canTeleport.test(source)));
+        return Command.SINGLE_SUCCESS;
+    }
+    private int teleport(CommandContext<S> context) {
+        S source = context.getSource();
+        if (!canTeleport.test(source)) return fail(source, Result.UNAUTHORIZED);
+        var cached = store.get().snapshot();
+        var entry = cached.entrySet().stream().filter(value -> value.getKey().value().equals(getString(context, SERVER))).findFirst().orElse(null);
+        if (entry == null) return fail(source, Result.UNAVAILABLE);
+        var view = entry.getValue();
+        if (view.state() == RemoteCatalogState.UNAUTHORIZED) return fail(source, Result.UNAUTHORIZED);
+        if (view.state() == RemoteCatalogState.STALE) return fail(source, Result.STALE_CATALOG);
+        if (view.state() != RemoteCatalogState.AVAILABLE || view.snapshot() == null) return fail(source, Result.UNAVAILABLE);
+        String dimension = getString(context, DIMENSION), listName = getString(context, LIST), waypoint = getString(context, WAYPOINT);
+        var list = view.snapshot().dimensions().getOrDefault(dimension, Map.of()).get(listName);
+        if (list == null || !list.waypoints().containsKey(waypoint)) return fail(source, Result.NOT_FOUND);
+        var selection = new RemoteTeleportInitiator.Selection(new RemoteWaypointKey(entry.getKey(), dimension, listName, waypoint),
+                view.snapshot().catalogRevision(), list.listRevision());
+        send.accept(source, translatable("waypoint.remote.tp.preparing"));
+        teleport.initiate(source, selection, result -> {
+            if (result == Result.SUCCESS) send.accept(source, translatable("waypoint.remote.tp.success"));
+            else fail(source, result);
+        });
+        return Command.SINGLE_SUCCESS;
+    }
+    private int fail(S source, Result result) {
+        error.accept(source, translatable("waypoint.remote.tp." + result.name().toLowerCase(Locale.ROOT)));
+        return 0;
+    }
     private void configure(ArgumentBuilder<S, ?> node, int depth) {
         new ListCommandOptions<S>((mode, reversed, grouped) -> context -> execute(context, depth, mode, reversed, grouped), null).configure(node);
     }
     private CompletableFuture<Suggestions> suggest(CommandContext<S> context, SuggestionsBuilder builder, int depth) {
-        if (!canList.test(context.getSource())) return Suggestions.empty();
+        return suggest(context, builder, depth, false);
+    }
+    private CompletableFuture<Suggestions> suggest(CommandContext<S> context, SuggestionsBuilder builder, int depth, boolean tp) {
+        if (!(tp ? canTeleport : canList).test(context.getSource())) return Suggestions.empty();
         Map<RemoteServerId, CatalogReceiver.View> cached = store.get().snapshot();
         Collection<String> candidates = List.of();
         if (depth == 0) candidates = cached.entrySet().stream().filter(entry -> entry.getValue().state() != RemoteCatalogState.UNAUTHORIZED)
@@ -69,7 +119,14 @@ final class RemoteWaypointCommand<S> {
             CatalogReceiver.View view = cached.entrySet().stream().filter(entry -> entry.getKey().value().equals(id)).map(Map.Entry::getValue).findFirst().orElse(null);
             if (view != null && view.snapshot() != null && view.state() != RemoteCatalogState.UNAUTHORIZED && view.state() != RemoteCatalogState.UNAVAILABLE) {
                 if (depth == 1) candidates = view.snapshot().dimensions().keySet();
-                else candidates = view.snapshot().dimensions().getOrDefault(getString(context, DIMENSION), Map.of()).keySet();
+                else {
+                    var lists = view.snapshot().dimensions().getOrDefault(getString(context, DIMENSION), Map.of());
+                    if (depth == 2) candidates = lists.keySet();
+                    else {
+                        var selected = lists.get(getString(context, LIST));
+                        if (selected != null) candidates = selected.waypoints().keySet();
+                    }
+                }
             }
         }
         String remaining = builder.getRemaining();

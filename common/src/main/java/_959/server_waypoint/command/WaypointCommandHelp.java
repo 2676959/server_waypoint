@@ -118,14 +118,20 @@ final class WaypointCommandHelp {
         return help;
     }
 
-    static Component remoteHelp() {
-        return topicHeader("waypoint.help.remote.title", "waypoint.help.remote.summary")
-                .append(section("waypoint.help.section.usage"))
-                .append(usageEntry("/wp remote servers [page <number> [limit <number>]]", "/wp remote servers", "waypoint.help.remote.servers"))
-                .append(usageEntry("/wp remote list [<server> [<dimension> [<list>]]]", "/wp remote list ", "waypoint.help.remote.list"))
-                .append(usageEntry("search <query> / sort <mode> [order <direction>] / page <number> / limit <number> / view tree|flat",
-                        "/wp remote list ", "waypoint.help.remote.options"))
-                .append(backButton());
+    static Component remoteHelp(boolean canList, boolean canTeleport) {
+        Component help = topicHeader("waypoint.help.remote.title", "waypoint.help.remote.summary")
+                .append(section("waypoint.help.section.usage"));
+        if (canList) {
+            help = help.append(usageEntry("/wp remote servers [page <number> [limit <number>]]", "/wp remote servers", "waypoint.help.remote.servers"))
+                    .append(usageEntry("/wp remote list [<server> [<dimension> [<list>]]]", "/wp remote list ", "waypoint.help.remote.list"))
+                    .append(usageEntry("search <query> / sort <mode> [order <direction>] / page <number> / limit <number> / view tree|flat",
+                            "/wp remote list ", "waypoint.help.remote.options"));
+        }
+        if (canTeleport) {
+            help = help.append(usageEntry("/wp remote tp <server> <dimension> <list> <waypoint>",
+                    "/wp remote tp ", "waypoint.help.remote.tp"));
+        }
+        return help.append(backButton());
     }
 
     static Component addHelp() {

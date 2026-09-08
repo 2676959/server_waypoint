@@ -14,7 +14,7 @@ messages so a future hybrid X25519 plus ML-KEM suite can be added without changi
 messages.
 
 Implementation status is tracked in [the progress record](cross-server-waypoint-teleportation-progress.md).
-Steps 1–14 now include transport, pairing/credentials, lifecycle agents, catalog distribution, permission-gated remote commands, authorization callbacks, coordinator handoff state and destination services; platform startup and the remaining
+Steps 1–15 now include transport, pairing/credentials, lifecycle agents, catalog distribution, permission-gated remote commands, authorization callbacks, coordinator handoff state and destination services plus remote teleport initiation; platform startup and the remaining
 services are not implemented. See the progress record for current evidence.
 
 ## Scope

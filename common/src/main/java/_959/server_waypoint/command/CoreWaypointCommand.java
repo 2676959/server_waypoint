@@ -1,6 +1,8 @@
 package _959.server_waypoint.command;
 
 import _959.server_waypoint.crossserver.authorization.RemotePermissions;
+import _959.server_waypoint.crossserver.handoff.RemoteTeleportInitiator;
+import _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result;
 
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
@@ -108,6 +110,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     private final WaypointServerCore waypointServer;
     private final WaypointQueryEngine waypointQueryEngine;
     private final RemoteWaypointCommand<S> remoteCommand;
+    private volatile RemoteTeleportInitiator<S> remoteTeleport = (source, selection, feedback) -> feedback.accept(Result.UNSUPPORTED);
+
     private final PermissionKeys<K> permissionKeys;
     private final PermissionManager<S, K, P> permissionManager;
     private final NavigationService<P> navigationService;
@@ -195,10 +199,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         this.waypointServer = waypointServer;
         this.waypointQueryEngine = new WaypointQueryEngine(waypointServer);
         this.sender = sender;
+        var remotePermissions = new RemotePermissions<>(permissionManager, () -> CONFIG.CommandPermission(), this::getPlayer);
         this.remoteCommand = new RemoteWaypointCommand<>(waypointServer::remoteCatalogStore, sender::sendMessage,
                 sender::sendError, () -> CONFIG.defaultPageLimit(),
-                new RemotePermissions<>(
-                        permissionManager, () -> CONFIG.CommandPermission(), this::getPlayer)::canList);
+                remotePermissions::canList, remotePermissions::canRequestTeleport,
+                (source, selection, feedback) -> remoteTeleport.initiate(source, selection, feedback));
         this.permissionManager = permissionManager;
         this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
         this.restoreRegistry = new WaypointRestoreRegistry<>();
@@ -206,6 +211,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
         this.dimensionArgumentProvider = dimensionArgument;
         this.blockPosArgumentProvider = blockPositionArgument;
         this.permissionKeys = permissionManager.keys;
+    }
+
+    /** Install the connection-scoped source service; the lifecycle owner must close it before replacement. */
+    public final void setRemoteTeleportInitiator(RemoteTeleportInitiator<S> initiator) {
+        this.remoteTeleport = Objects.requireNonNull(initiator, "initiator");
     }
 
     protected abstract String toDimensionName(D dimensionArgument);
@@ -584,7 +594,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                                     return Command.SINGLE_SUCCESS;
                                 })
                         )
-                        .then(literal("remote").requires(source -> this.remoteCommand.canList((S) source))
+                        .then(literal("remote").requires(source -> this.remoteCommand.canUse((S) source))
                                 .executes(context -> this.remoteCommand.help((S) context.getSource())))
                         .then(literal(NAVIGATE_COMMAND)
                                 .requires(source -> hasNavigatePermission((S) source))
@@ -874,7 +884,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 hasTpPermission(source),
                 hasReloadPermission(source),
                 hasUploadPermission(source),
-                remoteCommand.canList(source)
+                remoteCommand.canUse(source)
         ));
     }
 
