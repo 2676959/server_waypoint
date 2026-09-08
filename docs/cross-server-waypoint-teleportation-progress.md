@@ -5,11 +5,11 @@ Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
 KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
 Step 2 is now `fd3ba53` after rebasing onto upload-branch fix `f0d8281`.
 Step 3 was committed as `3fccc28`; step 4 as `6d7be5a`; step 5 as `4e806fa`; step 6 as `8752aaa`.
-Step 7 was committed as `1858582`; step 8 as `b8a372d`. Step 9 was committed as `d32d177`. Step 10 was committed as `d9ada50`. Step 11 remote queries and suggestions are complete. Step 12 permissions and authorization callbacks were committed as `bebdb30`. The current change implements step 13 coordinator handoffs.
+Step 7 was committed as `1858582`; step 8 as `b8a372d`. Step 9 was committed as `d32d177`. Step 10 was committed as `d9ada50`. Step 11 remote queries and suggestions are complete. Step 12 permissions and authorization callbacks were committed as `bebdb30`. Step 13 coordinator handoffs were committed as `4122f2a`. The current change implements step 14 destination preparation and arrival.
 
 ## Current status
 
-**Steps 1–13 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
+**Steps 1–14 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
 for `Noise_KK_25519_AESGCM_SHA256`, with 35 passing KK checks and a scoped source review.**
 Step 3 adds the proxy modules/contracts and private dependency packaging; all 41 artifact checks
 and 10 native runtime checks pass. Step 4 adds immutable catalogs and reader views.
@@ -21,7 +21,8 @@ Step 10 adds bounded coordinator indexing, fan-out and backend replicas with sta
 Step 11 registers read-only remote commands and cached suggestions in the shared backend command tree.
 Step 12 adds permission-gated browsing and reusable source/destination authorization callbacks.
 Step 13 adds bounded coordinator handoff state and reusable backend-message handlers.
-Steps 14–19 have not started. No platform lifecycle starts these channels; commands report no cached
+Step 14 adds destination reservations, authoritative arrival validation and concrete mod/Paper teleport adapters.
+Steps 15–19 have not started. No platform lifecycle starts these channels; commands report no cached
 servers until a remote store is attached. Platform catalog synchronization, player transfers and
 remote GUI behavior remain unenabled.
 
@@ -57,7 +58,8 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 11 — Remote queries/suggestions | Complete | Read-only bounded store facade, shared list grammar/filtering/sorting, vanilla-safe servers/list commands, cache-only identity suggestions and six-language help/status feedback. See [query contract](cross-server-catalog-queries.md). |
 | 12 — Permissions and authorization | Complete | Remote list/tp nodes, current source-player checks, permission-gated commands/help/suggestions, destination export and final live-player callbacks. See [authorization contract](cross-server-authorization.md). |
 | 13 — Coordinator handoffs | Complete | Atomic prepare/reserve/claim/complete/cancel/expiry, session and proxy-player binding, bounded replay retention and audit, and backend-message handlers. See [handoff contract](cross-server-handoffs.md). |
-| 14–19 | Not started | Destination arrival/teleport, remote tp command, real Velocity integration, client/GUI integration, and release hardening remain pending. |
+| 14 — Destination preparation and arrival | Complete | Bounded connection-scoped reservations, exact claim/player binding, fresh local export/coordinate resolution, final permission checks and mod/Paper owner adapters. See [destination contract](cross-server-destination.md). |
+| 15–19 | Not started | Remote tp command, real Velocity integration, client/GUI integration, and release hardening remain pending. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
@@ -209,6 +211,18 @@ restart. See [handoff contract and integration boundary](cross-server-handoffs.m
 No native platform or live TCP handoff dispatcher was enabled or tested. Destination reservation,
 owning-thread arrival/teleport and real proxy/transport wiring remain steps 14–16.
 
+## Step-14 verification
+
+On 2026-09-08, common/proxy tests passed 484 common cases and 90 proxy cases with no failures,
+errors or skips. The 26 new cases cover authoritative preparation/arrival, removal/rename/movement,
+export and permission revocation, current player binding, scheduling/retirement, concurrent duplicate
+arrivals, late/invalid claims, cancellation/expiry/disconnect, async outcomes and in-memory exchanges
+with the coordinator in both modes. The Velocity build and production adapter compilation passed
+for Fabric 1.20.1/26.1.2, NeoForge 1.21.2, Forge 26.1.2 and Paper 1.21/26.2. See the
+[exact command and limits](cross-server-destination.md). No active Stonecutter version was changed.
+No native game/proxy session or full release artifact matrix was run. Remote command registration,
+TCP lifecycle/claim dispatch and join integration remain steps 15–16.
+
 ## Historical evidence retained
 
 - Step 1: `./gradlew :common:test --console=plain` passed all 25 identity cases during the original
@@ -220,7 +234,7 @@ owning-thread arrival/teleport and real proxy/transport wiring remain steps 14�
 
 ## Next work, in order
 
-1. Step 14: implement destination preparation and arrival.
+1. Step 15: add the remote teleport command.
 2. Continue the remaining command/handoff/platform steps in order. Plaintext backend identity
    must never be described as cryptographically authenticated.
 

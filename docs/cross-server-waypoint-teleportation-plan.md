@@ -14,7 +14,7 @@ messages so a future hybrid X25519 plus ML-KEM suite can be added without changi
 messages.
 
 Implementation status is tracked in [the progress record](cross-server-waypoint-teleportation-progress.md).
-Steps 1–13 now include transport, pairing/credentials, lifecycle agents, catalog distribution, permission-gated remote commands, authorization callbacks and coordinator handoff state; platform startup and the remaining
+Steps 1–14 now include transport, pairing/credentials, lifecycle agents, catalog distribution, permission-gated remote commands, authorization callbacks, coordinator handoff state and destination services; platform startup and the remaining
 services are not implemented. See the progress record for current evidence.
 
 ## Scope
@@ -756,6 +756,9 @@ Verification: in-memory source/coordinator/destination tests cover success, expi
 cross-player claims, cross-destination claims, concurrent claims, and coordinator restart.
 
 ### Step 14: implement destination preparation and arrival
+
+Completed as a destination service with authoritative lookup and concrete mod/Paper adapters:
+[destination contract and verification](cross-server-destination.md). Command and live lifecycle wiring remain steps 15–16.
 
 - Resolve the requested identity from current authoritative destination data during preparation.
 - Reserve the handoff without trusting cached coordinates from the source.
