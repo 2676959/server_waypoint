@@ -5,17 +5,18 @@ Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
 KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
 Step 2 is now `fd3ba53` after rebasing onto upload-branch fix `f0d8281`.
 Step 3 was committed as `3fccc28`; step 4 as `6d7be5a`; step 5 as `4e806fa`; step 6 as `8752aaa`.
-The current change implements step 7 pairing and credentials.
+Step 7 was committed as `1858582`. The current change implements step 8 connection lifecycle and registration.
 
 ## Current status
 
-**Steps 1–7 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
+**Steps 1–8 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
 for `Noise_KK_25519_AESGCM_SHA256`, with 35 passing KK checks and a scoped source review.**
 Step 3 adds the proxy modules/contracts and private dependency packaging; all 41 artifact checks
 and 10 native runtime checks pass. Step 4 adds immutable catalogs and reader views.
 Step 5 adds canonical messages and bounded codecs. Step 6 adds reusable bounded TCP channels in both
 modes. Step 7 adds authenticated pairing, credential persistence, rotation and live revocation.
-Steps 8–19 have not started. No platform lifecycle starts these channels, and no remote commands,
+Step 8 adds asynchronous agents, registered presence, heartbeat and bounded reconnect.
+Steps 9–19 have not started. No platform lifecycle starts these channels, and no remote commands,
 catalog synchronization service, player transfers, or remote GUI behavior has been enabled.
 
 The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
@@ -44,7 +45,8 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 5 — Canonical messages and codecs | Complete | Fifteen typed message families with stable IDs, correlated/sequenced envelopes, strict canonical catalog encoding, bounded chunk/delta payloads, and malformed-input tests. See [wire specification](cross-server-application-codec-v1.md). |
 | 6 — Bounded TCP transport | Complete | Explicit KK/plaintext modes, transcript-bound handshake and confirmation, bounded records/catalog assembly, sequence/replay tracking, admission limits, absolute deadlines and terminal cleanup. See [transport contract](cross-server-tcp-transport-v1.md). |
 | 7 — Pairing and credentials | Complete | One-time authenticated bootstrap, canonical key import, private credential files, expected-pin rotation and durable per-ID/live-session revocation. See [bootstrap contract and review](cross-server-pairing-v1.md). |
-| 8–19 | Not started | Lifecycle/registration, synchronization, commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
+| 8 — Lifecycle and registration | Complete | Asynchronous backend/coordinator owners, transcript-matched registration, explicit mode/status, heartbeat timeouts, bounded backoff, duplicate rejection, metrics and graceful shutdown. See [lifecycle contract](cross-server-connection-lifecycle.md). |
+| 9–19 | Not started | Catalog publication/synchronization, commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
@@ -127,6 +129,18 @@ See the [bootstrap specification and review](cross-server-pairing-v1.md) for the
 The feature is not enabled, and platform/bootstrap-carrier integration remains pending. Full backend
 artifact/native runtime verification was not repeated.
 
+## Step-8 verification
+
+On 2026-09-07, `./gradlew :common:test :proxy-common:test :velocity:build --max-workers=2 --console=plain`
+passed 439 common tests and 53 proxy tests (18 new lifecycle cases), without failures/errors/skips.
+Real sockets cover both modes, automatic registration/heartbeat, duplicate IDs, reconnect after
+coordinator restart, bounded commands/backoff, missing/mismatched registration, silent peers and
+shutdown during handshake. A deliberately blocked listener factory verifies that start/stop return
+without blocking the caller. See [ownership and limits](cross-server-connection-lifecycle.md).
+Final Velocity JAR inspection confirms both agents use Java 17 bytecode. Tracked/new-file
+whitespace checks pass. No platform lifecycle or bootstrap network dispatcher has been enabled.
+The full backend artifact and live game/proxy matrix was not repeated.
+
 ## Historical evidence retained
 
 - Step 1: `./gradlew :common:test --console=plain` passed all 25 identity cases during the original
@@ -138,8 +152,8 @@ artifact/native runtime verification was not repeated.
 
 ## Next work, in order
 
-1. Step 8: wrap the blocking channels in bounded lifecycle workers, with reconnect, registration and heartbeat.
-2. Continue the remaining catalog/handoff steps in order. Plaintext backend identity
+1. Step 9: publish authoritative immutable backend catalogs, bounded snapshots and revisioned deltas.
+2. Continue the remaining synchronization/command/handoff/platform steps in order. Plaintext backend identity
    must never be described as cryptographically authenticated.
 
 Update this file when a step's status changes, a blocker is resolved, or new validation is run.

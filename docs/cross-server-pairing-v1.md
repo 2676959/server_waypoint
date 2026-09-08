@@ -4,7 +4,8 @@ Step 7 provides coordinator administrative pair/revoke/rotation operations, back
 storage and an authenticated bootstrap state machine. The shared credential/bootstrap helpers
 live in `common/.../crossserver/pairing`; the coordinator admission registry belongs exclusively in
 `proxy-common/.../proxy/pairing`. No platform command, bootstrap socket dispatcher or game lifecycle
-starts these services yet. Step 8 supplies bounded workers, carrier I/O, registration and reconnect.
+starts these services yet. Step 8 supplies operational connection workers, registration and reconnect. The bootstrap network
+dispatcher remains platform integration work.
 
 ## Bootstrap decision and review
 

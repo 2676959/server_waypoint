@@ -14,7 +14,7 @@ messages so a future hybrid X25519 plus ML-KEM suite can be added without changi
 messages.
 
 Implementation status is tracked in [the progress record](cross-server-waypoint-teleportation-progress.md).
-Steps 1–7 now include reusable KK/plaintext TCP channels and pairing/credential APIs; platform startup and the remaining
+Steps 1–8 now include transport, pairing/credentials and connection/registration agents; platform startup and the remaining
 services are not implemented. See the progress record for current evidence.
 
 ## Scope
@@ -655,6 +655,9 @@ Verification: pairing codes are single-use, revoking one backend does not affect
 permissions are restricted where supported, and secret-scanning tests cover logs and `toString()`.
 
 ### Step 8: implement connection lifecycle and server registration
+
+Completed as reusable asynchronous agents: [lifecycle contract and verification](cross-server-connection-lifecycle.md).
+Platform startup and catalog publication are not enabled by this step.
 
 - Connect backend agents outbound to the coordinator with bounded exponential backoff.
 - Register stable server ID, protocol version, and catalog capabilities after KK confirmation or

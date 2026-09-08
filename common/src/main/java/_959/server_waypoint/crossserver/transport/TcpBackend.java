@@ -13,6 +13,13 @@ public final class TcpBackend {
     public static TcpChannel connect(TcpEndpoint endpoint, TransportMode mode, RemoteServerId id,
                                      Set<Integer> capabilities, NoiseKeys keys, byte[] coordinatorPin,
                                      TcpLimits limits, ProtocolLimits protocol) throws IOException {
+        return connect(endpoint, mode, id, capabilities, keys, coordinatorPin, limits, protocol, socket -> { });
+    }
+
+    static TcpChannel connect(TcpEndpoint endpoint, TransportMode mode, RemoteServerId id,
+                              Set<Integer> capabilities, NoiseKeys keys, byte[] coordinatorPin,
+                              TcpLimits limits, ProtocolLimits protocol,
+                              java.util.function.Consumer<Socket> owner) throws IOException {
         Objects.requireNonNull(mode, "mode");
         Objects.requireNonNull(limits, "limits");
         Objects.requireNonNull(protocol, "protocol");
@@ -26,6 +33,7 @@ public final class TcpBackend {
         ScheduledFuture<?> deadline = TcpWire.deadline(socket, limits.handshakeMillis());
         NoiseRecordCipher cipher = null;
         try {
+            owner.accept(socket);
             socket.connect(address, limits.handshakeMillis());
             socket.setTcpNoDelay(true);
             if (mode == TransportMode.PLAINTEXT && (!socket.getInetAddress().isLoopbackAddress()

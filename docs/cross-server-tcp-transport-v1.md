@@ -3,7 +3,7 @@
 `common/.../crossserver/transport` now provides reusable backend/coordinator TCP channels. Both
 backends and the coordinator use this code, so it belongs in `common`. No Minecraft, Paper or
 Velocity lifecycle starts it yet. Pairing/key persistence is implemented by [step 7](cross-server-pairing-v1.md); bounded worker ownership,
-reconnect, registration policy and heartbeat generation are step 8. Feature enablement remains off.
+reconnect, registration and heartbeat are now supplied by [step 8](cross-server-connection-lifecycle.md). Feature enablement remains off.
 
 ## Ownership and admission
 

@@ -64,7 +64,10 @@ public final class PairingCoordinator implements AutoCloseable {
     /** Starts only the operational listener explicitly. Pairing messages still require an owner-supplied carrier. */
     public synchronized TcpCoordinator listen(TcpEndpoint endpoint, TcpLimits limits, ProtocolLimits protocol) throws IOException {
         requireOpen();
-        if (listener != null) throw new IOException("Listener already owned");
+        if (listener != null) {
+            if (!listener.isClosed()) throw new IOException("Listener already owned");
+            listenerKeys.close(); listenerKeys = null; listener = null;
+        }
         Map<RemoteServerId, byte[]> raw = new HashMap<>();
         pins.forEach((id, pin) -> raw.put(id, CanonicalKey.rawPublic(pin)));
         listenerKeys = local.noiseKeys();

@@ -22,6 +22,7 @@ public final class TcpCoordinator implements AutoCloseable {
     private final Map<Socket, TcpChannel> sockets = new HashMap<>();
     private final Map<RemoteServerId, Socket> identities = new HashMap<>();
     private boolean closed;
+    private final java.util.concurrent.atomic.AtomicLong accepted = new java.util.concurrent.atomic.AtomicLong();
 
     /** Plaintext registry values must be empty arrays; encrypted registry values are raw 32-byte pins. */
     public TcpCoordinator(TcpEndpoint endpoint, TransportMode mode, NoiseKeys keys,
@@ -48,12 +49,17 @@ public final class TcpCoordinator implements AutoCloseable {
         }
     }
 
+    public synchronized boolean isClosed() { return closed; }
+    public TcpLimits limits() { return limits; }
+    public long acceptedConnections() { return accepted.get(); }
+
     public int port() { return listener.getLocalPort(); }
     public synchronized int connectionCount() { return sockets.size(); }
 
     /** May be called by multiple bounded workers. Failed handshakes never return a channel. */
     public TcpChannel accept() throws IOException {
         Socket socket = listener.accept();
+        accepted.updateAndGet(value -> value == Long.MAX_VALUE ? value : value + 1);
         synchronized (this) {
             if (closed || sockets.size() >= limits.connections()) {
                 TcpWire.close(socket);
