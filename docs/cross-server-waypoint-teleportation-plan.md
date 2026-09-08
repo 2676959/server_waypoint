@@ -14,7 +14,7 @@ messages so a future hybrid X25519 plus ML-KEM suite can be added without changi
 messages.
 
 Implementation status is tracked in [the progress record](cross-server-waypoint-teleportation-progress.md).
-Steps 1–12 now include transport, pairing/credentials, lifecycle agents, catalog distribution, permission-gated remote commands and authorization callbacks; platform startup and the remaining
+Steps 1–13 now include transport, pairing/credentials, lifecycle agents, catalog distribution, permission-gated remote commands, authorization callbacks and coordinator handoff state; platform startup and the remaining
 services are not implemented. See the progress record for current evidence.
 
 ## Scope
@@ -739,6 +739,9 @@ Verification: explicit allow/deny assignments, fallback behavior, console behavi
 revocation are covered on modded and Paper implementations.
 
 ### Step 13: implement the coordinator handoff state machine
+
+Completed as a bounded atomic registry and reusable backend-message dispatcher:
+[handoff contract and verification](cross-server-handoffs.md). Destination execution and platform dispatch remain steps 14–16.
 
 - Implement prepare, reserve, claim, complete, cancel, and expiry transitions.
 - Create single-use records bound to request UUID, player UUID, source server, destination server,
