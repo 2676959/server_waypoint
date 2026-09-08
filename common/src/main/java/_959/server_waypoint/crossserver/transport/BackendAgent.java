@@ -1,7 +1,8 @@
 package _959.server_waypoint.crossserver.transport;
 
 import _959.server_waypoint.crossserver.RemoteServerId;
-import _959.server_waypoint.crossserver.catalog.CatalogPublisher;
+import _959.server_waypoint.crossserver.catalog.*;
+import _959.server_waypoint.crossserver.RemoteCatalogState;
 import _959.server_waypoint.crossserver.protocol.*;
 import java.io.IOException;
 import java.net.Socket;
@@ -9,7 +10,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
 
-/** Outbound presence worker. Does not touch game state, publish catalogs or perform transfers. */
+/** Outbound registration, optional publication, and bounded remote catalog replication. */
 public final class BackendAgent extends AsyncTransportLifecycle implements BackendTransport {
     public enum State { NEW, DISABLED, CONNECTING, REGISTERED, BACKOFF, STOPPED }
     public record Status(State state, TransportMode mode, BackendPresence presence, ConnectionMetrics.Snapshot metrics) { }
@@ -23,6 +24,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
     private final ProtocolLimits protocol;
     private final LifecycleSettings settings;
     private final CatalogPublisher publisher;
+    private final CatalogIndex remoteCatalogs;
     private ScheduledThreadPoolExecutor publications;
     private final ConnectionMetrics metrics = new ConnectionMetrics();
     private final Object retry = new Object();
@@ -44,7 +46,13 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
     public BackendAgent(TcpEndpoint endpoint, TransportMode mode, RemoteServerId id, Set<Integer> capabilities,
                         NoiseKeys keys, byte[] coordinatorPin, TcpLimits limits, ProtocolLimits protocol,
                         LifecycleSettings settings, CatalogPublisher publisher) {
+        this(endpoint, mode, id, capabilities, keys, coordinatorPin, limits, protocol, settings, publisher, CatalogCacheLimits.DEFAULT);
+    }
+    public BackendAgent(TcpEndpoint endpoint, TransportMode mode, RemoteServerId id, Set<Integer> capabilities,
+                        NoiseKeys keys, byte[] coordinatorPin, TcpLimits limits, ProtocolLimits protocol,
+                        LifecycleSettings settings, CatalogPublisher publisher, CatalogCacheLimits cacheLimits) {
         super("server-waypoint-backend-control");
+        remoteCatalogs = new CatalogIndex(cacheLimits);
         if (publisher != null && !publisher.serverId().equals(id)) throw new IllegalArgumentException("Publisher identity mismatch");
         this.publisher = publisher;
         this.endpoint = Objects.requireNonNull(endpoint);
@@ -66,6 +74,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
             try { this.keys = new NoiseKeys(secret); } finally { Arrays.fill(secret, (byte) 0); }
         }
     }
+    public Map<RemoteServerId, CatalogReceiver.View> remoteCatalogs() { return remoteCatalogs.views(); }
     @Override public RemoteServerId serverId() { return id; }
     public Status status() {
         TcpChannel current = channel;
@@ -77,6 +86,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
         endpoint.validate(mode);
         writer = new ScheduledThreadPoolExecutor(1, daemonThreads("server-waypoint-backend-heartbeat"));
         writer.setRemoveOnCancelPolicy(true);
+        writer.scheduleWithFixedDelay(remoteCatalogs::maintain, settings.heartbeatMillis(), settings.heartbeatMillis(), TimeUnit.MILLISECONDS);
         if (publisher != null) {
             publications = new ScheduledThreadPoolExecutor(1, daemonThreads("server-waypoint-backend-catalog"));
             publications.setRemoveOnCancelPolicy(true);
@@ -111,6 +121,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
                     throw new IOException("Registration rejected");
                 }
                 if (stopping || generation == Long.MAX_VALUE) throw new IOException("Agent stopped or exhausted");
+                for (RemoteServerId source : remoteCatalogs.serverIds()) remoteCatalogs.connected(source, current, null, protocol);
                 connectedAt = System.nanoTime();
                 presence = new BackendPresence(id, mode, capabilities, ++generation, Instant.now());
                 registered = true;
@@ -127,12 +138,33 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
                     }, 0, publisher.intervalMillis(), TimeUnit.MILLISECONDS);
                 }
                 while (!stopping) {
-                    ApplicationEnvelope envelope = current.receive().envelope();
+                    TcpChannel.Received received = current.receive();
+                    ApplicationEnvelope envelope = received.envelope();
                     if (publisher != null && envelope.message() instanceof ApplicationMessage.Error error
                             && error.reason() == ApplicationMessage.Result.STALE_CATALOG) {
                         publisher.requestFullSnapshot(); continue;
                     }
-                    if (!(envelope.message() instanceof ApplicationMessage.Heartbeat)) throw new IOException("Unexpected presence message");
+                    if (!(envelope.message() instanceof ApplicationMessage.Heartbeat)) {
+                        ApplicationMessage message = envelope.message();
+                        RemoteServerId source;
+                        if (message instanceof ApplicationMessage.CatalogMetadata m) source = m.serverId();
+                        else if (message instanceof ApplicationMessage.CatalogSnapshot m) source = m.serverId();
+                        else if (message instanceof ApplicationMessage.CatalogDelta m) source = m.serverId();
+                        else if (message instanceof ApplicationMessage.CatalogInvalidate m) source = m.serverId();
+                        else throw new IOException("Unexpected coordinator message");
+                        if (source.equals(id)) throw new IOException("Coordinator echoed local catalog");
+                        // The coordinator vouches for routing. This link's mode does not prove the source link's mode.
+                        if (!remoteCatalogs.contains(source)) {
+                            remoteCatalogs.connected(source, current, null, protocol);
+                        }
+                        if (remoteCatalogs.receive(source, current, received)) {
+                            current.send(envelope.requestId(), new ApplicationMessage.Error(ApplicationMessage.Result.STALE_CATALOG));
+                        }
+                        if (message instanceof ApplicationMessage.CatalogInvalidate m && m.state() == RemoteCatalogState.UNAVAILABLE) {
+                            remoteCatalogs.expire(source);
+                        }
+                        continue;
+                    }
                     metrics.receivedHeartbeat(); heartbeatReceived = true;
                 }
             } catch (Exception failure) {
@@ -140,7 +172,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
             } finally {
                 if (heartbeat != null) heartbeat.cancel(false);
                 if (publication != null) publication.cancel(false);
-                if (current != null) current.close();
+                if (current != null) { current.close(); remoteCatalogs.disconnected(current); }
                 Socket socket = connecting;
                 if (socket != null) TcpWire.close(socket);
                 connecting = null; channel = null; presence = null;
@@ -174,6 +206,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
         terminate(reader);
         terminate(writer);
         terminate(publications);
+        remoteCatalogs.clear();
         if (keys != null) keys.close();
         presence = null; state = State.STOPPED;
     }

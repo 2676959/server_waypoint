@@ -14,7 +14,7 @@ messages so a future hybrid X25519 plus ML-KEM suite can be added without changi
 messages.
 
 Implementation status is tracked in [the progress record](cross-server-waypoint-teleportation-progress.md).
-Steps 1–9 now include transport, pairing/credentials, lifecycle agents and backend catalog publication; platform startup and the remaining
+Steps 1–10 now include transport, pairing/credentials, lifecycle agents and catalog publication/distribution; platform startup and the remaining
 services are not implemented. See the progress record for current evidence.
 
 ## Scope
@@ -687,6 +687,9 @@ Verification: edits generate revisions, explicit empty catalogs remove entries, 
 outside mutation locks, and failed publication preserves the previous coordinator snapshot as stale.
 
 ### Step 10: aggregate and distribute catalogs
+
+Completed as reusable index/distribution services: [distribution contract and verification](cross-server-catalog-distribution.md).
+Platform startup remains a later integration step.
 
 - Maintain one immutable latest snapshot per admitted server ID in the coordinator, retaining its transport mode.
 - Reject old revisions and server-ID mismatches.

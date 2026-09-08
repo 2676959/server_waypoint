@@ -5,11 +5,11 @@ Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
 KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
 Step 2 is now `fd3ba53` after rebasing onto upload-branch fix `f0d8281`.
 Step 3 was committed as `3fccc28`; step 4 as `6d7be5a`; step 5 as `4e806fa`; step 6 as `8752aaa`.
-Step 7 was committed as `1858582`; step 8 as `b8a372d`. The current change implements step 9 catalog publication.
+Step 7 was committed as `1858582`; step 8 as `b8a372d`. Step 9 was committed as `d32d177`. The current change implements step 10 catalog aggregation and distribution.
 
 ## Current status
 
-**Steps 1–9 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
+**Steps 1–10 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
 for `Noise_KK_25519_AESGCM_SHA256`, with 35 passing KK checks and a scoped source review.**
 Step 3 adds the proxy modules/contracts and private dependency packaging; all 41 artifact checks
 and 10 native runtime checks pass. Step 4 adds immutable catalogs and reader views.
@@ -17,8 +17,9 @@ Step 5 adds canonical messages and bounded codecs. Step 6 adds reusable bounded 
 modes. Step 7 adds authenticated pairing, credential persistence, rotation and live revocation.
 Step 8 adds asynchronous agents, registered presence, heartbeat and bounded reconnect.
 Step 9 adds authoritative full/delta publication and stale-safe coordinator receipt.
-Steps 10–19 have not started. No platform lifecycle starts these channels, and no remote commands,
-catalog synchronization service, player transfers, or remote GUI behavior has been enabled.
+Step 10 adds bounded coordinator indexing, fan-out and backend replicas with stale expiry.
+Steps 11–19 have not started. No platform lifecycle starts these channels, and no remote commands,
+platform catalog synchronization, player transfers, or remote GUI behavior has been enabled.
 
 The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
 The [protocol v1 contract](cross-server-protocol-v1.md) defines the feature semantics.
@@ -48,7 +49,8 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 7 — Pairing and credentials | Complete | One-time authenticated bootstrap, canonical key import, private credential files, expected-pin rotation and durable per-ID/live-session revocation. See [bootstrap contract and review](cross-server-pairing-v1.md). |
 | 8 — Lifecycle and registration | Complete | Asynchronous backend/coordinator owners, transcript-matched registration, explicit mode/status, heartbeat timeouts, bounded backoff, duplicate rejection, metrics and graceful shutdown. See [lifecycle contract](cross-server-connection-lifecycle.md). |
 | 9 — Backend catalog publication | Complete | Atomic detached capture, exact PUBLIC selection, durable catalog/list revisions, bounded full/delta publication, gap resynchronization and stale-preserving receiver validation. See [publication contract](cross-server-catalog-publication.md). |
-| 10–19 | Not started | Coordinator catalog aggregation/fan-out, commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
+| 10 — Catalog aggregation/distribution | Complete | Shared bounded index, coordinator fan-out with full/delta resynchronization, source-mode retention, separate backend replicas, stale expiry and retained revision fingerprints. See [distribution contract](cross-server-catalog-distribution.md). |
+| 11–19 | Not started | Remote queries/commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
@@ -154,6 +156,16 @@ cleanup tests now wait for asynchronous cleanup/accounting as well as socket/pre
 See [publication ownership and limits](cross-server-catalog-publication.md). Full backend artifact
 and native game/proxy integration checks were not repeated; no platform feature has been enabled.
 
+## Step-10 verification
+
+On 2026-09-08, `./gradlew :common:test :proxy-common:test :velocity:build --max-workers=2 --console=plain`
+passed 444 common tests and 67 proxy tests, with zero failures/errors/skips. Six new cases cover
+A-to-B synchronization in KK/plaintext, duplicate local names, reconnect, immutable views,
+stale/expiry fan-out, global/per-server/identity limits, source/session mismatch, retained revision
+fingerprints, correlated delta recovery, oversized-delta full fallback and expiry during refresh.
+The Velocity artifact includes Java 17 catalog services. Native Minecraft/Velocity integration
+and the full backend artifact matrix were not run; platform lifecycle wiring remains pending.
+
 ## Historical evidence retained
 
 - Step 1: `./gradlew :common:test --console=plain` passed all 25 identity cases during the original
@@ -165,7 +177,7 @@ and native game/proxy integration checks were not repeated; no platform feature 
 
 ## Next work, in order
 
-1. Step 10: build the coordinator catalog index, bound cache/expiry policy, and fan out catalogs to backends.
+1. Step 11: add backend remote-catalog queries, command suggestions and localized read-only feedback.
 2. Continue the remaining command/handoff/platform steps in order. Plaintext backend identity
    must never be described as cryptographically authenticated.
 

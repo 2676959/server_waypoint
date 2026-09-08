@@ -68,7 +68,8 @@ application version must be 1. A missing, malformed or mismatched registration n
 visible presence. Duplicate transport IDs reject without displacing the existing session. The
 coordinator sends the correlated successful result before exposing the immutable presence entry.
 Step 8 accepted only heartbeats after registration. [Step 9](cross-server-catalog-publication.md)
-now adds backend catalog publication/receipt; handoff handlers remain absent.
+adds backend catalog publication/receipt; [Step 10](cross-server-catalog-distribution.md)
+adds coordinator fan-out and backend replication. Handoff handlers remain absent.
 
 `BackendPresence` contains the stable ID, actual mode, defensive capability set, registration time
 and a monotonically increasing generation local to that agent. `authenticated()` is true only
@@ -92,7 +93,8 @@ a silent peer even while outbound heartbeats are succeeding. Heartbeat writes us
 bounded write deadline and close the session on failure.
 
 A backend uses one reader, one heartbeat worker and one control owner. Step 9 adds one optional
-publication worker when a CatalogPublisher is supplied. A coordinator uses at most
+publication worker when a CatalogPublisher is supplied. Step 10 adds bounded cache maintenance
+tasks and at most four coordinator distribution workers, with one coalescing task per peer. A coordinator uses at most
 `TcpLimits.connections()` readers, at most four heartbeat workers and one control owner. Reader
 jobs are fixed for the lifecycle; heartbeat jobs are at most one per active peer and canceled jobs
 are removed. There is no application outbound queue or executor growth under reconnect storms.

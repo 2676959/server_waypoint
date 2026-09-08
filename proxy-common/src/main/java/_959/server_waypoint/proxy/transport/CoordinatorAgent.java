@@ -1,7 +1,8 @@
 package _959.server_waypoint.proxy.transport;
 
 import _959.server_waypoint.crossserver.RemoteServerId;
-import _959.server_waypoint.proxy.catalog.CatalogReceiver;
+import _959.server_waypoint.crossserver.catalog.*;
+import _959.server_waypoint.proxy.catalog.CatalogDistributor;
 import _959.server_waypoint.crossserver.protocol.*;
 import _959.server_waypoint.crossserver.transport.*;
 import java.io.IOException;
@@ -30,16 +31,21 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
     private final LifecycleSettings settings;
     private final ConnectionMetrics metrics = new ConnectionMetrics();
     private final ConcurrentMap<RemoteServerId, Live> peers = new ConcurrentHashMap<>();
-    private final Map<RemoteServerId, CatalogReceiver> catalogs = new HashMap<>();
+    private final CatalogIndex catalogs;
     private final AtomicLong generation = new AtomicLong();
     private ExecutorService readers;
     private ScheduledThreadPoolExecutor writers;
+    private ScheduledThreadPoolExecutor distributions;
     private volatile TcpCoordinator listener;
     private volatile boolean running;
 
     /** Factory runs on the control worker, never on the caller; it may use PairingCoordinator.listen(). */
     public CoordinatorAgent(ListenerFactory factory, TcpLimits limits, LifecycleSettings settings) {
+        this(factory, limits, settings, CatalogCacheLimits.DEFAULT);
+    }
+    public CoordinatorAgent(ListenerFactory factory, TcpLimits limits, LifecycleSettings settings, CatalogCacheLimits cacheLimits) {
         super("server-waypoint-coordinator-control");
+        catalogs = new CatalogIndex(cacheLimits);
         this.factory = Objects.requireNonNull(factory);
         this.limits = Objects.requireNonNull(limits);
         this.settings = Objects.requireNonNull(settings);
@@ -57,11 +63,7 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
                         counters.disconnects(), counters.failures(), counters.sentHeartbeats(), counters.receivedHeartbeats()));
     }
     public Map<RemoteServerId, CatalogReceiver.View> catalogs() {
-        synchronized (catalogs) {
-            Map<RemoteServerId, CatalogReceiver.View> result = new HashMap<>();
-            catalogs.forEach((id, receiver) -> result.put(id, receiver.view()));
-            return Map.copyOf(result);
-        }
+        return catalogs.views();
     }
 
     @Override protected TransportResult startResources() throws Exception {
@@ -70,6 +72,9 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
         if (!limits.equals(listener.limits())) throw new IllegalArgumentException("Listener limits differ from worker limits");
         writers = new ScheduledThreadPoolExecutor(Math.min(4, limits.connections()), daemonThreads("server-waypoint-coordinator-heartbeat"));
         writers.setRemoveOnCancelPolicy(true);
+        distributions = new ScheduledThreadPoolExecutor(Math.min(4, limits.connections()), daemonThreads("server-waypoint-coordinator-catalog"));
+        distributions.setRemoveOnCancelPolicy(true);
+        distributions.scheduleWithFixedDelay(catalogs::maintain, settings.heartbeatMillis(), settings.heartbeatMillis(), TimeUnit.MILLISECONDS);
         readers = Executors.newFixedThreadPool(limits.connections(), daemonThreads("server-waypoint-coordinator-reader"));
         running = true;
         for (int n = 0; n < limits.connections(); n++) readers.execute(this::acceptLoop);
@@ -79,7 +84,8 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
         while (!stopping && running) {
             TcpChannel channel = null;
             Live live = null;
-            CatalogReceiver catalog = null;
+            CatalogDistributor distributor = null;
+            ScheduledFuture<?> distribution = null;
             ScheduledFuture<?> heartbeat = null;
             try {
                 channel = listener.accept();
@@ -93,26 +99,27 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
                 if (stopping || next == Long.MAX_VALUE) throw new IOException("Coordinator stopped or exhausted");
                 live = new Live(channel, new BackendPresence(channel.serverId(), channel.mode(), channel.capabilities(), next, Instant.now()));
                 if (peers.putIfAbsent(channel.serverId(), live) != null) throw new IOException("Duplicate registered ID");
-                synchronized (catalogs) {
-                    catalog = catalogs.get(channel.serverId());
-                    if (catalog == null) {
-                        if (catalogs.size() >= limits.connections()) throw new IOException("Retained catalog slot limit");
-                        catalog = new CatalogReceiver(channel.serverId(), channel.protocolLimits());
-                        catalog.connected(channel, channel.mode());
-                        catalogs.put(channel.serverId(), catalog);
-                    } else catalog.connected(channel, channel.mode());
-                }
+                catalogs.connected(channel.serverId(), channel, channel.mode(), channel.protocolLimits());
+                distributor = new CatalogDistributor(catalogs, channel);
                 channel.send(envelope.requestId(), new ApplicationMessage.RegisterResult(channel.serverId(), ApplicationMessage.Result.SUCCESS));
                 live.registered = true;
                 metrics.registered();
                 TcpChannel session = channel;
                 heartbeat = writers.scheduleWithFixedDelay(() -> sendHeartbeat(session), settings.heartbeatMillis(),
                         settings.heartbeatMillis(), TimeUnit.MILLISECONDS);
+                CatalogDistributor updates = distributor;
+                distribution = distributions.scheduleWithFixedDelay(() -> {
+                    if (stopping || session.isClosed()) return;
+                    try { updates.publish(); } catch (Exception failure) { session.close(); }
+                }, 0, settings.heartbeatMillis(), TimeUnit.MILLISECONDS);
                 while (!stopping && running) {
                     TcpChannel.Received received = channel.receive();
                     ApplicationEnvelope nextEnvelope = received.envelope();
                     if (nextEnvelope.message() instanceof ApplicationMessage.Heartbeat) metrics.receivedHeartbeat();
-                    else if (catalog.receive(channel, received)) {
+                    else if (nextEnvelope.message() instanceof ApplicationMessage.Error error
+                            && error.reason() == ApplicationMessage.Result.STALE_CATALOG) {
+                        distributor.resynchronize(nextEnvelope.requestId());
+                    } else if (catalogs.receive(channel.serverId(), channel, received)) {
                         channel.send(nextEnvelope.requestId(), new ApplicationMessage.Error(ApplicationMessage.Result.STALE_CATALOG));
                     }
                 }
@@ -121,8 +128,9 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
                 if (listener.isClosed()) running = false;
             } finally {
                 if (heartbeat != null) heartbeat.cancel(false);
+                if (distribution != null) distribution.cancel(false);
                 if (channel != null) channel.close();
-                if (catalog != null) catalog.disconnected(channel);
+                if (channel != null) catalogs.disconnected(channel.serverId(), channel);
                 if (live != null && peers.remove(live.presence().serverId(), live) && live.registered) metrics.disconnected();
             }
         }
@@ -150,8 +158,9 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
         try { if (listener != null) listener.close(); } catch (IOException exception) { failure = exception; }
         terminate(readers);
         terminate(writers);
+        terminate(distributions);
         peers.clear();
-        synchronized (catalogs) { catalogs.clear(); }
+        catalogs.clear();
         if (failure != null) throw failure;
     }
 }

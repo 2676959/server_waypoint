@@ -112,7 +112,10 @@ replacement maps can represent empty dimensions. Applying a delta requires match
 revision and validation of list revisions against authoritative state; that work is now implemented for backend publication in
 [step 9](cross-server-catalog-publication.md). Deltas too large for a frame require full snapshot publication.
 ERROR(STALE_CATALOG), correlated to a catalog delta, requests a complete snapshot when the receiver
-lacks the expected baseline. Invalidation is a state signal, never an implicit empty publication or permission grant.
+lacks the expected baseline. Step 10 uses the same families in the coordinator-to-backend direction,
+with the origin server ID retained. In that direction STALE retains the snapshot and UNAVAILABLE
+discards expired content while preserving revision fingerprints. A metadata transport mode is not
+on this wire schema; replicas must not infer the source link mode from their coordinator link. Invalidation is a state signal, never an implicit empty publication or permission grant.
 
 ## Independent bounds and failures
 

@@ -2,8 +2,9 @@
 
 Step 9 connects authoritative backend snapshots to one validated coordinator publication per
 backend. It adds shared capture/selection/revision/delta/publication code under
-`common/.../crossserver/catalog` and a coordinator-only `CatalogReceiver` under `proxy-common`.
-Step 10 still owns coordinator-wide indexing, fan-out, expiry and global/per-server cache policy.
+`common/.../crossserver/catalog` and initially a coordinator-only `CatalogReceiver` under `proxy-common`.
+[Step 10](cross-server-catalog-distribution.md) moves the receiver to shared `common` scope and
+adds coordinator-wide indexing, fan-out, expiry and global/per-server cache policy.
 No platform lifecycle, game command or client GUI has been enabled.
 
 ## Atomic source capture and export
@@ -105,12 +106,12 @@ successful empty snapshot/delta is the only way to delete all entries. Reconnect
 complete snapshot before stale data becomes available again.
 
 `CoordinatorAgent.catalogs()` exposes detached immutable views with snapshot, state, display name
-and actual transport mode. Step 9 retains at most `TcpLimits.connections()` backend catalog slots,
+and actual transport mode. The original Step 9 retained at most `TcpLimits.connections()` backend catalog slots,
 each limited by its channel's full catalog and codec budgets. Disconnected slots remain retained;
 if the slot ceiling is reached, new IDs are rejected before a successful registration reply.
 Stopping the coordinator clears these transient views and backends republish after restart.
-More flexible expiry/eviction and coordinator-wide fan-out belong to Step 10. No backend receives
-another backend's catalog in this step.
+Step 10 supersedes this slot policy with explicit bounded index limits and expiry, and distributes
+other backends' catalogs. See the distribution contract for current behavior.
 
 ## Verification
 
@@ -130,4 +131,4 @@ observations become visible at the same instant.
 
 The Velocity artifact builds with the new publication classes. Full backend artifact/native game
 validation was not repeated. These are reusable service tests; platform lifecycle wiring,
-bootstrap dispatch, catalog fan-out, command/GUI behavior and transfer remain later work.
+bootstrap dispatch, command/GUI behavior and transfer remain later work. Catalog fan-out is now Step 10.

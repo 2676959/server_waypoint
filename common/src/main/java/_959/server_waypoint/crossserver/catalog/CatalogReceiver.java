@@ -1,4 +1,4 @@
-package _959.server_waypoint.proxy.catalog;
+package _959.server_waypoint.crossserver.catalog;
 
 import _959.server_waypoint.crossserver.*;
 import _959.server_waypoint.crossserver.catalog.CatalogDelta;
@@ -13,6 +13,9 @@ public final class CatalogReceiver {
     private final RemoteServerId id;
     private final ApplicationCodec codec;
     private RemoteCatalogSnapshot current;
+    private RemoteRevision highWater;
+    private byte[] fingerprint;
+    private final java.util.function.Predicate<RemoteCatalogSnapshot> admission;
     private RemoteCatalogState state = RemoteCatalogState.UNAVAILABLE;
     private String displayName;
     private TransportMode mode;
@@ -20,7 +23,26 @@ public final class CatalogReceiver {
     private UUID request;
     private ApplicationMessage.CatalogMetadata metadata;
 
-    public CatalogReceiver(RemoteServerId id, ProtocolLimits limits) { this.id = id; codec = new ApplicationCodec(limits); displayName = id.value(); }
+    public CatalogReceiver(RemoteServerId id, ProtocolLimits limits) { this(id, limits, snapshot -> true); }
+    CatalogReceiver(RemoteServerId id, ProtocolLimits limits, java.util.function.Predicate<RemoteCatalogSnapshot> admission) {
+        this.id = id; codec = new ApplicationCodec(limits); displayName = id.value(); this.admission = admission;
+    }
+    public synchronized void expire() {
+        current = null; state = RemoteCatalogState.UNAVAILABLE;
+    }
+    public synchronized RemoteRevision revision() { return highWater == null ? new RemoteRevision(0) : highWater; }
+    private void install(RemoteCatalogSnapshot candidate) throws IOException {
+        byte[] bytes = codec.encodeCatalog(candidate);
+        byte[] digest;
+        try { digest = java.security.MessageDigest.getInstance("SHA-256").digest(bytes); }
+        catch (java.security.NoSuchAlgorithmException impossible) { throw new AssertionError(impossible); }
+        if (highWater != null && (candidate.catalogRevision().compareTo(highWater) < 0
+                || candidate.catalogRevision().equals(highWater) && !java.util.Arrays.equals(fingerprint, digest))) {
+            throw new IOException("Old or conflicting expired catalog");
+        }
+        if (!admission.test(candidate)) throw new IOException("Catalog cache limit");
+        current = candidate; highWater = candidate.catalogRevision(); fingerprint = digest;
+    }
     public synchronized void connected(Object session, TransportMode mode) {
         owner = session; this.mode = mode; metadata = null; request = null;
         state = current == null ? RemoteCatalogState.UNAVAILABLE : RemoteCatalogState.STALE;
@@ -68,8 +90,7 @@ public final class CatalogReceiver {
                         throw new IllegalArgumentException("Conflicting list revision");
                     }
                 }));
-                codec.encodeCatalog(completed); // same local limits on full and accumulated delta states
-                current = completed; displayName = metadata.displayName(); metadata = null; request = null;
+                install(completed); displayName = metadata.displayName(); metadata = null; request = null;
                 state = RemoteCatalogState.AVAILABLE; return false;
             }
             if (message instanceof ApplicationMessage.CatalogDelta m) {
@@ -80,8 +101,7 @@ public final class CatalogReceiver {
                     state = current == null ? RemoteCatalogState.UNAVAILABLE : RemoteCatalogState.STALE; return true;
                 }
                 RemoteCatalogSnapshot candidate = CatalogDelta.apply(current, m);
-                codec.encodeCatalog(candidate);
-                current = candidate; state = RemoteCatalogState.AVAILABLE; return false;
+                install(candidate); state = RemoteCatalogState.AVAILABLE; return false;
             }
             if (message instanceof ApplicationMessage.CatalogInvalidate m) {
                 identity(m.serverId());
