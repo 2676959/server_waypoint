@@ -81,7 +81,7 @@ public final class TcpCoordinator implements AutoCloseable {
                 cipher = NoiseRecordCipher.handshake(socket, false, keys, pin, TcpWire.prologue(first, second));
             }
             synchronized (this) {
-                if (closed || socket.isClosed()) throw new IOException("Listener closed or handshake expired");
+                if (closed || socket.isClosed() || pins.get(hello.serverId()) != pin) throw new IOException("Admission changed or expired");
                 TcpChannel channel = new TcpChannel(socket, mode, hello, cipher, limits, protocol, () -> release(socket));
                 sockets.put(socket, channel);
                 return channel;
@@ -109,6 +109,20 @@ public final class TcpCoordinator implements AutoCloseable {
         }
         if (channel != null) channel.close();
         else if (socket != null) TcpWire.close(socket);
+    }
+
+    /** Administrative pin update. Invalidates both in-flight and established sessions for this ID. */
+    public void replacePin(RemoteServerId id, byte[] pin) {
+        if (pin != null && pin.length != (mode == TransportMode.NOISE_KK ? 32 : 0)) {
+            throw new IllegalArgumentException("Invalid admission pin");
+        }
+        synchronized (this) {
+            if (closed) throw new IllegalStateException("Listener closed");
+            if (pin != null && !pins.containsKey(id) && pins.size() >= 4096) throw new IllegalStateException("Admission limit");
+            if (pin == null) pins.remove(id);
+            else pins.put(Objects.requireNonNull(id), pin.clone());
+        }
+        disconnect(id);
     }
 
     @Override public void close() throws IOException {

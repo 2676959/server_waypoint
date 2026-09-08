@@ -11,6 +11,8 @@ public record TcpEndpoint(String host, int port) {
         if (port < 0 || port > 65535) throw new IllegalArgumentException("Invalid port");
     }
 
+    public void validate(TransportMode mode) throws UnknownHostException { resolve(java.util.Objects.requireNonNull(mode)); }
+
     InetSocketAddress resolve(TransportMode mode) throws UnknownHostException {
         String literal = host.startsWith("[") && host.endsWith("]") ? host.substring(1, host.length() - 1) : host;
         if (mode == TransportMode.PLAINTEXT) {

@@ -14,7 +14,7 @@ messages so a future hybrid X25519 plus ML-KEM suite can be added without changi
 messages.
 
 Implementation status is tracked in [the progress record](cross-server-waypoint-teleportation-progress.md).
-Steps 1–6 now include reusable KK/plaintext TCP channels; platform startup and the remaining
+Steps 1–7 now include reusable KK/plaintext TCP channels and pairing/credential APIs; platform startup and the remaining
 services are not implemented. See the progress record for current evidence.
 
 ## Scope
@@ -364,7 +364,7 @@ configuration changes and new sessions; there is no downgrade or compatibility r
 1. Coordinator and backend each generate their own static X25519 key pair locally.
 2. `/serverwaypoint pair <server-id>` creates a short-lived one-time pairing code bound to the ID.
 3. A separately reviewed bootstrap exchange authenticates that code and binds both public keys
-   and the server ID before installing either pin. Define and test this bootstrap in step 7;
+   and the server ID before installing either pin. The [step-7 bootstrap](cross-server-pairing-v1.md) uses one-time 256-bit codes and transcript-bound HMAC confirmations;
    KK cannot pair previously unknown keys by itself. Never use unauthenticated key exchange or
    plaintext mode as a remote pairing shortcut.
 4. The backend stores the coordinator public pin; the coordinator stores the backend public key
@@ -638,6 +638,9 @@ Verification: malformed frames, invalid tags, replay, duplicate IDs, oversized i
 attempts, slow handshakes, and disconnect storms remain bounded.
 
 ### Step 7: implement pairing and credential management
+
+Completed as reusable administrative/bootstrap APIs: [pairing contract, review and tests](cross-server-pairing-v1.md).
+Platform commands and the network bootstrap carrier are not started by this step.
 
 - Generate the coordinator static key on first startup.
 - Generate a unique backend static key pair locally and register only its public key.

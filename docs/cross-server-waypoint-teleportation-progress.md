@@ -4,16 +4,18 @@ Last updated: 2026-09-07.
 Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
 KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
 Step 2 is now `fd3ba53` after rebasing onto upload-branch fix `f0d8281`.
-Step 3 was committed as `3fccc28`; step 4 as `6d7be5a`. Step 5 codecs are complete. The current change implements step 6 TCP channels.
+Step 3 was committed as `3fccc28`; step 4 as `6d7be5a`; step 5 as `4e806fa`; step 6 as `8752aaa`.
+The current change implements step 7 pairing and credentials.
 
 ## Current status
 
-**Steps 1–6 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
+**Steps 1–7 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
 for `Noise_KK_25519_AESGCM_SHA256`, with 35 passing KK checks and a scoped source review.**
 Step 3 adds the proxy modules/contracts and private dependency packaging; all 41 artifact checks
 and 10 native runtime checks pass. Step 4 adds immutable catalogs and reader views.
 Step 5 adds canonical messages and bounded codecs. Step 6 adds reusable bounded TCP channels in both
-modes. Steps 7–19 have not started. No platform lifecycle starts these channels, and no remote commands,
+modes. Step 7 adds authenticated pairing, credential persistence, rotation and live revocation.
+Steps 8–19 have not started. No platform lifecycle starts these channels, and no remote commands,
 catalog synchronization service, player transfers, or remote GUI behavior has been enabled.
 
 The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
@@ -29,7 +31,7 @@ source-review findings, maintenance risk, integration requirements, and outstand
 - KK requires transcript-bound key selection and backend transport confirmation before operations.
 - Step 2 selects/reviews the dependency and proves standalone relocation. Step 3 creates the
   modules and completes the final platform artifact/classloader matrix before production transport.
-- Both transport modes are implemented as reusable channels; platform startup and the revised pairing workflow remain pending.
+- Both transport modes are implemented as reusable channels; pairing/credential APIs are implemented; platform startup and the bootstrap carrier remain pending.
 
 ## Completed work
 
@@ -41,7 +43,8 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 4 — Identity and catalog models | Complete | Immutable nested snapshots, exact-key lookup, independent catalog/list revisions, receiver-local receipt time, and validated reader views. See [model contract](cross-server-catalog-models.md). |
 | 5 — Canonical messages and codecs | Complete | Fifteen typed message families with stable IDs, correlated/sequenced envelopes, strict canonical catalog encoding, bounded chunk/delta payloads, and malformed-input tests. See [wire specification](cross-server-application-codec-v1.md). |
 | 6 — Bounded TCP transport | Complete | Explicit KK/plaintext modes, transcript-bound handshake and confirmation, bounded records/catalog assembly, sequence/replay tracking, admission limits, absolute deadlines and terminal cleanup. See [transport contract](cross-server-tcp-transport-v1.md). |
-| 7–19 | Not started | Pairing, lifecycle/registration, synchronization, commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
+| 7 — Pairing and credentials | Complete | One-time authenticated bootstrap, canonical key import, private credential files, expected-pin rotation and durable per-ID/live-session revocation. See [bootstrap contract and review](cross-server-pairing-v1.md). |
+| 8–19 | Not started | Lifecycle/registration, synchronization, commands, permissions, handoffs, real Velocity integration, client/GUI integration, and release hardening remain pending. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
@@ -111,6 +114,19 @@ relocation and no original Noise namespace. Tracked/new-file whitespace checks p
 The full backend artifact/native runtime matrix was not repeated. No game lifecycle starts these
 channels; pairing/reconnect and live feature integration remain pending.
 
+## Step-7 verification
+
+On 2026-09-07, `./gradlew :common:test :proxy-common:test :velocity:build --max-workers=2 --console=plain`
+passed. After adding the final live-session isolation and diagnostic scans, `:proxy-common:test`
+also passed. Current totals are 439 common tests and 35 proxy tests (30 new Step-7 cases),
+with zero failures/errors/skips. The final Velocity JAR contains Java 17 credential/coordinator
+classes and the privately relocated Noise caller. Tracked/new-file whitespace checks pass.
+Tests verify authenticated installation ordering, replay/expiry
+rejection, credential permissions, explicit rotation and isolated revocation using real KK sockets.
+See the [bootstrap specification and review](cross-server-pairing-v1.md) for the security boundary.
+The feature is not enabled, and platform/bootstrap-carrier integration remains pending. Full backend
+artifact/native runtime verification was not repeated.
+
 ## Historical evidence retained
 
 - Step 1: `./gradlew :common:test --console=plain` passed all 25 identity cases during the original
@@ -122,9 +138,8 @@ channels; pairing/reconnect and live feature integration remain pending.
 
 ## Next work, in order
 
-1. Step 7: prove the authenticated pairing bootstrap, canonical key import, rotation, and revocation.
-2. Step 8: wrap the blocking channels in bounded lifecycle workers, with reconnect, registration and heartbeat.
-3. Continue the remaining catalog/handoff steps in order. Plaintext backend identity
+1. Step 8: wrap the blocking channels in bounded lifecycle workers, with reconnect, registration and heartbeat.
+2. Continue the remaining catalog/handoff steps in order. Plaintext backend identity
    must never be described as cryptographically authenticated.
 
 Update this file when a step's status changes, a blocker is resolved, or new validation is run.

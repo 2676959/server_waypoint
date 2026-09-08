@@ -385,4 +385,26 @@ class TcpTransportTest {
             }
         }
     }
+
+    @Test void administrativeRevocationInvalidatesPendingHandshakeAndReadmission() throws Exception {
+        try (Fixture f = new Fixture(TransportMode.NOISE_KK)) {
+            Future<TcpChannel> accepted = f.accept();
+            try (Socket socket = new Socket("127.0.0.1", f.listener.port())) {
+                socket.setSoTimeout(2000);
+                TcpWire.write(socket, TcpWire.hello(f.mode, ID, Set.of(), false), 65_536);
+                TcpWire.read(socket, 65_536); // identity reserved, authentication still pending
+                f.listener.replacePin(ID, null);
+                assertThrows(ExecutionException.class, accepted::get);
+                assertEquals(0, f.listener.connectionCount());
+                Future<TcpChannel> denied = f.accept();
+                assertThrows(IOException.class, f::connect);
+                assertThrows(ExecutionException.class, denied::get);
+                f.listener.replacePin(ID, f.backendPublic);
+                Future<TcpChannel> restored = f.accept();
+                try (TcpChannel backend = f.connect(); TcpChannel coordinator = restored.get()) {
+                    assertTrue(coordinator.authenticated());
+                }
+            }
+        }
+    }
 }

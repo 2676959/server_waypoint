@@ -2,7 +2,7 @@
 
 `common/.../crossserver/transport` now provides reusable backend/coordinator TCP channels. Both
 backends and the coordinator use this code, so it belongs in `common`. No Minecraft, Paper or
-Velocity lifecycle starts it yet. Pairing/key persistence is step 7; bounded worker ownership,
+Velocity lifecycle starts it yet. Pairing/key persistence is implemented by [step 7](cross-server-pairing-v1.md); bounded worker ownership,
 reconnect, registration policy and heartbeat generation are step 8. Feature enablement remains off.
 
 ## Ownership and admission
@@ -24,14 +24,14 @@ reconnect, registration policy and heartbeat generation are step 8. Feature enab
   the state/cipher monitor. `close()` interrupts blocked I/O, destroys ciphers, releases reservations,
   clears retained state and cancels scheduled expiry. Closing the listener closes pending and live
   sockets. Credential objects remain owned by the caller and may be destroyed after listener stop.
-- `disconnect(id)` closes current sockets only; it does not revoke admission. Step 7/8 must replace
-  admission policy before permitting subsequent connections. This is deliberately not an
+- `disconnect(id)` closes current sockets only; it does not revoke admission. Step 7 adds
+  `replacePin(id, pinOrNull)` to update admission and invalidate live/pending sessions before reuse. This is deliberately not an
   implementation of the nonblocking `TransportLifecycle` interfaces; those wrappers belong to the
   lifecycle step and must complete shutdown only after their own workers have exited.
 
 `NoiseKeys` defensively owns a raw 32-byte X25519 private key, wipes it on close and redacts
 `toString()`. Raw public pins are copied at configuration/connection boundaries. These are internal
-transport inputs, not the final credential-file/import formats. Plaintext rejects supplied keys;
+transport inputs; step 7 now supplies canonical credential-file/import formats. Plaintext rejects supplied keys;
 its admitted registry values are empty arrays. Credentials are neither logged nor persisted here.
 
 Plaintext endpoint validation accepts dotted-quad 127/8 or literal IPv6 loopback (`::1`, optionally
