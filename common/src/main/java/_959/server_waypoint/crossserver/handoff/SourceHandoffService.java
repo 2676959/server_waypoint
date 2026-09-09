@@ -139,14 +139,15 @@ public final class SourceHandoffService<S> implements RemoteTeleportInitiator<S>
             if (!platform.execute(entry.source, task, () -> finish(entry, Result.UNAVAILABLE))) finish(entry, Result.UNAVAILABLE);
         } catch (RuntimeException unavailable) { finish(entry, Result.UNAVAILABLE); }
     }
-    private void finish(Entry entry, Result result) {
+    private void finish(Entry entry, Result result) { finish(entry, result, true); }
+    private void finish(Entry entry, Result result, boolean notify) {
         HandoffBinding binding;
         synchronized (this) {
             if (entry.state == State.TERMINAL) return;
             entry.state = State.TERMINAL; binding = entry.binding;
             players.remove(entry.request.playerId(), entry); retained -= entry.bytes;
         }
-        if (binding != null && result != Result.SUCCESS) {
+        if (notify && binding != null && result != Result.SUCCESS) {
             try { link.cancel(entry.requestId, new CancelHandoff(binding.handoffId(), result)); }
             catch (RuntimeException unavailable) { /* Connection-scoped expiry is the fallback. */ }
         }
@@ -171,7 +172,7 @@ public final class SourceHandoffService<S> implements RemoteTeleportInitiator<S>
             else if (message instanceof HandoffRejected rejected) reason = rejected.reason();
             else return false;
             // Keep cancellation atomic with transfer initiation.
-            finish(entry, reason);
+            finish(entry, reason, false);
         }
         return true;
     }

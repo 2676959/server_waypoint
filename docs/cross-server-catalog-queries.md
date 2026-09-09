@@ -119,3 +119,9 @@ vanilla-client validation remain later integration gates.
 suggestions, with waypoint completion and separate teleport permission checks. List results and
 pagination remain read-only. See [source teleport initiation](cross-server-source-teleport.md);
 this does not enable live platform startup.
+
+## Step-16 integration
+
+The services now have live coordinator/backend lifecycle and Velocity transfer wiring. See
+[the runtime contract and current validation](cross-server-velocity-runtime.md). Earlier step-specific
+verification above describes its historical boundary; client/GUI and full release hardening remain.

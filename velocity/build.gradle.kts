@@ -15,6 +15,9 @@ repositories {
 dependencies {
     implementation(project(":proxy-common"))
     compileOnly("com.velocitypowered:velocity-api:${property("velocity_api_version")}")
+    testImplementation("com.velocitypowered:velocity-api:${property("velocity_api_version")}")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     annotationProcessor("com.velocitypowered:velocity-api:${property("velocity_api_version")}")
 }
 
@@ -53,3 +56,5 @@ apply(from = rootProject.file("gradle/noise-packaging.gradle.kts"))
 tasks.assemble {
     dependsOn(tasks.shadowJar)
 }
+
+tasks.test { useJUnitPlatform() }

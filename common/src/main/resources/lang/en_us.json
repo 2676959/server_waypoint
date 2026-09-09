@@ -309,5 +309,6 @@
   "waypoint.remote.tp.unsupported": "This server has no supported cross-server transfer adapter.",
   "waypoint.remote.tp.invalid_request": "The handoff reply did not match the request.",
   "waypoint.remote.tp.internal_error": "The remote teleport service encountered an internal error.",
-  "waypoint.help.remote.tp": "Request a teleport using exact server, dimension, list, and waypoint identities. Quote names containing spaces; transfer waits for destination preparation."
+  "waypoint.help.remote.tp": "Request a teleport using exact server, dimension, list, and waypoint identities. Quote names containing spaces; transfer waits for destination preparation.",
+  "waypoint.remote.tp.arrived": "Remote teleport completed."
 }

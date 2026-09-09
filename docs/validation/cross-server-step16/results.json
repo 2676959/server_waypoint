@@ -1,0 +1,56 @@
+{
+    "date": "2026-09-08",
+    "baseCommit": "1a0d7e8",
+    "paper": "1.21-130-b1b5d4c",
+    "velocity": "4.1.1-SNAPSHOT (20260826.101250-1)",
+    "minecraftProtocol": 767,
+    "mcc": "26.2 build 499 (7b100a3)",
+    "java": {
+        "paper": "OpenJDK 21",
+        "velocity": "Temurin 25.0.3+9"
+    },
+    "testAuthentication": "Offline test account on disposable literal-loopback listeners; no production authentication configuration changed.",
+    "tests": {
+        "common": {
+            "tests": 523,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        "proxy-common": {
+            "tests": 106,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        "velocity": {
+            "tests": 6,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        }
+    },
+    "liveAssertions": [
+        "KK a->b: exactly one PLUGIN teleport to 20.5,80,30.5, position queried afterward",
+        "KK b->a: exactly one PLUGIN teleport to 5.5,80,30.5",
+        "KK revoked destination permission: denied after arrival, b teleport count remains 1",
+        "KK revoked source permission: rejected command, player remains on b",
+        "PLAINTEXT rejected destination login: transfer failure feedback, player remains on a, zero teleports",
+        "PLAINTEXT subsequent a->b: exactly one PLUGIN teleport to 20.5,80,30.5"
+    ],
+    "nativeRunSha256": {
+        "paper": "29d8d0f7a1278f320a469d56fa5b804ac40e9a6f3372bd24cde1d48d550535b1",
+        "velocity": "919e6169335968a57b62ed8bf8b8d7a31bc2b167a9d1353132b287efd40f8290",
+        "paperRuntime": "ab9bb1afc3cea6978a0c03ce8448aa654fe8a9c4dddf341e7cbda1b0edaa73f5",
+        "velocityRuntime": "846411d2d0560fed0f23496ffb89681be528d2c0650ecdcf21724d2d7bd9c1ee",
+        "mcc": "c9d630d123c20c0bf8f8a179334ed8ab9c634843514ec8a8c9e0c399ac770062",
+        "testAudit": "067f3aca3497e696c3e1cc575fcc327590b2b258241491c0b613f7a0401de43b"
+    },
+    "finalRevisionNote": "Native logs cover the earlier Step 16 artifacts identified by nativeRunSha256. The final source-readiness claim guard was subsequently verified by the automated real-TCP tests in both modes; native sessions were not repeated for this final guard.",
+    "finalBuildSha256": {
+        "velocity/build/libs/server_waypoint-3.1.0-velocity-unshaded.jar": "8f89efef6091c43e4ab31fda99feff05a128fd32922a3d4772d745a97c20abc0",
+        "velocity/build/libs/server_waypoint-3.1.0-velocity-3.1.0-unshaded.jar": "befd377e172a1f1d23bdbf2e17c1cf628b094f913df68da01b83dc1c4c4f3cc8",
+        "velocity/build/libs/server_waypoint-3.1.0-velocity-3.1.0.jar": "770ac33d05e7179622557da56481938d279010a784e41920c6445f02f17de283",
+        "velocity/build/libs/server_waypoint-3.1.0-velocity.jar": "5da639b25f6080547dd8efd2a030fcd3e370a020ab4283856be18d8cd3bc90ae"
+    }
+}

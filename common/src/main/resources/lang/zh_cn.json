@@ -309,5 +309,6 @@
   "waypoint.remote.tp.unsupported": "此服务器尚未配置受支持的跨服切换适配器。",
   "waypoint.remote.tp.invalid_request": "跨服传送回复与请求不匹配。",
   "waypoint.remote.tp.internal_error": "远程传送服务发生内部错误。",
-  "waypoint.help.remote.tp": "使用精确的服务器、维度、列表和路径点标识请求传送。含空格的名称请加引号；目标服务器准备成功后才会切换。"
+  "waypoint.help.remote.tp": "使用精确的服务器、维度、列表和路径点标识请求传送。含空格的名称请加引号；目标服务器准备成功后才会切换。",
+  "waypoint.remote.tp.arrived": "远程传送已完成。"
 }

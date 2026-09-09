@@ -108,6 +108,7 @@ public class ServerWaypointForge implements IPlatformConfigPath {
                 uploadCoordinator
         );
         this.waypointCommand = new WaypointCommand(this.waypointServer, messageSender, permissionManager, uploadCoordinator);
+        this.waypointServer.configureCrossServer(this.waypointCommand, permissionManager);
 
         //? if < 1.21.6
         /*IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();*/
@@ -179,6 +180,7 @@ public class ServerWaypointForge implements IPlatformConfigPath {
         if (event.getEntity() instanceof ServerPlayer player) {
             ModMessageSender.getInstance().disconnectChunkedMessages(player);
             this.waypointServer.navigation().onPlayerJoin(player);
+            this.waypointServer.crossServerArrival(player);
         }
     }
 

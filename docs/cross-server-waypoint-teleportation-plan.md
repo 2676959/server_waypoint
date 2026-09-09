@@ -14,8 +14,9 @@ messages so a future hybrid X25519 plus ML-KEM suite can be added without changi
 messages.
 
 Implementation status is tracked in [the progress record](cross-server-waypoint-teleportation-progress.md).
-Steps 1–15 now include transport, pairing/credentials, lifecycle agents, catalog distribution, permission-gated remote commands, authorization callbacks, coordinator handoff state and destination services plus remote teleport initiation; platform startup and the remaining
-services are not implemented. See the progress record for current evidence.
+Steps 1–16 now include transport, credentials, catalog distribution, permissions, handoff services,
+remote commands and live Velocity/Paper command-to-arrival integration. Client/GUI synchronization
+and release hardening remain. See the progress record and [runtime contract](cross-server-velocity-runtime.md).
 
 ## Scope
 
@@ -277,7 +278,7 @@ logging a bounded diagnostic without secrets.
 
 ## Pairing and configuration
 
-The examples below are the planned `cross-server.json` format, not implemented configuration.
+The examples below use the implemented `cross-server.json` format; see the runtime contract for defaults and setup.
 Paths are relative to the component's configuration directory. Public keys use Base64-encoded
 X.509 SubjectPublicKeyInfo; private-key files use binary PKCS#8 with owner-only permissions where
 supported. Public pins may appear in ordinary configuration; private keys and temporary pairing
@@ -292,15 +293,14 @@ secrets must not appear in configuration dumps, logs, or `toString()` output.
     "listen": "127.0.0.1:25580",
     "protocolVersion": 1,
     "requiredSuite": "Noise_KK_25519_AESGCM_SHA256",
-    "privateKeyFile": "credentials/coordinator.key",
+    "credentialsDirectory": "credentials",
     "backends": {
         "survival": {
             "enabled": true,
             "velocityServer": "survival",
             "publicKey": "<base64 X25519 public key>"
         }
-    },
-    "catalogCacheLimitBytes": 67108864
+    }
 }
 ```
 
@@ -314,7 +314,7 @@ secrets must not appear in configuration dumps, logs, or `toString()` output.
     "coordinator": "127.0.0.1:25580",
     "protocolVersion": 1,
     "requiredSuite": "Noise_KK_25519_AESGCM_SHA256",
-    "privateKeyFile": "credentials/backend.key",
+    "credentialsDirectory": "credentials",
     "coordinatorPublicKey": "<base64 X25519 coordinator public key>",
     "catalogExport": "PUBLIC"
 }

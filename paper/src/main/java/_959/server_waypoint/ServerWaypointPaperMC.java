@@ -54,6 +54,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
     private static final String BUILD_PROPERTIES_RESOURCE = "/server-waypoint-paper.properties";
     private static final String MINECRAFT_VERSION_RANGE_PROPERTY = "minecraft-version-range";
 
+    private _959.server_waypoint.handoff.PaperCrossServerRuntime crossServer;
     private WaypointServerPlugin waypointServer;
     private WaypointCommand waypointCommand;
     private NavigationService<Player> navigationService;
@@ -163,6 +164,9 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands ->
                 commands.registrar().register(command)
         );
+        crossServer = new _959.server_waypoint.handoff.PaperCrossServerRuntime(this, waypointServer, waypointCommand, permissionManager, sender);
+        server.getPluginManager().registerEvents(crossServer, this);
+        crossServer.start();
         registerChannels();
         server.getPluginManager().registerEvents(chatListener, this);
         server.getPluginManager().registerEvents(channelRegisterListener, this);
@@ -171,6 +175,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
 
     @Override
     public void onDisable() {
+        if (crossServer != null) crossServer.stop();
         if (this.c2sPacketHandler != null) {
             this.c2sPacketHandler.resetSession();
         }

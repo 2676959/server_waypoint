@@ -67,6 +67,7 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
                 uploadCoordinator
         );
         WaypointCommand waypointCommand = new WaypointCommand(waypointServer, messageSender, permissionManager, uploadCoordinator);
+        waypointServer.configureCrossServer(waypointCommand, permissionManager);
 
         FabricLoader fabricLoader = FabricLoader.getInstance();
         if (fabricLoader.isModLoaded("fabric-permissions-api-v0")) {
@@ -105,6 +106,7 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
                 (listener, sender, server) -> {
                     messageSender.disconnectChunkedMessages(listener.player);
                     waypointServer.navigation().onPlayerJoin(listener.player);
+                    waypointServer.crossServerArrival(listener.player);
                 }
         );
         ServerPlayConnectionEvents.DISCONNECT.register(

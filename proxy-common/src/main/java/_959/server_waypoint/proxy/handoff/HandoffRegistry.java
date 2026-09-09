@@ -25,6 +25,7 @@ public final class HandoffRegistry implements AutoCloseable {
         final long bytes, expiresAtEpochMillis;
         long deadlineNanos, terminalAtNanos;
         HandoffBinding binding;
+        boolean transferStarted;
         State state = State.PREPARING;
         Result result = Result.SUCCESS;
         Entry(UUID requestId, PrepareHandoff request, HandoffPeer source, HandoffPeer destination,
@@ -106,6 +107,23 @@ public final class HandoffRegistry implements AutoCloseable {
         return changed(Event.RESERVE, entry);
     }
 
+    /** Records the exact source session's final readiness once, within the bounded record. */
+    public synchronized Result beginTransfer(HandoffPeer source, UUID requestId, HandoffBinding binding) {
+        Entry entry = current(requestId);
+        if (entry == null) return Result.NOT_FOUND;
+        if (!entry.active()) return terminalReason(entry);
+        if (!entry.source.equals(source) || !Objects.equals(entry.binding, binding)) return Result.INVALID_REQUEST;
+        if (entry.transferStarted) return Result.REPLAY;
+        if (entry.state != State.PREPARED) return Result.INVALID_REQUEST;
+        entry.transferStarted = true;
+        return Result.SUCCESS;
+    }
+
+    public synchronized boolean transferStarted(UUID requestId) {
+        Entry entry = current(requestId);
+        return entry != null && entry.active() && entry.transferStarted;
+    }
+
     public synchronized Outcome claim(HandoffPeer peer, UUID requestId, ClaimHandoff claim) {
         Entry entry = current(requestId);
         Outcome invalid = validate(entry, peer, claim.handoffId(), claim.playerId(), claim.destination());
@@ -160,6 +178,18 @@ public final class HandoffRegistry implements AutoCloseable {
         List<Snapshot> changed = new ArrayList<>();
         for (Entry entry : entries.values()) {
             if (entry.active() && (entry.source.equals(peer) || entry.destination.equals(peer))) {
+                finish(entry, State.CANCELLED, Result.UNAVAILABLE, Event.DISCONNECT); changed.add(entry.snapshot());
+            }
+        }
+        return List.copyOf(changed);
+    }
+
+    /** Called only with a UUID obtained from the proxy disconnect event. */
+    public synchronized List<Snapshot> disconnectPlayer(UUID playerId) {
+        sweep();
+        List<Snapshot> changed = new ArrayList<>();
+        for (Entry entry : entries.values()) {
+            if (entry.active() && entry.request.playerId().equals(playerId)) {
                 finish(entry, State.CANCELLED, Result.UNAVAILABLE, Event.DISCONNECT); changed.add(entry.snapshot());
             }
         }

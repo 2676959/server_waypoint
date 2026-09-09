@@ -124,3 +124,9 @@ closure. Existing pairing/revocation, framing, replay and malformed-message test
 These tests do not boot Minecraft or wire a Velocity plugin. Catalog publication is now implemented in [step 9](cross-server-catalog-publication.md);
 registration of platform lifecycle/commands and the bootstrap network dispatcher remain integration
 work. The step-7 bootstrap API is not routed onto the operational KK listener by this change.
+
+## Step-16 integration
+
+The services now have live coordinator/backend lifecycle and Velocity transfer wiring. See
+[the runtime contract and current validation](cross-server-velocity-runtime.md). Earlier step-specific
+verification above describes its historical boundary; client/GUI and full release hardening remain.

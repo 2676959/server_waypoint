@@ -96,3 +96,9 @@ The final Velocity JAR contains the source service with Java 17 bytecode. Tracke
 whitespace checks pass. No Stonecutter source branch or platform adapter was edited, and no active
 version was switched. Native Minecraft/Velocity sessions and the full backend release artifact
 matrix were not run; Step 16 must supply and validate real lifecycle, transport and transfer wiring.
+
+## Step-16 integration
+
+The services now have live coordinator/backend lifecycle and Velocity transfer wiring. See
+[the runtime contract and current validation](cross-server-velocity-runtime.md). Earlier step-specific
+verification above describes its historical boundary; client/GUI and full release hardening remain.

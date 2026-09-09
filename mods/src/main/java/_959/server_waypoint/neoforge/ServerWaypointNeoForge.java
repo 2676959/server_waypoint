@@ -93,6 +93,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                 uploadCoordinator
         );
         this.waypointCommand = new WaypointCommand(this.waypointServer, messageSender, permissionManager, uploadCoordinator);
+        this.waypointServer.configureCrossServer(this.waypointCommand, permissionManager);
 
         this.configureLoadedMods();
 //? if = 1.20.2 {
@@ -151,6 +152,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
         if (event.getEntity() instanceof ServerPlayer player) {
             ModMessageSender.getInstance().disconnectChunkedMessages(player);
             this.waypointServer.navigation().onPlayerJoin(player);
+            this.waypointServer.crossServerArrival(player);
         }
     }
 

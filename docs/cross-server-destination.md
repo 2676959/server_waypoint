@@ -124,3 +124,9 @@ contracts. The common service uses Java 17; platform projects keep their existin
 Stonecutter markers and new-file whitespace checks pass. No native Minecraft/Paper/Folia/Velocity
 session, live permission-provider integration, or full release artifact matrix was run. The tests
 exercise controlled owning-thread adapters, while the concrete platform adapters are compile-verified.
+
+## Step-16 integration
+
+The services now have live coordinator/backend lifecycle and Velocity transfer wiring. See
+[the runtime contract and current validation](cross-server-velocity-runtime.md). Earlier step-specific
+verification above describes its historical boundary; client/GUI and full release hardening remain.

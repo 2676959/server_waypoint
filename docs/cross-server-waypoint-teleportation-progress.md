@@ -5,11 +5,11 @@ Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
 KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
 Step 2 is now `fd3ba53` after rebasing onto upload-branch fix `f0d8281`.
 Step 3 was committed as `3fccc28`; step 4 as `6d7be5a`; step 5 as `4e806fa`; step 6 as `8752aaa`.
-Step 7 was committed as `1858582`; step 8 as `b8a372d`. Step 9 was committed as `d32d177`. Step 10 was committed as `d9ada50`. Step 11 remote queries and suggestions are complete. Step 12 permissions and authorization callbacks were committed as `bebdb30`. Step 13 coordinator handoffs were committed as `4122f2a`. The current change implements step 14 destination preparation and arrival.
+Step 7 was committed as `1858582`; step 8 as `b8a372d`. Step 9 was committed as `d32d177`. Step 10 was committed as `d9ada50`. Step 11 remote queries and suggestions are complete. Step 12 permissions and authorization callbacks were committed as `bebdb30`. Step 13 coordinator handoffs were committed as `4122f2a`. Step 15 was committed as `1a0d7e8`. The current change implements Step 16 Velocity runtime integration.
 
 ## Current status
 
-**Steps 1–14 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
+**Steps 1–16 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
 for `Noise_KK_25519_AESGCM_SHA256`, with 35 passing KK checks and a scoped source review.**
 Step 3 adds the proxy modules/contracts and private dependency packaging; all 41 artifact checks
 and 10 native runtime checks pass. Step 4 adds immutable catalogs and reader views.
@@ -22,9 +22,9 @@ Step 11 registers read-only remote commands and cached suggestions in the shared
 Step 12 adds permission-gated browsing and reusable source/destination authorization callbacks.
 Step 13 adds bounded coordinator handoff state and reusable backend-message handlers.
 Step 14 adds destination reservations, authoritative arrival validation and concrete mod/Paper teleport adapters.
-Steps 15–19 have not started. No platform lifecycle starts these channels; commands report no cached
-servers until a remote store is attached. Platform catalog synchronization, player transfers and
-remote GUI behavior remain unenabled.
+Step 15 adds source initiation and final owner-thread checks. Step 16 wires the backend and Velocity
+lifecycles, catalog synchronization and player transfers behind explicit configuration (disabled by
+default). Steps 17–19 remain; remote GUI behavior is not yet enabled.
 
 The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
 The [protocol v1 contract](cross-server-protocol-v1.md) defines the feature semantics.
@@ -60,7 +60,8 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 13 — Coordinator handoffs | Complete | Atomic prepare/reserve/claim/complete/cancel/expiry, session and proxy-player binding, bounded replay retention and audit, and backend-message handlers. See [handoff contract](cross-server-handoffs.md). |
 | 14 — Destination preparation and arrival | Complete | Bounded connection-scoped reservations, exact claim/player binding, fresh local export/coordinate resolution, final permission checks and mod/Paper owner adapters. See [destination contract](cross-server-destination.md). |
 | 15 — Remote teleport command | Complete | Exact cached targets, permission-gated command/help/suggestions, bounded source preparation service and transfer adapter boundary. See [source teleport contract](cross-server-source-teleport.md). |
-| 16–19 | Not started | Real Velocity integration, client/GUI integration, and release hardening remain pending. |
+| 16 — Velocity runtime integration | Complete | Coordinator/backend lifecycle, TCP readiness/claim dispatch, real Velocity switch, owner-thread arrivals, 16 real-socket cases and live Paper/Velocity tests in both modes. See [runtime contract](cross-server-velocity-runtime.md). |
+| 17–19 | Not started | Modded-client catalogs, GUI integration and release hardening remain pending. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
@@ -236,6 +237,18 @@ source-service bytecode and whitespace checks pass. See [source initiation](cros
 No active version changed. Native game/proxy sessions and the full backend artifact matrix were
 not run; real lifecycle/TCP dispatch/Velocity switching remain Step 16.
 
+## Step-16 verification
+
+On 2026-09-08, 523 common, 106 proxy and 6 Velocity tests passed with no failures/errors/skips.
+The new runtime tests exercise real TCP in both modes and actual Velocity API doubles. Paper 1.21
+build/tests and active Paper 26.2/Fabric 26.1.2 plus Fabric 1.20.1, NeoForge 1.21.2 and Forge 26.1.2
+compilation passed. No active version changed. Live Velocity 4.1.1 with two Paper 1.21 servers and
+MCC passed KK transfers in both directions, exactly-once destination event/position checks,
+permission denial, explicit plaintext transfer and rejected-login recovery with source retention.
+All disposable processes stopped cleanly. Logs and matching artifact hashes are archived in
+[Step-16 evidence](validation/cross-server-step16/results.json). See [scope and deployment contract](cross-server-velocity-runtime.md).
+Native mod/Folia transfers, online forwarding and the full release/soak matrix remain Step-19 gates.
+
 ## Historical evidence retained
 
 - Step 1: `./gradlew :common:test --console=plain` passed all 25 identity cases during the original
@@ -247,7 +260,7 @@ not run; real lifecycle/TCP dispatch/Velocity switching remain Step 16.
 
 ## Next work, in order
 
-1. Step 16: implement the Velocity adapter and live lifecycle/transport wiring.
+1. Step 17: synchronize remote catalogs to modded clients.
 2. Continue the remaining command/handoff/platform steps in order. Plaintext backend identity
    must never be described as cryptographically authenticated.
 

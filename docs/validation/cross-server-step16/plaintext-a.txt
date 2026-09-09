@@ -1,0 +1,92 @@
+Starting org.bukkit.craftbukkit.Main
+*** Warning, you've not updated in a while! ***
+*** Please download a new build as per instructions from https://papermc.io/downloads/paper ***
+WARN StatusConsoleListener Advanced terminal features are not available in this environment
+[15:49:17 INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.11; Homebrew Homebrew) on Mac OS X 26.5 (aarch64)
+[15:49:17 INFO]: [bootstrap] Loading Paper 1.21-130-master@b1b5d4c (2024-08-10T10:02:42Z) for Minecraft 1.21
+[15:49:19 INFO]: [PluginInitializerManager] Initializing plugins...
+[15:49:19 INFO]: [PluginRemapper] Remapping plugin 'plugins/teleport-audit.jar'...
+[15:49:20 INFO]: [PluginRemapper] Done remapping plugin 'plugins/teleport-audit.jar' in 231ms.
+[15:49:20 INFO]: [PluginInitializerManager] Initialized 2 plugins
+[15:49:20 INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (3.1.0)
+[15:49:20 INFO]: [PluginInitializerManager] Bukkit plugins (1):
+ - TeleportAudit (1)
+[15:49:22 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[15:49:23 INFO]: Loaded 1290 recipes
+[15:49:23 INFO]: Loaded 1399 advancements
+[15:49:23 INFO]: Starting minecraft server version 1.21
+[15:49:23 INFO]: Loading properties
+[15:49:23 INFO]: This server is running Paper version 1.21-130-master@b1b5d4c (2024-08-10T10:02:42Z) (Implementing API version 1.21-R0.1-SNAPSHOT)
+[15:49:23 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[15:49:23 INFO]: Using 4 threads for Netty based IO
+[15:49:23 INFO]: Server Ping Player Sample Count: 12
+[15:49:23 INFO]: [ChunkTaskScheduler] Chunk system is using 1 I/O threads, 2 worker threads, and population gen parallelism of 2 threads
+[15:49:23 INFO]: Default game type: CREATIVE
+[15:49:23 INFO]: Generating keypair
+[15:49:23 INFO]: Starting Minecraft server on 127.0.0.1:25961
+[15:49:23 INFO]: Using default channel type
+[15:49:28 INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+[15:49:28 INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+[15:49:28 INFO]: [TeleportAudit] Loading server plugin TeleportAudit v1
+[15:49:28 INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v3.1.0
+[15:49:28 INFO]: Server permissions file permissions.yml is empty, ignoring it
+[15:49:28 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[15:49:28 WARN]: The server will make no attempt to authenticate usernames. Beware.
+[15:49:28 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[15:49:28 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[15:49:28 INFO]: Preparing level "world"
+[15:49:29 INFO]: Preparing start region for dimension minecraft:overworld
+[15:49:29 INFO]: Time elapsed: 292 ms
+[15:49:29 INFO]: Preparing start region for dimension minecraft:the_nether
+[15:49:29 INFO]: Time elapsed: 50 ms
+[15:49:29 INFO]: Preparing start region for dimension minecraft:the_end
+[15:49:29 INFO]: Time elapsed: 25 ms
+[15:49:29 INFO]: [TeleportAudit] Enabling TeleportAudit v1
+[15:49:29 INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v3.1.0
+[15:49:29 INFO]: [server_waypoint_translator] Internal translations: es_es, he_il, zh_cn, en_us, zh_hk, zh_tw
+[15:49:29 INFO]: [server_waypoint_core] Loaded config Config{serverId=-998046936, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+[15:49:29 INFO]: [server_waypoint_core] Loaded 0 languages:
+[15:49:29 INFO]: [server_waypoint_core] Loaded 1 lists and 1 waypoints from file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[15:49:29 INFO]: [server_waypoint_core] Cross-server backend startup: SUCCESS
+[15:49:29 INFO]: [spark] Starting background profiler...
+[15:49:30 INFO]: Done preparing level "world" (1.040s)
+[15:49:30 INFO]: Running delayed init tasks
+[15:49:30 INFO]: Done (17.323s)! For help, type "help"
+[15:49:30 INFO]: Timings Reset
+[15:50:17 INFO]: UUID of player CodexStep16 is d8dac0f7-467d-357b-8085-1c899b3062b7
+[15:50:17 INFO]: CodexStep16 joined the game
+[15:50:17 INFO]: CodexStep16[/127.0.0.1:54878] logged in with entity id 37 at ([world]5.5, 76.07999651758378, 30.5)
+[15:50:26 INFO]: CodexStep16 issued server command: /wp remote servers
+[15:50:27 INFO]: CodexStep16 issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[15:50:49 INFO]: There are 1 of a max of 1 players online: CodexStep16
+[15:50:58 INFO]: CodexStep16 issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[15:50:58 INFO]: CodexStep16 lost connection: Disconnected
+[15:50:58 INFO]: CodexStep16 left the game
+[15:52:14 INFO]: Stopping the server
+[15:52:14 INFO]: Stopping server
+[15:52:14 INFO]: [server_waypoint_plugin] Disabling ServerWaypoint v3.1.0
+[15:52:14 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[15:52:14 INFO]: [server_waypoint_core] Saved config file: plugins/ServerWaypoint/config.json
+[15:52:14 INFO]: [TeleportAudit] Disabling TeleportAudit v1
+[15:52:14 INFO]: Saving players
+[15:52:14 INFO]: Saving worlds
+[15:52:14 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[15:52:14 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world'
+[15:52:14 INFO]: [ChunkHolderManager] Halted chunk system for world 'world'
+[15:52:14 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world'
+[15:52:14 INFO]: [ChunkHolderManager] Saved 121 block chunks, 121 entity chunks, 0 poi chunks in world 'world' in 0.16s
+[15:52:14 INFO]: Saving chunks for level 'ServerLevel[world_nether]'/minecraft:the_nether
+[15:52:14 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_nether'
+[15:52:14 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_nether'
+[15:52:14 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_nether'
+[15:52:15 INFO]: [ChunkHolderManager] Saved 49 block chunks, 49 entity chunks, 0 poi chunks in world 'world_nether' in 0.07s
+[15:52:15 INFO]: Saving chunks for level 'ServerLevel[world_the_end]'/minecraft:the_end
+[15:52:15 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_the_end'
+[15:52:15 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_the_end'
+[15:52:15 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_the_end'
+[15:52:15 INFO]: [ChunkHolderManager] Saved 49 block chunks, 49 entity chunks, 0 poi chunks in world 'world_the_end' in 0.08s
+[15:52:15 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[15:52:15 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[15:52:15 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[15:52:15 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved

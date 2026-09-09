@@ -14,6 +14,11 @@ import java.util.concurrent.*;
 public final class BackendAgent extends AsyncTransportLifecycle implements BackendTransport {
     public enum State { NEW, DISABLED, CONNECTING, REGISTERED, BACKOFF, STOPPED }
     public record Status(State state, TransportMode mode, BackendPresence presence, ConnectionMetrics.Snapshot metrics) { }
+    private java.util.function.Function<TcpChannel, OperationalSession> sessionFactory = channel -> null;
+    /** Configure before start. The returned owner is closed before this connection is replaced. */
+    public void setSessionFactory(java.util.function.Function<TcpChannel, OperationalSession> factory) {
+        sessionFactory = Objects.requireNonNull(factory);
+    }
     private final TcpEndpoint endpoint;
     private final TransportMode mode;
     private final RemoteServerId id;
@@ -107,6 +112,8 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
             ScheduledFuture<?> heartbeat = null;
             ScheduledFuture<?> publication = null;
             TcpChannel current = null;
+            OperationalSession operations = null;
+            ScheduledFuture<?> maintenance = null;
             try {
                 state = State.CONNECTING;
                 metrics.attempted();
@@ -131,6 +138,11 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
                 metrics.registered();
                 state = State.REGISTERED;
                 TcpChannel session = current;
+                operations = sessionFactory.apply(session);
+                if (operations != null) {
+                    OperationalSession owner = operations;
+                    maintenance = writer.scheduleWithFixedDelay(owner::maintain, 100, 100, TimeUnit.MILLISECONDS);
+                }
                 heartbeat = writer.scheduleWithFixedDelay(() -> sendHeartbeat(session), settings.heartbeatMillis(),
                         settings.heartbeatMillis(), TimeUnit.MILLISECONDS);
                 if (publisher != null) {
@@ -143,6 +155,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
                 while (!stopping) {
                     TcpChannel.Received received = current.receive();
                     ApplicationEnvelope envelope = received.envelope();
+                    if (operations != null && operations.receive(envelope)) continue;
                     if (publisher != null && envelope.message() instanceof ApplicationMessage.Error error
                             && error.reason() == ApplicationMessage.Result.STALE_CATALOG) {
                         publisher.requestFullSnapshot(); continue;
@@ -173,6 +186,8 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
             } catch (Exception failure) {
                 if (!stopping) metrics.failed();
             } finally {
+                if (maintenance != null) maintenance.cancel(false);
+                if (operations != null) operations.close();
                 if (heartbeat != null) heartbeat.cancel(false);
                 if (publication != null) publication.cancel(false);
                 if (current != null) { current.close(); remoteCatalogs.disconnected(current); }

@@ -78,5 +78,6 @@
   "waypoint.remote.tp.unsupported": "此伺服器尚未設定支援的跨服切換介面。",
   "waypoint.remote.tp.invalid_request": "跨服傳送回覆與請求不符。",
   "waypoint.remote.tp.internal_error": "遠端傳送服務發生內部錯誤。",
-  "waypoint.help.remote.tp": "使用精確的伺服器、維度、清單及路徑點識別名稱請求傳送。含空格的名稱請加引號；目標伺服器準備成功後才會切換。"
+  "waypoint.help.remote.tp": "使用精確的伺服器、維度、清單及路徑點識別名稱請求傳送。含空格的名稱請加引號；目標伺服器準備成功後才會切換。",
+  "waypoint.remote.tp.arrived": "遠端傳送已完成。"
 }

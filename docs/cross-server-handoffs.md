@@ -136,3 +136,9 @@ restart. Exactly one concurrent claim is accepted.
 The Velocity artifact builds with the new Java 17 proxy classes. No native Minecraft/Velocity
 instances or full backend artifact matrix were run. The game-owning thread, destination-local
 reservation/teleport and live TCP handoff dispatcher remain later integration gates.
+
+## Step-16 integration
+
+The services now have live coordinator/backend lifecycle and Velocity transfer wiring. See
+[the runtime contract and current validation](cross-server-velocity-runtime.md). Earlier step-specific
+verification above describes its historical boundary; client/GUI and full release hardening remain.

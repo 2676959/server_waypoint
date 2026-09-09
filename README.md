@@ -53,9 +53,9 @@ Optional:
 - `/wp remote servers [page <number> [limit <1-100>]]` shows cached remote server identities and availability.
 - `/wp remote list [<server> [<dimension> [<list>]]]` browses cached remote waypoints. It uses the same search, sort/order, page, limit, and `view tree|flat` option syntax as `/wp list`. Quote exact identities, including names matching option words. Distance sorting reports that cross-server distances are unavailable.
   - Results are read-only and work through ordinary server chat. Stale data is labeled; unavailable catalogs are distinct from successfully published empty catalogs. Run `/wp help remote` for help.
-  - This branch registers the commands, but transport startup still requires the later platform integration. Until a backend cache is attached, the commands report that no remote servers are cached. See [remote catalog queries](docs/cross-server-catalog-queries.md).
+  - Catalog synchronization starts when cross-server configuration is enabled. See [Velocity runtime setup](docs/cross-server-velocity-runtime.md) and [remote catalog queries](docs/cross-server-catalog-queries.md).
 - `/wp remote tp <server> <dimension> <list> <waypoint>` requests a teleport using exact cached identities (quote names with spaces). Stale or missing targets fail before preparation; the player stays on the source until destination preparation and fresh permission checks succeed. See [remote teleport initiation](docs/cross-server-source-teleport.md).
-  - Command initiation is implemented through an adapter. Live Velocity/transport startup remains Step 16; without an installed transfer adapter, an otherwise valid request reports unsupported transfer. Suggestions use only the local cache.
+  - Velocity and dedicated backend runtime integration is implemented and disabled by default. Suggestions use only the local cache. Quote dimension identities such as `"minecraft:overworld"`. See [configuration and validation](docs/cross-server-velocity-runtime.md).
 - `/wp reload` reload `config.json` and translation files in `/config/server_waypoint/lang`, feature `sendXaerosWorldId` requires restarting to take effect.
 - `/wp remove` removes a waypoint by identifier and returns a temporary, single-use restore action.
   - `/wp remove <dimension> <list-identifier>` removes an empty waypoint list.

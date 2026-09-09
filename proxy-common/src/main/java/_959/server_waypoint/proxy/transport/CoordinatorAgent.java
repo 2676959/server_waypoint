@@ -26,6 +26,11 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
                          ConnectionMetrics.Snapshot metrics) {
         public Status { backends = Map.copyOf(backends); }
     }
+    private java.util.function.Function<TcpChannel, OperationalSession> sessionFactory = channel -> null;
+    /** Configure before start; close each operational owner before replacing its connection. */
+    public void setSessionFactory(java.util.function.Function<TcpChannel, OperationalSession> factory) {
+        sessionFactory = Objects.requireNonNull(factory);
+    }
     private final ListenerFactory factory;
     private final TcpLimits limits;
     private final LifecycleSettings settings;
@@ -84,6 +89,8 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
         while (!stopping && running) {
             TcpChannel channel = null;
             Live live = null;
+            OperationalSession operations = null;
+            ScheduledFuture<?> maintenance = null;
             CatalogDistributor distributor = null;
             ScheduledFuture<?> distribution = null;
             ScheduledFuture<?> heartbeat = null;
@@ -105,6 +112,11 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
                 live.registered = true;
                 metrics.registered();
                 TcpChannel session = channel;
+                operations = sessionFactory.apply(session);
+                if (operations != null) {
+                    OperationalSession owner = operations;
+                    maintenance = writers.scheduleWithFixedDelay(owner::maintain, 100, 100, TimeUnit.MILLISECONDS);
+                }
                 heartbeat = writers.scheduleWithFixedDelay(() -> sendHeartbeat(session), settings.heartbeatMillis(),
                         settings.heartbeatMillis(), TimeUnit.MILLISECONDS);
                 CatalogDistributor updates = distributor;
@@ -115,6 +127,7 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
                 while (!stopping && running) {
                     TcpChannel.Received received = channel.receive();
                     ApplicationEnvelope nextEnvelope = received.envelope();
+                    if (operations != null && operations.receive(nextEnvelope)) continue;
                     if (nextEnvelope.message() instanceof ApplicationMessage.Heartbeat) metrics.receivedHeartbeat();
                     else if (nextEnvelope.message() instanceof ApplicationMessage.Error error
                             && error.reason() == ApplicationMessage.Result.STALE_CATALOG) {
@@ -127,6 +140,8 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
                 if (!stopping && running) metrics.failed();
                 if (listener.isClosed()) running = false;
             } finally {
+                if (maintenance != null) maintenance.cancel(false);
+                if (operations != null) operations.close();
                 if (heartbeat != null) heartbeat.cancel(false);
                 if (distribution != null) distribution.cancel(false);
                 if (channel != null) channel.close();

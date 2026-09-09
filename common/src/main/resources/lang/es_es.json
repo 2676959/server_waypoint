@@ -78,5 +78,6 @@
   "waypoint.remote.tp.unsupported": "Este servidor no tiene un adaptador compatible para transferencias entre servidores.",
   "waypoint.remote.tp.invalid_request": "La respuesta de transferencia no coincide con la solicitud.",
   "waypoint.remote.tp.internal_error": "El servicio de teletransporte remoto encontró un error interno.",
-  "waypoint.help.remote.tp": "Solicita un teletransporte con las identidades exactas del servidor, dimensión, lista y punto. Usa comillas para nombres con espacios; el traslado espera la preparación del destino."
+  "waypoint.help.remote.tp": "Solicita un teletransporte con las identidades exactas del servidor, dimensión, lista y punto. Usa comillas para nombres con espacios; el traslado espera la preparación del destino.",
+  "waypoint.remote.tp.arrived": "Teletransporte remoto completado."
 }

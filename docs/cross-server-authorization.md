@@ -81,3 +81,9 @@ permission API branch). Its inputs are registered with Gradle so adapter edits i
 It does not boot Minecraft, Paper/Folia or LuckPerms, validate legacy generated branches, or prove
 platform scheduling/claim binding. Existing shared-root tests also verify denied remote commands/help
 and unchanged local browsing. Full backend builds and native runtime validation were not repeated.
+
+## Step-16 integration
+
+The services now have live coordinator/backend lifecycle and Velocity transfer wiring. See
+[the runtime contract and current validation](cross-server-velocity-runtime.md). Earlier step-specific
+verification above describes its historical boundary; client/GUI and full release hardening remain.

@@ -39,9 +39,17 @@ public class WaypointServerMod extends WaypointServerCore {
     public final ModChatMessageHandler<String> chatMessageHandler;
     private final ModNavigationRuntime navigation = new ModNavigationRuntime();
     private volatile boolean loaded = false;
+    private final Path crossServerDirectory;
+    private _959.server_waypoint.common.server.handoff.ModCrossServerRuntime crossServer;
+    public void configureCrossServer(_959.server_waypoint.common.server.command.WaypointCommand command,
+            _959.server_waypoint.command.permission.PermissionManager<net.minecraft.commands.CommandSourceStack, String, net.minecraft.server.level.ServerPlayer> permissions) {
+        crossServer = new _959.server_waypoint.common.server.handoff.ModCrossServerRuntime(crossServerDirectory, this, command, permissions);
+    }
+    public void crossServerArrival(net.minecraft.server.level.ServerPlayer player) { if (crossServer != null) crossServer.arrived(player); }
 
     public WaypointServerMod(Path configDir, ModChatMessageHandler<String> handler) {
         super(configDir);
+        this.crossServerDirectory = configDir;
         this.chatMessageHandler = handler;
         INSTANCE = this;
     }
@@ -346,9 +354,11 @@ public class WaypointServerMod extends WaypointServerCore {
             throw new RuntimeException(e);
         }
         this.loaded = true;
+        if (crossServer != null) crossServer.start(minecraftServer);
     }
 
     public void unload() {
+        if (crossServer != null) crossServer.stop();
         this.navigation.shutdown();
         freeAllLoadedFiles();
         setMinecraftServer(null);
