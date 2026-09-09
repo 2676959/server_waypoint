@@ -2,14 +2,15 @@
 
 Release candidate for the chunked upload and download transport.
 
-## Breaking change: network protocol 10
+## Breaking change: network protocol 11
 
-3.1.0 moves the client and server to **network protocol 10**. A 3.1.x client and a
+3.1.0 moves the client and server to **network protocol 11**. A 3.1.x client and a
 3.1.x server are required on both ends; mixing 3.0.x and 3.1.x will not sync.
-Earlier 3.1.0 candidates using protocol 9 must also be replaced on both ends.
-Protocol 10 includes the explicit Xaero/VoxelMap upload target.
+Earlier 3.1.0 candidates using protocol 9 or 10 must also be replaced on both ends.
+Protocol 11 retains the explicit Xaero/VoxelMap upload target and adds authorized remote catalog
+synchronization. Remote GUI integration remains pending; see [the client contract](cross-server-client-sync.md).
 
-- `ProtocolVersion.PROTOCOL_VERSION = 10`, `COMPATIBLE_VERSION = "3.1.x"`.
+- `ProtocolVersion.PROTOCOL_VERSION = 11`, `COMPATIBLE_VERSION = "3.1.x"`.
 - Application-level ACK and retry frames are removed. Minecraft's connection
   already provides reliable ordered delivery, so the chunk layer now owns only
   fragmentation, checksums, bounded reassembly, timeout cleanup, backpressure

@@ -52,6 +52,27 @@ class C2SPacketHandlerTest {
     private Path tempDir;
 
     @Test
+    void remoteSynchronizationRequiresCompatibleHandshakeAndCurrentPermission() {
+        TestSender sender = new TestSender();
+        WaypointServerCore server = new WaypointServerCore(this.tempDir) { };
+        var handler = new C2SPacketHandler<>(sender, server, new TestPermissionManager(false),
+                navigationService(), uploadCoordinator(server));
+        var request = new _959.server_waypoint.core.network.message.RemoteCatalogRequestMessage(UUID.randomUUID());
+        handler.onClientHandshake("player", new ClientHandshakeBuffer(_959.server_waypoint.ProtocolVersion.PROTOCOL_VERSION - 1));
+        int before = sender.packets.size();
+        handler.onRemoteCatalogRequest("player", request);
+        assertEquals(before, sender.packets.size());
+        handler.onClientHandshake("player", new ClientHandshakeBuffer(_959.server_waypoint.ProtocolVersion.PROTOCOL_VERSION));
+        handler.onRemoteCatalogRequest("player", request);
+        var response = (_959.server_waypoint.core.network.message.RemoteCatalogMessage) sender.packets.get(sender.packets.size() - 1);
+        assertEquals(_959.server_waypoint.crossserver.RemoteCatalogState.UNAUTHORIZED, response.state());
+        assertTrue(response.servers().isEmpty());
+        before = sender.packets.size(); handler.onRemoteCatalogRequest("player", request);
+        assertEquals(before, sender.packets.size());
+        assertTrue(server.getFileManagerMap().isEmpty());
+    }
+
+    @Test
     void editPermissionDenialDoesNotResolveOrMutateTheTarget() {
         TestSender sender = new TestSender();
         WaypointServerCore server = new WaypointServerCore(this.tempDir) {

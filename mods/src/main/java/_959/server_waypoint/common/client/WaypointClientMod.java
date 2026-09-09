@@ -71,6 +71,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     private static ClientNetworkState networkState = ClientNetworkState.NOT_READY;
     private static String currentDimensionName;
     private static ClientConfig clientConfig;
+    private final RemoteClientCatalogs remoteCatalogs = new RemoteClientCatalogs();
+    public RemoteClientCatalogs remoteCatalogs() { return this.remoteCatalogs; }
+
     private final ClientHandshakeC2SPayload clientHandshake = new ClientHandshakeC2SPayload(new ClientHandshakeBuffer());
     private final ChunkedMessageManager<String> chunkedMessages = new ChunkedMessageManager<>();
     private final ChunkedMessageManager<String> uploadChunkedMessages = new ChunkedMessageManager<>();
@@ -282,6 +285,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void onLeaveServer() {
+        this.remoteCatalogs.clear();
         this.chunkedMessages.clearAll();
         this.uploadChunkedMessages.clearAll();
         this.synchronizationTracker.clearAll();
@@ -318,6 +322,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         if (!WaypointServerMod.runsWithClient()) {
             this.saveAllWaypointFiles();
         }
+        this.remoteCatalogs.clear();
         this.chunkedMessages.clearAll();
         this.uploadChunkedMessages.clearAll();
         this.synchronizationTracker.clearAll();
@@ -344,6 +349,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
     @Override
     public void onServerHandshake(ServerHandshakeBuffer buffer) {
+        this.remoteCatalogs.clear();
         networkState = ClientNetworkState.HANDSHAKE_FINISHED;
         this.compressChunkedMessages = buffer.compressChunkedMessages();
         int serverId = buffer.serverId();
@@ -478,6 +484,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     public void tickChunkedMessages() {
+        if (!WaypointServerMod.runsWithClient() && (networkState == ClientNetworkState.HANDSHAKE_FINISHED
+                || networkState == ClientNetworkState.SYNC_FINISHED)) {
+            var request = this.remoteCatalogs.poll();
+            if (request != null) this.sendChunkedMessageToServer(request);
+        }
         for (ReceiveFailure<String> failure : this.chunkedMessages.tick()) {
             this.handleChunkedReceiveFailure(failure.messageTypeId());
             LOGGER.warn(
@@ -513,7 +524,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     private void applyChunkedMessage(ChunkedMessage message) {
-        if (message instanceof WaypointData waypointData) {
+        if (message instanceof RemoteCatalogMessage remote) {
+            this.remoteCatalogs.apply(remote);
+        } else if (message instanceof WaypointData waypointData) {
             this.applyWaypointData(waypointData);
         } else if (message instanceof WaypointModificationMessage modification) {
             this.onWaypointModification(modification);
@@ -533,7 +546,8 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         return messageTypeId == ChunkedMessageRegistry.WAYPOINT_DATA.id()
                 || messageTypeId == ChunkedMessageRegistry.WAYPOINT_EDIT_RESULT.id()
                 || messageTypeId == ChunkedMessageRegistry.WAYPOINT_MODIFICATION.id()
-                || messageTypeId == ChunkedMessageRegistry.WAYPOINT_LIST_UPDATE.id();
+                || messageTypeId == ChunkedMessageRegistry.WAYPOINT_LIST_UPDATE.id()
+                || messageTypeId == ChunkedMessageRegistry.REMOTE_CATALOG.id();
     }
 
     private void applyWaypointData(WaypointData waypointData) {

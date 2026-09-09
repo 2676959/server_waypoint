@@ -5,11 +5,11 @@ Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
 KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
 Step 2 is now `fd3ba53` after rebasing onto upload-branch fix `f0d8281`.
 Step 3 was committed as `3fccc28`; step 4 as `6d7be5a`; step 5 as `4e806fa`; step 6 as `8752aaa`.
-Step 7 was committed as `1858582`; step 8 as `b8a372d`. Step 9 was committed as `d32d177`. Step 10 was committed as `d9ada50`. Step 11 remote queries and suggestions are complete. Step 12 permissions and authorization callbacks were committed as `bebdb30`. Step 13 coordinator handoffs were committed as `4122f2a`. Step 15 was committed as `1a0d7e8`. The current change implements Step 16 Velocity runtime integration.
+Step 7 was committed as `1858582`; step 8 as `b8a372d`. Step 9 was committed as `d32d177`. Step 10 was committed as `d9ada50`. Step 11 remote queries and suggestions are complete. Step 12 permissions and authorization callbacks were committed as `bebdb30`. Step 13 coordinator handoffs were committed as `4122f2a`. Step 15 was committed as `1a0d7e8`. Step 16 was committed as `4d91de1`. The current change implements Step 17 client catalog synchronization.
 
 ## Current status
 
-**Steps 1–16 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
+**Steps 1–17 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
 for `Noise_KK_25519_AESGCM_SHA256`, with 35 passing KK checks and a scoped source review.**
 Step 3 adds the proxy modules/contracts and private dependency packaging; all 41 artifact checks
 and 10 native runtime checks pass. Step 4 adds immutable catalogs and reader views.
@@ -24,7 +24,8 @@ Step 13 adds bounded coordinator handoff state and reusable backend-message hand
 Step 14 adds destination reservations, authoritative arrival validation and concrete mod/Paper teleport adapters.
 Step 15 adds source initiation and final owner-thread checks. Step 16 wires the backend and Velocity
 lifecycles, catalog synchronization and player transfers behind explicit configuration (disabled by
-default). Steps 17–19 remain; remote GUI behavior is not yet enabled.
+default). Step 17 adds bounded authorized remote client snapshots under Minecraft protocol 11.
+Steps 18–19 remain; remote GUI behavior is not yet enabled.
 
 The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
 The [protocol v1 contract](cross-server-protocol-v1.md) defines the feature semantics.
@@ -61,7 +62,8 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 14 — Destination preparation and arrival | Complete | Bounded connection-scoped reservations, exact claim/player binding, fresh local export/coordinate resolution, final permission checks and mod/Paper owner adapters. See [destination contract](cross-server-destination.md). |
 | 15 — Remote teleport command | Complete | Exact cached targets, permission-gated command/help/suggestions, bounded source preparation service and transfer adapter boundary. See [source teleport contract](cross-server-source-teleport.md). |
 | 16 — Velocity runtime integration | Complete | Coordinator/backend lifecycle, TCP readiness/claim dispatch, real Velocity switch, owner-thread arrivals, 16 real-socket cases and live Paper/Velocity tests in both modes. See [runtime contract](cross-server-velocity-runtime.md). |
-| 17–19 | Not started | Modded-client catalogs, GUI integration and release hardening remain pending. |
+| 17 — Client catalog synchronization | Complete | Protocol 11, bounded authorized remote snapshots, session reset and client dispatcher isolation tests. See [client contract](cross-server-client-sync.md). |
+| 18–19 | Not started | GUI integration and release hardening remain pending. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
@@ -260,9 +262,21 @@ Native mod/Folia transfers, online forwarding and the full release/soak matrix r
 
 ## Next work, in order
 
-1. Step 17: synchronize remote catalogs to modded clients.
-2. Continue the remaining command/handoff/platform steps in order. Plaintext backend identity
+1. Step 18: integrate read-only remote browsing and teleport confirmation into the GUI.
+2. Step 19: harden and verify the full release matrix, including native protocol-11 sessions. Plaintext backend identity
    must never be described as cryptographically authenticated.
 
 Update this file when a step's status changes, a blocker is resolved, or new validation is run.
 Keep completed implementation, experimental evidence, and unperformed validation separate.
+
+
+## Step-17 verification
+
+Step 17 synchronizes bounded authorized catalog/status replacements over the existing Minecraft
+chunked channel. Protocol 11 clients correlate refreshes by request UUID and clear remote state on
+session changes; remote data remains separate from local files/managers. See the
+[client synchronization contract](cross-server-client-sync.md) for wire limits, polling semantics,
+automated validation and remaining native release gates.
+
+All 852 automated tests passed (common, proxy-common, Velocity, active Fabric and Paper 1.21),
+with zero failures/errors/skips. [Machine-readable results](validation/cross-server-step17/results.json).

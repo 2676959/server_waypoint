@@ -279,3 +279,7 @@ Some changes made in `config.json` may take effects after server restarts.
   Waypoint sets with unique names that do not exist on the server.
   - What is lost:
   Any waypoints you added to these shared lists. Any list you created that happens to share a name with a server list.
+
+Remote catalog synchronization requires matching protocol-11 clients and backends. Remote snapshots
+are kept separately from local waypoint files; client GUI integration is the next implementation
+step. See [client synchronization](docs/cross-server-client-sync.md).

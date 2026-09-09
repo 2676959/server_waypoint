@@ -79,6 +79,15 @@ public final class ApplicationCodec {
         });
     }
 
+    /** Decode nested client catalogs against one aggregate allocation budget. */
+    public RemoteCatalogSnapshot decodeCatalog(byte[] encoded, Instant receivedAt, DecodingContext budget) {
+        return read(encoded, limits.catalogBytes(), budget, r -> {
+            if (r.i() != CrossServerProtocol.PROTOCOL_VERSION) throw invalid();
+            r.object();
+            return new RemoteCatalogSnapshot(r.server(), r.revision(), r.dimensions(), receivedAt);
+        });
+    }
+
     public static int typeId(ApplicationMessage message) {
         if (message instanceof RegisterServer) return 1;
         if (message instanceof RegisterResult) return 2;
@@ -213,11 +222,15 @@ public final class ApplicationCodec {
     }
 
     private <T> T read(byte[] bytes, int maximum, java.util.function.Function<Reader, T> action) {
+        return read(bytes, maximum, new DecodingContext(limits.allocationBytes(), limits.objects()), action);
+    }
+
+    private <T> T read(byte[] bytes, int maximum, DecodingContext budget, java.util.function.Function<Reader, T> action) {
         Objects.requireNonNull(bytes, "bytes");
         if (bytes.length > maximum) throw invalid();
         ByteBuf buf = Unpooled.wrappedBuffer(bytes);
         try {
-            T result = action.apply(new Reader(buf));
+            T result = action.apply(new Reader(buf, budget));
             if (buf.isReadable()) throw invalid();
             return result;
         } catch (IndexOutOfBoundsException exception) {
@@ -389,10 +402,12 @@ public final class ApplicationCodec {
 
     private final class Reader {
         private final ByteBuf buf;
-        private final DecodingContext budget = new DecodingContext(limits.allocationBytes(), limits.objects());
+        private final DecodingContext budget;
+        private final DecodingContext catalogBudget = new DecodingContext(limits.allocationBytes(), limits.objects());
 
-        private Reader(ByteBuf buf) { this.buf = buf; }
-        private void object() { budget.claimObject(); }
+        private Reader(ByteBuf buf, DecodingContext budget) { this.buf = buf; this.budget = budget; }
+        private void object() { budget.claimObject(); catalogBudget.claimObject(); }
+        private void claimBytes(int count) { budget.claimBytes(count); catalogBudget.claimBytes(count); }
         private int i() { return buf.readInt(); }
         private long l() { return buf.readLong(); }
         private UUID uuid() { object(); return new UUID(l(), l()); }
@@ -416,7 +431,7 @@ public final class ApplicationCodec {
             if (length < 0 || length > limits.stringBytes() || length > buf.readableBytes()) throw invalid();
             object();
             // UTF-8 bytes plus decoder storage, immutable string storage and defensive-copy headroom.
-            budget.claimBytes(Math.multiplyExact(length, 6));
+            claimBytes(Math.multiplyExact(length, 6));
             byte[] bytes = new byte[length];
             buf.readBytes(bytes);
             try {
@@ -431,7 +446,7 @@ public final class ApplicationCodec {
             int count = i();
             if (count < 0 || count > limits.collectionEntries() || count > buf.readableBytes() / minimumBytes) throw invalid();
             object();
-            budget.claimBytes(Math.multiplyExact(count, 64));
+            claimBytes(Math.multiplyExact(count, 64));
             for (int n = 0; n < count; n++) object();
             return count;
         }
@@ -516,7 +531,7 @@ public final class ApplicationCodec {
             int length = i();
             if (length < 0 || length > limits.chunkBytes() || length > buf.readableBytes()) throw invalid();
             object();
-            budget.claimBytes(Math.multiplyExact(length, 2));
+            claimBytes(Math.multiplyExact(length, 2));
             byte[] bytes = new byte[length];
             buf.readBytes(bytes);
             return new Bytes(bytes);

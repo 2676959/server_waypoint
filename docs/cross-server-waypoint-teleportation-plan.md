@@ -14,7 +14,7 @@ messages so a future hybrid X25519 plus ML-KEM suite can be added without changi
 messages.
 
 Implementation status is tracked in [the progress record](cross-server-waypoint-teleportation-progress.md).
-Steps 1–16 now include transport, credentials, catalog distribution, permissions, handoff services,
+Steps 1–17 now include transport, credentials, catalog distribution, permissions, handoff services,
 remote commands and live Velocity/Paper command-to-arrival integration. Client/GUI synchronization
 and release hardening remain. See the progress record and [runtime contract](cross-server-velocity-runtime.md).
 

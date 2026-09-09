@@ -14,6 +14,9 @@ import _959.server_waypoint.core.network.message.WaypointEditResultMessage;
 import _959.server_waypoint.core.network.message.WaypointListUpdateMessage;
 import _959.server_waypoint.core.network.message.WaypointModificationMessage;
 import io.netty.buffer.ByteBuf;
+import _959.server_waypoint.core.network.message.RemoteCatalogMessage;
+import _959.server_waypoint.core.network.message.RemoteCatalogRequestMessage;
+import _959.server_waypoint.core.network.codec.RemoteCatalogMessageCodec;
 
 import java.util.Map;
 
@@ -50,13 +53,23 @@ public final class ChunkedMessageRegistry {
             WaypointListUpdateMessageCodec::decode
     );
 
+    public static final ChunkedMessageType<RemoteCatalogMessage> REMOTE_CATALOG = type(
+            6, RemoteCatalogMessageCodec::encode, RemoteCatalogMessageCodec::decode);
+    public static final ChunkedMessageType<RemoteCatalogRequestMessage> REMOTE_CATALOG_REQUEST = type(
+            7, (buffer, message, context) -> {
+                buffer.writeLong(message.requestId().getMostSignificantBits());
+                buffer.writeLong(message.requestId().getLeastSignificantBits());
+            }, (buffer, context) -> new RemoteCatalogRequestMessage(new java.util.UUID(buffer.readLong(), buffer.readLong())));
+
     private static final Map<Integer, ChunkedMessageType<?>> TYPES_BY_ID = Map.of(
             WAYPOINT_DATA.id(), WAYPOINT_DATA,
             CLIENT_UPDATE_REQUEST.id(), CLIENT_UPDATE_REQUEST,
             WAYPOINT_EDIT_REQUEST.id(), WAYPOINT_EDIT_REQUEST,
             WAYPOINT_EDIT_RESULT.id(), WAYPOINT_EDIT_RESULT,
             WAYPOINT_MODIFICATION.id(), WAYPOINT_MODIFICATION,
-            WAYPOINT_LIST_UPDATE.id(), WAYPOINT_LIST_UPDATE
+            WAYPOINT_LIST_UPDATE.id(), WAYPOINT_LIST_UPDATE,
+            REMOTE_CATALOG.id(), REMOTE_CATALOG,
+            REMOTE_CATALOG_REQUEST.id(), REMOTE_CATALOG_REQUEST
     );
 
     private ChunkedMessageRegistry() {
