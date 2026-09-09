@@ -1,0 +1,260 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+
+> Configure project :mods:1.20.1-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.20.1-forge
+Minecraft Maven is up-to-date, took 0:01.353
+
+> Configure project :mods:26.2-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:26.2-forge
+Minecraft Maven is up-to-date, took 0:01.335
+
+> Task :proxy-common:processResources NO-SOURCE
+> Task :common:updateModInfo UP-TO-DATE
+> Task :proxy-common:processTestResources NO-SOURCE
+> Task :velocity:processResources NO-SOURCE
+> Task :velocity:verifyNoiseDependency
+> Task :velocity:processTestResources NO-SOURCE
+> Task :mods:1.20.1-fabric:stonecutterPrepare UP-TO-DATE
+> Task :mods:1.20.1-fabric:stonecutterGenerate UP-TO-DATE
+> Task :mods:1.20.1-fabric:processResources UP-TO-DATE
+> Task :mods:1.20.1-fabric:processIncludeJars UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :common:processResources UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+> Task :mods:1.20.1-fabric:verifyNoiseDependency
+> Task :common:jar UP-TO-DATE
+> Task :proxy-common:compileJava UP-TO-DATE
+> Task :proxy-common:classes UP-TO-DATE
+> Task :proxy-common:jar UP-TO-DATE
+> Task :common:compileTestJava UP-TO-DATE
+> Task :proxy-common:compileTestJava UP-TO-DATE
+> Task :common:processTestResources NO-SOURCE
+> Task :common:testClasses UP-TO-DATE
+> Task :proxy-common:testClasses UP-TO-DATE
+> Task :proxy-common:test UP-TO-DATE
+> Task :common:test UP-TO-DATE
+> Task :velocity:compileJava UP-TO-DATE
+> Task :velocity:classes UP-TO-DATE
+> Task :velocity:jar UP-TO-DATE
+> Task :velocity:shadowJar UP-TO-DATE
+> Task :velocity:assemble UP-TO-DATE
+> Task :velocity:compileTestJava UP-TO-DATE
+> Task :velocity:testClasses UP-TO-DATE
+> Task :velocity:test UP-TO-DATE
+> Task :velocity:check UP-TO-DATE
+> Task :velocity:build UP-TO-DATE
+> Task :mods:1.20.1-forge:stonecutterPrepare UP-TO-DATE
+> Task :mods:1.20.1-forge:stonecutterGenerate UP-TO-DATE
+> Task :mods:1.20.1-forge:unpackMixinMappings UP-TO-DATE
+> Task :mods:1.20.1-fabric:compileJava UP-TO-DATE
+> Task :mods:1.20.1-fabric:classes UP-TO-DATE
+> Task :mods:1.20.1-fabric:jar UP-TO-DATE
+> Task :mods:1.20.1-fabric:shadowJar UP-TO-DATE
+> Task :mods:1.20.1-fabric:remapJar UP-TO-DATE
+> Task :mods:1.20.1-fabric:remapSourcesJar SKIPPED
+> Task :mods:1.20.1-fabric:assemble UP-TO-DATE
+> Task :mods:1.20.1-fabric:stonecutterPrepareTest UP-TO-DATE
+> Task :mods:1.20.1-fabric:stonecutterGenerateTest UP-TO-DATE
+> Task :mods:1.20.1-forge:compileJava UP-TO-DATE
+> Task :mods:1.20.1-forge:processResources UP-TO-DATE
+> Task :mods:1.20.1-fabric:compileTestJava UP-TO-DATE
+> Task :mods:1.20.1-forge:classes UP-TO-DATE
+> Task :mods:1.20.1-fabric:processTestResources NO-SOURCE
+> Task :mods:1.20.1-fabric:testClasses UP-TO-DATE
+> Task :mods:1.20.1-forge:jar UP-TO-DATE
+> Task :mods:1.20.1-forge:mergeMixinMappings UP-TO-DATE
+> Task :mods:1.20.1-forge:shadedJarJarMetadata UP-TO-DATE
+> Task :mods:1.20.1-forge:verifyNoiseDependency
+> Task :mods:1.20.1-fabric:test UP-TO-DATE
+> Task :mods:1.20.1-fabric:validateAccessWidener UP-TO-DATE
+> Task :mods:1.20.1-fabric:check UP-TO-DATE
+> Task :mods:1.20.1-fabric:build UP-TO-DATE
+> Task :mods:1.20.1-forge:shadowJar UP-TO-DATE
+> Task :mods:1.20.2-neoforge:neoFormListLibraries UP-TO-DATE
+> Task :mods:1.20.1-forge:shadedJar UP-TO-DATE
+> Task :mods:1.20.2-neoforge:cacheVersionManifest1.20.2 UP-TO-DATE
+> Task :mods:1.20.2-neoforge:cacheVersionExecutableClient1.20.2 UP-TO-DATE
+> Task :mods:1.20.2-neoforge:cacheVersionExecutableServer1.20.2 UP-TO-DATE
+> Task :mods:1.20.2-neoforge:cacheVersionExtractedServer1.20.2 UP-TO-DATE
+> Task :mods:1.20.2-neoforge:cacheVersionMappingsClient1.20.2 UP-TO-DATE
+> Task :mods:1.20.2-neoforge:create1.20.2ClientExtraJar UP-TO-DATE
+> Task :mods:1.20.1-forge:shadedJarJar UP-TO-DATE
+> Task :mods:1.20.2-neoforge:selectRawArtifactNg_dummy_ng.net.minecraft_client_1.20.2_client-extra UP-TO-DATE
+> Task :mods:1.20.1-forge:reobfShadowJar UP-TO-DATE
+> Task :mods:1.20.1-forge:assemble UP-TO-DATE
+> Task :mods:1.20.1-forge:stonecutterPrepareTest UP-TO-DATE
+> Task :mods:1.20.1-forge:stonecutterGenerateTest UP-TO-DATE
+> Task :mods:1.20.1-forge:compileTestJava UP-TO-DATE
+> Task :mods:1.20.2-neoforge:neoFormListTransformLibraries UP-TO-DATE
+> Task :mods:1.20.1-forge:processTestResources NO-SOURCE
+> Task :mods:1.20.1-forge:testClasses UP-TO-DATE
+> Task :mods:1.20.2-neoforge:neoFormStripClient UP-TO-DATE
+> Task :mods:1.20.2-neoforge:neoFormStripServer UP-TO-DATE
+> Task :mods:1.20.2-neoforge:neoFormMerge UP-TO-DATE
+> Task :mods:1.20.1-forge:test UP-TO-DATE
+> Task :mods:1.20.1-forge:check UP-TO-DATE
+> Task :mods:1.20.1-forge:build UP-TO-DATE
+> Task :mods:1.20.2-neoforge:neoFormMergeMappings UP-TO-DATE
+> Task :mods:26.2-fabric:stonecutterPrepare UP-TO-DATE
+> Task :mods:26.2-fabric:stonecutterGenerate UP-TO-DATE
+> Task :mods:1.20.2-neoforge:neoFormRename UP-TO-DATE
+> Task :mods:1.20.2-neoforge:neoFormDecompile UP-TO-DATE
+> Task :mods:26.2-fabric:compileJava UP-TO-DATE
+> Task :mods:26.2-fabric:processResources UP-TO-DATE
+> Task :mods:26.2-fabric:classes UP-TO-DATE
+> Task :mods:26.2-fabric:processIncludeJars UP-TO-DATE
+> Task :mods:26.2-fabric:jar UP-TO-DATE
+> Task :mods:26.2-fabric:verifyNoiseDependency
+> Task :mods:1.20.2-neoforge:neoFormInject UP-TO-DATE
+> Task :mods:26.2-fabric:shadowJar UP-TO-DATE
+> Task :mods:26.2-fabric:assemble UP-TO-DATE
+> Task :mods:26.2-fabric:stonecutterPrepareTest UP-TO-DATE
+> Task :mods:26.2-fabric:stonecutterGenerateTest UP-TO-DATE
+> Task :mods:26.2-fabric:compileTestJava UP-TO-DATE
+> Task :mods:26.2-fabric:processTestResources NO-SOURCE
+> Task :mods:26.2-fabric:testClasses UP-TO-DATE
+> Task :mods:26.2-fabric:test UP-TO-DATE
+> Task :mods:26.2-fabric:validateAccessWidener UP-TO-DATE
+> Task :mods:26.2-fabric:check UP-TO-DATE
+> Task :mods:26.2-fabric:build UP-TO-DATE
+> Task :mods:26.2-forge:stonecutterPrepare UP-TO-DATE
+> Task :mods:26.2-forge:stonecutterGenerate UP-TO-DATE
+> Task :mods:1.20.2-neoforge:neoFormPatch UP-TO-DATE
+> Task :mods:1.20.2-neoforge:neoFormPatchUserDev UP-TO-DATE
+> Task :mods:1.20.2-neoforge:neoFormTransformSource UP-TO-DATE
+> Task :mods:1.20.2-neoforge:neoFormRecompile UP-TO-DATE
+> Task :mods:1.20.2-neoforge:supplyRawJarForneoFormJoined1.20.2-20231019.002635 UP-TO-DATE
+> Task :mods:1.20.2-neoforge:selectRawArtifactNg_dummy_ng.net.neoforged_neoforge_20.2.93 UP-TO-DATE
+> Task :mods:1.20.2-neoforge:stonecutterPrepare UP-TO-DATE
+> Task :mods:1.20.2-neoforge:stonecutterGenerate UP-TO-DATE
+> Task :mods:1.20.2-neoforge:compileJava UP-TO-DATE
+> Task :mods:1.20.2-neoforge:processResources UP-TO-DATE
+> Task :mods:1.20.2-neoforge:classes UP-TO-DATE
+> Task :mods:1.20.2-neoforge:jar UP-TO-DATE
+> Task :mods:1.20.2-neoforge:jarJar SKIPPED
+> Task :mods:1.20.2-neoforge:verifyNoiseDependency
+> Task :mods:26.2-forge:compileJava UP-TO-DATE
+> Task :mods:26.2-forge:processResources UP-TO-DATE
+> Task :mods:26.2-forge:classes UP-TO-DATE
+> Task :mods:26.2-forge:jar UP-TO-DATE
+> Task :mods:26.2-forge:shadedJarJarMetadata UP-TO-DATE
+> Task :mods:1.20.2-neoforge:shadowJar UP-TO-DATE
+> Task :mods:1.20.2-neoforge:assemble UP-TO-DATE
+> Task :mods:26.2-forge:verifyNoiseDependency
+> Task :mods:1.20.2-neoforge:stonecutterPrepareTest UP-TO-DATE
+> Task :mods:1.20.2-neoforge:stonecutterGenerateTest UP-TO-DATE
+> Task :mods:26.2-forge:shadowJar UP-TO-DATE
+> Task :mods:1.20.2-neoforge:compileTestJava UP-TO-DATE
+> Task :mods:1.20.2-neoforge:processTestResources NO-SOURCE
+> Task :mods:1.20.2-neoforge:testClasses UP-TO-DATE
+> Task :mods:26.2-forge:shadedJar UP-TO-DATE
+> Task :mods:26.2-forge:shadedJarJar UP-TO-DATE
+> Task :mods:26.2-forge:assemble UP-TO-DATE
+> Task :mods:26.2-forge:stonecutterPrepareTest UP-TO-DATE
+> Task :mods:26.2-forge:stonecutterGenerateTest UP-TO-DATE
+> Task :mods:1.20.2-neoforge:test UP-TO-DATE
+> Task :mods:1.20.2-neoforge:check UP-TO-DATE
+> Task :mods:1.20.2-neoforge:build UP-TO-DATE
+> Task :mods:26.2-neoforge:stonecutterPrepare UP-TO-DATE
+> Task :mods:26.2-neoforge:stonecutterGenerate UP-TO-DATE
+> Task :mods:26.2-forge:compileTestJava UP-TO-DATE
+> Task :mods:26.2-forge:processTestResources NO-SOURCE
+> Task :mods:26.2-forge:testClasses UP-TO-DATE
+> Task :mods:26.2-forge:test UP-TO-DATE
+> Task :mods:26.2-forge:check UP-TO-DATE
+> Task :mods:26.2-forge:build UP-TO-DATE
+> Task :paper:1.21-paper:paperweightUserdevSetup UP-TO-DATE
+> Task :paper:1.21-paper:stonecutterPrepare UP-TO-DATE
+> Task :paper:1.21-paper:stonecutterGenerate UP-TO-DATE
+> Task :mods:26.2-neoforge:createMinecraftArtifacts UP-TO-DATE
+> Task :mods:26.2-neoforge:compileJava FAILED
+> Task :paper:1.21-paper:compileJava UP-TO-DATE
+> Task :paper:1.21-paper:processResources UP-TO-DATE
+> Task :paper:1.21-paper:classes UP-TO-DATE
+> Task :paper:1.21-paper:jar SKIPPED
+> Task :paper:1.21-paper:verifyNoiseDependency
+> Task :paper:1.21-paper:shadowJar UP-TO-DATE
+> Task :paper:1.21-paper:assemble UP-TO-DATE
+> Task :paper:1.21-paper:stonecutterPrepareTest UP-TO-DATE
+> Task :paper:1.21-paper:stonecutterGenerateTest UP-TO-DATE
+> Task :paper:1.21-paper:compileTestJava UP-TO-DATE
+> Task :paper:1.21-paper:processTestResources NO-SOURCE
+> Task :paper:1.21-paper:testClasses UP-TO-DATE
+> Task :paper:1.21-paper:test UP-TO-DATE
+> Task :paper:1.21-paper:check UP-TO-DATE
+> Task :paper:1.21-paper:build UP-TO-DATE
+> Task :paper:1.21.11-paper:paperweightUserdevSetup UP-TO-DATE
+> Task :paper:1.21.11-paper:stonecutterPrepare UP-TO-DATE
+> Task :paper:1.21.11-paper:stonecutterGenerate UP-TO-DATE
+> Task :mods:26.2-neoforge:processResources
+> Task :mods:26.2-neoforge:jarJar NO-SOURCE
+> Task :mods:26.2-neoforge:verifyNoiseDependency
+> Task :mods:26.2-neoforge:stonecutterPrepareTest
+> Task :paper:1.21.11-paper:compileJava UP-TO-DATE
+> Task :paper:1.21.11-paper:processResources UP-TO-DATE
+> Task :paper:1.21.11-paper:classes UP-TO-DATE
+> Task :paper:1.21.11-paper:jar SKIPPED
+> Task :paper:1.21.11-paper:verifyNoiseDependency
+> Task :paper:1.21.11-paper:shadowJar UP-TO-DATE
+> Task :paper:1.21.11-paper:assemble UP-TO-DATE
+> Task :paper:1.21.11-paper:stonecutterPrepareTest UP-TO-DATE
+> Task :paper:1.21.11-paper:stonecutterGenerateTest UP-TO-DATE
+> Task :paper:1.21.11-paper:compileTestJava UP-TO-DATE
+> Task :paper:1.21.11-paper:processTestResources NO-SOURCE
+> Task :paper:1.21.11-paper:testClasses UP-TO-DATE
+> Task :mods:26.2-neoforge:stonecutterGenerateTest
+> Task :mods:26.2-neoforge:processTestResources NO-SOURCE
+> Task :paper:1.21.11-paper:test UP-TO-DATE
+> Task :paper:1.21.11-paper:check UP-TO-DATE
+> Task :paper:1.21.11-paper:build UP-TO-DATE
+> Task :paper:26.2-paper:paperweightUserdevSetup UP-TO-DATE
+> Task :paper:26.2-paper:compileJava UP-TO-DATE
+> Task :paper:26.2-paper:processResources UP-TO-DATE
+> Task :paper:26.2-paper:classes UP-TO-DATE
+> Task :paper:26.2-paper:jar SKIPPED
+> Task :paper:26.2-paper:verifyNoiseDependency
+> Task :paper:26.2-paper:shadowJar UP-TO-DATE
+> Task :paper:26.2-paper:assemble UP-TO-DATE
+> Task :paper:26.2-paper:compileTestJava UP-TO-DATE
+> Task :paper:26.2-paper:processTestResources NO-SOURCE
+> Task :paper:26.2-paper:testClasses UP-TO-DATE
+> Task :paper:26.2-paper:test UP-TO-DATE
+> Task :paper:26.2-paper:check UP-TO-DATE
+> Task :paper:26.2-paper:build UP-TO-DATE
+
+[Incubating] Problems report is available at: file:///private/tmp/server-waypoint-cross-server-plan/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':mods:26.2-neoforge:compileJava' (registered by plugin class 'org.gradle.api.plugins.JavaBasePlugin').
+> Could not resolve all files for configuration ':mods:26.2-neoforge:compileClasspath'.
+   > Could not resolve io.netty:netty-buffer:4.1.+.
+     Required by:
+         project ':mods:26.2-neoforge' > project :common
+      > No cached version listing for io.netty:netty-buffer:4.1.+ available for offline mode.
+      > No cached version listing for io.netty:netty-buffer:4.1.+ available for offline mode.
+      > No cached version listing for io.netty:netty-buffer:4.1.+ available for offline mode.
+      > No cached version listing for io.netty:netty-buffer:4.1.+ available for offline mode.
+      > No cached version listing for io.netty:netty-buffer:4.1.+ available for offline mode.
+      > No cached version listing for io.netty:netty-buffer:4.1.+ available for offline mode.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 4s
+144 actionable tasks: 14 executed, 130 up-to-date

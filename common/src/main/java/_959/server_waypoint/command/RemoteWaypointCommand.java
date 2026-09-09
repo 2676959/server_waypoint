@@ -156,7 +156,7 @@ final class RemoteWaypointCommand<S> {
         if (options.pageNumber() > result.totalPages()) {
             error.accept(source, translatable("waypoint.list.page.invalid", text(options.pageNumber()), text(result.totalPages()))); return 0;
         }
-        Component output = text().append(translatable("waypoint.remote.title", NamedTextColor.GOLD)).build();
+        Component output = Component.empty().append(translatable("waypoint.remote.title", NamedTextColor.GOLD));
         if (result.rows().isEmpty()) output = output.appendNewline().append(translatable(cached.isEmpty() ? "waypoint.remote.no_servers" : "waypoint.remote.no_results"));
         String lastServer = null, lastDimension = null, lastList = null;
         for (RemoteCatalogQuery.Row row : result.rows()) {
@@ -197,7 +197,7 @@ final class RemoteWaypointCommand<S> {
         int page = optionalInt(context, PAGE_NUMBER_ARG, 1), limit = optionalInt(context, PAGE_LIMIT_ARG, defaultLimit.getAsInt());
         int pages = Math.max(1, (entries.size() + limit - 1) / limit);
         if (page > pages) { error.accept(context.getSource(), translatable("waypoint.list.page.invalid", text(page), text(pages))); return 0; }
-        Component output = text().append(translatable("waypoint.remote.servers", NamedTextColor.GOLD)).build();
+        Component output = Component.empty().append(translatable("waypoint.remote.servers", NamedTextColor.GOLD));
         if (entries.isEmpty()) output = output.appendNewline().append(translatable("waypoint.remote.no_servers"));
         for (var entry : entries.subList((page - 1) * limit, Math.min(entries.size(), page * limit))) {
             output = output.appendNewline().append(serverLabel(entry.getKey(), entry.getValue().displayName(), entry.getValue().state()));
@@ -210,13 +210,13 @@ final class RemoteWaypointCommand<S> {
         send.accept(context.getSource(), output); return Command.SINGLE_SUCCESS;
     }
     private static Component serverLabel(RemoteServerId id, String display, RemoteCatalogState state) {
-        return text().append(label(display, id.value())).appendSpace()
+        return Component.empty().append(label(display, id.value())).appendSpace()
                 .append(translatable("waypoint.remote.state." + state.name().toLowerCase(Locale.ROOT),
-                        state == RemoteCatalogState.AVAILABLE ? NamedTextColor.GREEN : NamedTextColor.YELLOW)).build();
+                        state == RemoteCatalogState.AVAILABLE ? NamedTextColor.GREEN : NamedTextColor.YELLOW));
     }
     private static Component label(String display, String identity) {
         Component result = safe(display);
-        return display.equals(identity) ? result : text().append(result).append(text(" [")).append(safe(identity)).append(text("]")).build();
+        return display.equals(identity) ? result : Component.empty().append(result).append(text(" [")).append(safe(identity)).append(text("]"));
     }
     private static Component safe(String value) { return text(value.length() > 256 ? value.substring(0, 256) + "…" : value); }
     private static Component button(String label, String command) {

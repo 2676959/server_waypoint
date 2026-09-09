@@ -3,6 +3,7 @@ package _959.server_waypoint.common.server.handoff;
 import _959.server_waypoint.crossserver.handoff.DestinationPlatform;
 import _959.server_waypoint.crossserver.handoff.DestinationResolver;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerPlayer;
 import java.util.Objects;
 import java.util.Set;
@@ -22,10 +23,16 @@ public final class ModDestinationPlatform implements DestinationPlatform<ServerP
     }
     @Override public boolean execute(ServerPlayer player, Runnable task, Runnable retired) {
         if (server.isStopped()) return false;
-        server.execute(() -> {
+        // Join hooks may run before PlayerList installs the player. Always enqueue the owner check.
+        Runnable action = () -> {
             if (server.isStopped() || !isCurrentPlayer(player)) retired.run();
             else task.run();
-        });
+        };
+        //? if >=1.21.2 {
+        server.schedule(new TickTask(server.getTickCount(), action));
+        //?} else {
+        /*server.tell(new TickTask(server.getTickCount(), action));
+        *///?}
         return true;
     }
     @Override public boolean ownsThread(ServerPlayer player) { return server.isSameThread(); }

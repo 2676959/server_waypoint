@@ -130,3 +130,11 @@ exercise controlled owning-thread adapters, while the concrete platform adapters
 The services now have live coordinator/backend lifecycle and Velocity transfer wiring. See
 [the runtime contract and current validation](cross-server-velocity-runtime.md). Earlier step-specific
 verification above describes its historical boundary; client/GUI and full release hardening remain.
+
+## Step-19 native arrival scheduling correction
+
+Mod owner dispatch now enqueues a `TickTask` even when called from the server thread; Fabric's
+JOIN hook can precede UUID lookup installation. Paper/Folia dispatch always uses the next player
+scheduler tick. Both adapters recheck the actual player object and lifecycle at execution time.
+The [release record](cross-server-release-readiness.md) contains the native before/after evidence
+and delayed-registration/replacement/shutdown regression coverage.

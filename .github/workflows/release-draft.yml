@@ -41,7 +41,9 @@ jobs:
         run: ./move_builds.sh
 
       - name: verify release artifacts
-        run: bash ./tools/verify-release-artifacts.sh
+        run: |
+          python3 tools/test_release_artifacts.py
+          bash ./tools/verify-release-artifacts.sh
 
       - name: create draft release with all builds
         env:

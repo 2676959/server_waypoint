@@ -25,11 +25,10 @@ public final class PaperDestinationPlatform implements DestinationPlatform<Playe
     }
     @Override public boolean execute(Player player, Runnable task, Runnable retired) {
         if (!plugin.isEnabled()) return false;
-        if (Bukkit.isOwnedByCurrentRegion(player)) {
+        // Join events can precede installation in the live player lookup. Check on the next owner tick.
+        return player.getScheduler().execute(plugin, () -> {
             if (isCurrentPlayer(player)) task.run(); else retired.run();
-            return true;
-        }
-        return player.getScheduler().execute(plugin, task, retired, 1L);
+        }, retired, 1L);
     }
     @Override public boolean ownsThread(Player player) { return Bukkit.isOwnedByCurrentRegion(player); }
     @Override public UUID playerId(Player player) { return player.getUniqueId(); }

@@ -283,3 +283,8 @@ Some changes made in `config.json` may take effects after server restarts.
 Remote catalog synchronization requires matching protocol-11 clients and backends. Remote snapshots
 are kept separately from local waypoint files; client GUI integration is the next implementation
 step. See [client synchronization](docs/cross-server-client-sync.md).
+
+### Cross-server administration
+
+Cross-server support is opt-in and disabled by default. See the [administrator guide](docs/cross-server-admin.md),
+[release notes](docs/cross-server-release-notes.md), and [release verification](docs/cross-server-release-readiness.md).

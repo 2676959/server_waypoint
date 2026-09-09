@@ -1,0 +1,22 @@
+Minecraft Console Client v26.2 - for MC 1.4.6 to 26.2 - Github.com/MCCTeam
+GitHub build 499, built on 2026-07-31 from commit 7b100a3
+⭐ Like MCC? Star us on GitHub: https://github.com/MCCTeam/Minecraft-Console-Client
+A new version of MCC is available and you can download it via /upgrade
+Or download it manually: https://github.com/MCCTeam/Minecraft-Console-Client/releases
+You chose to run in offline mode.
+Using Minecraft version 26.2 (protocol v776)
+[MCC] Version is supported.
+Logging in...
+[MCC] Server is in offline mode.
+[MCC] Server was successfully joined.
+Type '/quit' to leave the server.
+▌CodexStep19 joined the game
+▌Remote servers b Available → Page 1/1
+▌Preparing remote teleport…
+▌Remote teleport completed.
+▌Preparing remote teleport…
+▌CodexStep19 joined the game
+▌Remote teleport completed.
+▌Remote servers b Stale — retained data may be outdated → Page 1/1
+▌The remote catalog is stale. Wait for it to refresh and try again.
+The current setting is saved as MinecraftClient.ini

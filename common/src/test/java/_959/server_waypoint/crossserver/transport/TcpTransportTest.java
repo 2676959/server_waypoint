@@ -386,6 +386,74 @@ class TcpTransportTest {
         }
     }
 
+    @ParameterizedTest @EnumSource(TransportMode.class)
+    void seededFragmentBoundariesPreserveCanonicalEnvelope(TransportMode mode) throws Exception {
+        Random random = new Random(190959);
+        try (Fixture f = new Fixture(mode)) {
+            Future<TcpChannel> accepted = f.accept();
+            try (RawPeer peer = new RawPeer(f); TcpChannel channel = accepted.get()) {
+                for (int sequence = 0; sequence < 128; sequence++) {
+                    var expected = new ApplicationEnvelope(sequence, new UUID(19, sequence),
+                            new ApplicationMessage.CatalogMetadata(ID, "世界".repeat(random.nextInt(100)),
+                                    new RemoteRevision(sequence), CatalogExportPolicy.PUBLIC));
+                    byte[] frame = CODEC.encode(expected);
+                    for (int offset = 0; offset < frame.length;) {
+                        int count = 1 + random.nextInt(Math.min(97, frame.length - offset));
+                        peer.write(ByteBuffer.allocate(count + 8).putInt(frame.length).putInt(offset)
+                                .put(frame, offset, count).array());
+                        offset += count;
+                    }
+                    assertEquals(expected, channel.receive().envelope());
+                }
+            }
+            assertEquals(0, f.listener.connectionCount());
+        }
+    }
+
+    @ParameterizedTest @EnumSource(TransportMode.class)
+    void seededInvalidOffsetsCloseAndReleaseEveryAdmission(TransportMode mode) throws Exception {
+        Random random = new Random(190960);
+        try (Fixture f = new Fixture(mode)) {
+            for (int trial = 0; trial < 64; trial++) {
+                Future<TcpChannel> accepted = f.accept();
+                try (RawPeer peer = new RawPeer(f); TcpChannel channel = accepted.get()) {
+                    int total = 36 + random.nextInt(1024);
+                    int offset = trial % 2 == 0 ? -1 - random.nextInt(Integer.MAX_VALUE)
+                            : 1 + random.nextInt(Integer.MAX_VALUE);
+                    peer.write(ByteBuffer.allocate(9).putInt(total).putInt(offset).put((byte) 0).array());
+                    assertThrows(IOException.class, channel::receive);
+                    assertTrue(channel.isClosed());
+                    assertEquals(0, f.listener.connectionCount());
+                }
+            }
+        }
+    }
+
+    @ParameterizedTest @EnumSource(TransportMode.class)
+    void exactRetainedAndMessageBudgetsCloseFloodAndAllowFreshSession(TransportMode mode) throws Exception {
+        for (TcpLimits limits : List.of(new TcpLimits(2, 1000, 3000, 64, 3 * 192, 100),
+                new TcpLimits(2, 1000, 3000, 64, 4096, 3))) {
+            try (Fixture f = new Fixture(mode, limits)) {
+                Future<TcpChannel> accepted = f.accept();
+                try (RawPeer peer = new RawPeer(f); TcpChannel channel = accepted.get()) {
+                    for (int sequence = 0; sequence < 3; sequence++) {
+                        peer.envelope(sequence, new UUID(19, sequence));
+                        assertEquals(sequence, channel.receive().envelope().sequence());
+                    }
+                    peer.envelope(3, new UUID(19, 3));
+                    assertThrows(IOException.class, channel::receive);
+                    assertTrue(channel.isClosed());
+                    assertEquals(0, f.listener.connectionCount());
+                }
+                Future<TcpChannel> fresh = f.accept();
+                try (TcpChannel backend = f.connect(); TcpChannel channel = fresh.get()) {
+                    backend.send(new UUID(19, 0), new ApplicationMessage.Heartbeat());
+                    assertEquals(0, channel.receive().envelope().sequence());
+                }
+            }
+        }
+    }
+
     @Test void administrativeRevocationInvalidatesPendingHandshakeAndReadmission() throws Exception {
         try (Fixture f = new Fixture(TransportMode.NOISE_KK)) {
             Future<TcpChannel> accepted = f.accept();

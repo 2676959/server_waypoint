@@ -2,7 +2,8 @@
 
 Step 16 connects the existing catalog and handoff services to Velocity and the dedicated mod/Paper
 backends. The feature remains disabled by default. No client mod is required for remote commands
-or server switches. Modded-client catalogs and GUI controls remain Steps 17–18.
+or server switches. Protocol-11 modded-client catalogs and read-only GUI controls were added in Steps 17–18.
+See the [administrator guide](cross-server-admin.md) and [current release verification](cross-server-release-readiness.md).
 
 ## Runtime ownership and handoff flow
 

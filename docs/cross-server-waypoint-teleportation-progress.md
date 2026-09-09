@@ -5,7 +5,7 @@ Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
 KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
 Step 2 is now `fd3ba53` after rebasing onto upload-branch fix `f0d8281`.
 Step 3 was committed as `3fccc28`; step 4 as `6d7be5a`; step 5 as `4e806fa`; step 6 as `8752aaa`.
-Step 7 was committed as `1858582`; step 8 as `b8a372d`. Step 9 was committed as `d32d177`. Step 10 was committed as `d9ada50`. Step 11 remote queries and suggestions are complete. Step 12 permissions and authorization callbacks were committed as `bebdb30`. Step 13 coordinator handoffs were committed as `4122f2a`. Step 15 was committed as `1a0d7e8`. Step 16 was committed as `4d91de1`. Step 17 was committed as `1c2e74a`. The current change implements Step 18 remote GUI integration.
+Step 7 was committed as `1858582`; step 8 as `b8a372d`. Step 9 was committed as `d32d177`. Step 10 was committed as `d9ada50`. Step 11 remote queries and suggestions are complete. Step 12 permissions and authorization callbacks were committed as `bebdb30`. Step 13 coordinator handoffs were committed as `4122f2a`. Step 15 was committed as `1a0d7e8`. Step 16 was committed as `4d91de1`. Step 17 was committed as `1c2e74a`. Step 18 was committed as `4fe1a9b`. The current change implements Step 19 hardening; native production release gates remain open.
 
 ## Current status
 
@@ -26,7 +26,8 @@ Step 15 adds source initiation and final owner-thread checks. Step 16 wires the 
 lifecycles, catalog synchronization and player transfers behind explicit configuration (disabled by
 default). Step 17 adds bounded authorized remote client snapshots under Minecraft protocol 11.
 Step 18 adds a read-only remote manager branch with exact-identity selection and teleport confirmation.
-Step 19 release hardening remains.
+Step 19 hardening, administrator documentation and the full build/artifact matrix are implemented.
+Native production release approval remains open; see [Step-19 verification](cross-server-release-readiness.md).
 
 The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
 The [protocol v1 contract](cross-server-protocol-v1.md) defines the feature semantics.
@@ -41,7 +42,7 @@ source-review findings, maintenance risk, integration requirements, and outstand
 - KK requires transcript-bound key selection and backend transport confirmation before operations.
 - Step 2 selects/reviews the dependency and proves standalone relocation. Step 3 creates the
   modules and completes the final platform artifact/classloader matrix before production transport.
-- Both transport modes are implemented as reusable channels; pairing/credential APIs are implemented; platform startup and the bootstrap carrier remain pending.
+- Both transport modes and platform startup are implemented. Runtime administration uses trusted public-pin exchange; the pairing-code bootstrap carrier remains unimplemented.
 
 ## Completed work
 
@@ -65,6 +66,7 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 16 — Velocity runtime integration | Complete | Coordinator/backend lifecycle, TCP readiness/claim dispatch, real Velocity switch, owner-thread arrivals, 16 real-socket cases and live Paper/Velocity tests in both modes. See [runtime contract](cross-server-velocity-runtime.md). |
 | 17 — Client catalog synchronization | Complete | Protocol 11, bounded authorized remote snapshots, session reset and client dispatcher isolation tests. See [client contract](cross-server-client-sync.md). |
 | 18 — Waypoint manager GUI | Complete | Read-only server/dimension/list/waypoint tree, exact selection, stale status, remote details, guarded command confirmation, seven regression tests and native GUI probe. See [GUI contract](cross-server-gui.md). |
+| 19 — Release hardening | In progress | Full build and 39-JAR gate pass; eight hardening regressions, native Paper/Fabric fixes, administrator guide and release notes implemented. Native production gates remain in the [release record](cross-server-release-readiness.md). |
 | 19 — Release hardening | Not started | Full release/version matrix, visual screenshot review and live protocol-11 proxy/Folia/mod handoff validation remain pending. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
@@ -264,7 +266,7 @@ Native mod/Folia transfers, online forwarding and the full release/soak matrix r
 
 ## Next work, in order
 
-1. Step 19: harden and verify the full release matrix, including native protocol-11 sessions. Plaintext backend identity
+1. Step 19: close the remaining native production gates in the release record, including protocol-11 sessions. Plaintext backend identity
    must never be described as cryptographically authenticated.
 
 Update this file when a step's status changes, a blocker is resolved, or new validation is run.
@@ -298,3 +300,22 @@ offline flat world. The explicit probe is excluded from production artifacts. He
 uses stubbed graphics and dummy assets: this is native GUI lifecycle/input evidence, not screenshot
 approval or a live remote transfer. See [evidence](validation/cross-server-step18/results.json) and
 [probe runbook](../tools/cross-server-gui-test/README.md).
+
+## Step-19 verification
+
+On 2026-09-09 the complete `./gradlew build --continue --max-workers=2 --console=plain` matrix
+passed, with no active version change. Reports contain 8,327 test cases, zero failures/errors and
+12 existing Forge-family Minecraft-bootstrap skips. Final common/proxy/Velocity checks include
+539/106/6 cases with no skips; 35 fresh KK checks and eight release-tool tests pass. All 39 final
+release JARs pass exact-target, relocation/license and test-content verification.
+
+Native Paper/Fabric 26.2 with Velocity 4.1.1 and MCC protocol 776 reproduced and closed an Adventure
+remote-command linkage defect and early join/player-lookup arrival defects. Both modes now pass
+bidirectional arrival/coordinate checks. KK additionally passes catalog edits, destination denial
+and coordinator restart/republish; plaintext leaves keys unchanged and denies stale destinations.
+The run used disposable offline identities and forwarding NONE. All processes stopped cleanly.
+
+Step 19 remains **in progress for production release approval**, pending native Folia/Forge/NeoForge,
+real modded protocol-11 GUI/proxy sessions, authenticated forwarding and the broader native
+failure-timing/rotation/soak matrix. See the [release record](cross-server-release-readiness.md),
+[administrator guide](cross-server-admin.md) and [machine-readable evidence](validation/cross-server-step19/results.json).
