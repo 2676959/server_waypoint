@@ -4,6 +4,8 @@ package _959.server_waypoint.common.client.gui.widgets;
 import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.util.ColorHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.crossserver.RemoteWaypointKey;
+import _959.server_waypoint.crossserver.catalog.CatalogReceiver;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -42,6 +44,7 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
     private @Nullable WaypointListWidget.WaypointSelection selection;
     private List<DetailRow> rows = List.of();
     private int contentHeight;
+    private @Nullable RemoteWaypointKey remoteKey;
 
     public WaypointDetailsWidget(int x, int y, int width, int height, Font textRenderer) {
         super(x, y, width, height, Component.translatable("waypoint.details.title"));
@@ -53,12 +56,46 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
     }
 
     public void setSelection(@Nullable WaypointListWidget.WaypointSelection selection) {
+        this.remoteKey = null;
         boolean sameSelection = isSameSelection(this.selection, selection);
         double previousScrollY = this.getScrollY();
         this.selection = selection;
         this.rows = this.createRows();
         this.rebuildContentHeight();
         this.setScrollY(sameSelection ? previousScrollY : 0.0D);
+    }
+
+    /** Presents advisory remote data without constructing a local waypoint or rendering handle. */
+    public void setRemoteSelection(@Nullable RemoteWaypointKey key, @Nullable CatalogReceiver.View view) {
+        double scroll = Objects.equals(this.remoteKey, key) ? getScrollY() : 0;
+        this.remoteKey = key;
+        this.selection = null;
+        List<DetailRow> details = new ArrayList<>();
+        details.add(detail("waypoint.remote.gui.read_only", Component.empty()));
+        if (view != null) {
+            details.add(detail("waypoint.remote.gui.status", Component.translatable(
+                    "waypoint.remote.state." + view.state().name().toLowerCase(java.util.Locale.ROOT))));
+        }
+        var waypoint = key == null || view == null || view.snapshot() == null
+                ? null : view.snapshot().find(key).orElse(null);
+        if (waypoint == null) {
+            details.add(detail("waypoint.details.select", Component.empty()));
+        } else {
+            details.add(detail("waypoint.remote.gui.server", Component.literal(key.serverId().value())));
+            details.add(detail("waypoint.details.dimension", Component.literal(key.dimensionName())));
+            details.add(detail("waypoint.details.list_name", Component.literal(key.listName())));
+            details.add(detail("waypoint.details.name", Component.literal(key.waypointName())));
+            details.add(detail("waypoint.details.display_name", Component.literal(waypoint.displayName())));
+            details.add(detail("waypoint.details.initials", Component.literal(waypoint.initials())));
+            details.add(detail("waypoint.details.position", Component.literal(waypoint.position().toShortString())));
+            details.add(detail("waypoint.details.yaw", Component.literal(Integer.toString(waypoint.yaw()))));
+            details.add(detail("waypoint.details.color", Component.literal(rgbToHexCode(waypoint.rgb(), true))));
+            details.add(detail("waypoint.details.keywords", Component.literal(String.join(", ", waypoint.keywords()))));
+            details.add(detail("waypoint.details.description", Component.literal(waypoint.description())));
+        }
+        this.rows = List.copyOf(details);
+        this.rebuildContentHeight();
+        this.setScrollY(scroll);
     }
 
     private static boolean isSameSelection(

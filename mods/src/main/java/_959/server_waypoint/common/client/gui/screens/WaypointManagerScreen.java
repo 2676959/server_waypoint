@@ -87,6 +87,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private final IconDropdownMenu sortingModeDropdown;
     private final IconToggleButton allDimensionsToggle;
     private final Screen parentScreen;
+    private final TranslucentButton serverSelector;
     private final WaypointClientMod waypointClientMod;
     private boolean hasInitialized = false;
     private final WidgetPack leftLayout;
@@ -98,6 +99,11 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         super(Component.nullToEmpty("Server Waypoints"));
         this.parentScreen = parentScreen;
         this.waypointClientMod = waypointClientMod;
+        this.serverSelector = new TranslucentButton(0, 0, 180, 11,
+                Component.translatable("waypoint.remote.gui.selector"), () -> {
+                    closeOpenDropdownMenus();
+                    MinecraftClientHelper.setScreen(this.minecraft, new RemoteWaypointManagerScreen(this.waypointClientMod, this));
+                });
         dimensionListWidget = new DimensionListWidget(
                 0,
                 0,
@@ -458,6 +464,9 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         this.leftLayout.visitWidgets(this::addRenderableWidget);
         this.middleLayout.visitWidgets(this::addRenderableWidget);
         this.addRenderableWidget(this.waypointDetailsWidget);
+        this.serverSelector.setX(this.layoutGeometry.middleX());
+        this.serverSelector.setY(Math.max(3, this.layoutGeometry.panelY() - 16));
+        this.addRenderableWidget(this.serverSelector);
     }
 
     @Override
@@ -582,6 +591,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 this.layoutGeometry.middlePanelWidth(),
                 this.layoutGeometry.panelHeight()
         );
+        serverSelector.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
         searchField.
         //$ render_method_swap
         extractRenderState

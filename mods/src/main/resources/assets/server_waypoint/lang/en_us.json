@@ -157,5 +157,22 @@
   "waypoint.edit.error.duplicate_keyword": "A waypoint cannot contain duplicate keywords.",
   "waypoint.edit.error.encoding_failed": "The update is too large to synchronize.",
   "waypoint.edit.error.response_timeout": "The server did not confirm the edit in time. Verify the waypoint before retrying.",
-  "waypoint.network.encoding_failed": "The waypoint message is too large or could not be encoded."
+  "waypoint.network.encoding_failed": "The waypoint message is too large or could not be encoded.",
+  "waypoint.remote.gui.selector": "Server: Local / Remote…",
+  "waypoint.remote.gui.local": "Server: Local",
+  "waypoint.remote.gui.read_only": "Read-only remote data. Add, edit, remove and local rendering are unavailable.",
+  "waypoint.remote.gui.status": "Status: %s",
+  "waypoint.remote.gui.server": "Server ID: %s",
+  "waypoint.remote.gui.teleport": "Teleport…",
+  "waypoint.remote.gui.teleport_hint": "Select an available waypoint. Stale data and identities unsupported by chat commands cannot be teleported to.",
+  "waypoint.remote.gui.confirm": "Teleport to server %s, dimension %s, list [%s], waypoint [%s]? Coordinates are advisory. The server checks permissions and the current destination.",
+  "waypoint.remote.gui.feedback": "After confirmation, progress and failures appear in chat.",
+  "waypoint.remote.gui.changed": "The target or session changed. Select it again.",
+  "waypoint.remote.gui.send_failed": "Could not send the teleport request.",
+  "waypoint.remote.title": "Remote waypoints",
+  "waypoint.remote.no_servers": "No remote servers are cached. Catalog synchronization may be unavailable.",
+  "waypoint.remote.state.available": "Available",
+  "waypoint.remote.state.stale": "Stale — retained data may be outdated",
+  "waypoint.remote.state.unavailable": "Unavailable",
+  "waypoint.remote.state.unauthorized": "Unauthorized"
 }

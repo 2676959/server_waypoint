@@ -1,15 +1,15 @@
 # Cross-server waypoint teleportation progress
 
-Last updated: 2026-09-08.
+Last updated: 2026-09-09.
 Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
 KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
 Step 2 is now `fd3ba53` after rebasing onto upload-branch fix `f0d8281`.
 Step 3 was committed as `3fccc28`; step 4 as `6d7be5a`; step 5 as `4e806fa`; step 6 as `8752aaa`.
-Step 7 was committed as `1858582`; step 8 as `b8a372d`. Step 9 was committed as `d32d177`. Step 10 was committed as `d9ada50`. Step 11 remote queries and suggestions are complete. Step 12 permissions and authorization callbacks were committed as `bebdb30`. Step 13 coordinator handoffs were committed as `4122f2a`. Step 15 was committed as `1a0d7e8`. Step 16 was committed as `4d91de1`. The current change implements Step 17 client catalog synchronization.
+Step 7 was committed as `1858582`; step 8 as `b8a372d`. Step 9 was committed as `d32d177`. Step 10 was committed as `d9ada50`. Step 11 remote queries and suggestions are complete. Step 12 permissions and authorization callbacks were committed as `bebdb30`. Step 13 coordinator handoffs were committed as `4122f2a`. Step 15 was committed as `1a0d7e8`. Step 16 was committed as `4d91de1`. Step 17 was committed as `1c2e74a`. The current change implements Step 18 remote GUI integration.
 
 ## Current status
 
-**Steps 1–17 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
+**Steps 1–18 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
 for `Noise_KK_25519_AESGCM_SHA256`, with 35 passing KK checks and a scoped source review.**
 Step 3 adds the proxy modules/contracts and private dependency packaging; all 41 artifact checks
 and 10 native runtime checks pass. Step 4 adds immutable catalogs and reader views.
@@ -25,7 +25,8 @@ Step 14 adds destination reservations, authoritative arrival validation and conc
 Step 15 adds source initiation and final owner-thread checks. Step 16 wires the backend and Velocity
 lifecycles, catalog synchronization and player transfers behind explicit configuration (disabled by
 default). Step 17 adds bounded authorized remote client snapshots under Minecraft protocol 11.
-Steps 18–19 remain; remote GUI behavior is not yet enabled.
+Step 18 adds a read-only remote manager branch with exact-identity selection and teleport confirmation.
+Step 19 release hardening remains.
 
 The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
 The [protocol v1 contract](cross-server-protocol-v1.md) defines the feature semantics.
@@ -63,7 +64,8 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 15 — Remote teleport command | Complete | Exact cached targets, permission-gated command/help/suggestions, bounded source preparation service and transfer adapter boundary. See [source teleport contract](cross-server-source-teleport.md). |
 | 16 — Velocity runtime integration | Complete | Coordinator/backend lifecycle, TCP readiness/claim dispatch, real Velocity switch, owner-thread arrivals, 16 real-socket cases and live Paper/Velocity tests in both modes. See [runtime contract](cross-server-velocity-runtime.md). |
 | 17 — Client catalog synchronization | Complete | Protocol 11, bounded authorized remote snapshots, session reset and client dispatcher isolation tests. See [client contract](cross-server-client-sync.md). |
-| 18–19 | Not started | GUI integration and release hardening remain pending. |
+| 18 — Waypoint manager GUI | Complete | Read-only server/dimension/list/waypoint tree, exact selection, stale status, remote details, guarded command confirmation, seven regression tests and native GUI probe. See [GUI contract](cross-server-gui.md). |
+| 19 — Release hardening | Not started | Full release/version matrix, visual screenshot review and live protocol-11 proxy/Folia/mod handoff validation remain pending. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
@@ -262,8 +264,7 @@ Native mod/Folia transfers, online forwarding and the full release/soak matrix r
 
 ## Next work, in order
 
-1. Step 18: integrate read-only remote browsing and teleport confirmation into the GUI.
-2. Step 19: harden and verify the full release matrix, including native protocol-11 sessions. Plaintext backend identity
+1. Step 19: harden and verify the full release matrix, including native protocol-11 sessions. Plaintext backend identity
    must never be described as cryptographically authenticated.
 
 Update this file when a step's status changes, a blocker is resolved, or new validation is run.
@@ -280,3 +281,20 @@ automated validation and remaining native release gates.
 
 All 852 automated tests passed (common, proxy-common, Velocity, active Fabric and Paper 1.21),
 with zero failures/errors/skips. [Machine-readable results](validation/cross-server-step17/results.json).
+
+## Step-18 verification
+
+On 2026-09-09, all 854 tests passed (531 common, 106 proxy, 6 Velocity, 211 Fabric),
+with zero failures/errors/skips; the Velocity build passed.
+Fabric 1.20.1, NeoForge 1.21.2 and Forge 26.1.2 compilation passed without changing the active
+Stonecutter version. Seven new regression cases cover exact server separation, sorting/filtering,
+quoted/empty/Unicode identifiers, stale/empty/denied states, confirmation invalidation, command
+packet limits and six-locale placeholder coverage.
+
+A disposable native Fabric 26.1.2 client (Fabric Loader 0.19.5, API 0.148.2+26.1.2, Java 25.0.3,
+HeadlessMC 2.10.0) passed actual screen mouse dispatch, modal cancellation, 320×240/960×540 resize,
+filter/stale action disabling, session-reset rejection and unchanged local manager/files in an
+offline flat world. The explicit probe is excluded from production artifacts. Headless rendering
+uses stubbed graphics and dummy assets: this is native GUI lifecycle/input evidence, not screenshot
+approval or a live remote transfer. See [evidence](validation/cross-server-step18/results.json) and
+[probe runbook](../tools/cross-server-gui-test/README.md).

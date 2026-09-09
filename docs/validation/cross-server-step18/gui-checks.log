@@ -1,0 +1,159 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+
+> Configure project :mods:26.1.2-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.20.1-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:26.1.2-forge
+Minecraft Maven is up-to-date, took 0:01.359
+
+> Task :common:updateModInfo UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterPrepare
+> Task :common:processResources UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+> Task :common:jar UP-TO-DATE
+> Task :mods:1.20.1-fabric:stonecutterPrepare
+> Task :mods:26.1.2-fabric:stonecutterGenerate
+> Task :mods:1.20.1-fabric:stonecutterGenerate
+> Task :mods:26.1.2-fabric:compileJava
+> Task :mods:26.1.2-fabric:processResources UP-TO-DATE
+> Task :mods:26.1.2-fabric:classes
+> Task :mods:26.1.2-fabric:compileRemoteGuiProbe UP-TO-DATE
+> Task :mods:26.1.2-fabric:verifyNoiseDependency
+> Task :mods:1.20.1-fabric:compileJava
+> Task :mods:1.21.2-neoforge:stonecutterPrepare
+> Task :mods:1.21.2-neoforge:stonecutterGenerate
+> Task :mods:1.21.2-neoforge:createMinecraftArtifacts UP-TO-DATE
+> Task :mods:26.1.2-fabric:shadowJar
+> Task :mods:26.1.2-fabric:stageRemoteGuiProbe UP-TO-DATE
+> Task :mods:26.1.2-fabric:compileTestJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:processTestResources NO-SOURCE
+> Task :mods:26.1.2-fabric:testClasses UP-TO-DATE
+> Task :mods:1.21.2-neoforge:compileJava
+> Task :mods:26.1.2-forge:stonecutterPrepare
+> Task :mods:26.1.2-forge:stonecutterGenerate
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/Volumes/ssd/gradle_home/caches/modules-2/files-2.1/org.joml/joml/1.10.8/fc0a71dad90a2cf41d82a76156a0e700af8e4f8d/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+
+> Task :mods:26.1.2-forge:compileJava
+Note: SpongePowered MIXIN Annotation Processor Version=0.8.5
+Note: Supported obfuscation types: ObfuscationServiceMCP supports [searge,notch]
+Note: Writing refmap to /private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/sourceSets/main/server_waypoint-common.refmap.json
+Note: Writing refmap to /private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/sourceSets/main/server_waypoint-common.refmap.json
+Note: Writing refmap to /private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/sourceSets/main/server_waypoint-common.refmap.json
+Note: Writing refmap to /private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/sourceSets/main/server_waypoint-common.refmap.json
+/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/generated/stonecutter/main/java/_959/server_waypoint/common/util/XaerosWaypointHelper.java:47: warning: [deprecation] getColor() in Waypoint has been deprecated
+                colorIndexToRgb(waypoint.getColor()),
+                                        ^
+/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java:153: warning: [deprecation] <M,B>messageBuilder(Class<M>,int,NetworkDirection<B>) in SimpleChannel has been deprecated
+        ServerWaypointForge.PACKET_CHANNEL.messageBuilder(payloadClass, id, NetworkDirection.PLAY_TO_CLIENT)
+                                          ^
+  where M,B are type-variables:
+    M extends Object declared in method <M,B>messageBuilder(Class<M>,int,NetworkDirection<B>)
+    B extends FriendlyByteBuf declared in method <M,B>messageBuilder(Class<M>,int,NetworkDirection<B>)
+/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java:155: warning: [unchecked] unchecked method invocation: method codec in class MessageBuilder is applied to given types
+                .codec((StreamCodec) codec)
+                      ^
+  required: StreamCodec<BUF,MSG>
+  found:    StreamCodec
+  where BUF,MSG are type-variables:
+    BUF extends FriendlyByteBuf declared in class MessageBuilder
+    MSG extends Object declared in class MessageBuilder
+/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java:155: warning: [unchecked] unchecked conversion
+                .codec((StreamCodec) codec)
+                       ^
+  required: StreamCodec<BUF,MSG>
+  found:    StreamCodec
+  where BUF,MSG are type-variables:
+    BUF extends FriendlyByteBuf declared in class MessageBuilder
+    MSG extends Object declared in class MessageBuilder
+/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java:161: warning: [unchecked] unchecked call to consumerMainThread(BiConsumer<MSG,Context>) as a member of the raw type MessageBuilder
+                .consumerMainThread((payload, context) -> handler.handle((P) payload, context))
+                                   ^
+  where MSG,BUF are type-variables:
+    MSG extends Object declared in class MessageBuilder
+    BUF extends FriendlyByteBuf declared in class MessageBuilder
+/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForgeClient.java:161: warning: [unchecked] unchecked cast
+                .consumerMainThread((payload, context) -> handler.handle((P) payload, context))
+                                                                             ^
+  required: P
+  found:    Object
+  where P is a type-variable:
+    P extends ModPayload declared in method <P>registerClientPayload(Class<P>,int,StreamCodec<ByteBuf,P>,CustomPayloadHandler<?,P>)
+/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForge.java:271: warning: [deprecation] <M,B>messageBuilder(Class<M>,int,NetworkDirection<B>) in SimpleChannel has been deprecated
+        PACKET_CHANNEL.messageBuilder(payloadClass, id, NetworkDirection.PLAY_TO_CLIENT)
+                      ^
+  where M,B are type-variables:
+    M extends Object declared in method <M,B>messageBuilder(Class<M>,int,NetworkDirection<B>)
+    B extends FriendlyByteBuf declared in method <M,B>messageBuilder(Class<M>,int,NetworkDirection<B>)
+/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForge.java:273: warning: [unchecked] unchecked method invocation: method codec in class MessageBuilder is applied to given types
+                .codec((StreamCodec) codec)
+                      ^
+  required: StreamCodec<BUF,MSG>
+  found:    StreamCodec
+  where BUF,MSG are type-variables:
+    BUF extends FriendlyByteBuf declared in class MessageBuilder
+    MSG extends Object declared in class MessageBuilder
+/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForge.java:273: warning: [unchecked] unchecked conversion
+                .codec((StreamCodec) codec)
+                       ^
+  required: StreamCodec<BUF,MSG>
+  found:    StreamCodec
+  where BUF,MSG are type-variables:
+    BUF extends FriendlyByteBuf declared in class MessageBuilder
+    MSG extends Object declared in class MessageBuilder
+/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForge.java:278: warning: [unchecked] unchecked call to consumerMainThread(BiConsumer<MSG,Context>) as a member of the raw type MessageBuilder
+                .consumerMainThread(handler)
+                                   ^
+  where MSG,BUF are type-variables:
+    MSG extends Object declared in class MessageBuilder
+    BUF extends FriendlyByteBuf declared in class MessageBuilder
+/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForge.java:310: warning: [deprecation] <M,B>messageBuilder(Class<M>,int,NetworkDirection<B>) in SimpleChannel has been deprecated
+        PACKET_CHANNEL.messageBuilder(payloadClass, id, NetworkDirection.PLAY_TO_SERVER)
+                      ^
+  where M,B are type-variables:
+    M extends Object declared in method <M,B>messageBuilder(Class<M>,int,NetworkDirection<B>)
+    B extends FriendlyByteBuf declared in method <M,B>messageBuilder(Class<M>,int,NetworkDirection<B>)
+/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForge.java:312: warning: [unchecked] unchecked method invocation: method codec in class MessageBuilder is applied to given types
+                .codec((StreamCodec) codec)
+                      ^
+  required: StreamCodec<BUF,MSG>
+  found:    StreamCodec
+  where BUF,MSG are type-variables:
+    BUF extends FriendlyByteBuf declared in class MessageBuilder
+    MSG extends Object declared in class MessageBuilder
+/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForge.java:312: warning: [unchecked] unchecked conversion
+                .codec((StreamCodec) codec)
+                       ^
+  required: StreamCodec<BUF,MSG>
+  found:    StreamCodec
+  where BUF,MSG are type-variables:
+    BUF extends FriendlyByteBuf declared in class MessageBuilder
+    MSG extends Object declared in class MessageBuilder
+/private/tmp/server-waypoint-cross-server-plan/mods/versions/26.1.2-forge/build/generated/stonecutter/main/java/_959/server_waypoint/forge/ServerWaypointForge.java:317: warning: [unchecked] unchecked call to consumerMainThread(BiConsumer<MSG,Context>) as a member of the raw type MessageBuilder
+                .consumerMainThread(handler)
+                                   ^
+  where MSG,BUF are type-variables:
+    MSG extends Object declared in class MessageBuilder
+    BUF extends FriendlyByteBuf declared in class MessageBuilder
+14 warnings
+
+> Task :mods:26.1.2-fabric:test
+
+[Incubating] Problems report is available at: file:///private/tmp/server-waypoint-cross-server-plan/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 6s
+24 actionable tasks: 15 executed, 9 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html

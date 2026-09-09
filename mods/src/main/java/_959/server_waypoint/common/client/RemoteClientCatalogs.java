@@ -13,9 +13,11 @@ public final class RemoteClientCatalogs {
     private RemoteCatalogState state = RemoteCatalogState.UNAVAILABLE;
     private UUID pending;
     private long requestedAt, nextRequest;
+    private long session;
     public RemoteClientCatalogs() { this(System::nanoTime); }
     public RemoteClientCatalogs(LongSupplier clock) { this.clock = Objects.requireNonNull(clock); }
     public synchronized void clear() {
+        session++;
         servers = Map.of(); state = RemoteCatalogState.UNAVAILABLE; pending = null; nextRequest = clock.getAsLong();
     }
     public synchronized RemoteCatalogRequestMessage poll() {
@@ -32,4 +34,5 @@ public final class RemoteClientCatalogs {
     }
     public synchronized Map<RemoteServerId, CatalogReceiver.View> snapshot() { return servers; }
     public synchronized RemoteCatalogState state() { return state; }
+    public synchronized long session() { return session; }
 }

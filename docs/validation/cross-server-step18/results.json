@@ -1,0 +1,78 @@
+{
+  "step": 18,
+  "date": "2026-09-09",
+  "baseCommit": "1c2e74adff509aa4dfcd81ce1cf3e5f5718ba84e",
+  "worktree": "/private/tmp/server-waypoint-cross-server-plan",
+  "automatedTests": {
+    "common": {
+      "tests": 531,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "proxy-common": {
+      "tests": 106,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "velocity": {
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "fabric-26.1.2": {
+      "tests": 211,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "automatedTotal": 854,
+  "compilationTargets": [
+    "Fabric 26.1.2",
+    "Fabric 1.20.1",
+    "NeoForge 1.21.2",
+    "Forge 26.1.2"
+  ],
+  "native": {
+    "result": "PASS",
+    "minecraft": "26.1.2",
+    "loader": "Fabric 0.19.5",
+    "fabricApi": "0.148.2+26.1.2",
+    "java": "Temurin 25.0.3+9",
+    "headlessmc": "2.10.0",
+    "scenario": "Isolated offline flat world with fixture-supplied remote catalogs; actual manager, tree input, cancellation, resize, filter, stale refresh, session reset and local-file isolation",
+    "graphics": "LWJGL stubs and dummy assets; no visual screenshot approval",
+    "artifacts": [
+      {
+        "file": "server_waypoint-3.1.0-fabric-mc26.1-26.1.2.jar",
+        "sha256": "a9b90c351d071cec67852c74b2c8b7e4c4df7db50d2880d65c98dcd87eeb75dd"
+      },
+      {
+        "file": "remote-gui-probe.jar",
+        "sha256": "c223e7b7b50195b0eece622c9d2c17be25894fcc20cd9df9dbcf5aac791884f9"
+      },
+      {
+        "file": "fabric-api-0.148.2+26.1.2.jar",
+        "sha256": "99c5b8fdb6128dd3f2fff25b5357f465226c3c08d0ce4b9d01b37b921c7126ab"
+      },
+      {
+        "file": "fabric-permissions-api-0.7.0.jar",
+        "sha256": "444c8752bf3fc40a452074106fd02d3341b7d350ff006254f59ea1fd17f1272b"
+      }
+    ]
+  },
+  "packaging": {
+    "nativeProbeExcludedFromProductionJar": true,
+    "testedProductionJarMatchesFinalBuild": true
+  },
+  "notRun": [
+    "Visual screenshot review",
+    "Live remote GUI teleport through Velocity",
+    "Native protocol-11 proxy/Folia/mod release matrix",
+    "Full release and soak/security matrix"
+  ],
+  "guiGuide": "docs/gui-tips/README.md updated locally; excluded by user Git info/exclude; tracked API contracts are in docs/cross-server-gui.md"
+}

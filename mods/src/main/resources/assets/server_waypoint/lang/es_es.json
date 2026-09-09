@@ -48,5 +48,22 @@
   "server_waypoint.waypoint_manager_gui.keybind": "Abrir la pantalla del gestor de waypoints",
   "server_waypoint.config.confirm_sync": "Sincronizar",
   "server_waypoint.config.true": "Verdadero",
-  "server_waypoint.config.false": "Falso"
+  "server_waypoint.config.false": "Falso",
+  "waypoint.remote.gui.selector": "Servidor: Local / Remoto…",
+  "waypoint.remote.gui.local": "Servidor: Local",
+  "waypoint.remote.gui.read_only": "Datos remotos de solo lectura. No se pueden añadir, editar, eliminar ni mostrar en el mundo local.",
+  "waypoint.remote.gui.status": "Estado: %s",
+  "waypoint.remote.gui.server": "ID del servidor: %s",
+  "waypoint.remote.gui.teleport": "Teletransportar…",
+  "waypoint.remote.gui.teleport_hint": "Selecciona un punto disponible. No se puede viajar con datos obsoletos ni identificadores incompatibles con los comandos del chat.",
+  "waypoint.remote.gui.confirm": "¿Viajar al servidor %s, dimensión %s, lista [%s], punto [%s]? Las coordenadas son orientativas. El servidor comprobará los permisos y el destino actual.",
+  "waypoint.remote.gui.feedback": "Tras confirmar, el progreso y los errores aparecerán en el chat.",
+  "waypoint.remote.gui.changed": "El destino o la sesión ha cambiado. Selecciónalo de nuevo.",
+  "waypoint.remote.gui.send_failed": "No se pudo enviar la solicitud de teletransporte.",
+  "waypoint.remote.title": "Puntos de ruta remotos",
+  "waypoint.remote.no_servers": "No hay servidores remotos en caché. La sincronización puede no estar disponible.",
+  "waypoint.remote.state.available": "Disponible",
+  "waypoint.remote.state.stale": "Obsoleto — los datos conservados pueden estar desactualizados",
+  "waypoint.remote.state.unavailable": "No disponible",
+  "waypoint.remote.state.unauthorized": "Sin autorización"
 }

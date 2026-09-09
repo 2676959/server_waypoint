@@ -48,5 +48,22 @@
   "server_waypoint.waypoint_manager_gui.keybind": "פתח את מסך ניהול נקודות הציון",
   "server_waypoint.config.confirm_sync": "סנכרן",
   "server_waypoint.config.true": "נכון",
-  "server_waypoint.config.false": "לא נכון"
+  "server_waypoint.config.false": "לא נכון",
+  "waypoint.remote.gui.selector": "שרת: מקומי / מרוחק…",
+  "waypoint.remote.gui.local": "שרת: מקומי",
+  "waypoint.remote.gui.read_only": "נתונים מרוחקים לקריאה בלבד. הוספה, עריכה, מחיקה והצגה בעולם המקומי אינן זמינות.",
+  "waypoint.remote.gui.status": "מצב: %s",
+  "waypoint.remote.gui.server": "מזהה שרת: %s",
+  "waypoint.remote.gui.teleport": "שיגור…",
+  "waypoint.remote.gui.teleport_hint": "יש לבחור נקודה זמינה. לא ניתן להשתגר עם נתונים מיושנים או מזהים שאינם נתמכים בפקודות הצ׳אט.",
+  "waypoint.remote.gui.confirm": "להשתגר לשרת %s, לממד %s, לרשימה [%s], לנקודה [%s]? הקואורדינטות הן לעיון בלבד. השרת יבדוק את ההרשאות ואת היעד הנוכחי.",
+  "waypoint.remote.gui.feedback": "לאחר האישור, ההתקדמות והשגיאות יוצגו בצ׳אט.",
+  "waypoint.remote.gui.changed": "היעד או החיבור השתנו. יש לבחור מחדש.",
+  "waypoint.remote.gui.send_failed": "לא ניתן לשלוח את בקשת השיגור.",
+  "waypoint.remote.title": "נקודות ציון מרוחקות",
+  "waypoint.remote.no_servers": "אין שרתים מרוחקים במטמון. ייתכן שסנכרון הקטלוג אינו זמין.",
+  "waypoint.remote.state.available": "זמין",
+  "waypoint.remote.state.stale": "מיושן — ייתכן שהנתונים השמורים אינם עדכניים",
+  "waypoint.remote.state.unavailable": "לא זמין",
+  "waypoint.remote.state.unauthorized": "ללא הרשאה"
 }

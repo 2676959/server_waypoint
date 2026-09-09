@@ -1,6 +1,6 @@
 # Step 17: remote catalogs on modded clients
 
-Step 17 adds authorized remote cache synchronization. GUI selection and actions remain Step 18.
+Step 17 adds authorized remote cache synchronization. [Step 18](cross-server-gui.md) adds GUI selection and actions.
 Remote catalogs never enter local waypoint codecs, managers, files, renderers or map-mod exports.
 
 ## Protocol and lifecycle
@@ -45,6 +45,9 @@ The backend preflights serialization and decoding against these bounds. An over-
 sends an empty UNAVAILABLE replacement, never a partial apparently complete catalog. Stale views
 can retain their read-only snapshots; unavailable views cannot contain data. Remote data is only
 available through `WaypointClientMod.remoteCatalogs()`, a session-only store with immutable views.
+`RemoteClientCatalogs.session()` exposes a monotonically changing session generation, incremented
+by `clear()`. GUI confirmations bind to it so reconnecting with identical catalog contents cannot
+reuse a confirmation from the previous server/world session.
 
 ## Verification
 

@@ -157,5 +157,22 @@
   "waypoint.edit.error.duplicate_keyword": "一个路径点不能包含重复的关键词。",
   "waypoint.edit.error.encoding_failed": "更新内容过大，无法同步。",
   "waypoint.edit.error.response_timeout": "服务器未能及时确认编辑，请检查路径点后再重试。",
-  "waypoint.network.encoding_failed": "路径点消息过大或无法编码。"
+  "waypoint.network.encoding_failed": "路径点消息过大或无法编码。",
+  "waypoint.remote.gui.selector": "服务器：本地 / 远程…",
+  "waypoint.remote.gui.local": "服务器：本地",
+  "waypoint.remote.gui.read_only": "远程数据只读，无法添加、编辑、删除或在本地渲染。",
+  "waypoint.remote.gui.status": "状态：%s",
+  "waypoint.remote.gui.server": "服务器 ID：%s",
+  "waypoint.remote.gui.teleport": "传送…",
+  "waypoint.remote.gui.teleport_hint": "请选择可用的路径点。过期数据及聊天命令不支持的标识无法用于传送。",
+  "waypoint.remote.gui.confirm": "传送至服务器 %s、维度 %s、列表 [%s]、路径点 [%s]？坐标仅供参考，服务器将检查权限和当前目的地。",
+  "waypoint.remote.gui.feedback": "确认后，进度和失败原因会显示在聊天栏中。",
+  "waypoint.remote.gui.changed": "目标或会话已更改，请重新选择。",
+  "waypoint.remote.gui.send_failed": "无法发送传送请求。",
+  "waypoint.remote.title": "远程路径点",
+  "waypoint.remote.no_servers": "尚未缓存远程服务器，目录同步可能不可用。",
+  "waypoint.remote.state.available": "可用",
+  "waypoint.remote.state.stale": "已过期 — 保留的数据可能不是最新的",
+  "waypoint.remote.state.unavailable": "不可用",
+  "waypoint.remote.state.unauthorized": "未授权"
 }

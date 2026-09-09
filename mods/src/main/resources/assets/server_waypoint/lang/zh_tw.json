@@ -48,5 +48,22 @@
   "server_waypoint.waypoint_manager_gui.keybind": "開啓路徑點管理介面",
   "server_waypoint.config.confirm_sync": "同步",
   "server_waypoint.config.true": "是",
-  "server_waypoint.config.false": "否"
+  "server_waypoint.config.false": "否",
+  "waypoint.remote.gui.selector": "伺服器：本地 / 遠端…",
+  "waypoint.remote.gui.local": "伺服器：本地",
+  "waypoint.remote.gui.read_only": "遠端資料唯讀，無法新增、編輯、刪除或在本地繪製。",
+  "waypoint.remote.gui.status": "狀態：%s",
+  "waypoint.remote.gui.server": "伺服器 ID：%s",
+  "waypoint.remote.gui.teleport": "傳送…",
+  "waypoint.remote.gui.teleport_hint": "請選擇可用的路徑點。過期資料及聊天指令不支援的識別名稱無法用於傳送。",
+  "waypoint.remote.gui.confirm": "傳送至伺服器 %s、維度 %s、列表 [%s]、路徑點 [%s]？座標僅供參考，伺服器將檢查權限和目前目的地。",
+  "waypoint.remote.gui.feedback": "確認後，進度和失敗原因會顯示於聊天欄。",
+  "waypoint.remote.gui.changed": "目標或工作階段已變更，請重新選擇。",
+  "waypoint.remote.gui.send_failed": "無法傳送傳送請求。",
+  "waypoint.remote.title": "遠端路徑點",
+  "waypoint.remote.no_servers": "尚未快取遠端伺服器，目錄同步可能無法使用。",
+  "waypoint.remote.state.available": "可用",
+  "waypoint.remote.state.stale": "已過期 — 保留的資料可能不是最新的",
+  "waypoint.remote.state.unavailable": "無法使用",
+  "waypoint.remote.state.unauthorized": "未授權"
 }
