@@ -1,0 +1,86 @@
+[
+  {
+    "sourceName": "MinecraftClient-2026-09-10-101213.ips",
+    "sourceSha256": "847140378797e87d7ad2533b56a4c8eec780e1d8bbc79d5ab0585b015d4816d7",
+    "captureTime": "2026-09-10 10:12:11.8420 -0400",
+    "osVersion": {
+      "train": "macOS 26.5",
+      "build": "25F71",
+      "releaseType": "User"
+    },
+    "exception": {
+      "codes": "0x0000000000000000, 0x0000000000000000",
+      "rawCodes": [
+        0,
+        0
+      ],
+      "type": "EXC_CRASH",
+      "signal": "SIGABRT"
+    },
+    "termination": {
+      "flags": 0,
+      "code": 6,
+      "namespace": "SIGNAL",
+      "indicator": "Abort trap: 6",
+      "byProc": "MinecraftClient",
+      "byPid": 93688
+    },
+    "faultingThreadName": null,
+    "faultingSymbols": [
+      "__pthread_kill",
+      "pthread_kill",
+      "abort",
+      "PROCAbort",
+      "TerminateProcess",
+      "EEPolicy::HandleFatalError(unsigned int, unsigned long, char16_t const*, _EXCEPTION_POINTERS*, char16_t const*, char16_t const*)",
+      "FailFastIfCorruptingStateException(ExInfo*)",
+      "SfiInitWorker(StackFrameIterator*, _CONTEXT*, bool, bool*)",
+      "SfiInit",
+      "CallDescrWorkerInternal",
+      "DispatchCallSimple(unsigned long*, unsigned int, unsigned long, unsigned int)",
+      "HandleHardwareException(PAL_SEHException*)"
+    ]
+  },
+  {
+    "sourceName": "MinecraftClient-2026-09-10-102645.ips",
+    "sourceSha256": "1bfaa00dd86f103bc9c682928be689179513f019c1f58d14fe5d3956359ab33e",
+    "captureTime": "2026-09-10 10:26:44.5629 -0400",
+    "osVersion": {
+      "train": "macOS 26.5",
+      "build": "25F71",
+      "releaseType": "User"
+    },
+    "exception": {
+      "codes": "0x0000000000000000, 0x0000000000000000",
+      "rawCodes": [
+        0,
+        0
+      ],
+      "type": "EXC_CRASH",
+      "signal": "SIGABRT"
+    },
+    "termination": {
+      "flags": 0,
+      "code": 6,
+      "namespace": "SIGNAL",
+      "indicator": "Abort trap: 6",
+      "byProc": "MinecraftClient",
+      "byPid": 2418
+    },
+    "faultingThreadName": ".NET TP Worker",
+    "faultingSymbols": [
+      "__pthread_kill",
+      "pthread_kill",
+      "abort",
+      "PROCAbort",
+      "TerminateProcess",
+      "EEPolicy::HandleFatalError(unsigned int, unsigned long, char16_t const*, _EXCEPTION_POINTERS*, char16_t const*, char16_t const*)",
+      "FailFastIfCorruptingStateException(ExInfo*)",
+      "SfiInitWorker(StackFrameIterator*, _CONTEXT*, bool, bool*)",
+      "SfiInit",
+      "CallDescrWorkerInternal",
+      "DispatchCallSimple(unsigned long*, unsigned int, unsigned long, unsigned int)",
+      "HandleHardwareException(PAL_SEHException*)"
+    ]
+  }
+]

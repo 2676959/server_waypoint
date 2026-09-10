@@ -1,0 +1,106 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by net.minecraftforge.unsafe.UnsafeHacks (file:/private/tmp/server-waypoint-step19-forge/b/libraries/net/minecraftforge/unsafe/0.9.2/unsafe-0.9.2.jar)
+WARNING: Please consider reporting this to the maintainers of class net.minecraftforge.unsafe.UnsafeHacks
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[19:22:15] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forge_server, nogui]
+[19:22:15] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: JVM identified as Eclipse Adoptium OpenJDK 64-Bit Server VM 25.0.3+9-LTS
+[19:22:15] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher 10.2.6 starting: java version 25.0.3 by Eclipse Adoptium; OS Mac OS X arch aarch64 version 26.5
+[19:22:15] [main/WARN] [ne.mi.fm.lo.FMLConfig/CORE]: Configuration file /private/tmp/server-waypoint-step19-forge/b/config/fml.toml is not correct. Correcting
+[19:22:15] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowSkipGLVersions] was corrected from null to []
+[19:22:15] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowLogHelpMessage] was corrected from null to true
+[19:22:15] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowSquir] was corrected from null to false
+[19:22:15] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowShowCPU] was corrected from null to false
+[19:22:15] [main/INFO] [ne.mi.fm.lo.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forge_server
+[19:22:15] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=jar:file:///private/tmp/server-waypoint-step19-forge/b/libraries/org/spongepowered/mixin/0.8.7/mixin-0.8.7.jar!/ Service=ModLauncher Env=SERVER
+[19:22:15] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/JAR-JAR]: JarJar Candidated for com.github.LlamaLad7:MixinExtras
+[19:22:15] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/JAR-JAR]:  *mixinextras-forge-0.5.4.jar!/META-INF/jars/MixinExtras-0.5.4.jar
+[19:22:15] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/JAR-JAR]: JarJar Candidated for io.github.llamalad7:mixinextras-forge
+[19:22:15] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/JAR-JAR]:  *mixinextras-forge-0.5.4.jar
+[19:22:15] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/JAR-JAR]: Found 2 dependencies adding them to mods collection
+[19:22:15] [main/INFO] [mixin/]: Compatibility level set to JAVA_17
+[19:22:15] [main/INFO] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forge_server' with arguments [nogui]
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by com.sun.jna.Native in module com.sun.jna (jar:file:///private/tmp/server-waypoint-step19-forge/b/libraries/net/java/dev/jna/jna/5.17.0/jna-5.17.0.jar!/)
+WARNING: Use --enable-native-access=com.sun.jna to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+[19:22:16] [main/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.4).
+[19:22:18] [modloading-worker-0/INFO] [pcf/]: Initializing ProxyCompatibleForge on Minecraft 26.2 (Forge 65.1.3)
+[19:22:18] [modloading-worker-0/INFO] [ne.mi.co.ForgeMod/FORGEMOD]: Forge mod loading, version 65.1.3, for MC 26.2 with MCP 20260616.103818
+[19:22:18] [modloading-worker-0/INFO] [ne.mi.co.MinecraftForge/FORGE]: MinecraftForge v65.1.3 Initialized
+[19:22:18] [modloading-worker-0/INFO] [ne.mi.co.ForgeMod/FORGEMOD]: Opening jdk.naming.dns/com.sun.jndi.dns to java.naming
+[19:22:18] [modloading-worker-0/INFO] [server_waypoint_translator/]: Internal translations: zh_tw, zh_hk, en_us, zh_cn, he_il, es_es
+[19:22:18] [modloading-worker-0/INFO] [server_waypoint_mod/]: xaero's mod is not loaded, set sendXaerosWorldId to true by config.json
+[19:22:18] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file /private/tmp/server-waypoint-step19-forge/b/config/forge-common.toml is not correct. Correcting
+[19:22:18] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key general was corrected from null to its default, SynchronizedConfig{DataHolder:{}}.
+[19:22:18] [main/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key general.logLegacyTagWarnings was corrected from null to its default, OFF.
+[19:22:18] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [pcf] Starting version check at https://api.modrinth.com/updates/proxy-compatible-forge/forge_updates.json
+[19:22:18] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [pcf] Found status: UP_TO_DATE Current: 1.3.1 Target: null
+[19:22:18] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[19:22:18] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Found status: AHEAD Current: 65.1.3 Target: null
+[19:22:18] [main/INFO] [mojang/YggdrasilAuthenticationService]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[19:22:19] [Worker-Main-7/INFO] [minecraft/Main]: No existing world data, creating new world
+[19:22:19] [main/INFO] [minecraft/RecipeManager]: Loaded 1585 recipes
+[19:22:19] [main/INFO] [minecraft/AdvancementTree]: Loaded 1688 advancements
+[19:22:19] [Server thread/INFO] [minecraft/DedicatedServer]: Starting minecraft server version 26.2
+[19:22:19] [Server thread/INFO] [minecraft/DedicatedServer]: Loading properties
+[19:22:19] [Server thread/INFO] [minecraft/DedicatedServer]: Default game type: CREATIVE
+[19:22:19] [Server thread/INFO] [minecraft/MinecraftServer]: Generating keypair
+>   [19:22:19] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:25992
+> WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::loadLibrary has been called by io.netty.util.internal.NativeLibraryUtil in module io.netty.common (jar:file:///private/tmp/server-waypoint-step19-forge/b/libraries/io/netty/netty-common/4.2.15.Final/netty-common-4.2.15.Final.jar!/)
+WARNING: Use --enable-native-access=io.netty.common to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+  [19:22:20] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+>   [19:22:20] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.
+>   [19:22:20] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+>   [19:22:20] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set "online-mode" to "true" in the server.properties file.
+>   [19:22:20] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file ./world/serverconfig/forge-server.toml is not correct. Correcting
+>   [19:22:20] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SynchronizedConfig{DataHolder:{}}.
+>   [19:22:20] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false.
+>   [19:22:20] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false.
+>   [19:22:20] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false.
+>   [19:22:20] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler.
+>   [19:22:20] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true.
+>   [19:22:20] [Server thread/INFO] [minecraft/DedicatedServer]: Preparing level "world"
+>   [19:22:21] [Server thread/INFO] [minecraft/LoggingLevelLoadListener]: Selecting global world spawn...
+>   [19:22:22] [Server thread/INFO] [minecraft/LoggingLevelLoadListener]: Loading 0 persistent chunks...
+>   [19:22:22] [Server thread/INFO] [minecraft/LoggingLevelLoadListener]: Preparing spawn area: 100%
+>   [19:22:22] [Server thread/INFO] [minecraft/LoggingLevelLoadListener]: Time elapsed: 1308 ms
+>   [19:22:22] [Server thread/INFO] [minecraft/DedicatedServer]: Done (1.419s)! For help, type "help"
+>   [19:22:22] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+>   [19:22:22] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+>   [19:22:22] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+>   [19:22:22] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>   [19:22:22] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>   [19:22:22] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>   [19:22:22] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+>   [19:22:22] [LanServerPinger #1/WARN] [minecraft/LanServerPinger]: LanServerPinger: No route to host
+>   [19:22:22] [Server thread/INFO] [ne.mi.se.pe.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+>   [19:22:22] [Server thread/INFO] [server_waypoint_core/]: Loaded config Config{serverId=-1636408806, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+>   [19:22:22] [Server thread/INFO] [server_waypoint_core/]: Loaded 0 languages:
+>   [19:22:22] [Server thread/INFO] [server_waypoint_core/]: Loaded 1 lists and 1 waypoints from file: /private/tmp/server-waypoint-step19-forge/b/defaultconfigs/server_waypoint/waypoints/minecraft$overworld.json
+>   [19:22:22] [server-waypoint-backend-startup/INFO] [server_waypoint_core/]: Cross-server backend startup: SUCCESS
+> >   [19:22:51] [Server thread/INFO] [server_waypoint_core/]: Loaded config Config{serverId=190002, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+>   [19:22:51] [Server thread/INFO] [minecraft/MinecraftServer]: Loaded 0 languages:
+>   [19:22:51] [Server thread/INFO] [minecraft/MinecraftServer]: Reload config file and language files
+>   [19:23:22] [Server thread/INFO] [minecraft/MinecraftServer]: Server empty for 60 seconds, pausing
+> >   [19:29:03] [Server thread/INFO] [minecraft/MinecraftServer]: No entity was found
+>   [19:31:55] [Netty Kqueue Server IO #1/INFO] [minecraft/ServerLoginPacketListenerImpl]: UUID of player CodexStep19 is 7cf408b7-3218-334b-8f94-04d13c8e9231
+>   [19:31:56] [Server thread/INFO] [minecraft/PlayerList]: CodexStep19[/127.0.0.1:59232] logged in with entity id 14 at (43.5, 76.0, 33.5)
+>   [19:31:57] [Server thread/INFO] [minecraft/MinecraftServer]: CodexStep19 joined the game
+>   [19:31:57] [Server thread/INFO] [server_waypoint_core/]: client join with protocol version: 11
+> >   [19:32:00] [Server thread/INFO] [minecraft/MinecraftServer]: CodexStep19 has the following entity data: [8197.5d, 54.99179651239603d, 30.5d]
+>   [19:32:10] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: CodexStep19 lost connection: Disconnected
+>   [19:32:10] [Server thread/INFO] [minecraft/MinecraftServer]: CodexStep19 left the game
+> >   [19:32:21] [Server thread/INFO] [minecraft/MinecraftServer]: No player was found
+> >   [19:32:34] [Server thread/INFO] [minecraft/MinecraftServer]: That position is not loaded
+>   [19:32:37] [Netty Kqueue Server IO #2/INFO] [minecraft/ServerLoginPacketListenerImpl]: UUID of player CodexStep19 is 7cf408b7-3218-334b-8f94-04d13c8e9231
+>   [19:32:37] [Server thread/INFO] [minecraft/PlayerList]: CodexStep19[/127.0.0.1:59249] logged in with entity id 131 at (8197.5, 54.0, 30.5)
+>   [19:32:37] [Server thread/INFO] [minecraft/MinecraftServer]: CodexStep19 joined the game
+>   [19:32:37] [Server thread/INFO] [server_waypoint_core/]: client join with protocol version: 11
+> >   [19:32:48] [Server thread/INFO] [minecraft/MinecraftServer]: CodexStep19 has the following entity data: [8197.5d, 54.0d, 30.5d]
+> > >   [19:33:27] [Server thread/INFO] [minecraft/MinecraftServer]: Set CodexStep19's game mode to Spectator Mode
+>   [19:33:27] [Server thread/INFO] [minecraft/MinecraftServer]: Changed the block at 8197, 79, 30
+>   [19:33:28] [Server thread/INFO] [minecraft/ServerGamePacketListenerImpl]: CodexStep19 lost connection: Disconnected
+>   [19:33:28] [Server thread/INFO] [minecraft/MinecraftServer]: CodexStep19 left the game
+>   [19:34:28] [Server thread/INFO] [minecraft/MinecraftServer]: Server empty for 60 seconds, pausing

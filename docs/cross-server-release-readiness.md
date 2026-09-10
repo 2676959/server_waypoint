@@ -1,8 +1,9 @@
 # Cross-server release hardening (Step 19)
 
-Status: **implementation and build hardening completed; production release approval remains open**.
+Status: **implementation, build hardening and the four representative native release gates passed**.
 The feature remains opt-in and disabled by default. Nothing was published or uploaded.
-The archived evidence records the pre-commit validation snapshot.
+The archived evidence records the tested snapshots and their distinct artifact hashes.
+No release has been published.
 
 ## Changes
 
@@ -78,21 +79,138 @@ MCC supplies an ordinary vanilla protocol session, not a modded protocol-11 GUI 
 and completion feedback were observed; exactly-once event counting is covered by component tests
 and earlier Paper evidence, not a native Fabric teleport-event counter in this run.
 
-## Remaining production release gates
+## Current native gate status
 
-Step 19 stays open until these are recorded against matching release artifacts:
+Representative Folia, Forge and NeoForge transfers and reconnects have been recorded,
+and the real protocol-11 GUI has completed a network catalog change and confirmed
+proxy transfer. The follow-ups below retain each runtime, identity, artifact and
+instrumentation limit. These representative versions do not imply native coverage
+of every supported version.
 
-1. Native Folia transfers with owner/retirement stress and Forge/NeoForge cross-server player sessions.
-2. A real protocol-11 modded client browsing changing remote catalogs and initiating confirmed
-   teleports through the proxy; Step-18 headless GUI input evidence remains a separate isolated probe.
-3. Authenticated player forwarding/online identities and the complete native failure-timing matrix:
-   disconnect during transfer/after arrival, target mutation and permission revocation specifically
-   between preparation and arrival, and administrative key rotation/revocation under load.
-4. Native soak/resource validation. Deterministic protocol, byte-budget and handoff concurrency
-   tests establish bounded component behavior, not long-running platform resource health.
+Authenticated Folia with modern forwarding and NOISE_KK has also exercised destination
+permission and waypoint changes between preparation and arrival, first-tick disconnect,
+backend revocation, and backend key rotation. That run used the earlier race-fix proxy;
+final-candidate validation repeated the mutation checks and both backend and coordinator
+key rotation, including restart with one authenticated player connected. Old pins fail
+closed; updated trusted pins restore authenticated bidirectional transfers. See the
+[final-candidate evidence](validation/cross-server-step19-authenticated-final/results.json).
 
-The existing real-TCP component suite covers fail-closed race and authorization semantics; it does
-not replace these native lifecycle gates. Do not describe this build as production approved.
+The final-candidate resource gate passed a 1,801.9-second authenticated soak after key
+rotation: 60 clean reconnect sessions, 120 completed transfers and 62 resource samples.
+File descriptors stayed at 151 per backend and 59 for Velocity; coordinator readers
+stayed at 32. Retained heap after explicit GC decreased by 1,320/1,229 KiB on the
+backends and increased by 247 KiB on Velocity. Thread counts stabilized, with no runtime
+error or wrong-owner log matches. [Soak evidence](validation/cross-server-step19-soak/results.json).
+The separate pressure check completed two authenticated transfers while the 32-connection
+ceiling was held, expired 30 stalled handshakes and returned to two legitimate sockets.
+
+Two earlier soak attempts stopped before new logins after 6 and 16 cycles. macOS reports
+identify MCC CoreCLR SIGABRT before any proxy connection. They remain archived as failed
+attempts. The passing run set `DOTNET_ReadyToRun=0` only for MCC, disabling precompiled
+.NET code as documented by [.NET](https://github.com/dotnet/runtime/blob/main/docs/workflow/debugging/coreclr/debugging-runtime.md).
+The exact upstream crash defect is unconfirmed; no server change was made for it.
+
+These four gates are closed for the recorded representative configurations. The 30-minute
+one-player workload does not establish overnight or high-player-count health, and the
+headless GUI run does not provide visual screenshot approval. Forge/NeoForge ownership
+is supported by the production guard and arrival observations, without independent
+adapter callback instrumentation. All disposable processes stopped cleanly; no user
+worlds or production services were modified by the fixtures. Private authentication
+data is excluded from the archived evidence.
 
 [Machine-readable results and artifact hashes](validation/cross-server-step19/results.json) and
 adjacent logs preserve the evidence without credential contents. Build artifacts are in `builds/`.
+
+## Folia follow-up — 2026-09-09
+
+The representative Folia 1.21.11-14 run found a second arrival-order race: the
+backend's next entity tick can still precede Velocity's route installation.
+A diagnostic proxy observed `currentServer=Optional.empty` at the rejected claim.
+The coordinator fix defers one validated claim per bounded transfer until the
+proxy switch completes, then preserves the normal live-route checks.
+
+After the fix, native bidirectional repeated transfers and two-player transfers
+between separated regions reached the expected coordinates on two Folia tick
+threads. Audit snapshots recorded current player identity and region ownership.
+A controlled kick on the first destination tick produced the audit retirement
+callback; removing the marker allowed a fresh successful transfer. Disconnecting
+after arrival and reconnecting also allowed a fresh transfer. The test-only audit
+did not receive Folia PLUGIN teleport events, so this is not native exactly-once
+event-count evidence. Offline accounts, forwarding NONE and loopback PLAINTEXT
+were used; authenticated forwarding, native KK and soak gates remain separate.
+
+The Paper plugin matches the original staged release artifact. The fixed Velocity
+plugin was rebuilt from the working tree; original, diagnostic and fixed hashes
+are retained separately. See [Folia evidence](validation/cross-server-step19-folia/results.json).
+The earlier full-matrix result belongs to the pre-fix snapshot; the follow-up runs
+common/proxy/Velocity checks and a separate 39-artifact audit with the new proxy.
+
+
+### Forge follow-up — 2026-09-10
+
+Forge 26.2 / 65.1.3 with Proxy Compatible Forge 1.3.1 and Velocity 4.1.1 build 24
+passed four synchronized bidirectional arrivals over two real client sessions,
+including graceful disconnect/reconnect recovery. Protocol 11 reached `SYNC_FINISHED`
+and the client tick event bus remained active. Destination positions were
+`(5.5, 80, 30.5)` and `(8197.5, 80, 30.5)`.
+[Logs, hashes and limitations](validation/cross-server-step19-forge/results.json).
+
+The initial disposable control probe lacked resource-pack metadata. Forge's startup
+warning screen disabled its event bus while Quick Play connected, leaving client
+synchronization queued. Correcting the probe metadata restored the normal startup
+path; final synchronized transfers had no chunked delivery warning. This was a
+fixture defect. PCF was required for this native Forge/proxy configuration. These
+runs used offline identities, modern forwarding and loopback plaintext coordinator
+transport; they do not close authenticated identity or controlled handoff-disconnect
+timing gates. Ownership is supported by the production guard and successful native
+arrival, without independent adapter callback instrumentation.
+
+
+### NeoForge follow-up — 2026-09-10
+
+NeoForge 26.2.0.3-beta / Minecraft 26.2 with PCF 1.3.1 and Velocity 4.1.1 build 24
+passed four bidirectional arrivals across two real client sessions, expected positions
+on both backends, and graceful disconnect/reconnect recovery. Protocol 11 reached
+`SYNC_FINISHED` with advancing ticks. [Evidence](validation/cross-server-step19-neoforge/results.json)
+retains exact runtime/artifact versions. As with Forge, these offline modern-forwarding
+runs do not establish online identity authentication or controlled in-handoff retirement;
+no independent production ownership callback probe was installed.
+
+
+### Live protocol-11 GUI follow-up — 2026-09-10
+
+A real Fabric 26.2 client passed remote browser navigation, receipt of a backend
+catalog mutation while the browser remained open, exact selection of the new entry,
+teleport confirmation through native mouse dispatch, proxy transfer, and fresh
+synchronization at `(45.5, 80, 30.5)`. [Evidence](validation/cross-server-step19-live-gui/results.json).
+The probe injects neither catalogs nor network state. Headless rendering is not visual
+approval; this run used an offline identity, forwarding NONE and loopback plaintext.
+
+
+### Authenticated forwarding and failure timing — 2026-09-10
+
+The selected online profile AuthenticatedTestPlayer reached both Folia backends with the same
+UUID through Velocity modern forwarding and authenticated NOISE_KK coordinator sessions.
+A destination entity task revoked teleport permission after preparation and arrival was
+denied. Moving the target in that window used its fresh position; kicking on the first
+entity tick retired the pending arrival and allowed source fallback and a fresh retry.
+Disabling backend b and presenting a newly generated backend key against the old pin
+both left its catalog stale and rejected requests. Installing the new trusted public
+pin restored availability and bidirectional transfers.
+[Recorded logs and exact artifact scope](validation/cross-server-step19-authenticated/results.json).
+
+A separate 64-socket attempt hit the accepted coordinator connection ceiling of 32;
+30 stalled handshakes closed by the deadline observation and the count returned to the
+two legitimate backend connections. A subsequent authenticated transfer passed. The
+transfer occurred after pressure was released; it is not a transfer-under-pressure claim.
+
+
+### Final candidate checks — 2026-09-10
+
+After the Folia route-installation fix and registry-scan refinement, scoped
+common/proxy-common/Velocity checks passed 539/114/6 tests with no failures, errors
+or skips. The final staged Velocity artifact has SHA-256
+`be67bf9998b72b3fb3cb87aa2d402cf944edd2b3dd9d72eed4ba2f830ddd865f`.
+All 39 staged release JARs passed the exact-target/content audit, and all eight
+release-tool regression cases passed. The earlier full matrix remains the pre-fix
+matrix result; only proxy runtime classes changed in this follow-up.

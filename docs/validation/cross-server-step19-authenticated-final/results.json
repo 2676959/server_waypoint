@@ -1,0 +1,122 @@
+{
+  "date": "2026-09-10",
+  "status": "PASS for representative authenticated native scenarios",
+  "identity": {
+    "profile": "AuthenticatedTestPlayer",
+    "uuid": "00000000-0000-4000-8000-000000000019",
+    "proxyOnlineMode": true,
+    "forwarding": "MODERN",
+    "coordinatorTransport": "NOISE_KK"
+  },
+  "runtime": "Folia 1.21.11 build14, 2 region tick threads; Velocity 4.1.1 build24; MCC26.2 build499 protocol774",
+  "artifacts": {
+    "server_waypoint-3.1.0-velocity.jar": "be67bf9998b72b3fb3cb87aa2d402cf944edd2b3dd9d72eed4ba2f830ddd865f",
+    "server_waypoint-3.1.0-paper-mc1.21.11-26.1.2.jar": "34c9bf5bfc5a3be8d1a11a7b5b5ee390f3d00f1f2589161ae72b298969d0f728",
+    "teleport-audit4.jar": "146c94e1515deca006f231a6645975469b35a632d9c5fe001ee6df0a21f1d940"
+  },
+  "assertions": [
+    "Destination permission denied after preparation, no completion",
+    "Target moved after preparation; owned/current/online snapshot at (8197.5,81,30.5); target restored",
+    "First entity tick kick: retired callback and source fallback, subsequent fresh transfer completes",
+    "Disabled backend after restart with one authenticated player connected at shutdown: stale catalog request denied",
+    "Fresh coordinator key with old backend pins: stale request denied",
+    "Fresh backend b key with old coordinator registry pin: unavailable request denied",
+    "Updated trusted pins restore authenticated bidirectional transfers",
+    "32 accepted socket ceiling; 30 stalled handshakes closed by deadline observation; 2 transfers completed while pressure held; returns to 2 backend sockets"
+  ],
+  "limitations": [
+    "One connected player for restart-based administrative rotation; not high-player-count rotation load",
+    "Audit corroborates ownership without independent Folia PLUGIN event count",
+    "Two soak attempts stopped before new logins (6 and 16 cycles): macOS reports confirm MCC EXC_CRASH/SIGABRT in CoreCLR fatal-error handling; no proxy connection was observed for either failed attempt. Exact upstream root cause is unconfirmed."
+  ],
+  "logs": {
+    "proxy-final.log": {
+      "rawSha256": "f8133f8d52e5a8a31118ea8e84ab08674e2ceecfafbfd286054c2c3e7c1a1683",
+      "archivedSha256": "217b372416ea35056aef80682d48d06a04d9a1ad6adca6ab06d654326726c7b8"
+    },
+    "proxy-final-revoked.log": {
+      "rawSha256": "6758c09f836d5c3fbfa61d8fa69535919f9ed5a146ae64a51a520342bd4700a5",
+      "archivedSha256": "065887984fba1a594dd4cd19b0fe033881854bbdf7aa611f41266bd2e814100d"
+    },
+    "proxy-final-new-coordinator.log": {
+      "rawSha256": "8e2c77d40b9fe27300ec4c90b9cd6920c5d6c47f60cbe66e68ce065d94968667",
+      "archivedSha256": "3abe875f009686083b360b8ea5b7259d92286232a63db1dd6989413bc2e80a5b"
+    },
+    "final-rotation-evidence.json": {
+      "rawSha256": "5732813e67cd23131dc36fa2bf5f25eb79ea5b5d2465a4ebe91fc5f45dcfff80",
+      "archivedSha256": "9712ded0b130d7ed5315ba96afac94d67b74b18a58cbbb29c7acc829a7e17a26"
+    },
+    "pressure-final-active-results.json": {
+      "rawSha256": "ac0a4875e63ef59f8ef7cca324b8daf4068cb916086865b93f22a14a640aeaca",
+      "archivedSha256": "ac0a4875e63ef59f8ef7cca324b8daf4068cb916086865b93f22a14a640aeaca"
+    },
+    "pressure-final-active.log": {
+      "rawSha256": "44eab01cba58c3716cd2927e207686dee6080575199c05b7da1a9b0c7c5d0ca5",
+      "archivedSha256": "44eab01cba58c3716cd2927e207686dee6080575199c05b7da1a9b0c7c5d0ca5"
+    },
+    "final-interval-a-authenticated.log": {
+      "sourceRawSha256": "ab947adbb4f4661565f00af0d8f21929c06cf4e8b2914254641b384768b10b38",
+      "archivedSha256": "f0f8c98fdb1c0a88a37c702d097d08a91c269b76adf474f1c9c6fa8002afa764",
+      "scope": "Starts at first 10:09 log entry, after final candidate installation at 10:08:33"
+    },
+    "final-interval-b-rotated.log": {
+      "sourceRawSha256": "0350f5154a8afc875ec0178c5eadf347eabb8b2c00c92c3a2a5d8159f23a4c65",
+      "archivedSha256": "4f289bf1c8109c3b2a99d12a7edd745ab732c9c562efbcff0482ea4106853222",
+      "scope": "Starts at first 10:09 log entry, after final candidate installation at 10:08:33"
+    },
+    "soak-attempt1/soak-status.json": {
+      "archivedSha256": "7e716923a26a1949df8b1e1e1dac227ae46a247b79205b139bdca28a88e8baf5"
+    },
+    "soak-attempt1/soak-progress.log": {
+      "archivedSha256": "3dc34a154170342b408cc990a44028ee6083a2f2e8198f4e92e8857351403269"
+    },
+    "soak-attempt1/soak-samples.json": {
+      "archivedSha256": "7f15725e3cf265f3b01b6a356026ffe1002bce881c8cce384903c6c7c538961e"
+    },
+    "soak-attempt1/soak-client-safe.log": {
+      "archivedSha256": "ad4e260ef0d29b451f6d4329eff9a4ae9fd5801e303b3f51d07ef94ab89731fb"
+    },
+    "soak-attempt1/scope.json": {
+      "archivedSha256": "a14820d295603f22a6d9105f1bc4a4d8d92f3647164d7a137ab938d112cdea0b"
+    },
+    "final-client-safe.log": {
+      "sourceRawSha256": "01c0db81d2cd58322e6019c59f229283a325194c114bcaaf0238ec898b32ddc6",
+      "archivedSha256": "88b3394646c5eab52dbfde9456449b2a345fd0c75b1c4b94bee89b06312a3b7d",
+      "scope": "Safe game output after the earlier authenticated evidence snapshot; final candidate checks and diagnostic reconnects"
+    },
+    "mcc-crash-summary.json": {
+      "archivedSha256": "9ea1c5f0e76221ca437e36ace19c10f7d6b64583ac34886ab48348f96a4cbcea"
+    },
+    "soak-attempt2/soak-status.json": {
+      "archivedSha256": "b4c9e70592316008310a68842f0ce5febfe969180e95df37ba67fd2024b16ce8"
+    },
+    "soak-attempt2/soak-progress.log": {
+      "archivedSha256": "f738456aa02097084aaed7affce10cf36250325be4262f23e22bd971894c9b54"
+    },
+    "soak-attempt2/soak-samples.json": {
+      "archivedSha256": "c111c83f505d791d52e5a2f223bec89295f13cdefd9d6599834ac003c16a6904"
+    },
+    "soak-attempt2/soak-client-safe.log": {
+      "archivedSha256": "2ed6ebf485052d0adaf6d6ac267b6fa55453f46fe0152d5732f8210c1db9510e"
+    }
+  },
+  "soakClientAdjustment": {
+    "environment": {
+      "DOTNET_ReadyToRun": "0"
+    },
+    "reason": "Two native MCC CoreCLR aborts before joining; rerun with precompiled runtime code disabled",
+    "documentation": "https://github.com/dotnet/runtime/blob/main/docs/workflow/debugging/coreclr/debugging-runtime.md",
+    "relatedIssue": "https://github.com/dotnet/runtime/issues/112167",
+    "causality": "Related macOS arm64 issue informed the experiment; exact upstream defect is not established by these crash stacks"
+  },
+  "soakEvidence": "../cross-server-step19-soak/results.json",
+  "recoveryEvidence": "../cross-server-step19-soak/proxy-final-rotation-recovery.log",
+  "cleanup": "Three disposable Java processes stopped cleanly; authenticated MCC clients stopped; arrival markers removed; waypoint target restored",
+  "identityRedaction": {
+    "profileLabel": "AuthenticatedTestPlayer",
+    "onlineUuidLabel": "00000000-0000-4000-8000-000000000019",
+    "offlineUuidLabel": "00000000-0000-3000-8000-000000000019",
+    "note": "Personal profile name and online/offline UUIDs are replaced consistently with synthetic labels. These labels are not login accounts. Raw source hashes refer to private originals; archived hashes cover redacted evidence."
+  },
+  "archiveNormalization": "Archived logs remove ANSI formatting where captured, console-only prompts and empty lines, expand tabs, normalize line endings and trim trailing whitespace; raw source hashes retain the original private evidence identity."
+}

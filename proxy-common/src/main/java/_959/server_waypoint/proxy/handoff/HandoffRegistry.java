@@ -124,6 +124,15 @@ public final class HandoffRegistry implements AutoCloseable {
         return entry != null && entry.active() && entry.transferStarted;
     }
 
+    synchronized Set<UUID> activeTransferRequestIds() {
+        sweep();
+        Set<UUID> active = new HashSet<>();
+        for (Entry entry : entries.values()) {
+            if (entry.active() && entry.transferStarted) active.add(entry.requestId);
+        }
+        return active;
+    }
+
     public synchronized Outcome claim(HandoffPeer peer, UUID requestId, ClaimHandoff claim) {
         Entry entry = current(requestId);
         Outcome invalid = validate(entry, peer, claim.handoffId(), claim.playerId(), claim.destination());

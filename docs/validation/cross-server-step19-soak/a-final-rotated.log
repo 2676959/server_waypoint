@@ -1,0 +1,1405 @@
+Starting org.bukkit.craftbukkit.Main
+[10:17:01 INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.11; Homebrew Homebrew) on Mac OS X 26.5 (aarch64)
+[10:17:01 INFO]: [bootstrap] Loading Folia 1.21.11-14-ver/1.21.11@529aabc (2026-02-22T20:22:23Z) for Minecraft 1.21.11
+[10:17:03 INFO]: [PluginInitializerManager] Initializing plugins...
+[10:17:03 INFO]: [PluginInitializerManager] Initialized 2 plugins
+[10:17:03 INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (3.1.0)
+[10:17:03 INFO]: [PluginInitializerManager] Bukkit plugins (1):
+ - TeleportAudit (4)
+[10:17:06 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[10:17:07 INFO]: Loaded 1470 recipes
+[10:17:07 INFO]: Loaded 1584 advancements
+[10:17:07 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[10:17:07 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 195.2ms
+[10:17:07 INFO]: Starting minecraft server version 1.21.11
+[10:17:07 INFO]: Loading properties
+[10:17:07 INFO]: This server is running Folia version 1.21.11-14-ver/1.21.11@529aabc (2026-02-22T20:22:23Z) (Implementing API version 1.21.11-R0.1-SNAPSHOT)
+[10:17:07 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[10:17:07 INFO]: Using 4 threads for Netty based IO
+[10:17:07 INFO]: Server Ping Player Sample Count: 12
+[10:17:07 INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[10:17:07 INFO]: [io.papermc.paper.threadedregions.TickRegions] Initialised EDF Folia scheduler with initial 2 target thread(s)
+[10:17:07 INFO]: Default game type: CREATIVE
+[10:17:07 INFO]: Generating keypair
+[10:17:07 INFO]: Starting Minecraft server on 127.0.0.1:25981
+[10:17:15 INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+[10:17:15 INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+[10:17:16 INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v3.1.0
+[10:17:16 INFO]: [TeleportAudit] Loading server plugin TeleportAudit v4
+[10:17:16 INFO]: Server permissions file permissions.yml is empty, ignoring it
+[10:17:16 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[10:17:16 WARN]: The server will make no attempt to authenticate usernames. Beware.
+[10:17:16 WARN]: Whilst this makes it possible to use Velocity, unless access to your server is properly restricted, it also opens up the ability for hackers to connect with any username they choose.
+[10:17:16 WARN]: Please see https://docs.papermc.io/velocity/security for further information.
+[10:17:16 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[10:17:16 INFO]: Preparing level "world"
+[10:17:16 INFO]: Loading 0 persistent chunks for world 'minecraft:overworld'...
+[10:17:16 INFO]: Prepared spawn area in 0 ms
+[10:17:16 INFO]: Loading 0 persistent chunks for world 'minecraft:the_nether'...
+[10:17:16 INFO]: Prepared spawn area in 0 ms
+[10:17:16 INFO]: Loading 0 persistent chunks for world 'minecraft:the_end'...
+[10:17:16 INFO]: Prepared spawn area in 0 ms
+[10:17:16 INFO]: Done preparing level "world" (0.128s)
+[10:17:16 INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v3.1.0
+[10:17:16 INFO]: [server_waypoint_translator] Internal translations: es_es, he_il, zh_cn, en_us, zh_hk, zh_tw
+[10:17:16 INFO]: [server_waypoint_core] Loaded config Config{serverId=1864037529, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+[10:17:16 INFO]: [server_waypoint_core] Loaded 0 languages:
+[10:17:16 INFO]: [server_waypoint_core] Loaded 1 lists and 2 waypoints from file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[10:17:16 INFO]: [TeleportAudit] Enabling TeleportAudit v4
+[10:17:16 INFO]: [spark] The spark plugin has been preferred but was not loaded. The bundled spark profiler will enabled instead.
+[10:17:16 INFO]: [spark] The spark profiler will not be enabled because it is currently disabled in the configuration.
+[10:17:16 INFO]: [server_waypoint_core] Cross-server backend startup: SUCCESS
+[10:17:16 INFO]: Done (16.329s)! For help, type "help"
+[10:17:51 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:17:52 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:17:52 INFO]: AuthenticatedTestPlayer joined the game
+[10:17:52 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51446] logged in with entity id 12 at ([world]5.5, 64.51377381038093, 30.5)
+[10:17:53 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=64.51377381038093 z=30.5
+[10:18:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:18:20 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:18:20 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:18:20 INFO]: AuthenticatedTestPlayer left the game
+[10:18:47 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:18:47 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:18:47 INFO]: AuthenticatedTestPlayer joined the game
+[10:18:47 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51474] logged in with entity id 143 at ([world]5.5, 60.59382738867039, 30.5)
+[10:18:48 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=60.59382738867039 z=30.5
+[10:18:51 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:18:51 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:18:51 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:18:51 INFO]: AuthenticatedTestPlayer left the game
+[10:18:54 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:18:54 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:18:54 INFO]: AuthenticatedTestPlayer joined the game
+[10:18:54 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51478] logged in with entity id 167 at ([world]5.5, 57.70707982940254, 30.5)
+[10:18:54 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:18:54 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:18:54 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:18:54 INFO]: AuthenticatedTestPlayer left the game
+[10:19:15 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:19:15 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:19:15 INFO]: AuthenticatedTestPlayer joined the game
+[10:19:15 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51489] logged in with entity id 178 at ([world]5.5, 79.76947263108704, 30.5)
+[10:19:16 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:19:18 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:19:18 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:19:18 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:19:18 INFO]: AuthenticatedTestPlayer left the game
+[10:19:21 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:19:21 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:19:21 INFO]: AuthenticatedTestPlayer joined the game
+[10:19:21 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51497] logged in with entity id 191 at ([world]5.5, 76.92532909878207, 30.5)
+[10:19:21 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:19:21 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:19:21 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:19:21 INFO]: AuthenticatedTestPlayer left the game
+[10:19:45 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:19:45 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:19:45 INFO]: AuthenticatedTestPlayer joined the game
+[10:19:45 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51506] logged in with entity id 202 at ([world]5.5, 79.76947263108704, 30.5)
+[10:19:46 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:19:48 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:19:48 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:19:48 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:19:48 INFO]: AuthenticatedTestPlayer left the game
+[10:19:51 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:19:51 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:19:51 INFO]: AuthenticatedTestPlayer joined the game
+[10:19:51 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51511] logged in with entity id 215 at ([world]5.5, 76.92532909878207, 30.5)
+[10:19:51 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:19:51 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:19:51 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:19:51 INFO]: AuthenticatedTestPlayer left the game
+[10:20:14 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:20:15 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:20:15 INFO]: AuthenticatedTestPlayer joined the game
+[10:20:15 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51521] logged in with entity id 225 at ([world]5.5, 79.76947263108704, 30.5)
+[10:20:16 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:20:18 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:20:18 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:20:18 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:20:18 INFO]: AuthenticatedTestPlayer left the game
+[10:20:21 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:20:21 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:20:21 INFO]: AuthenticatedTestPlayer joined the game
+[10:20:21 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51526] logged in with entity id 239 at ([world]5.5, 76.90381191365455, 30.5)
+[10:20:21 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:20:21 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:20:21 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:20:21 INFO]: AuthenticatedTestPlayer left the game
+[10:20:45 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:20:45 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:20:45 INFO]: AuthenticatedTestPlayer joined the game
+[10:20:45 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51535] logged in with entity id 249 at ([world]5.5, 79.76947263108704, 30.5)
+[10:20:46 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:20:48 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:20:48 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:20:48 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:20:48 INFO]: AuthenticatedTestPlayer left the game
+[10:20:51 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:20:51 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:20:51 INFO]: AuthenticatedTestPlayer joined the game
+[10:20:51 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51539] logged in with entity id 265 at ([world]5.5, 76.92532909878207, 30.5)
+[10:20:52 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:20:52 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:20:52 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:20:52 INFO]: AuthenticatedTestPlayer left the game
+[10:21:15 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:21:15 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:21:15 INFO]: AuthenticatedTestPlayer joined the game
+[10:21:15 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51552] logged in with entity id 275 at ([world]5.5, 79.76947263108704, 30.5)
+[10:21:16 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:21:18 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:21:18 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:21:18 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:21:18 INFO]: AuthenticatedTestPlayer left the game
+[10:21:21 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:21:21 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:21:21 INFO]: AuthenticatedTestPlayer joined the game
+[10:21:21 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51556] logged in with entity id 289 at ([world]5.5, 76.90381191365455, 30.5)
+[10:21:22 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:21:22 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:21:22 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:21:22 INFO]: AuthenticatedTestPlayer left the game
+[10:21:45 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:21:45 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:21:45 INFO]: AuthenticatedTestPlayer joined the game
+[10:21:45 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51566] logged in with entity id 299 at ([world]5.5, 79.69568317254246, 30.5)
+[10:21:46 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:21:48 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:21:48 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:21:48 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:21:48 INFO]: AuthenticatedTestPlayer left the game
+[10:21:51 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:21:51 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:21:51 INFO]: AuthenticatedTestPlayer joined the game
+[10:21:51 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51570] logged in with entity id 313 at ([world]5.5, 76.83002245510997, 30.5)
+[10:21:51 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:21:51 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:21:51 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:21:51 INFO]: AuthenticatedTestPlayer left the game
+[10:22:15 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:22:15 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:22:15 INFO]: AuthenticatedTestPlayer joined the game
+[10:22:15 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51580] logged in with entity id 323 at ([world]5.5, 79.76947263108704, 30.5)
+[10:22:16 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:22:18 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:22:19 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:22:19 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:22:19 INFO]: AuthenticatedTestPlayer left the game
+[10:22:21 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:22:22 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:22:22 INFO]: AuthenticatedTestPlayer joined the game
+[10:22:22 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51584] logged in with entity id 337 at ([world]5.5, 76.92532909878207, 30.5)
+[10:22:22 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:22:22 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:22:22 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:22:22 INFO]: AuthenticatedTestPlayer left the game
+[10:22:45 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:22:45 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:22:45 INFO]: AuthenticatedTestPlayer joined the game
+[10:22:45 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51594] logged in with entity id 347 at ([world]5.5, 79.76947263108704, 30.5)
+[10:22:46 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:22:48 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:22:48 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:22:48 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:22:48 INFO]: AuthenticatedTestPlayer left the game
+[10:22:51 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:22:51 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:22:51 INFO]: AuthenticatedTestPlayer joined the game
+[10:22:51 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51599] logged in with entity id 361 at ([world]5.5, 76.90381191365455, 30.5)
+[10:22:52 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:22:52 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:22:52 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:22:52 INFO]: AuthenticatedTestPlayer left the game
+[10:23:15 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:23:15 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:23:15 INFO]: AuthenticatedTestPlayer joined the game
+[10:23:15 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51609] logged in with entity id 371 at ([world]5.5, 79.69568317254246, 30.5)
+[10:23:16 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:23:18 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:23:18 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:23:18 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:23:18 INFO]: AuthenticatedTestPlayer left the game
+[10:23:21 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:23:22 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:23:22 INFO]: AuthenticatedTestPlayer joined the game
+[10:23:22 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51613] logged in with entity id 385 at ([world]5.5, 76.83002245510997, 30.5)
+[10:23:22 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:23:22 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:23:22 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:23:22 INFO]: AuthenticatedTestPlayer left the game
+[10:23:45 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:23:45 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:23:45 INFO]: AuthenticatedTestPlayer joined the game
+[10:23:45 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51623] logged in with entity id 395 at ([world]5.5, 79.69568317254246, 30.5)
+[10:23:46 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:23:48 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:23:48 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:23:48 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:23:48 INFO]: AuthenticatedTestPlayer left the game
+[10:23:51 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:23:51 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:23:51 INFO]: AuthenticatedTestPlayer joined the game
+[10:23:51 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51628] logged in with entity id 411 at ([world]5.5, 76.83002245510997, 30.5)
+[10:23:52 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:23:52 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:23:52 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:23:52 INFO]: AuthenticatedTestPlayer left the game
+[10:24:15 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:24:15 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:24:15 INFO]: AuthenticatedTestPlayer joined the game
+[10:24:15 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51641] logged in with entity id 421 at ([world]5.5, 79.69568317254246, 30.5)
+[10:24:16 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:24:18 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:24:18 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:24:18 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:24:18 INFO]: AuthenticatedTestPlayer left the game
+[10:24:21 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:24:21 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:24:21 INFO]: AuthenticatedTestPlayer joined the game
+[10:24:21 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51645] logged in with entity id 435 at ([world]5.5, 76.85153964023749, 30.5)
+[10:24:21 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:24:21 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:24:21 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:24:21 INFO]: AuthenticatedTestPlayer left the game
+[10:24:45 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:24:45 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:24:45 INFO]: AuthenticatedTestPlayer joined the game
+[10:24:45 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51656] logged in with entity id 445 at ([world]5.5, 79.76947263108704, 30.5)
+[10:24:46 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:24:48 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:24:48 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:24:48 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:24:48 INFO]: AuthenticatedTestPlayer left the game
+[10:24:51 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:24:51 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:24:51 INFO]: AuthenticatedTestPlayer joined the game
+[10:24:51 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51661] logged in with entity id 459 at ([world]5.5, 76.92532909878207, 30.5)
+[10:24:51 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:24:51 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:24:51 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:24:51 INFO]: AuthenticatedTestPlayer left the game
+[10:25:15 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:25:15 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:25:15 INFO]: AuthenticatedTestPlayer joined the game
+[10:25:15 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51670] logged in with entity id 469 at ([world]5.5, 79.76947263108704, 30.5)
+[10:25:16 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:25:18 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:25:18 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:25:18 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:25:18 INFO]: AuthenticatedTestPlayer left the game
+[10:25:21 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:25:21 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:25:21 INFO]: AuthenticatedTestPlayer joined the game
+[10:25:21 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51674] logged in with entity id 485 at ([world]5.5, 76.92532909878207, 30.5)
+[10:25:21 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:25:21 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:25:21 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:25:21 INFO]: AuthenticatedTestPlayer left the game
+[10:25:45 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:25:45 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:25:45 INFO]: AuthenticatedTestPlayer joined the game
+[10:25:45 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51684] logged in with entity id 495 at ([world]5.5, 79.76947263108704, 30.5)
+[10:25:46 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:25:48 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:25:48 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:25:48 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:25:48 INFO]: AuthenticatedTestPlayer left the game
+[10:25:51 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:25:51 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:25:51 INFO]: AuthenticatedTestPlayer joined the game
+[10:25:51 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51688] logged in with entity id 509 at ([world]5.5, 76.90381191365455, 30.5)
+[10:25:52 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:25:52 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:25:52 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:25:52 INFO]: AuthenticatedTestPlayer left the game
+[10:26:15 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:26:15 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:26:15 INFO]: AuthenticatedTestPlayer joined the game
+[10:26:15 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51699] logged in with entity id 519 at ([world]5.5, 79.69568317254246, 30.5)
+[10:26:16 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:26:18 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:26:18 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:26:18 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:26:18 INFO]: AuthenticatedTestPlayer left the game
+[10:26:21 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:26:21 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:26:21 INFO]: AuthenticatedTestPlayer joined the game
+[10:26:21 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51703] logged in with entity id 533 at ([world]5.5, 76.85153964023749, 30.5)
+[10:26:22 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:26:22 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:26:22 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:26:22 INFO]: AuthenticatedTestPlayer left the game
+[10:29:31 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:29:31 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:29:31 INFO]: AuthenticatedTestPlayer joined the game
+[10:29:31 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51749] logged in with entity id 543 at ([world]5.5, 79.69568317254246, 30.5)
+[10:29:32 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:29:34 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:29:34 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:29:34 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:29:34 INFO]: AuthenticatedTestPlayer left the game
+[10:29:37 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:29:38 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:29:38 INFO]: AuthenticatedTestPlayer joined the game
+[10:29:38 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51753] logged in with entity id 557 at ([world]5.5, 76.83002245510997, 30.5)
+[10:29:38 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:29:38 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:29:38 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:29:38 INFO]: AuthenticatedTestPlayer left the game
+[10:29:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:29:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:29:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:29:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51762] logged in with entity id 567 at ([world]5.5, 79.76947263108704, 30.5)
+[10:30:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:30:02 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:30:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:30:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:30:03 INFO]: AuthenticatedTestPlayer left the game
+[10:30:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:30:05 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:30:05 INFO]: AuthenticatedTestPlayer joined the game
+[10:30:05 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51768] logged in with entity id 581 at ([world]5.5, 76.92532909878207, 30.5)
+[10:30:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:30:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:30:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:30:06 INFO]: AuthenticatedTestPlayer left the game
+[10:30:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:30:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:30:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:30:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51777] logged in with entity id 591 at ([world]5.5, 79.76947263108704, 30.5)
+[10:30:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:30:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:30:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:30:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:30:33 INFO]: AuthenticatedTestPlayer left the game
+[10:30:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:30:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:30:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:30:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51781] logged in with entity id 605 at ([world]5.5, 76.92532909878207, 30.5)
+[10:30:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:30:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:30:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:30:36 INFO]: AuthenticatedTestPlayer left the game
+[10:30:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:30:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:30:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:30:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51790] logged in with entity id 615 at ([world]5.5, 79.76947263108704, 30.5)
+[10:31:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:31:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:31:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:31:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:31:03 INFO]: AuthenticatedTestPlayer left the game
+[10:31:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:31:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:31:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:31:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51797] logged in with entity id 629 at ([world]5.5, 76.90381191365455, 30.5)
+[10:31:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:31:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:31:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:31:06 INFO]: AuthenticatedTestPlayer left the game
+[10:31:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:31:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:31:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:31:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51806] logged in with entity id 639 at ([world]5.5, 79.76947263108704, 30.5)
+[10:31:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:31:32 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:31:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:31:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:31:33 INFO]: AuthenticatedTestPlayer left the game
+[10:31:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:31:35 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:31:35 INFO]: AuthenticatedTestPlayer joined the game
+[10:31:35 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51811] logged in with entity id 653 at ([world]5.5, 76.90381191365455, 30.5)
+[10:31:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:31:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:31:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:31:36 INFO]: AuthenticatedTestPlayer left the game
+[10:31:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:31:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:31:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:31:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51820] logged in with entity id 662 at ([world]5.5, 79.69568317254246, 30.5)
+[10:32:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:32:02 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:32:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:32:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:32:03 INFO]: AuthenticatedTestPlayer left the game
+[10:32:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:32:05 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:32:05 INFO]: AuthenticatedTestPlayer joined the game
+[10:32:05 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51824] logged in with entity id 677 at ([world]5.5, 76.85153964023749, 30.5)
+[10:32:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:32:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:32:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:32:06 INFO]: AuthenticatedTestPlayer left the game
+[10:32:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:32:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:32:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:32:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51833] logged in with entity id 686 at ([world]5.5, 79.76947263108704, 30.5)
+[10:32:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:32:32 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:32:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:32:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:32:33 INFO]: AuthenticatedTestPlayer left the game
+[10:32:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:32:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:32:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:32:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51837] logged in with entity id 701 at ([world]5.5, 76.92532909878207, 30.5)
+[10:32:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:32:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:32:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:32:36 INFO]: AuthenticatedTestPlayer left the game
+[10:32:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:33:00 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:33:00 INFO]: AuthenticatedTestPlayer joined the game
+[10:33:00 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51847] logged in with entity id 709 at ([world]5.5, 79.76947263108704, 30.5)
+[10:33:01 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:33:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:33:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:33:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:33:03 INFO]: AuthenticatedTestPlayer left the game
+[10:33:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:33:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:33:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:33:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51851] logged in with entity id 725 at ([world]5.5, 76.90381191365455, 30.5)
+[10:33:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:33:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:33:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:33:06 INFO]: AuthenticatedTestPlayer left the game
+[10:33:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:33:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:33:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:33:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51860] logged in with entity id 733 at ([world]5.5, 79.69568317254246, 30.5)
+[10:33:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:33:32 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:33:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:33:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:33:33 INFO]: AuthenticatedTestPlayer left the game
+[10:33:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:33:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:33:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:33:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51864] logged in with entity id 749 at ([world]5.5, 76.85153964023749, 30.5)
+[10:33:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:33:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:33:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:33:36 INFO]: AuthenticatedTestPlayer left the game
+[10:33:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:34:00 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:34:00 INFO]: AuthenticatedTestPlayer joined the game
+[10:34:00 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51875] logged in with entity id 757 at ([world]5.5, 79.76947263108704, 30.5)
+[10:34:01 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:34:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:34:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:34:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:34:03 INFO]: AuthenticatedTestPlayer left the game
+[10:34:06 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:34:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:34:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:34:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51879] logged in with entity id 773 at ([world]5.5, 76.90381191365455, 30.5)
+[10:34:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:34:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:34:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:34:06 INFO]: AuthenticatedTestPlayer left the game
+[10:34:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:34:30 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:34:30 INFO]: AuthenticatedTestPlayer joined the game
+[10:34:30 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51890] logged in with entity id 781 at ([world]5.5, 79.76947263108704, 30.5)
+[10:34:31 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:34:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:34:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:34:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:34:33 INFO]: AuthenticatedTestPlayer left the game
+[10:34:36 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:34:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:34:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:34:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51894] logged in with entity id 797 at ([world]5.5, 76.92532909878207, 30.5)
+[10:34:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:34:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:34:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:34:36 INFO]: AuthenticatedTestPlayer left the game
+[10:34:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:35:00 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:35:00 INFO]: AuthenticatedTestPlayer joined the game
+[10:35:00 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51903] logged in with entity id 805 at ([world]5.5, 79.76947263108704, 30.5)
+[10:35:01 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:35:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:35:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:35:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:35:03 INFO]: AuthenticatedTestPlayer left the game
+[10:35:06 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:35:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:35:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:35:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51907] logged in with entity id 821 at ([world]5.5, 76.92532909878207, 30.5)
+[10:35:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:35:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:35:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:35:06 INFO]: AuthenticatedTestPlayer left the game
+[10:35:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:35:30 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:35:30 INFO]: AuthenticatedTestPlayer joined the game
+[10:35:30 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51916] logged in with entity id 829 at ([world]5.5, 79.76947263108704, 30.5)
+[10:35:31 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:35:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:35:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:35:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:35:33 INFO]: AuthenticatedTestPlayer left the game
+[10:35:36 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:35:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:35:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:35:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51920] logged in with entity id 847 at ([world]5.5, 76.92532909878207, 30.5)
+[10:35:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:35:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:35:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:35:36 INFO]: AuthenticatedTestPlayer left the game
+[10:35:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:36:00 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:36:00 INFO]: AuthenticatedTestPlayer joined the game
+[10:36:00 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51929] logged in with entity id 855 at ([world]5.5, 79.76947263108704, 30.5)
+[10:36:01 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:36:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:36:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:36:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:36:03 INFO]: AuthenticatedTestPlayer left the game
+[10:36:06 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:36:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:36:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:36:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51933] logged in with entity id 871 at ([world]5.5, 76.92532909878207, 30.5)
+[10:36:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:36:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:36:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:36:06 INFO]: AuthenticatedTestPlayer left the game
+[10:36:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:36:30 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:36:30 INFO]: AuthenticatedTestPlayer joined the game
+[10:36:30 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51942] logged in with entity id 879 at ([world]5.5, 79.76947263108704, 30.5)
+[10:36:31 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:36:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:36:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:36:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:36:33 INFO]: AuthenticatedTestPlayer left the game
+[10:36:36 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:36:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:36:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:36:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51946] logged in with entity id 895 at ([world]5.5, 76.90381191365455, 30.5)
+[10:36:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:36:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:36:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:36:36 INFO]: AuthenticatedTestPlayer left the game
+[10:36:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:36:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:36:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:36:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51955] logged in with entity id 903 at ([world]5.5, 79.76947263108704, 30.5)
+[10:37:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:37:02 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:37:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:37:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:37:03 INFO]: AuthenticatedTestPlayer left the game
+[10:37:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:37:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:37:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:37:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51959] logged in with entity id 919 at ([world]5.5, 76.92532909878207, 30.5)
+[10:37:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:37:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:37:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:37:06 INFO]: AuthenticatedTestPlayer left the game
+[10:37:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:37:30 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:37:30 INFO]: AuthenticatedTestPlayer joined the game
+[10:37:30 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51968] logged in with entity id 927 at ([world]5.5, 79.76947263108704, 30.5)
+[10:37:31 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:37:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:37:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:37:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:37:33 INFO]: AuthenticatedTestPlayer left the game
+[10:37:36 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:37:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:37:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:37:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51972] logged in with entity id 943 at ([world]5.5, 76.90381191365455, 30.5)
+[10:37:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:37:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:37:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:37:36 INFO]: AuthenticatedTestPlayer left the game
+[10:37:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:38:00 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:38:00 INFO]: AuthenticatedTestPlayer joined the game
+[10:38:00 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51981] logged in with entity id 951 at ([world]5.5, 79.69568317254246, 30.5)
+[10:38:01 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:38:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:38:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:38:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:38:03 INFO]: AuthenticatedTestPlayer left the game
+[10:38:06 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:38:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:38:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:38:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51985] logged in with entity id 969 at ([world]5.5, 76.85153964023749, 30.5)
+[10:38:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:38:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:38:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:38:06 INFO]: AuthenticatedTestPlayer left the game
+[10:38:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:38:30 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:38:30 INFO]: AuthenticatedTestPlayer joined the game
+[10:38:30 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51996] logged in with entity id 977 at ([world]5.5, 79.76947263108704, 30.5)
+[10:38:31 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:38:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:38:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:38:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:38:33 INFO]: AuthenticatedTestPlayer left the game
+[10:38:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:38:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:38:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:38:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52000] logged in with entity id 993 at ([world]5.5, 76.90381191365455, 30.5)
+[10:38:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:38:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:38:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:38:36 INFO]: AuthenticatedTestPlayer left the game
+[10:38:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:38:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:38:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:38:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52009] logged in with entity id 1001 at ([world]5.5, 79.76947263108704, 30.5)
+[10:39:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:39:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:39:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:39:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:39:03 INFO]: AuthenticatedTestPlayer left the game
+[10:39:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:39:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:39:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:39:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52013] logged in with entity id 1017 at ([world]5.5, 76.92532909878207, 30.5)
+[10:39:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:39:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:39:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:39:06 INFO]: AuthenticatedTestPlayer left the game
+[10:39:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:39:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:39:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:39:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52023] logged in with entity id 1025 at ([world]5.5, 79.76947263108704, 30.5)
+[10:39:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:39:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:39:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:39:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:39:33 INFO]: AuthenticatedTestPlayer left the game
+[10:39:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:39:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:39:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:39:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52027] logged in with entity id 1041 at ([world]5.5, 76.92532909878207, 30.5)
+[10:39:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:39:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:39:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:39:36 INFO]: AuthenticatedTestPlayer left the game
+[10:39:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:40:00 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:40:00 INFO]: AuthenticatedTestPlayer joined the game
+[10:40:00 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52036] logged in with entity id 1049 at ([world]5.5, 79.76947263108704, 30.5)
+[10:40:01 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:40:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:40:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:40:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:40:03 INFO]: AuthenticatedTestPlayer left the game
+[10:40:06 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:40:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:40:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:40:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52040] logged in with entity id 1065 at ([world]5.5, 76.92532909878207, 30.5)
+[10:40:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:40:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:40:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:40:06 INFO]: AuthenticatedTestPlayer left the game
+[10:40:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:40:30 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:40:30 INFO]: AuthenticatedTestPlayer joined the game
+[10:40:30 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52049] logged in with entity id 1073 at ([world]5.5, 79.76947263108704, 30.5)
+[10:40:31 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:40:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:40:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:40:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:40:33 INFO]: AuthenticatedTestPlayer left the game
+[10:40:36 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:40:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:40:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:40:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52053] logged in with entity id 1089 at ([world]5.5, 76.92532909878207, 30.5)
+[10:40:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:40:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:40:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:40:36 INFO]: AuthenticatedTestPlayer left the game
+[10:40:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:41:00 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:41:00 INFO]: AuthenticatedTestPlayer joined the game
+[10:41:00 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52062] logged in with entity id 1097 at ([world]5.5, 79.69568317254246, 30.5)
+[10:41:01 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:41:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:41:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:41:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:41:03 INFO]: AuthenticatedTestPlayer left the game
+[10:41:06 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:41:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:41:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:41:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52066] logged in with entity id 1113 at ([world]5.5, 76.85153964023749, 30.5)
+[10:41:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:41:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:41:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:41:06 INFO]: AuthenticatedTestPlayer left the game
+[10:41:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:41:30 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:41:30 INFO]: AuthenticatedTestPlayer joined the game
+[10:41:30 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52075] logged in with entity id 1121 at ([world]5.5, 79.76947263108704, 30.5)
+[10:41:31 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:41:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:41:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:41:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:41:33 INFO]: AuthenticatedTestPlayer left the game
+[10:41:36 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:41:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:41:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:41:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52079] logged in with entity id 1139 at ([world]5.5, 76.90381191365455, 30.5)
+[10:41:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:41:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:41:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:41:36 INFO]: AuthenticatedTestPlayer left the game
+[10:41:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:42:00 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:42:00 INFO]: AuthenticatedTestPlayer joined the game
+[10:42:00 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52088] logged in with entity id 1147 at ([world]5.5, 79.69568317254246, 30.5)
+[10:42:01 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:42:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:42:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:42:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:42:03 INFO]: AuthenticatedTestPlayer left the game
+[10:42:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:42:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:42:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:42:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52092] logged in with entity id 1163 at ([world]5.5, 76.85153964023749, 30.5)
+[10:42:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:42:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:42:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:42:06 INFO]: AuthenticatedTestPlayer left the game
+[10:42:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:42:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:42:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:42:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52101] logged in with entity id 1171 at ([world]5.5, 79.76947263108704, 30.5)
+[10:42:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:42:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:42:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:42:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:42:33 INFO]: AuthenticatedTestPlayer left the game
+[10:42:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:42:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:42:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:42:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52105] logged in with entity id 1187 at ([world]5.5, 76.92532909878207, 30.5)
+[10:42:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:42:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:42:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:42:36 INFO]: AuthenticatedTestPlayer left the game
+[10:42:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:42:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:42:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:42:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52116] logged in with entity id 1195 at ([world]5.5, 79.76947263108704, 30.5)
+[10:43:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:43:02 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:43:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:43:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:43:03 INFO]: AuthenticatedTestPlayer left the game
+[10:43:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:43:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:43:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:43:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52120] logged in with entity id 1211 at ([world]5.5, 76.92532909878207, 30.5)
+[10:43:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:43:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:43:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:43:06 INFO]: AuthenticatedTestPlayer left the game
+[10:43:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:43:30 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:43:30 INFO]: AuthenticatedTestPlayer joined the game
+[10:43:30 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52131] logged in with entity id 1219 at ([world]5.5, 79.76947263108704, 30.5)
+[10:43:31 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:43:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:43:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:43:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:43:33 INFO]: AuthenticatedTestPlayer left the game
+[10:43:36 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:43:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:43:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:43:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52135] logged in with entity id 1235 at ([world]5.5, 76.90381191365455, 30.5)
+[10:43:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:43:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:43:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:43:36 INFO]: AuthenticatedTestPlayer left the game
+[10:43:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:44:00 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:44:00 INFO]: AuthenticatedTestPlayer joined the game
+[10:44:00 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52144] logged in with entity id 1243 at ([world]5.5, 79.69568317254246, 30.5)
+[10:44:01 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:44:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:44:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:44:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:44:03 INFO]: AuthenticatedTestPlayer left the game
+[10:44:06 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:44:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:44:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:44:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52148] logged in with entity id 1259 at ([world]5.5, 76.83002245510997, 30.5)
+[10:44:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:44:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:44:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:44:06 INFO]: AuthenticatedTestPlayer left the game
+[10:44:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:44:30 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:44:30 INFO]: AuthenticatedTestPlayer joined the game
+[10:44:30 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52158] logged in with entity id 1267 at ([world]5.5, 79.76947263108704, 30.5)
+[10:44:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:44:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:44:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:44:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:44:33 INFO]: AuthenticatedTestPlayer left the game
+[10:44:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:44:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:44:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:44:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52162] logged in with entity id 1285 at ([world]5.5, 76.90381191365455, 30.5)
+[10:44:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:44:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:44:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:44:36 INFO]: AuthenticatedTestPlayer left the game
+[10:44:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:45:00 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:45:00 INFO]: AuthenticatedTestPlayer joined the game
+[10:45:00 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52171] logged in with entity id 1293 at ([world]5.5, 79.76947263108704, 30.5)
+[10:45:01 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:45:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:45:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:45:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:45:03 INFO]: AuthenticatedTestPlayer left the game
+[10:45:06 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:45:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:45:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:45:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52175] logged in with entity id 1309 at ([world]5.5, 76.92532909878207, 30.5)
+[10:45:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:45:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:45:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:45:06 INFO]: AuthenticatedTestPlayer left the game
+[10:45:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:45:30 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:45:30 INFO]: AuthenticatedTestPlayer joined the game
+[10:45:30 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52184] logged in with entity id 1316 at ([world]5.5, 79.76947263108704, 30.5)
+[10:45:31 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:45:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:45:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:45:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:45:33 INFO]: AuthenticatedTestPlayer left the game
+[10:45:36 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:45:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:45:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:45:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52188] logged in with entity id 1335 at ([world]5.5, 76.90381191365455, 30.5)
+[10:45:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:45:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:45:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:45:36 INFO]: AuthenticatedTestPlayer left the game
+[10:45:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:45:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:45:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:45:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52197] logged in with entity id 1342 at ([world]5.5, 79.69568317254246, 30.5)
+[10:46:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:46:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:46:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:46:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:46:03 INFO]: AuthenticatedTestPlayer left the game
+[10:46:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:46:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:46:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:46:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52201] logged in with entity id 1359 at ([world]5.5, 76.83002245510997, 30.5)
+[10:46:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:46:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:46:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:46:06 INFO]: AuthenticatedTestPlayer left the game
+[10:46:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:46:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:46:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:46:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52210] logged in with entity id 1365 at ([world]5.5, 79.69568317254246, 30.5)
+[10:46:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:46:32 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:46:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:46:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:46:33 INFO]: AuthenticatedTestPlayer left the game
+[10:46:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:46:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:46:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:46:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52214] logged in with entity id 1383 at ([world]5.5, 76.85153964023749, 30.5)
+[10:46:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:46:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:46:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:46:36 INFO]: AuthenticatedTestPlayer left the game
+[10:46:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:46:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:46:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:46:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52223] logged in with entity id 1389 at ([world]5.5, 79.76947263108704, 30.5)
+[10:47:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:47:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:47:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:47:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:47:03 INFO]: AuthenticatedTestPlayer left the game
+[10:47:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:47:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:47:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:47:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52227] logged in with entity id 1407 at ([world]5.5, 76.90381191365455, 30.5)
+[10:47:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:47:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:47:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:47:06 INFO]: AuthenticatedTestPlayer left the game
+[10:47:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:47:30 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:47:30 INFO]: AuthenticatedTestPlayer joined the game
+[10:47:30 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52238] logged in with entity id 1413 at ([world]5.5, 79.69568317254246, 30.5)
+[10:47:31 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:47:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:47:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:47:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:47:33 INFO]: AuthenticatedTestPlayer left the game
+[10:47:36 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:47:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:47:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:47:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52242] logged in with entity id 1431 at ([world]5.5, 76.83002245510997, 30.5)
+[10:47:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:47:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:47:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:47:36 INFO]: AuthenticatedTestPlayer left the game
+[10:47:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:47:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:47:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:47:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52251] logged in with entity id 1437 at ([world]5.5, 79.69568317254246, 30.5)
+[10:48:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:48:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:48:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:48:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:48:03 INFO]: AuthenticatedTestPlayer left the game
+[10:48:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:48:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:48:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:48:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52255] logged in with entity id 1455 at ([world]5.5, 76.83002245510997, 30.5)
+[10:48:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:48:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:48:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:48:06 INFO]: AuthenticatedTestPlayer left the game
+[10:48:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:48:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:48:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:48:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52267] logged in with entity id 1461 at ([world]5.5, 79.69568317254246, 30.5)
+[10:48:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:48:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:48:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:48:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:48:33 INFO]: AuthenticatedTestPlayer left the game
+[10:48:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:48:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:48:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:48:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52271] logged in with entity id 1479 at ([world]5.5, 76.83002245510997, 30.5)
+[10:48:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:48:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:48:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:48:36 INFO]: AuthenticatedTestPlayer left the game
+[10:48:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:48:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:48:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:48:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52280] logged in with entity id 1485 at ([world]5.5, 79.76947263108704, 30.5)
+[10:49:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:49:02 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:49:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:49:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:49:03 INFO]: AuthenticatedTestPlayer left the game
+[10:49:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:49:05 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:49:05 INFO]: AuthenticatedTestPlayer joined the game
+[10:49:05 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52284] logged in with entity id 1503 at ([world]5.5, 76.92532909878207, 30.5)
+[10:49:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:49:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:49:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:49:06 INFO]: AuthenticatedTestPlayer left the game
+[10:49:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:49:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:49:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:49:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52293] logged in with entity id 1509 at ([world]5.5, 79.76947263108704, 30.5)
+[10:49:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:49:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:49:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:49:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:49:33 INFO]: AuthenticatedTestPlayer left the game
+[10:49:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:49:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:49:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:49:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52297] logged in with entity id 1527 at ([world]5.5, 76.90381191365455, 30.5)
+[10:49:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:49:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:49:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:49:36 INFO]: AuthenticatedTestPlayer left the game
+[10:49:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:50:00 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:50:00 INFO]: AuthenticatedTestPlayer joined the game
+[10:50:00 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52307] logged in with entity id 1533 at ([world]5.5, 79.69568317254246, 30.5)
+[10:50:01 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:50:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:50:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:50:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:50:03 INFO]: AuthenticatedTestPlayer left the game
+[10:50:06 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:50:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:50:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:50:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52311] logged in with entity id 1551 at ([world]5.5, 76.85153964023749, 30.5)
+[10:50:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:50:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:50:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:50:06 INFO]: AuthenticatedTestPlayer left the game
+[10:50:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:50:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:50:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:50:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52320] logged in with entity id 1557 at ([world]5.5, 79.76947263108704, 30.5)
+[10:50:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:50:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:50:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:50:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:50:33 INFO]: AuthenticatedTestPlayer left the game
+[10:50:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:50:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:50:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:50:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52324] logged in with entity id 1575 at ([world]5.5, 76.90381191365455, 30.5)
+[10:50:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:50:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:50:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:50:36 INFO]: AuthenticatedTestPlayer left the game
+[10:50:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:50:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:50:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:50:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52333] logged in with entity id 1580 at ([world]5.5, 79.69568317254246, 30.5)
+[10:51:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:51:02 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:51:02 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:51:02 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:51:02 INFO]: AuthenticatedTestPlayer left the game
+[10:51:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:51:05 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:51:05 INFO]: AuthenticatedTestPlayer joined the game
+[10:51:05 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52337] logged in with entity id 1599 at ([world]5.5, 76.85153964023749, 30.5)
+[10:51:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:51:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:51:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:51:06 INFO]: AuthenticatedTestPlayer left the game
+[10:51:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:51:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:51:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:51:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52346] logged in with entity id 1604 at ([world]5.5, 79.76947263108704, 30.5)
+[10:51:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:51:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:51:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:51:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:51:33 INFO]: AuthenticatedTestPlayer left the game
+[10:51:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:51:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:51:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:51:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52350] logged in with entity id 1623 at ([world]5.5, 76.92532909878207, 30.5)
+[10:51:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:51:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:51:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:51:36 INFO]: AuthenticatedTestPlayer left the game
+[10:51:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:51:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:51:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:51:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52361] logged in with entity id 1628 at ([world]5.5, 79.76947263108704, 30.5)
+[10:52:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:52:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:52:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:52:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:52:03 INFO]: AuthenticatedTestPlayer left the game
+[10:52:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:52:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:52:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:52:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52365] logged in with entity id 1647 at ([world]5.5, 76.90381191365455, 30.5)
+[10:52:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:52:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:52:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:52:06 INFO]: AuthenticatedTestPlayer left the game
+[10:52:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:52:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:52:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:52:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52375] logged in with entity id 1652 at ([world]5.5, 79.69568317254246, 30.5)
+[10:52:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:52:32 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:52:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:52:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:52:33 INFO]: AuthenticatedTestPlayer left the game
+[10:52:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:52:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:52:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:52:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52380] logged in with entity id 1671 at ([world]5.5, 76.85153964023749, 30.5)
+[10:52:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:52:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:52:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:52:36 INFO]: AuthenticatedTestPlayer left the game
+[10:52:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:52:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:52:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:52:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52389] logged in with entity id 1676 at ([world]5.5, 79.69568317254246, 30.5)
+[10:53:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:53:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:53:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:53:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:53:03 INFO]: AuthenticatedTestPlayer left the game
+[10:53:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:53:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:53:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:53:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52393] logged in with entity id 1695 at ([world]5.5, 76.83002245510997, 30.5)
+[10:53:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:53:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:53:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:53:06 INFO]: AuthenticatedTestPlayer left the game
+[10:53:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:53:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:53:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:53:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52402] logged in with entity id 1700 at ([world]5.5, 79.76947263108704, 30.5)
+[10:53:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:53:32 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:53:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:53:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:53:33 INFO]: AuthenticatedTestPlayer left the game
+[10:53:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:53:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:53:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:53:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52407] logged in with entity id 1719 at ([world]5.5, 76.92532909878207, 30.5)
+[10:53:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:53:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:53:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:53:36 INFO]: AuthenticatedTestPlayer left the game
+[10:53:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:53:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:53:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:53:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52418] logged in with entity id 1724 at ([world]5.5, 79.76947263108704, 30.5)
+[10:54:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:54:02 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:54:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:54:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:54:03 INFO]: AuthenticatedTestPlayer left the game
+[10:54:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:54:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:54:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:54:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52422] logged in with entity id 1743 at ([world]5.5, 76.92532909878207, 30.5)
+[10:54:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:54:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:54:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:54:06 INFO]: AuthenticatedTestPlayer left the game
+[10:54:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:54:30 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:54:30 INFO]: AuthenticatedTestPlayer joined the game
+[10:54:30 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52433] logged in with entity id 1748 at ([world]5.5, 79.76947263108704, 30.5)
+[10:54:31 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:54:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:54:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:54:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:54:33 INFO]: AuthenticatedTestPlayer left the game
+[10:54:36 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:54:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:54:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:54:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52437] logged in with entity id 1767 at ([world]5.5, 76.90381191365455, 30.5)
+[10:54:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:54:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:54:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:54:36 INFO]: AuthenticatedTestPlayer left the game
+[10:55:01 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:55:01 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:55:01 INFO]: AuthenticatedTestPlayer joined the game
+[10:55:01 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52446] logged in with entity id 1772 at ([world]5.5, 79.76947263108704, 30.5)
+[10:55:02 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:55:04 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:55:05 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:55:05 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:55:05 INFO]: AuthenticatedTestPlayer left the game
+[10:55:07 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:55:08 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:55:08 INFO]: AuthenticatedTestPlayer joined the game
+[10:55:08 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52450] logged in with entity id 1791 at ([world]5.5, 76.90381191365455, 30.5)
+[10:55:08 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:55:08 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:55:08 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:55:08 INFO]: AuthenticatedTestPlayer left the game
+[10:55:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:55:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:55:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:55:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52459] logged in with entity id 1796 at ([world]5.5, 79.69568317254246, 30.5)
+[10:55:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:55:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:55:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:55:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:55:33 INFO]: AuthenticatedTestPlayer left the game
+[10:55:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:55:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:55:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:55:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52463] logged in with entity id 1815 at ([world]5.5, 76.83002245510997, 30.5)
+[10:55:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:55:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:55:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:55:36 INFO]: AuthenticatedTestPlayer left the game
+[10:55:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:55:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:55:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:55:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52472] logged in with entity id 1820 at ([world]5.5, 79.69568317254246, 30.5)
+[10:56:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:56:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:56:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:56:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:56:03 INFO]: AuthenticatedTestPlayer left the game
+[10:56:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:56:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:56:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:56:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52476] logged in with entity id 1839 at ([world]5.5, 76.83002245510997, 30.5)
+[10:56:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:56:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:56:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:56:06 INFO]: AuthenticatedTestPlayer left the game
+[10:56:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:56:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:56:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:56:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52487] logged in with entity id 1843 at ([world]5.5, 79.76947263108704, 30.5)
+[10:56:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:56:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:56:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:56:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:56:33 INFO]: AuthenticatedTestPlayer left the game
+[10:56:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:56:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:56:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:56:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52491] logged in with entity id 1863 at ([world]5.5, 76.90381191365455, 30.5)
+[10:56:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:56:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:56:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:56:36 INFO]: AuthenticatedTestPlayer left the game
+[10:56:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:57:00 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:57:00 INFO]: AuthenticatedTestPlayer joined the game
+[10:57:00 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52500] logged in with entity id 1867 at ([world]5.5, 79.76947263108704, 30.5)
+[10:57:01 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:57:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:57:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:57:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:57:03 INFO]: AuthenticatedTestPlayer left the game
+[10:57:06 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:57:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:57:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:57:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52504] logged in with entity id 1887 at ([world]5.5, 76.90381191365455, 30.5)
+[10:57:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:57:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:57:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:57:06 INFO]: AuthenticatedTestPlayer left the game
+[10:57:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:57:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:57:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:57:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52514] logged in with entity id 1891 at ([world]5.5, 79.69568317254246, 30.5)
+[10:57:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:57:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:57:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:57:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:57:33 INFO]: AuthenticatedTestPlayer left the game
+[10:57:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:57:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:57:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:57:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52518] logged in with entity id 1911 at ([world]5.5, 76.85153964023749, 30.5)
+[10:57:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:57:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:57:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:57:36 INFO]: AuthenticatedTestPlayer left the game
+[10:57:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:58:00 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:58:00 INFO]: AuthenticatedTestPlayer joined the game
+[10:58:00 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52527] logged in with entity id 1915 at ([world]5.5, 79.76947263108704, 30.5)
+[10:58:01 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:58:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:58:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:58:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:58:03 INFO]: AuthenticatedTestPlayer left the game
+[10:58:06 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:58:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:58:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:58:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52531] logged in with entity id 1935 at ([world]5.5, 76.90381191365455, 30.5)
+[10:58:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:58:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:58:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:58:06 INFO]: AuthenticatedTestPlayer left the game
+[10:58:29 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:58:29 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:58:29 INFO]: AuthenticatedTestPlayer joined the game
+[10:58:29 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52541] logged in with entity id 1939 at ([world]5.5, 79.69568317254246, 30.5)
+[10:58:30 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.69568317254246 z=30.5
+[10:58:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:58:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:58:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:58:33 INFO]: AuthenticatedTestPlayer left the game
+[10:58:35 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:58:36 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:58:36 INFO]: AuthenticatedTestPlayer joined the game
+[10:58:36 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52545] logged in with entity id 1959 at ([world]5.5, 76.83002245510997, 30.5)
+[10:58:36 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:58:36 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:58:36 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:58:36 INFO]: AuthenticatedTestPlayer left the game
+[10:58:59 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:58:59 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:58:59 INFO]: AuthenticatedTestPlayer joined the game
+[10:58:59 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52554] logged in with entity id 1963 at ([world]5.5, 79.76947263108704, 30.5)
+[10:59:00 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=5.5 y=79.76947263108704 z=30.5
+[10:59:03 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp b "minecraft:overworld" Test Target
+[10:59:03 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:59:03 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:59:03 INFO]: AuthenticatedTestPlayer left the game
+[10:59:05 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:59:06 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:59:06 INFO]: AuthenticatedTestPlayer joined the game
+[10:59:06 INFO]: AuthenticatedTestPlayer[/127.0.0.1:52558] logged in with entity id 1983 at ([world]5.5, 76.92532909878207, 30.5)
+[10:59:06 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:59:06 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:59:06 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:59:06 INFO]: AuthenticatedTestPlayer left the game
+> >
+[15:01:55 INFO]: Stopping the server
+[15:01:55 INFO]: [RegionShutdownThread] Awaiting scheduler termination for 60s...
+[15:01:55 INFO]: [RegionShutdownThread] Scheduler halted
+[15:01:55 INFO]: Stopping server
+[15:01:55 INFO]: [TeleportAudit] Disabling TeleportAudit v4
+[15:01:55 INFO]: [server_waypoint_plugin] Disabling ServerWaypoint v3.1.0
+[15:01:55 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[15:01:55 INFO]: [server_waypoint_core] Saved config file: plugins/ServerWaypoint/config.json
+[15:01:55 INFO]: [RegionShutdownThread] Halting chunk systems...
+[15:01:55 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world'
+[15:01:55 INFO]: [ChunkHolderManager] Halted chunk system for world 'world'
+[15:01:55 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_nether'
+[15:01:55 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_nether'
+[15:01:55 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_the_end'
+[15:01:55 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_the_end'
+[15:01:55 INFO]: [RegionShutdownThread] Halted chunk systems
+[15:01:55 INFO]: [RegionShutdownThread] Finishing pending teleports...
+[15:01:55 INFO]: [RegionShutdownThread] Finished pending teleports
+[15:01:55 INFO]: [RegionShutdownThread] Saving all worlds
+[15:01:55 INFO]: [RegionShutdownThread] Saving world data for world 'world'
+[15:01:55 INFO]: [RegionShutdownThread] Closing player inventories...
+[15:01:55 INFO]: [RegionShutdownThread] Closed player inventories
+[15:01:55 INFO]: [RegionShutdownThread] Saving chunks...
+[15:01:55 INFO]: [RegionShutdownThread] Saved chunks
+[15:01:55 INFO]: [RegionShutdownThread] Saving level data...
+[15:01:55 INFO]: [RegionShutdownThread] Saved level data
+[15:01:55 INFO]: [RegionShutdownThread] Saved world data for world 'world'
+[15:01:55 INFO]: [RegionShutdownThread] Saving world data for world 'world_nether'
+[15:01:55 INFO]: [RegionShutdownThread] Closing player inventories...
+[15:01:55 INFO]: [RegionShutdownThread] Closed player inventories
+[15:01:55 INFO]: [RegionShutdownThread] Saving chunks...
+[15:01:55 INFO]: [RegionShutdownThread] Saved chunks
+[15:01:55 INFO]: [RegionShutdownThread] Saving level data...
+[15:01:55 INFO]: [RegionShutdownThread] Saved level data
+[15:01:55 INFO]: [RegionShutdownThread] Saved world data for world 'world_nether'
+[15:01:55 INFO]: [RegionShutdownThread] Saving world data for world 'world_the_end'
+[15:01:55 INFO]: [RegionShutdownThread] Closing player inventories...
+[15:01:55 INFO]: [RegionShutdownThread] Closed player inventories
+[15:01:55 INFO]: [RegionShutdownThread] Saving chunks...
+[15:01:55 INFO]: [RegionShutdownThread] Saved chunks
+[15:01:55 INFO]: [RegionShutdownThread] Saving level data...
+[15:01:55 INFO]: [RegionShutdownThread] Saved level data
+[15:01:55 INFO]: [RegionShutdownThread] Saved world data for world 'world_the_end'
+[15:01:55 INFO]: [RegionShutdownThread] Saved all worlds
+[15:01:55 INFO]: [RegionShutdownThread] Saving all player data...
+[15:01:55 INFO]: [RegionShutdownThread] Saved all player data
+[15:01:55 INFO]: Waiting for all RegionFile I/O tasks to complete...
+[15:01:55 INFO]: All RegionFile I/O tasks to complete
+[15:01:55 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+[15:01:55 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...

@@ -1,0 +1,378 @@
+{
+  "status": "PASS",
+  "durationSeconds": 1801.9,
+  "cycles": [
+    {
+      "cycle": 1,
+      "durationSeconds": 7.91,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 2,
+      "durationSeconds": 7.74,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 3,
+      "durationSeconds": 7.96,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 4,
+      "durationSeconds": 7.94,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 5,
+      "durationSeconds": 7.76,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 6,
+      "durationSeconds": 7.7,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 7,
+      "durationSeconds": 7.82,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 8,
+      "durationSeconds": 8.11,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 9,
+      "durationSeconds": 7.78,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 10,
+      "durationSeconds": 8.35,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 11,
+      "durationSeconds": 8.17,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 12,
+      "durationSeconds": 8.13,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 13,
+      "durationSeconds": 8.23,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 14,
+      "durationSeconds": 8.17,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 15,
+      "durationSeconds": 8.29,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 16,
+      "durationSeconds": 7.77,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 17,
+      "durationSeconds": 8.25,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 18,
+      "durationSeconds": 8.17,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 19,
+      "durationSeconds": 8.04,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 20,
+      "durationSeconds": 7.94,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 21,
+      "durationSeconds": 7.93,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 22,
+      "durationSeconds": 8.12,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 23,
+      "durationSeconds": 8.17,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 24,
+      "durationSeconds": 8.09,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 25,
+      "durationSeconds": 8.31,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 26,
+      "durationSeconds": 8.06,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 27,
+      "durationSeconds": 7.88,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 28,
+      "durationSeconds": 7.85,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 29,
+      "durationSeconds": 8.38,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 30,
+      "durationSeconds": 8.41,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 31,
+      "durationSeconds": 7.98,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 32,
+      "durationSeconds": 8.28,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 33,
+      "durationSeconds": 8.42,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 34,
+      "durationSeconds": 7.88,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 35,
+      "durationSeconds": 7.93,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 36,
+      "durationSeconds": 7.9,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 37,
+      "durationSeconds": 8.36,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 38,
+      "durationSeconds": 8.11,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 39,
+      "durationSeconds": 7.92,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 40,
+      "durationSeconds": 7.8,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 41,
+      "durationSeconds": 7.86,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 42,
+      "durationSeconds": 8.3,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 43,
+      "durationSeconds": 8.1,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 44,
+      "durationSeconds": 7.77,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 45,
+      "durationSeconds": 7.89,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 46,
+      "durationSeconds": 8.07,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 47,
+      "durationSeconds": 7.92,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 48,
+      "durationSeconds": 8.04,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 49,
+      "durationSeconds": 7.87,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 50,
+      "durationSeconds": 7.93,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 51,
+      "durationSeconds": 8.21,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 52,
+      "durationSeconds": 10.0,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 53,
+      "durationSeconds": 8.21,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 54,
+      "durationSeconds": 7.93,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 55,
+      "durationSeconds": 8.05,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 56,
+      "durationSeconds": 8.26,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 57,
+      "durationSeconds": 7.95,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 58,
+      "durationSeconds": 8.41,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 59,
+      "durationSeconds": 8.02,
+      "result": "PASS",
+      "transfers": 2
+    },
+    {
+      "cycle": 60,
+      "durationSeconds": 7.93,
+      "result": "PASS",
+      "transfers": 2
+    }
+  ],
+  "samplesFile": "soak-samples.json",
+  "cycleCount": 60,
+  "successfulTransfers": 120,
+  "identity": "AuthenticatedTestPlayer",
+  "authentication": "online Velocity with modern forwarding",
+  "coordinatorTransport": "NOISE_KK",
+  "limits": {
+    "proxyMaxHeapMiB": 512,
+    "backendMaxHeapMiB": 1024,
+    "coordinatorConnections": 32
+  },
+  "scope": "30-minute bounded reconnect and transfer soak; not an overnight or high-player-count soak"
+}

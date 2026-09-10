@@ -1,0 +1,133 @@
+package _959.server_waypoint.proxy.handoff;
+
+import _959.server_waypoint.crossserver.RemoteServerId;
+import _959.server_waypoint.crossserver.protocol.ApplicationMessage;
+import _959.server_waypoint.crossserver.protocol.ApplicationMessage.*;
+import _959.server_waypoint.proxy.ProxyPlayerSnapshot;
+import java.util.*;
+import java.util.function.Function;
+
+/**
+ * Platform-neutral coordinator handlers for backend requests and destination replies.
+ * The lifecycle owner supplies admitted session contexts and serializes disconnect/revocation with
+ * dispatch. Callbacks must be nonblocking local observations. No player switch is performed here.
+ */
+public final class HandoffRequestHandler implements AutoCloseable {
+    /** Deliver only to this exact still-live session, preserving requestId with a fresh wire sequence. */
+    public record Delivery(HandoffPeer peer, UUID requestId, ApplicationMessage message) { }
+    public record Dispatch(Result result, List<Delivery> deliveries) {
+        public Dispatch { deliveries = List.copyOf(deliveries); }
+    }
+    private final HandoffRegistry registry;
+    private final Function<RemoteServerId, Optional<HandoffPeer>> peers;
+    private final Function<UUID, Optional<ProxyPlayerSnapshot>> players;
+    private final Function<PrepareHandoff, Result> admission;
+
+    /**
+     * admission must check configured source handoff permission, route mappings and coordinator
+     * catalog policy/budgets. It cannot replace destination preparation or final player permission.
+     * players must use proxy-authenticated snapshots (for example ProxyPlayerRouter::findPlayer),
+     * never backend-supplied UUID-to-permission assertions. peers includes only registered sessions.
+     */
+    public HandoffRequestHandler(HandoffRegistry registry,
+                                 Function<RemoteServerId, Optional<HandoffPeer>> peers,
+                                 Function<UUID, Optional<ProxyPlayerSnapshot>> players,
+                                 Function<PrepareHandoff, Result> admission) {
+        this.registry = Objects.requireNonNull(registry);
+        this.peers = Objects.requireNonNull(peers);
+        this.players = Objects.requireNonNull(players);
+        this.admission = Objects.requireNonNull(admission);
+    }
+
+    public synchronized Dispatch handle(HandoffPeer peer, UUID requestId, ApplicationMessage message) {
+        Objects.requireNonNull(peer); Objects.requireNonNull(requestId); Objects.requireNonNull(message);
+        if (requestId.equals(new UUID(0, 0))) throw new IllegalArgumentException("Nil request ID");
+        try {
+            if (!isCurrent(peer)) return failure(peer, requestId, message, Result.UNAUTHORIZED);
+            if (message instanceof PrepareHandoff prepare) {
+                if (!peer.serverId().equals(prepare.source())) return failure(peer, requestId, message, Result.WRONG_SOURCE);
+                if (!playerAt(prepare.playerId(), prepare.source())) return failure(peer, requestId, message, Result.WRONG_SOURCE);
+                Result allowed = Objects.requireNonNull(admission.apply(prepare));
+                if (allowed != Result.SUCCESS) return failure(peer, requestId, message, allowed);
+                HandoffPeer destination = peers.apply(prepare.target().serverId()).orElse(null);
+                if (destination == null) return failure(peer, requestId, message, Result.UNAVAILABLE);
+                var result = registry.prepare(requestId, prepare, peer, destination);
+                if (result.result() != Result.SUCCESS) return failure(peer, requestId, message, result.result());
+                return delivered(destination, requestId, prepare);
+            }
+            if (message instanceof HandoffPrepared prepared) {
+                var existing = registry.find(requestId).orElse(null);
+                if (existing == null) return failure(peer, requestId, message, Result.NOT_FOUND);
+                if (!existing.destination().equals(peer)) return failure(peer, requestId, message, Result.WRONG_DESTINATION);
+                if (!isCurrent(existing.source())) return failure(peer, requestId, message, Result.UNAVAILABLE);
+                if (!playerAt(existing.request().playerId(), existing.source().serverId())) return failure(peer, requestId, message, Result.WRONG_SOURCE);
+                Result allowed = Objects.requireNonNull(admission.apply(existing.request()));
+                if (allowed != Result.SUCCESS) return failure(peer, requestId, message, allowed);
+                var result = registry.reserve(peer, requestId, prepared.binding());
+                if (result.result() != Result.SUCCESS) return failure(peer, requestId, message, result.result());
+                return delivered(result.snapshot().source(), requestId, new HandoffPrepared(result.snapshot().binding()));
+            }
+            if (message instanceof HandoffRejected rejected) {
+                var result = registry.reject(peer, requestId, rejected.reason());
+                if (result.result() != Result.SUCCESS) return failure(peer, requestId, message, result.result());
+                return delivered(result.snapshot().source(), requestId, rejected);
+            }
+            if (message instanceof ClaimHandoff claim) {
+                if (!peer.serverId().equals(claim.destination())) return failure(peer, requestId, message, Result.WRONG_DESTINATION);
+                var existing = registry.find(requestId).orElse(null);
+                if (existing != null && !isCurrent(existing.source())) return failure(peer, requestId, message, Result.UNAVAILABLE);
+                if (!playerAt(claim.playerId(), claim.destination())) return failure(peer, requestId, message, Result.UNAUTHORIZED);
+                var result = registry.claim(peer, requestId, claim);
+                if (result.result() != Result.SUCCESS) return failure(peer, requestId, message, result.result());
+                return delivered(peer, requestId, new HandoffClaimed(result.snapshot().binding()));
+            }
+            if (message instanceof CompleteHandoff complete) {
+                var result = registry.complete(peer, requestId, complete);
+                if (result.result() != Result.SUCCESS) return failure(peer, requestId, message, result.result());
+                return result.changed() ? delivered(result.snapshot().source(), requestId, complete) : unchanged();
+            }
+            if (message instanceof CancelHandoff cancel) {
+                var result = registry.cancel(peer, requestId, cancel);
+                if (result.result() != Result.SUCCESS) return failure(peer, requestId, message, result.result());
+                HandoffPeer other = peer.equals(result.snapshot().source()) ? result.snapshot().destination() : result.snapshot().source();
+                return result.changed() ? delivered(other, requestId, cancel) : unchanged();
+            }
+            return failure(peer, requestId, message, Result.UNSUPPORTED);
+        } catch (RuntimeException unavailable) {
+            // No exception text or peer-supplied diagnostic is reflected to a backend.
+            return failure(peer, requestId, message, Result.UNAVAILABLE);
+        }
+    }
+
+    /** Best-effort expiry notices; every operation independently enforces expiry even without this tick. */
+    public synchronized List<Delivery> maintain() { return notifications(registry.maintain(), null); }
+    public synchronized List<Delivery> disconnect(HandoffPeer peer) { return notifications(registry.disconnect(peer), peer); }
+    @Override public synchronized void close() { registry.close(); }
+
+    private List<Delivery> notifications(List<HandoffRegistry.Snapshot> records, HandoffPeer disconnected) {
+        List<Delivery> deliveries = new ArrayList<>();
+        for (var record : records) {
+            ApplicationMessage message = record.binding() == null ? new HandoffRejected(record.result())
+                    : new CancelHandoff(record.binding().handoffId(), record.result());
+            if (!record.source().equals(disconnected)) deliveries.add(new Delivery(record.source(), record.requestId(), message));
+            if (!record.destination().equals(disconnected)) deliveries.add(new Delivery(record.destination(), record.requestId(), message));
+        }
+        return List.copyOf(deliveries);
+    }
+    private boolean isCurrent(HandoffPeer peer) { return peers.apply(peer.serverId()).filter(peer::equals).isPresent(); }
+    private boolean playerAt(UUID id, RemoteServerId server) {
+        System.out.println("STEP19_ROUTE expected=" + server + " actual=" + players.apply(id));
+        return players.apply(id).filter(player -> player.playerId().equals(id))
+                .flatMap(ProxyPlayerSnapshot::currentServer).filter(server::equals).isPresent();
+    }
+    private Dispatch failure(HandoffPeer peer, UUID requestId, ApplicationMessage request, Result reason) {
+        registry.auditRejection(reason);
+        ApplicationMessage response = request instanceof PrepareHandoff ? new HandoffRejected(reason)
+                : new ApplicationMessage.Error(reason);
+        return new Dispatch(reason, List.of(new Delivery(peer, requestId, response)));
+    }
+    private static Dispatch delivered(HandoffPeer peer, UUID requestId, ApplicationMessage message) {
+        return new Dispatch(Result.SUCCESS, List.of(new Delivery(peer, requestId, message)));
+    }
+    private static Dispatch unchanged() { return new Dispatch(Result.SUCCESS, List.of()); }
+}

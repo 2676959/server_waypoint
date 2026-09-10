@@ -1,0 +1,2 @@
+PRESSURE_HELD established_client_sockets=62 accepted_server_sockets=32
+{"successfulTransfersWhilePressureHeld": 2, "attemptedConnections": 64, "connectedClientSockets": 62, "serverEstablishedBefore": 2, "serverEstablishedDuringPressure": 32, "handshakeSocketsClosedByDeadline": 30, "serverEstablishedAfterRelease": 2, "configuredApplicationSocketLimit": 32, "configuredHandshakeDeadlineMillis": 10000}

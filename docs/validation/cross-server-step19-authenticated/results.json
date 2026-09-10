@@ -1,0 +1,83 @@
+{
+  "date": "2026-09-10",
+  "result": "PASS for recorded scenarios",
+  "runtime": "Folia 1.21.11 build 14, two region tick threads per backend; Velocity 4.1.1 build 24; MCC v26.2 build499 speaking protocol774",
+  "identity": {
+    "profile": "AuthenticatedTestPlayer",
+    "uuid": "00000000-0000-4000-8000-000000000019",
+    "proxyOnlineMode": true,
+    "forwarding": "MODERN",
+    "coordinatorTransport": "NOISE_KK"
+  },
+  "assertions": [
+    "Authenticated bidirectional transfers with matching UUID, owned/current/online true and correct coordinates",
+    "Destination permission revoked by entity task after preparation: UNAUTHORIZED, no completion; subsequent fresh session recovers",
+    "Waypoint moved after preparation: arrival uses fresh (8197.5,81,30.5), then target restored to y80",
+    "Destination kicked on first entity tick: retired callback, no completion, proxy falls back to source; next handoff succeeds",
+    "Disabled backend registry followed by coordinator restart: stale catalog and denied teleport",
+    "Backend key rotated in fresh credential directory with old pin: stale catalog and denied teleport",
+    "New backend public pin installed and coordinator restarted: AVAILABLE catalog and bidirectional authenticated transfer recovery",
+    "64 connection attempts: accepted server socket ceiling32, 30 stalled handshakes close by deadline observation, returns to2 legitimate connections; subsequent transfer succeeds"
+  ],
+  "limitations": [
+    "Audit entity-task callbacks corroborate ownership; Folia did not emit PLUGIN teleport events in the earlier run, so no independent exactly-once event count is claimed",
+    "Coordinator private-key rotation was not exercised; recorded rotation is backend b",
+    "Pressure transfer request occurred after socket release; established player connection survived pressure",
+    "Soak results are recorded separately; this file does not claim a soak pass",
+    "This native run used the earlier race-fix candidate, before the final registry-scan refinement; final-candidate validation is recorded separately."
+  ],
+  "artifacts": {
+    "server_waypoint-3.1.0-velocity.jar": "a41ff6feadd30bae8adf231685622645d8a7b54cb8d305ce09d5262f08d14273",
+    "teleport-audit4.jar": "146c94e1515deca006f231a6645975469b35a632d9c5fe001ee6df0a21f1d940",
+    "server_waypoint-3.1.0-paper-mc1.21.11-26.1.2.jar": "34c9bf5bfc5a3be8d1a11a7b5b5ee390f3d00f1f2589161ae72b298969d0f728"
+  },
+  "logs": {
+    "a-authenticated.log": {
+      "rawSha256": "114d5679f961dfc5efc88bc1e81f84243039bee077f8d556e28b1354a6c90fe8",
+      "archivedSha256": "a6f2107babacb2e2271b5f28852047d8348401527af744b4147426a300592f1b"
+    },
+    "b-authenticated.log": {
+      "rawSha256": "04890887fdf859e950a907eb898a2a7d996f6ac1d29e476dc0cf2999f1c01096",
+      "archivedSha256": "9e5480ddcac790371dc4ce1b7529278d0a9e8b7f267150e5cfa726df74d3285a"
+    },
+    "proxy-authenticated.log": {
+      "rawSha256": "6549d90d3cd67a06e1eb7a108be3171d45439e2823a9befd1191fc362e104e7b",
+      "archivedSha256": "2894c098699cc8f6e98001a696c6b145992eb4e081e523f2a5291622a8ac0053"
+    },
+    "b-rotated.log": {
+      "rawSha256": "7bcb88afc9533e8d1f9f7829cf0bd3cf213334b478e53207bab65e62f84c9e5d",
+      "archivedSha256": "3de36d32faf4f89ffc6c3be4a581b941fce76b71e70deeea5b781d0623e317c1"
+    },
+    "proxy-revoked.log": {
+      "rawSha256": "94c2b2221b45029df640151662f8a2a0e28a652eb0a981ffa99b51a2e62735d6",
+      "archivedSha256": "03f0e17bd706e8f5d5be3a3fe0ae315323a0bb59cd2ba88ddf8fd350b825819e"
+    },
+    "proxy-old-pin.log": {
+      "rawSha256": "0856f9686745516d69440eeaae02c6b38004fc761351329637cdb5d81ac50c26",
+      "archivedSha256": "53dd7952775349ebcfef771cda33e67e32731c725dae62f1b7e1d96231eaf5ae"
+    },
+    "proxy-rotated.log": {
+      "rawSha256": "d1da9ec21f032214bf16d9e9db150596128550842b049f0807217633e7b9a8fb",
+      "archivedSha256": "b8fa2671d92c135b25ba985aec1fa94eabc6d8bed4bff6c2ae0b49249707789d"
+    },
+    "rotation-evidence.json": {
+      "rawSha256": "9d88600d34c107d6ad7abec501a9cb82ec75d62699cb5024be986a02fbc75f7a",
+      "archivedSha256": "9d88600d34c107d6ad7abec501a9cb82ec75d62699cb5024be986a02fbc75f7a"
+    },
+    "pressure-results.json": {
+      "rawSha256": "af87665fe42aca5855b7f5130744bc0081944a0445baba7239c2ea51935f4df6",
+      "archivedSha256": "af87665fe42aca5855b7f5130744bc0081944a0445baba7239c2ea51935f4df6"
+    },
+    "step19-authenticated-client-safe.log": {
+      "rawSha256": "9e45032aaac07cf35ca04eb10df315192736febead1021a7295e46ce59ea7c3b",
+      "archivedSha256": "ffc3db4a0bc80f056998df82fa1b1122b0de13459e707c86f311bbe1987b698d"
+    }
+  },
+  "identityRedaction": {
+    "profileLabel": "AuthenticatedTestPlayer",
+    "onlineUuidLabel": "00000000-0000-4000-8000-000000000019",
+    "offlineUuidLabel": "00000000-0000-3000-8000-000000000019",
+    "note": "Personal profile name and online/offline UUIDs are replaced consistently with synthetic labels. These labels are not login accounts. Raw source hashes refer to private originals; archived hashes cover redacted evidence."
+  },
+  "archiveNormalization": "Archived logs remove ANSI formatting where captured, console-only prompts and empty lines, expand tabs, normalize line endings and trim trailing whitespace; raw source hashes retain the original private evidence identity."
+}

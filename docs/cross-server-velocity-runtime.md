@@ -172,3 +172,16 @@ API/real-TCP fixtures, not MCC packet injection. Native mod-loader and Folia cro
 modern online forwarding, restart/rotation administration, the full release artifact matrix and
 broader soak/security hardening remain release verification work for Step 19. These results establish
 the first live Paper/Velocity command-to-arrival path; they do not establish full production readiness.
+
+### Folia arrival versus proxy route installation (Step 19 follow-up)
+
+Native Folia 1.21.11 exposed arrival claims while Velocity's current-server snapshot
+was temporarily empty during a switch. Waiting for the backend's next entity tick
+alone does not order that tick after the proxy's asynchronous transfer completion.
+The coordinator now retains at most one fixed-size claim for each bounded active
+transfer. It validates the destination session, handoff ID and player ID before
+retaining the claim, then runs the ordinary live-route authorization only after
+successful transfer completion. Failed transfers, player/session disconnects,
+expiry and shutdown discard retained claims; a late callback cannot revive them.
+No wire format or protocol number changes. Real-TCP regressions exercise the delayed
+route, failed switch, disconnect and wrong-route completion in both transport modes.

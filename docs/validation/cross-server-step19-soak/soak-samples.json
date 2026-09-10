@@ -1,0 +1,1862 @@
+[
+  {
+    "label": "baseline-after-gc",
+    "elapsedSeconds": 0.0,
+    "processes": {
+      "a": {
+        "rssKiB": 896768,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 237273,
+        "fileDescriptors": 151,
+        "threads": 72,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 902928,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 237104,
+        "fileDescriptors": 151,
+        "threads": 72,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 271424,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 20311,
+        "fileDescriptors": 59,
+        "threads": 96,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-1",
+    "elapsedSeconds": 9.81,
+    "processes": {
+      "a": {
+        "rssKiB": 896944,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 341393,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 902656,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 312607,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 271520,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 44904,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-2",
+    "elapsedSeconds": 37.74,
+    "processes": {
+      "a": {
+        "rssKiB": 897104,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 522252,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 902720,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 464189,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 271552,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 69125,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-3",
+    "elapsedSeconds": 67.97,
+    "processes": {
+      "a": {
+        "rssKiB": 910064,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 416120,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 908800,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 339007,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 273696,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 93257,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-4",
+    "elapsedSeconds": 97.95,
+    "processes": {
+      "a": {
+        "rssKiB": 911152,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 319411,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 908816,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 490550,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 274112,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 44339,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-5",
+    "elapsedSeconds": 127.76,
+    "processes": {
+      "a": {
+        "rssKiB": 912128,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 499044,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 908880,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 363670,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 274464,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 75306,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-6",
+    "elapsedSeconds": 157.7,
+    "processes": {
+      "a": {
+        "rssKiB": 912224,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 398394,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 909616,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 514768,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 275280,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 28698,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-7",
+    "elapsedSeconds": 187.83,
+    "processes": {
+      "a": {
+        "rssKiB": 912352,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 295326,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 909760,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 389780,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 275424,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 61344,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-8",
+    "elapsedSeconds": 218.12,
+    "processes": {
+      "a": {
+        "rssKiB": 912384,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 476260,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 910112,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 266526,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 275776,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 95170,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-9",
+    "elapsedSeconds": 247.79,
+    "processes": {
+      "a": {
+        "rssKiB": 912448,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 369381,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 910128,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 418053,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 276288,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 44276,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-10",
+    "elapsedSeconds": 278.35,
+    "processes": {
+      "a": {
+        "rssKiB": 913744,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 269402,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 910256,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 295385,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 276512,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 70042,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-11",
+    "elapsedSeconds": 308.17,
+    "processes": {
+      "a": {
+        "rssKiB": 911424,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 448968,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 909344,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 446934,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 271184,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 94135,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-12",
+    "elapsedSeconds": 338.13,
+    "processes": {
+      "a": {
+        "rssKiB": 913008,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 342989,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 909520,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 317902,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 271456,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 45113,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-13",
+    "elapsedSeconds": 368.23,
+    "processes": {
+      "a": {
+        "rssKiB": 913008,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 521658,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 909648,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 470059,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 271776,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 70833,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-14",
+    "elapsedSeconds": 398.17,
+    "processes": {
+      "a": {
+        "rssKiB": 913056,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 414098,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 909728,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 339691,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 271904,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 95349,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-15",
+    "elapsedSeconds": 428.29,
+    "processes": {
+      "a": {
+        "rssKiB": 913120,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 306175,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 909728,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 490646,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 272128,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 44123,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-16",
+    "elapsedSeconds": 457.77,
+    "processes": {
+      "a": {
+        "rssKiB": 913152,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 485749,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 909728,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 362066,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 272592,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 70262,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-17",
+    "elapsedSeconds": 488.26,
+    "processes": {
+      "a": {
+        "rssKiB": 913168,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 374163,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 909760,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 514104,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 273072,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 28663,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-18",
+    "elapsedSeconds": 518.18,
+    "processes": {
+      "a": {
+        "rssKiB": 914032,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 271974,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 909776,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 388754,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 273248,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 53251,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-19",
+    "elapsedSeconds": 548.04,
+    "processes": {
+      "a": {
+        "rssKiB": 914048,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 452084,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 909792,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 263042,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 274032,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 78060,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-20",
+    "elapsedSeconds": 577.94,
+    "processes": {
+      "a": {
+        "rssKiB": 914096,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 341640,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 909792,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 414076,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 274640,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 33059,
+        "fileDescriptors": 59,
+        "threads": 99,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-21",
+    "elapsedSeconds": 607.94,
+    "processes": {
+      "a": {
+        "rssKiB": 914144,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 520720,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 910064,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 292741,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 274912,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 60911,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-22",
+    "elapsedSeconds": 638.13,
+    "processes": {
+      "a": {
+        "rssKiB": 914176,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 411782,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 910080,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 443260,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 275120,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 96171,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-23",
+    "elapsedSeconds": 668.18,
+    "processes": {
+      "a": {
+        "rssKiB": 914176,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 303349,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 910304,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 313231,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 275280,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 44269,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-24",
+    "elapsedSeconds": 698.1,
+    "processes": {
+      "a": {
+        "rssKiB": 914192,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 483598,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 910320,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 464197,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 275520,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 69361,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-25",
+    "elapsedSeconds": 728.32,
+    "processes": {
+      "a": {
+        "rssKiB": 914448,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 372110,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 910384,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 330980,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 275632,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 95083,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-26",
+    "elapsedSeconds": 758.07,
+    "processes": {
+      "a": {
+        "rssKiB": 917712,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 270167,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 910384,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 482094,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 275808,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 44472,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-27",
+    "elapsedSeconds": 787.9,
+    "processes": {
+      "a": {
+        "rssKiB": 917776,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 450578,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 910432,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 349275,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 276272,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 69221,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-28",
+    "elapsedSeconds": 817.86,
+    "processes": {
+      "a": {
+        "rssKiB": 919024,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 341371,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 910480,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 500156,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 276416,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 28795,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-29",
+    "elapsedSeconds": 848.39,
+    "processes": {
+      "a": {
+        "rssKiB": 554304,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 521595,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 428240,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 373933,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 154752,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 53619,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-30",
+    "elapsedSeconds": 878.41,
+    "processes": {
+      "a": {
+        "rssKiB": 616432,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 411703,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 595600,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 525530,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 178032,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 79041,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-31",
+    "elapsedSeconds": 907.99,
+    "processes": {
+      "a": {
+        "rssKiB": 779360,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 303424,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 793760,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 399238,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 203616,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 28929,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-32",
+    "elapsedSeconds": 938.29,
+    "processes": {
+      "a": {
+        "rssKiB": 781456,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 483580,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 800544,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 271999,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 205552,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 53868,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-33",
+    "elapsedSeconds": 968.43,
+    "processes": {
+      "a": {
+        "rssKiB": 783232,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 371117,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 800688,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 422546,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 206192,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 78576,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-34",
+    "elapsedSeconds": 997.88,
+    "processes": {
+      "a": {
+        "rssKiB": 788960,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 269180,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 802048,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 296057,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 209984,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 29136,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-35",
+    "elapsedSeconds": 1027.94,
+    "processes": {
+      "a": {
+        "rssKiB": 793696,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 448000,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 804304,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 447031,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 210880,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 54153,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-36",
+    "elapsedSeconds": 1057.9,
+    "processes": {
+      "a": {
+        "rssKiB": 795616,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 339420,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 805616,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 313252,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 212416,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 83871,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-37",
+    "elapsedSeconds": 1088.37,
+    "processes": {
+      "a": {
+        "rssKiB": 796640,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 518112,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 805776,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 463763,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 215584,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 36913,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-38",
+    "elapsedSeconds": 1118.12,
+    "processes": {
+      "a": {
+        "rssKiB": 796944,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 407474,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 806400,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 329441,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 215808,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 65053,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-39",
+    "elapsedSeconds": 1147.92,
+    "processes": {
+      "a": {
+        "rssKiB": 798048,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 298897,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 809200,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 480619,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 216384,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 89894,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-40",
+    "elapsedSeconds": 1177.81,
+    "processes": {
+      "a": {
+        "rssKiB": 801504,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 477101,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 810128,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 347712,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 217312,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 41714,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-41",
+    "elapsedSeconds": 1207.87,
+    "processes": {
+      "a": {
+        "rssKiB": 802176,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 363480,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 810400,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 498240,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 217696,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 76982,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-42",
+    "elapsedSeconds": 1238.3,
+    "processes": {
+      "a": {
+        "rssKiB": 813504,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 265643,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 810816,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 369762,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 218336,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 29522,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-43",
+    "elapsedSeconds": 1268.11,
+    "processes": {
+      "a": {
+        "rssKiB": 813648,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 444023,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 810976,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 520912,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 218832,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 53897,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-44",
+    "elapsedSeconds": 1297.77,
+    "processes": {
+      "a": {
+        "rssKiB": 814768,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 337920,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 811840,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 393190,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 219680,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 78636,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-45",
+    "elapsedSeconds": 1327.9,
+    "processes": {
+      "a": {
+        "rssKiB": 814992,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 516023,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 812640,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 267151,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 219872,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 29497,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-46",
+    "elapsedSeconds": 1358.08,
+    "processes": {
+      "a": {
+        "rssKiB": 815744,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 407514,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 812896,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 417728,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 220144,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 54227,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-47",
+    "elapsedSeconds": 1387.92,
+    "processes": {
+      "a": {
+        "rssKiB": 816720,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 299054,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 817616,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 294662,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 220432,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 80289,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-48",
+    "elapsedSeconds": 1418.05,
+    "processes": {
+      "a": {
+        "rssKiB": 823632,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 477565,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 818000,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 444754,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 221200,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 29237,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-49",
+    "elapsedSeconds": 1447.88,
+    "processes": {
+      "a": {
+        "rssKiB": 823984,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 365620,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 818288,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 313285,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 221296,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 64220,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-50",
+    "elapsedSeconds": 1477.94,
+    "processes": {
+      "a": {
+        "rssKiB": 824288,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 264413,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 818496,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 463348,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 221440,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 89095,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-51",
+    "elapsedSeconds": 1508.22,
+    "processes": {
+      "a": {
+        "rssKiB": 824640,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 442830,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 818640,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 328789,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 233456,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 41574,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-52",
+    "elapsedSeconds": 1540.01,
+    "processes": {
+      "a": {
+        "rssKiB": 824688,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 336455,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 818656,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 478878,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 233616,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 67871,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-53",
+    "elapsedSeconds": 1568.22,
+    "processes": {
+      "a": {
+        "rssKiB": 824912,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 515513,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 818832,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 345380,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 233840,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 94553,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-54",
+    "elapsedSeconds": 1597.93,
+    "processes": {
+      "a": {
+        "rssKiB": 825376,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 407583,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 819184,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 494910,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 234048,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 46252,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-55",
+    "elapsedSeconds": 1628.05,
+    "processes": {
+      "a": {
+        "rssKiB": 825456,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 299628,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 819808,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 362530,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 234192,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 81201,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-56",
+    "elapsedSeconds": 1658.27,
+    "processes": {
+      "a": {
+        "rssKiB": 825616,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 477751,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 819872,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 511158,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 234352,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 33610,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-57",
+    "elapsedSeconds": 1687.95,
+    "processes": {
+      "a": {
+        "rssKiB": 825616,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 366485,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 819968,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 381780,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 236288,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 58192,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-58",
+    "elapsedSeconds": 1718.41,
+    "processes": {
+      "a": {
+        "rssKiB": 825776,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 265434,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 820848,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 256237,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 236544,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 91786,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-59",
+    "elapsedSeconds": 1748.03,
+    "processes": {
+      "a": {
+        "rssKiB": 826160,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 444271,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 820864,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 405769,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 237216,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 45418,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "cycle-60",
+    "elapsedSeconds": 1777.93,
+    "processes": {
+      "a": {
+        "rssKiB": 826272,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 337771,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 820944,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 275090,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 238000,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 80560,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  },
+  {
+    "label": "final-after-gc",
+    "elapsedSeconds": 1800.01,
+    "processes": {
+      "a": {
+        "rssKiB": 831360,
+        "heapCommittedKiB": 567296,
+        "heapUsedKiB": 235953,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "b": {
+        "rssKiB": 876672,
+        "heapCommittedKiB": 557056,
+        "heapUsedKiB": 235875,
+        "fileDescriptors": 151,
+        "threads": 74,
+        "coordinatorReaders": 0
+      },
+      "proxy": {
+        "rssKiB": 266160,
+        "heapCommittedKiB": 131072,
+        "heapUsedKiB": 20558,
+        "fileDescriptors": 59,
+        "threads": 100,
+        "coordinatorReaders": 32
+      }
+    }
+  }
+]

@@ -1,0 +1,15 @@
+{"status": "RUNNING", "completedCycles": 1, "transfers": 2, "elapsedSeconds": 11.3}
+{"status": "RUNNING", "completedCycles": 2, "transfers": 4, "elapsedSeconds": 38.9}
+{"status": "RUNNING", "completedCycles": 3, "transfers": 6, "elapsedSeconds": 69.1}
+{"status": "RUNNING", "completedCycles": 4, "transfers": 8, "elapsedSeconds": 99.0}
+{"status": "RUNNING", "completedCycles": 5, "transfers": 10, "elapsedSeconds": 129.0}
+{"status": "RUNNING", "completedCycles": 6, "transfers": 12, "elapsedSeconds": 159.2}
+SOAK_FAILED Client exited before expected game response
+Traceback (most recent call last):
+  File "/private/tmp/server-waypoint-step19-folia/run-soak.py", line 51, in <module>
+    waitFor('[MCC] Server was successfully joined.')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/server-waypoint-step19-folia/run-soak.py", line 48, in waitFor
+    if line=='PROCESS_EXIT':raise RuntimeError('Client exited before expected game response')
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Client exited before expected game response

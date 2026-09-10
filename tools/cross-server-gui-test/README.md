@@ -45,3 +45,36 @@ Require the fresh PASS marker, a successful HeadlessMC command test and clean pr
 Preserve the production JAR hash, client log and test result with the run's evidence. The graphics
 and audio are stubbed, so OpenAL/missing-sound warnings are expected. Screenshot/visual validation,
 real proxy transfers, and the other supported game versions are separate release checks.
+
+
+## Step 19 real network GUI probe
+
+`LiveRemoteGuiProbe.java` runs against a disposable Paper/Fabric 26.2 pair behind
+Velocity. It requires an available backend `b` with `minecraft:overworld` list
+`Test` containing `Target` and no `Added` entry. Grant the disposable player the
+normal remote browsing and teleport permissions. Build and stage explicitly:
+
+```sh
+rtk proxy ./gradlew -I tools/cross-server-gui-test/live-probe.gradle.kts :mods:26.2-fabric:stageLiveRemoteGuiProbe --max-workers=2 --console=plain
+```
+
+Install the staged files from `build/live-remote-gui-native-mods` in a fresh
+HeadlessMC game directory using the isolation and options above, selecting Fabric
+26.2. Connect through Velocity with Quick Play. The validated runtime used Fabric
+Loader 0.19.5, Fabric API 0.152.1+26.2 and Java 25. After the probe logs
+`LIVE_REMOTE_GUI WAIT_REMOTE_MUTATION`, run this on backend b through its console:
+
+```text
+wp add minecraft:overworld Test 45 80 30 Added A gold 0 false
+```
+
+Require the ordered markers `SYNC_PROTOCOL_11`, `WAIT_REMOTE_MUTATION`,
+`NETWORK_CATALOG_CHANGED`, `CONFIRMATION_OPEN`, `CONFIRMED_BY_CLICK` and
+`PASS real protocol-11 catalog update and confirmed proxy transfer`, followed by
+clean client termination. The probe opens the initial local manager directly,
+then uses native mouse dispatch for remote navigation, target selection and
+confirmation. It receives catalog changes over the actual network and checks
+fresh synchronization at `(45.5, 80, 30.5)` after transfer. It does not inject cache
+or network state. Preserve the fresh `live-remote-gui-result.txt`, client/server
+logs and artifact hashes. Headless graphics remain unsuitable for visual approval.
+See [recorded evidence](../../docs/validation/cross-server-step19-live-gui/results.json).

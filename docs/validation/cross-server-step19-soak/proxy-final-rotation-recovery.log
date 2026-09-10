@@ -1,0 +1,625 @@
+[10:18:23 INFO]: Booting up Velocity 4.1.1...
+[10:18:26 INFO]: Connections will use kqueue channels, libdeflate (macOS ARM64 / Apple Silicon) compression, native (macOS ARM64 / Apple Silicon) ciphers
+[10:18:26 INFO]: Loading localizations...
+[10:18:26 INFO]: Loading plugins...
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/private/tmp/server-waypoint-step19-folia/proxy/velocity.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[10:18:26 INFO]: Loaded plugin server_waypoint 3.1.0 by 2676959
+[10:18:26 INFO]: Loaded 2 plugins
+[10:18:26 INFO]: Listening on /127.0.0.1:25980
+[10:18:26 INFO]: Done (4.73s)!
+[10:18:26 INFO] [server_waypoint]: Server Waypoint coordinator startup: SUCCESS
+[10:18:47 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51471) has connected
+[10:18:47 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:18:51 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:18:51 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:18:54 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:18:54 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:18:54 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51471) has disconnected
+[10:18:54 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:19:14 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51486) has connected
+[10:19:15 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:19:18 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:19:18 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:19:21 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:19:21 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:19:21 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51486) has disconnected
+[10:19:21 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:19:45 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51503) has connected
+[10:19:45 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:19:48 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:19:48 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:19:51 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:19:51 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:19:51 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51503) has disconnected
+[10:19:51 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:20:14 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51518) has connected
+[10:20:14 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:20:18 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:20:18 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:20:21 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:20:21 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:20:21 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51518) has disconnected
+[10:20:21 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:20:45 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51532) has connected
+[10:20:45 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:20:48 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:20:48 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:20:51 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:20:51 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:20:52 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51532) has disconnected
+[10:20:52 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:21:15 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51549) has connected
+[10:21:15 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:21:18 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:21:18 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:21:21 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:21:21 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:21:22 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51549) has disconnected
+[10:21:22 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:21:45 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51563) has connected
+[10:21:45 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:21:48 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:21:48 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:21:51 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:21:51 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:21:51 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51563) has disconnected
+[10:21:51 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:22:15 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51577) has connected
+[10:22:15 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:22:19 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:22:19 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:22:21 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:22:21 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:22:22 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51577) has disconnected
+[10:22:22 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:22:45 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51591) has connected
+[10:22:45 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:22:48 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:22:48 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:22:51 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:22:51 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:22:51 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51591) has disconnected
+[10:22:51 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:23:15 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51606) has connected
+[10:23:15 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:23:18 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:23:18 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:23:21 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:23:21 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:23:22 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51606) has disconnected
+[10:23:22 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:23:45 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51620) has connected
+[10:23:45 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:23:48 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:23:48 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:23:51 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:23:51 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:23:52 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51620) has disconnected
+[10:23:52 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:24:15 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51638) has connected
+[10:24:15 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:24:18 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:24:18 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:24:21 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:24:21 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:24:21 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51638) has disconnected
+[10:24:21 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:24:45 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51653) has connected
+[10:24:45 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:24:48 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:24:48 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:24:51 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:24:51 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:24:51 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51653) has disconnected
+[10:24:51 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:25:15 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51667) has connected
+[10:25:15 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:25:18 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:25:18 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:25:21 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:25:21 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:25:21 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51667) has disconnected
+[10:25:21 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:25:45 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51681) has connected
+[10:25:45 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:25:48 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:25:48 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:25:51 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:25:51 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:25:52 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51681) has disconnected
+[10:25:52 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:26:15 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51696) has connected
+[10:26:15 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:26:18 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:26:18 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:26:21 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:26:21 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:26:22 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51696) has disconnected
+[10:26:22 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:29:31 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51746) has connected
+[10:29:31 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:29:34 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:29:34 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:29:37 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:29:37 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:29:38 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51746) has disconnected
+[10:29:38 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:29:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51759) has connected
+[10:29:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:30:02 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:30:02 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:30:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:30:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:30:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51759) has disconnected
+[10:30:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:30:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51774) has connected
+[10:30:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:30:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:30:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:30:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:30:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:30:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51774) has disconnected
+[10:30:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:30:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51787) has connected
+[10:30:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:31:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:31:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:31:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:31:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:31:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51787) has disconnected
+[10:31:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:31:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51803) has connected
+[10:31:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:31:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:31:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:31:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:31:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:31:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51803) has disconnected
+[10:31:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:31:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51817) has connected
+[10:31:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:32:02 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:32:02 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:32:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:32:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:32:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51817) has disconnected
+[10:32:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:32:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51830) has connected
+[10:32:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:32:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:32:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:32:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:32:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:32:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51830) has disconnected
+[10:32:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:32:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51844) has connected
+[10:32:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:33:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:33:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:33:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:33:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:33:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51844) has disconnected
+[10:33:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:33:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51857) has connected
+[10:33:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:33:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:33:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:33:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:33:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:33:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51857) has disconnected
+[10:33:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:33:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51872) has connected
+[10:33:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:34:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:34:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:34:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:34:06 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:34:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51872) has disconnected
+[10:34:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:34:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51887) has connected
+[10:34:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:34:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:34:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:34:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:34:36 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:34:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51887) has disconnected
+[10:34:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:34:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51900) has connected
+[10:34:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:35:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:35:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:35:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:35:06 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:35:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51900) has disconnected
+[10:35:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:35:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51913) has connected
+[10:35:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:35:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:35:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:35:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:35:36 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:35:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51913) has disconnected
+[10:35:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:35:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51926) has connected
+[10:35:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:36:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:36:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:36:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:36:06 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:36:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51926) has disconnected
+[10:36:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:36:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51938) has connected
+[10:36:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:36:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:36:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:36:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:36:36 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:36:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51938) has disconnected
+[10:36:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:36:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51952) has connected
+[10:36:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:37:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:37:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:37:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:37:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:37:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51952) has disconnected
+[10:37:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:37:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51965) has connected
+[10:37:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:37:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:37:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:37:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:37:36 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:37:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51965) has disconnected
+[10:37:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:37:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51978) has connected
+[10:37:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:38:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:38:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:38:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:38:06 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:38:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51978) has disconnected
+[10:38:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:38:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51993) has connected
+[10:38:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:38:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:38:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:38:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:38:36 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:38:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51993) has disconnected
+[10:38:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:38:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52006) has connected
+[10:38:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:39:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:39:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:39:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:39:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:39:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52006) has disconnected
+[10:39:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:39:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52020) has connected
+[10:39:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:39:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:39:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:39:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:39:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:39:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52020) has disconnected
+[10:39:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:39:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52033) has connected
+[10:39:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:40:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:40:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:40:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:40:06 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:40:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52033) has disconnected
+[10:40:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:40:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52046) has connected
+[10:40:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:40:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:40:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:40:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:40:36 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:40:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52046) has disconnected
+[10:40:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:40:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52058) has connected
+[10:40:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:41:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:41:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:41:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:41:06 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:41:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52058) has disconnected
+[10:41:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:41:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52072) has connected
+[10:41:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:41:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:41:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:41:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:41:36 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:41:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52072) has disconnected
+[10:41:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:41:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52085) has connected
+[10:41:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:42:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:42:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:42:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:42:06 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:42:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52085) has disconnected
+[10:42:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:42:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52098) has connected
+[10:42:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:42:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:42:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:42:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:42:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:42:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52098) has disconnected
+[10:42:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:42:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52113) has connected
+[10:42:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:43:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:43:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:43:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:43:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:43:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52113) has disconnected
+[10:43:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:43:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52128) has connected
+[10:43:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:43:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:43:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:43:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:43:36 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:43:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52128) has disconnected
+[10:43:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:43:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52141) has connected
+[10:43:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:44:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:44:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:44:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:44:06 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:44:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52141) has disconnected
+[10:44:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:44:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52155) has connected
+[10:44:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:44:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:44:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:44:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:44:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:44:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52155) has disconnected
+[10:44:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:44:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52168) has connected
+[10:44:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:45:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:45:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:45:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:45:06 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:45:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52168) has disconnected
+[10:45:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:45:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52180) has connected
+[10:45:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:45:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:45:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:45:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:45:36 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:45:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52180) has disconnected
+[10:45:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:45:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52194) has connected
+[10:45:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:46:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:46:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:46:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:46:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:46:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52194) has disconnected
+[10:46:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:46:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52207) has connected
+[10:46:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:46:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:46:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:46:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:46:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:46:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52207) has disconnected
+[10:46:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:46:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52220) has connected
+[10:46:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:47:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:47:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:47:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:47:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:47:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52220) has disconnected
+[10:47:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:47:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52235) has connected
+[10:47:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:47:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:47:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:47:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:47:36 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:47:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52235) has disconnected
+[10:47:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:47:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52247) has connected
+[10:47:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:48:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:48:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:48:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:48:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:48:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52247) has disconnected
+[10:48:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:48:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52264) has connected
+[10:48:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:48:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:48:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:48:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:48:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:48:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52264) has disconnected
+[10:48:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:48:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52277) has connected
+[10:48:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:49:02 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:49:02 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:49:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:49:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:49:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52277) has disconnected
+[10:49:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:49:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52290) has connected
+[10:49:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:49:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:49:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:49:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:49:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:49:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52290) has disconnected
+[10:49:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:49:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52304) has connected
+[10:49:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:50:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:50:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:50:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:50:06 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:50:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52304) has disconnected
+[10:50:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:50:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52317) has connected
+[10:50:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:50:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:50:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:50:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:50:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:50:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52317) has disconnected
+[10:50:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:50:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52330) has connected
+[10:50:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:51:02 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:51:02 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:51:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:51:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:51:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52330) has disconnected
+[10:51:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:51:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52343) has connected
+[10:51:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:51:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:51:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:51:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:51:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:51:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52343) has disconnected
+[10:51:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:51:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52358) has connected
+[10:51:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:52:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:52:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:52:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:52:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:52:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52358) has disconnected
+[10:52:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:52:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52372) has connected
+[10:52:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:52:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:52:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:52:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:52:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:52:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52372) has disconnected
+[10:52:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:52:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52386) has connected
+[10:52:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:53:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:53:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:53:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:53:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:53:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52386) has disconnected
+[10:53:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:53:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52399) has connected
+[10:53:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:53:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:53:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:53:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:53:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:53:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52399) has disconnected
+[10:53:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:53:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52415) has connected
+[10:53:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:54:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:54:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:54:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:54:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:54:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52415) has disconnected
+[10:54:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:54:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52430) has connected
+[10:54:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:54:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:54:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:54:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:54:36 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:54:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52430) has disconnected
+[10:54:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:55:01 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52443) has connected
+[10:55:01 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:55:04 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:55:04 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:55:07 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:55:07 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:55:08 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52443) has disconnected
+[10:55:08 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:55:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52456) has connected
+[10:55:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:55:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:55:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:55:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:55:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:55:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52456) has disconnected
+[10:55:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:55:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52469) has connected
+[10:55:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:56:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:56:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:56:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:56:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:56:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52469) has disconnected
+[10:56:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:56:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52484) has connected
+[10:56:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:56:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:56:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:56:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:56:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:56:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52484) has disconnected
+[10:56:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:56:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52496) has connected
+[10:56:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:57:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:57:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:57:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:57:06 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:57:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52496) has disconnected
+[10:57:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:57:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52511) has connected
+[10:57:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:57:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:57:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:57:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:57:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:57:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52511) has disconnected
+[10:57:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:57:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52524) has connected
+[10:57:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:58:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:58:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:58:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:58:06 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:58:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52524) has disconnected
+[10:58:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:58:29 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52538) has connected
+[10:58:29 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:58:33 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:58:33 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:58:35 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:58:35 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:58:36 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52538) has disconnected
+[10:58:36 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:58:59 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52551) has connected
+[10:58:59 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:59:03 INFO]: [server connection] AuthenticatedTestPlayer -> beta has connected
+[10:59:03 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:59:05 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:59:05 INFO]: [server connection] AuthenticatedTestPlayer -> beta has disconnected
+[10:59:06 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:52551) has disconnected
+[10:59:06 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+> >
+[15:01:55 INFO]: Shutting down the proxy...
+[15:01:55 INFO]: Closing endpoint /127.0.0.1:25980
+[15:01:55 INFO] [server_waypoint]: Server Waypoint coordinator stopped: SUCCESS

@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Timeout(30)
 class LiveHandoffRuntimeTest {
-    enum Scenario { SUCCESS, DESTINATION_REJECTED, WRONG_SOURCE, TRANSFER_FAILED, PROXY_DENIED, DESTINATION_PERMISSION_REVOKED, DISCONNECT, CLAIM_BEFORE_READY }
+    enum Scenario { SUCCESS, DESTINATION_REJECTED, WRONG_SOURCE, TRANSFER_FAILED, PROXY_DENIED, DESTINATION_PERMISSION_REVOKED, DISCONNECT, CLAIM_BEFORE_READY, DELAYED_ROUTE, DELAYED_FAILED, DELAYED_DISCONNECT, DELAYED_WRONG_ROUTE }
     @ParameterizedTest @EnumSource(Scenario.class)
     void plaintext(Scenario scenario) throws Exception { run(TransportMode.PLAINTEXT, scenario); }
     @ParameterizedTest @EnumSource(Scenario.class)
@@ -29,6 +29,9 @@ class LiveHandoffRuntimeTest {
     void run(TransportMode mode, Scenario scenario) throws Exception {
         var a = new RemoteServerId("a"); var b = new RemoteServerId("b"); UUID player = UUID.randomUUID();
         var key = new RemoteWaypointKey(b, "world", "list", "target");
+        boolean delayed = scenario.name().startsWith("DELAYED_");
+        CompletableFuture<TransferResult> transferCompletion = new CompletableFuture<>();
+        AtomicBoolean physicallyArrived = new AtomicBoolean();
         var route = new AtomicReference<>(scenario == Scenario.WRONG_SOURCE ? b : a);
         AtomicInteger switches = new AtomicInteger(), teleports = new AtomicInteger();
         CompletableFuture<Result> feedback = new CompletableFuture<>(), arrived = new CompletableFuture<>();
@@ -56,7 +59,7 @@ class LiveHandoffRuntimeTest {
         DestinationPlatform<UUID> destinationPlatform = new DestinationPlatform<>() {
             public boolean ownsThread(UUID p) { return owns.get(); }
             public UUID playerId(UUID p) { assertTrue(owns.get()); return p; }
-            public boolean isCurrentPlayer(UUID p) { assertTrue(owns.get()); return route.get().equals(b); }
+            public boolean isCurrentPlayer(UUID p) { assertTrue(owns.get()); return physicallyArrived.get() || route.get().equals(b); }
             public boolean canTeleport(UUID p) { assertTrue(owns.get()); return scenario != Scenario.DESTINATION_PERMISSION_REVOKED; }
             public boolean execute(UUID p, Runnable task, Runnable retired) { schedule.accept(task); return true; }
             public CompletionStage<Boolean> teleport(UUID p, DestinationResolver.Target target) {
@@ -76,11 +79,12 @@ class LiveHandoffRuntimeTest {
                     runtimeRef.get().playerDisconnected(id); return CompletableFuture.completedFuture(TransferResult.CANCELLED);
                 }
                 if (scenario == Scenario.TRANSFER_FAILED) return CompletableFuture.completedFuture(TransferResult.CONNECTION_FAILED);
-                route.set(b);
+                physicallyArrived.set(true);
+                if (!delayed) route.set(b);
                 secondSession.get().destination().arrive(player, player).whenComplete((result, failure) -> {
                     if (failure != null) arrived.completeExceptionally(failure); else arrived.complete(result.result());
                 });
-                return CompletableFuture.completedFuture(TransferResult.SUCCESS);
+                return delayed ? transferCompletion : CompletableFuture.completedFuture(TransferResult.SUCCESS);
             }, coordinator::catalogs);
             runtimeRef.set(runtime);
             coordinator.setSessionFactory(runtime::attach);
@@ -118,21 +122,36 @@ class LiveHandoffRuntimeTest {
                     assertEquals(0, switches.get()); assertEquals(0, teleports.get());
                     schedule.accept(ready);
                 }
+                if (delayed) {
+                    await(() -> runtime.pendingClaimCount() == 1);
+                    assertFalse(arrived.isDone());
+                    assertEquals(0, teleports.get());
+                    if (scenario == Scenario.DELAYED_DISCONNECT) runtime.playerDisconnected(player);
+                    if (scenario != Scenario.DELAYED_WRONG_ROUTE) route.set(b);
+                    transferCompletion.complete(scenario == Scenario.DELAYED_FAILED
+                            ? TransferResult.CONNECTION_FAILED : TransferResult.SUCCESS);
+                    if (scenario == Scenario.DELAYED_WRONG_ROUTE) {
+                        assertEquals(Result.UNAUTHORIZED, arrived.get(5, TimeUnit.SECONDS));
+                        runtime.playerDisconnected(player);
+                    }
+                }
                 Result expected = switch (scenario) {
-                    case SUCCESS -> Result.SUCCESS;
+                    case SUCCESS, DELAYED_ROUTE -> Result.SUCCESS;
                     case DESTINATION_REJECTED -> Result.NOT_FOUND;
                     case WRONG_SOURCE, CLAIM_BEFORE_READY -> Result.WRONG_SOURCE;
-                    case TRANSFER_FAILED -> Result.TRANSFER_FAILED;
+                    case TRANSFER_FAILED, DELAYED_FAILED -> Result.TRANSFER_FAILED;
                     case PROXY_DENIED, DESTINATION_PERMISSION_REVOKED -> Result.UNAUTHORIZED;
-                    case DISCONNECT -> Result.UNAVAILABLE;
+                    case DISCONNECT, DELAYED_DISCONNECT, DELAYED_WRONG_ROUTE -> Result.UNAVAILABLE;
                 };
                 assertEquals(expected, feedback.get(8, TimeUnit.SECONDS));
-                if (scenario == Scenario.SUCCESS) {
+                if (scenario == Scenario.SUCCESS || scenario == Scenario.DELAYED_ROUTE) {
                     assertEquals(Result.SUCCESS, arrived.get(5, TimeUnit.SECONDS));
                     assertEquals(1, switches.get()); assertEquals(1, teleports.get());
                     assertEquals(Result.NOT_FOUND, secondSession.get().destination().arrive(player, player).toCompletableFuture().get().result());
-                } else { assertEquals(0, teleports.get()); assertEquals(Set.of(Scenario.TRANSFER_FAILED, Scenario.DESTINATION_PERMISSION_REVOKED, Scenario.DISCONNECT).contains(scenario) ? 1 : 0, switches.get()); }
+                } else { assertEquals(0, teleports.get()); assertEquals(Set.of(Scenario.TRANSFER_FAILED, Scenario.DESTINATION_PERMISSION_REVOKED, Scenario.DISCONNECT, Scenario.DELAYED_FAILED, Scenario.DELAYED_DISCONNECT, Scenario.DELAYED_WRONG_ROUTE).contains(scenario) ? 1 : 0, switches.get()); }
                 assertEquals(0, firstSession.get().source().pendingCount());
+                assertEquals(0, runtime.pendingTransferCount());
+                assertEquals(0, runtime.pendingClaimCount());
             } finally {
                 first.stop().toCompletableFuture().get(); second.stop().toCompletableFuture().get();
                 runtime.close(); coordinator.stop().toCompletableFuture().get();

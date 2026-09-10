@@ -19,6 +19,16 @@ public final class CoordinatorHandoffRuntime implements AutoCloseable {
     private final Function<PrepareHandoff, Result> permission;
     private final TransferAdapter<RemoteServerId> transfer;
     private final Supplier<Map<RemoteServerId, CatalogReceiver.View>> catalogs;
+    // At most one fixed-size claim per active, bounded registry record.
+    private final Map<UUID, PendingTransfer> transfers = new HashMap<>();
+    private static final class PendingTransfer {
+        final HandoffPeer destination;
+        final HandoffBinding binding;
+        ApplicationEnvelope claim;
+        PendingTransfer(HandoffPeer destination, HandoffBinding binding) {
+            this.destination = destination; this.binding = binding;
+        }
+    }
     private boolean closed;
     public CoordinatorHandoffRuntime(Function<UUID, Optional<ProxyPlayerSnapshot>> players,
                                      Function<PrepareHandoff, Result> permission,
@@ -59,12 +69,23 @@ public final class CoordinatorHandoffRuntime implements AutoCloseable {
             if (type < 20 || type > 26) return false;
             synchronized (CoordinatorHandoffRuntime.this) {
                 if (closed || sessions.get(peer.serverId()) != this) return true;
+                pruneTransfers();
                 var record = registry.find(envelope.requestId()).orElse(null);
                 if (envelope.message() instanceof HandoffPrepared ready && record != null && record.source().equals(peer)) {
                     beginTransfer(this, envelope.requestId(), ready.binding());
                 } else if (envelope.message() instanceof ClaimHandoff && !registry.transferStarted(envelope.requestId())) {
                     sender.send(envelope.requestId(), new ApplicationMessage.Error(Result.UNAUTHORIZED));
+                } else if (envelope.message() instanceof ClaimHandoff claim && transfers.containsKey(envelope.requestId())) {
+                    var pending = transfers.get(envelope.requestId());
+                    if (!pending.destination.equals(peer) || !peer.serverId().equals(claim.destination())
+                            || !pending.binding.handoffId().equals(claim.handoffId())
+                            || !pending.binding.playerId().equals(claim.playerId())) {
+                        sender.send(envelope.requestId(), new ApplicationMessage.Error(Result.INVALID_REQUEST));
+                    } else if (pending.claim != null) {
+                        sender.send(envelope.requestId(), new ApplicationMessage.Error(Result.REPLAY));
+                    } else pending.claim = envelope;
                 } else deliver(handler.handle(peer, envelope.requestId(), envelope.message()).deliveries());
+                pruneTransfers();
             }
             return true;
         }
@@ -72,11 +93,13 @@ public final class CoordinatorHandoffRuntime implements AutoCloseable {
             synchronized (CoordinatorHandoffRuntime.this) {
                 if (closed) return;
                 deliver(handler.maintain());
+                pruneTransfers();
             }
         }
         public void close() {
             synchronized (CoordinatorHandoffRuntime.this) {
                 if (sessions.remove(peer.serverId(), this)) deliver(handler.disconnect(peer));
+                pruneTransfers();
                 sender.close();
             }
         }
@@ -94,18 +117,24 @@ public final class CoordinatorHandoffRuntime implements AutoCloseable {
         }
         if (denied == Result.SUCCESS) denied = registry.beginTransfer(session.peer, id, binding);
         if (denied != Result.SUCCESS) { failTransfer(session, id, binding, denied); return; }
+        var pending = new PendingTransfer(record.destination(), binding);
+        transfers.put(id, pending);
         try {
             // Adapter must recheck current proxy route immediately before the actual asynchronous switch.
             Objects.requireNonNull(transfer.transfer(binding.playerId(), binding.source(), binding.target().serverId()))
                     .whenComplete((result, failure) -> {
-                        if (failure == null && result == TransferResult.SUCCESS) return; // Destination owns claim and completion.
                         synchronized (CoordinatorHandoffRuntime.this) {
-                            if (!closed && sessions.get(session.peer.serverId()) == session) {
+                            pruneTransfers();
+                            if (closed || !transfers.remove(id, pending) || sessions.get(session.peer.serverId()) != session) return;
+                            if (failure == null && result == TransferResult.SUCCESS) {
+                                // Recheck the proxy's live route only after its switch completes. Never trust the queued claim as route evidence.
+                                if (pending.claim != null) deliver(handler.handle(pending.destination, id, pending.claim.message()).deliveries());
+                            } else {
                                 failTransfer(session, id, binding, result == TransferResult.PERMISSION_DENIED ? Result.UNAUTHORIZED : Result.TRANSFER_FAILED);
                             }
                         }
                     });
-        } catch (RuntimeException failure) { failTransfer(session, id, binding, Result.TRANSFER_FAILED); }
+        } catch (RuntimeException failure) { transfers.remove(id, pending); failTransfer(session, id, binding, Result.TRANSFER_FAILED); }
     }
     private void failTransfer(Session session, UUID id, HandoffBinding binding, Result reason) {
         var record = registry.find(id).orElse(null);
@@ -124,6 +153,14 @@ public final class CoordinatorHandoffRuntime implements AutoCloseable {
             deliver(List.of(new HandoffRequestHandler.Delivery(record.source(), record.requestId(), message),
                     new HandoffRequestHandler.Delivery(record.destination(), record.requestId(), message)));
         }
+        pruneTransfers();
+    }
+    private void pruneTransfers() {
+        if (!transfers.isEmpty()) transfers.keySet().retainAll(registry.activeTransferRequestIds());
+    }
+    synchronized int pendingTransferCount() { pruneTransfers(); return transfers.size(); }
+    synchronized int pendingClaimCount() {
+        pruneTransfers(); return (int) transfers.values().stream().filter(pending -> pending.claim != null).count();
     }
     private void deliver(List<HandoffRequestHandler.Delivery> deliveries) {
         for (var delivery : deliveries) {
@@ -135,6 +172,6 @@ public final class CoordinatorHandoffRuntime implements AutoCloseable {
         if (closed) return;
         closed = true;
         List.copyOf(sessions.values()).forEach(session -> { session.channel.close(); session.sender.close(); });
-        sessions.clear(); handler.close();
+        sessions.clear(); transfers.clear(); handler.close();
     }
 }

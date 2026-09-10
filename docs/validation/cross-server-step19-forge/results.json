@@ -1,0 +1,60 @@
+{
+  "date": "2026-09-10",
+  "minecraft": "26.2",
+  "forge": "65.1.3",
+  "proxyCompatibleForge": "1.3.1",
+  "velocity": "4.1.1 build 24",
+  "identity": "offline CodexStep19",
+  "forwarding": "MODERN with matching private secret; proxy online-mode=false",
+  "crossServerTransport": "PLAINTEXT literal loopback",
+  "assertions": [
+    "Four synchronized bidirectional arrivals across two client sessions",
+    "Expected coordinates a=(5.5,80,30.5), b=(8197.5,80,30.5)",
+    "Protocol 11 and SYNC_FINISHED with active tick event bus",
+    "Graceful disconnect, reconnect, fresh bidirectional transfer",
+    "No chunked delivery warning in synchronized final/reconnect runs",
+    "All Forge fixture processes stopped"
+  ],
+  "limitations": [
+    "Ownership inferred from production guard and native successful arrival; no independent callback instrumentation",
+    "No controlled disconnect inside destination scheduling window",
+    "Initial headless test probe lacked pack metadata: Forge warning screen disabled event bus. Probe metadata corrected, normal warning setting restored in reconnect run. Earlier unsynchronized runs are diagnostic only",
+    "Online authenticated profile and cryptographically authenticated cross-server transport not exercised here"
+  ],
+  "logs": {
+    "step19-forge-client-final.log": {
+      "rawSha256": "51d40ad7e6e89998214ca245b6c6143d6931957553f6c4007d21f983b7cebdb5",
+      "archivedSha256": "e4c45b0752473ad37a62a27ce9e7e9b1296138569742d937be87dc1cde800bcc"
+    },
+    "step19-forge-client-reconnect.log": {
+      "rawSha256": "b9004d2425232d9de260166f850a4a0767fb0e3971687e545fa0ff883885a10f",
+      "archivedSha256": "b4cd86d0b70b0aba7df7a84f8353cfd50d96decbb7973fb85cd3e3dc183679d0"
+    },
+    "step19-forge-client-diagnostic4.log": {
+      "rawSha256": "fc2620e0080c8fe4633bcee368785538e7440bc99f31184e969184e8e703cce7",
+      "archivedSha256": "ebbfe58fb4f21df844b6f60acb40ad75497d9167b61866915135866e40044c18"
+    },
+    "a-live.log": {
+      "rawSha256": "a09585f9618dfa0f14c3fb9e8439a9319b7a052b7771fedf07a2773d3ad0a207",
+      "archivedSha256": "27010c9623d708aee92b576aa877cb12bfff598ccb46906fb8c89efe11777f30"
+    },
+    "b-live.log": {
+      "rawSha256": "af33efcdb604a27819e86402bf6b6d0f76bf0c6b8d83c399c169664337b8e230",
+      "archivedSha256": "f55970f6d6d9ad28b032f3449878d110c822cf0b81e93f4a56be7cd0eaf3f0de"
+    },
+    "proxy-live.log": {
+      "rawSha256": "e79070a51034f49d8bad50bae0cdad436a3433e4cc64fc256e03385f798398e5",
+      "archivedSha256": "963ee20a5912c269d3634470837f7c57d0ef5aa9287b210a2a85c1c1e1f219f0"
+    },
+    "b-pcf-live.log": {
+      "rawSha256": "eb5f3559515751595ae6e991eaf83f3f61c66de6bee4a7306e485ce3eea5279b",
+      "archivedSha256": "eaf0649ec4024677c3e6c9f65572ab0a1fc94dcb67638c145b25ebca178e8917"
+    }
+  },
+  "artifacts": {
+    "server_waypoint-3.1.0-forge-mc26.2.jar": "7049524f982a59d7ed03eb65c56b74fe69aa4ca729f9854e001ea22277007f89",
+    "step19-pcf-1.3.1.jar": "ea541aff6276970d98506965c8e71bd4ad7329452f631b2f45eb08edea425271",
+    "server_waypoint-3.1.0-velocity.jar": "be67bf9998b72b3fb3cb87aa2d402cf944edd2b3dd9d72eed4ba2f830ddd865f"
+  },
+  "archiveNormalization": "Archived logs remove ANSI formatting where captured, console-only prompts and empty lines, expand tabs, normalize line endings and trim trailing whitespace; raw source hashes retain the original private evidence identity."
+}

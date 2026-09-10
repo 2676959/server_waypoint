@@ -1,0 +1,53 @@
+{
+  "date": "2026-09-10",
+  "minecraft": "26.2",
+  "neoforge": "26.2.0.3-beta",
+  "proxyCompatibleForge": "1.3.1",
+  "velocity": "4.1.1 build 24",
+  "identity": "offline CodexStep19",
+  "forwarding": "MODERN with matching private secret; proxy online-mode=false",
+  "crossServerTransport": "PLAINTEXT literal loopback",
+  "assertions": [
+    "Four bidirectional arrivals across two real client sessions",
+    "Expected coordinates a=(5.5,80,30.5), b=(8197.5,80,30.5)",
+    "Protocol 11 and SYNC_FINISHED with advancing client ticks",
+    "Graceful disconnect, reconnect, fresh bidirectional transfer",
+    "All NeoForge fixture processes stopped"
+  ],
+  "limitations": [
+    "Ownership inferred from production guard and native successful arrival; no independent callback instrumentation",
+    "No controlled disconnect inside destination scheduling window",
+    "Online authenticated profile and cryptographically authenticated cross-server transport not exercised here",
+    "Headless LWJGL stubs and dummy assets; no visual approval",
+    "The archived NeoForge probe bus=true label was a constant, not a queried bus state; advancing tick counts and real synchronization are the event-delivery evidence. The current probe omits that label."
+  ],
+  "logs": {
+    "step19-neo-client-connected.log": {
+      "rawSha256": "6342589ebe16dd176e9009022cfa94219af3da38da07ff904311d4ad8685cf7a",
+      "archivedSha256": "4d2cba3238aa075afab5316103ec04dd807165065a11100690b449a584dc66d0"
+    },
+    "step19-neo-client-reconnect.log": {
+      "rawSha256": "d6b68e487f43b5bb049692133fc006d51f3cee95c60e6319bf49a5de6e9ab2dc",
+      "archivedSha256": "05b328805c20ad3c884756c896211d46deb8d47aaa3ab49f84b353c8419c968d"
+    },
+    "a-live.log": {
+      "rawSha256": "95ef9ffad73303869cff8177bc617060d0bd9ec7659ed6ec75ad167419f6b567",
+      "archivedSha256": "a802072b5e5b5af174ba9ccf86e2249c6e3354b0c51a486ff1c4c7efce324425"
+    },
+    "b-live.log": {
+      "rawSha256": "f0563257afa306d5e94d75e98770ecb1965e35c1d42b4a653f88551b9ecd1929",
+      "archivedSha256": "bdd306085c61f80feb403dd0332953660fa0eb7b12310ed5facd1b4eb53c726c"
+    },
+    "proxy-live.log": {
+      "rawSha256": "625d77d6a6e91cff226424f0845c9636adfc8e4ea05a9fbecec312d915b5792f",
+      "archivedSha256": "20dc767c6e3aa1744ecba5949a89a3ced2299a192d2ff7593200c08a1aa1a30b"
+    }
+  },
+  "artifacts": {
+    "server_waypoint-3.1.0-neoforge-mc26.2.jar": "fc9e81efe00d8acaa8cb3535ce3cf77b7ec39136588a28a9690a0a71cb00f3fb",
+    "server_waypoint-3.1.0-velocity.jar": "be67bf9998b72b3fb3cb87aa2d402cf944edd2b3dd9d72eed4ba2f830ddd865f",
+    "step19-pcf-1.3.1.jar": "ea541aff6276970d98506965c8e71bd4ad7329452f631b2f45eb08edea425271",
+    "neo-control-probe.jar": "9811130c23296d1660aac21a2a68da47bfe8acc6d29fd21d301d6636787caae8"
+  },
+  "archiveNormalization": "Archived logs remove ANSI formatting where captured, console-only prompts and empty lines, expand tabs, normalize line endings and trim trailing whitespace; raw source hashes retain the original private evidence identity."
+}

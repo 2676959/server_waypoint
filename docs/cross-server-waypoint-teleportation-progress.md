@@ -1,15 +1,15 @@
 # Cross-server waypoint teleportation progress
 
-Last updated: 2026-09-09.
+Last updated: 2026-09-10.
 Prior implementation: `e33cc62`; original progress record: `b2f0c1c`;
 KK/plaintext design revision: `631405e` on `feature/cross-server-tp`.
 Step 2 is now `fd3ba53` after rebasing onto upload-branch fix `f0d8281`.
 Step 3 was committed as `3fccc28`; step 4 as `6d7be5a`; step 5 as `4e806fa`; step 6 as `8752aaa`.
-Step 7 was committed as `1858582`; step 8 as `b8a372d`. Step 9 was committed as `d32d177`. Step 10 was committed as `d9ada50`. Step 11 remote queries and suggestions are complete. Step 12 permissions and authorization callbacks were committed as `bebdb30`. Step 13 coordinator handoffs were committed as `4122f2a`. Step 15 was committed as `1a0d7e8`. Step 16 was committed as `4d91de1`. Step 17 was committed as `1c2e74a`. Step 18 was committed as `4fe1a9b`. The current change implements Step 19 hardening; native production release gates remain open.
+Step 7 was committed as `1858582`; step 8 as `b8a372d`. Step 9 was committed as `d32d177`. Step 10 was committed as `d9ada50`. Step 11 remote queries and suggestions are complete. Step 12 permissions and authorization callbacks were committed as `bebdb30`. Step 13 coordinator handoffs were committed as `4122f2a`. Step 15 was committed as `1a0d7e8`. Step 16 was committed as `4d91de1`. Step 17 was committed as `1c2e74a`. Step 18 was committed as `4fe1a9b`. Step 19 hardening and the four representative native release gates are validated; the native follow-up is recorded below.
 
 ## Current status
 
-**Steps 1–18 are complete. Step 2 selects `org.signal.forks:noise-java:0.1.1`
+**Steps 1–19 are implemented and the representative native release gates pass. Step 2 selects `org.signal.forks:noise-java:0.1.1`
 for `Noise_KK_25519_AESGCM_SHA256`, with 35 passing KK checks and a scoped source review.**
 Step 3 adds the proxy modules/contracts and private dependency packaging; all 41 artifact checks
 and 10 native runtime checks pass. Step 4 adds immutable catalogs and reader views.
@@ -27,7 +27,7 @@ lifecycles, catalog synchronization and player transfers behind explicit configu
 default). Step 17 adds bounded authorized remote client snapshots under Minecraft protocol 11.
 Step 18 adds a read-only remote manager branch with exact-identity selection and teleport confirmation.
 Step 19 hardening, administrator documentation and the full build/artifact matrix are implemented.
-Native production release approval remains open; see [Step-19 verification](cross-server-release-readiness.md).
+The four representative native gates now pass; see [Step-19 verification and scope](cross-server-release-readiness.md). Nothing has been published.
 
 The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
 The [protocol v1 contract](cross-server-protocol-v1.md) defines the feature semantics.
@@ -66,8 +66,7 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 16 — Velocity runtime integration | Complete | Coordinator/backend lifecycle, TCP readiness/claim dispatch, real Velocity switch, owner-thread arrivals, 16 real-socket cases and live Paper/Velocity tests in both modes. See [runtime contract](cross-server-velocity-runtime.md). |
 | 17 — Client catalog synchronization | Complete | Protocol 11, bounded authorized remote snapshots, session reset and client dispatcher isolation tests. See [client contract](cross-server-client-sync.md). |
 | 18 — Waypoint manager GUI | Complete | Read-only server/dimension/list/waypoint tree, exact selection, stale status, remote details, guarded command confirmation, seven regression tests and native GUI probe. See [GUI contract](cross-server-gui.md). |
-| 19 — Release hardening | In progress | Full build and 39-JAR gate pass; eight hardening regressions, native Paper/Fabric fixes, administrator guide and release notes implemented. Native production gates remain in the [release record](cross-server-release-readiness.md). |
-| 19 — Release hardening | Not started | Full release/version matrix, visual screenshot review and live protocol-11 proxy/Folia/mod handoff validation remain pending. |
+| 19 — Release hardening | Validated | Full build and 39-JAR gate, representative Folia/Forge/NeoForge transfers, real protocol-11 GUI, authenticated failure/rotation checks and 30-minute soak pass. See exact scope and limitations in the [release record](cross-server-release-readiness.md). Native follow-up evidence is recorded below. |
 
 The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
@@ -266,8 +265,7 @@ Native mod/Folia transfers, online forwarding and the full release/soak matrix r
 
 ## Next work, in order
 
-1. Step 19: close the remaining native production gates in the release record, including protocol-11 sessions. Plaintext backend identity
-   must never be described as cryptographically authenticated.
+1. Review the Step-19 native follow-up and recorded deployment scope before release packaging/publication. The four requested representative native gates have passed; plaintext backend identity remains unauthenticated.
 
 Update this file when a step's status changes, a blocker is resolved, or new validation is run.
 Keep completed implementation, experimental evidence, and unperformed validation separate.
@@ -315,7 +313,43 @@ bidirectional arrival/coordinate checks. KK additionally passes catalog edits, d
 and coordinator restart/republish; plaintext leaves keys unchanged and denies stale destinations.
 The run used disposable offline identities and forwarding NONE. All processes stopped cleanly.
 
-Step 19 remains **in progress for production release approval**, pending native Folia/Forge/NeoForge,
-real modded protocol-11 GUI/proxy sessions, authenticated forwarding and the broader native
-failure-timing/rotation/soak matrix. See the [release record](cross-server-release-readiness.md),
+At that snapshot, Step 19 remained **in progress for production release approval**.
+The follow-ups below record subsequent native validation; current remaining gates are
+tracked in the release record. See the [release record](cross-server-release-readiness.md),
 [administrator guide](cross-server-admin.md) and [machine-readable evidence](validation/cross-server-step19/results.json).
+
+### Step 19 Folia native follow-up (2026-09-09)
+
+Folia 1.21.11 exposed a claim-before-proxy-route-installation race beyond the
+backend entity-tick fix. The coordinator now delays the validated claim until
+transfer completion and rechecks the live route. Representative repeated and
+separate-region two-player transfers, controlled destination retirement, and
+reconnect recovery pass with the fixed proxy. [Evidence and limitations](cross-server-release-readiness.md#folia-follow-up--2026-09-09)
+remain explicit; this is not full Step 19 or production release approval.
+
+
+### Step 19 native release follow-up (2026-09-10)
+
+Representative Forge 26.2/65.1.3 and NeoForge 26.2.0.3-beta clients passed synchronized
+bidirectional transfers and disconnect/reconnect recovery through modern forwarding with
+PCF 1.3.1. A real Fabric 26.2 protocol-11 client received a remote catalog mutation while
+browsing, selected the new exact target, confirmed through native mouse input and transferred
+through Velocity to the expected position. These were disposable offline client sessions.
+
+Online AuthenticatedTestPlayer sessions with modern forwarding and NOISE_KK have exercised Folia
+arrival ownership, permission revocation and waypoint movement between preparation and
+arrival, first-entity-tick disconnect and recovery. The final proxy candidate also passed
+those mutation cases, restart-based backend revocation and old-pin denial after backend
+and coordinator key rotation. The 32-connection native pressure check allowed two transfers
+while held and cleaned up stalled handshakes.
+
+Final-candidate common/proxy-common/Velocity reports contain 539/114/6 passing tests, with
+no failures, errors or skips. All 39 staged release artifacts pass the audit with the final
+proxy SHA-256 `be67bf9998b72b3fb3cb87aa2d402cf944edd2b3dd9d72eed4ba2f830ddd865f`.
+Two final-candidate soak attempts stopped before new logins after 6 and 16 cycles.
+macOS crash reports identify MCC CoreCLR SIGABRT, with no matching proxy connections.
+The subsequent 1,801.9-second run with `DOTNET_ReadyToRun=0` for MCC passed all 60
+reconnects and 120 transfers. The exact upstream crash defect remains unconfirmed.
+Retained heap and descriptor observations stayed bounded; all disposable processes stopped.
+[Soak evidence](validation/cross-server-step19-soak/results.json). Runtime scope,
+artifact distinctions and remaining limitations are in the [release record](cross-server-release-readiness.md).
