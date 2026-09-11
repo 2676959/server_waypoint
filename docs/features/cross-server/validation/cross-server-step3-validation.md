@@ -8,7 +8,7 @@ Source baseline after rebase: `fd3ba53`, including upload fix `f0d8281`.
 ## Scope
 
 The module contracts and inert Velocity plugin are documented in
-[proxy module contracts](cross-server-proxy-module-contracts.md). There is no production
+[proxy module contracts](../specs/cross-server-proxy-module-contracts.md). There is no production
 cross-server listener, connection, catalog, pairing flow, or player transfer.
 
 Every final target archive is checked in a fresh staging directory. The audit verifies unique
@@ -31,7 +31,7 @@ and server readiness followed by normal shutdown with exit code 0.
 
 41 final artifacts: 13 Fabric, 12 Forge, 12 NeoForge, 3 Paper, 1 Velocity. This includes the two
 26.2 Fabric/NeoForge development targets plus Velocity; the existing backend release collector
-still selects 38 artifacts. See [artifact hashes](validation/cross-server-step3/artifacts.json).
+still selects 38 artifacts. See [artifact hashes](cross-server-step3/artifacts.json).
 
 ```sh
 ./gradlew :common:test :proxy-common:build :velocity:build --max-workers=2 --console=plain
@@ -40,10 +40,10 @@ python3 tools/noise-platform-test/audit.py --java17-home /opt/homebrew/opt/openj
 python3 tools/noise-platform-test/run_live.py /private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-manifest.json
 ```
 
-The [tool README](../../tools/noise-platform-test/README.md) describes the explicit disposable-runtime
+The [tool README](../../../../tools/noise-platform-test/README.md) describes the explicit disposable-runtime
 manifest. Every server uses a fresh world/configuration on loopback; user map data is never copied.
 Runtime logs, exact command lines, artifact hashes, and native classloader/code-source evidence
-are retained in [runtime results](validation/cross-server-step3/runtime-results.json).
+are retained in [runtime results](cross-server-step3/runtime-results.json).
 
 ## Native runtime matrix
 
@@ -73,26 +73,26 @@ before the entrypoint loaded. Both failures reproduced without the observer on t
 step-2 baseline `ca167a1`, and on `feature/upload-3.1.0` at `32d4498`.
 
 At the user's direction, the defects were repaired on the upload branch before rebasing the
-cross-server branch. See [upstream repair evidence](../upload/upload-startup-fixes.md). These runtime
+cross-server branch. See [upstream repair evidence](../../upload/upload-startup-fixes.md). These runtime
 fixes are separate from step 3's module and packaging implementation.
 
 The post-rebase full build passed (563 tasks, 2m 38s), with 316 common tests and 11 proxy contract
 tests passing without failures or skips. The final contract tests were rerun after strengthening
 the duplicate-callback cancellation fixture; all 11 still pass. No production code changed in
-that final test-only refinement. See [build result](validation/cross-server-step3/build-result.json),
-[test counts](validation/cross-server-step3/test-summary.json), and
-[final contract run](validation/cross-server-step3/contract-tests-final.txt).
+that final test-only refinement. See [build result](cross-server-step3/build-result.json),
+[test counts](cross-server-step3/test-summary.json), and
+[final contract run](cross-server-step3/contract-tests-final.txt).
 
 All 41 freshly built artifacts passed the audit. All 10 listed native runtime cases passed their
 classloader crypto probe, server readiness, and clean shutdown. The exact live mod/plugin SHA-256
 values match the final audited artifacts. The Fabric setups initially omitted Fabric API and the
 Forge 26.2 setup omitted its shim launcher; after restoring those runtime dependencies, the three
-cases passed with unchanged mod artifacts. [Setup retry logs](validation/cross-server-step3/setup-retries.json)
+cases passed with unchanged mod artifacts. [Setup retry logs](cross-server-step3/setup-retries.json)
 are retained separately from source failures.
 
 Retained console text normalizes trailing whitespace and tabs; raw and retained SHA-256 values
-are recorded separately. [Initial runtime results](validation/cross-server-step3/initial-runtime-results.json)
-and [step-2 baseline comparisons](validation/cross-server-step3/baseline-results.json) preserve the
+are recorded separately. [Initial runtime results](cross-server-step3/initial-runtime-results.json)
+and [step-2 baseline comparisons](cross-server-step3/baseline-results.json) preserve the
 original blockers without treating them as the final outcome.
 
 This closes the step-3 packaging/classloader gate. Production transport and all steps 4–19 remain

@@ -43,5 +43,5 @@ handoffs, the full version matrix, screenshot review and soak/security release c
   labels are clipped. No client API or payload is added for teleport results; existing server
   command feedback appears in chat after the confirmed action closes the browser.
 
-The required workspace-only `docs/gui-tips/README.md` is also updated. This repository's local
-Git exclude rule keeps that guide outside the tracked patch; the API contracts above are tracked.
+The required workspace-only `docs/tips/gui/local-guide.md` is also updated. The repository's
+Git ignore rule keeps that guide outside the tracked patch; the API contracts above are tracked.

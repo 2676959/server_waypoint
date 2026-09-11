@@ -3,7 +3,7 @@
 Step 16 connects the existing catalog and handoff services to Velocity and the dedicated mod/Paper
 backends. The feature remains disabled by default. No client mod is required for remote commands
 or server switches. Protocol-11 modded-client catalogs and read-only GUI controls were added in Steps 17–18.
-See the [administrator guide](cross-server-admin.md) and [current release verification](cross-server-release-readiness.md).
+See the [administrator guide](../cross-server-admin.md) and [current release verification](../validation/cross-server-release-readiness.md).
 
 ## Runtime ownership and handoff flow
 
@@ -159,12 +159,12 @@ count; revoked source permission prevented another switch. Explicit loopback pla
 destination login while retaining the player on the source, then successfully retried with exactly
 one teleport after the test rejection was removed. All disposable processes stopped cleanly.
 
-[Runtime results and hashes](validation/cross-server-step16/results.json) and adjacent full logs
+[Runtime results and hashes](../validation/cross-server-step16/results.json) and adjacent full logs
 preserve the evidence and identify the earlier native-run artifacts separately from the final build.
 The final source-readiness claim guard passed real-TCP tests in both modes; native sessions were
 not repeated for that final guard. The initial test-fixture position format and MCC console-mode setup errors
 were corrected before the successful live scenarios; they required no production fixes. Credential
-files are not archived. [The test-only audit plugin](../../tools/cross-server-live-test/README.md) is not
+files are not archived. [The test-only audit plugin](../../../../tools/cross-server-live-test/README.md) is not
 included in any release artifact.
 
 Spoofed plugin packets, wrong-source injection and disconnect races were checked through

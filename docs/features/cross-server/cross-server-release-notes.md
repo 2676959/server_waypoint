@@ -1,6 +1,6 @@
 # Cross-server waypoints — release notes
 
-Release candidate; deployment approval depends on the [verification record](cross-server-release-readiness.md).
+Release candidate; deployment approval depends on the [verification record](validation/cross-server-release-readiness.md).
 
 - Optional Velocity integration lets players browse PUBLIC waypoint catalogs and request prepared,
   destination-validated teleports across dedicated backends. The feature is disabled by default.

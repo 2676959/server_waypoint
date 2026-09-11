@@ -24,9 +24,9 @@ No release has been published.
   The verifier checks all 39 exact targets, duplicates, loader distribution, relocated Noise and its
   notice, and accidental test/probe classes. Eight synthetic positive/negative tests cover the gate
   and collector; synthetic ZIPs are not runtime evidence.
-- The [administrator guide](cross-server-admin.md) covers trusted public-pin exchange without
+- The [administrator guide](../cross-server-admin.md) covers trusted public-pin exchange without
   certificates, plaintext local-process trust, binding/firewalls, mappings, permissions, rotation,
-  revocation, recovery and troubleshooting. [Release notes](cross-server-release-notes.md) explain
+  revocation, recovery and troubleshooting. [Release notes](../cross-server-release-notes.md) explain
   opt-in defaults and the independent protocol versions.
 
 ## Automated verification
@@ -93,14 +93,14 @@ backend revocation, and backend key rotation. That run used the earlier race-fix
 final-candidate validation repeated the mutation checks and both backend and coordinator
 key rotation, including restart with one authenticated player connected. Old pins fail
 closed; updated trusted pins restore authenticated bidirectional transfers. See the
-[final-candidate evidence](validation/cross-server-step19-authenticated-final/results.json).
+[final-candidate evidence](cross-server-step19-authenticated-final/results.json).
 
 The final-candidate resource gate passed a 1,801.9-second authenticated soak after key
 rotation: 60 clean reconnect sessions, 120 completed transfers and 62 resource samples.
 File descriptors stayed at 151 per backend and 59 for Velocity; coordinator readers
 stayed at 32. Retained heap after explicit GC decreased by 1,320/1,229 KiB on the
 backends and increased by 247 KiB on Velocity. Thread counts stabilized, with no runtime
-error or wrong-owner log matches. [Soak evidence](validation/cross-server-step19-soak/results.json).
+error or wrong-owner log matches. [Soak evidence](cross-server-step19-soak/results.json).
 The separate pressure check completed two authenticated transfers while the 32-connection
 ceiling was held, expired 30 stalled handshakes and returned to two legitimate sockets.
 
@@ -118,7 +118,7 @@ adapter callback instrumentation. All disposable processes stopped cleanly; no u
 worlds or production services were modified by the fixtures. Private authentication
 data is excluded from the archived evidence.
 
-[Machine-readable results and artifact hashes](validation/cross-server-step19/results.json) and
+[Machine-readable results and artifact hashes](cross-server-step19/results.json) and
 adjacent logs preserve the evidence without credential contents. Build artifacts are in `builds/`.
 
 ## Folia follow-up — 2026-09-09
@@ -141,7 +141,7 @@ were used; authenticated forwarding, native KK and soak gates remain separate.
 
 The Paper plugin matches the original staged release artifact. The fixed Velocity
 plugin was rebuilt from the working tree; original, diagnostic and fixed hashes
-are retained separately. See [Folia evidence](validation/cross-server-step19-folia/results.json).
+are retained separately. See [Folia evidence](cross-server-step19-folia/results.json).
 The earlier full-matrix result belongs to the pre-fix snapshot; the follow-up runs
 common/proxy/Velocity checks and a separate 39-artifact audit with the new proxy.
 
@@ -153,7 +153,7 @@ passed four synchronized bidirectional arrivals over two real client sessions,
 including graceful disconnect/reconnect recovery. Protocol 11 reached `SYNC_FINISHED`
 and the client tick event bus remained active. Destination positions were
 `(5.5, 80, 30.5)` and `(8197.5, 80, 30.5)`.
-[Logs, hashes and limitations](validation/cross-server-step19-forge/results.json).
+[Logs, hashes and limitations](cross-server-step19-forge/results.json).
 
 The initial disposable control probe lacked resource-pack metadata. Forge's startup
 warning screen disabled its event bus while Quick Play connected, leaving client
@@ -171,7 +171,7 @@ arrival, without independent adapter callback instrumentation.
 NeoForge 26.2.0.3-beta / Minecraft 26.2 with PCF 1.3.1 and Velocity 4.1.1 build 24
 passed four bidirectional arrivals across two real client sessions, expected positions
 on both backends, and graceful disconnect/reconnect recovery. Protocol 11 reached
-`SYNC_FINISHED` with advancing ticks. [Evidence](validation/cross-server-step19-neoforge/results.json)
+`SYNC_FINISHED` with advancing ticks. [Evidence](cross-server-step19-neoforge/results.json)
 retains exact runtime/artifact versions. As with Forge, these offline modern-forwarding
 runs do not establish online identity authentication or controlled in-handoff retirement;
 no independent production ownership callback probe was installed.
@@ -182,7 +182,7 @@ no independent production ownership callback probe was installed.
 A real Fabric 26.2 client passed remote browser navigation, receipt of a backend
 catalog mutation while the browser remained open, exact selection of the new entry,
 teleport confirmation through native mouse dispatch, proxy transfer, and fresh
-synchronization at `(45.5, 80, 30.5)`. [Evidence](validation/cross-server-step19-live-gui/results.json).
+synchronization at `(45.5, 80, 30.5)`. [Evidence](cross-server-step19-live-gui/results.json).
 The probe injects neither catalogs nor network state. Headless rendering is not visual
 approval; this run used an offline identity, forwarding NONE and loopback plaintext.
 
@@ -197,7 +197,7 @@ entity tick retired the pending arrival and allowed source fallback and a fresh 
 Disabling backend b and presenting a newly generated backend key against the old pin
 both left its catalog stale and rejected requests. Installing the new trusted public
 pin restored availability and bidirectional transfers.
-[Recorded logs and exact artifact scope](validation/cross-server-step19-authenticated/results.json).
+[Recorded logs and exact artifact scope](cross-server-step19-authenticated/results.json).
 
 A separate 64-socket attempt hit the accepted coordinator connection ceiling of 32;
 30 stalled handshakes closed by the deadline observation and the count returned to the

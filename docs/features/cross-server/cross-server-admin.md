@@ -5,7 +5,7 @@ backend artifact on each dedicated backend and the shaded `server_waypoint-<vers
 on Velocity. The proxy plugin requires Java 25. Use the Java version required by each backend.
 Integrated servers do not participate. Remote commands work with vanilla clients; the remote GUI
 requires a matching protocol-11 client mod. Update the proxy and all participating backends together.
-See the [release verification record](cross-server-release-readiness.md) before deploying.
+See the [release verification record](validation/cross-server-release-readiness.md) before deploying.
 
 ## Pair two backends with KK
 
@@ -16,7 +16,7 @@ See the [release verification record](cross-server-release-readiness.md) before 
 2. Start each component once to create its disabled `cross-server.json`, then stop it. On Paper the
    directory is `plugins/ServerWaypoint`; on Velocity it is `plugins/server_waypoint`. On mod loaders
    use the Server Waypoint configuration directory created by that installation.
-3. Use the [KK configuration examples](cross-server-velocity-runtime.md#configuration). For each
+3. Use the [KK configuration examples](specs/cross-server-velocity-runtime.md#configuration). For each
    backend set `enabled`, `serverId`, `coordinator`, `transportMode: "NOISE_KK"` and
    `catalogExport: "PUBLIC"`. On Velocity set `enabled`, `listen`, `transportMode: "NOISE_KK"`
    and two `backends` entries with their `velocityServer` mappings. Leave pins absent for this
@@ -67,7 +67,7 @@ Remote teleport requires both `server_waypoint.command.tp` and
 `server_waypoint.command.remote.tp` (`tp` and `remoteTp`, default level 2) at the source. The
 actual destination player must pass local teleport permission and current PUBLIC export checks.
 An optional Velocity `proxyPermission` adds another check; omitting it does not remove backend checks.
-Remote teleport does not require browse permission. See [authorization](cross-server-authorization.md).
+Remote teleport does not require browse permission. See [authorization](specs/cross-server-authorization.md).
 
 Remote catalogs are read-only caches, separate from local waypoint storage. Exact server, dimension,
 list and waypoint identities are retained; quote spaces, empty names and dimension IDs. `STALE`,
@@ -115,5 +115,5 @@ Retained replay history can force reconnect earlier than the message ceiling. Ru
 also have shorter deadlines and bounded queues. These are resource ceilings, not a promise of unlimited
 throughput or a per-second rate allowance. Errors close the affected session; reconnect repopulates
 catalogs. Report version, transport mode, non-secret IDs, timestamp and failure phase with sanitized
-logs. See [transport bounds](cross-server-tcp-transport-v1.md) and
-[runtime ownership](cross-server-velocity-runtime.md).
+logs. See [transport bounds](specs/cross-server-tcp-transport-v1.md) and
+[runtime ownership](specs/cross-server-velocity-runtime.md).

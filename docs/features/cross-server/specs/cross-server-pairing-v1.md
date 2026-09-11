@@ -151,6 +151,6 @@ concurrent completion, changed local keys, explicit rotation, failed persistence
 console/exception/toString secret scans. Real KK sockets use newly paired keys, exercise pending
 handshake revocation, reject revoked reconnects and preserve another backend's live session.
 
-See the [progress record](cross-server-waypoint-teleportation-progress.md) for exact test totals
+See the [progress record](../cross-server-waypoint-teleportation-progress.md) for exact test totals
 and build evidence. These tests do not validate platform commands, a network bootstrap dispatcher,
 reconnect scheduling or live game/proxy integration. Those are later plan steps.

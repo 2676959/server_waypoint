@@ -126,4 +126,4 @@ be authoritative. Missing or rejected handoffs MUST NOT cause a teleport.
 V1 explicitly excludes arbitrary unmodified servers, RCON, remote mutation/editing, player-private
 catalogs, and direct client connections to the coordinator. It adds no runtime networking in
 step 1. The remaining implementation and validation gates are in the
-[implementation plan](cross-server-waypoint-teleportation-plan.md).
+[implementation plan](../plans/cross-server-waypoint-teleportation-plan.md).

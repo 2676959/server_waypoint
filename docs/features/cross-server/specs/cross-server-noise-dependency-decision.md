@@ -110,7 +110,7 @@ and replayed transport. A wrong-side or wrong-phase exception, timeout, or admit
 traffic fails the test. The unit replay test checks a repeated first handshake against a fresh
 responder and rejects the previous session's confirmation.
 
-See [KK spike README](../../tools/noise-spike/kk/README.md) for report paths, test boundaries, fixture
+See [KK spike README](../../../../tools/noise-spike/kk/README.md) for report paths, test boundaries, fixture
 permissions, child cleanup, and commands. Whitespace checks pass. No root platform build was
 necessary or run for this isolated dependency change.
 
@@ -121,7 +121,7 @@ Shadow 9.4.1 relocates `com.southernstorm.noise` to `_959.server_waypoint.intern
 historical/test dependencies. All class files are Java 17 compatible.
 
 The platform routes below were rechecked in this worktree. The implementation and results now live in
-[step-3 platform validation](cross-server-step3-validation.md), before production transport work.
+[step-3 platform validation](../validation/cross-server-step3-validation.md), before production transport work.
 
 | Platform | Required packaging integration and check |
 | --- | --- |

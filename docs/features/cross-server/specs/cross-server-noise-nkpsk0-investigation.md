@@ -75,7 +75,7 @@ Additional integration constraints from source inspection:
 
 ## Executable evidence
 
-Run the [standalone spike](../../tools/noise-spike/README.md):
+Run the [standalone spike](../../../../tools/noise-spike/README.md):
 
 ```sh
 ./gradlew -p tools/noise-spike check --console=plain

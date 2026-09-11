@@ -13,10 +13,10 @@ provides unencrypted, unauthenticated TCP on loopback only for trusted same-host
 messages so a future hybrid X25519 plus ML-KEM suite can be added without changing application
 messages.
 
-Implementation status is tracked in [the progress record](cross-server-waypoint-teleportation-progress.md).
+Implementation status is tracked in [the progress record](../cross-server-waypoint-teleportation-progress.md).
 Steps 1–17 now include transport, credentials, catalog distribution, permissions, handoff services,
 remote commands and live Velocity/Paper command-to-arrival integration. Client/GUI synchronization
-and release hardening remain. See the progress record and [runtime contract](cross-server-velocity-runtime.md).
+and release hardening remain. See the progress record and [runtime contract](../specs/cross-server-velocity-runtime.md).
 
 ## Scope
 
@@ -364,7 +364,7 @@ configuration changes and new sessions; there is no downgrade or compatibility r
 1. Coordinator and backend each generate their own static X25519 key pair locally.
 2. `/serverwaypoint pair <server-id>` creates a short-lived one-time pairing code bound to the ID.
 3. A separately reviewed bootstrap exchange authenticates that code and binds both public keys
-   and the server ID before installing either pin. The [step-7 bootstrap](cross-server-pairing-v1.md) uses one-time 256-bit codes and transcript-bound HMAC confirmations;
+   and the server ID before installing either pin. The [step-7 bootstrap](../specs/cross-server-pairing-v1.md) uses one-time 256-bit codes and transcript-bound HMAC confirmations;
    KK cannot pair previously unknown keys by itself. Never use unauthenticated key exchange or
    plaintext mode as a remote pairing shortcut.
 4. The backend stores the coordinator public pin; the coordinator stores the backend public key
@@ -444,7 +444,7 @@ Remote views are explicitly read-only:
 - Treat display names as presentation only; all commands and requests carry exact identity strings.
 - Keep server identity visible in details and confirmation feedback.
 
-Before changing GUI APIs or render behavior, follow `docs/gui-tips/README.md` if that document is
+Before changing GUI APIs or render behavior, follow `docs/tips/gui/local-guide.md` if that document is
 present at implementation time and update it for any changed API under the documented GUI package.
 
 ## Permission and authorization model
@@ -533,7 +533,7 @@ start a player transfer until the destination has successfully prepared a handof
 
 ### Step 1: freeze the feature contract
 
-Implemented contract: [Cross-server protocol v1](cross-server-protocol-v1.md), with constants,
+Implemented contract: [Cross-server protocol v1](../specs/cross-server-protocol-v1.md), with constants,
 validated identities, catalog/export enums, and identity tests in `common`'s `crossserver` package.
 This step adds no runtime networking or command registration.
 
@@ -550,11 +550,11 @@ different servers remain distinct.
 
 ### Step 2: select and prove the Noise dependency
 
-Completed: the [selection decision](cross-server-noise-dependency-decision.md) selects
+Completed: the [selection decision](../specs/cross-server-noise-dependency-decision.md) selects
 `org.signal.forks:noise-java:0.1.1` after a scoped KK source review and 35 passing checks in the
-[isolated KK spike](../../tools/noise-spike/kk/README.md). Historical NKpsk0 evidence is preserved
+[isolated KK spike](../../../../tools/noise-spike/kk/README.md). Historical NKpsk0 evidence is preserved
 separately. Runtime dependency integration and final platform packaging/classloader evidence
-belong to [step 3](cross-server-step3-validation.md).
+belong to [step 3](../validation/cross-server-step3-validation.md).
 
 - Evaluate maintained Java 17-compatible implementations for `KK`, AES-GCM, exact-suite vectors,
   licensing, dependency size, thread-safety, key lifecycle, and nonce-exhaustion behavior.
@@ -572,8 +572,8 @@ does not waive this gate for the default encrypted transport.
 
 ### Step 3: add project modules and future-proof proxy interfaces
 
-Completed: [module contracts](cross-server-proxy-module-contracts.md), 11 passing proxy
-contract tests, and [platform validation](cross-server-step3-validation.md): 41 final artifacts
+Completed: [module contracts](../specs/cross-server-proxy-module-contracts.md), 11 passing proxy
+contract tests, and [platform validation](../validation/cross-server-step3-validation.md): 41 final artifacts
 and 10 native runtime cases pass after upload-branch fixes and rebase.
 
 - Add `proxy-common` and `velocity` Gradle subprojects.
@@ -618,7 +618,7 @@ bytes, oversized strings/collections, and malformed waypoint data.
 
 ### Step 6: implement bounded TCP framing for both modes
 
-Completed as reusable channels: [transport contract and verification](cross-server-tcp-transport-v1.md).
+Completed as reusable channels: [transport contract and verification](../specs/cross-server-tcp-transport-v1.md).
 Platform lifecycle/reconnect remains step 8.
 
 - Implement explicit mode matching, KK handshake/confirmation, encrypted records, bounded
@@ -639,7 +639,7 @@ attempts, slow handshakes, and disconnect storms remain bounded.
 
 ### Step 7: implement pairing and credential management
 
-Completed as reusable administrative/bootstrap APIs: [pairing contract, review and tests](cross-server-pairing-v1.md).
+Completed as reusable administrative/bootstrap APIs: [pairing contract, review and tests](../specs/cross-server-pairing-v1.md).
 Platform commands and the network bootstrap carrier are not started by this step.
 
 - Generate the coordinator static key on first startup.
@@ -656,7 +656,7 @@ permissions are restricted where supported, and secret-scanning tests cover logs
 
 ### Step 8: implement connection lifecycle and server registration
 
-Completed as reusable asynchronous agents: [lifecycle contract and verification](cross-server-connection-lifecycle.md).
+Completed as reusable asynchronous agents: [lifecycle contract and verification](../specs/cross-server-connection-lifecycle.md).
 Platform startup and catalog publication are not enabled by this step.
 
 - Connect backend agents outbound to the coordinator with bounded exponential backoff.
@@ -672,7 +672,7 @@ recoverable, and no connection operation blocks the server tick thread.
 
 ### Step 9: publish authoritative backend catalogs
 
-Completed as reusable publisher/receiver services: [publication contract and verification](cross-server-catalog-publication.md).
+Completed as reusable publisher/receiver services: [publication contract and verification](../specs/cross-server-catalog-publication.md).
 Coordinator-wide aggregation/fan-out remains Step 10.
 
 - Snapshot waypoint data atomically from each backend.
@@ -688,7 +688,7 @@ outside mutation locks, and failed publication preserves the previous coordinato
 
 ### Step 10: aggregate and distribute catalogs
 
-Completed as reusable index/distribution services: [distribution contract and verification](cross-server-catalog-distribution.md).
+Completed as reusable index/distribution services: [distribution contract and verification](../specs/cross-server-catalog-distribution.md).
 Platform startup remains a later integration step.
 
 - Maintain one immutable latest snapshot per admitted server ID in the coordinator, retaining its transport mode.
@@ -706,7 +706,7 @@ commands or teleporting.
 
 ### Step 11: add backend remote-catalog queries and suggestions
 
-Completed in the shared backend command tree: [query contract and verification](cross-server-catalog-queries.md).
+Completed in the shared backend command tree: [query contract and verification](../specs/cross-server-catalog-queries.md).
 Transport startup remains a later integration step; step 12 adds permission gates.
 
 - Add a bounded `RemoteCatalogStore` to each backend, separate from `WaypointFilesManagerCore`.
@@ -725,7 +725,7 @@ This completes the second independently releasable boundary: read-only remote ca
 
 ### Step 12: add permissions and authorization callbacks
 
-Completed as backend permission gates and reusable callbacks: [authorization contract and verification](cross-server-authorization.md).
+Completed as backend permission gates and reusable callbacks: [authorization contract and verification](../specs/cross-server-authorization.md).
 
 - Add `server_waypoint.command.remote.list` with default level 0.
 - Add `server_waypoint.command.remote.tp` with default level 2.
@@ -741,7 +741,7 @@ revocation are covered on modded and Paper implementations.
 ### Step 13: implement the coordinator handoff state machine
 
 Completed as a bounded atomic registry and reusable backend-message dispatcher:
-[handoff contract and verification](cross-server-handoffs.md). Destination execution and platform dispatch remain steps 14–16.
+[handoff contract and verification](../specs/cross-server-handoffs.md). Destination execution and platform dispatch remain steps 14–16.
 
 - Implement prepare, reserve, claim, complete, cancel, and expiry transitions.
 - Create single-use records bound to request UUID, player UUID, source server, destination server,
@@ -758,7 +758,7 @@ cross-player claims, cross-destination claims, concurrent claims, and coordinato
 ### Step 14: implement destination preparation and arrival
 
 Completed as a destination service with authoritative lookup and concrete mod/Paper adapters:
-[destination contract and verification](cross-server-destination.md). Command and live lifecycle wiring remain steps 15–16.
+[destination contract and verification](../specs/cross-server-destination.md). Command and live lifecycle wiring remain steps 15–16.
 
 - Resolve the requested identity from current authoritative destination data during preparation.
 - Reserve the handoff without trusting cached coordinates from the source.

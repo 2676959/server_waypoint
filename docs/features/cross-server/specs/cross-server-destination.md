@@ -136,5 +136,5 @@ verification above describes its historical boundary; client/GUI and full releas
 Mod owner dispatch now enqueues a `TickTask` even when called from the server thread; Fabric's
 JOIN hook can precede UUID lookup installation. Paper/Folia dispatch always uses the next player
 scheduler tick. Both adapters recheck the actual player object and lifecycle at execution time.
-The [release record](cross-server-release-readiness.md) contains the native before/after evidence
+The [release record](../validation/cross-server-release-readiness.md) contains the native before/after evidence
 and delayed-registration/replacement/shutdown regression coverage.

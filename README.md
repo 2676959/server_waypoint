@@ -53,9 +53,9 @@ Optional:
 - `/wp remote servers [page <number> [limit <1-100>]]` shows cached remote server identities and availability.
 - `/wp remote list [<server> [<dimension> [<list>]]]` browses cached remote waypoints. It uses the same search, sort/order, page, limit, and `view tree|flat` option syntax as `/wp list`. Quote exact identities, including names matching option words. Distance sorting reports that cross-server distances are unavailable.
   - Results are read-only and work through ordinary server chat. Stale data is labeled; unavailable catalogs are distinct from successfully published empty catalogs. Run `/wp help remote` for help.
-  - Catalog synchronization starts when cross-server configuration is enabled. See [Velocity runtime setup](docs/cross-server/cross-server-velocity-runtime.md) and [remote catalog queries](docs/cross-server/cross-server-catalog-queries.md).
-- `/wp remote tp <server> <dimension> <list> <waypoint>` requests a teleport using exact cached identities (quote names with spaces). Stale or missing targets fail before preparation; the player stays on the source until destination preparation and fresh permission checks succeed. See [remote teleport initiation](docs/cross-server/cross-server-source-teleport.md).
-  - Velocity and dedicated backend runtime integration is implemented and disabled by default. Suggestions use only the local cache. Quote dimension identities such as `"minecraft:overworld"`. See [configuration and validation](docs/cross-server/cross-server-velocity-runtime.md).
+  - Catalog synchronization starts when cross-server configuration is enabled. See [Velocity runtime setup](docs/features/cross-server/specs/cross-server-velocity-runtime.md) and [remote catalog queries](docs/features/cross-server/specs/cross-server-catalog-queries.md).
+- `/wp remote tp <server> <dimension> <list> <waypoint>` requests a teleport using exact cached identities (quote names with spaces). Stale or missing targets fail before preparation; the player stays on the source until destination preparation and fresh permission checks succeed. See [remote teleport initiation](docs/features/cross-server/specs/cross-server-source-teleport.md).
+  - Velocity and dedicated backend runtime integration is implemented and disabled by default. Suggestions use only the local cache. Quote dimension identities such as `"minecraft:overworld"`. See [configuration and validation](docs/features/cross-server/specs/cross-server-velocity-runtime.md).
 - `/wp reload` reload `config.json` and translation files in `/config/server_waypoint/lang`, feature `sendXaerosWorldId` requires restarting to take effect.
 - `/wp remove` removes a waypoint by identifier and returns a temporary, single-use restore action.
   - `/wp remove <dimension> <list-identifier>` removes an empty waypoint list.
@@ -194,7 +194,7 @@ Some changes made in `config.json` may take effects after server restarts.
   Paper currently falls back to `isOp()` for unset nodes, regardless of these configured levels;
   grant explicit nodes to ordinary players and use explicit denials when needed. Fabric's permissions
   API supports node overrides; the current Forge/NeoForge adapters use vanilla levels.
-  See [remote authorization](docs/cross-server/cross-server-authorization.md) for the integration boundary.
+  See [remote authorization](docs/features/cross-server/specs/cross-server-authorization.md) for the integration boundary.
 
   Default value:
   ```json5
@@ -282,9 +282,9 @@ Some changes made in `config.json` may take effects after server restarts.
 
 Remote catalog synchronization requires matching protocol-11 clients and backends. Remote snapshots
 are kept separately from local waypoint files; client GUI integration is the next implementation
-step. See [client synchronization](docs/cross-server/cross-server-client-sync.md).
+step. See [client synchronization](docs/features/cross-server/specs/cross-server-client-sync.md).
 
 ### Cross-server administration
 
-Cross-server support is opt-in and disabled by default. See the [administrator guide](docs/cross-server/cross-server-admin.md),
-[release notes](docs/cross-server/cross-server-release-notes.md), and [release verification](docs/cross-server/cross-server-release-readiness.md).
+Cross-server support is opt-in and disabled by default. See the [administrator guide](docs/features/cross-server/cross-server-admin.md),
+[release notes](docs/features/cross-server/cross-server-release-notes.md), and [release verification](docs/features/cross-server/validation/cross-server-release-readiness.md).

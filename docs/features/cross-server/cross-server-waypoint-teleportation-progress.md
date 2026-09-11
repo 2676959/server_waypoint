@@ -27,11 +27,11 @@ lifecycles, catalog synchronization and player transfers behind explicit configu
 default). Step 17 adds bounded authorized remote client snapshots under Minecraft protocol 11.
 Step 18 adds a read-only remote manager branch with exact-identity selection and teleport confirmation.
 Step 19 hardening, administrator documentation and the full build/artifact matrix are implemented.
-The four representative native gates now pass; see [Step-19 verification and scope](cross-server-release-readiness.md). Nothing has been published.
+The four representative native gates now pass; see [Step-19 verification and scope](validation/cross-server-release-readiness.md). Nothing has been published.
 
-The [implementation plan](cross-server-waypoint-teleportation-plan.md) defines scope and order.
-The [protocol v1 contract](cross-server-protocol-v1.md) defines the feature semantics.
-The [dependency decision](cross-server-noise-dependency-decision.md) records the selected artifact,
+The [implementation plan](plans/cross-server-waypoint-teleportation-plan.md) defines scope and order.
+The [protocol v1 contract](specs/cross-server-protocol-v1.md) defines the feature semantics.
+The [dependency decision](specs/cross-server-noise-dependency-decision.md) records the selected artifact,
 source-review findings, maintenance risk, integration requirements, and outstanding platform checks.
 
 ## Accepted design
@@ -50,25 +50,25 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | --- | --- | --- |
 | 1 — Freeze the feature contract | Complete | Commit `a0af646`: separate protocol version 1, stable server-ID validation, exact `RemoteWaypointKey`, catalog states, public export policy, permission constants, normative command/security contract, and identity tests. The transport contract was subsequently revised to KK/plaintext. |
 | 2 — Select and prove the Noise dependency | Complete | New isolated `tools/noise-spike/kk`: published Signal artifact pinned by SHA-256, source review, exact KK vectors, fail-closed nonce boundary tests, confirmation/replay checks, 26 two-process cases, and standalone relocation. Selected for step-3 integration, not production release approval. |
-| 3 — Modules and proxy interfaces | Complete | `proxy-common`, inert `velocity`, common transport/proxy-neutral lifecycle and transfer contracts, 11 fake-adapter contract tests, private Noise shading on all platforms, and development-only artifact/native-classloader probes. See [validation](cross-server-step3-validation.md). |
-| 4 — Identity and catalog models | Complete | Immutable nested snapshots, exact-key lookup, independent catalog/list revisions, receiver-local receipt time, and validated reader views. See [model contract](cross-server-catalog-models.md). |
-| 5 — Canonical messages and codecs | Complete | Fifteen typed message families with stable IDs, correlated/sequenced envelopes, strict canonical catalog encoding, bounded chunk/delta payloads, and malformed-input tests. See [wire specification](cross-server-application-codec-v1.md). |
-| 6 — Bounded TCP transport | Complete | Explicit KK/plaintext modes, transcript-bound handshake and confirmation, bounded records/catalog assembly, sequence/replay tracking, admission limits, absolute deadlines and terminal cleanup. See [transport contract](cross-server-tcp-transport-v1.md). |
-| 7 — Pairing and credentials | Complete | One-time authenticated bootstrap, canonical key import, private credential files, expected-pin rotation and durable per-ID/live-session revocation. See [bootstrap contract and review](cross-server-pairing-v1.md). |
-| 8 — Lifecycle and registration | Complete | Asynchronous backend/coordinator owners, transcript-matched registration, explicit mode/status, heartbeat timeouts, bounded backoff, duplicate rejection, metrics and graceful shutdown. See [lifecycle contract](cross-server-connection-lifecycle.md). |
-| 9 — Backend catalog publication | Complete | Atomic detached capture, exact PUBLIC selection, durable catalog/list revisions, bounded full/delta publication, gap resynchronization and stale-preserving receiver validation. See [publication contract](cross-server-catalog-publication.md). |
-| 10 — Catalog aggregation/distribution | Complete | Shared bounded index, coordinator fan-out with full/delta resynchronization, source-mode retention, separate backend replicas, stale expiry and retained revision fingerprints. See [distribution contract](cross-server-catalog-distribution.md). |
-| 11 — Remote queries/suggestions | Complete | Read-only bounded store facade, shared list grammar/filtering/sorting, vanilla-safe servers/list commands, cache-only identity suggestions and six-language help/status feedback. See [query contract](cross-server-catalog-queries.md). |
-| 12 — Permissions and authorization | Complete | Remote list/tp nodes, current source-player checks, permission-gated commands/help/suggestions, destination export and final live-player callbacks. See [authorization contract](cross-server-authorization.md). |
-| 13 — Coordinator handoffs | Complete | Atomic prepare/reserve/claim/complete/cancel/expiry, session and proxy-player binding, bounded replay retention and audit, and backend-message handlers. See [handoff contract](cross-server-handoffs.md). |
-| 14 — Destination preparation and arrival | Complete | Bounded connection-scoped reservations, exact claim/player binding, fresh local export/coordinate resolution, final permission checks and mod/Paper owner adapters. See [destination contract](cross-server-destination.md). |
-| 15 — Remote teleport command | Complete | Exact cached targets, permission-gated command/help/suggestions, bounded source preparation service and transfer adapter boundary. See [source teleport contract](cross-server-source-teleport.md). |
-| 16 — Velocity runtime integration | Complete | Coordinator/backend lifecycle, TCP readiness/claim dispatch, real Velocity switch, owner-thread arrivals, 16 real-socket cases and live Paper/Velocity tests in both modes. See [runtime contract](cross-server-velocity-runtime.md). |
-| 17 — Client catalog synchronization | Complete | Protocol 11, bounded authorized remote snapshots, session reset and client dispatcher isolation tests. See [client contract](cross-server-client-sync.md). |
-| 18 — Waypoint manager GUI | Complete | Read-only server/dimension/list/waypoint tree, exact selection, stale status, remote details, guarded command confirmation, seven regression tests and native GUI probe. See [GUI contract](cross-server-gui.md). |
-| 19 — Release hardening | Validated | Full build and 39-JAR gate, representative Folia/Forge/NeoForge transfers, real protocol-11 GUI, authenticated failure/rotation checks and 30-minute soak pass. See exact scope and limitations in the [release record](cross-server-release-readiness.md). Native follow-up evidence is recorded below. |
+| 3 — Modules and proxy interfaces | Complete | `proxy-common`, inert `velocity`, common transport/proxy-neutral lifecycle and transfer contracts, 11 fake-adapter contract tests, private Noise shading on all platforms, and development-only artifact/native-classloader probes. See [validation](validation/cross-server-step3-validation.md). |
+| 4 — Identity and catalog models | Complete | Immutable nested snapshots, exact-key lookup, independent catalog/list revisions, receiver-local receipt time, and validated reader views. See [model contract](specs/cross-server-catalog-models.md). |
+| 5 — Canonical messages and codecs | Complete | Fifteen typed message families with stable IDs, correlated/sequenced envelopes, strict canonical catalog encoding, bounded chunk/delta payloads, and malformed-input tests. See [wire specification](specs/cross-server-application-codec-v1.md). |
+| 6 — Bounded TCP transport | Complete | Explicit KK/plaintext modes, transcript-bound handshake and confirmation, bounded records/catalog assembly, sequence/replay tracking, admission limits, absolute deadlines and terminal cleanup. See [transport contract](specs/cross-server-tcp-transport-v1.md). |
+| 7 — Pairing and credentials | Complete | One-time authenticated bootstrap, canonical key import, private credential files, expected-pin rotation and durable per-ID/live-session revocation. See [bootstrap contract and review](specs/cross-server-pairing-v1.md). |
+| 8 — Lifecycle and registration | Complete | Asynchronous backend/coordinator owners, transcript-matched registration, explicit mode/status, heartbeat timeouts, bounded backoff, duplicate rejection, metrics and graceful shutdown. See [lifecycle contract](specs/cross-server-connection-lifecycle.md). |
+| 9 — Backend catalog publication | Complete | Atomic detached capture, exact PUBLIC selection, durable catalog/list revisions, bounded full/delta publication, gap resynchronization and stale-preserving receiver validation. See [publication contract](specs/cross-server-catalog-publication.md). |
+| 10 — Catalog aggregation/distribution | Complete | Shared bounded index, coordinator fan-out with full/delta resynchronization, source-mode retention, separate backend replicas, stale expiry and retained revision fingerprints. See [distribution contract](specs/cross-server-catalog-distribution.md). |
+| 11 — Remote queries/suggestions | Complete | Read-only bounded store facade, shared list grammar/filtering/sorting, vanilla-safe servers/list commands, cache-only identity suggestions and six-language help/status feedback. See [query contract](specs/cross-server-catalog-queries.md). |
+| 12 — Permissions and authorization | Complete | Remote list/tp nodes, current source-player checks, permission-gated commands/help/suggestions, destination export and final live-player callbacks. See [authorization contract](specs/cross-server-authorization.md). |
+| 13 — Coordinator handoffs | Complete | Atomic prepare/reserve/claim/complete/cancel/expiry, session and proxy-player binding, bounded replay retention and audit, and backend-message handlers. See [handoff contract](specs/cross-server-handoffs.md). |
+| 14 — Destination preparation and arrival | Complete | Bounded connection-scoped reservations, exact claim/player binding, fresh local export/coordinate resolution, final permission checks and mod/Paper owner adapters. See [destination contract](specs/cross-server-destination.md). |
+| 15 — Remote teleport command | Complete | Exact cached targets, permission-gated command/help/suggestions, bounded source preparation service and transfer adapter boundary. See [source teleport contract](specs/cross-server-source-teleport.md). |
+| 16 — Velocity runtime integration | Complete | Coordinator/backend lifecycle, TCP readiness/claim dispatch, real Velocity switch, owner-thread arrivals, 16 real-socket cases and live Paper/Velocity tests in both modes. See [runtime contract](specs/cross-server-velocity-runtime.md). |
+| 17 — Client catalog synchronization | Complete | Protocol 11, bounded authorized remote snapshots, session reset and client dispatcher isolation tests. See [client contract](specs/cross-server-client-sync.md). |
+| 18 — Waypoint manager GUI | Complete | Read-only server/dimension/list/waypoint tree, exact selection, stale status, remote details, guarded command confirmation, seven regression tests and native GUI probe. See [GUI contract](specs/cross-server-gui.md). |
+| 19 — Release hardening | Validated | Full build and 39-JAR gate, representative Folia/Forge/NeoForge transfers, real protocol-11 GUI, authenticated failure/rotation checks and 30-minute soak pass. See exact scope and limitations in the [release record](validation/cross-server-release-readiness.md). Native follow-up evidence is recorded below. |
 
-The [standalone spike](../../tools/noise-spike/README.md) is not included in root project settings,
+The [standalone spike](../../../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
 historical no-go evidence from `e33cc62`; the new `kk` project has a separate runtime classpath.
 
@@ -101,14 +101,14 @@ were reproduced on `feature/upload-3.1.0`, fixed there in `f0d8281`, and the cro
 was rebased onto that commit at the user's direction. The post-rebase full build passed, with
 316 common tests and 11 proxy contract tests. All 41 final artifact checks and all 10 native
 startup/classloader/shutdown cases passed against matching artifact hashes. The final contract
-fixture refinement also passed all 11 tests. See [detailed evidence](cross-server-step3-validation.md).
+fixture refinement also passed all 11 tests. See [detailed evidence](validation/cross-server-step3-validation.md).
 
 ## Step-4 verification
 
 On 2026-09-07, `./gradlew :common:test :proxy-common:test --max-workers=2 --console=plain`
 passed: 325 common tests (including 9 new catalog-model cases) and 11 proxy contract tests,
 with no failures or skips. The common module uses the Java 17 toolchain. `git diff --check`
-and explicit new-file whitespace checks passed. See [model semantics](cross-server-catalog-models.md).
+and explicit new-file whitespace checks passed. See [model semantics](specs/cross-server-catalog-models.md).
 No platform source/build configuration changed; the full artifact and live runtime matrix was
 not rerun for this domain-only step. The step-3 results above remain historical evidence.
 
@@ -120,7 +120,7 @@ failures or skips. Compilation used the common module's Java 17 toolchain. Tests
 15 message families, every truncation prefix, canonical ordering, strict UTF-8, independent
 budgets, catalog/handoff validation, defensive ownership, and 2,000 seeded byte mutations.
 `git diff --check` and explicit new-file whitespace checks passed. See the
-[wire specification](cross-server-application-codec-v1.md) for payloads and exact limits.
+[wire specification](specs/cross-server-application-codec-v1.md) for payloads and exact limits.
 No runtime networking or platform configuration changed. Full artifact/native runtime checks were
 not repeated, and these codec tests do not establish transport, replay, reassembly, or handoff safety.
 
@@ -130,7 +130,7 @@ On 2026-09-07, `./gradlew :common:test :proxy-common:test --max-workers=2 --cons
 passed 433 common tests (48 new transport cases) and 11 proxy tests, without failures or skips.
 Real loopback sockets exercise both modes, KK confirmation and transcript rejection, framing,
 replay, resource ceilings, concurrent directions, stalled peers and cleanup. See the
-[transport specification](cross-server-tcp-transport-v1.md) for exact scope and limits.
+[transport specification](specs/cross-server-tcp-transport-v1.md) for exact scope and limits.
 `:velocity:build` also passed; the final JAR contains the new Java 17 Noise caller with private
 relocation and no original Noise namespace. Tracked/new-file whitespace checks passed.
 The full backend artifact/native runtime matrix was not repeated. No game lifecycle starts these
@@ -145,7 +145,7 @@ with zero failures/errors/skips. The final Velocity JAR contains Java 17 credent
 classes and the privately relocated Noise caller. Tracked/new-file whitespace checks pass.
 Tests verify authenticated installation ordering, replay/expiry
 rejection, credential permissions, explicit rotation and isolated revocation using real KK sockets.
-See the [bootstrap specification and review](cross-server-pairing-v1.md) for the security boundary.
+See the [bootstrap specification and review](specs/cross-server-pairing-v1.md) for the security boundary.
 The feature is not enabled, and platform/bootstrap-carrier integration remains pending. Full backend
 artifact/native runtime verification was not repeated.
 
@@ -156,7 +156,7 @@ passed 439 common tests and 53 proxy tests (18 new lifecycle cases), without fai
 Real sockets cover both modes, automatic registration/heartbeat, duplicate IDs, reconnect after
 coordinator restart, bounded commands/backoff, missing/mismatched registration, silent peers and
 shutdown during handshake. A deliberately blocked listener factory verifies that start/stop return
-without blocking the caller. See [ownership and limits](cross-server-connection-lifecycle.md).
+without blocking the caller. See [ownership and limits](specs/cross-server-connection-lifecycle.md).
 Final Velocity JAR inspection confirms both agents use Java 17 bytecode. Tracked/new-file
 whitespace checks pass. No platform lifecycle or bootstrap network dispatcher has been enabled.
 The full backend artifact and live game/proxy matrix was not repeated.
@@ -169,7 +169,7 @@ actual model edits, atomic detached export, independent list revisions, persiste
 full/delta publication in both modes, missed-delta resynchronization, bounded full fallback,
 explicit empty catalogs and preservation of stale data on publication failure. Two pre-existing
 cleanup tests now wait for asynchronous cleanup/accounting as well as socket/presence closure.
-See [publication ownership and limits](cross-server-catalog-publication.md). Full backend artifact
+See [publication ownership and limits](specs/cross-server-catalog-publication.md). Full backend artifact
 and native game/proxy integration checks were not repeated; no platform feature has been enabled.
 
 ## Step-10 verification
@@ -202,7 +202,7 @@ passed 460 common tests and 67 proxy tests, with no failures/errors/skips. Eight
 permission/config changes, both source teleport nodes, console behavior, exact destination export
 checks and revocation, callback failures, command/suggestion revocation after parsing, and the four
 checked-in platform permission adapters against API doubles. Existing command tests additionally
-verify denied remote help/browsing and unchanged local lists. See [scope and limitations](cross-server-authorization.md).
+verify denied remote help/browsing and unchanged local lists. See [scope and limitations](specs/cross-server-authorization.md).
 The adapter harness exercises active sources, not legacy generated branches or a live permission
 provider. Full backend builds/native runtime checks were not repeated; no handoff/platform startup
 or teleport command is enabled.
@@ -214,7 +214,7 @@ passed 460 common tests and 88 proxy tests with no failures/errors/skips. The 21
 canonical in-memory exchanges in both modes, proxy identity/source/destination checks, admission
 revocation, exact bindings and session replacement, replay and terminal idempotence, concurrent
 prepares/claims/cancellation, monotonic and capped expiry, bounded retention/audits, disconnect and
-restart. See [handoff contract and integration boundary](cross-server-handoffs.md).
+restart. See [handoff contract and integration boundary](specs/cross-server-handoffs.md).
 No native platform or live TCP handoff dispatcher was enabled or tested. Destination reservation,
 owning-thread arrival/teleport and real proxy/transport wiring remain steps 14–16.
 
@@ -226,7 +226,7 @@ export and permission revocation, current player binding, scheduling/retirement,
 arrivals, late/invalid claims, cancellation/expiry/disconnect, async outcomes and in-memory exchanges
 with the coordinator in both modes. The Velocity build and production adapter compilation passed
 for Fabric 1.20.1/26.1.2, NeoForge 1.21.2, Forge 26.1.2 and Paper 1.21/26.2. See the
-[exact command and limits](cross-server-destination.md). No active Stonecutter version was changed.
+[exact command and limits](specs/cross-server-destination.md). No active Stonecutter version was changed.
 No native game/proxy session or full release artifact matrix was run. Remote command registration,
 TCP lifecycle/claim dispatch and join integration remain steps 15–16.
 
@@ -238,7 +238,7 @@ cover remote command initiation, exact identities/revisions, permission/cache ch
 preparation results, owner scheduling, cancellation, bounded expiry, disconnect and async failures.
 The existing two destination exchanges now run through source initiation and a fake transfer adapter
 in both modes, asserting PREPARED before switching. Six-locale keys/placeholders, packaged Java 17
-source-service bytecode and whitespace checks pass. See [source initiation](cross-server-source-teleport.md).
+source-service bytecode and whitespace checks pass. See [source initiation](specs/cross-server-source-teleport.md).
 No active version changed. Native game/proxy sessions and the full backend artifact matrix were
 not run; real lifecycle/TCP dispatch/Velocity switching remain Step 16.
 
@@ -251,7 +251,7 @@ compilation passed. No active version changed. Live Velocity 4.1.1 with two Pape
 MCC passed KK transfers in both directions, exactly-once destination event/position checks,
 permission denial, explicit plaintext transfer and rejected-login recovery with source retention.
 All disposable processes stopped cleanly. Logs and matching artifact hashes are archived in
-[Step-16 evidence](validation/cross-server-step16/results.json). See [scope and deployment contract](cross-server-velocity-runtime.md).
+[Step-16 evidence](validation/cross-server-step16/results.json). See [scope and deployment contract](specs/cross-server-velocity-runtime.md).
 Native mod/Folia transfers, online forwarding and the full release/soak matrix remain Step-19 gates.
 
 ## Historical evidence retained
@@ -260,7 +260,7 @@ Native mod/Folia transfers, online forwarding and the full release/soak matrix r
   implementation. It was not rerun for this isolated dependency change.
 - NKpsk0: all 18 historical checks still pass, including a test that deliberately reproduces the
   jchambers nonce-exhaustion defect. That is evidence against adopting that candidate, not KK
-  approval or production permission. See the [archived decision](cross-server-noise-nkpsk0-investigation.md).
+  approval or production permission. See the [archived decision](specs/cross-server-noise-nkpsk0-investigation.md).
 - Earlier implementation commits and this step-2 continuation passed their staged whitespace checks.
 
 ## Next work, in order
@@ -276,7 +276,7 @@ Keep completed implementation, experimental evidence, and unperformed validation
 Step 17 synchronizes bounded authorized catalog/status replacements over the existing Minecraft
 chunked channel. Protocol 11 clients correlate refreshes by request UUID and clear remote state on
 session changes; remote data remains separate from local files/managers. See the
-[client synchronization contract](cross-server-client-sync.md) for wire limits, polling semantics,
+[client synchronization contract](specs/cross-server-client-sync.md) for wire limits, polling semantics,
 automated validation and remaining native release gates.
 
 All 852 automated tests passed (common, proxy-common, Velocity, active Fabric and Paper 1.21),
@@ -297,7 +297,7 @@ filter/stale action disabling, session-reset rejection and unchanged local manag
 offline flat world. The explicit probe is excluded from production artifacts. Headless rendering
 uses stubbed graphics and dummy assets: this is native GUI lifecycle/input evidence, not screenshot
 approval or a live remote transfer. See [evidence](validation/cross-server-step18/results.json) and
-[probe runbook](../../tools/cross-server-gui-test/README.md).
+[probe runbook](../../../tools/cross-server-gui-test/README.md).
 
 ## Step-19 verification
 
@@ -315,7 +315,7 @@ The run used disposable offline identities and forwarding NONE. All processes st
 
 At that snapshot, Step 19 remained **in progress for production release approval**.
 The follow-ups below record subsequent native validation; current remaining gates are
-tracked in the release record. See the [release record](cross-server-release-readiness.md),
+tracked in the release record. See the [release record](validation/cross-server-release-readiness.md),
 [administrator guide](cross-server-admin.md) and [machine-readable evidence](validation/cross-server-step19/results.json).
 
 ### Step 19 Folia native follow-up (2026-09-09)
@@ -324,7 +324,7 @@ Folia 1.21.11 exposed a claim-before-proxy-route-installation race beyond the
 backend entity-tick fix. The coordinator now delays the validated claim until
 transfer completion and rechecks the live route. Representative repeated and
 separate-region two-player transfers, controlled destination retirement, and
-reconnect recovery pass with the fixed proxy. [Evidence and limitations](cross-server-release-readiness.md#folia-follow-up--2026-09-09)
+reconnect recovery pass with the fixed proxy. [Evidence and limitations](validation/cross-server-release-readiness.md#folia-follow-up--2026-09-09)
 remain explicit; this is not full Step 19 or production release approval.
 
 
@@ -352,4 +352,4 @@ The subsequent 1,801.9-second run with `DOTNET_ReadyToRun=0` for MCC passed all 
 reconnects and 120 transfers. The exact upstream crash defect remains unconfirmed.
 Retained heap and descriptor observations stayed bounded; all disposable processes stopped.
 [Soak evidence](validation/cross-server-step19-soak/results.json). Runtime scope,
-artifact distinctions and remaining limitations are in the [release record](cross-server-release-readiness.md).
+artifact distinctions and remaining limitations are in the [release record](validation/cross-server-release-readiness.md).
