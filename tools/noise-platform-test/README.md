@@ -80,5 +80,5 @@ user waypoint/configuration data or point these scripts at a live server directo
 configuration should bind to loopback and its stop command is `shutdown`. Forge/NeoForge use the
 installer-generated `unix_args.txt` with the appropriate JDK rather than a development run classpath.
 
-The committed [validation record](../../docs/cross-server-step3-validation.md) identifies exact
+The committed [validation record](../../docs/cross-server/cross-server-step3-validation.md) identifies exact
 runtime builds, outcomes, baseline comparisons, and retained evidence for this implementation.

@@ -110,7 +110,7 @@ and replayed transport. A wrong-side or wrong-phase exception, timeout, or admit
 traffic fails the test. The unit replay test checks a repeated first handshake against a fresh
 responder and rejects the previous session's confirmation.
 
-See [KK spike README](../tools/noise-spike/kk/README.md) for report paths, test boundaries, fixture
+See [KK spike README](../../tools/noise-spike/kk/README.md) for report paths, test boundaries, fixture
 permissions, child cleanup, and commands. Whitespace checks pass. No root platform build was
 necessary or run for this isolated dependency change.
 

@@ -68,7 +68,7 @@ source-review findings, maintenance risk, integration requirements, and outstand
 | 18 — Waypoint manager GUI | Complete | Read-only server/dimension/list/waypoint tree, exact selection, stale status, remote details, guarded command confirmation, seven regression tests and native GUI probe. See [GUI contract](cross-server-gui.md). |
 | 19 — Release hardening | Validated | Full build and 39-JAR gate, representative Folia/Forge/NeoForge transfers, real protocol-11 GUI, authenticated failure/rotation checks and 30-minute soak pass. See exact scope and limitations in the [release record](cross-server-release-readiness.md). Native follow-up evidence is recorded below. |
 
-The [standalone spike](../tools/noise-spike/README.md) is not included in root project settings,
+The [standalone spike](../../tools/noise-spike/README.md) is not included in root project settings,
 runtime dependencies, or release tasks. Its unchanged NKpsk0 root/candidate projects preserve the
 historical no-go evidence from `e33cc62`; the new `kk` project has a separate runtime classpath.
 
@@ -297,7 +297,7 @@ filter/stale action disabling, session-reset rejection and unchanged local manag
 offline flat world. The explicit probe is excluded from production artifacts. Headless rendering
 uses stubbed graphics and dummy assets: this is native GUI lifecycle/input evidence, not screenshot
 approval or a live remote transfer. See [evidence](validation/cross-server-step18/results.json) and
-[probe runbook](../tools/cross-server-gui-test/README.md).
+[probe runbook](../../tools/cross-server-gui-test/README.md).
 
 ## Step-19 verification
 

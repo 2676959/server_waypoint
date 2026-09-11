@@ -7,7 +7,7 @@ This standalone build contains two separate investigations:
 
 **Step 2 selects `org.signal.forks:noise-java:0.1.1` for KK; final platform checks remain step 3.**
 The historical tests below do not validate KK or approve the old candidate.
-See the [selection decision](../../docs/cross-server-noise-dependency-decision.md).
+See the [selection decision](../../docs/cross-server/cross-server-noise-dependency-decision.md).
 This standalone Gradle build is not included in the repository's root settings or release tasks.
 
 From the repository root (`check` runs both investigations):

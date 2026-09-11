@@ -77,4 +77,4 @@ confirmation. It receives catalog changes over the actual network and checks
 fresh synchronization at `(45.5, 80, 30.5)` after transfer. It does not inject cache
 or network state. Preserve the fresh `live-remote-gui-result.txt`, client/server
 logs and artifact hashes. Headless graphics remain unsuitable for visual approval.
-See [recorded evidence](../../docs/validation/cross-server-step19-live-gui/results.json).
+See [recorded evidence](../../docs/cross-server/validation/cross-server-step19-live-gui/results.json).

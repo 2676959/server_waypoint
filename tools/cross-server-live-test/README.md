@@ -33,7 +33,7 @@ unique local waypoint on each backend and wait for `/wp remote servers` to show 
    assertions without private credentials. Restore test permissions and remove test markers.
 
 The Step-16 run used two Paper 1.21 servers and Velocity 4.1.1 with Minecraft protocol 767.
-See [runtime documentation](../../docs/cross-server-velocity-runtime.md) and its archived evidence.
+See [runtime documentation](../../docs/cross-server/cross-server-velocity-runtime.md) and its archived evidence.
 Offline authentication and forwarding NONE in that run are disposable fixture choices, not deployment
 recommendations. The audit uses concurrent UUID counters for Folia event threads. `STEP19_JOIN` and
 `STEP19_QUIT` record event ownership; a delayed entity task records `STEP19_OWNER`
@@ -127,7 +127,7 @@ summaries and failed-attempt results. This setting disables precompiled .NET cod
 ([runtime documentation](https://github.com/dotnet/runtime/blob/main/docs/workflow/debugging/coreclr/debugging-runtime.md));
 it was a successful fixture adjustment, not proof of a specific upstream defect.
 The final run passed 60 reconnect sessions and 120 transfers in 1,801.9 seconds.
-See [soak results](../../docs/validation/cross-server-step19-soak/results.json).
+See [soak results](../../docs/cross-server/validation/cross-server-step19-soak/results.json).
 
 
 Archived Step-19 evidence replaces the personal profile name with

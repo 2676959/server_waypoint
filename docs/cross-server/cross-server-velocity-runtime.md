@@ -164,7 +164,7 @@ preserve the evidence and identify the earlier native-run artifacts separately f
 The final source-readiness claim guard passed real-TCP tests in both modes; native sessions were
 not repeated for that final guard. The initial test-fixture position format and MCC console-mode setup errors
 were corrected before the successful live scenarios; they required no production fixes. Credential
-files are not archived. [The test-only audit plugin](../tools/cross-server-live-test/README.md) is not
+files are not archived. [The test-only audit plugin](../../tools/cross-server-live-test/README.md) is not
 included in any release artifact.
 
 Spoofed plugin packets, wrong-source injection and disconnect races were checked through

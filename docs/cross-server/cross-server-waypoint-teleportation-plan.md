@@ -552,7 +552,7 @@ different servers remain distinct.
 
 Completed: the [selection decision](cross-server-noise-dependency-decision.md) selects
 `org.signal.forks:noise-java:0.1.1` after a scoped KK source review and 35 passing checks in the
-[isolated KK spike](../tools/noise-spike/kk/README.md). Historical NKpsk0 evidence is preserved
+[isolated KK spike](../../tools/noise-spike/kk/README.md). Historical NKpsk0 evidence is preserved
 separately. Runtime dependency integration and final platform packaging/classloader evidence
 belong to [step 3](cross-server-step3-validation.md).
 

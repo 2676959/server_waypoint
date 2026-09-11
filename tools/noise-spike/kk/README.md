@@ -1,7 +1,7 @@
 # KK dependency spike
 
 Isolated evaluation of `org.signal.forks:noise-java:0.1.1` for
-`Noise_KK_25519_AESGCM_SHA256`. See the [selection decision](../../../docs/cross-server-noise-dependency-decision.md).
+`Noise_KK_25519_AESGCM_SHA256`. See the [selection decision](../../../docs/cross-server/cross-server-noise-dependency-decision.md).
 This is a subproject of the standalone spike, not a root runtime/release dependency.
 The parent NKpsk0 probe is preserved as historical evidence and is not a compatibility mode.
 

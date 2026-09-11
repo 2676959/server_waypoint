@@ -40,7 +40,7 @@ python3 tools/noise-platform-test/audit.py --java17-home /opt/homebrew/opt/openj
 python3 tools/noise-platform-test/run_live.py /private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-manifest.json
 ```
 
-The [tool README](../tools/noise-platform-test/README.md) describes the explicit disposable-runtime
+The [tool README](../../tools/noise-platform-test/README.md) describes the explicit disposable-runtime
 manifest. Every server uses a fresh world/configuration on loopback; user map data is never copied.
 Runtime logs, exact command lines, artifact hashes, and native classloader/code-source evidence
 are retained in [runtime results](validation/cross-server-step3/runtime-results.json).
@@ -73,7 +73,7 @@ before the entrypoint loaded. Both failures reproduced without the observer on t
 step-2 baseline `ca167a1`, and on `feature/upload-3.1.0` at `32d4498`.
 
 At the user's direction, the defects were repaired on the upload branch before rebasing the
-cross-server branch. See [upstream repair evidence](upload-startup-fixes.md). These runtime
+cross-server branch. See [upstream repair evidence](../upload/upload-startup-fixes.md). These runtime
 fixes are separate from step 3's module and packaging implementation.
 
 The post-rebase full build passed (563 tasks, 2m 38s), with 316 common tests and 11 proxy contract

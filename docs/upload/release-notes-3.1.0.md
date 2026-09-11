@@ -8,7 +8,7 @@ Release candidate for the chunked upload and download transport.
 3.1.x server are required on both ends; mixing 3.0.x and 3.1.x will not sync.
 Earlier 3.1.0 candidates using protocol 9 or 10 must also be replaced on both ends.
 Protocol 11 retains the explicit Xaero/VoxelMap upload target and adds authorized remote catalog
-synchronization. Remote GUI integration remains pending; see [the client contract](cross-server-client-sync.md).
+synchronization. Remote GUI integration remains pending; see [the client contract](../cross-server/cross-server-client-sync.md).
 
 - `ProtocolVersion.PROTOCOL_VERSION = 11`, `COMPATIBLE_VERSION = "3.1.x"`.
 - Application-level ACK and retry frames are removed. Minecraft's connection
@@ -96,5 +96,5 @@ coordinates or sending a successful empty manifest.
 
 ## Validated targets
 
-See "Validation status" in `docs/upload-transport-progress.md` for the recorded
+See "Validation status" in `docs/upload/upload-transport-progress.md` for the recorded
 build, test and live Folia results backing this release candidate.

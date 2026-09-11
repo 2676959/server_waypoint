@@ -57,7 +57,7 @@ one visible symptom. Existing final artifact names and release selection are pre
 
 See [platform verification](cross-server-step3-validation.md) for exact targets, commands,
 artifact hashes, native classloader evidence, and any remaining startup blockers.
-The [test tools](../tools/noise-platform-test/README.md) remain outside release source sets.
+The [test tools](../../tools/noise-platform-test/README.md) remain outside release source sets.
 
 ```sh
 ./gradlew :common:test :proxy-common:build :velocity:build --max-workers=2 --console=plain
