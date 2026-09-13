@@ -58,7 +58,7 @@ class WaypointManagerScreenLayoutTest {
                 WaypointManagerScreen.calculateLayoutGeometry(854, 480);
 
         assertEquals(394, geometry.contentHeight());
-        assertEquals(292, geometry.dimensionListHeight());
+        assertEquals(272, geometry.dimensionListHeight());
         assertEquals(379, geometry.waypointListHeight(11));
 
         WaypointManagerScreen.ManagerLayoutGeometry shorter =

@@ -25,7 +25,7 @@ public final class RemoteGuiProbe implements ClientModInitializer {
     private int stage = -1;
     private WaypointClientMod client;
     private WaypointManagerScreen local;
-    private RemoteWaypointManagerScreen remote;
+    private RemoteWaypointPanel remote;
     private Object manager;
     private Map<Path, String> files;
     private final RemoteServerId id = new RemoteServerId("remote-a");
@@ -62,24 +62,29 @@ public final class RemoteGuiProbe implements ClientModInitializer {
                 manager = client.getWaypointFileManager("minecraft:overworld");
                 files = localFiles(mc);
                 install(RemoteCatalogState.AVAILABLE);
+                var config = WaypointClientMod.getClientConfig();
+                config.setWaypointManagerGroupByLists(true);
+                config.setWaypointManagerSortMode(WaypointSorting.SortMode.NAME);
+                config.setWaypointManagerSortReversed(false);
                 local = new WaypointManagerScreen(client);
                 mc.setScreen(local);
             }
             case 1 -> {
                 check(mc.screen == local, "local manager open");
-                click(mc.screen, (AbstractWidget) field(WaypointManagerScreen.class, "serverSelector").get(local));
-                check(mc.screen instanceof RemoteWaypointManagerScreen, "server selector opens remote branch");
-                remote = (RemoteWaypointManagerScreen) mc.screen;
-                check(remote.children().size() == 6, "only browse and teleport controls registered");
+                click(mc.screen, (AbstractWidget) field(WaypointManagerScreen.class, "serverScopeToggle").get(local));
+                check(mc.screen == local, "scope toggle keeps manager screen");
+                remote = (RemoteWaypointPanel) field(WaypointManagerScreen.class, "remotePanel").get(local);
+                check((boolean) field(WaypointManagerScreen.class, "showingRemote").get(local), "remote scope selected");
+                check(!((AbstractWidget) field(WaypointManagerScreen.class, "addWaypointButton").get(local)).active, "local add disabled");
             }
             case 2 -> {
-                var tree = (TreeViewWidget<?>) field(RemoteWaypointManagerScreen.class, "tree").get(remote);
+                var tree = (TreeViewWidget<?>) field(RemoteWaypointPanel.class, "tree").get(remote);
                 // Server, dimension, list, then first waypoint; dispatch through the real screen input path.
-                clickAt(remote, tree.getX() + 24, tree.getY() + 3 * 16 + 8);
+                clickAt(local, tree.getX() + 24, tree.getY() + 3 * 16 + 8);
                 check(button().active, "available exact target enables teleport");
-                var key = (RemoteWaypointKey) field(RemoteWaypointManagerScreen.class, "selected").get(remote);
+                var key = (RemoteWaypointKey) field(RemoteWaypointPanel.class, "selected").get(remote);
                 check(key.serverId().equals(id) && key.listName().isEmpty() && key.waypointName().equals("Exact \"Name\""), "exact selection identity");
-                click(remote, button());
+                click(local, button());
                 check(mc.screen instanceof ConfirmScreen, "confirmation is a separate modal screen");
             }
             case 3 -> {
@@ -87,33 +92,53 @@ public final class RemoteGuiProbe implements ClientModInitializer {
                 var cancel = mc.screen.children().stream().filter(c -> c instanceof AbstractWidget w
                         && w.getMessage().getString().equals("No")).map(c -> (AbstractWidget)c).findFirst().orElseThrow();
                 click(mc.screen, cancel);
-                check(mc.screen == remote, "cancel restores browser");
-                remote.resize(320, 240);
+                check(mc.screen == local, "cancel restores browser");
+                local.resize(320, 240);
                 check(button().getX() + button().getWidth() <= 320, "small viewport fits actions");
-                remote.resize(960, 540);
+                local.resize(960, 540);
                 check(button().active, "resize preserves valid selection");
-                ((WaypointSearchBarWidget) field(RemoteWaypointManagerScreen.class, "search").get(remote)).setValue("not-found");
+                var grouping = (AbstractWidget) field(WaypointManagerScreen.class, "groupModeToggle").get(local);
+                click(local, grouping);
+                check(!(boolean) field(RemoteWaypointPanel.class, "grouped").get(remote), "shared flat control");
+                var order = (AbstractWidget) field(WaypointManagerScreen.class, "sortOrderToggle").get(local);
+                click(local, order);
+                check((boolean) field(RemoteWaypointPanel.class, "reversed").get(remote), "shared sort direction");
+                check(button().active, "sorting keeps exact selection");
+                var sorting = (AbstractWidget) field(WaypointManagerScreen.class, "sortingModeDropdown").get(local);
+                var items = (java.util.List<?>) field(sorting.getClass(), "iconItems").get(sorting);
+                check(!((AbstractWidget) items.get(2)).active, "remote distance sort is disabled");
+                click(local, sorting);
+                click(local, (AbstractWidget) items.get(3));
+                check(field(RemoteWaypointPanel.class, "sortMode").get(remote) == WaypointSorting.SortMode.COLOR,
+                        "shared color sort menu controls remote panel");
+                var scope = (AbstractWidget) field(WaypointManagerScreen.class, "serverScopeToggle").get(local);
+                click(local, scope);
+                check(mc.screen == local && !button().visible, "local view hides remote actions");
+                click(local, scope);
+                check(button().active, "remote view restores selection");
+                click(local, grouping);
+                ((WaypointSearchBarWidget) field(WaypointManagerScreen.class, "searchField").get(local)).setValue("not-found");
                 check(!button().active, "filtered-out selection disables teleport");
             }
             case 4 -> {
-                ((WaypointSearchBarWidget) field(RemoteWaypointManagerScreen.class, "search").get(remote)).setValue("");
+                ((WaypointSearchBarWidget) field(WaypointManagerScreen.class, "searchField").get(local)).setValue("");
                 install(RemoteCatalogState.STALE);
             }
             case 5 -> {
-                var tree = (TreeViewWidget<?>) field(RemoteWaypointManagerScreen.class, "tree").get(remote);
-                clickAt(remote, tree.getX() + 24, tree.getY() + 3 * 16 + 8);
+                var tree = (TreeViewWidget<?>) field(RemoteWaypointPanel.class, "tree").get(remote);
+                clickAt(local, tree.getX() + 24, tree.getY() + 3 * 16 + 8);
                 check(!button().active, "stale target remains read-only");
                 install(RemoteCatalogState.AVAILABLE);
             }
             case 6 -> {
                 check(button().active, "fresh replacement restores action");
-                click(remote, button());
+                click(local, button());
                 check(mc.screen instanceof ConfirmScreen, "confirmation reopened");
                 client.remoteCatalogs().clear();
                 var yes = mc.screen.children().stream().filter(c -> c instanceof AbstractWidget w
                         && w.getMessage().getString().equals("Yes")).map(c -> (AbstractWidget)c).findFirst().orElseThrow();
                 click(mc.screen, yes);
-                check(!(mc.screen instanceof RemoteWaypointManagerScreen), "session reset invalidates confirmation");
+                check(mc.screen == null, "session reset invalidates confirmation");
                 check(manager == client.getWaypointFileManager("minecraft:overworld"), "local manager untouched");
                 check(files.equals(localFiles(mc)), "local files unchanged");
                 System.out.println("REMOTE_GUI_PROBE PASS: native Fabric 26.1.2 screen input, confirmation, resize, cache transitions and local isolation");
@@ -126,7 +151,7 @@ public final class RemoteGuiProbe implements ClientModInitializer {
     }
 
     private TranslucentButton button() throws Exception {
-        return (TranslucentButton) field(RemoteWaypointManagerScreen.class, "teleportButton").get(remote);
+        return (TranslucentButton) field(RemoteWaypointPanel.class, "teleportButton").get(remote);
     }
     private void install(RemoteCatalogState state) throws Exception {
         // Make the fixture refresh due without replacing the session under test.

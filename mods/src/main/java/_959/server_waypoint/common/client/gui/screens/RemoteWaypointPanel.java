@@ -13,6 +13,10 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.AbstractWidget;
+import _959.server_waypoint.core.waypoint.WaypointSorting;
+import java.util.function.Consumer;
 import net.minecraft.network.chat.Component;
 
 import java.util.*;
@@ -21,108 +25,92 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.dr
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.*;
 
-/** Read-only manager branch. All local mutation/render widgets remain on the local screen. */
-public final class RemoteWaypointManagerScreen extends MovementAllowedScreen {
+/** Read-only remote panel owned and rendered by the waypoint manager. */
+final class RemoteWaypointPanel {
+    private final Font font;
     private final WaypointManagerScreen local;
     private final RemoteClientCatalogs catalogs;
     private final long session;
-    private final BrowserTree tree = new BrowserTree();
-    private final WaypointDetailsWidget details = new WaypointDetailsWidget(0, 0, 160, 160, font);
-    private final WaypointSearchBarWidget search = new WaypointSearchBarWidget(
-            0, 0, 160, Component.translatable("waypoint.search.entry"), font, this::filter);
-    private final TranslucentButton localButton;
-    private final TranslucentButton sortButton;
+    private final BrowserTree tree;
+    private final WaypointDetailsWidget details;
     private final TranslucentButton teleportButton;
     private Map<RemoteServerId, CatalogReceiver.View> displayed = Map.of();
     private RemoteCatalogState displayedState;
     private RemoteWaypointKey selected;
     private String filter = "";
     private boolean reversed;
+    private boolean grouped = true;
+    private WaypointSorting.SortMode sortMode = WaypointSorting.SortMode.NAME;
     private String feedback = "waypoint.remote.gui.feedback";
 
-    public RemoteWaypointManagerScreen(WaypointClientMod client, WaypointManagerScreen local) {
-        super(Component.translatable("waypoint.remote.title"));
+    RemoteWaypointPanel(WaypointClientMod client, WaypointManagerScreen local, Font font) {
         this.local = local;
+        this.font = font;
         this.catalogs = client.remoteCatalogs();
         this.session = catalogs.session();
-        this.localButton = button("waypoint.remote.gui.local", this::onClose);
-        this.sortButton = button("waypoint.sort.ascending", this::toggleSort);
-        this.teleportButton = button("waypoint.remote.gui.teleport", this::confirmTeleport);
+        this.tree = new BrowserTree();
+        this.details = new WaypointDetailsWidget(0, 0, 160, 160, font);
+        this.teleportButton = new TranslucentButton(0, 0, 100, 16,
+                Component.translatable("waypoint.remote.gui.teleport"), this::confirmTeleport, AnchorMode.OUTLINE);
         this.teleportButton.setTooltip(Tooltip.create(Component.translatable("waypoint.remote.gui.teleport_hint")));
-        this.acceptMovementKeys(false);
     }
 
-    private TranslucentButton button(String key, Runnable action) {
-        return new TranslucentButton(0, 0, 100, 16, Component.translatable(key), action::run, AnchorMode.OUTLINE);
+    void register(Consumer<AbstractWidget> register) {
+        register.accept(tree);
+        register.accept(details);
+        register.accept(teleportButton);
     }
 
-    @Override
-    protected void init() {
-        super.init();
-        int left = getCenteredX();
-        int top = getCenteredY();
-        int half = (getContentWidth() - 8) / 2;
-        localButton.setX(left);
-        localButton.setY(top);
-        localButton.setVisualWidth(half);
-        sortButton.setX(left + half + 8);
-        sortButton.setY(top);
-        sortButton.setVisualWidth(half);
-        search.setX(left + 2);
-        search.setY(top + 27);
-        search.setWidth(half - 4);
-        tree.setX(left);
-        tree.setY(top + 48);
-        tree.setWidth(half);
-        tree.setHeight(getContentHeight() - 74);
-        details.setX(left + half + 8);
-        details.setY(top + 26);
-        details.setWidth(half);
-        details.setHeight(getContentHeight() - 52);
-        teleportButton.setX(left + half + 8);
-        teleportButton.setY(top + getContentHeight() - 20);
-        teleportButton.setVisualWidth(half);
-        addRenderableWidget(localButton);
-        addRenderableWidget(sortButton);
-        addRenderableWidget(search);
-        addRenderableWidget(tree);
-        addRenderableWidget(details);
-        addRenderableWidget(teleportButton);
-        rebuild();
+    void layout(int x, int y, int width, int height, int detailsX, int detailsY, int detailsWidth, int detailsHeight) {
+        tree.setX(x);
+        tree.setY(y);
+        tree.setWidth(width);
+        tree.setHeight(height);
+        details.setX(detailsX);
+        details.setY(detailsY);
+        details.setWidth(detailsWidth);
+        details.setHeight(Math.max(1, detailsHeight - 24));
+        teleportButton.setX(detailsX);
+        teleportButton.setY(detailsY + detailsHeight - 20);
+        teleportButton.setVisualWidth(detailsWidth);
     }
 
-    private void filter(String value) {
-        filter = value;
-        rebuild();
+    void setVisible(boolean visible) {
+        tree.visible = tree.active = visible;
+        details.visible = details.active = visible;
+        teleportButton.visible = visible;
+        teleportButton.active = visible && session == catalogs.session()
+                && RemoteBrowserModel.prepare(catalogs, selected) != null;
     }
 
-    private void toggleSort() {
-        reversed = !reversed;
-        sortButton.setText(Component.translatable(reversed ? "waypoint.sort.descending" : "waypoint.sort.ascending"));
+    void setOptions(String filter, boolean grouped, WaypointSorting.SortMode sortMode, boolean reversed) {
+        this.filter = filter;
+        this.grouped = grouped;
+        this.sortMode = sortMode;
+        this.reversed = reversed;
         rebuild();
     }
 
     private void rebuild() {
         displayed = catalogs.snapshot();
         displayedState = catalogs.state();
-        var roots = RemoteBrowserModel.roots(displayed, filter, reversed);
+        teleportButton.setTooltip(Tooltip.create(Component.translatable(feedback)));
+        var roots = RemoteBrowserModel.roots(displayed, filter, grouped, sortMode, reversed);
         // Filter/removal must not leave an actionable invisible selection.
         if (selected != null && !contains(roots, selected)) selected = null;
         tree.setTooltip(null);
         tree.updateRoots(roots);
         details.setRemoteSelection(selected, selected == null ? null : displayed.get(selected.serverId()));
-        teleportButton.active = session == catalogs.session() && RemoteBrowserModel.prepare(catalogs, selected) != null;
+        teleportButton.active = teleportButton.visible && session == catalogs.session() && RemoteBrowserModel.prepare(catalogs, selected) != null;
     }
 
     private static boolean contains(List<RemoteBrowserModel.Node> nodes, RemoteWaypointKey key) {
         return nodes.stream().anyMatch(node -> key.equals(node.path().key()) || contains(node.children(), key));
     }
 
-    @Override
-    public void tick() {
-        super.tick();
+    void tick() {
         if (session != catalogs.session()) {
-            MinecraftClientHelper.setScreen(this.minecraft, null);
+            MinecraftClientHelper.setScreen(null);
             return;
         }
         if (displayed != catalogs.snapshot() || displayedState != catalogs.state()) rebuild();
@@ -138,41 +126,23 @@ public final class RemoteWaypointManagerScreen extends MovementAllowedScreen {
         var key = confirmation.key();
         Component message = Component.translatable("waypoint.remote.gui.confirm",
                 key.serverId().value(), key.dimensionName(), key.listName(), key.waypointName());
-        MinecraftClientHelper.setScreen(this.minecraft, new ConfirmScreen(accepted -> {
+        MinecraftClientHelper.setScreen(new ConfirmScreen(accepted -> {
             if (accepted && RemoteBrowserModel.isCurrent(catalogs, confirmation)) {
                 if (ClientCommandUtils.sendCommand(confirmation.command())) {
                     // Existing command feedback supplies preparation, permission, transfer and failure results.
-                    MinecraftClientHelper.setScreen(this.minecraft, null);
+                    MinecraftClientHelper.setScreen(null);
                     return;
                 }
                 feedback = "waypoint.remote.gui.send_failed";
             } else if (accepted) {
                 feedback = "waypoint.remote.gui.changed";
             }
-            MinecraftClientHelper.setScreen(this.minecraft, session == catalogs.session() ? this : null);
+            MinecraftClientHelper.setScreen(session == catalogs.session() ? local : null);
         }, Component.translatable("waypoint.remote.gui.teleport"), message));
     }
 
-    @Override
-    int getContentWidth() { return Math.max(220, Math.min(700, width - 24)); }
-
-    @Override
-    int getContentHeight() { return Math.max(140, Math.min(420, height - 32)); }
-
-    @Override
-    protected void renderScreenContents(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-        localButton.
-        //$ render_method_swap
-        extractRenderState
-                (context, mouseX, mouseY, deltaTicks);
-        sortButton.
-        //$ render_method_swap
-        extractRenderState
-                (context, mouseX, mouseY, deltaTicks);
-        search.
-        //$ render_method_swap
-        extractRenderState
-                (context, mouseX, mouseY, deltaTicks);
+    void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        if (!tree.visible) return;
         tree.
         //$ render_method_swap
         extractRenderState
@@ -187,19 +157,15 @@ public final class RemoteWaypointManagerScreen extends MovementAllowedScreen {
                 (context, mouseX, mouseY, deltaTicks);
         Component status = Component.translatable("waypoint.remote.gui.status", Component.translatable(
                 "waypoint.remote.state." + catalogs.state().name().toLowerCase(Locale.ROOT)));
-        drawText(context, font, status, getCenteredX(), getCenteredY() + getContentHeight() - 16, getColor(TEXT_MUTED));
-        Component hint = Component.translatable(feedback);
-        drawText(context, font, font.plainSubstrByWidth(hint.getString(), getContentWidth()),
-                getCenteredX(), getCenteredY() + getContentHeight() + 4, getColor(TEXT_MUTED), true);
-    }
+        drawText(context, font, font.plainSubstrByWidth(status.getString(), tree.getWidth()),
+                tree.getX(), tree.getY() + tree.getHeight() + 3, getColor(TEXT_MUTED));
 
-    @Override
-    public void onClose() {
-        MinecraftClientHelper.setScreen(this.minecraft, session == catalogs.session() ? local : null);
     }
 
     private final class BrowserTree extends TreeViewWidget<RemoteBrowserModel.Node> {
         private final Set<RemoteBrowserModel.Path> collapsed = new HashSet<>();
+        private final ScalableText emptyMessage = new ScalableText(
+                2, 2, Component.translatable("waypoint.remote.no_servers"), TEXT_MUTED, font);
         BrowserTree() { super(0, 0, 160, 160, 16, Component.translatable("waypoint.remote.title")); }
         @Override
         protected List<RemoteBrowserModel.Node> getChildren(RemoteBrowserModel.Node node) { return node.children(); }
@@ -225,7 +191,14 @@ public final class RemoteWaypointManagerScreen extends MovementAllowedScreen {
         }
         @Override
         protected void renderEmpty(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-            drawText(context, font, Component.translatable("waypoint.remote.no_servers"), 2, 2, getColor(TEXT_MUTED));
+            int availableWidth = Math.max(1, getContentWidth() - 4);
+            if (emptyMessage.getWidth() != availableWidth) {
+                emptyMessage.setMaxWidth(availableWidth);
+            }
+            emptyMessage.
+            //$ render_method_swap
+            extractRenderState
+                    (context, mouseX, mouseY, deltaTicks);
         }
         @Override
         protected void renderEntry(GuiGraphicsExtractor context, TreeEntry<RemoteBrowserModel.Node> entry,
@@ -237,6 +210,10 @@ public final class RemoteWaypointManagerScreen extends MovementAllowedScreen {
             Component label = Component.literal((node.children().isEmpty() ? "" : isExpanded(node) ? "− " : "+ ") + node.label());
             if (node.path().dimension() == null) label = Component.translatable(
                     "waypoint.remote.state." + node.state().name().toLowerCase(Locale.ROOT)).append(" · ").append(label);
+            if (!grouped && node.path().key() != null) {
+                label = Component.literal(node.label() + " · " + node.path().server().value() + " / "
+                        + node.path().dimension() + " / [" + node.path().list() + "]");
+            }
             int x = 2 + entry.depth() * 8;
             drawText(context, font, font.plainSubstrByWidth(label.getString(), Math.max(1, contentWidth - x)), x, rowY + 3,
                     getColor(node.state() == RemoteCatalogState.AVAILABLE ? TEXT_PRIMARY : TEXT_MUTED), true);
@@ -247,7 +224,8 @@ public final class RemoteWaypointManagerScreen extends MovementAllowedScreen {
             var node = entry.value();
             selected = node.path().key();
             details.setRemoteSelection(selected, displayed.get(node.path().server()));
-            teleportButton.active = RemoteBrowserModel.prepare(catalogs, selected) != null;
+            teleportButton.active = teleportButton.visible && session == catalogs.session()
+                    && RemoteBrowserModel.prepare(catalogs, selected) != null;
             return selected != null;
         }
         @Override

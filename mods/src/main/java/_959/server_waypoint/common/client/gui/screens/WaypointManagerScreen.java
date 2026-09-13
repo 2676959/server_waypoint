@@ -72,7 +72,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private static final int CONTROL_ICON_PADDING = 2;
     private static final int CONTROL_COLUMN_X_OFFSET =
             (LEFT_PART_WIDTH - CONTROL_BUTTON_SIZE) / 2;
-    private static final int CONTROL_COLUMN_HEIGHT = CONTROL_BUTTON_SIZE * 5 + CONTROL_GAP * 4;
+    private static final int CONTROL_COLUMN_HEIGHT = CONTROL_BUTTON_SIZE * 6 + CONTROL_GAP * 5;
     private static final int MIN_DIMENSION_LIST_HEIGHT = DIMENSION_ICON_SIZE + DIMENSION_VERTICAL_PADDING * 2;
     private static final int MIN_WAYPOINT_LIST_HEIGHT = 28;
     private static final float RELATIVE_HEIGHT = 0.82F;
@@ -87,7 +87,9 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private final IconDropdownMenu sortingModeDropdown;
     private final IconToggleButton allDimensionsToggle;
     private final Screen parentScreen;
-    private final TranslucentButton serverSelector;
+    private final IconToggleButton serverScopeToggle;
+    private final RemoteWaypointPanel remotePanel;
+    private boolean showingRemote;
     private final WaypointClientMod waypointClientMod;
     private boolean hasInitialized = false;
     private final WidgetPack leftLayout;
@@ -99,11 +101,14 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         super(Component.nullToEmpty("Server Waypoints"));
         this.parentScreen = parentScreen;
         this.waypointClientMod = waypointClientMod;
-        this.serverSelector = new TranslucentButton(0, 0, 180, 11,
-                Component.translatable("waypoint.remote.gui.selector"), () -> {
-                    closeOpenDropdownMenus();
-                    MinecraftClientHelper.setScreen(this.minecraft, new RemoteWaypointManagerScreen(this.waypointClientMod, this));
-                });
+        this.remotePanel = new RemoteWaypointPanel(waypointClientMod, this, this.font);
+        this.serverScopeToggle = new IconToggleButton(
+                Component.translatable("waypoint.remote.gui.local"),
+                Component.translatable("waypoint.remote.title"),
+                WidgetTextures.HOME_ICON,
+                WidgetTextures.LAN_SERVERS_ICON,
+                this::setShowingRemote
+        );
         dimensionListWidget = new DimensionListWidget(
                 0,
                 0,
@@ -158,7 +163,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 MIN_MIDDLE_PART_WIDTH,
                 Component.translatable("waypoint.search.entry"),
                 this.font,
-                waypointListWidget::setSearchQuery
+                query -> {
+                    waypointListWidget.setSearchQuery(query);
+                    refreshRemoteOptions();
+                }
         );
         searchField.setHint(Component.translatable("waypoint.search.hint"));
         groupModeToggle = new IconToggleButton(
@@ -215,6 +223,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 CONTROL_COLUMN_HEIGHT,
                 LayoutFlow.Orientation.VERTICAL
         );
+        controlColumn.addChild(serverScopeToggle, LayoutFlow.Direction.FORWARD);
+        controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
         controlColumn.addChild(allDimensionsToggle, LayoutFlow.Direction.FORWARD);
         controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
         controlColumn.addChild(groupModeToggle, LayoutFlow.Direction.FORWARD);
@@ -416,6 +426,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         boolean controlsVisible = this.layoutGeometry.contentHeight() >= CONTROL_COLUMN_HEIGHT;
         setControlVisibility(controlsVisible);
         this.leftLayout.setDimensions(LEFT_PART_WIDTH, this.layoutGeometry.contentHeight());
+        updatePanelVisibility();
     }
 
     @Override
@@ -464,15 +475,15 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         this.leftLayout.visitWidgets(this::addRenderableWidget);
         this.middleLayout.visitWidgets(this::addRenderableWidget);
         this.addRenderableWidget(this.waypointDetailsWidget);
-        this.serverSelector.setX(this.layoutGeometry.middleX());
-        this.serverSelector.setY(Math.max(3, this.layoutGeometry.panelY() - 16));
-        this.addRenderableWidget(this.serverSelector);
+        remotePanel.register(this::addRenderableWidget);
+        updatePanelVisibility();
     }
 
     @Override
     public void tick() {
         super.tick();
-        waypointListWidget.refreshDistanceSortIfPlayerMoved();
+        if (showingRemote) remotePanel.tick();
+        else waypointListWidget.refreshDistanceSortIfPlayerMoved();
     }
 
     @Override
@@ -488,7 +499,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             MinecraftClientHelper.setScreen(this.minecraft, new ClientConfigScreen(this));
             return true;
         }
-        return waypointListWidget.keyPressed(keyCode, scanCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers);
+        return !showingRemote && waypointListWidget.keyPressed(keyCode, scanCode, modifiers)
+                || super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     //? if >= 1.21.9 {
@@ -591,10 +603,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 this.layoutGeometry.middlePanelWidth(),
                 this.layoutGeometry.panelHeight()
         );
-        serverSelector.
-        //$ render_method_swap
-        extractRenderState
-                (context, mouseX, mouseY, delta);
         searchField.
         //$ render_method_swap
         extractRenderState
@@ -614,6 +622,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, delta);
+        if (showingRemote) remotePanel.render(context, mouseX, mouseY, delta);
         this.renderPanel(
                 context,
                 this.layoutGeometry.leftPanelX(),
@@ -622,6 +631,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 this.layoutGeometry.panelHeight()
         );
         dimensionListWidget.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
+        serverScopeToggle.
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, delta);
@@ -659,6 +672,40 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         else MinecraftClientHelper.setScreen(this.parentScreen);
     }
 
+    private void setShowingRemote(boolean remote) {
+        closeOpenDropdownMenus();
+        showingRemote = remote;
+        setFocused(null);
+        // Distance has no shared origin across servers.
+        if (remote && waypointListWidget.getSortMode() == WaypointSorting.SortMode.DISTANCE) {
+            setSortMode(WaypointSorting.SortMode.NAME);
+        }
+        sortingModeDropdown.iconItems.get(2).active = !remote;
+        updatePanelVisibility();
+        refreshRemoteOptions();
+    }
+
+    private void refreshRemoteOptions() {
+        if (searchField != null && waypointListWidget != null) {
+            remotePanel.setOptions(searchField.getValue(), waypointListWidget.isGroupByLists(),
+                    waypointListWidget.getSortMode(), waypointListWidget.isSortReversed());
+        }
+    }
+
+    private void updatePanelVisibility() {
+        boolean visible = layoutGeometry.waypointListHeight(searchField.getVisualHeight()) >= MIN_WAYPOINT_LIST_HEIGHT;
+        waypointListWidget.visible = waypointListWidget.active = visible && !showingRemote;
+        waypointDetailsWidget.visible = waypointDetailsWidget.active = !showingRemote;
+        dimensionListWidget.active = dimensionListWidget.visible && !showingRemote;
+        allDimensionsToggle.active = allDimensionsToggle.visible && !showingRemote;
+        addWaypointButton.active = addWaypointButton.visible && !showingRemote;
+        remotePanel.layout(layoutGeometry.middleX(), layoutGeometry.contentY() + searchField.getVisualHeight() + SEARCH_GAP,
+                layoutGeometry.middlePartWidth(), Math.max(1, layoutGeometry.waypointListHeight(searchField.getVisualHeight()) - 14),
+                layoutGeometry.detailsContentX(), layoutGeometry.contentY(),
+                layoutGeometry.detailsContentWidth(), layoutGeometry.contentHeight());
+        remotePanel.setVisible(showingRemote && visible);
+    }
+
     private void syncControlStates() {
         if (waypointListWidget == null) {
             return;
@@ -684,6 +731,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             case DISTANCE -> "waypoint.sort.distance";
             case COLOR -> "waypoint.sort.color";
         };
+        refreshRemoteOptions();
         sortingModeDropdown.setSelectedIndex(sortIndex);
         sortingModeDropdown.setMessage(Component.translatable(sortTranslationKey)
                 .append(WaypointSortButtonLabel.directionSuffix(activeMode, activeMode, reversed)));
@@ -774,7 +822,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
     private void setControlVisibility(boolean visible) {
         addWaypointButton.visible = visible;
-        addWaypointButton.active = visible;
+        addWaypointButton.active = visible && !showingRemote;
+        serverScopeToggle.visible = serverScopeToggle.active = visible;
         groupModeToggle.visible = visible;
         groupModeToggle.active = visible;
         sortOrderToggle.visible = visible;
@@ -783,7 +832,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         sortingModeDropdown.visible = visible;
         sortingModeDropdown.active = visible;
         allDimensionsToggle.visible = visible;
-        allDimensionsToggle.active = visible;
+        allDimensionsToggle.active = visible && !showingRemote;
         if (!visible) {
             closeOpenDropdownMenus();
         }

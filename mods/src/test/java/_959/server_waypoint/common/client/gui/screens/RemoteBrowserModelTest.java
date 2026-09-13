@@ -3,6 +3,7 @@ package _959.server_waypoint.common.client.gui.screens;
 import _959.server_waypoint.common.client.RemoteClientCatalogs;
 import _959.server_waypoint.core.network.message.RemoteCatalogMessage;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.core.waypoint.WaypointSorting;
 import _959.server_waypoint.crossserver.*;
 import _959.server_waypoint.crossserver.catalog.CatalogReceiver;
 import com.mojang.brigadier.StringReader;
@@ -46,14 +47,37 @@ class RemoteBrowserModelTest {
     @Test void duplicateLabelsRetainServerAndExactIdentityThroughFilteringAndReverseSort() {
         var views = Map.of(a, view(a, RemoteCatalogState.AVAILABLE, 1, "z", "a"),
                 b, view(b, RemoteCatalogState.AVAILABLE, 1, "z", "a"));
-        var roots = RemoteBrowserModel.roots(views, "keyword", true);
+        var roots = RemoteBrowserModel.roots(views, "keyword", true, WaypointSorting.SortMode.NAME, true);
         var rows = leaves(roots);
         assertEquals(List.of("z", "a", "z", "a"), rows.stream().map(n -> n.path().waypoint()).toList());
         assertEquals(List.of(a, a, b, b), rows.stream().map(n -> n.path().server()).toList());
         assertEquals(4, rows.stream().map(n -> n.path().key()).distinct().count());
         assertTrue(roots.get(0).label().contains("[a]"));
-        assertTrue(leaves(RemoteBrowserModel.roots(views, "no-match", false)).isEmpty());
+        assertTrue(leaves(RemoteBrowserModel.roots(views, "no-match", true, WaypointSorting.SortMode.NAME, false)).isEmpty());
         assertThrows(UnsupportedOperationException.class, () -> roots.clear());
+    }
+
+    @Test void flatModeSortsAcrossServersAndPreservesExactIdentities() {
+        var views = Map.of(a, view(a, RemoteCatalogState.AVAILABLE, 1, "z", "a"),
+                b, view(b, RemoteCatalogState.STALE, 1, "b"));
+        var flat = RemoteBrowserModel.roots(views, "", false, WaypointSorting.SortMode.NAME, false);
+        assertEquals(List.of("a", "b", "z"), flat.stream().map(node -> node.path().waypoint()).toList());
+        assertTrue(flat.stream().allMatch(node -> node.children().isEmpty()));
+        assertEquals(new RemoteWaypointKey(b, "dimension with spaces", "", "b"), flat.get(1).path().key());
+        assertEquals(RemoteCatalogState.STALE, flat.get(1).state());
+        var reversed = RemoteBrowserModel.roots(views, "", false, WaypointSorting.SortMode.NAME, true);
+        assertEquals(List.of("z", "b", "a"), reversed.stream().map(node -> node.path().waypoint()).toList());
+        assertTrue(RemoteBrowserModel.roots(views, "missing", false, WaypointSorting.SortMode.NAME, false).isEmpty());
+    }
+
+    @Test void defaultOrderIgnoresReverseAndColorSortWorksInBothViews() {
+        var views = Map.of(a, view(a, RemoteCatalogState.AVAILABLE, 1, "z", "a"));
+        for (boolean grouped : List.of(true, false)) {
+            assertEquals(RemoteBrowserModel.roots(views, "", grouped, WaypointSorting.SortMode.DEFAULT, false),
+                    RemoteBrowserModel.roots(views, "", grouped, WaypointSorting.SortMode.DEFAULT, true));
+            var rows = leaves(RemoteBrowserModel.roots(views, "", grouped, WaypointSorting.SortMode.COLOR, true));
+            assertEquals(List.of("z", "a"), rows.stream().map(node -> node.path().waypoint()).toList());
+        }
     }
 
     @Test void quotedEmptyAndUnicodeArgumentsRoundTripWithoutUsingLabels() throws Exception {
@@ -74,7 +98,7 @@ class RemoteBrowserModelTest {
     @Test void staleDataIsBrowsableButNotActionableAndUnavailableHasNoRows() {
         install(RemoteCatalogState.AVAILABLE, Map.of(a, view(a, RemoteCatalogState.STALE, 1, "name"),
                 b, view(b, RemoteCatalogState.UNAVAILABLE, 1)));
-        var roots = RemoteBrowserModel.roots(cache.snapshot(), "", false);
+        var roots = RemoteBrowserModel.roots(cache.snapshot(), "", true, WaypointSorting.SortMode.NAME, false);
         assertEquals(1, leaves(roots).size());
         assertEquals(RemoteCatalogState.STALE, leaves(roots).get(0).state());
         assertNull(RemoteBrowserModel.prepare(cache, new RemoteWaypointKey(a, "dimension with spaces", "", "name")));
@@ -102,7 +126,7 @@ class RemoteBrowserModelTest {
     @Test void unsafeOrOversizeChatIdentitiesAreNeverTruncatedOrSent() {
         for (String name : List.of("x".repeat(257), "line\nbreak", "color§code", "del\u007f")) {
             install(RemoteCatalogState.AVAILABLE, Map.of(a, view(a, RemoteCatalogState.AVAILABLE, 1, name)));
-            assertEquals(name, leaves(RemoteBrowserModel.roots(cache.snapshot(), "", false)).get(0).path().waypoint());
+            assertEquals(name, leaves(RemoteBrowserModel.roots(cache.snapshot(), "", true, WaypointSorting.SortMode.NAME, false)).get(0).path().waypoint());
             assertNull(RemoteBrowserModel.prepare(cache, new RemoteWaypointKey(a, "dimension with spaces", "", name)));
         }
     }
@@ -110,7 +134,7 @@ class RemoteBrowserModelTest {
     @Test void emptyAvailableServerRemainsDistinctFromUnavailableAndDenied() {
         var empty = new CatalogReceiver.View(new RemoteCatalogSnapshot(a, new RemoteRevision(1), Map.of(), Instant.EPOCH),
                 RemoteCatalogState.AVAILABLE, "empty", null);
-        var roots = RemoteBrowserModel.roots(Map.of(a, empty, b, view(b, RemoteCatalogState.UNAUTHORIZED, 1, "hidden")), "", false);
+        var roots = RemoteBrowserModel.roots(Map.of(a, empty, b, view(b, RemoteCatalogState.UNAUTHORIZED, 1, "hidden")), "", true, WaypointSorting.SortMode.NAME, false);
         assertEquals(1, roots.size());
         assertEquals(RemoteCatalogState.AVAILABLE, roots.get(0).state());
         assertTrue(roots.get(0).children().isEmpty());

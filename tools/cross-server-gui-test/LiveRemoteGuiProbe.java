@@ -19,7 +19,7 @@ public final class LiveRemoteGuiProbe implements ClientModInitializer {
     private int ticks, stage;
     private WaypointClientMod client;
     private WaypointManagerScreen local;
-    private RemoteWaypointManagerScreen remote;
+    private RemoteWaypointPanel remote;
     private final RemoteServerId destination = new RemoteServerId("b");
     @Override public void onInitializeClient() {
         ClientTickEvents.END_CLIENT_TICK.register(mc -> {
@@ -45,24 +45,24 @@ public final class LiveRemoteGuiProbe implements ClientModInitializer {
                 mark(mc, "SYNC_PROTOCOL_11");
             }
             case 1 -> {
-                click(mc.gui.screen(), (AbstractWidget) field(WaypointManagerScreen.class, "serverSelector").get(local));
-                check(mc.gui.screen() instanceof RemoteWaypointManagerScreen, "remote branch reached by click");
-                remote = (RemoteWaypointManagerScreen) mc.gui.screen();
+                click(mc.gui.screen(), (AbstractWidget) field(WaypointManagerScreen.class, "serverScopeToggle").get(local));
+                check(mc.gui.screen() == local, "scope toggles inside manager");
+                remote = (RemoteWaypointPanel) field(WaypointManagerScreen.class, "remotePanel").get(local);
                 mark(mc, "WAIT_REMOTE_MUTATION");
             }
             case 2 -> {
                 if (!has("Added")) return;
-                check(mc.gui.screen() == remote, "browser remained open during network change");
-                ((WaypointSearchBarWidget) field(RemoteWaypointManagerScreen.class, "search").get(remote)).setValue("Added");
+                check(mc.gui.screen() == local, "browser remained open during network change");
+                ((WaypointSearchBarWidget) field(WaypointManagerScreen.class, "searchField").get(local)).setValue("Added");
                 mark(mc, "NETWORK_CATALOG_CHANGED");
             }
             case 3 -> {
-                var tree = (TreeViewWidget<?>) field(RemoteWaypointManagerScreen.class, "tree").get(remote);
-                clickAt(remote, tree.getX() + 24, tree.getY() + 3 * 16 + 8);
-                var selected = (RemoteWaypointKey) field(RemoteWaypointManagerScreen.class, "selected").get(remote);
+                var tree = (TreeViewWidget<?>) field(RemoteWaypointPanel.class, "tree").get(remote);
+                clickAt(local, tree.getX() + 24, tree.getY() + 3 * 16 + 8);
+                var selected = (RemoteWaypointKey) field(RemoteWaypointPanel.class, "selected").get(remote);
                 check(new RemoteWaypointKey(destination, "minecraft:overworld", "Test", "Added").equals(selected), "exact added target selected");
-                var button = (AbstractWidget) field(RemoteWaypointManagerScreen.class, "teleportButton").get(remote);
-                check(button.active, "changed target actionable"); click(remote, button);
+                var button = (AbstractWidget) field(RemoteWaypointPanel.class, "teleportButton").get(remote);
+                check(button.active, "changed target actionable"); click(local, button);
                 check(mc.gui.screen() instanceof ConfirmScreen, "real confirmation modal");
                 mark(mc, "CONFIRMATION_OPEN");
             }

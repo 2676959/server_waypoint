@@ -4,6 +4,8 @@ import _959.server_waypoint.common.client.RemoteClientCatalogs;
 import _959.server_waypoint.crossserver.*;
 import _959.server_waypoint.crossserver.catalog.CatalogReceiver;
 import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
+import _959.server_waypoint.core.waypoint.WaypointSorting;
+import _959.server_waypoint.util.ColorUtils;
 import _959.server_waypoint.util.StringCommandBuilder;
 
 import java.util.*;
@@ -21,7 +23,8 @@ final class RemoteBrowserModel {
     record Confirmation(long session, RemoteWaypointKey key, RemoteRevision revision,
                         RemoteWaypointSnapshot waypoint, String command) { }
 
-    static List<Node> roots(Map<RemoteServerId, CatalogReceiver.View> servers, String filter, boolean reversed) {
+    static List<Node> roots(Map<RemoteServerId, CatalogReceiver.View> servers, String filter, boolean grouped,
+                            WaypointSorting.SortMode sortMode, boolean reversed) {
         List<Node> roots = new ArrayList<>();
         for (var server : servers.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey(Comparator.comparing(RemoteServerId::value))).toList()) {
@@ -43,13 +46,13 @@ final class RemoteBrowserModel {
                                         label(value.displayName(), waypoint.getKey()), view.state(), List.of()));
                             }
                         }
-                        if (reversed) Collections.reverse(waypoints);
+                        sort(waypoints, servers, sortMode, reversed);
                         if (!waypoints.isEmpty() || filter.isBlank()) {
                             lists.add(new Node(new Path(id, dimension.getKey(), list.getKey(), null),
                                     label(list.getValue().displayName(), list.getKey()), view.state(), waypoints));
                         }
                     }
-                    if (reversed) Collections.reverse(lists);
+                    if (reversed && sortMode != WaypointSorting.SortMode.DEFAULT) Collections.reverse(lists);
                     if (!lists.isEmpty() || filter.isBlank()) {
                         dimensions.add(new Node(new Path(id, dimension.getKey(), null, null), dimension.getKey(), view.state(), lists));
                     }
@@ -57,7 +60,36 @@ final class RemoteBrowserModel {
             }
             roots.add(new Node(new Path(id, null, null, null), label(view.displayName(), id.value()), view.state(), dimensions));
         }
+        if (!grouped) {
+            List<Node> flat = new ArrayList<>();
+            flatten(roots, flat);
+            sort(flat, servers, sortMode, reversed);
+            return List.copyOf(flat);
+        }
         return List.copyOf(roots);
+    }
+
+    private static void flatten(List<Node> nodes, List<Node> flat) {
+        for (Node node : nodes) {
+            if (node.path().key() != null) flat.add(node);
+            else flatten(node.children(), flat);
+        }
+    }
+
+    private static void sort(List<Node> nodes, Map<RemoteServerId, CatalogReceiver.View> servers,
+                             WaypointSorting.SortMode mode, boolean reversed) {
+        Comparator<Node> byName = WaypointSorting.<Node>byName(node -> node.path().waypoint())
+                .thenComparing(node -> node.path().server().value())
+                .thenComparing(node -> node.path().dimension())
+                .thenComparing(node -> node.path().list());
+        switch (mode) {
+            case NAME, DISTANCE -> nodes.sort(byName);
+            case COLOR -> ColorUtils.sortWaypointColors(nodes,
+                    node -> servers.get(node.path().server()).snapshot().find(node.path().key()).orElseThrow().rgb(),
+                    byName);
+            case DEFAULT -> { }
+        }
+        if (reversed && mode != WaypointSorting.SortMode.DEFAULT) Collections.reverse(nodes);
     }
 
     private static String label(String display, String identity) {
