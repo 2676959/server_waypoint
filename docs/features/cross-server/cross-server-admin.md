@@ -4,7 +4,7 @@ Cross-server waypoints are opt-in and **disabled by default**. Install the match
 backend artifact on each dedicated backend and the shaded `server_waypoint-<version>-velocity.jar`
 on Velocity. The proxy plugin requires Java 25. Use the Java version required by each backend.
 Integrated servers do not participate. Remote commands work with vanilla clients; the remote GUI
-requires a matching protocol-11 client mod. Update the proxy and all participating backends together.
+requires a matching protocol-1 client mod. Update the proxy and all participating backends together.
 See the [release verification record](validation/cross-server-release-readiness.md) before deploying.
 
 ## Pair two backends with KK

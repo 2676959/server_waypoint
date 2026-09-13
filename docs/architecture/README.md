@@ -22,7 +22,7 @@ The [Gradle settings](../../settings.gradle.kts) define the module and version m
 - **Remote teleport:** source validation and destination preparation precede source readiness confirmation and the Velocity switch. Destination arrival claims the reservation, rechecks live permissions and resolves current local coordinates before teleporting. A successful switch alone is not a successful teleport.
 - **Execution ownership:** transport lifecycle workers own blocking startup and cleanup. Minecraft actions return to the owning server; Paper/Folia player callbacks use the player/entity owner. Integrated servers do not start cross-server runtime services.
 
-Client/backend payload **protocol 11** and cross-server TCP **application protocol v1** are separate contracts. Cross-server support is disabled by default and uses pinned `NOISE_KK` credentials when enabled with the default transport. Explicit `PLAINTEXT` mode is unauthenticated and restricted to literal loopback addresses. The reserved handoff plugin-message channel is not an authorization path.
+Client/backend payload **protocol 1** and cross-server TCP **application protocol v1** are separate contracts. Cross-server support is disabled by default and uses pinned `NOISE_KK` credentials when enabled with the default transport. Explicit `PLAINTEXT` mode is unauthenticated and restricted to literal loopback addresses. The reserved handoff plugin-message channel is not an authorization path.
 
 ## Source and contract references
 

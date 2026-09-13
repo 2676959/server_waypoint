@@ -1,5 +1,9 @@
 # Server Waypoint 3.1.0
 
+Historical development-candidate notes: 3.1.0 was not publicly released. The next planned
+public release is 4.0.0, using network protocol 1; released 3.0.4 uses protocol 0.
+The candidate version and protocol numbers below describe earlier development snapshots.
+
 Release candidate for the chunked upload and download transport.
 
 ## Breaking change: network protocol 11

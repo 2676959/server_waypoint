@@ -17,6 +17,6 @@
         "fabricloader": ">=0.16.10",
         "fabric-api": "*",
         "minecraft": "1.21.11",
-        "server_waypoint": "3.1.0"
+        "server_waypoint": "4.0.0"
     }
 }
