@@ -18,7 +18,7 @@ The [Gradle settings](../../settings.gradle.kts) define the module and version m
 
 - **Local waypoints:** backend adapters use `WaypointServerCore` for authoritative state and GSON persistence. Modded clients maintain their local cache, GUI, renderer and Xaero/VoxelMap integrations. Chunked upload/download belongs to this client/backend path.
 - **Remote discovery:** each enabled dedicated backend publishes PUBLIC catalogs to the Velocity coordinator over TCP. The coordinator aggregates and distributes catalogs to separate backend replicas. Authorized client requests receive session-only remote catalog snapshots.
-- **Remote GUI:** `RemoteClientCatalogs` and the remote manager provide read-only discovery and teleport selection. Remote state does not enter the local waypoint manager, persisted cache, renderer or map-mod files.
+- **Remote GUI:** `RemoteClientCatalogs` supplies read-only discovery and teleport selection through the manager's remote panel. The sidebar switches between local and remote views; remote data remains separate from local waypoint storage, persisted cache, renderer and map-mod files.
 - **Remote teleport:** source validation and destination preparation precede source readiness confirmation and the Velocity switch. Destination arrival claims the reservation, rechecks live permissions and resolves current local coordinates before teleporting. A successful switch alone is not a successful teleport.
 - **Execution ownership:** transport lifecycle workers own blocking startup and cleanup. Minecraft actions return to the owning server; Paper/Folia player callbacks use the player/entity owner. Integrated servers do not start cross-server runtime services.
 
@@ -33,11 +33,14 @@ Client/backend payload **protocol 1** and cross-server TCP **application protoco
 - [Administrator guide](../features/cross-server/cross-server-admin.md) and [release validation](../features/cross-server/validation/cross-server-release-readiness.md). This overview does not replace release gates.
 - [Upload transport records](../features/upload/) and [implementation tips](../tips/).
 
-## Local diagram and regeneration
+## Diagram and regeneration
 
-The visual assets remain workspace-only: `server-waypoint.architecture.json` is the archify input, and `server-waypoint-architecture.html` is the generated diagram with theme switching and image/SVG export. They are intentionally not linked here because clean clones do not contain them. This README provides the tracked architecture overview.
+The repository includes the [architecture input](server-waypoint.architecture.json) and
+[generated diagram](server-waypoint-architecture.html), with theme switching and image/SVG export.
+The diagram records the 2026-09-11 architecture snapshot; consult the source references above for
+current protocol versions and feature behavior.
 
-Obtain the JSON from the workspace maintainer or recreate it from the module and runtime boundaries above. With Node.js and the archify skill installed, set `ARCHIFY_ROOT` to that skill directory and run from the repository root:
+With Node.js and the archify skill installed, set `ARCHIFY_ROOT` to that skill directory and run from the repository root:
 
 ```sh
 node "$ARCHIFY_ROOT/bin/archify.mjs" render architecture docs/architecture/server-waypoint.architecture.json docs/architecture/server-waypoint-architecture.html

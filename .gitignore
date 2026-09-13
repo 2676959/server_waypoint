@@ -57,9 +57,3 @@ builds/
 
 # zed editor
 /.zed/
-
-# Local documentation assets; keep clone-safe indexes available
-!/docs/architecture/
-/docs/architecture/*
-!/docs/architecture/README.md
-/docs/tips/gui/local-guide.md

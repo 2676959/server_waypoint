@@ -1,0 +1,314 @@
+{
+    "schema_version": 1,
+    "diagram_type": "architecture",
+    "meta": {
+        "title": "Server Waypoint Architecture",
+        "subtitle": "Current module and runtime boundaries \u00b7 2026-09-11 \u00b7 Cross-server support is opt-in",
+        "output": "server-waypoint-architecture.html",
+        "viewBox": [
+            1180,
+            990
+        ]
+    },
+    "components": [
+        {
+            "id": "client",
+            "type": "frontend",
+            "label": "Modded Minecraft client",
+            "sublabel": "GUI / renderer / Xaero / VoxelMap",
+            "pos": [
+                70,
+                130
+            ],
+            "size": [
+                240,
+                70
+            ],
+            "tag": "MODS CLIENT"
+        },
+        {
+            "id": "backend",
+            "type": "backend",
+            "label": "Waypoint backend",
+            "sublabel": "Fabric / Forge / NeoForge / Paper",
+            "pos": [
+                470,
+                130
+            ],
+            "size": [
+                240,
+                70
+            ],
+            "tag": "MODS OR PAPER / FOLIA"
+        },
+        {
+            "id": "velocity",
+            "type": "backend",
+            "label": "Velocity proxy",
+            "sublabel": "Stable server IDs / player routing",
+            "pos": [
+                870,
+                130
+            ],
+            "size": [
+                240,
+                70
+            ],
+            "tag": "VELOCITY"
+        },
+        {
+            "id": "local_client",
+            "type": "database",
+            "label": "Local client state",
+            "sublabel": "Per-server cache / map integration",
+            "pos": [
+                70,
+                310
+            ],
+            "size": [
+                240,
+                70
+            ],
+            "tag": "PERSISTED LOCAL STATE"
+        },
+        {
+            "id": "local_server",
+            "type": "database",
+            "label": "Authoritative waypoint state",
+            "sublabel": "WaypointServerCore / GSON files",
+            "pos": [
+                470,
+                310
+            ],
+            "size": [
+                240,
+                70
+            ],
+            "tag": "LOCAL SERVER OWNER"
+        },
+        {
+            "id": "coordinator",
+            "type": "backend",
+            "label": "Coordinator services",
+            "sublabel": "Catalog index / bounded handoffs",
+            "pos": [
+                870,
+                310
+            ],
+            "size": [
+                240,
+                70
+            ],
+            "tag": "PROXY-COMMON"
+        },
+        {
+            "id": "remote_client",
+            "type": "frontend",
+            "label": "Remote catalog + GUI",
+            "sublabel": "Session-only / read-only selection",
+            "pos": [
+                70,
+                490
+            ],
+            "size": [
+                240,
+                70
+            ],
+            "tag": "NO LOCAL CACHE OR MAP WRITES"
+        },
+        {
+            "id": "remote_backend",
+            "type": "backend",
+            "label": "BackendRuntime",
+            "sublabel": "PUBLIC export / replica / handoffs",
+            "pos": [
+                470,
+                490
+            ],
+            "size": [
+                240,
+                70
+            ],
+            "tag": "DEDICATED SERVERS ONLY"
+        },
+        {
+            "id": "credentials",
+            "type": "security",
+            "label": "Cross-server credentials",
+            "sublabel": "Pinned Noise keys / exact mappings",
+            "pos": [
+                870,
+                490
+            ],
+            "size": [
+                240,
+                70
+            ],
+            "tag": "BACKEND + PROXY CONFIG"
+        },
+        {
+            "id": "common",
+            "type": "backend",
+            "label": "common",
+            "sublabel": "Core / codecs / transport / services",
+            "pos": [
+                70,
+                760
+            ],
+            "size": [
+                240,
+                70
+            ],
+            "tag": "JAVA 17 SHARED LIBRARY"
+        },
+        {
+            "id": "proxy_common",
+            "type": "backend",
+            "label": "proxy-common",
+            "sublabel": "Proxy contracts / coordinator logic",
+            "pos": [
+                470,
+                760
+            ],
+            "size": [
+                240,
+                70
+            ],
+            "tag": "DEPENDS ON COMMON"
+        },
+        {
+            "id": "build",
+            "type": "cloud",
+            "label": "Gradle + Stonecutter + CI",
+            "sublabel": "Versioned backends + Velocity JAR",
+            "pos": [
+                870,
+                760
+            ],
+            "size": [
+                240,
+                70
+            ],
+            "tag": "JDK 17 / 21 / 25"
+        }
+    ],
+    "boundaries": [
+        {
+            "kind": "region",
+            "label": "CLIENT PROCESS",
+            "wraps": [
+                "client",
+                "local_client",
+                "remote_client"
+            ]
+        },
+        {
+            "kind": "region",
+            "label": "EACH BACKEND PROCESS",
+            "wraps": [
+                "backend",
+                "local_server",
+                "remote_backend"
+            ]
+        },
+        {
+            "kind": "region",
+            "label": "PROXY AND TRUST CONFIGURATION",
+            "wraps": [
+                "velocity",
+                "coordinator",
+                "credentials"
+            ]
+        },
+        {
+            "kind": "region",
+            "label": "COMPILE-TIME MODULES AND BUILD (NOT EXTRA RUNTIME SERVICES)",
+            "wraps": [
+                "common",
+                "proxy_common",
+                "build"
+            ]
+        }
+    ],
+    "connections": [
+        {
+            "from": "client",
+            "to": "backend",
+            "label": "Payload protocol 11",
+            "variant": "emphasis",
+            "labelAt": [
+                390,
+                116
+            ]
+        },
+        {
+            "from": "backend",
+            "to": "velocity",
+            "label": "TCP application v1",
+            "variant": "emphasis",
+            "labelAt": [
+                790,
+                116
+            ]
+        },
+        {
+            "from": "client",
+            "to": "local_client",
+            "fromSide": "bottom",
+            "toSide": "top"
+        },
+        {
+            "from": "backend",
+            "to": "local_server",
+            "fromSide": "bottom",
+            "toSide": "top"
+        },
+        {
+            "from": "velocity",
+            "to": "coordinator",
+            "fromSide": "bottom",
+            "toSide": "top"
+        },
+        {
+            "from": "remote_backend",
+            "to": "remote_client",
+            "label": "Authorized catalog snapshots",
+            "variant": "dashed",
+            "labelAt": [
+                390,
+                592
+            ]
+        }
+    ],
+    "cards": [
+        {
+            "dot": "cyan",
+            "title": "Client and local waypoint flow",
+            "items": [
+                "mods supplies both client and server adapters; paper supplies server adapters only. Vanilla clients can use remote commands and server switches without a mod.",
+                "Local GUI, rendering, upload/download and map integration use local waypoint state. RemoteClientCatalogs is separate session-only state and never writes local waypoint caches or map mods.",
+                "Protocol 11 carries chunked client/backend messages, including authorized remote catalog request/replacement messages."
+            ]
+        },
+        {
+            "dot": "rose",
+            "title": "Cross-server control and ownership",
+            "items": [
+                "Each dedicated backend exports PUBLIC catalogs and holds a separate remote replica. Integrated servers do not start BackendRuntime.",
+                "Velocity hosts catalog aggregation and the handoff coordinator. A second backend has the same backend structure shown here. TCP is bidirectional; arrows identify logical relationships, not one-way transport.",
+                "Prepare destination, confirm source readiness, switch through Velocity, then claim and teleport on the destination owner. A server switch alone is not teleport completion.",
+                "Mod callbacks run on the owning Minecraft server; Paper/Folia player callbacks use the player/entity owner. Lifecycle workers own blocking startup and transport cleanup."
+            ]
+        },
+        {
+            "dot": "amber",
+            "title": "Trust, packaging and documentation",
+            "items": [
+                "Cross-server configuration is disabled by default. NOISE_KK uses pinned keys; explicit PLAINTEXT is unauthenticated and literal-loopback-only, with no downgrade fallback. Reserved plugin messages do not authorize handoffs.",
+                "mods and paper depend on common. proxy-common depends on common; velocity depends on proxy-common and packages both libraries. Shared libraries are code, not standalone servers.",
+                "Stonecutter selects backend loader/version projects. Velocity builds separately with Java 17 source syntax and a Java 25 runtime target. Final-artifact verification covers backend and Velocity release JARs.",
+                "Features: docs/features/. Shared implementation guidance: docs/tips/. This overview: docs/architecture/. See each feature validation record for runtime evidence and release limitations."
+            ]
+        }
+    ]
+}
