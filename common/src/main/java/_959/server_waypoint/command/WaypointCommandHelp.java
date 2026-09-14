@@ -124,6 +124,8 @@ final class WaypointCommandHelp {
         if (canList) {
             help = help.append(usageEntry("/wp remote servers [page <number> [limit <number>]]", "/wp remote servers", "waypoint.help.remote.servers"))
                     .append(usageEntry("/wp remote list [<server> [<dimension> [<list>]]]", "/wp remote list ", "waypoint.help.remote.list"))
+                    .append(usageEntry("/wp remote details <server> <dimension> <list> [<waypoint>]",
+                            "/wp remote details ", "button.details"))
                     .append(usageEntry("search <query> / sort <mode> [order <direction>] / page <number> / limit <number> / view tree|flat",
                             "/wp remote list ", "waypoint.help.remote.options"));
         }

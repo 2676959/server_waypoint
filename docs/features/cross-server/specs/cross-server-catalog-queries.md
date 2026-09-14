@@ -88,7 +88,7 @@ Each label is bounded to 256 UTF-16 code units in chat; exact keys remain intact
 Generated read-only actions are attached only when their complete command fits the conservative
 256-character UI budget. No truncated command is sent. Server, scope and waypoint text does not
 inherit a neighboring button's click action. Commands expose no edit, delete, download, navigation
-or teleport controls.
+or teleport controls at Step 11; the list presentation extension below adds remote teleport controls.
 
 Help and feedback keys are included in all six bundled locales: English, Spanish, Hebrew,
 Simplified Chinese, Traditional Chinese and Hong Kong Chinese. [Step 12](cross-server-authorization.md)
@@ -125,3 +125,39 @@ this does not enable live platform startup.
 The services now have live coordinator/backend lifecycle and Velocity transfer wiring. See
 [the runtime contract and current validation](cross-server-velocity-runtime.md). Earlier step-specific
 verification above describes its historical boundary; client/GUI and full release hardening remain.
+
+## Remote list presentation parity
+
+`/wp remote list` now uses the local list button builders for search, tree/flat view, name/color/default
+sorting, ascending/descending order, and pagination. Selected/disabled controls have the same
+colors and decorations as `/wp list`. Distance sorting remains unsupported. Flat output places
+server/dimension/list context and the waypoint on one line. Tree output has colored dimension
+headings, bold list headings, and clickable server/dimension/list scopes. Scope links reset to page 1
+and preserve the search, sorting, page size, and view; view changes preserve the current page.
+Search suggestions reset the page and retain the page size, sorting, and view. Sort/order changes
+reset to page 1. Pagination continues to count remote result rows, including empty/unavailable scopes.
+
+Waypoint rows show colored, bold initials and a white display label. Hovering the label shows the
+cached description and coordinates, including the local list's Overworld/Nether coordinate conversion.
+Exact identities remain separate from display labels. Remote presentation strings remain literal text.
+Initials execute `/wp remote tp` only for an AVAILABLE entry and a source with teleport permission.
+The teleport command rechecks permissions and current cache state when clicked.
+
+The `⋯` buttons open read-only cached details:
+
+```text
+/wp remote details <server> <dimension> <list> [<waypoint>]
+```
+
+These selectors share the list command's exact, quoted cache-only suggestions and remote list
+permission. List details include the identifier, display name, dimension, and waypoint count.
+Waypoint details additionally show the source list, initials, coordinates, color, yaw, visibility,
+keywords, and description. Both provide an Open List action. AVAILABLE waypoint details offer remote
+teleport when permitted. Stale details remain visibly advisory and cannot teleport; unavailable or
+unauthorized details never expose retained data. Editing, removal, and local navigation are not
+remote catalog operations.
+
+All generated actions retain the 256-character command limit and use neutral parent components so
+clicks and bold styling do not spill onto neighboring text. `RemoteWaypointCommandTest` covers
+control command round trips, option retention, exact detail/teleport identity, permission revocation,
+stale/expired data, oversized commands, and effective click-event inheritance.

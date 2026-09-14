@@ -15,6 +15,9 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Predicate;
 
 import static _959.server_waypoint.util.StringCommandBuilder.*;
 import static net.kyori.adventure.text.Component.text;
@@ -185,17 +188,25 @@ public class TextButtonBuilder {
     }
 
     public static Component getListSearchButton(ListTarget target, ListOptions options) {
+        return getListSearchButton(listSearchCmd(target, options));
+    }
+
+    public static Component getListSearchButton(String command) {
         return buildButton(
                 text(SEARCH_SYMBOL),
                 NamedTextColor.AQUA,
                 TextDecoration.State.FALSE,
                 TextDecoration.State.FALSE,
-                ClickEvent.suggestCommand(listSearchCmd(target, options)),
+                safeClick(command, true),
                 translatable("button.list.search")
         );
     }
 
     public static Component getListViewToggleButton(ListTarget target, ListOptions options) {
+        return getListViewToggleButton(options, listViewCmd(target, options, !options.groupByLists()));
+    }
+
+    public static Component getListViewToggleButton(ListOptions options, String command) {
         boolean nextGroupByLists = !options.groupByLists();
         String view = nextGroupByLists ? "tree" : "flat";
         return buildButton(
@@ -203,18 +214,27 @@ public class TextButtonBuilder {
                 NamedTextColor.AQUA,
                 TextDecoration.State.FALSE,
                 TextDecoration.State.FALSE,
-                ClickEvent.runCommand(listViewCmd(target, options, nextGroupByLists)),
+                safeClick(command, false),
                 translatable("button.list.view." + view)
         );
     }
 
     public static Component getListSortControls(ListTarget target, ListOptions options) {
+        return getListSortControls(options, mode -> listSortCmd(target, options, mode),
+                reversed -> listOrderCmd(target, options, reversed), mode -> true);
+    }
+
+    public static Component getListSortControls(ListOptions options,
+                                                Function<WaypointSorting.SortMode, String> sortCommand,
+                                                Function<Boolean, String> orderCommand,
+                                                Predicate<WaypointSorting.SortMode> available) {
         Component controls = translatable("waypoint.list.sort.label", NamedTextColor.GRAY);
         for (WaypointSorting.SortMode sortMode : WaypointSorting.SortMode.values()) {
+            if (!available.test(sortMode)) continue;
             boolean selected = options.sortMode() == sortMode;
             controls = controls.appendSpace().append(listSortButton(
                     translatable(sortModeTranslationKey(sortMode)),
-                    listSortCmd(target, options, sortMode),
+                    sortCommand.apply(sortMode),
                     selected,
                     true,
                     "button.sort." + sortMode.name().toLowerCase(Locale.ROOT)
@@ -225,7 +245,7 @@ public class TextButtonBuilder {
         controls = controls.appendSpace().append(text("·", NamedTextColor.GRAY)).appendSpace()
                 .append(listSortButton(
                         text("↑"),
-                        listOrderCmd(target, options, false),
+                        orderCommand.apply(false),
                         orderEnabled && !options.reversed(),
                         orderEnabled,
                         "button.sort.ascending"
@@ -233,7 +253,7 @@ public class TextButtonBuilder {
                 .appendSpace()
                 .append(listSortButton(
                         text("↓"),
-                        listOrderCmd(target, options, true),
+                        orderCommand.apply(true),
                         orderEnabled && options.reversed(),
                         orderEnabled,
                         "button.sort.descending"
@@ -264,7 +284,7 @@ public class TextButtonBuilder {
         } else {
             color = NamedTextColor.AQUA;
             bold = TextDecoration.State.FALSE;
-            clickEvent = ClickEvent.runCommand(command);
+            clickEvent = safeClick(command, false);
             hoverText = translatable(hoverTranslationKey);
         }
         return buildButton(
@@ -292,17 +312,23 @@ public class TextButtonBuilder {
             int totalPages,
             int totalWaypoints
     ) {
+        return getPageNavigation(options, totalPages, totalWaypoints,
+                page -> listPageCmd(target, options, page));
+    }
+
+    public static Component getPageNavigation(ListOptions options, int totalPages, int totalWaypoints,
+                                               IntFunction<String> pageCommand) {
         Component previous = options.pageNumber() > 1
                 ? pageButton(
                 PREVIOUS_PAGE,
-                        listPageCmd(target, options, options.pageNumber() - 1),
+                        pageCommand.apply(options.pageNumber() - 1),
                         "button.page.previous"
                 )
                 : buildInactiveButton(PREVIOUS_PAGE);
         Component next = options.pageNumber() < totalPages
                 ? pageButton(
                 NEXT_PAGE,
-                        listPageCmd(target, options, options.pageNumber() + 1),
+                        pageCommand.apply(options.pageNumber() + 1),
                         "button.page.next"
                 )
                 : buildInactiveButton(NEXT_PAGE);
@@ -313,8 +339,13 @@ public class TextButtonBuilder {
                 text(options.pageLimit()),
                 text(totalWaypoints)
         ).color(NamedTextColor.GRAY);
-        return previous.appendSpace().append(pageText).appendSpace().append(next)
+        return Component.empty().append(previous).appendSpace().append(pageText).appendSpace().append(next)
                 .decoration(TextDecoration.BOLD, false);
+    }
+
+    private static ClickEvent safeClick(String command, boolean suggest) {
+        if (command.length() > 256) return null;
+        return suggest ? ClickEvent.suggestCommand(command) : ClickEvent.runCommand(command);
     }
 
     private static Component pageButton(String symbol, String command, String hoverTranslationKey) {
@@ -323,7 +354,7 @@ public class TextButtonBuilder {
                 NamedTextColor.AQUA,
                 TextDecoration.State.NOT_SET,
                 TextDecoration.State.NOT_SET,
-                ClickEvent.runCommand(command),
+                safeClick(command, false),
                 translatable(hoverTranslationKey)
         );
     }

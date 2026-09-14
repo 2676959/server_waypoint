@@ -114,12 +114,103 @@ class RemoteWaypointCommandTest {
         assertEquals("/" + target() + " search village sort name order descending page 2 limit 2 view flat", next);
         assertEquals(1, dispatcher.execute(next.substring(1), "console"));
         assertTrue(text(last()).contains("search")); assertFalse(text(last()).contains("Other waypoint"));
-        assertTrue(clicks(last()).stream().allMatch(value -> value.startsWith("/wp remote list ")));
+        assertTrue(clicks(last()).stream().allMatch(value -> value.startsWith("/wp remote list ") || value.startsWith("/wp remote details ")));
         for (String suffix : List.of("search village", "sort color order ascending search village", "page 1 limit 3 view tree search village",
                 "sort name page 1 limit 2 view flat", "limit 3 search village", "view flat search village")) {
             assertEquals(1, dispatcher.execute(target() + " " + suffix, "console"));
         }
     }
+    @Test void listControlsPreserveScopeAndOptionsAndUseLocalStyles() throws Exception {
+        dispatcher.execute(target() + " search village sort color order descending page 2 limit 2", "console");
+        Component output = last();
+        assertNoInheritedClick(output, null, "Display");
+        assertTrue(keys(output).containsAll(List.of("waypoint.list.view.flat", "waypoint.list.sort.label", "waypoint.list.page")));
+        assertFalse(keys(output).contains("waypoint.sort.distance"));
+        var events = components(output).stream().map(Component::clickEvent).filter(Objects::nonNull).toList();
+        String search = events.stream().filter(event -> event.action() == ClickEvent.Action.SUGGEST_COMMAND)
+                .map(ClickEvent::value).findFirst().orElseThrow();
+        assertEquals("/" + target() + " sort color order descending page 1 limit 2 search ", search);
+        assertEquals(1, dispatcher.execute(search.substring(1) + "village", "console"));
+        String flat = events.stream().map(ClickEvent::value).filter(value -> value.endsWith("view flat")).findFirst().orElseThrow();
+        assertEquals("/" + target() + " search village sort color order descending page 2 limit 2 view flat", flat);
+        for (ClickEvent event : events) {
+            if (event.action() == ClickEvent.Action.RUN_COMMAND) assertEquals(1, dispatcher.execute(event.value().substring(1), "console"));
+        }
+        dispatcher.execute(target() + " view flat", "console");
+        assertTrue(keys(last()).contains("waypoint.list.view.tree"));
+        assertTrue(clicks(last()).stream().anyMatch(value -> value.contains("sort name order descending")));
+    }
+
+    @Test void initialsTeleportOnlyWhenAvailableAndPermittedAndDoNotLeakToNames() throws Exception {
+        tpAllowed = true;
+        dispatcher.execute(target(), "player");
+        Component output = last();
+        String teleportClick = clicks(output).stream().filter(value -> value.startsWith("/wp remote tp ")).findFirst().orElseThrow();
+        assertEquals("/" + tpTarget(), teleportClick);
+        assertTrue(text(output).contains("[B]"));
+        assertNoInheritedClick(output, null, "Display 0");
+        Component name = components(output).stream().filter(c -> c instanceof TextComponent t && t.content().equals("Display 0"))
+                .findFirst().orElseThrow();
+        // The hover lives on the neutral display-label wrapper, outside the teleport control.
+        assertTrue(components(output).stream().anyMatch(c -> c.hoverEvent() != null
+                && c.hoverEvent().value() instanceof Component hover && text(hover).contains("description")));
+        assertNull(name.clickEvent());
+        assertEquals(1, dispatcher.execute(teleportClick.substring(1), "player"));
+        assertNotNull(preparation);
+        tpAllowed = false;
+        dispatcher.execute(target(), "player");
+        assertTrue(clicks(last()).stream().noneMatch(value -> value.startsWith("/wp remote tp ")));
+        tpAllowed = true;
+        index.disconnected(A, owner);
+        dispatcher.execute(target(), "player");
+        assertTrue(clicks(last()).stream().noneMatch(value -> value.startsWith("/wp remote tp ")));
+    }
+
+    private static void assertNoInheritedClick(Component component, ClickEvent inherited, String match) {
+        ClickEvent effective = component.clickEvent() == null ? inherited : component.clickEvent();
+        if (component instanceof TextComponent text && text.content().contains(match)) assertNull(effective);
+        if (component instanceof TranslatableComponent translated && translated.key().equals("waypoint.list.page")) assertNull(effective);
+        for (Component child : component.children()) assertNoInheritedClick(child, effective, match);
+    }
+
+    @Test void detailsLinksResolveExactCachedIdentityAndRespectAvailabilityAndPermissions() throws Exception {
+        dispatcher.execute(target(), "console");
+        List<String> details = clicks(last()).stream().filter(value -> value.startsWith("/wp remote details ")).toList();
+        assertEquals(6, details.size());
+        for (String command : details) assertEquals(1, dispatcher.execute(command.substring(1), "console"));
+        assertTrue(keys(last()).containsAll(List.of("waypoint.details.waypoint.title", "waypoint.details.description",
+                "waypoint.details.color", "waypoint.details.keywords")));
+        assertTrue(text(last()).contains("description"));
+        assertTrue(clicks(last()).stream().noneMatch(value -> value.startsWith("/wp remote tp ")));
+        String waypointDetails = details.get(1).substring(1);
+        tpAllowed = true;
+        dispatcher.execute(waypointDetails, "player");
+        assertTrue(clicks(last()).contains("/" + tpTarget()));
+        index.disconnected(A, owner);
+        dispatcher.execute(waypointDetails, "player");
+        assertTrue(keys(last()).contains("waypoint.remote.state.stale"));
+        assertTrue(clicks(last()).stream().noneMatch(value -> value.startsWith("/wp remote tp ")));
+        time.set(11_000_000); index.maintain();
+        assertEquals(0, dispatcher.execute(waypointDetails, "player"));
+        assertFalse(text(last()).contains("description"));
+        var parsed = dispatcher.parse(waypointDetails, "player");
+        allowed = false;
+        int count = messages.size();
+        assertEquals(0, dispatcher.execute(parsed));
+        assertEquals(count, messages.size());
+    }
+
+    @Test void longIdentitiesNeverProduceTruncatedOrOversizedActions() throws Exception {
+        String longList = "x".repeat(240);
+        publish(new RemoteServerId("long"), Map.of(DIMENSION, Map.of(longList,
+                new RemoteListSnapshot("Long list", new RemoteRevision(1), Map.of("waypoint", waypoint("Long waypoint", 0))))));
+        tpAllowed = true;
+        dispatcher.execute("wp remote list long " + quote(DIMENSION) + " " + quote(longList), "player");
+        assertTrue(text(last()).contains("Long waypoint"));
+        assertTrue(clicks(last()).stream().allMatch(value -> value.length() <= 256));
+        assertTrue(clicks(last()).stream().noneMatch(value -> value.startsWith("/wp remote tp ") || value.startsWith("/wp remote details ")));
+    }
+
     @Test void staleAndUnavailableRemainDifferentFromSuccessfulEmptyCatalogs() throws Exception {
         index.disconnected(A, owner);
         dispatcher.execute(target(), "console"); assertTrue(keys(last()).contains("waypoint.remote.state.stale"));

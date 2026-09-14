@@ -14,6 +14,10 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.suggestion.Suggestions;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.TextDecoration;
+import static _959.server_waypoint.text.TextButtonBuilder.*;
+import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import java.util.*;
@@ -58,6 +62,16 @@ final class RemoteWaypointCommand<S> {
         RequiredArgumentBuilder<S, String> list = argument(LIST, string()); configure(list, 3);
         list.suggests((context, builder) -> suggest(context, builder, 2));
         root.then(lists.then(server.then(dimension.then(list))));
+        RequiredArgumentBuilder<S, String> detailsServer = argument(SERVER, string());
+        RequiredArgumentBuilder<S, String> detailsDimension = argument(DIMENSION, string());
+        RequiredArgumentBuilder<S, String> detailsList = argument(LIST, string());
+        RequiredArgumentBuilder<S, String> detailsWaypoint = argument(WAYPOINT, string());
+        detailsServer.suggests((context, builder) -> suggest(context, builder, 0));
+        detailsDimension.suggests((context, builder) -> suggest(context, builder, 1));
+        detailsList.suggests((context, builder) -> suggest(context, builder, 2)).executes(context -> details(context, false));
+        detailsWaypoint.suggests((context, builder) -> suggest(context, builder, 3)).executes(context -> details(context, true));
+        root.then(LiteralArgumentBuilder.<S>literal("details").requires(canList)
+                .then(detailsServer.then(detailsDimension.then(detailsList.then(detailsWaypoint)))));
         RequiredArgumentBuilder<S, String> tpServer = argument(SERVER, string());
         RequiredArgumentBuilder<S, String> tpDimension = argument(DIMENSION, string());
         RequiredArgumentBuilder<S, String> tpList = argument(LIST, string());
@@ -145,6 +159,7 @@ final class RemoteWaypointCommand<S> {
         if (!canList.test(context.getSource())) return 0;
         var scope = new RemoteCatalogQuery.Scope(depth > 0 ? getString(context, SERVER) : null,
                 depth > 1 ? getString(context, DIMENSION) : null, depth > 2 ? getString(context, LIST) : null);
+        if (!grouped && mode == WaypointSorting.SortMode.DEFAULT) mode = WaypointSorting.SortMode.NAME;
         ListOptions options = new ListOptions(optionalString(context, SEARCH_QUERY_ARG), mode, reversed,
                 optionalInt(context, PAGE_NUMBER_ARG, 1), optionalInt(context, PAGE_LIMIT_ARG, defaultLimit.getAsInt()), grouped);
         var cached = store.get().snapshot();
@@ -162,35 +177,172 @@ final class RemoteWaypointCommand<S> {
         for (RemoteCatalogQuery.Row row : result.rows()) {
             if (grouped) {
                 if (!row.server().value().equals(lastServer)) {
-                    output = output.appendNewline().append(serverLabel(row.server(), row.serverLabel(), row.state()));
+                    output = output.appendNewline().append(scopeLink(serverLabel(row.server(), row.serverLabel(), row.state()),
+                            row.server().value(), null, null, options, translatable("waypoint.remote.title")));
                     lastServer = row.server().value(); lastDimension = null; lastList = null;
                 }
                 if (row.dimension() != null && !row.dimension().equals(lastDimension)) {
-                    output = output.appendNewline().append(text("  ")).append(safe(row.dimension()));
+                    output = output.appendNewline().append(text("  ")).append(scopeLink(
+                            safe(row.dimension()).color(getDimensionColor(row.dimension())), row.server().value(), row.dimension(), null,
+                            options, translatable("button.list.dimension", safe(row.dimension()))));
                     lastDimension = row.dimension(); lastList = null;
                 }
                 if (row.list() != null && !row.list().equals(lastList)) {
-                    output = output.appendNewline().append(text("    ")).append(label(row.listLabel(), row.list())); lastList = row.list();
+                    output = output.appendNewline().append(text("    ")).append(detailsButton(row, false)).appendSpace().append(scopeLink(
+                            label(row.listLabel(), row.list()).color(NamedTextColor.WHITE).decorate(TextDecoration.BOLD),
+                            row.server().value(), row.dimension(), row.list(), options,
+                            translatable("button.list.waypoint_list", label(row.listLabel(), row.list()))));
+                    lastList = row.list();
                 }
             } else {
                 output = output.appendNewline().append(serverLabel(row.server(), row.serverLabel(), row.state()));
-                if (row.dimension() != null) output = output.append(text(" / ")).append(safe(row.dimension()));
-                if (row.list() != null) output = output.append(text(" / ")).append(label(row.listLabel(), row.list()));
+                if (row.dimension() != null) output = output.append(text(" / ", NamedTextColor.DARK_GRAY))
+                        .append(safe(row.dimension()).color(getDimensionColor(row.dimension())));
+                if (row.list() != null) output = output.append(text(" / ", NamedTextColor.DARK_GRAY))
+                        .append(label(row.listLabel(), row.list()).colorIfAbsent(NamedTextColor.GRAY));
             }
             if (row.waypoint() != null) {
-                var waypoint = row.waypoint();
-                output = output.appendNewline().append(text(grouped ? "      " : "  "))
-                        .append(label(waypoint.displayName(), row.waypointName()).color(TextColor.color(waypoint.rgb())))
-                        .append(text(" (" + waypoint.position().x() + ", " + waypoint.position().y() + ", " + waypoint.position().z() + ")", NamedTextColor.GRAY));
+                output = grouped ? output.appendNewline().append(text("      "))
+                        : output.append(text(" / ", NamedTextColor.DARK_GRAY));
+                output = output.append(waypointText(row, canTeleport.test(source)));
             } else if (row.state() == RemoteCatalogState.AVAILABLE || row.state() == RemoteCatalogState.STALE) {
-                output = output.appendNewline().append(text("      ")).append(translatable("waypoint.remote.empty"));
+                output = output.appendNewline().append(text("      ")).append(translatable("waypoint.remote.empty", NamedTextColor.GRAY).decorate(TextDecoration.ITALIC));
             }
         }
-        output = output.appendNewline().append(translatable("waypoint.remote.page", text(options.pageNumber()), text(result.totalPages())));
-        if (options.pageNumber() > 1) output = output.appendSpace().append(button("←", StringCommandBuilder.remoteListPageCmd(scope.server(), scope.dimension(), scope.list(), options, options.pageNumber() - 1)));
-        if (options.pageNumber() < result.totalPages()) output = output.appendSpace().append(button("→", StringCommandBuilder.remoteListPageCmd(scope.server(), scope.dimension(), scope.list(), options, options.pageNumber() + 1)));
+        output = output.appendNewline().append(listControls(scope, options));
+        if (result.totalPages() > 1) {
+            output = output.append(getPageNavigation(options, result.totalPages(), result.totalRows(),
+                    page -> StringCommandBuilder.remoteListPageCmd(scope.server(), scope.dimension(), scope.list(), options, page)));
+        }
         send.accept(source, output); return Command.SINGLE_SUCCESS;
     }
+    private int details(CommandContext<S> context, boolean withWaypoint) {
+        S source = context.getSource();
+        if (!canList.test(source)) return 0;
+        String server = getString(context, SERVER), dimension = getString(context, DIMENSION), listName = getString(context, LIST);
+        var view = store.get().snapshot().entrySet().stream()
+                .filter(entry -> entry.getKey().value().equals(server)).map(Map.Entry::getValue).findFirst().orElse(null);
+        if (view == null) {
+            error.accept(source, translatable("waypoint.remote.unknown_server"));
+            return 0;
+        }
+        Component heading = serverLabel(new RemoteServerId(server), view.displayName(), view.state());
+        if (view.snapshot() == null || view.state() == RemoteCatalogState.UNAUTHORIZED || view.state() == RemoteCatalogState.UNAVAILABLE) {
+            send.accept(source, heading);
+            return 0;
+        }
+        var lists = view.snapshot().dimensions().get(dimension);
+        if (lists == null || !lists.containsKey(listName)) {
+            error.accept(source, translatable(lists == null ? "waypoint.remote.unknown_dimension" : "waypoint.remote.unknown_list"));
+            return 0;
+        }
+        var list = lists.get(listName);
+        String name = withWaypoint ? getString(context, WAYPOINT) : listName;
+        var waypoint = withWaypoint ? list.waypoints().get(name) : null;
+        if (withWaypoint && waypoint == null) {
+            error.accept(source, translatable("waypoint.remote.tp.not_found"));
+            return 0;
+        }
+        Component output = Component.empty().append(translatable(withWaypoint
+                ? "waypoint.details.waypoint.title" : "waypoint.details.list.title", NamedTextColor.GOLD))
+                .appendNewline().append(heading).appendNewline()
+                .append(property("identifier", safe(name)))
+                .append(property("display_name", safe(withWaypoint ? waypoint.displayName() : list.displayName())))
+                .append(property("dimension", safe(dimension).color(getDimensionColor(dimension))));
+        if (withWaypoint) {
+            output = output.append(property("source_list_display_name", safe(list.displayName())))
+                    .append(property("source_list_identifier", safe(listName)))
+                    .append(property("initials", safe(waypoint.initials())))
+                    .append(property("position", text(waypoint.position().toShortString())))
+                    .append(property("color", Component.empty().append(text("■", TextColor.color(waypoint.rgb())))
+                            .appendSpace().append(text(String.format(Locale.ROOT, "#%06X", waypoint.rgb()), NamedTextColor.WHITE))))
+                    .append(property("yaw", text(waypoint.yaw())))
+                    .append(property("visibility", translatable(waypoint.global() ? "waypoint.global" : "waypoint.local")))
+                    .append(property("keywords", text(String.join(", ", waypoint.keywords()))))
+                    .append(property("description", text(waypoint.description())));
+            var row = new RemoteCatalogQuery.Row(new RemoteServerId(server), view.displayName(), view.state(),
+                    dimension, listName, list.displayName(), name, waypoint);
+            if (canTeleport.test(source) && view.state() == RemoteCatalogState.AVAILABLE) {
+                String command = remoteTargetCommand("tp", row, true);
+                if (command.length() <= 256) output = output.append(runCommandButton(translatable("button.teleport"),
+                        NamedTextColor.LIGHT_PURPLE, command, translatable("button.teleport"))).appendSpace();
+            }
+        } else {
+            output = output.append(property("waypoint_count", text(list.waypoints().size())));
+        }
+        String back = StringCommandBuilder.remoteListPageCmd(server, dimension, listName,
+                new ListOptions("", WaypointSorting.SortMode.DEFAULT, false, 1, defaultLimit.getAsInt()), 1);
+        if (back.length() <= 256) output = output.append(runCommandButton(translatable("button.open_list"),
+                NamedTextColor.AQUA, back, translatable("button.open_list")));
+        send.accept(source, output);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static Component property(String key, Component value) {
+        return Component.empty().append(translatable("waypoint.details." + key, NamedTextColor.GRAY))
+                .append(text(": ", NamedTextColor.GRAY)).append(value.colorIfAbsent(NamedTextColor.WHITE)).appendNewline();
+    }
+
+    private static String remoteTargetCommand(String action, RemoteCatalogQuery.Row row, boolean withWaypoint) {
+        String command = "/wp remote " + action + " " + StringCommandBuilder.escapeListName(row.server().value())
+                + " " + StringCommandBuilder.escapeListName(row.dimension())
+                + " " + StringCommandBuilder.escapeListName(row.list());
+        return withWaypoint ? command + " " + StringCommandBuilder.escapeListName(row.waypointName()) : command;
+    }
+
+    private static Component detailsButton(RemoteCatalogQuery.Row row, boolean withWaypoint) {
+        String command = remoteTargetCommand("details", row, withWaypoint);
+        return command.length() <= 256 ? showMoreButton(command)
+                : text("[⋯]", NamedTextColor.DARK_GRAY);
+    }
+
+    private static Component scopeLink(Component label, String server, String dimension, String list,
+                                       ListOptions options, Component hover) {
+        String command = StringCommandBuilder.remoteListPageCmd(server, dimension, list, options, 1);
+        return command.length() <= 256 ? label.clickEvent(ClickEvent.runCommand(command)).hoverEvent(hover) : label;
+    }
+
+    private static Component listControls(RemoteCatalogQuery.Scope scope, ListOptions options) {
+        Function<ListOptions, String> command = value -> StringCommandBuilder.remoteListPageCmd(
+                scope.server(), scope.dimension(), scope.list(), value, value.pageNumber());
+        ListOptions view = new ListOptions(options.filterText(), options.sortMode(), options.reversed(),
+                options.pageNumber(), options.pageLimit(), !options.groupByLists());
+        ListOptions search = new ListOptions("", options.sortMode(), options.reversed(), 1,
+                options.pageLimit(), options.groupByLists());
+        return Component.empty().append(getListViewToggleButton(options, command.apply(view)))
+                .appendSpace().append(getListSearchButton(command.apply(search) + " search "))
+                .appendSpace().append(getListSortControls(options,
+                        mode -> command.apply(new ListOptions(options.filterText(), mode, false, 1,
+                                options.pageLimit(), options.groupByLists())),
+                        reversed -> command.apply(new ListOptions(options.filterText(), options.sortMode(), reversed, 1,
+                                options.pageLimit(), options.groupByLists())),
+                        mode -> mode != WaypointSorting.SortMode.DISTANCE));
+    }
+
+    private static Component waypointText(RemoteCatalogQuery.Row row, boolean canTeleport) {
+        RemoteWaypointSnapshot waypoint = row.waypoint();
+        Component hover = Component.empty();
+        if (!waypoint.description().isEmpty()) hover = hover.append(safe(waypoint.description())).appendNewline();
+        hover = hover.append(text(waypoint.position().toShortString()));
+        if (_959.server_waypoint.util.VanillaDimensionNames.MINECRAFT_OVERWORLD.equals(row.dimension())) {
+            hover = hover.appendNewline().append(text(_959.server_waypoint.util.BlockPosConverter
+                    .overWorldToNether(waypoint.position()).toShortString(), NamedTextColor.RED));
+        } else if (_959.server_waypoint.util.VanillaDimensionNames.MINECRAFT_THE_NETHER.equals(row.dimension())) {
+            hover = hover.appendNewline().append(text(_959.server_waypoint.util.BlockPosConverter
+                    .netherToOverWorld(waypoint.position()).toShortString(), NamedTextColor.GREEN));
+        }
+        Component initials = text("[" + waypoint.initials() + "]", TextColor.color(waypoint.rgb()))
+                .decorate(TextDecoration.BOLD);
+        String command = remoteTargetCommand("tp", row, true);
+        if (canTeleport && row.state() == RemoteCatalogState.AVAILABLE && command.length() <= 256) {
+            initials = initials.clickEvent(ClickEvent.runCommand(command))
+                    .hoverEvent(translatable("button.initials.tp"));
+        }
+        return Component.empty().append(detailsButton(row, true)).appendSpace().append(initials).appendSpace()
+                .append(label(waypoint.displayName(), row.waypointName()).color(NamedTextColor.WHITE)
+                        .decoration(TextDecoration.BOLD, false).hoverEvent(HoverEvent.showText(hover)));
+    }
+
     private int servers(CommandContext<S> context) {
         if (!canList.test(context.getSource())) return 0;
         var entries = store.get().snapshot().entrySet().stream().sorted(Map.Entry.comparingByKey(Comparator.comparing(RemoteServerId::value))).toList();
