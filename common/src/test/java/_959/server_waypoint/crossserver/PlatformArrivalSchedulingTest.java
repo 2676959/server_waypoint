@@ -123,8 +123,10 @@ class PlatformArrivalSchedulingTest {
             Class<?> owner = loader.loadClass(project.equals("mods") ? "net.minecraft.server.MinecraftServer" : "org.bukkit.plugin.java.JavaPlugin");
             Class<?> playerClass = loader.loadClass(project.equals("mods") ? "net.minecraft.server.level.ServerPlayer" : "org.bukkit.entity.Player");
             Object player = playerClass.getConstructor().newInstance();
-            var adapter = (DestinationPlatform<Object>) loader.loadClass(name).getConstructor(owner, Predicate.class)
-                    .newInstance(owner.getConstructor().newInstance(), (Predicate<Object>) ignored -> true);
+            var adapter = (DestinationPlatform<Object>) loader.loadClass(name).getConstructor(owner, Predicate.class, java.util.function.Function.class)
+                    .newInstance(owner.getConstructor().newInstance(), (Predicate<Object>) ignored -> true,
+                            (java.util.function.Function<java.util.UUID, java.util.concurrent.CompletionStage<Boolean>>)
+                                    ignored -> java.util.concurrent.CompletableFuture.completedFuture(true));
             int[] ran = {0}, retired = {0};
             Runnable action = () -> ran[0]++, retirement = () -> retired[0]++;
             assertTrue(adapter.execute(player, action, retirement));

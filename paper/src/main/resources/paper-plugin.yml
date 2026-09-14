@@ -11,3 +11,10 @@ permissions:
   server_waypoint.command.navigate:
     description: Use server-side waypoint navigation
     default: true
+
+dependencies:
+  server:
+    LuckPerms:
+      load: BEFORE
+      required: false
+      join-classpath: true

@@ -8,14 +8,18 @@ server identity and read-only metadata. The Local button returns to the existing
 Remote data stays in the Step 17 session cache. No remote row becomes a local waypoint, file,
 renderer, map-mod export, or local navigation target. The details explain why mutation and local
 rendering controls are absent. Stale data remains readable, while stale/unavailable/denied data cannot
-initiate teleport. Server availability is shown before its label so clipping cannot hide the status.
+initiate teleport. Server availability is shown beside its label and in the panel status.
 
-Teleport opens a separate confirmation naming all four exact identity fields. Confirming rechecks
-the cache session, catalog revision and waypoint snapshot, then submits the existing remote teleport
+Teleport sends immediately without a confirmation dialog. The click rechecks the cache session,
+catalog revision, exact target and waypoint snapshot before submitting the existing remote teleport
 command. The browser closes so authoritative preparation/progress/failure messages appear in chat.
-Source and destination permission checks remain server-side. An unavailable connection is reported
-in the browser. Cancelling sends nothing. A changed/removed target requires a fresh selection;
-server transfers, disconnects and handshakes invalidate open confirmations and browser sessions.
+Source and destination permission checks remain server-side, including destination authorization
+before the proxy transfers the player. A changed or removed target requires a fresh selection;
+server transfers, disconnects and handshakes invalidate browser sessions.
+
+Rows use the local list's 20-pixel height, colored backgrounds, initials badges, hover and selection
+outlines, formatted display names, and expand/collapse icons. Exact identities remain in tooltips;
+remote rows do not expose local edit or visibility actions.
 
 The GUI never truncates identities to fit a command packet. Unsupported chat characters or commands
 longer than 256 characters disable the action with a tooltip; their read-only details remain visible.
@@ -26,22 +30,20 @@ handoffs, the full version matrix, screenshot review and soak/security release c
 
 ## Client API contracts
 
-- `WaypointManagerScreen` opens `RemoteWaypointManagerScreen(client, localScreen)` from the server
-  selector. Returning to Local restores the same local screen and its preferences. The remote
-  screen owns its own tree, selection, search, sort and collapsed-node state.
+- `WaypointManagerScreen` owns `RemoteWaypointPanel(client, font)` and toggles the middle list and
+  details panel in place. The remote panel retains its own selection and collapsed-node state.
 - `WaypointDetailsWidget.setRemoteSelection(key, view)` accepts nullable arguments and builds
   read-only rows directly from `RemoteWaypointSnapshot`. It clears the local selection, preserves
   scrolling for the same exact key, and resets it on a different selection. The existing local
   `setSelection` clears the remote key. Neither path imports remote data into a local waypoint.
-- The package-private `RemoteBrowserModel` owns immutable hierarchical identities and confirmation
+- The package-private `RemoteBrowserModel` owns immutable hierarchical identities and teleport request
   bindings. `roots` filters/sorts one immutable cache view; `prepare` and `isCurrent` bind and
   recheck the session generation, key, catalog revision, waypoint value and escaped command.
 - `RemoteClientCatalogs.session()` increments on `clear()` and is independent of remote revisions.
-  The screen closes on generation changes, including confirmation callbacks after a handshake.
+  The screen closes on generation changes, including after a handshake.
 - The remote screen renders each registered widget once through the high-level Stonecutter swap.
-  `ConfirmScreen` owns modal input. Exact identities are available in hover details even when
+  Exact identities are available in hover details even when
   labels are clipped. No client API or payload is added for teleport results; existing server
-  command feedback appears in chat after the confirmed action closes the browser.
+  command feedback appears in chat after the teleport action closes the browser.
 
-The required workspace-only `docs/tips/gui/local-guide.md` is also updated. The repository's
-Git ignore rule keeps that guide outside the tracked patch; the API contracts above are tracked.
+Shared GUI rendering APIs are documented in [the GUI guide](../../../tips/gui/local-guide.md).

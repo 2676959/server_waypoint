@@ -73,6 +73,9 @@ class PlatformRemotePermissionContractTest {
         sources.put("me.lucko.fabric.api.permissions.v0.Permissions", """
                 package me.lucko.fabric.api.permissions.v0;
                 public class Permissions {
+                    public static java.util.concurrent.CompletableFuture<Boolean> check(java.util.UUID id, String node, boolean fallback) {
+                        return java.util.concurrent.CompletableFuture.completedFuture(fallback);
+                    }
                     public static boolean check(fixture.Subject subject, String node,
                             net.minecraft.server.permissions.PermissionLevel level) {
                         return subject.assignments.getOrDefault(node, subject.level >= level.value());

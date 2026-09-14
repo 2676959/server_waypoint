@@ -1,6 +1,7 @@
 package _959.server_waypoint.proxy.handoff;
 
 import _959.server_waypoint.crossserver.*;
+import _959.server_waypoint.crossserver.handoff.TeleportCoordinatorLog;
 import _959.server_waypoint.crossserver.catalog.CatalogReceiver;
 import _959.server_waypoint.crossserver.protocol.*;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage.*;
@@ -69,6 +70,7 @@ public final class CoordinatorHandoffRuntime implements AutoCloseable {
             if (type < 20 || type > 26) return false;
             synchronized (CoordinatorHandoffRuntime.this) {
                 if (closed || sessions.get(peer.serverId()) != this) return true;
+                TeleportCoordinatorLog.activity(TeleportCoordinatorLog.PROXY, "received", peer.serverId(), envelope.requestId(), envelope.message());
                 pruneTransfers();
                 var record = registry.find(envelope.requestId()).orElse(null);
                 if (envelope.message() instanceof HandoffPrepared ready && record != null && record.source().equals(peer)) {
@@ -119,6 +121,8 @@ public final class CoordinatorHandoffRuntime implements AutoCloseable {
         if (denied != Result.SUCCESS) { failTransfer(session, id, binding, denied); return; }
         var pending = new PendingTransfer(record.destination(), binding);
         transfers.put(id, pending);
+        TeleportCoordinatorLog.PROXY.info("transfer_started request={} player={} source={} destination={}", id, binding.playerId(),
+                TeleportCoordinatorLog.safe(binding.source().value()), TeleportCoordinatorLog.safe(binding.target().serverId().value()));
         try {
             // Adapter must recheck current proxy route immediately before the actual asynchronous switch.
             Objects.requireNonNull(transfer.transfer(binding.playerId(), binding.source(), binding.target().serverId()))
@@ -126,6 +130,8 @@ public final class CoordinatorHandoffRuntime implements AutoCloseable {
                         synchronized (CoordinatorHandoffRuntime.this) {
                             pruneTransfers();
                             if (closed || !transfers.remove(id, pending) || sessions.get(session.peer.serverId()) != session) return;
+                            TeleportCoordinatorLog.PROXY.info("transfer_finished request={} player={} result={}", id, binding.playerId(),
+                                    failure == null ? result : Result.TRANSFER_FAILED);
                             if (failure == null && result == TransferResult.SUCCESS) {
                                 // Recheck the proxy's live route only after its switch completes. Never trust the queued claim as route evidence.
                                 if (pending.claim != null) deliver(handler.handle(pending.destination, id, pending.claim.message()).deliveries());
@@ -164,6 +170,7 @@ public final class CoordinatorHandoffRuntime implements AutoCloseable {
     }
     private void deliver(List<HandoffRequestHandler.Delivery> deliveries) {
         for (var delivery : deliveries) {
+            TeleportCoordinatorLog.activity(TeleportCoordinatorLog.PROXY, "delivery", delivery.peer().serverId(), delivery.requestId(), delivery.message());
             Session session = sessions.get(delivery.peer().serverId());
             if (session != null && session.peer.equals(delivery.peer()) && !session.channel.isClosed()) session.sender.send(delivery.requestId(), delivery.message());
         }

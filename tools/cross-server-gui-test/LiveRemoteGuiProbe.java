@@ -58,25 +58,20 @@ public final class LiveRemoteGuiProbe implements ClientModInitializer {
             }
             case 3 -> {
                 var tree = (TreeViewWidget<?>) field(RemoteWaypointPanel.class, "tree").get(remote);
-                clickAt(local, tree.getX() + 24, tree.getY() + 3 * 16 + 8);
+                clickAt(local, tree.getX() + 24, tree.getY() + 3 * 20 + 10);
                 var selected = (RemoteWaypointKey) field(RemoteWaypointPanel.class, "selected").get(remote);
                 check(new RemoteWaypointKey(destination, "minecraft:overworld", "Test", "Added").equals(selected), "exact added target selected");
                 var button = (AbstractWidget) field(RemoteWaypointPanel.class, "teleportButton").get(remote);
                 check(button.active, "changed target actionable"); click(local, button);
-                check(mc.gui.screen() instanceof ConfirmScreen, "real confirmation modal");
-                mark(mc, "CONFIRMATION_OPEN");
+                check(mc.gui.screen() == null, "teleport submitted without confirmation");
+                mark(mc, "TELEPORT_SUBMITTED");
             }
             case 4 -> {
-                var yes = mc.gui.screen().children().stream().filter(c -> c instanceof AbstractWidget w
-                        && w.getMessage().getString().equals("Yes")).map(c -> (AbstractWidget)c).findFirst().orElseThrow();
-                click(mc.gui.screen(), yes); mark(mc, "CONFIRMED_BY_CLICK");
-            }
-            case 5 -> {
                 if (mc.player == null || WaypointClientMod.getNetworkState() != WaypointClientMod.ClientNetworkState.SYNC_FINISHED) return;
                 if (Math.abs(mc.player.getX() - 45.5) > .01 || Math.abs(mc.player.getY() - 80) > .01
                         || Math.abs(mc.player.getZ() - 30.5) > .01) return;
-                check(mc.gui.screen() == null, "confirmation closed after transfer");
-                mark(mc, "PASS real protocol-11 catalog update and confirmed proxy transfer x=45.5 y=80 z=30.5");
+                check(mc.gui.screen() == null, "manager closed after transfer");
+                mark(mc, "PASS real protocol-11 catalog update and immediate proxy transfer x=45.5 y=80 z=30.5");
                 stage = 999; mc.stop(); return;
             }
             default -> throw new AssertionError("Unknown stage");

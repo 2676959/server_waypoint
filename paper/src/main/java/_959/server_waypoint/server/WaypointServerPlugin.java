@@ -5,15 +5,19 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public class WaypointServerPlugin extends WaypointServerCore {
-    public WaypointServerPlugin(Path configDir, Path saveDir) {
+    public WaypointServerPlugin(Path configDir) {
         super(configDir);
-        if (CONFIG.Features().sendXaerosWorldId()) {
-            this.initXearoWorldId(saveDir);
-        }
     }
 
     public void load() throws IOException {
         initConfigAndLanguageResource();
+        initializeXaeroWorldId();
         initOrReadWaypointFiles();
+    }
+
+    void initializeXaeroWorldId() {
+        if (CONFIG.Features().sendXaerosWorldId()) {
+            this.setXaeroWorldId(CONFIG.getServerId());
+        }
     }
 }

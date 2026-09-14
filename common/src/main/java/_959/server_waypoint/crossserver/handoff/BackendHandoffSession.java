@@ -12,11 +12,13 @@ public final class BackendHandoffSession<S, P> implements OperationalSession {
     private record Pending(int phase, long deadline, CompletableFuture<ApplicationMessage> reply) { }
     private final Map<UUID, Pending> pending = new HashMap<>();
     private final QueuedChannelSender sender;
+    private final RemoteServerId localId;
     private final SourceHandoffService<S> source;
     private final DestinationHandoffService<P> destination;
     private boolean closed;
     public BackendHandoffSession(RemoteServerId localId, TcpChannel channel, SourceHandoffService.Platform<S> sourcePlatform,
                                  DestinationPlatform<P> destinationPlatform, DestinationResolver resolver) {
+        this.localId = localId;
         sender = new QueuedChannelSender(channel);
         source = new SourceHandoffService<>(localId, sourcePlatform, new SourceHandoffService.Link() {
             public CompletionStage<ApplicationMessage> prepare(UUID id, PrepareHandoff request) { return request(id, request, 20); }
@@ -30,12 +32,17 @@ public final class BackendHandoffSession<S, P> implements OperationalSession {
                     return Result.INVALID_REQUEST;
                 });
             }
-            public void cancel(UUID id, CancelHandoff cancel) { sender.send(id, cancel); }
+            public void cancel(UUID id, CancelHandoff cancel) { send(id, cancel); }
         });
         destination = new DestinationHandoffService<>(localId, resolver, destinationPlatform, new DestinationHandoffService.CoordinatorLink() {
             public CompletionStage<ApplicationMessage> claim(UUID id, ClaimHandoff claim) { return request(id, claim, 23); }
-            public boolean send(UUID id, ApplicationMessage message) { return sender.send(id, message); }
+            public boolean send(UUID id, ApplicationMessage message) { return BackendHandoffSession.this.send(id, message); }
         }, DestinationHandoffService.Limits.DEFAULT);
+    }
+    private boolean send(UUID id, ApplicationMessage message) {
+        boolean queued = sender.send(id, message);
+        TeleportCoordinatorLog.activity(TeleportCoordinatorLog.BACKEND, queued ? "queued" : "queue_failed", localId, id, message);
+        return queued;
     }
     public SourceHandoffService<S> source() { return source; }
     public DestinationHandoffService<P> destination() { return destination; }
@@ -45,7 +52,7 @@ public final class BackendHandoffSession<S, P> implements OperationalSession {
             if (closed || pending.size() >= 64 || pending.containsKey(id)) return CompletableFuture.completedFuture(new ApplicationMessage.Error(Result.BUSY));
             pending.put(id, new Pending(phase, System.nanoTime() + 15_000_000_000L, future));
         }
-        if (!sender.send(id, message)) {
+        if (!send(id, message)) {
             synchronized (this) { pending.remove(id); }
             future.complete(new ApplicationMessage.Error(Result.UNAVAILABLE));
         }
@@ -63,9 +70,12 @@ public final class BackendHandoffSession<S, P> implements OperationalSession {
                     || waiting.phase() == 23 && type == 24 || waiting.phase() == 21 && type == 25)) pending.remove(envelope.requestId());
             else waiting = null;
         }
+        if (waiting != null || type >= 20 && type <= 26)
+            TeleportCoordinatorLog.activity(TeleportCoordinatorLog.BACKEND, "received", localId, envelope.requestId(), message);
         if (waiting != null) { waiting.reply().complete(message); return true; }
         if (type == 30 && message instanceof ApplicationMessage.Error error && error.reason() == Result.STALE_CATALOG) return false;
-        if (message instanceof PrepareHandoff prepare) sender.send(envelope.requestId(), destination.prepare(envelope.requestId(), prepare));
+        if (message instanceof PrepareHandoff prepare) destination.prepare(envelope.requestId(), prepare)
+                .thenAccept(reply -> send(envelope.requestId(), reply));
         else {
             source.receive(envelope.requestId(), message);
             destination.receive(envelope.requestId(), message);

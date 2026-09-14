@@ -24,6 +24,8 @@ repositories {
 }
 
 dependencies {
+    compileOnly("net.luckperms:api:5.5")
+    testImplementation("net.luckperms:api:5.5")
     val paperApiVersion : String by project
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     paperweight.paperDevBundle(paperApiVersion)

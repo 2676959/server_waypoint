@@ -6,6 +6,7 @@ import _959.server_waypoint.proxy.catalog.CatalogDistributor;
 import _959.server_waypoint.crossserver.protocol.*;
 import _959.server_waypoint.crossserver.transport.*;
 import java.io.IOException;
+import _959.server_waypoint.crossserver.handoff.TeleportCoordinatorLog;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.*;
@@ -82,6 +83,7 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
         distributions.scheduleWithFixedDelay(catalogs::maintain, settings.heartbeatMillis(), settings.heartbeatMillis(), TimeUnit.MILLISECONDS);
         readers = Executors.newFixedThreadPool(limits.connections(), daemonThreads("server-waypoint-coordinator-reader"));
         running = true;
+        TeleportCoordinatorLog.PROXY.info("coordinator_listening port={}", listener.port());
         for (int n = 0; n < limits.connections(); n++) readers.execute(this::acceptLoop);
         return TransportResult.SUCCESS;
     }
@@ -111,6 +113,8 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
                 channel.send(envelope.requestId(), new ApplicationMessage.RegisterResult(channel.serverId(), ApplicationMessage.Result.SUCCESS));
                 live.registered = true;
                 metrics.registered();
+                TeleportCoordinatorLog.PROXY.info("connection_registered server={} generation={} mode={}",
+                        TeleportCoordinatorLog.safe(channel.serverId().value()), next, channel.mode());
                 TcpChannel session = channel;
                 operations = sessionFactory.apply(session);
                 if (operations != null) {
@@ -137,14 +141,21 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
                     }
                 }
             } catch (Exception failure) {
-                if (!stopping && running) metrics.failed();
+                if (!stopping && running) {
+                    metrics.failed();
+                    TeleportCoordinatorLog.PROXY.warn("connection_failed server={} cause={}",
+                            channel == null ? "unidentified" : TeleportCoordinatorLog.safe(channel.serverId().value()), failure.getClass().getSimpleName());
+                }
                 if (listener.isClosed()) running = false;
             } finally {
                 if (maintenance != null) maintenance.cancel(false);
                 if (operations != null) operations.close();
                 if (heartbeat != null) heartbeat.cancel(false);
                 if (distribution != null) distribution.cancel(false);
-                if (channel != null) channel.close();
+                if (channel != null) {
+                    channel.close();
+                    TeleportCoordinatorLog.PROXY.info("connection_closed server={} stopping={}", TeleportCoordinatorLog.safe(channel.serverId().value()), stopping);
+                }
                 if (channel != null) catalogs.disconnected(channel.serverId(), channel);
                 if (live != null && peers.remove(live.presence().serverId(), live) && live.registered) metrics.disconnected();
             }
@@ -169,6 +180,7 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
     }
     @Override protected void stopResources() throws Exception {
         running = false;
+        TeleportCoordinatorLog.PROXY.info("coordinator_stopping");
         IOException failure = null;
         try { if (listener != null) listener.close(); } catch (IOException exception) { failure = exception; }
         terminate(readers);

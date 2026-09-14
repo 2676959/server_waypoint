@@ -23,6 +23,13 @@ public class FabricPermissionManager extends PermissionManager<CommandSourceStac
     }
 
     @Override
+    public java.util.concurrent.CompletionStage<Boolean> checkOfflinePermission(java.util.UUID playerId,
+            PermissionKeys<String>.PermissionKey key, boolean fallback) {
+        return isFabricPermissionAPILoaded ? Permissions.check(playerId, key.getKey(), fallback)
+                : java.util.concurrent.CompletableFuture.completedFuture(fallback);
+    }
+
+    @Override
     public boolean hasPermission(CommandSourceStack source, PermissionKeys<String>.PermissionKey key, int defaultLevel) {
         //? if >= 1.21.11 {
         if (isFabricPermissionAPILoaded) {

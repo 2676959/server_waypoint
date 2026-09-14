@@ -82,6 +82,7 @@ public final class SourceHandoffService<S> implements RemoteTeleportInitiator<S>
                     selection.catalogRevision(), selection.listRevision());
             entry = new Entry(source, request, feedback, bytes);
             players.put(playerId, entry); retained += bytes;
+            TeleportCoordinatorLog.activity(TeleportCoordinatorLog.BACKEND, "initiated", localId, entry.requestId, request);
             try {
                 Objects.requireNonNull(link.prepare(entry.requestId, request)).whenComplete((reply, failure) -> prepared(entry, reply, failure));
             } catch (RuntimeException unavailable) { finish(entry, Result.UNAVAILABLE); }
@@ -147,6 +148,8 @@ public final class SourceHandoffService<S> implements RemoteTeleportInitiator<S>
             entry.state = State.TERMINAL; binding = entry.binding;
             players.remove(entry.request.playerId(), entry); retained -= entry.bytes;
         }
+        TeleportCoordinatorLog.BACKEND.info("source_finished server={} request={} player={} result={}",
+                TeleportCoordinatorLog.safe(localId.value()), entry.requestId, entry.request.playerId(), result);
         if (notify && binding != null && result != Result.SUCCESS) {
             try { link.cancel(entry.requestId, new CancelHandoff(binding.handoffId(), result)); }
             catch (RuntimeException unavailable) { /* Connection-scoped expiry is the fallback. */ }

@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Timeout(30)
 class LiveHandoffRuntimeTest {
-    enum Scenario { SUCCESS, DESTINATION_REJECTED, WRONG_SOURCE, TRANSFER_FAILED, PROXY_DENIED, DESTINATION_PERMISSION_REVOKED, DISCONNECT, CLAIM_BEFORE_READY, DELAYED_ROUTE, DELAYED_FAILED, DELAYED_DISCONNECT, DELAYED_WRONG_ROUTE }
+    enum Scenario { SUCCESS, DESTINATION_PERMISSION_DENIED, DESTINATION_REJECTED, WRONG_SOURCE, TRANSFER_FAILED, PROXY_DENIED, DESTINATION_PERMISSION_REVOKED, DISCONNECT, CLAIM_BEFORE_READY, DELAYED_ROUTE, DELAYED_FAILED, DELAYED_DISCONNECT, DELAYED_WRONG_ROUTE }
     @ParameterizedTest @EnumSource(Scenario.class)
     void plaintext(Scenario scenario) throws Exception { run(TransportMode.PLAINTEXT, scenario); }
     @ParameterizedTest @EnumSource(Scenario.class)
@@ -57,6 +57,7 @@ class LiveHandoffRuntimeTest {
             }
         };
         DestinationPlatform<UUID> destinationPlatform = new DestinationPlatform<>() {
+            public CompletionStage<Boolean> canPrepare(UUID id) { return CompletableFuture.completedFuture(scenario != Scenario.DESTINATION_PERMISSION_DENIED); }
             public boolean ownsThread(UUID p) { return owns.get(); }
             public UUID playerId(UUID p) { assertTrue(owns.get()); return p; }
             public boolean isCurrentPlayer(UUID p) { assertTrue(owns.get()); return physicallyArrived.get() || route.get().equals(b); }
@@ -140,7 +141,7 @@ class LiveHandoffRuntimeTest {
                     case DESTINATION_REJECTED -> Result.NOT_FOUND;
                     case WRONG_SOURCE, CLAIM_BEFORE_READY -> Result.WRONG_SOURCE;
                     case TRANSFER_FAILED, DELAYED_FAILED -> Result.TRANSFER_FAILED;
-                    case PROXY_DENIED, DESTINATION_PERMISSION_REVOKED -> Result.UNAUTHORIZED;
+                    case DESTINATION_PERMISSION_DENIED, PROXY_DENIED, DESTINATION_PERMISSION_REVOKED -> Result.UNAUTHORIZED;
                     case DISCONNECT, DELAYED_DISCONNECT, DELAYED_WRONG_ROUTE -> Result.UNAVAILABLE;
                 };
                 assertEquals(expected, feedback.get(8, TimeUnit.SECONDS));

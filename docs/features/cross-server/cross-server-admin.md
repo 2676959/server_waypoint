@@ -117,3 +117,20 @@ throughput or a per-second rate allowance. Errors close the affected session; re
 catalogs. Report version, transport mode, non-secret IDs, timestamp and failure phase with sanitized
 logs. See [transport bounds](specs/cross-server-tcp-transport-v1.md) and
 [runtime ownership](specs/cross-server-velocity-runtime.md).
+
+## Teleport coordinator logs
+
+Both sides write activity and connection history through dedicated SLF4J categories in the normal
+server logs: `server_waypoint.teleport_coordinator.backend` on each backend and
+`server_waypoint.teleport_coordinator.proxy` on Velocity. Filter or route these categories in the
+server logging configuration when a separate file is desired.
+
+Handoff entries include request UUID, player UUID when carried by that phase, source/destination,
+phase and result. Use the request UUID to correlate rejections and cancellations with the initial
+player entry. Proxy transfer start/result and backend final arrival/source results are logged
+separately. Connection entries cover registration, failures, disconnects, backend retry delays and
+coordinator start/stop. These logs exclude credentials, raw packets and waypoint coordinates;
+control characters in labels are replaced and logged labels are bounded.
+
+Destination teleport permission is checked before the proxy switches servers, then checked again
+on arrival. See [offline provider behavior](specs/cross-server-authorization.md#permission-check-before-transfer).

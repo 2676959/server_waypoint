@@ -16,11 +16,15 @@ import java.util.function.Predicate;
 public final class ModDestinationPlatform implements DestinationPlatform<ServerPlayer> {
     private final MinecraftServer server;
     private final Predicate<ServerPlayer> permission;
+    private final java.util.function.Function<UUID, CompletionStage<Boolean>> preflight;
 
-    public ModDestinationPlatform(MinecraftServer server, Predicate<ServerPlayer> permission) {
+    public ModDestinationPlatform(MinecraftServer server, Predicate<ServerPlayer> permission,
+            java.util.function.Function<UUID, CompletionStage<Boolean>> preflight) {
         this.server = Objects.requireNonNull(server);
         this.permission = Objects.requireNonNull(permission);
+        this.preflight = Objects.requireNonNull(preflight);
     }
+    @Override public CompletionStage<Boolean> canPrepare(UUID playerId) { return preflight.apply(playerId); }
     @Override public boolean execute(ServerPlayer player, Runnable task, Runnable retired) {
         if (server.isStopped()) return false;
         // Join hooks may run before PlayerList installs the player. Always enqueue the owner check.

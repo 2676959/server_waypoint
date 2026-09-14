@@ -18,11 +18,15 @@ import java.util.function.Predicate;
 public final class PaperDestinationPlatform implements DestinationPlatform<Player> {
     private final JavaPlugin plugin;
     private final Predicate<Player> permission;
+    private final java.util.function.Function<UUID, CompletionStage<Boolean>> preflight;
 
-    public PaperDestinationPlatform(JavaPlugin plugin, Predicate<Player> permission) {
+    public PaperDestinationPlatform(JavaPlugin plugin, Predicate<Player> permission,
+            java.util.function.Function<UUID, CompletionStage<Boolean>> preflight) {
         this.plugin = Objects.requireNonNull(plugin);
         this.permission = Objects.requireNonNull(permission);
+        this.preflight = Objects.requireNonNull(preflight);
     }
+    @Override public CompletionStage<Boolean> canPrepare(UUID playerId) { return preflight.apply(playerId); }
     @Override public boolean execute(Player player, Runnable task, Runnable retired) {
         if (!plugin.isEnabled()) return false;
         // Join events can precede installation in the live player lookup. Check on the next owner tick.

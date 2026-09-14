@@ -445,8 +445,13 @@ grouped mode uses server/dimension/list roots. Remote distance sorting is unavai
 is no shared player origin across servers (entering remote mode from distance sorting selects name).
 The local dimension scope and add controls are disabled while remote waypoints are shown.
 Remote data stays in `RemoteClientCatalogs`; no remote row creates a local waypoint or mutation
-handle. The remote details and guarded teleport action remain read-only, and confirmation rechecks
-session, catalog revision, exact identity, and waypoint data before sending the command. Switching
+handle. The remote details remain read-only. The teleport button sends immediately without a
+confirmation dialog, after rechecking session, catalog revision, exact identity, and waypoint data.
+Both lists use 20-pixel rows and `WaypointRowRenderer.background(...)` / `initials(...)` for waypoint
+color washes, hover/selection outlines and initials badges. The initials method returns the badge
+width for label placement. The remote tree reuses `WidgetTextures` expand/collapse/empty icons,
+formatted display names and the tree's clipping and hit testing; exact identities remain in tooltips.
+Switching
 views preserves separate local and remote selection/scroll state; filtering/removal clears an
 invisible remote selection. Remote scope is owned by the screen instance, not persisted to disk.
 

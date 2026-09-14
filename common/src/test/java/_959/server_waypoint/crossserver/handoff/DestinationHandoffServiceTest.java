@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.*;
 import static _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+@org.junit.jupiter.api.Timeout(10)
 class DestinationHandoffServiceTest {
     @TempDir Path directory;
     private static final RemoteServerId SOURCE = new RemoteServerId("source"), DESTINATION = new RemoteServerId("destination");
@@ -37,6 +38,8 @@ class DestinationHandoffServiceTest {
         final Deque<Runnable> work = new ArrayDeque<>(), retired = new ArrayDeque<>();
         final List<DestinationResolver.Target> teleports = new ArrayList<>();
         final CompletableFuture<Boolean> teleported = new CompletableFuture<>();
+        CompletionStage<Boolean> preflight = CompletableFuture.completedFuture(true);
+        public CompletionStage<Boolean> canPrepare(UUID id) { assertEquals(playerId, id); return preflight; }
         boolean owned, reject, lieAboutOwnership;
         int reads;
         public boolean execute(Player player, Runnable task, Runnable retirement) {
@@ -86,7 +89,7 @@ class DestinationHandoffServiceTest {
         return new PrepareHandoff(playerId, SOURCE, KEY, Action.TELEPORT, new RemoteRevision(1), new RemoteRevision(1));
     }
     private HandoffBinding prepare() {
-        var response = service.prepare(request, prepareMessage());
+        var response = service.prepare(request, prepareMessage()).toCompletableFuture().join();
         assertInstanceOf(HandoffPrepared.class, response); return ((HandoffPrepared) response).binding();
     }
     private CompletableFuture<DestinationHandoffService.ArrivalResult> arrive() {
@@ -95,6 +98,44 @@ class DestinationHandoffServiceTest {
     private void grant(HandoffBinding binding) { link.reply.complete(new HandoffClaimed(binding)); }
     private void assertFailure(CompletableFuture<DestinationHandoffService.ArrivalResult> result, Result expected) {
         assertEquals(expected, result.join().result()); assertTrue(platform.teleports.isEmpty());
+    }
+
+    @Test void deniedPermissionNeverPreparesOrClaims() {
+        platform.preflight = CompletableFuture.completedFuture(false);
+        assertEquals(new HandoffRejected(UNAUTHORIZED), service.prepare(request, prepareMessage()).toCompletableFuture().join());
+        assertEquals(NOT_FOUND, arrive().join().result());
+        assertEquals(0, link.claims);
+        assertTrue(platform.teleports.isEmpty());
+    }
+
+    @Test void pendingPermissionCannotAdmitArrivalAndLateGrantCannotReviveExpiredRequest() {
+        CompletableFuture<Boolean> permission = new CompletableFuture<>();
+        platform.preflight = permission;
+        var preparation = service.prepare(request, prepareMessage()).toCompletableFuture();
+        assertFalse(preparation.isDone());
+        assertEquals(REPLAY, arrive().join().result());
+        nanos.addAndGet(16_000_000_000L);
+        service.maintain();
+        assertEquals(new HandoffRejected(EXPIRED), preparation.join());
+        permission.complete(true);
+        assertEquals(NOT_FOUND, arrive().join().result());
+        assertEquals(0, link.claims);
+    }
+
+    @Test void disconnectCompletesPendingPreparationAndLateGrantCannotReviveIt() {
+        CompletableFuture<Boolean> permission = new CompletableFuture<>();
+        platform.preflight = permission;
+        var preparation = service.prepare(request, prepareMessage()).toCompletableFuture();
+        service.close();
+        assertEquals(new HandoffRejected(UNAVAILABLE), preparation.join());
+        permission.complete(true);
+        assertEquals(0, service.stats().active());
+        assertEquals(0, link.claims);
+    }
+
+    @Test void permissionFailureFailsClosed() {
+        platform.preflight = CompletableFuture.failedFuture(new IllegalStateException("unavailable"));
+        assertEquals(new HandoffRejected(UNAVAILABLE), service.prepare(request, prepareMessage()).toCompletableFuture().join());
     }
 
     @Test void resolvesMovedWaypointAfterClaimAndReportsOnlyActualAsyncSuccess() {
@@ -198,21 +239,21 @@ class DestinationHandoffServiceTest {
         assertEquals(NOT_FOUND, arrive().join().result()); assertEquals(1, platform.teleports.size());
     }
     @Test void preparationIsBoundedAndReplayProtectedWithoutReadingPlayers() {
-        prepare(); assertEquals(new HandoffRejected(REPLAY), service.prepare(request, prepareMessage()));
-        assertEquals(new HandoffRejected(BUSY), service.prepare(UUID.randomUUID(), prepareMessage()));
+        prepare(); assertEquals(new HandoffRejected(REPLAY), service.prepare(request, prepareMessage()).toCompletableFuture().join());
+        assertEquals(new HandoffRejected(BUSY), service.prepare(UUID.randomUUID(), prepareMessage()).toCompletableFuture().join());
         assertEquals(0, platform.reads);
         nanos.set(15_000_000_000L); service.maintain();
-        assertEquals(new HandoffRejected(REPLAY), service.prepare(request, prepareMessage()));
+        assertEquals(new HandoffRejected(REPLAY), service.prepare(request, prepareMessage()).toCompletableFuture().join());
         nanos.addAndGet(60_000_000_000L); service.maintain(); assertEquals(0, service.stats().records());
         assertEquals(0, service.stats().retainedBytes());
     }
     @Test void authoritativeSourceUnavailableAndUnexportedTargetsRejectPreparation() {
         selection.set(new CatalogSelection(false, Map.of()));
-        assertEquals(new HandoffRejected(UNAUTHORIZED), service.prepare(request, prepareMessage()));
+        assertEquals(new HandoffRejected(UNAUTHORIZED), service.prepare(request, prepareMessage()).toCompletableFuture().join());
         service = create(DestinationResolver.fromManager(DESTINATION, new WaypointFilesManagerCore(), selection::get, 100),
                 DestinationHandoffService.Limits.DEFAULT);
         selection.set(CatalogSelection.allPublic());
-        assertEquals(new HandoffRejected(UNAVAILABLE), service.prepare(request, prepareMessage()));
+        assertEquals(new HandoffRejected(UNAVAILABLE), service.prepare(request, prepareMessage()).toCompletableFuture().join());
     }
     @Test void concurrentArrivalEventsClaimAndTeleportOnlyOnce() throws Exception {
         HandoffBinding binding = prepare();
@@ -241,10 +282,10 @@ class DestinationHandoffServiceTest {
         service = create(key -> new DestinationResolver.Resolution(SUCCESS, new DestinationResolver.Target(
                 new RemoteWaypointKey(DESTINATION, "world", "Public", "Other"), new WaypointPos(1, 2, 3), 0)),
                 DestinationHandoffService.Limits.DEFAULT);
-        assertEquals(new HandoffRejected(INVALID_REQUEST), service.prepare(request, prepareMessage()));
+        assertEquals(new HandoffRejected(INVALID_REQUEST), service.prepare(request, prepareMessage()).toCompletableFuture().join());
         service = create(DestinationResolver.fromManager(DESTINATION, manager, selection::get, 100),
                 new DestinationHandoffService.Limits(1, 2048, 1000, 1000));
-        assertEquals(new HandoffRejected(BUSY), service.prepare(request, prepareMessage()));
+        assertEquals(new HandoffRejected(BUSY), service.prepare(request, prepareMessage()).toCompletableFuture().join());
         assertEquals(0, service.stats().records());
     }
 }

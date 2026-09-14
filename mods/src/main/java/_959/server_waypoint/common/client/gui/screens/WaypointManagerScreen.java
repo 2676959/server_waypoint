@@ -101,7 +101,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         super(Component.nullToEmpty("Server Waypoints"));
         this.parentScreen = parentScreen;
         this.waypointClientMod = waypointClientMod;
-        this.remotePanel = new RemoteWaypointPanel(waypointClientMod, this, this.font);
+        this.remotePanel = new RemoteWaypointPanel(waypointClientMod, this.font);
         this.serverScopeToggle = new IconToggleButton(
                 Component.translatable("waypoint.remote.gui.local"),
                 Component.translatable("waypoint.remote.title"),

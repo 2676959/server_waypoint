@@ -2,9 +2,9 @@
 
 This explicitly invoked test mod boots Fabric **26.1.2** in a disposable offline flat world.
 It opens the real local manager, uses registered mouse input to toggle the remote panel in place, selects
-an exact quoted target, cancels confirmation, resizes the browser, toggles list/flat view and sort
+an exact quoted target, sends teleport immediately without a dialog, resizes the browser, toggles list/flat view and sort
 direction through the shared sidebar controls, returns to local and remote views, filters rows, refreshes stale
-catalogs and invalidates a confirmation by resetting the cache session. It checks the original
+catalogs and invalidates the teleport action by resetting the cache session. It checks the original
 local manager object and saved files remain unchanged. A fixture populates the real remote cache;
 this probe does not test TCP, permissions or a real cross-server teleport.
 
@@ -70,11 +70,11 @@ wp add minecraft:overworld Test 45 80 30 Added A gold 0 false
 ```
 
 Require the ordered markers `SYNC_PROTOCOL_11`, `WAIT_REMOTE_MUTATION`,
-`NETWORK_CATALOG_CHANGED`, `CONFIRMATION_OPEN`, `CONFIRMED_BY_CLICK` and
-`PASS real protocol-11 catalog update and confirmed proxy transfer`, followed by
+`NETWORK_CATALOG_CHANGED`, `TELEPORT_SUBMITTED`, `TELEPORT_SUBMITTED` and
+`PASS real protocol-11 catalog update and immediate proxy transfer`, followed by
 clean client termination. The probe opens the initial local manager directly,
 then uses native mouse dispatch for remote navigation, target selection and
-confirmation. It receives catalog changes over the actual network and checks
+teleport action. It receives catalog changes over the actual network and checks
 fresh synchronization at `(45.5, 80, 30.5)` after transfer. It does not inject cache
 or network state. Preserve the fresh `live-remote-gui-result.txt`, client/server
 logs and artifact hashes. Headless graphics remain unsuitable for visual approval.

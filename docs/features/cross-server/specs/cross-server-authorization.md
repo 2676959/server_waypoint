@@ -40,6 +40,23 @@ identities are returned. Existing local list commands retain their behavior.
   at the source and the local teleport node at the destination for intended teleport users; use
   explicit denials where required. Do not rely on vanilla levels to express Paper policy.
 
+## Permission check before transfer
+
+`DestinationHandoffService.prepare` returns a completion stage. It reserves a bounded record, then
+calls `DestinationPlatform.canPrepare` using the coordinator-bound player UUID. Only a successful
+destination permission lookup and authoritative waypoint resolution produce `HandoffPrepared`.
+Denied, failed, timed-out or disconnected lookups cannot authorize a proxy transfer. A late permission
+response cannot revive an expired or cancelled record. The final live-player check still runs on arrival.
+
+- Fabric queries the Fabric Permissions API offline UUID lookup, with the destination operator level
+  and configured `tp` level as its fallback. Forge/NeoForge use that operator-level check directly.
+- Paper optionally loads LuckPerms user data asynchronously and checks `server_waypoint.command.tp`
+  in the destination's static server context; explicit denial overrides operator status. Without
+  LuckPerms, only the native operator fallback is available. Other plugins' player attachments and
+  dynamic player contexts cannot be evaluated while the player is absent; their live result is
+  checked on arrival. Deployments needing offline node grants should use LuckPerms.
+- All permission-provider exceptions fail closed. No source-side grant is forwarded as a destination grant.
+
 ## Destination callback ownership
 
 `DestinationAuthorization.ExportPolicy` receives only the exact `RemoteWaypointKey`. Its platform

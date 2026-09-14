@@ -21,16 +21,19 @@ public final class ModCrossServerRuntime {
     private final WaypointServerCore manager;
     private final WaypointCommand command;
     private final RemotePermissions<CommandSourceStack, String, ServerPlayer> authorization;
+    private final PermissionManager<CommandSourceStack, String, ServerPlayer> permissions;
     private BackendRuntime<CommandSourceStack, ServerPlayer> runtime;
     private ModDestinationPlatform destination;
     public ModCrossServerRuntime(Path directory, WaypointServerCore manager, WaypointCommand command,
                                  PermissionManager<CommandSourceStack, String, ServerPlayer> permissions) {
+        this.permissions = permissions;
         this.directory = directory; this.manager = manager; this.command = command;
         authorization = new RemotePermissions<>(permissions, () -> CONFIG.CommandPermission(), CommandSourceStack::getPlayer);
     }
     public void start(MinecraftServer server) {
         if (!server.isDedicatedServer()) return;
-        destination = new ModDestinationPlatform(server, authorization::canTeleportOnArrival);
+        destination = new ModDestinationPlatform(server, authorization::canTeleportOnArrival,
+                new ModOfflineTeleportPermission(server, permissions)::check);
         runtime = new BackendRuntime<>(directory, manager, new SourceHandoffService.Platform<>() {
             public boolean ownsThread(CommandSourceStack source) { return server.isSameThread(); }
             public UUID playerId(CommandSourceStack source) { return source.getPlayer() == null ? null : source.getPlayer().getUUID(); }

@@ -42,6 +42,8 @@ backend/proxy boundary.
 
 ## Release
 
+- [Remote UI, permission preflight and logging validation](validation/2026-09-13-remote-ui-permission-logging.md) — 2026-09-13
+
 - [Release readiness](validation/cross-server-release-readiness.md) — step 19 hardening and release gates
 - [Release notes](cross-server-release-notes.md)
 - [Step 3 platform validation](validation/cross-server-step3-validation.md)

@@ -10,7 +10,7 @@ import _959.server_waypoint.util.StringCommandBuilder;
 
 import java.util.*;
 
-/** GUI-only immutable identities and confirmation guard; never creates local waypoints. */
+/** GUI-only immutable identities and teleport request guard; never creates local waypoints. */
 final class RemoteBrowserModel {
     record Path(RemoteServerId server, String dimension, String list, String waypoint) {
         RemoteWaypointKey key() {
@@ -20,7 +20,7 @@ final class RemoteBrowserModel {
     record Node(Path path, String label, RemoteCatalogState state, List<Node> children) {
         Node { children = List.copyOf(children); }
     }
-    record Confirmation(long session, RemoteWaypointKey key, RemoteRevision revision,
+    record TeleportRequest(long session, RemoteWaypointKey key, RemoteRevision revision,
                         RemoteWaypointSnapshot waypoint, String command) { }
 
     static List<Node> roots(Map<RemoteServerId, CatalogReceiver.View> servers, String filter, boolean grouped,
@@ -96,7 +96,7 @@ final class RemoteBrowserModel {
         return display.equals(identity) ? identity : display + " [" + identity + "]";
     }
 
-    static Confirmation prepare(RemoteClientCatalogs catalogs, RemoteWaypointKey key) {
+    static TeleportRequest prepare(RemoteClientCatalogs catalogs, RemoteWaypointKey key) {
         if (key == null || catalogs.state() != RemoteCatalogState.AVAILABLE) return null;
         var view = catalogs.snapshot().get(key.serverId());
         if (view == null || view.state() != RemoteCatalogState.AVAILABLE || view.snapshot() == null) return null;
@@ -108,10 +108,10 @@ final class RemoteBrowserModel {
                 + StringCommandBuilder.escapeArgument(key.waypointName());
         // The oldest supported Minecraft command packet has a 256-character bound. Never truncate identities.
         if (command.length() > 256 || command.chars().anyMatch(c -> c < 32 || c == 127 || c == 167)) return null;
-        return new Confirmation(catalogs.session(), key, view.snapshot().catalogRevision(), waypoint, command);
+        return new TeleportRequest(catalogs.session(), key, view.snapshot().catalogRevision(), waypoint, command);
     }
 
-    static boolean isCurrent(RemoteClientCatalogs catalogs, Confirmation confirmation) {
+    static boolean isCurrent(RemoteClientCatalogs catalogs, TeleportRequest confirmation) {
         return confirmation != null && confirmation.equals(prepare(catalogs, confirmation.key()));
     }
 }

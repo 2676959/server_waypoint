@@ -12,7 +12,11 @@ import _959.server_waypoint.crossserver.catalog.CatalogReceiver;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.ConfirmScreen;
+import _959.server_waypoint.common.client.gui.render.WaypointRowRenderer;
+import _959.server_waypoint.common.client.gui.render.WidgetTextures;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.*;
+import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
+import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
@@ -28,7 +32,6 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 /** Read-only remote panel owned and rendered by the waypoint manager. */
 final class RemoteWaypointPanel {
     private final Font font;
-    private final WaypointManagerScreen local;
     private final RemoteClientCatalogs catalogs;
     private final long session;
     private final BrowserTree tree;
@@ -43,15 +46,14 @@ final class RemoteWaypointPanel {
     private WaypointSorting.SortMode sortMode = WaypointSorting.SortMode.NAME;
     private String feedback = "waypoint.remote.gui.feedback";
 
-    RemoteWaypointPanel(WaypointClientMod client, WaypointManagerScreen local, Font font) {
-        this.local = local;
+    RemoteWaypointPanel(WaypointClientMod client, Font font) {
         this.font = font;
         this.catalogs = client.remoteCatalogs();
         this.session = catalogs.session();
         this.tree = new BrowserTree();
         this.details = new WaypointDetailsWidget(0, 0, 160, 160, font);
         this.teleportButton = new TranslucentButton(0, 0, 100, 16,
-                Component.translatable("waypoint.remote.gui.teleport"), this::confirmTeleport, AnchorMode.OUTLINE);
+                Component.translatable("waypoint.remote.gui.teleport"), this::teleport, AnchorMode.OUTLINE);
         this.teleportButton.setTooltip(Tooltip.create(Component.translatable("waypoint.remote.gui.teleport_hint")));
     }
 
@@ -116,29 +118,17 @@ final class RemoteWaypointPanel {
         if (displayed != catalogs.snapshot() || displayedState != catalogs.state()) rebuild();
     }
 
-    private void confirmTeleport() {
-        var confirmation = RemoteBrowserModel.prepare(catalogs, selected);
-        if (session != catalogs.session() || confirmation == null) {
+    private void teleport() {
+        var request = RemoteBrowserModel.prepare(catalogs, selected);
+        if (session != catalogs.session() || request == null || !RemoteBrowserModel.isCurrent(catalogs, request)) {
             feedback = "waypoint.remote.gui.changed";
-            rebuild();
+        } else if (ClientCommandUtils.sendCommand(request.command())) {
+            MinecraftClientHelper.setScreen(null);
             return;
+        } else {
+            feedback = "waypoint.remote.gui.send_failed";
         }
-        var key = confirmation.key();
-        Component message = Component.translatable("waypoint.remote.gui.confirm",
-                key.serverId().value(), key.dimensionName(), key.listName(), key.waypointName());
-        MinecraftClientHelper.setScreen(new ConfirmScreen(accepted -> {
-            if (accepted && RemoteBrowserModel.isCurrent(catalogs, confirmation)) {
-                if (ClientCommandUtils.sendCommand(confirmation.command())) {
-                    // Existing command feedback supplies preparation, permission, transfer and failure results.
-                    MinecraftClientHelper.setScreen(null);
-                    return;
-                }
-                feedback = "waypoint.remote.gui.send_failed";
-            } else if (accepted) {
-                feedback = "waypoint.remote.gui.changed";
-            }
-            MinecraftClientHelper.setScreen(session == catalogs.session() ? local : null);
-        }, Component.translatable("waypoint.remote.gui.teleport"), message));
+        rebuild();
     }
 
     void render(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
@@ -162,11 +152,12 @@ final class RemoteWaypointPanel {
 
     }
 
+    // Local WaypointListWidget requires mutable local lists. Share its row presentation while keeping remote snapshots immutable.
     private final class BrowserTree extends TreeViewWidget<RemoteBrowserModel.Node> {
         private final Set<RemoteBrowserModel.Path> collapsed = new HashSet<>();
         private final ScalableText emptyMessage = new ScalableText(
                 2, 2, Component.translatable("waypoint.remote.no_servers"), TEXT_MUTED, font);
-        BrowserTree() { super(0, 0, 160, 160, 16, Component.translatable("waypoint.remote.title")); }
+        BrowserTree() { super(0, 0, 160, 160, 20, Component.translatable("waypoint.remote.title")); }
         @Override
         protected List<RemoteBrowserModel.Node> getChildren(RemoteBrowserModel.Node node) { return node.children(); }
         @Override
@@ -204,19 +195,41 @@ final class RemoteWaypointPanel {
         protected void renderEntry(GuiGraphicsExtractor context, TreeEntry<RemoteBrowserModel.Node> entry,
                                    boolean hovered, int rowY, int contentWidth, int mouseX, int mouseY, float deltaTicks) {
             var node = entry.value();
-            if (hovered || selected != null && selected.equals(node.path().key())) {
-                context.fill(0, rowY, contentWidth, rowY + 16, getColor(CONTROL_HOVER_BACKGROUND));
+            int indent = entry.depth() * 10;
+            int textY = rowY + (20 - font.lineHeight) / 2 + 1;
+            int textColor = getColor(node.state() == RemoteCatalogState.AVAILABLE ? TEXT_PRIMARY : TEXT_MUTED);
+            var key = node.path().key();
+            var view = displayed.get(node.path().server());
+            var waypoint = key == null || view == null || view.snapshot() == null ? null
+                    : view.snapshot().find(key).orElse(null);
+            if (waypoint != null) {
+                WaypointRowRenderer.background(context, rowY, contentWidth, 20, waypoint.rgb(), hovered, key.equals(selected));
+                if (waypoint.global()) drawText(context, font, "*", indent + 6, textY, textColor);
+                int badgeWidth = WaypointRowRenderer.initials(context, font, waypoint.initials(), indent + 15, textY - 1,
+                        0xFF000000 | waypoint.rgb(), getSafeTextColor(waypoint.rgb()));
+                int nameX = indent + 18 + badgeWidth;
+                Component label = parseFormattedText(waypoint.displayName());
+                if (!grouped) label = label.copy().append(Component.literal(" · " + key.serverId().value()
+                        + " / " + key.dimensionName() + " / [" + key.listName() + "]"));
+                drawText(context, font, label, nameX, textY, textColor, true);
+            } else {
+                if (hovered) {
+                    context.fill(0, rowY, contentWidth, rowY + 20, getColor(ROW_HOVER_BACKGROUND));
+                    renderOutline(context, 0, rowY, contentWidth, 20, getColor(FOCUS_RING));
+                }
+                texture(context, node.children().isEmpty() ? WidgetTextures.LIST_EMPTY
+                        : isExpanded(node) ? WidgetTextures.LIST_EXPAND_ICON : WidgetTextures.LIST_COLLAPSE_ICON,
+                        indent, rowY + 2, 0, 0, 16, 16, 16, 16);
+                Component label;
+                if (node.path().list() != null && view != null && view.snapshot() != null) {
+                    var list = view.snapshot().dimensions().getOrDefault(node.path().dimension(), Map.of()).get(node.path().list());
+                    label = list == null ? Component.literal(node.label()) : parseFormattedText(list.displayName());
+                } else label = Component.literal(node.label());
+                if (node.path().dimension() == null) label = label.copy().append(" · ").append(Component.translatable(
+                        "waypoint.remote.state." + node.state().name().toLowerCase(Locale.ROOT)));
+                drawText(context, font, label, indent + 18,
+                        textY, textColor, true);
             }
-            Component label = Component.literal((node.children().isEmpty() ? "" : isExpanded(node) ? "− " : "+ ") + node.label());
-            if (node.path().dimension() == null) label = Component.translatable(
-                    "waypoint.remote.state." + node.state().name().toLowerCase(Locale.ROOT)).append(" · ").append(label);
-            if (!grouped && node.path().key() != null) {
-                label = Component.literal(node.label() + " · " + node.path().server().value() + " / "
-                        + node.path().dimension() + " / [" + node.path().list() + "]");
-            }
-            int x = 2 + entry.depth() * 8;
-            drawText(context, font, font.plainSubstrByWidth(label.getString(), Math.max(1, contentWidth - x)), x, rowY + 3,
-                    getColor(node.state() == RemoteCatalogState.AVAILABLE ? TEXT_PRIMARY : TEXT_MUTED), true);
         }
         @Override
         protected boolean onEntryClicked(TreeEntry<RemoteBrowserModel.Node> entry, double x, double y, int button) {

@@ -5,6 +5,8 @@ import java.util.concurrent.CompletionStage;
 
 /** Backend adapter. No method may block waiting for a server thread or an asynchronous teleport. */
 public interface DestinationPlatform<P> {
+    /** Resolve the destination permission for an absent player before admitting a transfer. Fail closed. */
+    CompletionStage<Boolean> canPrepare(UUID playerId);
     /** Queue once on the player's owner. Return false on rejection; call retired if the owner disappears. */
     boolean execute(P player, Runnable task, Runnable retired);
     boolean ownsThread(P player);

@@ -80,19 +80,15 @@ public final class RemoteGuiProbe implements ClientModInitializer {
             case 2 -> {
                 var tree = (TreeViewWidget<?>) field(RemoteWaypointPanel.class, "tree").get(remote);
                 // Server, dimension, list, then first waypoint; dispatch through the real screen input path.
-                clickAt(local, tree.getX() + 24, tree.getY() + 3 * 16 + 8);
+                clickAt(local, tree.getX() + 24, tree.getY() + 3 * 20 + 10);
                 check(button().active, "available exact target enables teleport");
                 var key = (RemoteWaypointKey) field(RemoteWaypointPanel.class, "selected").get(remote);
                 check(key.serverId().equals(id) && key.listName().isEmpty() && key.waypointName().equals("Exact \"Name\""), "exact selection identity");
                 click(local, button());
-                check(mc.screen instanceof ConfirmScreen, "confirmation is a separate modal screen");
+                check(mc.screen == null, "teleport sends directly and closes the manager");
+                mc.setScreen(local);
             }
             case 3 -> {
-                // The native Cancel button returns to the same remote screen without sending a command.
-                var cancel = mc.screen.children().stream().filter(c -> c instanceof AbstractWidget w
-                        && w.getMessage().getString().equals("No")).map(c -> (AbstractWidget)c).findFirst().orElseThrow();
-                click(mc.screen, cancel);
-                check(mc.screen == local, "cancel restores browser");
                 local.resize(320, 240);
                 check(button().getX() + button().getWidth() <= 320, "small viewport fits actions");
                 local.resize(960, 540);
@@ -126,22 +122,23 @@ public final class RemoteGuiProbe implements ClientModInitializer {
             }
             case 5 -> {
                 var tree = (TreeViewWidget<?>) field(RemoteWaypointPanel.class, "tree").get(remote);
-                clickAt(local, tree.getX() + 24, tree.getY() + 3 * 16 + 8);
+                clickAt(local, tree.getX() + 24, tree.getY() + 3 * 20 + 10);
                 check(!button().active, "stale target remains read-only");
                 install(RemoteCatalogState.AVAILABLE);
             }
             case 6 -> {
                 check(button().active, "fresh replacement restores action");
-                click(local, button());
-                check(mc.screen instanceof ConfirmScreen, "confirmation reopened");
                 client.remoteCatalogs().clear();
-                var yes = mc.screen.children().stream().filter(c -> c instanceof AbstractWidget w
-                        && w.getMessage().getString().equals("Yes")).map(c -> (AbstractWidget)c).findFirst().orElseThrow();
-                click(mc.screen, yes);
-                check(mc.screen == null, "session reset invalidates confirmation");
+                // Invoke the same action callback after session invalidation, before tick closes the screen.
+                var teleport = RemoteWaypointPanel.class.getDeclaredMethod("teleport");
+                teleport.setAccessible(true);
+                teleport.invoke(remote);
+                check(!button().active, "session reset invalidates immediate teleport");
+                local.tick();
+                check(mc.screen == null, "session reset closes the manager");
                 check(manager == client.getWaypointFileManager("minecraft:overworld"), "local manager untouched");
                 check(files.equals(localFiles(mc)), "local files unchanged");
-                System.out.println("REMOTE_GUI_PROBE PASS: native Fabric 26.1.2 screen input, confirmation, resize, cache transitions and local isolation");
+                System.out.println("REMOTE_GUI_PROBE PASS: native Fabric 26.1.2 screen input, immediate teleport, resize, cache transitions and local isolation");
                 Files.writeString(mc.gameDirectory.toPath().resolve("remote-gui-result.txt"), "PASS\n");
                 mc.stop();
             }

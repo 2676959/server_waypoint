@@ -31,6 +31,7 @@ public final class DestinationHandoffService<P> implements AutoCloseable {
         final UUID requestId;
         final HandoffBinding binding;
         final long bytes;
+        final CompletableFuture<ApplicationMessage> preparation = new CompletableFuture<>();
         final CompletableFuture<ArrivalResult> arrival = new CompletableFuture<>();
         long deadline, terminalAt;
         State state = State.CHECKING;
@@ -66,38 +67,54 @@ public final class DestinationHandoffService<P> implements AutoCloseable {
     }
 
     /** Called only for coordinator-forwarded preparation. Resolution is thread-safe authoritative model work. */
-    public ApplicationMessage prepare(UUID requestId, PrepareHandoff request) {
+    public CompletionStage<ApplicationMessage> prepare(UUID requestId, PrepareHandoff request) {
         requireId(requestId); Objects.requireNonNull(request); maintain();
         Entry entry;
         synchronized (lock) {
-            if (closed) return new HandoffRejected(Result.UNAVAILABLE);
-            if (!localId.equals(request.target().serverId())) return new HandoffRejected(Result.WRONG_DESTINATION);
-            if (requests.containsKey(requestId)) return new HandoffRejected(Result.REPLAY);
+            if (closed) return CompletableFuture.completedFuture(new HandoffRejected(Result.UNAVAILABLE));
+            if (!localId.equals(request.target().serverId())) return CompletableFuture.completedFuture(new HandoffRejected(Result.WRONG_DESTINATION));
+            if (requests.containsKey(requestId)) return CompletableFuture.completedFuture(new HandoffRejected(Result.REPLAY));
             long bytes = 2048L + 2L * ((long) request.target().dimensionName().length()
                     + request.target().listName().length() + request.target().waypointName().length());
             if (players.containsKey(request.playerId()) || requests.size() >= limits.records() || bytes > limits.retainedBytes() - retained) {
-                return new HandoffRejected(Result.BUSY);
+                return CompletableFuture.completedFuture(new HandoffRejected(Result.BUSY));
             }
             long expiry;
             try { expiry = Math.addExact(epoch.getAsLong(), limits.expiryMillis()); }
-            catch (ArithmeticException invalidClock) { return new HandoffRejected(Result.UNAVAILABLE); }
-            if (expiry <= 0) return new HandoffRejected(Result.UNAVAILABLE);
+            catch (ArithmeticException invalidClock) { return CompletableFuture.completedFuture(new HandoffRejected(Result.UNAVAILABLE)); }
+            if (expiry <= 0) return CompletableFuture.completedFuture(new HandoffRejected(Result.UNAVAILABLE));
             var binding = new HandoffBinding(UUID.randomUUID(), request.playerId(), request.source(), request.target(), request.action(), expiry);
             entry = new Entry(requestId, binding, bytes, nanos.getAsLong() + limits.expiryMillis() * 1_000_000L);
             requests.put(requestId, entry); players.put(request.playerId(), entry); retained += bytes;
         }
-        Result resolution = resolve(entry).result();
+        try {
+            Objects.requireNonNull(platform.canPrepare(request.playerId())).whenComplete((allowed, failure) -> {
+                Result result = failure != null ? Result.UNAVAILABLE
+                        : Boolean.TRUE.equals(allowed) ? Result.SUCCESS : Result.UNAUTHORIZED;
+                prepared(entry, result);
+            });
+        } catch (RuntimeException unavailable) {
+            prepared(entry, Result.UNAVAILABLE);
+        }
+        return entry.preparation.minimalCompletionStage();
+    }
+
+    private void prepared(Entry entry, Result permission) {
+        synchronized (lock) {
+            if (entry.state != State.CHECKING || closed) return;
+        }
+        Result resolution = permission == Result.SUCCESS ? resolve(entry).result() : permission;
         synchronized (lock) {
             if (closed) resolution = Result.UNAVAILABLE;
             else if (entry.state == State.TERMINAL) resolution = entry.result;
             else if (expired(entry)) resolution = Result.EXPIRED;
             if (resolution == Result.SUCCESS) {
                 entry.state = State.PREPARED;
-                return new HandoffPrepared(entry.binding);
+                entry.preparation.complete(new HandoffPrepared(entry.binding));
+                return;
             }
         }
         finish(entry, resolution, false);
-        return new HandoffRejected(resolution);
     }
 
     /** Use the UUID from the authenticated local join event, never from a forwarded claim message. */
@@ -263,6 +280,9 @@ public final class DestinationHandoffService<P> implements AutoCloseable {
                     : new CancelHandoff(entry.binding.handoffId(), result == Result.SUCCESS ? Result.CANCELLED : result);
             try { queued = link.send(entry.requestId, message); } catch (RuntimeException unavailable) { /* No retry of player work. */ }
         }
+        TeleportCoordinatorLog.BACKEND.info("arrival_finished server={} request={} player={} result={}",
+                TeleportCoordinatorLog.safe(localId.value()), entry.requestId, entry.binding.playerId(), result);
+        if (!entry.preparation.isDone()) entry.preparation.complete(new HandoffRejected(result));
         entry.arrival.complete(new ArrivalResult(result, queued));
     }
     private boolean expired(Entry entry) { return nanos.getAsLong() - entry.deadline >= 0; }

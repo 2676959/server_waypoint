@@ -5,6 +5,7 @@ import _959.server_waypoint.crossserver.catalog.*;
 import _959.server_waypoint.crossserver.RemoteCatalogState;
 import _959.server_waypoint.crossserver.protocol.*;
 import java.io.IOException;
+import _959.server_waypoint.crossserver.handoff.TeleportCoordinatorLog;
 import java.net.Socket;
 import java.time.Instant;
 import java.util.*;
@@ -117,6 +118,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
             try {
                 state = State.CONNECTING;
                 metrics.attempted();
+                TeleportCoordinatorLog.BACKEND.info("connection_attempt server={} mode={}", TeleportCoordinatorLog.safe(id.value()), mode);
                 current = TcpBackend.connect(endpoint, mode, id, capabilities, keys, pin, limits, protocol, socket -> {
                     connecting = socket;
                     if (stopping) TcpWire.close(socket);
@@ -137,6 +139,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
                 registered = true;
                 metrics.registered();
                 state = State.REGISTERED;
+                TeleportCoordinatorLog.BACKEND.info("connection_registered server={} generation={} mode={}", TeleportCoordinatorLog.safe(id.value()), generation, mode);
                 TcpChannel session = current;
                 operations = sessionFactory.apply(session);
                 if (operations != null) {
@@ -184,7 +187,10 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
                     metrics.receivedHeartbeat(); heartbeatReceived = true;
                 }
             } catch (Exception failure) {
-                if (!stopping) metrics.failed();
+                if (!stopping) {
+                    metrics.failed();
+                    TeleportCoordinatorLog.BACKEND.warn("connection_failed server={} cause={}", TeleportCoordinatorLog.safe(id.value()), failure.getClass().getSimpleName());
+                }
             } finally {
                 if (maintenance != null) maintenance.cancel(false);
                 if (operations != null) operations.close();
@@ -194,7 +200,10 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
                 Socket socket = connecting;
                 if (socket != null) TcpWire.close(socket);
                 connecting = null; channel = null; presence = null;
-                if (registered) metrics.disconnected();
+                if (registered) {
+                    metrics.disconnected();
+                    TeleportCoordinatorLog.BACKEND.info("connection_closed server={} generation={} stopping={}", TeleportCoordinatorLog.safe(id.value()), generation, stopping);
+                }
             }
             if (stopping) break;
             if (heartbeatReceived && System.nanoTime() - connectedAt >= settings.reconnectMaxMillis() * 1_000_000L) failures = 0;
@@ -202,6 +211,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
             long ceiling = settings.reconnectDelay(failures);
             long delay = ThreadLocalRandom.current().nextLong(settings.reconnectMinMillis(), ceiling + 1);
             state = State.BACKOFF;
+            TeleportCoordinatorLog.BACKEND.info("connection_retry server={} delay_ms={}", TeleportCoordinatorLog.safe(id.value()), delay);
             synchronized (retry) {
                 if (!stopping) {
                     try { retry.wait(delay); } catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); break; }

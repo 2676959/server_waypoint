@@ -2,6 +2,7 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.render.WidgetTextures;
+import _959.server_waypoint.common.client.gui.render.WaypointRowRenderer;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
@@ -798,10 +799,9 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         int textColor = applyWaypointTextOpacity(getColor(TEXT_PRIMARY), wpRendered);
         int metadataTextColor = applyWaypointTextOpacity(getColor(TEXT_MUTED), wpRendered);
         int rgb = waypoint.rgb();
-        int y2 = rowY + itemHeight;
         boolean selected = isSelected(waypointNode);
+        WaypointRowRenderer.background(context, rowY, contentWidth, itemHeight, rgb, hovered, selected);
         if (hovered) {
-            context.fill(0, rowY, contentWidth, y2, 0x60000000 + rgb);
             int wpCenteredBtnY = rowY + buttonIconVertOffset;
             if (canToggleVisibility(waypointNode.dimensionName())) {
                 if (wpRendered) {
@@ -817,12 +817,6 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 texture(context, WidgetTextures.REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                 removeClickedPos = -1;
             }
-            renderOutline(context, 0, rowY, contentWidth, itemHeight, 0xFF000000 + rgb);
-        } else if (selected) {
-            context.fill(0, rowY, contentWidth, y2, getColor(SELECTION_BACKGROUND));
-            renderOutline(context, 0, rowY, contentWidth, itemHeight, getColor(FOCUS_RING));
-        } else {
-            context.fill(0, rowY, contentWidth, y2, 0x10000000 + rgb);
         }
 
         final int finalY = rowY + textVertOffset;
@@ -1015,12 +1009,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     }
 
     private void drawInitialsBox(GuiGraphicsExtractor context, String initials, int x, int y, int backgroundColor, int textColor) {
-        int textWidth = textRenderer.width(initials);
-        int bgWidth = Math.max(textWidth + 2, textRenderer.lineHeight);
-        int textX = (bgWidth - Math.max(0, textWidth - 1)) / 2;
-
-        context.fill(x, y, x + bgWidth, y + textRenderer.lineHeight, backgroundColor);
-        drawText(context, textRenderer, initials, x + textX, y + 1, textColor, true);
+        WaypointRowRenderer.initials(context, textRenderer, initials, x, y, backgroundColor, textColor);
     }
 
     private static int getInitialsTextColor(int rgb, boolean rendered) {

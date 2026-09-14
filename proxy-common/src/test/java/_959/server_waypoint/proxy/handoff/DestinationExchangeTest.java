@@ -14,6 +14,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+@org.junit.jupiter.api.Timeout(10)
 class DestinationExchangeTest {
     @ParameterizedTest @EnumSource(TransportMode.class)
     void destinationServiceCompletesCoordinatorClaimUsingFreshTarget(TransportMode mode) {
@@ -29,6 +30,7 @@ class DestinationExchangeTest {
                 id -> Optional.of(new ProxyPlayerSnapshot(player, Optional.of(route.get()))), ignored -> Result.SUCCESS);
         AtomicBoolean owned = new AtomicBoolean(); AtomicInteger teleports = new AtomicInteger();
         DestinationPlatform<UUID> platform = new DestinationPlatform<>() {
+            public CompletionStage<Boolean> canPrepare(UUID id) { return CompletableFuture.completedFuture(true); }
             public boolean execute(UUID p, Runnable task, Runnable retired) {
                 boolean previous = owned.getAndSet(true);
                 try { task.run(); } finally { owned.set(previous); } return true;
@@ -74,7 +76,7 @@ class DestinationExchangeTest {
                     request.set(id);
                     assertEquals(preparation, coordinator.handle(source, id, preparation).deliveries().get(0).message());
                     assertEquals(0, switches.get());
-                    var prepared = service.prepare(id, preparation);
+                    var prepared = service.prepare(id, preparation).toCompletableFuture().join();
                     var response = coordinator.handle(destination, id, prepared);
                     assertEquals(Result.SUCCESS, response.result()); assertEquals(0, switches.get());
                     return CompletableFuture.completedFuture(response.deliveries().get(0).message());

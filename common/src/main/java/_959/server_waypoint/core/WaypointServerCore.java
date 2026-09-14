@@ -249,25 +249,30 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
         try {
             if (Files.exists(xaeromapFile) && Files.isRegularFile(xaeromapFile)) {
                 //read xaeromap.txt and get the id
-                String idString = Files.readString(xaeromapFile);
+                String idString = Files.readString(xaeromapFile).trim();
                 if (idString.startsWith("id:")) {
                     worldId = Integer.parseInt(idString.split(":")[1]);
+                    return;
                 } else {
                     LOGGER.error("Invalid xaeromap.txt file format, cannot read id, creating a new one");
                 }
             }
         } catch (Exception e) {
             LOGGER.error("Failed to read xaeromap file. creating a new one", e);
-            try {
-                int id = (new Random()).nextInt();
-                String idString = "id:" + id;
-                Files.writeString(xaeromapFile, idString);
-                worldId = id;
-            } catch (Exception ee) {
-                CONFIG.Features().sendXaerosWorldId(false);
-                LOGGER.error("Cannot enable sendXaerosWorldId: failed to create xaeromap.txt: ", ee);
-            }
         }
+        try {
+            int id = (new Random()).nextInt();
+            String idString = "id:" + id;
+            Files.writeString(xaeromapFile, idString);
+            worldId = id;
+        } catch (Exception e) {
+            CONFIG.Features().sendXaerosWorldId(false);
+            LOGGER.error("Cannot enable sendXaerosWorldId: failed to create xaeromap.txt: ", e);
+        }
+    }
+
+    protected final void setXaeroWorldId(int id) {
+        worldId = id;
     }
 
     public static int getWorldId() {
