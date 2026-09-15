@@ -224,6 +224,32 @@ When popup items may overlap another registered widget, route the open dropdown 
 make Escape close the menu instead of the screen, call `closeMenuIfOpen` and return before
 `super.keyPressed`, because vanilla handles Escape before forwarding keys to the focused child.
 
+`ComboBoxWidget` combines editable text with a separately opened list of choices. It reuses
+`TranslucentTextField` for cursor movement, selection, clipboard shortcuts, and text rendering, and
+`AbstractDropdownMenuWidget` for the popup. Register only the composite; it owns its internal field's
+position, size, focus, input, and rendering. Click the text area to edit and the arrow to toggle the
+list. Arbitrary text is accepted, including values absent from the list. Choosing an item replaces
+the field text. Enter opens/selects, Up/Down navigates the open popup, and typing or losing focus
+closes it. Text scrolls with the cursor; popup labels are clipped with full-value tooltips.
+
+Pass choices, initial text, field label, font, and `Consumer<String>` to the constructor. Duplicate
+choices are removed in insertion order. `getValue` returns the current text; `setValue` accepts any
+non-null text without calling the callback. User edits and popup selections invoke the callback.
+An exact matching choice is omitted from the popup. Resizing also resizes the field and choice rows.
+The outline stays inside the content bounds; the popup is excluded from layout dimensions.
+Treat a focused combobox as text entry when deciding whether to forward movement keys, as
+`AbstractWaypointPropertiesScreen` does.
+
+When a dropdown appears early in a manually rendered layout, call
+`setRenderPopupSeparately(true)` and then `renderPopup(...)` once after the other controls.
+The default still renders the popup with its control. This prevents later controls from covering
+popup choices, including on newer render strata APIs. `AbstractWaypointPropertiesScreen` exposes
+`renderTitleRowOverlays(...)` after suggestions and before the swatch for this purpose.
+`WaypointAddScreen` uses that hook for its dimension combobox, populated from the available client
+dimensions in sorted order with the supplied starting dimension retained. List and waypoint-name
+suggestions and submission read the current selection. Popup clicks have priority over overlapping
+fields, outside clicks continue to their targets, and Escape closes the popup before the screen.
+
 ## `render`: drawing and presentation
 
 Use `DrawContextHelper` for drawing operations whose Minecraft API changes across supported versions. It centralizes text, texture, item, matrix, layer, outline, and custom-quad differences. Before adding a new Stonecutter branch at every call site, check whether the difference belongs in this helper.
@@ -377,6 +403,7 @@ Those cases do not justify duplicating standalone message rendering elsewhere.
 | Icon action | `IconButton` |
 | Boolean state | `ToggleButton` or `TrueFalseToggleButton` |
 | Text input with optional suggestions | `TranslucentTextField` |
+| Editable text with a popup choice list | `ComboBoxWidget` |
 | Bounded integer input | `IntegerField` |
 | Absolute/relative/local coordinate input | `CoordinateField` |
 | Integer slider plus field | `IntegerSlider` |

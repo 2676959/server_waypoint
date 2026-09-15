@@ -1,8 +1,10 @@
+//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
+import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
 import _959.server_waypoint.common.client.gui.widgets.ScalableText;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
@@ -13,12 +15,17 @@ import _959.server_waypoint.util.WaypointInitials;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
+//? if >=1.21.9 {
+import net.minecraft.client.input.MouseButtonEvent;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
@@ -29,7 +36,7 @@ import static _959.server_waypoint.text.FormattedTextHelper.plainText;
 
 public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     private TranslucentTextField listNameField;
-    private TranslucentTextField dimensionField;
+    private ComboBoxWidget dimensionField;
     private TranslucentButton addButton;
 
     public WaypointAddScreen(Screen previousScreen, String dimensionName, String listName) {
@@ -38,7 +45,6 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
 
     public WaypointAddScreen(Screen previousScreen, String dimensionName, String listName, WaypointPos defaultPos) {
         super(previousScreen, Component.translatable("waypoint.add.screen.title"), dimensionName, listName, null);
-        this.dimensionField.setValue(dimensionName);
         this.listNameField.setValue(listName);
         this.listNameField.setMaxLength(MAX_NAME_LENGTH);
         this.configureSuggestions();
@@ -86,7 +92,14 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         WidgetStack dimensionRow = new WidgetStack(0, 0, 0);
         ScalableText dimensionLabel = new ScalableText(
                 0, 0, dimensionLabelText, WidgetThemeVariable.TEXT_PRIMARY, font);
-        dimensionField = new TranslucentTextField(0, 0, 155, dimensionLabelText, font);
+        List<String> dimensions = new ArrayList<>(WaypointClientMod.getAllAvailableDimensionNames());
+        if (!dimensions.contains(this.dimensionName)) {
+            dimensions.add(this.dimensionName);
+        }
+        dimensions.sort(String::compareTo);
+        dimensionField = new ComboBoxWidget(0, 0, 155, 13, dimensionLabelText, font,
+                dimensions, this.dimensionName, value -> {});
+        dimensionField.setRenderPopupSeparately(true);
         dimensionRow.addChild(dimensionLabel, 0);
         dimensionRow.addChild(dimensionField);
         WidgetStack listNameRow = new WidgetStack(0, 0, 0);
@@ -124,6 +137,47 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         return List.of(addButton, cancelButton);
     }
 
+    //? if >=1.21.9 {
+    @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClicked) {
+        if (this.clickDimensionMenu(event.x(), event.y(), event.button())) {
+            return true;
+        }
+        return super.mouseClicked(event, doubleClicked);
+    }
+    //?} else {
+    /*@Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.clickDimensionMenu(mouseX, mouseY, button)) {
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+    *///?}
+
+    @Override
+    protected void renderTitleRowOverlays(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        this.dimensionField.renderPopup(context, mouseX, mouseY, delta);
+    }
+
+    private boolean clickDimensionMenu(double mouseX, double mouseY, int button) {
+        if (this.dimensionField.isExpanded()
+                && this.dimensionField.mouseClicked(mouseX, mouseY, button)) {
+            this.setFocused(this.dimensionField);
+            return true;
+        }
+        this.dimensionField.closeMenuIfOutside(mouseX, mouseY);
+        return false;
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == 256 && this.dimensionField.closeMenuIfOpen()) {
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
     private void sendAddCommand() {
         WaypointPos resolvedPos = this.resolveCoordinateFields();
         sendCommand(addCmd(this.dimensionField.getValue(), this.listNameField.getValue(),
@@ -140,7 +194,6 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     }
 
     private void configureSuggestions() {
-        this.dimensionField.setSuggestionsProvider(WaypointClientMod::getAllAvailableDimensionNames);
         this.listNameField.setSuggestionsProvider(() -> WaypointClientMod.getAllWaypointListNames(this.dimensionField.getValue()));
         this.nameEditBox.setSuggestionsProvider(() -> WaypointClientMod.getAllWaypointNames(this.dimensionField.getValue(), this.listNameField.getValue()));
         this.initialsEditBox.setSuggestionsProvider(this::getWaypointInitialsSuggestions);

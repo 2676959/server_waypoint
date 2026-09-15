@@ -29,6 +29,7 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
     private final LayoutFlow.Direction expansionDirection;
     private final int itemSpacing;
     private boolean expanded;
+    private boolean renderPopupSeparately;
     private int selectedMenuItemIndex = -1;
     private int highlightedItemIndex = -1;
 
@@ -272,7 +273,18 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
     extractWidgetRenderState
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         this.renderDropdownControl(context, mouseX, mouseY, deltaTicks);
-        if (!this.expanded) {
+        if (!this.renderPopupSeparately) {
+            this.renderPopup(context, mouseX, mouseY, deltaTicks);
+        }
+    }
+
+    /** Lets an owning screen draw the popup after its other controls. */
+    public final void setRenderPopupSeparately(boolean separately) {
+        this.renderPopupSeparately = separately;
+    }
+
+    public final void renderPopup(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        if (!this.expanded || !this.visible || !this.active) {
             return;
         }
         nextLayer(context);

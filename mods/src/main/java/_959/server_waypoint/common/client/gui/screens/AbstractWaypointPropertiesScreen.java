@@ -503,7 +503,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         GuiEventListener focused = this.getFocused();
-        this.acceptMovementKeys(!(focused instanceof EditBox));
+        this.acceptMovementKeys(!(focused instanceof EditBox) && !(focused instanceof ComboBoxWidget));
         if (keyCode == 256 && this.swatchWidget.visible) {
             this.closeSwatch();
             return true;
@@ -526,12 +526,16 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         nextLayer(context);
         this.renderTextFieldSuggestions(context, mouseX, mouseY);
         previousLayer(context);
+        this.renderTitleRowOverlays(context, mouseX, mouseY, delta);
         nextLayer(context);
         this.swatchWidget.
         //$ render_widget_method_swap
         extractWidgetRenderState
                 (context, mouseX, mouseY, delta);
         previousLayer(context);
+    }
+
+    protected void renderTitleRowOverlays(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
     }
 
     private void drawBackground(GuiGraphicsExtractor context) {
