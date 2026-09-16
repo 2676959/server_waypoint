@@ -1,11 +1,17 @@
 package _959.server_waypoint.common.client.integrations;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.core.WaypointFileManager;
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.data.DimensionWaypointData;
+import _959.server_waypoint.core.network.data.WaypointData;
+import _959.server_waypoint.core.network.upload.UploadStatus;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.common.util.SyncedWaypointName;
+import _959.server_waypoint.common.util.XaerosWaypointHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -15,8 +21,11 @@ import net.minecraft.world.level.Level;
 import xaero.hud.minimap.module.MinimapSession;
 import xaero.hud.minimap.waypoint.set.WaypointSet;
 import xaero.hud.minimap.world.MinimapWorld;
+import xaero.hud.minimap.waypoint.WaypointPurpose;
+import xaero.common.minimap.waypoints.Waypoint;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
@@ -35,6 +44,99 @@ public final class XaerosMinimapWaypointHelper {
         waypointClientMod.forEachWaypointFileManager((fileManager) ->
                 replaceDimension(session, fileManager));
         saveAllWorlds(session);
+    }
+
+    public static void uploadToServer(UploadRequestBuffer request) {
+        if (!ClientConfig.isXaerosMinimapLoaded) {
+            sendUploadResult(request, UploadStatus.XAERO_NOT_INSTALLED, List.of());
+            return;
+        }
+        if (!WaypointClientMod.isXaerosMinimapReady) {
+            sendUploadResult(request, UploadStatus.XAERO_NOT_READY, List.of());
+            return;
+        }
+
+        try {
+            MinimapSession session = getMinimapSession();
+            if (session == null) {
+                sendUploadResult(request, UploadStatus.XAERO_NOT_READY, List.of());
+                return;
+            }
+            List<DimensionWaypointData> uploadedDimensions = new ArrayList<>();
+            for (String dimensionName : request.dimensionNames()) {
+                ResourceKey<Level> dimensionKey = getDimensionKey(dimensionName);
+                if (dimensionKey == null) {
+                    LOGGER.warn("Cannot export Xaero's waypoints: unknown requested dimension {}", dimensionName);
+                    sendUploadResult(request, UploadStatus.XAERO_NOT_READY, List.of());
+                    return;
+                }
+                MinimapWorld minimapWorld = getMinimapWorld(session, dimensionKey);
+                if (minimapWorld == null) {
+                    LOGGER.warn("Cannot export Xaero's waypoints: world for requested dimension {} is not loaded", dimensionName);
+                    sendUploadResult(request, UploadStatus.XAERO_NOT_READY, List.of());
+                    return;
+                }
+                List<WaypointList> uploadedLists = new ArrayList<>();
+                for (WaypointSet waypointSet : minimapWorld.getIterableWaypointSets()) {
+                    String listName = SyncedWaypointName.parseSyncedName(waypointSet.getName());
+                    if (listName == null) {
+                        listName = waypointSet.getName();
+                    }
+                    if (request.listName() != null && !request.listName().equals(listName)) {
+                        continue;
+                    }
+                    uploadedLists.add(createUploadedWaypointList(request, listName, waypointSet));
+                }
+                uploadedDimensions.add(new DimensionWaypointData(dimensionName, uploadedLists));
+            }
+            sendUploadResult(request, UploadStatus.SUCCESS, uploadedDimensions);
+        } catch (Exception exception) {
+            LOGGER.warn("Failed to export Xaero's waypoints for upload", exception);
+            sendUploadResult(request, UploadStatus.FAILED, List.of());
+        }
+    }
+
+    private static WaypointList createUploadedWaypointList(
+            UploadRequestBuffer request,
+            String listName,
+            WaypointSet waypointSet
+    ) {
+        List<SimpleWaypoint> uploadedWaypoints = new ArrayList<>();
+        for (Waypoint waypoint : waypointSet.getWaypoints()) {
+            if (waypoint.getPurpose() != WaypointPurpose.NORMAL || waypoint.isTemporary() || waypoint.isDisabled()) {
+                continue;
+            }
+            String waypointName = SyncedWaypointName.parseSyncedName(waypoint.getName());
+            if (waypointName == null) {
+                waypointName = waypoint.getName();
+            }
+            if (request.waypointName() != null && !request.waypointName().equals(waypointName)) {
+                continue;
+            }
+            SimpleWaypoint simpleWaypoint = XaerosWaypointHelper.xaerosWaypointToSimpleWaypoint(waypoint);
+            if (!waypointName.equals(simpleWaypoint.name())) {
+                simpleWaypoint = new SimpleWaypoint(
+                        waypointName,
+                        simpleWaypoint.initials(),
+                        simpleWaypoint.pos(),
+                        simpleWaypoint.rgb(),
+                        simpleWaypoint.yaw(),
+                        simpleWaypoint.global()
+                );
+            }
+            uploadedWaypoints.add(simpleWaypoint);
+        }
+        return new WaypointList(listName, WaypointList.SERVER_N, uploadedWaypoints);
+    }
+
+    private static void sendUploadResult(
+            UploadRequestBuffer request,
+            UploadStatus status,
+            List<DimensionWaypointData> uploadedDimensions
+    ) {
+        WaypointClientMod.getInstance().sendChunkedMessageToServer(WaypointData.upload(
+                request.requestId(), status, uploadedDimensions
+        ));
     }
 
     public static void replaceList(String dimensionName, WaypointList waypointList) {
@@ -95,7 +197,7 @@ public final class XaerosMinimapWaypointHelper {
                 if (waypoint == null) {
                     return;
                 }
-                replaceSyncedWaypoint(waypointSet, listName, waypoint);
+                replaceSyncedWaypoint(waypointSet, waypoint);
                 displayClientMessage(player, Component.translatable("server_waypoint.modification.add.xaeros", toVanillaText(waypointTextWithTp(waypoint, dimensionName, listName))));
             }
             case REMOVE -> {
@@ -111,7 +213,7 @@ public final class XaerosMinimapWaypointHelper {
                 if (waypointName != null && !waypointName.equals(waypoint.name())) {
                     removeSyncedWaypoint(waypointSet, waypointName);
                 }
-                replaceSyncedWaypoint(waypointSet, listName, waypoint);
+                replaceSyncedWaypoint(waypointSet, waypoint);
                 displayClientMessage(player, Component.translatable("server_waypoint.modification.update.xaeros", toVanillaText(waypointTextWithTp(waypoint, dimensionName, listName))));
             }
             case ADD_LIST -> {

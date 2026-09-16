@@ -13,7 +13,7 @@ pluginManagement {
 }
 
 plugins {
-    id("dev.kikugie.stonecutter") version "0.7.1"
+    id("dev.kikugie.stonecutter") version "0.9.7"
 }
 
 stonecutter {
@@ -23,7 +23,9 @@ stonecutter {
     // Subproject configuration
     create("mods") {
         fun mc(loader: String, vararg versions: String) {
-            for (version in versions) vers("$version-$loader", version)
+            for (minecraftVersion in versions) {
+                version("$minecraftVersion-$loader", minecraftVersion)
+            }
         }
         mc("fabric",
             "1.20.1", "1.20.2", "1.20.4", "1.20.6",
@@ -51,12 +53,12 @@ stonecutter {
     }
 
     create("paper") {
-        vers("1.21-paper", "1.21")
+        version("1.21-paper", "1.21")
         // codes are identical with 1.21-paper, created because 1.21.11 complies the same method with different descriptor:
         // 1.21    : Transformation(Vector3f, Quaternionf, Vector3f, Quaternionf)
         // 1.21.11 : Transformation(Vector3fc, Quaternionfc, Vector3fc, Quaternionfc)
-        vers("1.21.11-paper", "1.21.11")
-        vers("26.2-paper", "26.2")
+        version("1.21.11-paper", "1.21.11")
+        version("26.2-paper", "26.2")
     }
 }
 

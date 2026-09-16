@@ -10,6 +10,8 @@ plugins {
     id("net.minecraftforge.gradle")
     id("net.minecraftforge.jarjar")
     id("com.gradleup.shadow")
+    id("com.modrinth.minotaur")
+    id("net.darkhax.curseforgegradle")
 }
 
 val minecraftVersion = stonecutter.current.version
@@ -113,15 +115,20 @@ stonecutter {
         else -> "mouseScrolled($1, $2, $3, $4)"
     }
 
-    replacements.regex("gui_graphics_26", usesTwentySixApi) {
-        replace("\\bGuiGraphics\\b", "GuiGraphicsExtractor")
-        reverse("\\bGuiGraphicsExtractor\\b", "GuiGraphics")
+    replacements.regex(usesTwentySixApi, "gui_graphics_26") {
+        replace("\\bGuiGraphics\\b", "GuiGraphicsExtractor", "\\bGuiGraphicsExtractor\\b", "GuiGraphics")
     }
-    replacements.string("gui_render_state_26", usesTwentySixApi) {
+    replacements.string(usesTwentySixApi, "gui_render_state_26") {
         replace("net.minecraft.client.gui.render.state.GuiElementRenderState", "net.minecraft.client.renderer.state.gui.GuiElementRenderState")
     }
-    replacements.string("resource_location_import", usesResourceLocation) {
+    replacements.string(usesResourceLocation, "resource_location_import") {
         replace("net.minecraft.resources.Identifier", "net.minecraft.resources.ResourceLocation")
+    }
+    replacements.string(usesTwentySixApi, "fabric_key_mapping_import_26") {
+        replace("net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper", "net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper")
+    }
+    replacements.string(usesTwentySixApi, "fabric_key_mapping_call_26") {
+        replace("KeyBindingHelper.registerKeyBinding", "KeyMappingHelper.registerKeyMapping")
     }
 }
 
@@ -232,12 +239,15 @@ dependencies {
     val mixinExtrasVersion = "0.5.4"
     compileOnly("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
     annotationProcessor("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
-    implementation("io.github.llamalad7:mixinextras-forge:$mixinExtrasVersion")
-    val mixinExtrasForge = requireNotNull(
-        add("jarJar", "io.github.llamalad7:mixinextras-forge:$mixinExtrasVersion")
-    )
-    jarJar.configure(mixinExtrasForge) {
-        setRange("[$mixinExtrasVersion,)")
+    // Forge 1.21.11+ bundles mixinextras-forge 0.5.3 itself; older Forge does not provide MixinExtras, so it must be embedded.
+    if (!stonecutter.eval(minecraftVersion, ">=1.21.11")) {
+        implementation("io.github.llamalad7:mixinextras-forge:$mixinExtrasVersion")
+        val mixinExtrasForge = requireNotNull(
+            add("jarJar", "io.github.llamalad7:mixinextras-forge:$mixinExtrasVersion")
+        )
+        jarJar.configure(mixinExtrasForge) {
+            setRange("[$mixinExtrasVersion,)")
+        }
     }
 
     implementation(project(":common"))
@@ -338,9 +348,11 @@ tasks.jar {
     archiveClassifier.set("thin")
 }
 
-tasks.named<ShadowJar>("shadowJar") {
+val shadowJarTask = tasks.named<ShadowJar>("shadowJar")
+shadowJarTask.configure {
     configurations = listOf(shadedDependencies)
-    archiveClassifier.set(if (needsSrgReobf) "dev-shadow" else "")
+    // Keep a distinct classifier on every version so the shadowJarJar output never collides with this archive.
+    archiveClassifier.set("shadow")
     addMultiReleaseAttribute.set(false)
     exclude("META-INF/*.DSA", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/MANIFEST.MF", "mappings/**")
     dependencies {
@@ -352,6 +364,9 @@ tasks.named<ShadowJar>("shadowJar") {
 val jarJarTask = tasks.named<Jar>("shadowJarJar") {
     archiveClassifier.set(if (needsSrgReobf) "dev-jarjar" else "")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    // The jarjar plugin replays the shadowJar CopySpec, which misses the shaded dependencies
+    // (ShadowJar weaves them in during its copy action). Merge in the full shadow archive explicitly.
+    from(shadowJarTask.flatMap { it.archiveFile }.map { zipTree(it.asFile) })
 }
 
 val reobfShadowJar = if (needsSrgReobf) {

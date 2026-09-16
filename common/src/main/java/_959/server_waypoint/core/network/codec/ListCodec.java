@@ -1,35 +1,60 @@
 package _959.server_waypoint.core.network.codec;
 
+import _959.server_waypoint.core.network.DecodingContext;
+import _959.server_waypoint.core.network.EncodingContext;
 import io.netty.buffer.ByteBuf;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
-public class ListCodec {
-    private static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_network_codec");
-    private static final int MAX_ITEMS = 10_000;
+public final class ListCodec {
+    private static final int INITIAL_CAPACITY_LIMIT = 64;
 
-    public static <T> void encode(ByteBuf byteBuf, List<T> list, BiConsumer<ByteBuf, T> encoder) {
+    private ListCodec() {
+    }
+
+    public static <T> void encode(
+            ByteBuf byteBuf,
+            List<T> list,
+            MessageCodec.Encoder<T> encoder,
+            EncodingContext context
+    ) {
         byteBuf.writeInt(list.size());
         for (T item : list) {
-            encoder.accept(byteBuf, item);
+            encoder.encode(byteBuf, item, context);
         }
     }
 
-    public static <T> List<T> decode(ByteBuf byteBuf, Function<ByteBuf, T> decoder) {
+    public static <T> List<T> decode(
+            ByteBuf byteBuf,
+            MessageCodec.Decoder<T> decoder,
+            DecodingContext context
+    ) {
         int arrayLength = byteBuf.readInt();
-        if (arrayLength < 0 || arrayLength > MAX_ITEMS) {
-            LOGGER.error("Invalid list length in network payload: {}. Ignoring this list; otherwise decoding may allocate excessive memory and crash the game.", arrayLength);
-            return Collections.emptyList();
+        if (arrayLength < 0) {
+            throw new IllegalArgumentException("Invalid list length: " + arrayLength);
         }
-        List<T> list = new ArrayList<>(arrayLength);
+        if (arrayLength > byteBuf.readableBytes()) {
+            throw new IllegalArgumentException(
+                    "List length cannot fit in the remaining message bytes: " + arrayLength
+            );
+        }
+        List<T> list = new ArrayList<>(Math.min(arrayLength, INITIAL_CAPACITY_LIMIT));
         for (int i = 0; i < arrayLength; i++) {
-            T item = decoder.apply(byteBuf);
+            context.claimObject();
+            int readerIndex = byteBuf.readerIndex();
+            T item;
+            try {
+                item = decoder.decode(byteBuf, context);
+            } catch (IndexOutOfBoundsException exception) {
+                throw new IllegalArgumentException(
+                        "List ended before its declared element count",
+                        exception
+                );
+            }
+            if (byteBuf.readerIndex() <= readerIndex) {
+                throw new IllegalArgumentException("List element decoder did not consume any bytes");
+            }
             list.add(item);
         }
         return list;

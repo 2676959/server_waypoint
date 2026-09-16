@@ -1,12 +1,22 @@
 package _959.server_waypoint.core.network.codec;
 
-import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
-import _959.server_waypoint.core.network.buffer.WaypointEditRequestBuffer;
-import _959.server_waypoint.core.network.buffer.WaypointEditResultBuffer;
-import _959.server_waypoint.core.network.buffer.WaypointListUpdateBuffer;
 import _959.server_waypoint.core.edit.EditResultStatus;
 import _959.server_waypoint.core.edit.PatchField;
 import _959.server_waypoint.core.edit.WaypointPatch;
+import _959.server_waypoint.core.network.DecodingContext;
+import _959.server_waypoint.core.network.EncodingContext;
+import _959.server_waypoint.core.network.MessageEncodingException;
+import _959.server_waypoint.core.network.buffer.ServerHandshakeBuffer;
+import _959.server_waypoint.core.network.buffer.ClientHandshakeBuffer;
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.data.DimensionWaypointData;
+import _959.server_waypoint.core.network.data.WaypointData;
+import _959.server_waypoint.core.network.message.WaypointEditRequestMessage;
+import _959.server_waypoint.core.network.message.WaypointEditResultMessage;
+import _959.server_waypoint.core.network.message.WaypointListUpdateMessage;
+import _959.server_waypoint.core.network.message.WaypointModificationMessage;
+import _959.server_waypoint.core.network.upload.UploadStatus;
+import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
@@ -15,107 +25,176 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NetworkCodecTest {
+    private static final int BYTE_BUDGET = 2 * 1_024 * 1_024;
+    private static final int OBJECT_BUDGET = 100_000;
+
     @Test
-    void utfStringRoundTripsStringsPastTheOldByteBoundary() {
-        String value = "a".repeat(2048);
-        ByteBuf buf = Unpooled.buffer();
+    void serverHandshakeCarriesChunkCompressionSetting() {
+        ServerHandshakeBuffer handshake = new ServerHandshakeBuffer(99, 42, false);
+        ByteBuf buffer = Unpooled.buffer();
 
-        UtfStringCodec.encode(buf, value);
+        ServerHandshakeCodec.encode(buffer, handshake);
+        ServerHandshakeBuffer decoded = ServerHandshakeCodec.decode(buffer);
 
-        assertEquals(value, UtfStringCodec.decode(buf));
+        assertEquals(99, decoded.version());
+        assertEquals(42, decoded.serverId());
+        assertFalse(decoded.compressChunkedMessages());
     }
 
     @Test
-    void utfStringTruncatesOverlongStringsWithoutThrowing() {
-        String value = "a".repeat(65_536);
-        ByteBuf buf = Unpooled.buffer();
+    void clientHandshakeCarriesItsDeclaredProtocolVersion() {
+        ClientHandshakeBuffer handshake = new ClientHandshakeBuffer(98);
+        ByteBuf buffer = Unpooled.buffer();
 
-        assertDoesNotThrow(() -> UtfStringCodec.encode(buf, value));
+        ClientHandshakeCodec.encode(buffer, handshake);
 
-        assertEquals("a".repeat(65_535), UtfStringCodec.decode(buf));
+        assertEquals(handshake, ClientHandshakeCodec.decode(buffer));
     }
 
     @Test
-    void listDecodeIgnoresOversizedCountsWithoutThrowing() {
-        ByteBuf buf = Unpooled.buffer();
-        buf.writeInt(10_001);
+    void utfStringAboveUnsignedShortBoundaryRoundTripsWithoutTruncation() {
+        String value = "\u00e9".repeat(40_000);
+        ByteBuf buffer = Unpooled.buffer();
 
-        List<String> decoded = assertDoesNotThrow(() -> ListCodec.decode(buf, ignored -> "item"));
+        UtfStringCodec.encode(buffer, value, encoding());
 
-        assertEquals(List.of(), decoded);
+        assertEquals(80_000, buffer.getInt(0));
+        assertEquals(value, UtfStringCodec.decode(buffer, decoding()));
     }
 
     @Test
-    void waypointExtraInfoRoundTrips() {
-        SimpleWaypoint waypoint = new SimpleWaypoint(
-                "Home",
-                "{\"text\":\"Home\",\"bold\":true}",
-                "H",
-                new WaypointPos(1, 2, 3),
-                0x39C5BB,
-                90,
-                true,
-                List.of("base", "storage"),
-                "{\"text\":\"Bring food\",\"color\":\"gold\"}"
+    void utfStringRejectsNegativeAndUnavailableLengths() {
+        ByteBuf negative = Unpooled.buffer().writeInt(-1);
+        ByteBuf unavailable = Unpooled.buffer().writeInt(10).writeByte(1);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> UtfStringCodec.decode(negative, decoding())
         );
-        ByteBuf buf = Unpooled.buffer();
-
-        SimpleWaypointCodec.encode(buf, waypoint);
-        SimpleWaypoint decoded = SimpleWaypointCodec.decode(buf);
-
-        assertEquals(waypoint.name(), decoded.name());
-        assertEquals(waypoint.displayName(), decoded.displayName());
-        assertEquals(waypoint.keywords(), decoded.keywords());
-        assertEquals(waypoint.description(), decoded.description());
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> UtfStringCodec.decode(unavailable, decoding())
+        );
     }
 
     @Test
-    void waypointListDisplayNameRoundTrips() {
+    void utfStringEncodingHonorsEnclosingByteBudget() {
+        ByteBuf buffer = Unpooled.buffer();
+
+        assertThrows(
+                MessageEncodingException.class,
+                () -> UtfStringCodec.encode(buffer, "abcdef", new EncodingContext(5))
+        );
+    }
+
+    @Test
+    void listAboveOldItemCeilingRoundTripsWithinBudget() {
+        List<Integer> values = IntStream.range(0, 12_000).boxed().toList();
+        ByteBuf buffer = Unpooled.buffer();
+
+        ListCodec.encode(
+                buffer,
+                values,
+                (target, value, ignored) -> target.writeInt(value),
+                encoding()
+        );
+        List<Integer> decoded = ListCodec.decode(
+                buffer,
+                (source, ignored) -> source.readInt(),
+                decoding()
+        );
+
+        assertEquals(values, decoded);
+    }
+
+    @Test
+    void listRejectsNegativeAndHugeDeclaredCountsWithoutLargePreallocation() {
+        ByteBuf negative = Unpooled.buffer().writeInt(-1);
+        ByteBuf huge = Unpooled.buffer().writeInt(Integer.MAX_VALUE);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ListCodec.decode(negative, (source, ignored) -> source.readByte(), decoding())
+        );
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ListCodec.decode(huge, (source, ignored) -> source.readByte(), decoding())
+        );
+    }
+
+    @Test
+    void listRejectsZeroByteElementDecoderAndObjectBudgetExhaustion() {
+        ByteBuf zeroByte = Unpooled.buffer().writeInt(1);
+        ByteBuf tooManyObjects = Unpooled.buffer()
+                .writeInt(3)
+                .writeInt(1)
+                .writeInt(2)
+                .writeInt(3);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ListCodec.decode(zeroByte, (source, ignored) -> "item", decoding())
+        );
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> ListCodec.decode(
+                        tooManyObjects,
+                        (source, ignored) -> source.readInt(),
+                        new DecodingContext(BYTE_BUDGET, 2)
+                )
+        );
+    }
+
+    @Test
+    void waypointStructureUsesOneCanonicalCodec() {
+        SimpleWaypoint waypoint = waypoint("Home");
         WaypointList waypointList = new WaypointList(
                 "Bases",
                 "{\"text\":\"Bases\",\"color\":\"aqua\"}",
                 4,
-                List.of()
+                List.of(waypoint)
         );
-        ByteBuf buf = Unpooled.buffer();
+        ByteBuf buffer = Unpooled.buffer();
 
-        WaypointListCodec.encode(buf, waypointList);
-        WaypointList decoded = WaypointListCodec.decode(buf);
+        WaypointListCodec.encode(buffer, waypointList, encoding());
+        WaypointList decoded = WaypointListCodec.decode(buffer, decoding());
 
         assertEquals(waypointList.name(), decoded.name());
         assertEquals(waypointList.displayName(), decoded.displayName());
+        assertEquals(waypoint.displayName(), decoded.simpleWaypoints().get(0).displayName());
+        assertEquals(waypoint.keywords(), decoded.simpleWaypoints().get(0).keywords());
+        assertEquals(waypoint.description(), decoded.simpleWaypoints().get(0).description());
     }
 
     @Test
-    void listDisplayNameRoundTripsInIncrementalModification() {
-        String displayName = "{\"text\":\"Bases\",\"color\":\"aqua\"}";
-        WaypointModificationBuffer modification = new WaypointModificationBuffer(
+    void logicalMessageCodecsRoundTripCanonicalSnapshots() {
+        WaypointModificationMessage modification = new WaypointModificationMessage(
                 "minecraft:overworld",
                 "Bases",
-                displayName,
+                "{\"text\":\"Bases\",\"color\":\"aqua\"}",
                 null,
                 null,
                 WaypointModificationType.ADD_LIST,
                 WaypointList.SERVER_N
         );
-        ByteBuf buf = Unpooled.buffer();
+        ByteBuf modificationBuffer = Unpooled.buffer();
+        WaypointModificationMessageCodec.encode(modificationBuffer, modification, encoding());
+        assertEquals(
+                modification,
+                WaypointModificationMessageCodec.decode(modificationBuffer, decoding())
+        );
 
-        WaypointModificationBufferCodec.encode(buf, modification);
-        WaypointModificationBuffer decoded = WaypointModificationBufferCodec.decode(buf);
-
-        assertEquals("Bases", decoded.listName());
-        assertEquals(displayName, decoded.listDisplayName());
-    }
-
-    @Test
-    void waypointEditRequestAndResultRoundTrip() {
         WaypointPatch patch = new WaypointPatch(
                 PatchField.set(""),
                 PatchField.set(""),
@@ -127,47 +206,117 @@ class NetworkCodecTest {
                 PatchField.clear(),
                 PatchField.clear()
         );
-        WaypointEditRequestBuffer request = new WaypointEditRequestBuffer(
-                42L, "minecraft:overworld", "", "way point", 7, patch
+        WaypointEditRequestMessage request = new WaypointEditRequestMessage(
+                42L,
+                "minecraft:overworld",
+                "",
+                "way point",
+                7,
+                patch
         );
-        ByteBuf requestBuf = Unpooled.buffer();
-        WaypointEditRequestBufferCodec.encode(requestBuf, request);
-        WaypointEditRequestBuffer decodedRequest = WaypointEditRequestBufferCodec.decode(requestBuf);
-        assertEquals(request, decodedRequest);
-        assertFalse(decodedRequest.patch().visibility().requiredValue());
+        ByteBuf requestBuffer = Unpooled.buffer();
+        WaypointEditRequestMessageCodec.encode(requestBuffer, request, encoding());
+        assertEquals(request, WaypointEditRequestMessageCodec.decode(requestBuffer, decoding()));
 
-        SimpleWaypoint canonical = new SimpleWaypoint(
-                "", "", "I", new WaypointPos(4, 5, 6), 0x123456, 90, false,
-                List.of(), ""
+        WaypointEditResultMessage result = new WaypointEditResultMessage(
+                42L,
+                EditResultStatus.DUPLICATE_KEYWORD,
+                "minecraft:overworld",
+                "",
+                "way point",
+                waypoint(""),
+                8
         );
-        WaypointEditResultBuffer result = new WaypointEditResultBuffer(
-                42L, EditResultStatus.DUPLICATE_KEYWORD, "minecraft:overworld", "", "way point",
-                canonical, 8
-        );
-        ByteBuf resultBuf = Unpooled.buffer();
-        WaypointEditResultBufferCodec.encode(resultBuf, result);
-        WaypointEditResultBuffer decodedResult = WaypointEditResultBufferCodec.decode(resultBuf);
-        assertEquals(result.requestId(), decodedResult.requestId());
+        ByteBuf resultBuffer = Unpooled.buffer();
+        WaypointEditResultMessageCodec.encode(resultBuffer, result, encoding());
+        WaypointEditResultMessage decodedResult =
+                WaypointEditResultMessageCodec.decode(resultBuffer, decoding());
         assertEquals(result.status(), decodedResult.status());
-        assertEquals("", decodedResult.waypoint().name());
         assertEquals(8, decodedResult.listRevision());
-    }
 
-    @Test
-    void waypointListUpdateRoundTripsPreviousIdentifierAndCanonicalSnapshot() {
-        WaypointListUpdateBuffer update = new WaypointListUpdateBuffer(
+        WaypointListUpdateMessage update = new WaypointListUpdateMessage(
                 "minecraft:overworld",
                 "old list",
                 new WaypointList("", "{\"text\":\"Shown\"}", 9, List.of())
         );
-        ByteBuf buf = Unpooled.buffer();
+        ByteBuf updateBuffer = Unpooled.buffer();
+        WaypointListUpdateMessageCodec.encode(updateBuffer, update, encoding());
+        WaypointListUpdateMessage decodedUpdate =
+                WaypointListUpdateMessageCodec.decode(updateBuffer, decoding());
+        assertEquals("old list", decodedUpdate.previousListIdentifier());
+        assertEquals(9, decodedUpdate.waypointList().getSyncNum());
+    }
 
-        WaypointListUpdateBufferCodec.encode(buf, update);
-        WaypointListUpdateBuffer decoded = WaypointListUpdateBufferCodec.decode(buf);
+    @Test
+    void waypointDataAndUploadRequestRoundTrip() {
+        List<SimpleWaypoint> waypoints = new ArrayList<>();
+        for (int index = 0; index < 65; index++) {
+            waypoints.add(waypoint("Waypoint " + index));
+        }
+        WaypointData uploadData = WaypointData.upload(
+                UUID.randomUUID(),
+                UploadStatus.SUCCESS,
+                List.of(new DimensionWaypointData(
+                        "minecraft:overworld",
+                        List.of(new WaypointList("Bases", WaypointList.SERVER_N, waypoints))
+                ))
+        );
+        ByteBuf dataBuffer = Unpooled.buffer();
+        WaypointDataCodec.encode(dataBuffer, uploadData, encoding());
+        WaypointData decodedData = WaypointDataCodec.decode(dataBuffer, decoding());
+        assertEquals(uploadData.uploadData().requestId(), decodedData.uploadData().requestId());
+        assertEquals(65, decodedData.dimensions().get(0).waypointLists().get(0).size());
 
-        assertEquals("old list", decoded.previousListIdentifier());
-        assertEquals("", decoded.waypointList().name());
-        assertEquals("{\"text\":\"Shown\"}", decoded.waypointList().displayName());
-        assertEquals(9, decoded.waypointList().getSyncNum());
+        UploadRequestBuffer request = new UploadRequestBuffer(
+                UUID.randomUUID(),
+                List.of("minecraft:overworld", "minecraft:the_nether"),
+                "Bases",
+                null,
+                UploadTarget.VOXELMAP
+        );
+        ByteBuf requestBuffer = Unpooled.buffer();
+        UploadRequestCodec.encode(requestBuffer, request, encoding());
+        assertEquals(request, UploadRequestCodec.decode(requestBuffer, decoding()));
+    }
+
+    @Test
+    void uploadRequestRejectsInvalidTargetOrdinal() {
+        UploadRequestBuffer request = new UploadRequestBuffer(
+                UUID.randomUUID(),
+                List.of("minecraft:overworld"),
+                null,
+                null,
+                UploadTarget.XAERO
+        );
+        ByteBuf buffer = Unpooled.buffer();
+        UploadRequestCodec.encode(buffer, request, encoding());
+        buffer.setByte(buffer.writerIndex() - 1, 255);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> UploadRequestCodec.decode(buffer, decoding())
+        );
+    }
+
+    private static SimpleWaypoint waypoint(String name) {
+        return new SimpleWaypoint(
+                name,
+                "{\"text\":\"Home\",\"bold\":true}",
+                "H",
+                new WaypointPos(1, 2, 3),
+                0x39C5BB,
+                90,
+                true,
+                List.of("base", "storage"),
+                "{\"text\":\"Bring food\",\"color\":\"gold\"}"
+        );
+    }
+
+    private static EncodingContext encoding() {
+        return new EncodingContext(BYTE_BUDGET);
+    }
+
+    private static DecodingContext decoding() {
+        return new DecodingContext(BYTE_BUDGET, OBJECT_BUDGET);
     }
 }

@@ -5,7 +5,11 @@ import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
-import _959.server_waypoint.core.network.buffer.MessageBuffer;
+import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.ChunkedMessageDelivery;
+import _959.server_waypoint.core.network.ChunkedMessageSendResult;
+import _959.server_waypoint.core.network.SinglePacketMessage;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
@@ -33,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -80,6 +85,31 @@ class CoreWaypointCommandListTest {
     @AfterEach
     void tearDown() {
         WaypointServerCore.CONFIG = this.originalConfig;
+    }
+
+    @Test
+    void downloadReportsSuccessOnlyAfterFinalDelivery() throws CommandSyntaxException {
+        CompletableFuture<ChunkedMessageSendResult> completion = new CompletableFuture<>();
+        this.sender.chunkedDelivery = ChunkedMessageDelivery.queued(completion);
+
+        this.dispatcher.execute("wp download", this.source);
+
+        assertTrue(this.sender.messages.isEmpty());
+        completion.complete(ChunkedMessageSendResult.DELIVERED);
+        assertTrue(translationKeys(lastMessage()).contains("waypoint.download.all"));
+    }
+
+    @Test
+    void downloadReportsAsynchronousDeliveryFailure() throws CommandSyntaxException {
+        CompletableFuture<ChunkedMessageSendResult> completion = new CompletableFuture<>();
+        this.sender.chunkedDelivery = ChunkedMessageDelivery.queued(completion);
+
+        this.dispatcher.execute("wp download", this.source);
+        completion.complete(ChunkedMessageSendResult.DELIVERY_FAILED);
+
+        assertTrue(translationKeys(
+                this.sender.errors.get(this.sender.errors.size() - 1)
+        ).contains("waypoint.network.delivery_failed"));
     }
 
     @Test
@@ -135,6 +165,9 @@ class CoreWaypointCommandListTest {
         String helpText = plainText(help);
         assertTrue(helpText.contains("/wp list"));
         assertTrue(helpText.contains("/wp download [<dimension> [<list-identifier> [<waypoint-identifier>]]]"));
+        assertTrue(helpText.contains(
+                "/wp upload <xaero|voxelmap> [force [server|local [delete]]] [<dimension> [<list> [<waypoint>]]]"
+        ));
         assertTrue(helpText.contains("/wp add"));
         assertTrue(helpText.contains("/wp edit"));
         assertTrue(helpText.contains("/wp navigate"));
@@ -145,6 +178,7 @@ class CoreWaypointCommandListTest {
                 "waypoint.help.title",
                 "waypoint.help.list",
                 "waypoint.help.download",
+                "waypoint.help.upload",
                 "waypoint.help.navigate",
                 "waypoint.help.add",
                 "waypoint.help.edit",
@@ -157,6 +191,7 @@ class CoreWaypointCommandListTest {
         assertEquals(List.of(
                 "/wp list ",
                 "/wp download ",
+                "/wp upload ",
                 "/wp navigate ",
                 "/wp add ",
                 "/wp edit ",
@@ -358,6 +393,26 @@ class CoreWaypointCommandListTest {
                 "wp details waypoint overworld \"\" \"\"",
                 this.source
         ));
+    }
+
+    @Test
+    void uploadRequiresSourceAndSuggestsSupportedTargets() throws CommandSyntaxException {
+        List<String> suggestions = this.dispatcher.getCompletionSuggestions(
+                        this.dispatcher.parse("wp upload ", this.source)
+                ).join().getList().stream()
+                .map(suggestion -> suggestion.getText())
+                .toList();
+
+        assertEquals(2, suggestions.size());
+        assertTrue(suggestions.containsAll(List.of("xaero", "voxelmap")));
+        assertThrows(
+                CommandSyntaxException.class,
+                () -> this.dispatcher.execute("wp upload", this.source)
+        );
+
+        this.dispatcher.execute("wp upload unsupported", this.source);
+        assertTrue(translationKeys(this.sender.errors.get(0))
+                .contains("waypoint.upload.source.invalid"));
     }
 
     @Test
@@ -859,6 +914,17 @@ class CoreWaypointCommandListTest {
                     sender,
                     permissionManager,
                     navigationService(),
+                    new UploadCoordinator<>(
+                            server,
+                            (player, message) -> {
+                            },
+                            packet -> {
+                            },
+                            player -> true,
+                            player -> true,
+                            navigationService(),
+                            player -> new UUID(0L, 0L)
+                    ),
                     StringArgumentType::string,
                     StringArgumentType::string
             );
@@ -943,6 +1009,11 @@ class CoreWaypointCommandListTest {
             return component::toString;
         }
 
+        @Override
+        protected List<String> getAvailableDimensionNames(TestSource source) {
+            return List.of("overworld");
+        }
+
         private static PermissionManager<TestSource, String, Object> permissionManager(
                 boolean allowPrivilegedCommands
         ) {
@@ -976,6 +1047,16 @@ class CoreWaypointCommandListTest {
                 protected PermissionKey createReloadPermissionKey() {
                     return new PermissionKey("reload");
                 }
+
+                @Override
+                protected PermissionKey createUploadPermissionKey() {
+                    return new PermissionKey("upload");
+                }
+
+                @Override
+                protected PermissionKey createUploadDeletePermissionKey() {
+                    return new PermissionKey("upload.delete");
+                }
             };
             return new PermissionManager<>(keys) {
                 @Override
@@ -1002,6 +1083,9 @@ class CoreWaypointCommandListTest {
     private static final class TestMessageSender implements PlatformMessageSender<TestSource, Object> {
         private final List<Component> messages = new ArrayList<>();
         private final List<Component> errors = new ArrayList<>();
+        private ChunkedMessageDelivery chunkedDelivery = ChunkedMessageDelivery.rejected(
+                ChunkedMessageSendResult.UNSUPPORTED
+        );
 
         @Override
         public void sendMessage(TestSource source, Component component) {
@@ -1018,11 +1102,23 @@ class CoreWaypointCommandListTest {
         }
 
         @Override
-        public void sendPacket(TestSource source, MessageBuffer packet) {
+        public void sendPacket(TestSource source, SinglePacketMessage message) {
         }
 
         @Override
-        public void sendPlayerPacket(Object player, MessageBuffer packet) {
+        public void sendPlayerPacket(Object player, SinglePacketMessage message) {
+        }
+
+        @Override
+        public void broadcastPacket(SinglePacketMessage message) {
+        }
+
+        @Override
+        public ChunkedMessageDelivery sendChunkedMessage(
+                TestSource source,
+                ChunkedMessage message
+        ) {
+            return this.chunkedDelivery;
         }
 
         @Override

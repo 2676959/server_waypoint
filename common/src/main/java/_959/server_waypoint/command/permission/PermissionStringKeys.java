@@ -40,4 +40,14 @@ public class PermissionStringKeys extends PermissionKeys<String> {
     protected PermissionKeys<String>.PermissionKey createReloadPermissionKey() {
         return build("command.reload");
     }
+
+    @Override
+    protected PermissionKeys<String>.PermissionKey createUploadPermissionKey() {
+        return build("command.upload");
+    }
+
+    @Override
+    protected PermissionKeys<String>.PermissionKey createUploadDeletePermissionKey() {
+        return build("command.upload.delete");
+    }
 }

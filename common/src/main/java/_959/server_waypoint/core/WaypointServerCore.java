@@ -1,8 +1,8 @@
 package _959.server_waypoint.core;
 
 import _959.server_waypoint.config.Config;
-import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
-import _959.server_waypoint.core.network.buffer.WorldWaypointBuffer;
+import _959.server_waypoint.core.network.data.DimensionWaypointData;
+import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.translation.AdventureTranslator;
 import _959.server_waypoint.translation.LanguageFilesManager;
 import com.google.gson.Gson;
@@ -57,20 +57,20 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
     }
 
     @Nullable
-    public WorldWaypointBuffer toWorldWaypointBuffer() {
+    public WaypointData toWorldWaypointData() {
         return this.readLifecycle(() -> {
             Collection<WaypointFileManager> fileManagers = this.fileManagerMap.values();
-            List<DimensionWaypointBuffer> dimensionWaypointBuffers = new ArrayList<>(fileManagers.size());
+            List<DimensionWaypointData> dimensions = new ArrayList<>(fileManagers.size());
             for (WaypointFileManager fileManager : fileManagers) {
                 if (fileManager != null && !fileManager.hasNoWaypoints()) {
-                    dimensionWaypointBuffers.add(fileManager.toDimensionWaypoint());
+                    dimensions.add(fileManager.toDimensionWaypointData());
                 }
             }
 
-            if (dimensionWaypointBuffers.isEmpty()) {
+            if (dimensions.isEmpty()) {
                 return null;
             }
-            return new WorldWaypointBuffer(dimensionWaypointBuffers);
+            return WaypointData.world(dimensions);
         });
     }
 

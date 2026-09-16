@@ -1,0 +1,19 @@
+{
+    "schemaVersion": 1,
+    "id": "server_waypoint_folia_live_test_probe",
+    "version": "1.0.0",
+    "name": "Server Waypoint Folia Live Test Probe",
+    "description": "Development-only protocol 9 fault probe for the disposable Folia testbed.",
+    "environment": "client",
+    "entrypoints": {
+        "client": [
+            "_959.server_waypoint.live.FoliaLiveTestProbe"
+        ]
+    },
+    "depends": {
+        "fabricloader": ">=0.17.3",
+        "fabric-api": "*",
+        "minecraft": "1.21.11",
+        "java": ">=21"
+    }
+}

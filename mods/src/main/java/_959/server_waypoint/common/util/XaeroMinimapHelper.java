@@ -3,7 +3,7 @@ package _959.server_waypoint.common.util;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
-import _959.server_waypoint.core.network.buffer.DimensionWaypointBuffer;
+import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import xaero.common.minimap.waypoints.Waypoint;
 import xaero.hud.minimap.BuiltInHudModules;
 import xaero.hud.minimap.module.MinimapSession;
@@ -20,6 +20,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
@@ -35,8 +37,18 @@ public class XaeroMinimapHelper {
     }
 
     public static MinimapWorld getMinimapWorld(MinimapSession session, ResourceKey<Level> dimKey) {
-        String dimId = session.getDimensionHelper().getDimensionDirectoryName(dimKey);
         MinimapWorldManager manager = session.getWorldManager();
+        // Xaero can change the automatic world path after receiving a server level
+        // id or after an Auto connection. For the current dimension, its active
+        // automatic world is authoritative; rebuilding the path can create a
+        // second, unconnected sub-world and duplicate waypoint sets.
+        if (Minecraft.getInstance().level != null && dimKey.equals(Minecraft.getInstance().level.dimension())) {
+            MinimapWorld autoWorld = manager.getAutoWorld();
+            if (autoWorld != null) {
+                return autoWorld;
+            }
+        }
+        String dimId = session.getDimensionHelper().getDimensionDirectoryName(dimKey);
         XaeroPath root = manager.getAutoRootContainer().getPath();
         String node = getMinimapWorldNode(session, dimKey);
         XaeroPath fullPath = root.resolve(dimId).resolve(node);
@@ -67,23 +79,27 @@ public class XaeroMinimapHelper {
         waypointSet.add(waypoint);
     }
 
-    public static void replaceSyncedWaypoint(WaypointSet waypointSet, String listName, SimpleWaypoint simpleWaypoint) {
-        String syncedName = SyncedWaypointName.formatSyncedName(simpleWaypoint.name());
-        if (syncedName == null) {
-            WaypointClientMod.LOGGER.warn("Skipping Xaero's Minimap sync for waypoint {} in list {} because its generated name would be ambiguous.", simpleWaypoint.name(), listName);
-            return;
-        }
+    public static void replaceSyncedWaypoint(WaypointSet waypointSet, SimpleWaypoint simpleWaypoint) {
         removeSyncedWaypoint(waypointSet, simpleWaypoint.name());
         removeDuplicateWaypoints(waypointSet);
-        waypointSet.add(XaerosWaypointHelper.simpleWaypointToXaerosWaypoint(simpleWaypoint, syncedName));
+        waypointSet.add(XaerosWaypointHelper.simpleWaypointToXaerosWaypoint(simpleWaypoint, simpleWaypoint.name()));
     }
 
     public static void replaceWaypointList(MinimapWorld minimapWorld, WaypointList waypointList) {
+        replaceWaypointList(
+                minimapWorld,
+                waypointList,
+                XaerosWaypointHelper::simpleWaypointToXaerosWaypoint
+        );
+    }
+
+    static void replaceWaypointList(MinimapWorld minimapWorld, WaypointList waypointList,
+                                    BiFunction<SimpleWaypoint, String, Waypoint> waypointFactory) {
         WaypointSet waypointSet = getOrCreateSyncedWaypointSet(minimapWorld, waypointList.name());
         if (waypointSet == null) {
             return;
         }
-        syncWaypointSetByWaypoints(waypointSet, waypointList);
+        syncWaypointSetByWaypoints(waypointSet, waypointList, waypointFactory);
     }
 
     private static WaypointSet getOrCreateSyncedWaypointSet(MinimapWorld minimapWorld, String listName) {
@@ -101,9 +117,16 @@ public class XaeroMinimapHelper {
     }
 
     private static void syncWaypointSetByWaypoints(WaypointSet waypointSet, WaypointList waypointList) {
-        removeSyncedWaypoints(waypointSet);
-        removeDuplicateWaypoints(waypointSet);
-        addUniqueSyncedWaypoints(waypointSet, waypointList);
+        syncWaypointSetByWaypoints(waypointSet, waypointList,
+                XaerosWaypointHelper::simpleWaypointToXaerosWaypoint);
+    }
+
+    private static void syncWaypointSetByWaypoints(WaypointSet waypointSet, WaypointList waypointList,
+                                                   BiFunction<SimpleWaypoint, String, Waypoint> waypointFactory) {
+        // The prefixed set is the ownership boundary. Current entries use plain names,
+        // while unprefixed personal sets must never be modified by server synchronization.
+        removeAllWaypoints(waypointSet);
+        addUniqueSyncedWaypoints(waypointSet, waypointList, waypointFactory);
     }
 
     public static void replaceWaypointLists(MinimapWorld minimapWorld, List<WaypointList> waypointLists) {
@@ -138,15 +161,7 @@ public class XaeroMinimapHelper {
     }
 
     public static void removeSyncedWaypointSet(MinimapWorld minimapWorld, String waypointSetName) {
-        WaypointSet waypointSet = minimapWorld.getWaypointSet(waypointSetName);
-        if (waypointSet == null) {
-            removeWaypointSet(minimapWorld, waypointSetName);
-            return;
-        }
-        removeSyncedWaypoints(waypointSet);
-        if (waypointSet.isEmpty()) {
-            removeWaypointSet(minimapWorld, waypointSetName);
-        }
+        removeWaypointSet(minimapWorld, waypointSetName);
     }
 
     private static void removeWaypointSet(MinimapWorld minimapWorld, String waypointSetName) {
@@ -166,7 +181,7 @@ public class XaeroMinimapHelper {
         replaceWaypointLists(minimapWorld, waypointLists);
     }
 
-    public static void addDimensionWaypoint(MinimapSession session, DimensionWaypointBuffer dimensionWaypointBuffer) {
+    public static void addDimensionWaypoint(MinimapSession session, DimensionWaypointData dimensionWaypointBuffer) {
         MinimapWorld minimapWorld = getMinimapWorld(session, getDimensionKey(dimensionWaypointBuffer.dimensionName()));
         replaceWaypointLists(minimapWorld, dimensionWaypointBuffer.waypointLists());
     }
@@ -183,11 +198,11 @@ public class XaeroMinimapHelper {
     }
 
     public static void removeSyncedWaypoint(WaypointSet waypointSet, String waypointName) {
-        String syncedName = SyncedWaypointName.formatSyncedName(waypointName);
-        if (syncedName == null) {
-            return;
+        removeWaypointsByName(waypointSet, waypointName);
+        String legacySyncedName = SyncedWaypointName.formatSyncedName(waypointName);
+        if (legacySyncedName != null) {
+            removeWaypointsByName(waypointSet, legacySyncedName);
         }
-        removeWaypointsByName(waypointSet, syncedName);
     }
 
     private static List<WaypointSet> getSyncedWaypointSets(MinimapWorld minimapWorld) {
@@ -198,16 +213,6 @@ public class XaeroMinimapHelper {
             }
         }
         return syncedWaypointSets;
-    }
-
-    private static void removeSyncedWaypoints(WaypointSet waypointSet) {
-        Iterator<Waypoint> iter =  waypointSet.getWaypoints().iterator();
-        while (iter.hasNext()) {
-            Waypoint waypoint = iter.next();
-            if (SyncedWaypointName.parseSyncedName(waypoint.getName()) != null) {
-                iter.remove();
-            }
-        }
     }
 
     private static void removeDuplicateWaypoints(WaypointSet waypointSet) {
@@ -221,17 +226,24 @@ public class XaeroMinimapHelper {
         }
     }
 
-    private static void addUniqueSyncedWaypoints(WaypointSet waypointSet, WaypointList waypointList) {
+    private static void removeAllWaypoints(WaypointSet waypointSet) {
+        Iterator<Waypoint> iterator = waypointSet.getWaypoints().iterator();
+        while (iterator.hasNext()) {
+            iterator.next();
+            iterator.remove();
+        }
+    }
+
+    private static void addUniqueSyncedWaypoints(WaypointSet waypointSet, WaypointList waypointList,
+                                                 BiFunction<SimpleWaypoint, String, Waypoint> waypointFactory) {
         Set<String> addedNames = new HashSet<>();
         for (SimpleWaypoint simpleWaypoint : waypointList.simpleWaypoints()) {
-            String syncedName = SyncedWaypointName.formatSyncedName(simpleWaypoint.name());
-            if (syncedName == null || !addedNames.add(syncedName)) {
-                if (syncedName == null) {
-                    WaypointClientMod.LOGGER.warn("Skipping Xaero's Minimap sync for waypoint {} in list {} because its generated name would be ambiguous.", simpleWaypoint.name(), waypointList.name());
-                }
+            String name = simpleWaypoint.name();
+            if (!addedNames.add(name)) {
                 continue;
             }
-            waypointSet.add(XaerosWaypointHelper.simpleWaypointToXaerosWaypoint(simpleWaypoint, syncedName));
+            removeWaypointsByName(waypointSet, name);
+            waypointSet.add(waypointFactory.apply(simpleWaypoint, name));
         }
     }
 }

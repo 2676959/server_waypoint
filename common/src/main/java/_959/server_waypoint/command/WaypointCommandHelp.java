@@ -16,6 +16,7 @@ final class WaypointCommandHelp {
     private static final String ADD_COMMAND_PREFIX = "/wp add ";
     private static final String EDIT_COMMAND_PREFIX = "/wp edit ";
     private static final String LIST_COMMAND_PREFIX = "/wp list ";
+    private static final String UPLOAD_COMMAND_PREFIX = "/wp upload ";
     private static final String NAVIGATE_COMMAND_PREFIX = "/wp navigate ";
     private static final TextColor DIMENSION_COLOR = TextColor.color(0x55FF55);
     private static final TextColor LIST_COLOR = TextColor.color(0xFFAA00);
@@ -42,7 +43,8 @@ final class WaypointCommandHelp {
             boolean withRemove,
             boolean withNavigate,
             boolean withTp,
-            boolean withReload
+            boolean withReload,
+            boolean withUpload
     ) {
         Component help = translatable("waypoint.help.title", NamedTextColor.GOLD)
                 .decorate(TextDecoration.BOLD)
@@ -57,6 +59,13 @@ final class WaypointCommandHelp {
                         "/wp download ",
                         "waypoint.help.download"
                 ));
+        if (withUpload) {
+            help = help.append(commandEntry(
+                    "/wp upload <xaero|voxelmap> [force [server|local [delete]]] [<dimension> [<list> [<waypoint>]]]",
+                    UPLOAD_COMMAND_PREFIX,
+                    "waypoint.help.upload"
+            ));
+        }
         if (withNavigate) {
             help = help.append(topicEntry(
                     "/wp navigate",

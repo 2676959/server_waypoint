@@ -32,8 +32,13 @@ public class XaerosWorldMapWaypointReaderMixin {
     private void sw$addDropDownOption(final Waypoint element, IRightClickableElement target, CallbackInfoReturnable<ArrayList<RightClickOption>> cir, @Local(name = "rightClickOptions") ArrayList<RightClickOption> rightClickOptions) {
         WaypointReader pointer = (WaypointReader) (Object) this;
         XaerosWorldMapWaypointAccess waypointAccess = (XaerosWorldMapWaypointAccess) element;
-        String syncedWaypointName = SyncedWaypointName.parseSyncedName(waypointAccess.sw$getRawName());
-        boolean syncedWaypoint = syncedWaypointName != null;
+        String rawWaypointName = waypointAccess.sw$getRawName();
+        String legacySyncedWaypointName = SyncedWaypointName.parseSyncedName(rawWaypointName);
+        String syncedListName = SyncedWaypointName.parseSyncedName(waypointAccess.sw$getRawSetName());
+        boolean syncedWaypoint = syncedListName != null;
+        String syncedWaypointName = legacySyncedWaypointName == null
+                ? rawWaypointName
+                : legacySyncedWaypointName;
         rightClickOptions.add(new RightClickOption(syncedWaypoint ? "Edit on server" : "Add to server", rightClickOptions.size(), target) {
                         {
                             Objects.requireNonNull(pointer);

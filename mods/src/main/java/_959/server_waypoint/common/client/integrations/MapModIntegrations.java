@@ -2,12 +2,14 @@ package _959.server_waypoint.common.client.integrations;
 
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.core.network.upload.UploadTarget;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Public client-side API for pushing Server Waypoint's synced state into map mods.
+ * Public client-side API for syncing Server Waypoint state with supported map mods.
  */
 public final class MapModIntegrations {
     private static final List<MapModIntegration> INTEGRATIONS = createIntegrations();
@@ -25,6 +27,12 @@ public final class MapModIntegrations {
                 integration.onClientWaypointSync(event, waypointClientMod);
             }
         }
+    }
+
+    public static Optional<MapModIntegration> findUploadCollector(UploadTarget target) {
+        return INTEGRATIONS.stream()
+                .filter(integration -> integration.uploadTarget() == target)
+                .findFirst();
     }
 
     private static List<MapModIntegration> createIntegrations() {

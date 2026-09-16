@@ -6,6 +6,7 @@ import _959.server_waypoint.command.CoreWaypointCommand;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.navigation.NavigationService;
 import com.mojang.brigadier.Message;
@@ -23,6 +24,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 @SuppressWarnings("UnstableApiUsage")
 public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, Player, World, BlockPositionResolver> {
     private final PaperScheduler scheduler;
@@ -31,13 +34,15 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
             WaypointServerCore waypointServer,
             PlatformMessageSender<CommandSourceStack, Player> sender,
             PermissionManager<CommandSourceStack, String, Player> permissionManager,
-            NavigationService<Player> navigationService
+            NavigationService<Player> navigationService,
+            UploadCoordinator<Player> uploadCoordinator
     ) {
         super(
                 waypointServer,
                 sender,
                 permissionManager,
                 navigationService,
+                uploadCoordinator,
                 ArgumentTypes::world,
                 ArgumentTypes::blockPosition
         );
@@ -111,5 +116,10 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     @Override
     protected Message getMessageFromComponent(Component component) {
         return MessageComponentSerializer.message().serialize(component);
+    }
+
+    @Override
+    protected List<String> getAvailableDimensionNames(CommandSourceStack source) {
+        return source.getSender().getServer().getWorlds().stream().map(world -> world.getKey().asString()).toList();
     }
 }

@@ -6,6 +6,7 @@ import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.network.PlatformMessageSender;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 
 import com.mojang.brigadier.Message;
@@ -26,17 +27,24 @@ import org.jetbrains.annotations.Nullable;
 
 //? if >= 1.21.2
 import java.util.Collections;
+import java.util.List;
 
 public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, ServerPlayer,
     //$ resource_location_type_swap
     Identifier
     , Coordinates> {
-    public WaypointCommand(WaypointServerMod waypointServer, PlatformMessageSender<CommandSourceStack, ServerPlayer> networkAdapter, PermissionManager<CommandSourceStack, String, ServerPlayer> permissionManager) {
+    public WaypointCommand(
+            WaypointServerMod waypointServer,
+            PlatformMessageSender<CommandSourceStack, ServerPlayer> networkAdapter,
+            PermissionManager<CommandSourceStack, String, ServerPlayer> permissionManager,
+            UploadCoordinator<ServerPlayer> uploadCoordinator
+    ) {
         super(
                 waypointServer,
                 networkAdapter,
                 permissionManager,
                 waypointServer.navigation().service(),
+                uploadCoordinator,
                 DimensionArgument::dimension,
                 BlockPosArgument::blockPos
         );
@@ -132,5 +140,16 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     @Override
     protected Message getMessageFromComponent(Component component) {
         return ModMessageSender.toVanillaText(component);
+    }
+
+    @Override
+    protected List<String> getAvailableDimensionNames(CommandSourceStack source) {
+        return source.getServer().levelKeys().stream().map(key ->
+                //? if >= 1.21.11 {
+                key.identifier().toString()
+                //?} else {
+                /*key.location().toString()
+                *///?}
+        ).toList();
     }
 }

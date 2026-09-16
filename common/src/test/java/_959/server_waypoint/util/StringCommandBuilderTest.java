@@ -1,10 +1,14 @@
 package _959.server_waypoint.util;
 
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.upload.UploadScope;
+import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,6 +75,22 @@ class StringCommandBuilderTest {
 
         assertTrue(command.contains(" exact-id E "));
         assertTrue(!command.contains("Presentation"));
+    }
+
+    @Test
+    void forceLocalUploadCommandPreservesVoxelMapSource() {
+        UploadRequestBuffer request = new UploadRequestBuffer(
+                UUID.randomUUID(),
+                List.of("minecraft:overworld"),
+                "Local list",
+                null,
+                UploadTarget.VOXELMAP
+        );
+
+        assertEquals(
+                "/wp upload voxelmap force local minecraft:overworld \"Local list\"",
+                StringCommandBuilder.uploadLocalCmd(UploadScope.LIST, request)
+        );
     }
 
     private static SimpleWaypoint waypoint(String identifier) {

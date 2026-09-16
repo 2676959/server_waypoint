@@ -7,6 +7,8 @@ public class CommandPermission {
     int navigate = 0;
     int tp = 2;
     int reload = 2;
+    int upload = 2;
+    int uploadDelete = 4;
 
     public CommandPermission() {
     }
@@ -35,6 +37,14 @@ public class CommandPermission {
         return this.reload;
     }
 
+    public int upload() {
+        return this.upload;
+    }
+
+    public int uploadDelete() {
+        return this.uploadDelete;
+    }
+
    @Override
    public String toString() {
       return "CommandPermission{" +
@@ -44,6 +54,8 @@ public class CommandPermission {
               ", navigate=" + navigate +
               ", tp=" + tp +
               ", reload=" + reload +
+              ", upload=" + upload +
+              ", uploadDelete=" + uploadDelete +
               '}';
    }
 }

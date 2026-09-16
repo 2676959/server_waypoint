@@ -2,6 +2,8 @@ plugins {
     id("java-library")
     id("net.neoforged.gradle.userdev")
     id("com.gradleup.shadow")
+    id("com.modrinth.minotaur")
+    id("net.darkhax.curseforgegradle")
 }
 
 val minecraft = stonecutter.current.version
@@ -36,9 +38,11 @@ stonecutter {
     swaps["resource_location_type_swap"] = if (usesResourceLocation) "ResourceLocation" else "Identifier"
     swaps["mouseScrolled_swap"] = "mouseScrolled($1, $2, $3, $4)"
 
-    replacements.regex("gui_graphics_26", usesTwentySixApi) { replace("\\bGuiGraphics\\b", "GuiGraphicsExtractor"); reverse("\\bGuiGraphicsExtractor\\b", "GuiGraphics") }
-    replacements.string("gui_render_state_26", usesTwentySixApi) { replace("net.minecraft.client.gui.render.state.GuiElementRenderState", "net.minecraft.client.renderer.state.gui.GuiElementRenderState") }
-    replacements.string("resource_location_import", usesResourceLocation) { replace("net.minecraft.resources.Identifier", "net.minecraft.resources.ResourceLocation") }
+    replacements.regex(usesTwentySixApi, "gui_graphics_26") { replace("\\bGuiGraphics\\b", "GuiGraphicsExtractor", "\\bGuiGraphicsExtractor\\b", "GuiGraphics") }
+    replacements.string(usesTwentySixApi, "gui_render_state_26") { replace("net.minecraft.client.gui.render.state.GuiElementRenderState", "net.minecraft.client.renderer.state.gui.GuiElementRenderState") }
+    replacements.string(usesResourceLocation, "resource_location_import") { replace("net.minecraft.resources.Identifier", "net.minecraft.resources.ResourceLocation") }
+    replacements.string(usesTwentySixApi, "fabric_key_mapping_import_26") { replace("net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper", "net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper") }
+    replacements.string(usesTwentySixApi, "fabric_key_mapping_call_26") { replace("KeyBindingHelper.registerKeyBinding", "KeyMappingHelper.registerKeyMapping") }
 }
 
 sourceSets.main {
@@ -48,6 +52,8 @@ sourceSets.main {
     }
     resources {
         exclude("fabric.mod.json")
+        // The legacy metadata is generated from the expanded modern descriptor in
+        // processResources; excluding it here keeps the unexpanded copy out of the jar.
         exclude("META-INF/mods.toml")
         exclude("pack.mcmeta")
         exclude("server_waypoint-official.accesswidener")
@@ -102,6 +108,8 @@ runs {
     configureEach {
         workingDirectory = file("run")
     }
+    register("client")
+    register("server")
 }
 
 tasks.processResources {
