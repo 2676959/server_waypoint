@@ -225,17 +225,38 @@ make Escape close the menu instead of the screen, call `closeMenuIfOpen` and ret
 `super.keyPressed`, because vanilla handles Escape before forwarding keys to the focused child.
 
 `ComboBoxWidget` combines editable text with a separately opened list of choices. It reuses
-`TranslucentTextField` for cursor movement, selection, clipboard shortcuts, and text rendering, and
+`SuggestingTextInput` for cursor movement, selection, clipboard shortcuts, text rendering, and
+completion (also shared by `TranslucentTextField`), and
 `AbstractDropdownMenuWidget` for the popup. Register only the composite; it owns its internal field's
 position, size, focus, input, and rendering. Click the text area to edit and the arrow to toggle the
 list. Arbitrary text is accepted, including values absent from the list. Choosing an item replaces
 the field text. Enter opens/selects, Up/Down navigates the open popup, and typing or losing focus
-closes it. Text scrolls with the cursor; popup labels are clipped with full-value tooltips.
+closes it. Text scrolls with the cursor; popup labels are clipped. The control and choice rows do
+not show hover tooltips because their values are already presented by the input and suggestions.
 
 Pass choices, initial text, field label, font, and `Consumer<String>` to the constructor. Duplicate
 choices are removed in insertion order. `getValue` returns the current text; `setValue` accepts any
 non-null text without calling the callback. `setValues` replaces the popup choices, closes an open
 popup, and preserves the current text without invoking the callback. User edits and popup selections invoke the callback.
+Suggestions default to the current choices; `setSuggestionsProvider(Supplier<List<String>>)` can
+supply a separate dynamic catalog, and `null` disables suggestions. Matching is case-insensitive
+prefix matching, deduplicated and sorted, with an inline suffix and up to five popup rows.
+Up/Down selects a suggestion and Tab/Shift-Tab accepts/cycles completions. Clicking a suggestion
+also accepts it through the normal user-change callback. The full choice popup suppresses
+suggestions while open. `renderPopup(...)` draws whichever popup is active, including when rendered
+separately. Route popup clicks before overlapping controls using `isMouseOver(...)`, and call
+`closeSuggestionsIfOpen()` after `closeMenuIfOpen()` when intercepting Escape at screen level.
+
+`SuggestingTextInput` is the reusable surface-free input base. It owns editing, shifted layout,
+completion state, inline text, and suggestion rendering/hit testing; `TranslucentTextField` adds
+only its themed surface. Composites can override `getSuggestionsY()` to anchor suggestions below
+their outer bounds and use `setSuggestionsEnabled(...)` to temporarily suppress completion without
+losing focus. `refreshSuggestions()` invalidates a completion cycle after catalog changes; replacing
+the provider also refreshes it. `renderSuggestions(...)` remains an explicit overlay pass for standalone inputs.
+Escape dismissal persists until editing or refocusing, and disabled/hidden inputs do not accept
+suggestion clicks. `AbstractDropdownMenuWidget.renderPopup(...)` may be overridden to provide
+another popup when the full menu is closed; preserve its separate-rendering contract.
+
 An exact matching choice is omitted from the popup. Resizing also resizes the field and choice rows.
 The outline stays inside the content bounds; the popup is excluded from layout dimensions.
 Treat a focused combobox as text entry when deciding whether to forward movement keys, as

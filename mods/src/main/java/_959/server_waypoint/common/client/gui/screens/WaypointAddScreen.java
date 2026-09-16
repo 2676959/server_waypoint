@@ -168,7 +168,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     }
 
     private boolean clickDimensionMenu(double mouseX, double mouseY, int button) {
-        if (this.dimensionField.isExpanded()
+        if (this.dimensionField.isMouseOver(mouseX, mouseY)
                 && this.dimensionField.mouseClicked(mouseX, mouseY, button)) {
             this.setFocused(this.dimensionField);
             return true;
@@ -179,7 +179,8 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == 256 && this.dimensionField.closeMenuIfOpen()) {
+        if (keyCode == 256 && (this.dimensionField.closeMenuIfOpen()
+                || this.dimensionField.closeSuggestionsIfOpen())) {
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);

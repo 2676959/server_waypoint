@@ -7,12 +7,14 @@ import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 
 /** Editable text input with a separately opened list of choices. */
 public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
@@ -32,17 +34,17 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
         this.onValueChanged = Objects.requireNonNull(onValueChanged);
         this.input = new TextInput(label, font);
         this.input.setMaxLength(Integer.MAX_VALUE);
+        this.input.setSuggestionsProvider(() -> this.values);
         this.input.setResponder(value -> {
             this.closeMenuIfOpen();
             Component message = this.label.copy().append(Component.literal(value));
             this.setMessage(message);
-            this.setTooltip(Tooltip.create(message));
             if (!this.settingValue) {
                 this.onValueChanged.accept(value);
             }
         });
         this.layoutInput();
-        this.arrow = new ScalableText(0, 0, Component.literal("▼"), () -> WidgetThemeState.text(this.active), font);
+        this.arrow = new ScalableText(0, 0, Component.literal("⏷"), () -> WidgetThemeState.text(this.active), font);
         this.setValues(values);
         this.setValue(initialValue);
     }
@@ -53,6 +55,42 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
         this.clearMenuItems();
         for (String option : this.values) {
             this.addMenuItem(new TextMenuItem(option, this.width, this.height, this.font));
+        }
+        this.input.refreshSuggestions();
+    }
+
+    /** Overrides the suggestion source; popup choices remain independently configurable. */
+    public void setSuggestionsProvider(Supplier<List<String>> provider) {
+        this.input.setSuggestionsProvider(provider);
+    }
+
+    public boolean closeSuggestionsIfOpen() {
+        return this.input.closeSuggestionsIfOpen();
+    }
+
+    @Override
+    protected void onExpandedChanged(boolean expanded) {
+        if (this.input != null) {
+            this.input.setSuggestionsEnabled(!expanded);
+        }
+    }
+
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return super.isMouseOver(mouseX, mouseY) || (this.isActive() && this.input != null
+                && this.input.isMouseOverSuggestion(mouseX, mouseY));
+    }
+
+    @Override
+    public void renderPopup(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        super.renderPopup(context, mouseX, mouseY, deltaTicks);
+        if (!this.isExpanded() && this.visible && this.active) {
+            nextLayer(context);
+            try {
+                this.input.renderSuggestions(context, mouseX, mouseY);
+            } finally {
+                previousLayer(context);
+            }
         }
     }
 
@@ -79,6 +117,9 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (!this.isActive() || button != 0) {
             return false;
+        }
+        if (this.input.mouseClickedSuggestion(mouseX, mouseY)) {
+            return true;
         }
         if (mouseX >= this.getX() && mouseX < this.getX() + this.width - 14
                 && mouseY >= this.getY() && mouseY < this.getY() + this.height) {
@@ -173,7 +214,7 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
-        this.arrow.setText(this.isExpanded() ? "▲" : "▼");
+        this.arrow.setText(this.isExpanded() ? "⏶" : "⏷");
         renderLabel(context, this.arrow, this.getX() + this.width - 12, this.getY(),
                 9, this.height, mouseX, mouseY, deltaTicks);
     }
@@ -199,8 +240,8 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
         context.disableScissor();
     }
 
-    /** The composite owns the surface; reuse the text field's editing and text renderer. */
-    private static final class TextInput extends TranslucentTextField {
+    /** The composite owns the surface; reuse the shared input's editing, completion, and text renderer. */
+    private final class TextInput extends SuggestingTextInput {
         private final int textHeight;
 
         private TextInput(Component label, Font font) {
@@ -209,13 +250,10 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
         }
 
         @Override
-        public void
-        //$ render_widget_method_swap
-        extractWidgetRenderState
-                (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-            this.updateThemeTextColors();
-            this.renderTextField(context, mouseX, mouseY, deltaTicks);
+        protected int getSuggestionsY() {
+            return ComboBoxWidget.this.getY() + ComboBoxWidget.this.getHeight();
         }
+
     }
 
     private final class TextMenuItem extends AbstractMenuItem {
@@ -226,7 +264,6 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
             super(width, height, Component.literal(option));
             this.option = option;
             this.text = new ScalableText(0, 0, this.getMessage(), () -> WidgetThemeState.text(this.active), font);
-            this.setTooltip(Tooltip.create(this.getMessage()));
         }
 
         private void resizeHeight(int height) {

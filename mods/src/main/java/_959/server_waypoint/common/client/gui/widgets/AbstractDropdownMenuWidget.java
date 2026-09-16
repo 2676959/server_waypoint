@@ -291,7 +291,7 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         this.renderPopupSeparately = separately;
     }
 
-    public final void renderPopup(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+    public void renderPopup(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         if (!this.expanded || !this.visible || !this.active) {
             return;
         }
