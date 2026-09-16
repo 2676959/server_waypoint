@@ -206,6 +206,30 @@ class AbstractDropdownMenuWidgetTest {
     }
 
     @Test
+    void clearingItemsClosesThePopupAndAllowsChoicesToBeRebuilt() {
+        TestDropdown dropdown = new TestDropdown(
+                0,
+                0,
+                16,
+                16,
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.FORWARD,
+                0
+        );
+        dropdown.addItem(16, 16, () -> {
+        });
+        dropdown.setExpanded(true);
+
+        dropdown.clearItems();
+
+        assertFalse(dropdown.isExpanded());
+        assertEquals(0, dropdown.getPopupItemCount());
+        dropdown.addItem(16, 16, () -> {
+        });
+        assertEquals(1, dropdown.getPopupItemCount());
+    }
+
+    @Test
     void dropdownWithOnlyTheSelectedItemCannotOpen() {
         TestDropdown dropdown = new TestDropdown(
                 0,
@@ -533,6 +557,10 @@ class AbstractDropdownMenuWidgetTest {
 
         private TestMenuItem addItem(int width, int height, Runnable callback) {
             return this.addMenuItem(new TestMenuItem(width, height, callback));
+        }
+
+        private void clearItems() {
+            this.clearMenuItems();
         }
 
         @Override

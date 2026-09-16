@@ -16,18 +16,19 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.re
 
 /** Editable text input with a separately opened list of choices. */
 public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
-    private final List<String> values;
+    private List<String> values = List.of();
     private final Component label;
     private final Consumer<String> onValueChanged;
     private final TextInput input;
     private final ScalableText arrow;
+    private final Font font;
     private boolean settingValue;
 
     public ComboBoxWidget(int x, int y, int width, int height, Component label, Font font,
                           List<String> values, String initialValue, Consumer<String> onValueChanged) {
         super(x, y, width, height, label, LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD);
-        this.values = values.stream().distinct().toList();
         this.label = label;
+        this.font = font;
         this.onValueChanged = Objects.requireNonNull(onValueChanged);
         this.input = new TextInput(label, font);
         this.input.setMaxLength(Integer.MAX_VALUE);
@@ -42,10 +43,17 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
         });
         this.layoutInput();
         this.arrow = new ScalableText(0, 0, Component.literal("▼"), () -> WidgetThemeState.text(this.active), font);
-        for (String option : this.values) {
-            this.addMenuItem(new TextMenuItem(option, width, height, font));
-        }
+        this.setValues(values);
         this.setValue(initialValue);
+    }
+
+    /** Replaces popup choices without changing the current text or invoking its callback. */
+    public void setValues(List<String> values) {
+        this.values = Objects.requireNonNull(values).stream().distinct().toList();
+        this.clearMenuItems();
+        for (String option : this.values) {
+            this.addMenuItem(new TextMenuItem(option, this.width, this.height, this.font));
+        }
     }
 
     public String getValue() {

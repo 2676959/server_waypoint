@@ -234,7 +234,8 @@ closes it. Text scrolls with the cursor; popup labels are clipped with full-valu
 
 Pass choices, initial text, field label, font, and `Consumer<String>` to the constructor. Duplicate
 choices are removed in insertion order. `getValue` returns the current text; `setValue` accepts any
-non-null text without calling the callback. User edits and popup selections invoke the callback.
+non-null text without calling the callback. `setValues` replaces the popup choices, closes an open
+popup, and preserves the current text without invoking the callback. User edits and popup selections invoke the callback.
 An exact matching choice is omitted from the popup. Resizing also resizes the field and choice rows.
 The outline stays inside the content bounds; the popup is excluded from layout dimensions.
 Treat a focused combobox as text entry when deciding whether to forward movement keys, as
@@ -245,8 +246,9 @@ When a dropdown appears early in a manually rendered layout, call
 The default still renders the popup with its control. This prevents later controls from covering
 popup choices, including on newer render strata APIs. `AbstractWaypointPropertiesScreen` exposes
 `renderTitleRowOverlays(...)` after suggestions and before the swatch for this purpose.
-`WaypointAddScreen` uses that hook for its dimension combobox, populated from the available client
-dimensions in sorted order with the supplied starting dimension retained. List and waypoint-name
+`WaypointAddScreen` uses that hook for its dimension combobox, populated from the same complete
+integrated-server or remote-suggestion dimension catalog as `WaypointManagerScreen`, with the
+supplied starting dimension retained. List and waypoint-name
 suggestions and submission read the current selection. Popup clicks have priority over overlapping
 fields, outside clicks continue to their targets, and Escape closes the popup before the screen.
 
@@ -573,6 +575,7 @@ Use current screens as focused examples:
 - `WaypointManagerScreen` demonstrates nested `ExpandableManager` layouts, fixed and flexible children, a `TreeViewWidget`, sorting controls, and responsive resizing.
 - `WaypointManagerScreen` forwards screen ticks to `WaypointListWidget.refreshDistanceSortIfPlayerMoved()`. The widget caches the last query origin and only rebuilds distance-sorted rows after the player's block position or relevant dimension changes.
 - `WaypointManagerScreen` separates full refreshes, dimension-list changes, and ordinary waypoint mutations. `updateAllWidgets()` rebuilds the dimension rail and refreshes waypoint rows exactly once. `updateWidgetsForDimensionListChange(...)` rebuilds the dimension rail but refreshes waypoint rows only when selection fallback or the active viewing scope requires it. `updateWaypointWidget(...)` skips dimension-name copying and sorting entirely, and it ignores changes outside the selected dimension unless all-dimensions mode is active. The selection is preserved by name and falls back to the current or first available dimension. Callers report the changed dimension instead of passing waypoint-list snapshots because `WaypointListWidget` owns the active search, sort, grouping, and dimension-scope query state.
+- The manager's dimension rail includes empty dimensions that have no synchronized waypoint file. In an integrated world it reads the integrated server's level keys directly. On a remote connection it asynchronously extracts fully namespaced dimension identifiers from the `/wp list ` command suggestions, merges them with the synchronized client cache as a fallback, and ignores the command's literal list/search/sort options.
 - In all-dimensions mode, the waypoint-list scroll position and grouped dimension-node expansion choices are session-scoped static widget state, so both survive closing and reopening the manager as well as ordinary dimension changes. Scroll restoration is deferred until the reconstructed widget has rows and a real maximum scroll range. Selected-dimension mode never remembers scroll and resets to the top when its scope is selected. `WaypointClientMod.onJoinServer()` calls `WaypointManagerScreen.resetSessionWidgetStates()` so connecting to another server or opening another local save also starts at the top with every dimension expanded.
 - `AbstractWaypointPropertiesScreen`, `WaypointAddScreen`, and `WaypointEditScreen` demonstrate shared form behavior, `WidgetStack` rows, suggestion fields, and subclass extension points. `WaypointEditScreen` captures the list revision, tracks an explicit display-name clear state, submits one atomic edit payload, and keeps entered values until a matching server result accepts the edit. Client transport reset and handshake paths must call `WaypointEditScreen.handleTransportReset()` so a lost correlated result cannot leave the update action disabled. The add screen treats its name field only as the exact identifier and creates no display-name override.
 - `ClientConfigScreen` demonstrates a scrollable `TreeViewWidget` of configuration rows and a modal `ConfirmationDialog` that disables the underlying controls.

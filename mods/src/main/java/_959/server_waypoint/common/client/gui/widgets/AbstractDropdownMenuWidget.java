@@ -74,6 +74,14 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         return menuItem;
     }
 
+    /** Closes the popup and removes every menu item so a subclass can rebuild its choices. */
+    protected final void clearMenuItems() {
+        this.setExpanded(false);
+        this.setHighlightedItemIndex(-1);
+        this.menuItems.clear();
+        this.selectedMenuItemIndex = -1;
+    }
+
     public final List<AbstractMenuItem> getMenuItems() {
         return List.copyOf(this.menuItems);
     }

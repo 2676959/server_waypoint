@@ -15,7 +15,6 @@ import _959.server_waypoint.util.WaypointInitials;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
@@ -29,6 +28,8 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
+import static _959.server_waypoint.common.client.util.ClientDimensionCatalog.getAvailableDimensionNames;
+import static _959.server_waypoint.common.client.util.ClientDimensionCatalog.mergeDimensionNames;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.util.StringCommandBuilder.addCmd;
 import static _959.server_waypoint.text.FormattedTextHelper.MAX_NAME_LENGTH;
@@ -53,6 +54,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
             defaultPos = getCurrentDefaultPos();
         }
         this.setDefaultPos(defaultPos);
+        this.refreshDimensionChoices();
     }
 
     private WaypointPos getCurrentDefaultPos() {
@@ -92,11 +94,10 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         WidgetStack dimensionRow = new WidgetStack(0, 0, 0);
         ScalableText dimensionLabel = new ScalableText(
                 0, 0, dimensionLabelText, WidgetThemeVariable.TEXT_PRIMARY, font);
-        List<String> dimensions = new ArrayList<>(WaypointClientMod.getAllAvailableDimensionNames());
-        if (!dimensions.contains(this.dimensionName)) {
-            dimensions.add(this.dimensionName);
-        }
-        dimensions.sort(String::compareTo);
+        List<String> dimensions = mergeDimensionNames(
+                WaypointClientMod.getAllAvailableDimensionNames(),
+                List.of(this.dimensionName)
+        );
         dimensionField = new ComboBoxWidget(0, 0, 155, 13, dimensionLabelText, font,
                 dimensions, this.dimensionName, value -> {});
         dimensionField.setRenderPopupSeparately(true);
@@ -114,6 +115,12 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         titleRow.addChild(listNameRow);
 
         return titleRow;
+    }
+
+    private void refreshDimensionChoices() {
+        getAvailableDimensionNames().thenAccept(dimensions -> this.dimensionField.setValues(
+                mergeDimensionNames(dimensions, List.of(this.dimensionName))
+        ));
     }
 
     @Override
