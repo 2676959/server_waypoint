@@ -1,9 +1,10 @@
 package _959.server_waypoint.config;
 
 public class Features {
-    public static boolean noXaerosMod = true;
-    boolean addWaypointFromChatSharing = true;
-    boolean sendXaerosWorldId = true;
+    public static volatile boolean noXaerosMod = true;
+    volatile boolean addWaypointFromChatSharing = true;
+    volatile boolean sendXaerosWorldId = true;
+    volatile boolean compressChunkedMessages = true;
 
     public Features() {
     }
@@ -20,8 +21,14 @@ public class Features {
         this.sendXaerosWorldId = enable;
     }
 
+    public boolean compressChunkedMessages() {
+        return this.compressChunkedMessages;
+    }
+
     @Override
     public String toString() {
-        return "{addWaypointFromChatSharing=" + addWaypointFromChatSharing  + ", sendXaerosWorldId=" + sendXaerosWorldId + "}";
+        return "{addWaypointFromChatSharing=" + addWaypointFromChatSharing
+                + ", sendXaerosWorldId=" + sendXaerosWorldId
+                + ", compressChunkedMessages=" + compressChunkedMessages + "}";
     }
 }

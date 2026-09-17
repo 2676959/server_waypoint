@@ -16,6 +16,11 @@ import net.minecraftforge.network.PacketDistributor;
 
 public class NetworkHelper {
     public static void sendPayloadToServer(ModPayload payload) {
+        //? if neoforge && >=1.20.4 {
+        /*if (payload instanceof _959.server_waypoint.common.network.payload.c2s.MessageChunkC2SPayload chunk) {
+            payload = new _959.server_waypoint.neoforge.MessageChunkPayload(chunk.messageChunk(), chunk.encodedMessage());
+        }
+        *///?}
         //? if fabric {
         ClientPlayNetworking.send(payload);
         //?} elif forge {

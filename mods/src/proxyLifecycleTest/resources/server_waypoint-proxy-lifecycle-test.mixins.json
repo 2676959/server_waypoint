@@ -1,0 +1,17 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "_959.server_waypoint.live.mixin",
+    "compatibilityLevel": "JAVA_21",
+    "client": [
+        "ChunkedMessageManagerAccessor",
+        "ClientSynchronizationTrackerAccessor",
+        "OptimizedWaypointRendererAccessor",
+        "WaypointClientLifecycleMixin",
+        "WaypointClientModAccessor",
+        "WaypointFilesManagerAccessor"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

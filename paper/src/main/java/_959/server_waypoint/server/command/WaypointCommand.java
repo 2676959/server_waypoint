@@ -1,11 +1,14 @@
 package _959.server_waypoint.server.command;
 
 import _959.server_waypoint.ServerWaypointPaperMC;
+import _959.server_waypoint.PaperScheduler;
 import _959.server_waypoint.command.CoreWaypointCommand;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.navigation.NavigationService;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -14,20 +17,36 @@ import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.BlockPositionResolver;
 import io.papermc.paper.math.BlockPosition;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 @SuppressWarnings("UnstableApiUsage")
 public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, Player, World, BlockPositionResolver> {
+    private final PaperScheduler scheduler;
 
-    public WaypointCommand(WaypointServerCore waypointServer, PlatformMessageSender<CommandSourceStack, Player> sender, PermissionManager<CommandSourceStack, String, Player> permissionManager) {
-        super(waypointServer, sender, permissionManager, ArgumentTypes::world, ArgumentTypes::blockPosition);
+    public WaypointCommand(
+            WaypointServerCore waypointServer,
+            PlatformMessageSender<CommandSourceStack, Player> sender,
+            PermissionManager<CommandSourceStack, String, Player> permissionManager,
+            NavigationService<Player> navigationService,
+            UploadCoordinator<Player> uploadCoordinator
+    ) {
+        super(
+                waypointServer,
+                sender,
+                permissionManager,
+                navigationService,
+                uploadCoordinator,
+                ArgumentTypes::world,
+                ArgumentTypes::blockPosition
+        );
+        this.scheduler = new PaperScheduler(ServerWaypointPaperMC.getSelf());
     }
 
     @Override
@@ -54,13 +73,18 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
 
     @Override
     protected void executeByServer(CommandSourceStack source, Runnable task) {
-        BukkitScheduler scheduler = Bukkit.getScheduler();
-        scheduler.runTaskLaterAsynchronously(ServerWaypointPaperMC.getSelf(), task, 20);
+        this.scheduler.runAsyncDelayed(task, 20L);
     }
 
     @Override
     protected World getSourceDimension(CommandSourceStack source) {
         return source.getLocation().getWorld();
+    }
+
+    @Override
+    protected WaypointPos getSourcePosition(CommandSourceStack source) {
+        Location location = source.getLocation();
+        return new WaypointPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 
     @Override
@@ -86,11 +110,16 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     @Override
     protected void teleportPlayer(CommandSourceStack source, Player player, World dimensionArgument, WaypointPos pos, int yaw) {
         Location location = new Location(dimensionArgument, pos.X(), pos.y(), pos.Z(), yaw, 0);
-        player.teleport(location, PlayerTeleportEvent.TeleportCause.COMMAND);
+        player.teleportAsync(location, PlayerTeleportEvent.TeleportCause.COMMAND);
     }
 
     @Override
     protected Message getMessageFromComponent(Component component) {
         return MessageComponentSerializer.message().serialize(component);
+    }
+
+    @Override
+    protected List<String> getAvailableDimensionNames(CommandSourceStack source) {
+        return source.getSender().getServer().getWorlds().stream().map(world -> world.getKey().asString()).toList();
     }
 }

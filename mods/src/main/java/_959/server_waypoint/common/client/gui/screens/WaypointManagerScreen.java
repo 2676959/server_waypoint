@@ -1,91 +1,370 @@
 //~ gui_graphics_26
+//~ resource_location_import
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
+import _959.server_waypoint.common.client.gui.layout.WidgetPack;
+import _959.server_waypoint.common.client.gui.render.WaypointSortButtonLabel;
+import _959.server_waypoint.common.client.gui.render.WidgetTextures;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
+import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
-import _959.server_waypoint.common.client.gui.layout.WidgetStack;
-import _959.server_waypoint.common.client.gui.widgets.DimensionListWidget;
-import _959.server_waypoint.common.client.gui.widgets.WaypointListWidget;
 import _959.server_waypoint.common.server.WaypointServerMod;
-import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.core.WaypointFilesManagerCore;
+import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
+import _959.server_waypoint.core.waypoint.WaypointSorting;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.layouts.SpacerElement;
+import net.minecraft.client.gui.screens.Screen;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+//? if >= 1.21.9 {
+import net.minecraft.client.input.MouseButtonEvent;
+//?}
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.ClientNetworkState.INCOMPATIBLE_PROTOCOL;
 import static _959.server_waypoint.common.client.WaypointClientMod.ClientNetworkState.NO_SERVERSIDE_SUPPORT;
 import static _959.server_waypoint.common.client.WaypointClientMod.getCurrentDimensionName;
 import static _959.server_waypoint.common.client.WaypointClientMod.getNetworkState;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.texture;
 
 public class WaypointManagerScreen extends MovementAllowedScreen {
+    private static final float MIDDLE_PART_WIDTH_RATIO = 0.38F;
+    private static final float DETAILS_PART_WIDTH_RATIO = 0.32F;
+    private static final int MIN_MIDDLE_PART_WIDTH = 180;
+    private static final int MAX_MIDDLE_PART_WIDTH = 360;
+    private static final int MIN_DETAILS_PART_WIDTH = 150;
+    private static final int MAX_DETAILS_PART_WIDTH = 320;
+    private static final int WAYPOINT_LIST_HORIZONTAL_PADDING = 8;
+    private static final int MIN_CONTENT_HEIGHT = 120;
+    private static final int MAX_CONTENT_HEIGHT = 400;
+    private static final int SCREEN_MARGIN = 12;
+    private static final int PANEL_PADDING = 4;
+    private static final int PANEL_GAP = 2;
+    private static final int SECTION_GAP = 6;
+    private static final int CONTROL_GAP = 4;
+    private static final int SEARCH_GAP = 4;
+    private static final int DROPDOWN_ITEM_GAP = 2;
+    private static final int DIMENSION_ICON_SIZE = 16;
+    private static final int DIMENSION_ICON_GAP = 2;
+    private static final int DIMENSION_VERTICAL_PADDING = 0;
+    private static final int DIMENSION_HORIZONTAL_PADDING = 0;
+    private static final int LEFT_PART_WIDTH = DIMENSION_ICON_SIZE + DIMENSION_HORIZONTAL_PADDING * 2;
+    private static final int CONTROL_BUTTON_SIZE = 16;
+    private static final int CONTROL_ICON_PADDING = 2;
+    private static final int CONTROL_COLUMN_X_OFFSET =
+            (LEFT_PART_WIDTH - CONTROL_BUTTON_SIZE) / 2;
+    private static final int CONTROL_COLUMN_HEIGHT = CONTROL_BUTTON_SIZE * 5 + CONTROL_GAP * 4;
+    private static final int MIN_DIMENSION_LIST_HEIGHT = DIMENSION_ICON_SIZE + DIMENSION_VERTICAL_PADDING * 2;
+    private static final int MIN_WAYPOINT_LIST_HEIGHT = 28;
+    private static final float RELATIVE_HEIGHT = 0.82F;
     private static boolean isRendering = false;
     private static WaypointListWidget waypointListWidget;
     private static DimensionListWidget dimensionListWidget;
+    private final WaypointDetailsWidget waypointDetailsWidget;
+    private final IconButton addWaypointButton;
+    private final WaypointSearchBarWidget searchField;
+    private final IconToggleButton groupModeToggle;
+    private final IconToggleButton sortOrderToggle;
+    private final IconDropdownMenu sortingModeDropdown;
+    private final IconToggleButton allDimensionsToggle;
+    private final Screen parentScreen;
     private final WaypointClientMod waypointClientMod;
-    private final float relativeHeight = 0.9F;
     private boolean hasInitialized = false;
-    private final WidgetStack mainLayout = new WidgetStack(0, 0, 0, true, false);
+    private final WidgetPack leftLayout;
+    private final WidgetPack controlAnchor;
+    private final WidgetPack middleLayout;
+    private ManagerLayoutGeometry layoutGeometry = calculateLayoutGeometry(0, 0);
 
-    public WaypointManagerScreen(WaypointClientMod waypointClientMod) {
+    public WaypointManagerScreen(WaypointClientMod waypointClientMod, Screen parentScreen) {
         super(Component.nullToEmpty("Server Waypoints"));
+        this.parentScreen = parentScreen;
         this.waypointClientMod = waypointClientMod;
-        int widgetWidth = 240;
-        dimensionListWidget = new DimensionListWidget(0, 0, widgetWidth, this, this.font, this::onSelectDimension);
-        waypointListWidget = new WaypointListWidget(0, 0, widgetWidth, 200, this, this.font);
-        mainLayout.addPaddedClickable(dimensionListWidget, 0);
-        mainLayout.addPaddedClickable(waypointListWidget, 0);
+        dimensionListWidget = new DimensionListWidget(
+                0,
+                0,
+                DIMENSION_ICON_SIZE,
+                100,
+                DIMENSION_ICON_SIZE,
+                this,
+                this.font,
+                this::onSelectDimension,
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.FORWARD,
+                DIMENSION_ICON_GAP,
+                DIMENSION_VERTICAL_PADDING,
+                DIMENSION_HORIZONTAL_PADDING
+        );
+        waypointDetailsWidget = new WaypointDetailsWidget(
+                0,
+                0,
+                MIN_DETAILS_PART_WIDTH,
+                200,
+                this.font
+        );
+        waypointListWidget = new WaypointListWidget(
+                0,
+                0,
+                MIN_MIDDLE_PART_WIDTH - WAYPOINT_LIST_HORIZONTAL_PADDING,
+                200,
+                this,
+                new WaypointQueryEngine(getWaypointQuerySource()),
+                this.font,
+                waypointDetailsWidget::setSelection
+        );
+        addWaypointButton = new IconButton(
+                0,
+                0,
+                16,
+                16,
+                Component.translatable("waypoint.add.button"),
+                WidgetTextures.ADD_ICON,
+                this::openAddWaypointScreen
+        );
+        allDimensionsToggle = new IconToggleButton(
+                Component.translatable("waypoint.dimension.show_selected"),
+                Component.translatable("waypoint.dimension.show_all"),
+                WidgetTextures.CUBE_ICON,
+                WidgetTextures.STACKS_ICON,
+                this::setShowAllDimensions
+        );
+        searchField = new WaypointSearchBarWidget(
+                0,
+                0,
+                MIN_MIDDLE_PART_WIDTH,
+                Component.translatable("waypoint.search.entry"),
+                this.font,
+                waypointListWidget::setSearchQuery
+        );
+        searchField.setHint(Component.translatable("waypoint.search.hint"));
+        groupModeToggle = new IconToggleButton(
+                Component.translatable("waypoint.group.flat"),
+                Component.translatable("waypoint.group.lists"),
+                WidgetTextures.FLAT_LIST_MODE_ICON,
+                WidgetTextures.GROUPED_LIST_MODE_ICON,
+                this::setGroupMode
+        );
+        sortOrderToggle = new IconToggleButton(
+                Component.translatable("waypoint.sort.ascending"),
+                Component.translatable("waypoint.sort.descending"),
+                WidgetTextures.SORT_ASCENDING_ICON,
+                WidgetTextures.SORT_DESCENDING_ICON,
+                this::setSortReversed
+        );
+        sortingModeDropdown = new IconDropdownMenu(
+                Component.translatable("waypoint.sort.default")
+        );
+        sortingModeDropdown.addIconItem(
+                Component.translatable("waypoint.sort.default"),
+                WidgetTextures.SORT_DEFAULT_ICON,
+                () -> setSortMode(WaypointSorting.SortMode.DEFAULT)
+        );
+        sortingModeDropdown.addIconItem(
+                Component.translatable("waypoint.sort.name"),
+                WidgetTextures.SORT_NAME_ICON,
+                () -> toggleSortMode(WaypointSorting.SortMode.NAME)
+        );
+        sortingModeDropdown.addIconItem(
+                Component.translatable("waypoint.sort.distance"),
+                WidgetTextures.SORT_DISTANCE_ICON,
+                () -> toggleSortMode(WaypointSorting.SortMode.DISTANCE)
+        );
+        sortingModeDropdown.addIconItem(
+                Component.translatable("waypoint.sort.color"),
+                WidgetTextures.SORT_COLOR_ICON,
+                () -> toggleSortMode(WaypointSorting.SortMode.COLOR)
+        );
+        restorePersistentState();
+        syncControlStates();
+
+        this.middleLayout = new WidgetPack(
+                MIN_MIDDLE_PART_WIDTH,
+                MAX_CONTENT_HEIGHT,
+                LayoutFlow.Orientation.VERTICAL
+        );
+        this.middleLayout.addChild(searchField, LayoutFlow.Direction.FORWARD);
+        this.middleLayout.addChild(SpacerElement.height(SEARCH_GAP), LayoutFlow.Direction.FORWARD);
+        this.middleLayout.addChild(waypointListWidget, LayoutFlow.Direction.FORWARD);
+
+        WidgetPack controlColumn = new WidgetPack(
+                CONTROL_BUTTON_SIZE,
+                CONTROL_COLUMN_HEIGHT,
+                LayoutFlow.Orientation.VERTICAL
+        );
+        controlColumn.addChild(allDimensionsToggle, LayoutFlow.Direction.FORWARD);
+        controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
+        controlColumn.addChild(groupModeToggle, LayoutFlow.Direction.FORWARD);
+        controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
+        controlColumn.addChild(sortOrderToggle, LayoutFlow.Direction.FORWARD);
+        controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
+        controlColumn.addChild(sortingModeDropdown, LayoutFlow.Direction.FORWARD);
+        controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
+        controlColumn.addChild(addWaypointButton, LayoutFlow.Direction.FORWARD);
+        this.controlAnchor = new WidgetPack(
+                LEFT_PART_WIDTH,
+                CONTROL_COLUMN_HEIGHT,
+                LayoutFlow.Orientation.HORIZONTAL
+        );
+        this.controlAnchor.addChild(controlColumn, LayoutFlow.Direction.FORWARD);
+        this.leftLayout = new WidgetPack(
+                LEFT_PART_WIDTH,
+                MAX_CONTENT_HEIGHT,
+                LayoutFlow.Orientation.VERTICAL
+        );
+        this.leftLayout.addChild(dimensionListWidget, LayoutFlow.Direction.FORWARD);
+        this.leftLayout.addChild(this.controlAnchor, LayoutFlow.Direction.REVERSE);
     }
 
+    public WaypointManagerScreen(WaypointClientMod waypointClientMod) {
+        this(waypointClientMod, null);
+    }
+
+    /**
+     * Resets dimension-rail navigation state after dimension travel while retaining all-dimensions
+     * waypoint-list scroll and dimension-node expansion choices for the current server or
+     * local-world session.
+     */
     public static void resetWidgetStates() {
-        WaypointListWidget.resetScroll();
         DimensionListWidget.resetStates();
     }
 
-    public static void updateCurrentView() {
-        if (isRendering) {
-            WaypointClientMod waypointClient = WaypointClientMod.getInstance();
-            dimensionListWidget.updateDimensionNames(waypointClient.getDimensionNames());
-            waypointListWidget.updateWaypointLists(waypointClient.getWaypointListsByDimensionName(dimensionListWidget.getSelectedDimensionName()));
+    /**
+     * Resets all session-scoped manager state when joining a server or opening a local world.
+     */
+    public static void resetSessionWidgetStates() {
+        resetWidgetStates();
+        WaypointListWidget.resetSessionStates();
+    }
+
+    /**
+     * Performs a full refresh after the available dimensions or the active player dimension may
+     * have changed. The dimension rail is rebuilt first and its selection is preserved when
+     * possible. The waypoint list is then refreshed exactly once; changing the selected dimension
+     * already performs that refresh, so a second query is skipped in that case.
+     */
+    public static void updateAllWidgets() {
+        if (!canUpdateWidgets()) {
+            return;
+        }
+        if (!updateDimensionWidgetSelection()) {
+            waypointListWidget.refreshView();
         }
     }
 
-    public static void updateDimensionList() {
-        if (isRendering) {
-            WaypointClientMod waypointClient = WaypointClientMod.getInstance();
-            String selectedDimensionName =  dimensionListWidget.getSelectedDimensionName();
-            List<String> dimensionNames = waypointClient.getDimensionNames();
-            if (dimensionNames.contains(selectedDimensionName)) {
-                dimensionListWidget.updateDimensionNames(dimensionNames);
-                dimensionListWidget.setDimensionName(selectedDimensionName);
-            } else if (!dimensionNames.isEmpty()) {
-                dimensionListWidget.updateDimensionNames(dimensionNames);
-                dimensionListWidget.setDimensionName(WaypointClientMod.getCurrentDimensionName());
-                waypointListWidget.updateWaypointLists(waypointClient.getCurrentWaypointLists());
-            } else {
-                dimensionListWidget.updateDimensionNames(dimensionNames);
-            }
+    /**
+     * Refreshes the manager after an operation creates or removes an available dimension. The
+     * dimension rail is always rebuilt while the screen is active. The waypoint list is refreshed
+     * only when selection fallback changes its dimension, the changed dimension is selected, or
+     * all-dimensions mode makes the changed dimension part of the current view.
+     *
+     * @param changedDimension the dimension added to or removed from the available-dimension set
+     */
+    public static void updateWidgetsForDimensionListChange(String changedDimension) {
+        if (!canUpdateWidgets() || updateDimensionWidgetSelection()) {
+            return;
+        }
+        refreshWaypointWidgetIfAffected(changedDimension);
+    }
+
+    /**
+     * Refreshes waypoint content after a mutation inside an existing dimension. This path never
+     * rebuilds or sorts the dimension rail. In selected-dimension mode, mutations in other
+     * dimensions are ignored; in all-dimensions mode, every dimension is relevant.
+     *
+     * @param changedDimension the dimension whose waypoint content changed
+     */
+    public static void updateWaypointWidget(String changedDimension) {
+        if (!canUpdateWidgets()) {
+            return;
+        }
+        refreshWaypointWidgetIfAffected(changedDimension);
+    }
+
+    /**
+     * Requeries waypoint rows only when the changed dimension participates in the active view.
+     *
+     * @param changedDimension the dimension whose waypoint content changed
+     */
+    private static void refreshWaypointWidgetIfAffected(String changedDimension) {
+        if (shouldRefreshDimension(
+                waypointListWidget.isShowingAllDimensions(),
+                changedDimension,
+                dimensionListWidget.getSelectedDimensionName()
+        )) {
+            waypointListWidget.refreshView();
         }
     }
 
-    public static void updateCurrentWaypointLists(List<WaypointList> waypointLists) {
-        if (isRendering) {
-            waypointListWidget.updateWaypointLists(waypointLists);
-        }
+    private static boolean canUpdateWidgets() {
+        return isRendering && dimensionListWidget != null && waypointListWidget != null;
     }
 
-    public static void updateWaypointLists(String dimensionName, List<WaypointList> waypointLists) {
-        if (isRendering && dimensionName.equals(dimensionListWidget.getSelectedDimensionName())) {
-            waypointListWidget.updateWaypointLists(waypointLists);
+    /**
+     * Rebuilds the dimension rail and resolves its selection by name. Selection preference is the
+     * previous dimension, then the player's current dimension, then the first available dimension.
+     *
+     * @return {@code true} when changing the selection already refreshed the waypoint list;
+     *         {@code false} when the caller still needs to decide whether waypoint rows changed
+     */
+    private static boolean updateDimensionWidgetSelection() {
+        WaypointClientMod waypointClient = WaypointClientMod.getInstance();
+        String previousSelection = dimensionListWidget.getSelectedDimensionName();
+        List<String> dimensionNames = waypointClient.getDimensionNames();
+        String selectedDimension = resolveSelectedDimension(
+                previousSelection,
+                getCurrentDimensionName(),
+                dimensionNames
+        );
+
+        dimensionListWidget.updateDimensionNames(dimensionNames);
+        if (selectedDimension != null) {
+            dimensionListWidget.setDimensionName(selectedDimension);
         }
+        if (Objects.equals(previousSelection, selectedDimension)) {
+            return false;
+        }
+        syncSelectedDimension(selectedDimension);
+        return true;
     }
 
-    public static void refreshWaypointLists(String dimensionName) {
-        if (isRendering && dimensionName.equals(dimensionListWidget.getSelectedDimensionName())) {
-            waypointListWidget.reCalculateRenderData();
+    /**
+     * Resolves the previous selection, then the current dimension, then the first available dimension.
+     *
+     * @param selectedDimension the dimension selected before the catalog update
+     * @param currentDimension the player's current dimension
+     * @param dimensionNames the complete updated dimension catalog
+     * @return the dimension to select, or {@code null} when the catalog is empty
+     */
+    static @Nullable String resolveSelectedDimension(
+            String selectedDimension,
+            String currentDimension,
+            List<String> dimensionNames
+    ) {
+        if (dimensionNames.contains(selectedDimension)) {
+            return selectedDimension;
         }
+        if (dimensionNames.contains(currentDimension)) {
+            return currentDimension;
+        }
+        return dimensionNames.isEmpty() ? null : dimensionNames.get(0);
     }
 
     public String getSelectedDimension() {
@@ -93,18 +372,54 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     public void updateWidgetDimension() {
-        int contentHeight = (int) (this.height * relativeHeight);
-        waypointListWidget.setVisualHeight(contentHeight - dimensionListWidget.getVisualHeight());
+        closeOpenDropdownMenus();
+        this.layoutGeometry = calculateLayoutGeometry(this.width, this.height);
+        sortingModeDropdown.setPopupXOffset(this.layoutGeometry.dropdownXOffset(
+                sortingModeDropdown.getPopupItemCount()
+        ));
+
+        int waypointListHeight = this.layoutGeometry.waypointListHeight(searchField.getVisualHeight());
+        boolean middleVisible = waypointListHeight >= MIN_WAYPOINT_LIST_HEIGHT;
+        searchField.visible = middleVisible;
+        searchField.active = middleVisible;
+        waypointListWidget.visible = middleVisible;
+        waypointListWidget.active = middleVisible;
+        searchField.setVisualWidth(this.layoutGeometry.middlePartWidth());
+        waypointListWidget.setVisualWidth(this.layoutGeometry.middlePartWidth());
+        waypointListWidget.setVisualHeight(Math.max(MIN_WAYPOINT_LIST_HEIGHT, waypointListHeight));
+        this.middleLayout.setDimensions(
+                this.layoutGeometry.middlePartWidth(),
+                this.layoutGeometry.contentHeight()
+        );
+
+        waypointDetailsWidget.visible = true;
+        waypointDetailsWidget.active = true;
+        waypointDetailsWidget.setDimensions(
+                this.layoutGeometry.detailsContentWidth(),
+                this.layoutGeometry.contentHeight()
+        );
+        waypointDetailsWidget.setX(this.layoutGeometry.detailsContentX());
+        waypointDetailsWidget.setY(this.layoutGeometry.contentY());
+
+        int dimensionListHeight = this.layoutGeometry.dimensionListHeight();
+        boolean dimensionListVisible = dimensionListHeight >= MIN_DIMENSION_LIST_HEIGHT;
+        dimensionListWidget.visible = dimensionListVisible;
+        dimensionListWidget.active = resolveDimensionListActive(dimensionListVisible);
+        dimensionListWidget.setVisualHeight(Math.max(MIN_DIMENSION_LIST_HEIGHT, dimensionListHeight));
+
+        boolean controlsVisible = this.layoutGeometry.contentHeight() >= CONTROL_COLUMN_HEIGHT;
+        setControlVisibility(controlsVisible);
+        this.leftLayout.setDimensions(LEFT_PART_WIDTH, this.layoutGeometry.contentHeight());
     }
 
     @Override
     int getContentWidth() {
-        return dimensionListWidget.getVisualWidth();
+        return calculateLayoutGeometry(this.width, this.height).completeWidth();
     }
 
     @Override
     int getContentHeight() {
-        return (int) (this.height * relativeHeight);
+        return calculateLayoutGeometry(this.width, this.height).panelHeight();
     }
 
     @Override
@@ -122,64 +437,204 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             }
         }
         updateWidgetDimension();
-        int centeredX = getCenteredX();
-        int centeredY = getCenteredY();
-        mainLayout.setOffsets(centeredX, centeredY);
+        this.middleLayout.setPosition(
+                this.layoutGeometry.middleX(),
+                this.layoutGeometry.contentY()
+        );
+        this.leftLayout.setPosition(
+                this.layoutGeometry.leftX(),
+                this.layoutGeometry.contentY()
+        );
 
-        List<WaypointList> defaultWaypointLists;
         dimensionListWidget.updateDimensionNames(this.waypointClientMod.getDimensionNames());
         if (hasInitialized) {
-            defaultWaypointLists = this.waypointClientMod.getWaypointListsByDimensionName(getSelectedDimension());
+            syncSelectedDimension(getSelectedDimension());
         } else {
-            defaultWaypointLists = this.waypointClientMod.getCurrentWaypointLists();
             dimensionListWidget.setDimensionName(getCurrentDimensionName());
+            syncSelectedDimension(getCurrentDimensionName());
             hasInitialized = true;
         }
 
-        waypointListWidget.updateWaypointLists(defaultWaypointLists);
-        this.addRenderableWidget(waypointListWidget);
-        this.addRenderableWidget(dimensionListWidget);
+        this.leftLayout.visitWidgets(this::addRenderableWidget);
+        this.middleLayout.visitWidgets(this::addRenderableWidget);
+        this.addRenderableWidget(this.waypointDetailsWidget);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        waypointListWidget.refreshDistanceSortIfPlayerMoved();
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_C) {
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE && closeOpenDropdownMenus()) {
+            return true;
+        }
+        GuiEventListener focused = this.getFocused();
+        boolean notTyping = !(focused instanceof EditBox);
+        this.acceptMovementKeys(notTyping);
+        if (notTyping && keyCode == GLFW.GLFW_KEY_C) {
+            closeOpenDropdownMenus();
             MinecraftClientHelper.setScreen(this.minecraft, new ClientConfigScreen(this));
             return true;
         }
         return waypointListWidget.keyPressed(keyCode, scanCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers);
     }
 
+    //? if >= 1.21.9 {
+    @Override
+    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClicked) {
+        if (this.mouseClickedOpenDropdown(
+                mouseButtonEvent.x(),
+                mouseButtonEvent.y(),
+                mouseButtonEvent.button()
+        )) {
+            return true;
+        }
+        this.closeDropdownsOutside(mouseButtonEvent.x(), mouseButtonEvent.y());
+        if (this.mouseClickedSearchSuggestion(mouseButtonEvent.x(), mouseButtonEvent.y())) {
+            return true;
+        }
+        return super.mouseClicked(mouseButtonEvent, doubleClicked);
+    }
+    //?} else {
+    /*@Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.mouseClickedOpenDropdown(mouseX, mouseY, button)) {
+            return true;
+        }
+        this.closeDropdownsOutside(mouseX, mouseY);
+        if (this.mouseClickedSearchSuggestion(mouseX, mouseY)) {
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+    *///?}
+
     private void onSelectDimension(String dimensionName) {
-        waypointListWidget.setHideButtonEnabled(dimensionName.equals(getCurrentDimensionName()));
-        waypointListWidget.updateWaypointLists(this.waypointClientMod.getWaypointListsByDimensionName(dimensionName));
+        syncSelectedDimension(dimensionName);
+    }
+
+    private void setShowAllDimensions(boolean showAllDimensions) {
+        waypointListWidget.setShowAllDimensions(showAllDimensions);
+        dimensionListWidget.active = resolveDimensionListActive(dimensionListWidget.visible);
+        persistManagerState();
+    }
+
+    static boolean resolveDimensionListActive(boolean dimensionListVisible) {
+        return dimensionListVisible;
+    }
+
+    /**
+     * Determines whether a mutation in one dimension can affect the currently displayed rows.
+     *
+     * @param showAllDimensions whether rows from every dimension are displayed
+     * @param changedDimension the dimension whose waypoint content changed
+     * @param selectedDimension the dimension selected in the dimension rail
+     * @return {@code true} when the waypoint list must be requeried
+     */
+    static boolean shouldRefreshDimension(
+            boolean showAllDimensions,
+            String changedDimension,
+            String selectedDimension
+    ) {
+        return showAllDimensions
+                || Objects.equals(changedDimension, selectedDimension);
+    }
+
+    private void openAddWaypointScreen() {
+        MinecraftClientHelper.setScreen(new WaypointAddScreen(this, getSelectedDimension(), ""));
+    }
+
+    private static void syncSelectedDimension(String dimensionName) {
+        waypointListWidget.setSelectedDimension(dimensionName);
+    }
+
+    private WaypointFilesManagerCore getWaypointQuerySource() {
+        if (WaypointServerMod.runsWithClient() && WaypointServerMod.getInstance() != null) {
+            return WaypointServerMod.getInstance();
+        }
+        return this.waypointClientMod;
     }
 
     @Override
-    public void
-    //$ render_method_swap
-    extractRenderState
+    protected void renderScreenContents
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         WaypointClientMod.ClientNetworkState networkState = getNetworkState();
         if (networkState == NO_SERVERSIDE_SUPPORT) {
             Component info = Component.translatable("server_waypoint.no_serverside_support");
             int infoWidth = font.width(info);
-            drawText(context, this.font, info, centered(this.width, infoWidth), this.height / 2, 0xFFFFFFFF);
+            drawText(context, this.font, info, centered(this.width, infoWidth), this.height / 2,
+                    WidgetThemeManager.getColor(WidgetThemeVariable.TEXT_PRIMARY));
             return;
         } else if (networkState == INCOMPATIBLE_PROTOCOL) {
             Component info = Component.translatable("server_waypoint.incompatible_protocol_version");
             int infoWidth = font.width(info);
-            drawText(context, this.font, info, centered(this.width, infoWidth), this.height / 2, 0xFFFFFFFF);
+            drawText(context, this.font, info, centered(this.width, infoWidth), this.height / 2,
+                    WidgetThemeManager.getColor(WidgetThemeVariable.TEXT_PRIMARY));
             return;
         }
+        this.renderPanel(
+                context,
+                this.layoutGeometry.middlePanelX(),
+                this.layoutGeometry.panelY(),
+                this.layoutGeometry.middlePanelWidth(),
+                this.layoutGeometry.panelHeight()
+        );
+        searchField.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
         waypointListWidget.
-        //$ render_widget_method_swap
-        extractWidgetRenderState
+        //$ render_method_swap
+        extractRenderState
                 (context, mouseX, mouseY, delta);
+        this.renderPanel(
+                context,
+                this.layoutGeometry.detailsPanelX(),
+                this.layoutGeometry.panelY(),
+                this.layoutGeometry.detailsPanelWidth(),
+                this.layoutGeometry.panelHeight()
+        );
+        waypointDetailsWidget.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
+        this.renderPanel(
+                context,
+                this.layoutGeometry.leftPanelX(),
+                this.layoutGeometry.panelY(),
+                this.layoutGeometry.leftPanelWidth(),
+                this.layoutGeometry.panelHeight()
+        );
         dimensionListWidget.
-        //$ render_widget_method_swap
-        extractWidgetRenderState
+        //$ render_method_swap
+        extractRenderState
                 (context, mouseX, mouseY, delta);
+        addWaypointButton.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
+        groupModeToggle.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
+        sortOrderToggle.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
+        sortingModeDropdown.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
+        allDimensionsToggle.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
+        nextLayer(context);
+        searchField.renderSuggestions(context, mouseX, mouseY);
+        previousLayer(context);
     }
 
     @Override
@@ -187,6 +642,565 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         isRendering = false;
         waypointListWidget = null;
         dimensionListWidget = null;
-        super.onClose();
+        if (parentScreen == null) super.onClose();
+        else MinecraftClientHelper.setScreen(this.parentScreen);
     }
+
+    private void syncControlStates() {
+        if (waypointListWidget == null) {
+            return;
+        }
+        WaypointSorting.SortMode activeMode = waypointListWidget.getSortMode();
+        boolean reversed = waypointListWidget.isSortReversed();
+        boolean groupByLists = waypointListWidget.isGroupByLists();
+        allDimensionsToggle.setState(waypointListWidget.isShowingAllDimensions());
+        groupModeToggle.setState(groupByLists);
+        sortOrderToggle.setState(reversed);
+        sortOrderToggle.active = sortOrderToggle.visible
+                && activeMode != WaypointSorting.SortMode.DEFAULT;
+
+        int sortIndex = switch (activeMode) {
+            case DEFAULT -> 0;
+            case NAME -> 1;
+            case DISTANCE -> 2;
+            case COLOR -> 3;
+        };
+        String sortTranslationKey = switch (activeMode) {
+            case DEFAULT -> "waypoint.sort.default";
+            case NAME -> "waypoint.sort.name";
+            case DISTANCE -> "waypoint.sort.distance";
+            case COLOR -> "waypoint.sort.color";
+        };
+        sortingModeDropdown.setSelectedIndex(sortIndex);
+        sortingModeDropdown.setMessage(Component.translatable(sortTranslationKey)
+                .append(WaypointSortButtonLabel.directionSuffix(activeMode, activeMode, reversed)));
+    }
+
+    private void setGroupMode(boolean groupByLists) {
+        WaypointSorting.SortMode currentSortMode = waypointListWidget.getSortMode();
+        WaypointSorting.SortMode resolvedSortMode = resolveSortModeForGroupMode(
+                currentSortMode,
+                groupByLists
+        );
+        if (resolvedSortMode != currentSortMode) {
+            waypointListWidget.setSortMode(resolvedSortMode);
+        }
+        waypointListWidget.setGroupByLists(groupByLists);
+        persistManagerState();
+        syncControlStates();
+    }
+
+    static WaypointSorting.SortMode resolveSortModeForGroupMode(
+            WaypointSorting.SortMode currentSortMode,
+            boolean groupByLists
+    ) {
+        return !groupByLists && currentSortMode == WaypointSorting.SortMode.DEFAULT
+                ? WaypointSorting.SortMode.NAME
+                : currentSortMode;
+    }
+
+    private void toggleSortMode(WaypointSorting.SortMode sortMode) {
+        waypointListWidget.toggleSortMode(sortMode);
+        persistManagerState();
+        syncControlStates();
+    }
+
+    private void setSortMode(WaypointSorting.SortMode sortMode) {
+        waypointListWidget.setSortMode(sortMode);
+        persistManagerState();
+        syncControlStates();
+    }
+
+    private void setSortReversed(boolean reversed) {
+        WaypointSorting.SortMode activeMode = waypointListWidget.getSortMode();
+        if (activeMode != WaypointSorting.SortMode.DEFAULT
+                && waypointListWidget.isSortReversed() != reversed) {
+            waypointListWidget.toggleSortMode(activeMode);
+        }
+        persistManagerState();
+        syncControlStates();
+    }
+
+    private void restorePersistentState() {
+        ClientConfig config = WaypointClientMod.getClientConfig();
+        WaypointSorting.SortMode sortMode = config.getWaypointManagerSortMode();
+        waypointListWidget.setSortMode(sortMode);
+        if (config.isWaypointManagerSortReversed()) {
+            waypointListWidget.toggleSortMode(sortMode);
+        }
+        waypointListWidget.setGroupByLists(config.isWaypointManagerGroupByLists());
+        waypointListWidget.setShowAllDimensions(config.isWaypointManagerShowAllDimensions());
+    }
+
+    private void persistManagerState() {
+        ClientConfig config = WaypointClientMod.getClientConfig();
+        config.setWaypointManagerSortMode(waypointListWidget.getSortMode());
+        config.setWaypointManagerSortReversed(waypointListWidget.isSortReversed());
+        config.setWaypointManagerGroupByLists(waypointListWidget.isGroupByLists());
+        config.setWaypointManagerShowAllDimensions(waypointListWidget.isShowingAllDimensions());
+        this.waypointClientMod.saveConfig();
+    }
+
+    private boolean mouseClickedSearchSuggestion(double mouseX, double mouseY) {
+        GuiEventListener focused = this.getFocused();
+        return focused == searchField && searchField.mouseClickedSuggestion(mouseX, mouseY);
+    }
+
+    private boolean mouseClickedOpenDropdown(double mouseX, double mouseY, int button) {
+        return sortingModeDropdown.isExpanded()
+                && sortingModeDropdown.mouseClicked(mouseX, mouseY, button);
+    }
+
+    private void closeDropdownsOutside(double mouseX, double mouseY) {
+        sortingModeDropdown.closeMenuIfOutside(mouseX, mouseY);
+    }
+
+    private boolean closeOpenDropdownMenus() {
+        return sortingModeDropdown.closeMenuIfOpen();
+    }
+
+    private void setControlVisibility(boolean visible) {
+        addWaypointButton.visible = visible;
+        addWaypointButton.active = visible;
+        groupModeToggle.visible = visible;
+        groupModeToggle.active = visible;
+        sortOrderToggle.visible = visible;
+        sortOrderToggle.active = visible
+                && waypointListWidget.getSortMode() != WaypointSorting.SortMode.DEFAULT;
+        sortingModeDropdown.visible = visible;
+        sortingModeDropdown.active = visible;
+        allDimensionsToggle.visible = visible;
+        allDimensionsToggle.active = visible;
+        if (!visible) {
+            closeOpenDropdownMenus();
+        }
+    }
+
+    private void renderPanel(GuiGraphicsExtractor context, int x, int y, int width, int height) {
+        context.fill(
+                x,
+                y,
+                x + width,
+                y + height,
+                WidgetThemeManager.getColor(WidgetThemeVariable.PANEL_BACKGROUND)
+        );
+        renderOutline(
+                context,
+                x,
+                y,
+                width,
+                height,
+                WidgetThemeManager.getColor(WidgetThemeVariable.BORDER)
+        );
+    }
+
+    static ManagerLayoutGeometry calculateLayoutGeometry(int screenWidth, int screenHeight) {
+        int availableContentHeight = Math.max(
+                0,
+                screenHeight - (SCREEN_MARGIN + PANEL_PADDING) * 2
+        );
+        int preferredContentHeight = clamp(
+                Math.round(screenHeight * RELATIVE_HEIGHT),
+                MIN_CONTENT_HEIGHT,
+                MAX_CONTENT_HEIGHT
+        );
+        int contentHeight = Math.min(availableContentHeight, preferredContentHeight);
+        int leftPanelWidth = LEFT_PART_WIDTH + PANEL_PADDING * 2;
+        int fixedHorizontalWidth = leftPanelWidth + PANEL_GAP * 2 + PANEL_PADDING * 4;
+        int desiredMiddlePartWidth = clamp(
+                Math.round(screenWidth * MIDDLE_PART_WIDTH_RATIO),
+                MIN_MIDDLE_PART_WIDTH,
+                MAX_MIDDLE_PART_WIDTH
+        );
+        int desiredDetailsPartWidth = clamp(
+                Math.round(screenWidth * DETAILS_PART_WIDTH_RATIO),
+                MIN_DETAILS_PART_WIDTH,
+                MAX_DETAILS_PART_WIDTH
+        );
+        int desiredFlexibleWidth = desiredMiddlePartWidth + desiredDetailsPartWidth;
+        int availableCompleteWidth = screenWidth <= 0
+                ? fixedHorizontalWidth + desiredFlexibleWidth
+                : Math.max(0, screenWidth - SCREEN_MARGIN * 2);
+        int availableFlexibleWidth = Math.max(
+                2,
+                availableCompleteWidth - fixedHorizontalWidth
+        );
+        int middlePartWidth = desiredMiddlePartWidth;
+        int detailsPartWidth = desiredDetailsPartWidth;
+        if (desiredFlexibleWidth > availableFlexibleWidth) {
+            middlePartWidth = Math.max(
+                    1,
+                    Math.round((float)availableFlexibleWidth
+                            * desiredMiddlePartWidth / desiredFlexibleWidth)
+            );
+            detailsPartWidth = Math.max(1, availableFlexibleWidth - middlePartWidth);
+        }
+        int middlePanelWidth = middlePartWidth + PANEL_PADDING * 2;
+        int detailsPanelWidth = detailsPartWidth + PANEL_PADDING * 2;
+        int completeWidth = leftPanelWidth
+                + PANEL_GAP
+                + middlePanelWidth
+                + PANEL_GAP
+                + detailsPanelWidth;
+        int leftPanelX = centered(screenWidth, completeWidth);
+        int leftX = leftPanelX + PANEL_PADDING;
+        int middleX = leftPanelX + leftPanelWidth + PANEL_GAP + PANEL_PADDING;
+        int detailsPanelX = leftPanelX + leftPanelWidth + PANEL_GAP
+                + middlePanelWidth + PANEL_GAP;
+        return new ManagerLayoutGeometry(
+                contentHeight,
+                middleX,
+                leftX,
+                centered(screenHeight, contentHeight),
+                middlePartWidth,
+                detailsPanelX,
+                detailsPanelWidth
+        );
+    }
+
+    private static int clamp(int value, int minimum, int maximum) {
+        return Math.max(minimum, Math.min(maximum, value));
+    }
+
+    record ManagerLayoutGeometry(
+            int contentHeight,
+            int middleX,
+            int leftX,
+            int contentY,
+            int middlePartWidth,
+            int detailsPanelX,
+            int detailsPanelWidth
+    ) {
+        int panelY() {
+            return this.contentY - PANEL_PADDING;
+        }
+
+        int panelHeight() {
+            return this.contentHeight + PANEL_PADDING * 2;
+        }
+
+        int middlePanelX() {
+            return this.middleX - PANEL_PADDING;
+        }
+
+        int middlePanelWidth() {
+            return this.middlePartWidth + PANEL_PADDING * 2;
+        }
+
+        int leftPanelX() {
+            return this.leftX - PANEL_PADDING;
+        }
+
+        int leftPanelWidth() {
+            return LEFT_PART_WIDTH + PANEL_PADDING * 2;
+        }
+
+        int detailsContentX() {
+            return this.detailsPanelX + PANEL_PADDING;
+        }
+
+        int detailsContentWidth() {
+            return Math.max(0, this.detailsPanelWidth - PANEL_PADDING * 2);
+        }
+
+        int completeWidth() {
+            return this.detailsPanelX + this.detailsPanelWidth - this.leftPanelX();
+        }
+
+        int dimensionListHeight() {
+            return Math.max(0, this.contentHeight - CONTROL_COLUMN_HEIGHT - SECTION_GAP);
+        }
+
+        int waypointListHeight(int searchBarHeight) {
+            return Math.max(0, this.contentHeight - searchBarHeight - SEARCH_GAP);
+        }
+
+        int panelGap() {
+            return this.middlePanelX() - (this.leftPanelX() + this.leftPanelWidth());
+        }
+
+        int leftDropdownEdge(int itemCount) {
+            return this.controlX() - itemCount * (CONTROL_BUTTON_SIZE + DROPDOWN_ITEM_GAP);
+        }
+
+        int controlX() {
+            return this.leftX + CONTROL_COLUMN_X_OFFSET;
+        }
+
+        int dropdownXOffset(int itemCount) {
+            return Math.max(0, SCREEN_MARGIN - this.leftDropdownEdge(itemCount));
+        }
+
+    }
+
+    private static void renderIconControl(
+            GuiGraphicsExtractor context,
+            ShiftableClickableWidget widget,
+            //$ resource_location_type_swap
+            Identifier
+            icon,
+            boolean selected,
+            boolean focusVisible
+    ) {
+        int backgroundColor;
+        if (!widget.active) {
+            backgroundColor = WidgetThemeManager.getColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND);
+        } else if (selected) {
+            backgroundColor = WidgetThemeManager.getColor(WidgetThemeVariable.SELECTION_BACKGROUND);
+        } else {
+            backgroundColor = WidgetThemeManager.getColor(widget.isHovered()
+                    ? WidgetThemeVariable.CONTROL_HOVER_BACKGROUND
+                    : WidgetThemeVariable.CONTROL_BACKGROUND);
+        }
+        int borderColor = WidgetThemeManager.getColor(resolveIconControlBorder(
+                widget.active,
+                widget.isFocused(),
+                widget.isHovered(),
+                focusVisible
+        ));
+        int x = widget.getX();
+        int y = widget.getY();
+        context.fill(x, y, x + widget.getWidth(), y + widget.getHeight(), backgroundColor);
+        renderOutline(context, x, y, widget.getWidth(), widget.getHeight(), borderColor);
+        int iconWidth = Math.max(0, widget.getWidth() - CONTROL_ICON_PADDING * 2);
+        int iconHeight = Math.max(0, widget.getHeight() - CONTROL_ICON_PADDING * 2);
+        if (iconWidth > 0 && iconHeight > 0) {
+            texture(
+                    context,
+                    icon,
+                    x + CONTROL_ICON_PADDING,
+                    y + CONTROL_ICON_PADDING,
+                    0,
+                    0,
+                    iconWidth,
+                    iconHeight,
+                    iconWidth,
+                    iconHeight
+            );
+        }
+    }
+
+    static WidgetThemeVariable resolveIconControlBorder(
+            boolean active,
+            boolean focused,
+            boolean hovered,
+            boolean focusVisible
+    ) {
+        return active && (hovered || (focused && focusVisible))
+                ? WidgetThemeVariable.FOCUS_RING
+                : WidgetThemeVariable.BORDER;
+    }
+
+    private static final class IconDropdownMenu extends AbstractDropdownMenuWidget {
+        private final List<IconMenuItem> iconItems = new ArrayList<>();
+        private int selectedIndex;
+        private int popupXOffset;
+        private int appliedPopupXOffset;
+        private int appliedPopupYOffset;
+
+        private IconDropdownMenu(Component message) {
+            super(
+                    0,
+                    0,
+                    CONTROL_BUTTON_SIZE,
+                    CONTROL_BUTTON_SIZE,
+                    message,
+                    LayoutFlow.Orientation.HORIZONTAL,
+                    LayoutFlow.Direction.REVERSE,
+                    DROPDOWN_ITEM_GAP
+            );
+            this.setTooltip(Tooltip.create(message));
+        }
+
+        @Override
+        public void setMessage(Component message) {
+            super.setMessage(message);
+            this.setTooltip(Tooltip.create(message));
+        }
+
+        private void addIconItem(
+                Component message,
+                //$ resource_location_type_swap
+                Identifier
+                icon,
+                Runnable callback
+        ) {
+            IconMenuItem menuItem = this.addMenuItem(new IconMenuItem(message, icon, callback));
+            this.iconItems.add(menuItem);
+        }
+
+        private void setSelectedIndex(int selectedIndex) {
+            this.selectedIndex = selectedIndex;
+            for (int i = 0; i < this.iconItems.size(); i++) {
+                this.iconItems.get(i).selected = i == selectedIndex;
+            }
+        }
+
+        private void setPopupXOffset(int popupXOffset) {
+            this.popupXOffset = Math.max(0, popupXOffset);
+        }
+
+        @Override
+        protected void renderDropdownControl(
+                GuiGraphicsExtractor context,
+                int mouseX,
+                int mouseY,
+                float deltaTicks
+        ) {
+            renderIconControl(context, this, this.getSelectedIcon(), false, this.isExpanded());
+        }
+
+        private
+        //$ resource_location_type_swap
+        Identifier
+        getSelectedIcon() {
+            return this.selectedIndex >= 0 && this.selectedIndex < this.iconItems.size()
+                    ? this.iconItems.get(this.selectedIndex).icon
+                    : WidgetTextures.PLACEHOLDER_ICON;
+        }
+
+        @Override
+        protected int getSelectedMenuItemIndex() {
+            return this.selectedIndex;
+        }
+
+        @Override
+        protected void onExpandedChanged(boolean expanded) {
+            this.removeAppliedPopupOffset();
+            if (!expanded) {
+                return;
+            }
+            if (this.popupXOffset == 0) {
+                return;
+            }
+            this.appliedPopupXOffset = this.popupXOffset;
+            this.appliedPopupYOffset = this.popupXOffset > DROPDOWN_ITEM_GAP
+                    ? -(CONTROL_BUTTON_SIZE + DROPDOWN_ITEM_GAP)
+                    : 0;
+            this.offsetMenuItems(this.appliedPopupXOffset, this.appliedPopupYOffset);
+        }
+
+        private void removeAppliedPopupOffset() {
+            if (this.appliedPopupXOffset == 0 && this.appliedPopupYOffset == 0) {
+                return;
+            }
+            this.offsetMenuItems(-this.appliedPopupXOffset, -this.appliedPopupYOffset);
+            this.appliedPopupXOffset = 0;
+            this.appliedPopupYOffset = 0;
+        }
+
+        private void offsetMenuItems(int xOffset, int yOffset) {
+            for (IconMenuItem iconItem : this.iconItems) {
+                iconItem.setPosition(iconItem.getX() + xOffset, iconItem.getY() + yOffset);
+            }
+        }
+    }
+
+    private static final class IconMenuItem extends AbstractDropdownMenuWidget.AbstractMenuItem {
+        private final
+        //$ resource_location_type_swap
+        Identifier
+        icon;
+        private final Runnable callback;
+        private boolean selected;
+
+        private IconMenuItem(
+                Component message,
+                //$ resource_location_type_swap
+                Identifier
+                icon,
+                Runnable callback
+        ) {
+            super(CONTROL_BUTTON_SIZE, CONTROL_BUTTON_SIZE, message);
+            this.icon = icon;
+            this.callback = callback;
+            this.setTooltip(Tooltip.create(message));
+        }
+
+        @Override
+        protected void onSelected() {
+            this.callback.run();
+        }
+
+        @Override
+        protected void renderMenuItem(
+                GuiGraphicsExtractor context,
+                int mouseX,
+                int mouseY,
+                float deltaTicks
+        ) {
+            renderIconControl(context, this, this.icon, this.selected, true);
+        }
+    }
+
+    private static final class IconToggleButton extends ShiftableClickableWidget {
+        private final
+        //$ resource_location_type_swap
+        Identifier
+        state0Icon;
+        private final
+        //$ resource_location_type_swap
+        Identifier
+        state1Icon;
+        private final Component state0Message;
+        private final Component state1Message;
+        private final Consumer<Boolean> callback;
+        private boolean state;
+
+        private IconToggleButton(
+                Component state0Message,
+                Component state1Message,
+                //$ resource_location_type_swap
+                Identifier
+                state0Icon,
+                //$ resource_location_type_swap
+                Identifier
+                state1Icon,
+                Consumer<Boolean> callback
+        ) {
+            super(0, 0, CONTROL_BUTTON_SIZE, CONTROL_BUTTON_SIZE, state0Message);
+            this.state0Message = state0Message;
+            this.state1Message = state1Message;
+            this.state0Icon = state0Icon;
+            this.state1Icon = state1Icon;
+            this.callback = callback;
+            this.updatePresentation();
+        }
+
+        @Override
+        public void onClick(double mouseX, double mouseY) {
+            this.setState(!this.state);
+            this.callback.accept(this.state);
+        }
+
+        private void setState(boolean state) {
+            this.state = state;
+            this.updatePresentation();
+        }
+
+        private void updatePresentation() {
+            Component message = this.state ? this.state1Message : this.state0Message;
+            this.setMessage(message);
+            this.setTooltip(Tooltip.create(message));
+        }
+
+        @Override
+        public void
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+                (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+            renderIconControl(
+                    context,
+                    this,
+                    this.state ? this.state1Icon : this.state0Icon,
+                    false,
+                    true
+            );
+        }
+
+        @Override
+        protected void updateWidgetNarration(NarrationElementOutput builder) {
+        }
+    }
+
 }

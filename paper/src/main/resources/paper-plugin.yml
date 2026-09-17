@@ -1,8 +1,13 @@
 name: ServerWaypoint
 version: '${version}'
 main: _959.server_waypoint.ServerWaypointPaperMC
-api-version: '1.21'
+api-version: '${mcVersion}'
+folia-supported: true
 author: 2676959
 description: Serverside waypoint manager
 website: https://modrinth.com/mod/server_waypoint
 prefix: server_waypoint_plugin
+permissions:
+  server_waypoint.command.navigate:
+    description: Use server-side waypoint navigation
+    default: true

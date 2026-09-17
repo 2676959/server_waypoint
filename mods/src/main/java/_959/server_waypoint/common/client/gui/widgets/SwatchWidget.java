@@ -1,7 +1,12 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.api.ColorPickerCallback;
+import _959.server_waypoint.common.client.gui.api.Colorable;
+import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
+import _959.server_waypoint.common.util.MathHelper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
@@ -13,12 +18,15 @@ import net.minecraft.client.input.KeyEvent;
 //?}
 import net.minecraft.network.chat.Component;
 
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.POPUP_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 import static _959.server_waypoint.util.ColorUtils.VANILLA_COLORS;
 
-public class SwatchWidget extends ShiftableClickableWidget implements Colorable {
-    private ColorPickerCallBack confirmCallback;
+public class SwatchWidget extends ShiftableClickableWidget implements Colorable, Padding {
+    private static final int SLIDER_BAR_COLOR = 0xFFFFFFFF;
+    private ColorPickerCallback confirmCallback;
     private static final int BG_PADDING_X = 10;
     private static final int BG_PADDING_Y = 6;
     private final WidgetStack colorRow0 = new WidgetStack(0, 0, 1);
@@ -37,17 +45,17 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
     private final ColorSquareButton previousColorButton = new ColorSquareButton(0, 0, 21, 0, false, () -> {});
     private GuiEventListener focused = this.currentColorButton;
 
-    public SwatchWidget(int x, int y, Font textRenderer, ColorPickerCallBack confirmCallback) {
+    public SwatchWidget(int x, int y, Font textRenderer, ColorPickerCallback confirmCallback) {
         super(x, y, 0, 0, Component.nullToEmpty("Swatch"));
         this.confirmCallback = confirmCallback;
         WidgetStack slidersRow = new WidgetStack(0, 0, 0);
         WidgetStack labelCol = new WidgetStack(0, 0, 2, true, false);
         WidgetStack pickerCol = new WidgetStack(0, 0, 0, true, false);
-        WidgetStack integerFieldCol = new WidgetStack(0, 0, 2, true, false);
+        WidgetStack integerFieldCol = new WidgetStack(0, 0, 0, true, false);
 
-        ScalableText hLabel = new ScalableText(0, 0, Component.nullToEmpty("H"), 0xFFFFFFFF, textRenderer);
-        ScalableText sLabel = new ScalableText(0, 0, Component.nullToEmpty("S"), 0xFFFFFFFF, textRenderer);
-        ScalableText vLabel = new ScalableText(0, 0, Component.nullToEmpty("V"), 0xFFFFFFFF, textRenderer);
+        ScalableText hLabel = new ScalableText(0, 0, Component.nullToEmpty("H"), TEXT_PRIMARY, textRenderer);
+        ScalableText sLabel = new ScalableText(0, 0, Component.nullToEmpty("S"), TEXT_PRIMARY, textRenderer);
+        ScalableText vLabel = new ScalableText(0, 0, Component.nullToEmpty("V"), TEXT_PRIMARY, textRenderer);
         ScalableText rLabel = new ScalableText(0, 0, Component.nullToEmpty("R"), 0xFFFF0000, textRenderer);
         ScalableText gLabel = new ScalableText(0, 0, Component.nullToEmpty("G"), 0xFF00FF00, textRenderer);
         ScalableText bLabel = new ScalableText(0, 0, Component.nullToEmpty("B"), 0xFF0000FF, textRenderer);
@@ -83,7 +91,7 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
         pickerCol.addChild(this.hsvColorPicker);
         pickerCol.addChild(this.rgbColorPicker);
 
-        integerFieldCol.addChild(this.hEntry);
+        integerFieldCol.addChild(this.hEntry, 2);
         integerFieldCol.addChild(this.sEntry);
         integerFieldCol.addChild(this.vEntry);
         integerFieldCol.addChild(this.rEntry);
@@ -313,6 +321,26 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
     }
 
     @Override
+    public int getVisualHeight() {
+        return this.height + (BG_PADDING_Y << 1);
+    }
+
+    @Override
+    public int getVisualWidth() {
+        return this.width + (BG_PADDING_X << 1);
+    }
+
+    @Override
+    public int getVisualX() {
+        return getX() - BG_PADDING_X;
+    }
+
+    @Override
+    public int getVisualY() {
+        return getY() - BG_PADDING_Y;
+    }
+
+    @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (this.visible) {
 //            float x = (float) mouseX - getX();
@@ -446,13 +474,31 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable 
             int y = getY() - BG_PADDING_Y;
             int paddingWidth = BG_PADDING_X << 1;
             int paddingHeight = BG_PADDING_Y << 1;
-            context.fill(x, y, x + this.width + paddingWidth, y + this.height + paddingHeight, TRANSPARENT_BG_COLOR);
-            renderOutline(context, x, y, this.width + paddingWidth, this.height + paddingHeight, 0xFFFFFFFF);
+            context.fill(x, y, x + this.width + paddingWidth, y + this.height + paddingHeight,
+                    WidgetThemeManager.getColor(POPUP_BACKGROUND));
+            renderOutline(context, x, y, this.width + paddingWidth, this.height + paddingHeight,
+                    WidgetThemeManager.getColor(BORDER));
             this.mainLayout.
             //$ render_method_swap
             extractRenderState
                     (context, mouseX, mouseY, deltaTicks);
+            this.renderWhiteSliderBars(context);
         }
+    }
+
+    private void renderWhiteSliderBars(GuiGraphicsExtractor context) {
+        renderWhiteSliderBar(context, this.hsvColorPicker.slider0);
+        renderWhiteSliderBar(context, this.hsvColorPicker.slider1);
+        renderWhiteSliderBar(context, this.hsvColorPicker.slider2);
+        renderWhiteSliderBar(context, this.rgbColorPicker.slider0);
+        renderWhiteSliderBar(context, this.rgbColorPicker.slider1);
+        renderWhiteSliderBar(context, this.rgbColorPicker.slider2);
+    }
+
+    private static void renderWhiteSliderBar(GuiGraphicsExtractor context, AbstractColorBgSlider slider) {
+        // Swatch gradients need a fixed high-contrast marker instead of a theme-dependent color.
+        int sliderX = slider.getX() + MathHelper.clamp((int)slider.sliderCenter, 0, slider.getWidth() - 1);
+        context.fill(sliderX, slider.getY(), sliderX + 1, slider.getY() + slider.getHeight(), SLIDER_BAR_COLOR);
     }
 
     @Override

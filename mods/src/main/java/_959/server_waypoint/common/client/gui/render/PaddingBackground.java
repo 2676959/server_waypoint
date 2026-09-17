@@ -1,0 +1,125 @@
+//~ gui_graphics_26
+package _959.server_waypoint.common.client.gui.render;
+
+import _959.server_waypoint.common.client.gui.layout.Padding;
+import java.util.Objects;
+import java.util.function.IntSupplier;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.layouts.LayoutElement;
+
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+
+public class PaddingBackground implements Renderable, Padding {
+    private final LayoutElement widget;
+    private final int topPadding;
+    private final int bottomPadding;
+    private final int leftPadding;
+    private final int rightPadding;
+    private final boolean border;
+    private final IntSupplier backgroundColor;
+    private final IntSupplier borderColor;
+
+    public PaddingBackground(LayoutElement widget, int topBottomPadding, int leftRightPadding, int bgColor, int bdColor, boolean border) {
+        this(widget, topBottomPadding, topBottomPadding, leftRightPadding, leftRightPadding, bgColor, bdColor, border);
+    }
+
+    public PaddingBackground(LayoutElement widget, int topBottomPadding, int leftRightPadding,
+                             WidgetThemeVariable backgroundColor, WidgetThemeVariable borderColor, boolean border) {
+        this(widget, topBottomPadding, topBottomPadding, leftRightPadding, leftRightPadding,
+                backgroundColor, borderColor, border);
+    }
+
+    public PaddingBackground(LayoutElement widget, int topBottomPadding, int leftRightPadding,
+                             IntSupplier backgroundColor, IntSupplier borderColor, boolean border) {
+        this(widget, topBottomPadding, topBottomPadding, leftRightPadding, leftRightPadding,
+                backgroundColor, borderColor, border);
+    }
+
+    public PaddingBackground(LayoutElement widget, int topPadding, int bottomPadding, int leftPadding, int rightPadding, int bgColor, int bdColor, boolean border) {
+        this(widget, topPadding, bottomPadding, leftPadding, rightPadding,
+                () -> bgColor, () -> bdColor, border);
+    }
+
+    public PaddingBackground(LayoutElement widget, int topPadding, int bottomPadding, int leftPadding, int rightPadding,
+                             WidgetThemeVariable backgroundColor, WidgetThemeVariable borderColor, boolean border) {
+        this(widget, topPadding, bottomPadding, leftPadding, rightPadding,
+                WidgetThemeColors.getColorSupplier(backgroundColor),
+                WidgetThemeColors.getColorSupplier(borderColor),
+                border);
+    }
+
+    public PaddingBackground(LayoutElement widget, int topPadding, int bottomPadding, int leftPadding, int rightPadding,
+                             IntSupplier backgroundColor, IntSupplier borderColor, boolean border) {
+        this.widget = widget;
+        this.topPadding = topPadding;
+        this.bottomPadding = bottomPadding;
+        this.leftPadding = leftPadding;
+        this.rightPadding = rightPadding;
+        this.backgroundColor = Objects.requireNonNull(backgroundColor, "backgroundColor");
+        this.borderColor = Objects.requireNonNull(borderColor, "borderColor");
+        this.border = border;
+    }
+
+    @Override
+    public void
+    //$ render_method_swap
+    extractRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        int x = this.widget.getX();
+        int y = this.widget.getY();
+        int width = this.widget.getWidth();
+        int height = this.widget.getHeight();
+        int x1 = x - this.leftPadding;
+        int y1 = y - this.topPadding;
+        context.fill(x1, y1, x + width + this.rightPadding, y + height + this.bottomPadding,
+                this.backgroundColor.getAsInt());
+        if (border) {
+            renderOutline(context, x1, y1, getVisualWidth(), getVisualHeight(), this.borderColor.getAsInt());
+        }
+    }
+
+    public int getTopPadding() {
+        return topPadding;
+    }
+
+    public int getBottomPadding() {
+        return bottomPadding;
+    }
+
+    public int getLeftPadding() {
+        return leftPadding;
+    }
+
+    public int getRightPadding() {
+        return rightPadding;
+    }
+
+    public int getPaddedHeight() {
+        return topPadding + bottomPadding;
+    }
+
+    public int getPaddedWidth() {
+        return leftPadding + rightPadding;
+    }
+
+    @Override
+    public int getVisualHeight() {
+        return this.widget.getHeight() + this.topPadding + this.bottomPadding;
+    }
+
+    @Override
+    public int getVisualWidth() {
+        return this.widget.getWidth() + this.leftPadding + this.rightPadding;
+    }
+
+    @Override
+    public int getVisualX() {
+        return this.widget.getX() - this.leftPadding;
+    }
+
+    @Override
+    public int getVisualY() {
+        return this.widget.getY() - this.topPadding;
+    }
+}

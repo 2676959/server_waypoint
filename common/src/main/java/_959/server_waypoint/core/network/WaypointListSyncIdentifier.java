@@ -18,11 +18,23 @@ public class WaypointListSyncIdentifier extends Pair<String, Integer> {
         return this.right;
     }
 
-    public static void encode(ByteBuf buf, WaypointListSyncIdentifier listSyncId) {
-        PairCodec.encode(buf, listSyncId, UtfStringCodec::encode, ByteBuf::writeInt);
+    public static void encode(ByteBuf buf, WaypointListSyncIdentifier listSyncId, EncodingContext context) {
+        PairCodec.encode(
+                buf,
+                listSyncId,
+                UtfStringCodec::encode,
+                (target, value, ignored) -> target.writeInt(value),
+                context
+        );
     }
 
-    public static WaypointListSyncIdentifier decode(ByteBuf buf) {
-        return PairCodec.decode(buf, UtfStringCodec::decode, ByteBuf::readInt, WaypointListSyncIdentifier::new);
+    public static WaypointListSyncIdentifier decode(ByteBuf buf, DecodingContext context) {
+        return PairCodec.decode(
+                buf,
+                UtfStringCodec::decode,
+                (target, ignored) -> target.readInt(),
+                WaypointListSyncIdentifier::new,
+                context
+        );
     }
 }

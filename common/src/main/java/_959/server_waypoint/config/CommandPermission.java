@@ -4,8 +4,11 @@ public class CommandPermission {
     int add = 0;
     int edit = 0;
     int remove = 0;
+    int navigate = 0;
     int tp = 2;
     int reload = 2;
+    int upload = 2;
+    int uploadDelete = 4;
 
     public CommandPermission() {
     }
@@ -22,6 +25,10 @@ public class CommandPermission {
         return this.remove;
     }
 
+    public int navigate() {
+        return this.navigate;
+    }
+
     public int tp() {
         return this.tp;
     }
@@ -30,14 +37,25 @@ public class CommandPermission {
         return this.reload;
     }
 
+    public int upload() {
+        return this.upload;
+    }
+
+    public int uploadDelete() {
+        return this.uploadDelete;
+    }
+
    @Override
    public String toString() {
       return "CommandPermission{" +
               "add=" + add +
               ", edit=" + edit +
               ", remove=" + remove +
+              ", navigate=" + navigate +
               ", tp=" + tp +
               ", reload=" + reload +
+              ", upload=" + upload +
+              ", uploadDelete=" + uploadDelete +
               '}';
    }
 }

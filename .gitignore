@@ -31,6 +31,7 @@ bin/
 # fabric
 
 run/
+logs/
 
 # java
 
@@ -41,9 +42,18 @@ replay_*.log
 
 # test
 test_files/
-
 builds/
+
+# jenv
 .java-version
-/TODO.md
+
+# generated
 /minecraft_source_code/
 /mods/versions/*/logs/
+
+# misc
+plans/
+/TODO.md
+
+# zed editor
+/.zed/

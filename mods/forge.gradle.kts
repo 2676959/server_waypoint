@@ -1,5 +1,6 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.minecraftforge.gradle.shadow.net.minecraftforge.gradleutils.shared.ToolsExtension
+import net.minecraftforge.renamer.gradle.shadow.net.minecraftforge.srgutils.IMappingFile
 import org.gradle.jvm.tasks.Jar
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -8,6 +9,7 @@ import java.util.zip.GZIPInputStream
 plugins {
     id("net.minecraftforge.renamer")
     id("net.minecraftforge.gradle")
+    id("net.minecraftforge.jarjar")
     id("com.gradleup.shadow")
     id("com.modrinth.minotaur")
     id("net.darkhax.curseforgegradle")
@@ -30,6 +32,8 @@ val forge_loader: String by project
 val mixinConfig = "server_waypoint-common.mixins.json"
 val mixinRefmap = "server_waypoint-common.refmap.json"
 val needsSrgReobf = stonecutter.eval(minecraftVersion, "<1.20.6")
+
+jarJar.register("jarJar", tasks.named<ShadowJar>("shadowJar"))
 
 evaluationDependsOn(":common")
 val commonMainSourceSet = project(":common")
@@ -73,6 +77,8 @@ val shadedDependencies by configurations.creating {
     isCanBeResolved = true
 }
 
+val generatedMixinMappings = layout.buildDirectory.file("tmp/compileJava/${mixinRefmap.removeSuffix(".refmap.json")}-mixins.tsrg")
+val mergedReobfMappings = layout.buildDirectory.file("mixin/combined-official-to-srg.tsrg")
 val unpackedMixinMappings = layout.buildDirectory.file("mixin/official-to-srg.tsrg")
 val unpackMixinMappings = if (needsSrgReobf) {
     val mixinMappingsArchive = providers.provider {
@@ -139,6 +145,7 @@ sourceSets.main {
         exclude("fabric.mod.json")
         exclude("META-INF/neoforge.mods.toml")
         exclude("server_waypoint-fabric.mixins.json")
+        exclude("server_waypoint-official.accesswidener")
     }
 }
 
@@ -167,12 +174,20 @@ repositories {
         }
     }
     maven("https://maven.minecraftforge.net/")
+    maven {
+        name = "Xaero's Maven"
+        url = uri("https://chocolateminecraft.com/maven")
+        content {
+            includeGroup("xaero.lib")
+        }
+    }
 }
 
 val minecraftExtension = extensions.getByType<net.minecraftforge.gradle.MinecraftExtensionForProject>()
 
 minecraft {
     mappings("official", minecraftVersion)
+    accessTransformer = files(rootProject.file("mods/src/main/resources/META-INF/accesstransformer.cfg"))
 
     if (stonecutter.eval(minecraftVersion, ">=1.20.6")) {
         javaClass.methods
@@ -224,13 +239,36 @@ minecraftExtension.mavenizer(repositories)
 dependencies {
     implementation(minecraftExtension.dependency("net.minecraftforge:forge:$minecraftVersion-$forge_loader").asProvider())
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
+    val mixinExtrasVersion = "0.5.4"
+    compileOnly("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
+    annotationProcessor("io.github.llamalad7:mixinextras-common:$mixinExtrasVersion")
+    // Forge 1.21.11+ bundles mixinextras-forge 0.5.3 itself; older Forge does not provide MixinExtras, so it must be embedded.
+    if (!stonecutter.eval(minecraftVersion, ">=1.21.11")) {
+        implementation("io.github.llamalad7:mixinextras-forge:$mixinExtrasVersion")
+        val mixinExtrasForge = requireNotNull(
+            add("jarJar", "io.github.llamalad7:mixinextras-forge:$mixinExtrasVersion")
+        )
+        jarJar.configure(mixinExtrasForge) {
+            setRange("[$mixinExtrasVersion,)")
+        }
+    }
 
     implementation(project(":common"))
     add(shadedDependencies.name, project(":common"))
     addAdventureSerializerDependency()
 
     val xaeros_minimap_forge: String by project
+    val xaeros_world_map_forge: String by project
+    if (project.hasProperty("xaerolib_forge")) {
+        val xaerolibMinecraft = findProperty("xaerolib_forge_minecraft")?.toString() ?: minecraftVersion
+        compileOnly("xaero.lib:xaerolib-forge-$xaerolibMinecraft:${property("xaerolib_forge")}")
+    }
     compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
+    compileOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_forge")
+    testImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.processResources {
@@ -259,22 +297,25 @@ tasks.processResources {
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.release.set(targetJavaVersion)
-    val mixinCompilerArgs = mutableListOf(
-        "-Xlint:deprecation",
-        "-Xlint:unchecked",
-        "-AoutRefMapFile=${layout.buildDirectory.file("sourceSets/main/$mixinRefmap").get().asFile.absolutePath}",
-        "-AMSG_NO_OBFDATA_FOR_TARGET=warning",
-    )
-    if (needsSrgReobf) {
-        dependsOn(unpackMixinMappings!!)
-        mixinCompilerArgs.addAll(listOf(
-            "-AreobfTsrgFile=${unpackedMixinMappings.get().asFile.absolutePath}",
-            "-AoutTsrgFile=${layout.buildDirectory.file("tmp/compileJava/${mixinRefmap.removeSuffix(".refmap.json")}-mixins.tsrg").get().asFile.absolutePath}",
-            "-AmappingTypes=tsrg",
-            "-AdefaultObfuscationEnv=searge",
-        ))
+    if (name == "compileJava") {
+        val mixinCompilerArgs = mutableListOf(
+            "-Xlint:deprecation",
+            "-Xlint:unchecked",
+            "-AoutRefMapFile=${layout.buildDirectory.file("sourceSets/main/$mixinRefmap").get().asFile.absolutePath}",
+            "-AMSG_NO_OBFDATA_FOR_TARGET=warning",
+        )
+        if (needsSrgReobf) {
+            dependsOn(unpackMixinMappings!!)
+            outputs.file(generatedMixinMappings)
+            mixinCompilerArgs.addAll(listOf(
+                "-AreobfTsrgFile=${unpackedMixinMappings.get().asFile.absolutePath}",
+                "-AoutTsrgFile=${generatedMixinMappings.get().asFile.absolutePath}",
+                "-AmappingTypes=tsrg",
+                "-AdefaultObfuscationEnv=searge",
+            ))
+        }
+        options.compilerArgs.addAll(mixinCompilerArgs)
     }
-    options.compilerArgs.addAll(mixinCompilerArgs)
 }
 
 tasks.named("compileJava") {
@@ -301,15 +342,23 @@ tasks.withType<Jar>().configureEach {
     from(rootProject.file("LICENSE")) {
         rename { "${it}_$mod_name" }
     }
+    from(rootProject.file("THIRD_PARTY_NOTICES.md")) {
+        into("META-INF")
+    }
+    from(rootProject.file("LICENSES/Apache-2.0.txt")) {
+        into("META-INF/licenses")
+    }
 }
 
 tasks.jar {
     archiveClassifier.set("thin")
 }
 
-tasks.named<ShadowJar>("shadowJar") {
+val shadowJarTask = tasks.named<ShadowJar>("shadowJar")
+shadowJarTask.configure {
     configurations = listOf(shadedDependencies)
-    archiveClassifier.set(if (needsSrgReobf) "dev-shadow" else "")
+    // Keep a distinct classifier on every version so the shadowJarJar output never collides with this archive.
+    archiveClassifier.set("shadow")
     addMultiReleaseAttribute.set(false)
     exclude("META-INF/*.DSA", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/MANIFEST.MF", "mappings/**")
     dependencies {
@@ -318,30 +367,58 @@ tasks.named<ShadowJar>("shadowJar") {
     }
 }
 
+val jarJarTask = tasks.named<Jar>("shadowJarJar") {
+    archiveClassifier.set(if (needsSrgReobf) "dev-jarjar" else "")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    // The jarjar plugin replays the shadowJar CopySpec, which misses the shaded dependencies
+    // (ShadowJar weaves them in during its copy action). Merge in the full shadow archive explicitly.
+    from(shadowJarTask.flatMap { it.archiveFile }.map { zipTree(it.asFile) })
+}
+
+// Shadow members belong to mixin classes, so the vanilla mappings alone cannot rename them.
+val mergeMixinMappings = if (needsSrgReobf) {
+    tasks.register("mergeMixinMappings") {
+        dependsOn(unpackMixinMappings!!, tasks.named("compileJava"))
+        inputs.files(unpackedMixinMappings, generatedMixinMappings)
+        outputs.file(mergedReobfMappings)
+        doLast {
+            IMappingFile.load(unpackedMixinMappings.get().asFile)
+                .merge(IMappingFile.load(generatedMixinMappings.get().asFile))
+                .write(mergedReobfMappings.get().asFile.toPath(), IMappingFile.Format.TSRG2, false)
+        }
+    }
+} else {
+    null
+}
+
 val reobfShadowJar = if (needsSrgReobf) {
     extensions
         .getByType(net.minecraftforge.renamer.gradle.RenamerExtension::class.java)
-        .classes("reobfShadowJar", tasks.named<ShadowJar>("shadowJar")) {
+        .classes("reobfShadowJar", jarJarTask) {
             archiveClassifier.set("")
             output.set(layout.buildDirectory.file("libs/${base.archivesName.get()}.jar"))
-            dependsOn(unpackMixinMappings!!)
-            setMappings(files(unpackedMixinMappings))
+            dependsOn(mergeMixinMappings!!)
+            setMappings(files(mergedReobfMappings))
         }
 } else {
     null
 }
 
 tasks.assemble {
-    dependsOn(reobfShadowJar ?: tasks.shadowJar)
+    dependsOn(reobfShadowJar ?: jarJarTask)
 }
 
 artifacts {
-    archives(reobfShadowJar ?: tasks.shadowJar)
+    archives(reobfShadowJar ?: jarJarTask)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.register<Copy>("buildAndCollect") {
     group = "build"
-    from(if (reobfShadowJar != null) reobfShadowJar.map { it.output } else tasks.shadowJar.map { it.archiveFile })
+    from(if (reobfShadowJar != null) reobfShadowJar.map { it.output } else jarJarTask.map { it.archiveFile })
     into(rootProject.layout.buildDirectory.file("libs/$mod_version"))
     dependsOn("build")
 }

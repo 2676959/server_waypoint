@@ -1,15 +1,20 @@
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.ScalableText;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.WaypointInitials;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
@@ -18,7 +23,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
-import static _959.server_waypoint.util.CommandGenerator.addCmd;
+import static _959.server_waypoint.util.StringCommandBuilder.addCmd;
+import static _959.server_waypoint.text.FormattedTextHelper.MAX_NAME_LENGTH;
+import static _959.server_waypoint.text.FormattedTextHelper.plainText;
 
 public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     private TranslucentTextField listNameField;
@@ -26,10 +33,23 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     private TranslucentButton addButton;
 
     public WaypointAddScreen(Screen previousScreen, String dimensionName, String listName) {
+        this(previousScreen, dimensionName, listName, null);
+    }
+
+    public WaypointAddScreen(Screen previousScreen, String dimensionName, String listName, WaypointPos defaultPos) {
         super(previousScreen, Component.translatable("waypoint.add.screen.title"), dimensionName, listName, null);
         this.dimensionField.setValue(dimensionName);
         this.listNameField.setValue(listName);
+        this.listNameField.setMaxLength(MAX_NAME_LENGTH);
+        this.configureSuggestions();
         this.buttonRow.setXOffset(CONTENT_WIDTH);
+        if (defaultPos == null) {
+            defaultPos = getCurrentDefaultPos();
+        }
+        this.setDefaultPos(defaultPos);
+    }
+
+    private WaypointPos getCurrentDefaultPos() {
         Minecraft minecraftClient = Minecraft.getInstance();
         //? if >= 1.21.11 {
         BlockPos defaultPos = MinecraftClientHelper.getMainCamera(minecraftClient).blockPosition();
@@ -39,15 +59,20 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         if (minecraftClient.getCameraEntity() != null) {
             defaultPos = minecraftClient.getCameraEntity().blockPosition();
         }
-        int x1 = defaultPos.getX();
-        int y1 = defaultPos.getY();
-        int z1 = defaultPos.getZ();
-        this.xEditBox.setDefaultValue(x1);
-        this.yEditBox.setDefaultValue(y1);
-        this.zEditBox.setDefaultValue(z1);
-        this.xEditBox.setValue(Integer.toString(x1));
-        this.yEditBox.setValue(Integer.toString(y1));
-        this.zEditBox.setValue(Integer.toString(z1));
+        return new WaypointPos(defaultPos.getX(), defaultPos.getY(), defaultPos.getZ());
+    }
+
+    private void setDefaultPos(WaypointPos defaultPos) {
+        int x = defaultPos.x();
+        int y = defaultPos.y();
+        int z = defaultPos.z();
+        this.coordinateDefaultPos = defaultPos;
+        this.xEditBox.setDefaultValue(x);
+        this.yEditBox.setDefaultValue(y);
+        this.zEditBox.setDefaultValue(z);
+        this.xEditBox.setValue(Integer.toString(x));
+        this.yEditBox.setValue(Integer.toString(y));
+        this.zEditBox.setValue(Integer.toString(z));
     }
 
     @Override
@@ -56,14 +81,17 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         MutableComponent listNameLabelText = Component.translatable("waypoint.list_name.info", "");
         // title row
         WidgetStack titleRow = new WidgetStack(0, 0, 10, true, false);
-        ScalableText titleLabel = new ScalableText(0, 0, this.getTitle(), 0xFFFFFFFF, font);
+        ScalableText titleLabel = new ScalableText(
+                0, 0, this.getTitle(), WidgetThemeVariable.TEXT_PRIMARY, font);
         WidgetStack dimensionRow = new WidgetStack(0, 0, 0);
-        ScalableText dimensionLabel = new ScalableText(0, 0, dimensionLabelText, 0xFFFFFFFF, font);
+        ScalableText dimensionLabel = new ScalableText(
+                0, 0, dimensionLabelText, WidgetThemeVariable.TEXT_PRIMARY, font);
         dimensionField = new TranslucentTextField(0, 0, 155, dimensionLabelText, font);
         dimensionRow.addChild(dimensionLabel, 0);
         dimensionRow.addChild(dimensionField);
         WidgetStack listNameRow = new WidgetStack(0, 0, 0);
-        ScalableText listNameLabel = new ScalableText(0, 0, listNameLabelText, 0xFFFFFFFF, font);
+        ScalableText listNameLabel = new ScalableText(
+                0, 0, listNameLabelText, WidgetThemeVariable.TEXT_PRIMARY, font);
         listNameField = new TranslucentTextField(0, 0, 90, listNameLabelText, font);
         listNameRow.addChild(listNameLabel, 0);
         listNameRow.addChild(listNameField);
@@ -97,16 +125,29 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     }
 
     private void sendAddCommand() {
+        WaypointPos resolvedPos = this.resolveCoordinateFields();
         sendCommand(addCmd(this.dimensionField.getValue(), this.listNameField.getValue(),
                 new SimpleWaypoint(
                         this.nameEditBox.getValue(),
                         this.initialsEditBox.getValue(),
-                        this.xEditBox.getIntValue(),
-                        this.yEditBox.getIntValue(),
-                        this.zEditBox.getIntValue(),
+                        resolvedPos,
                         this.colorPickerButton.getColor() & 0xFFFFFF,
                         this.yawEditBox.getIntValue(),
-                        this.globalToggle.getState()
+                        this.globalToggle.getState(),
+                        List.of(),
+                        ""
                 ), false));
     }
+
+    private void configureSuggestions() {
+        this.dimensionField.setSuggestionsProvider(WaypointClientMod::getAllAvailableDimensionNames);
+        this.listNameField.setSuggestionsProvider(() -> WaypointClientMod.getAllWaypointListNames(this.dimensionField.getValue()));
+        this.nameEditBox.setSuggestionsProvider(() -> WaypointClientMod.getAllWaypointNames(this.dimensionField.getValue(), this.listNameField.getValue()));
+        this.initialsEditBox.setSuggestionsProvider(this::getWaypointInitialsSuggestions);
+    }
+
+    private List<String> getWaypointInitialsSuggestions() {
+        return WaypointInitials.getInitialsCandidatesFromName(plainText(this.nameEditBox.getValue()));
+    }
+
 }

@@ -22,18 +22,21 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import org.lwjgl.glfw.GLFW;
 
+import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
+
 public class ServerWaypointFabricClient implements ClientModInitializer {
     private static KeyMapping keyBinding;
 
     @Override
     public void onInitializeClient() {
         ClientConfig.isXaerosMinimapLoaded = FabricLoader.getInstance().isModLoaded("xaerominimap");
+        ClientConfig.isVoxelMapLoaded = FabricLoader.getInstance().isModLoaded("voxelmap");
         keyBinding = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "server_waypoint.waypoint_manager_gui.keybind",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT_SHIFT,
                 //? if >= 1.21.9 {
-                KeyMapping.Category.register(_959.server_waypoint.common.util.ResourceLocationHelper.id("server_waypoint", "mod_name"))
+                KeyMapping.Category.register(modId("mod_name"))
                 //?} else {
                 /*"key.categories.server_waypoint.mod_name"
                 *///?}
@@ -41,6 +44,7 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
                 ClientWaypointCommand.register(dispatcher));
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            WaypointClientMod.tickChunkedMessagesIfInitialized();
             while (keyBinding.consumeClick()) {
                 MinecraftClientHelper.setScreen(client, new WaypointManagerScreen(WaypointClientMod.getInstance()));
             }
@@ -53,18 +57,12 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
     }
 
     private void registerClientHandlers() {
-        S2CPayloadHandler.WaypointListHandler waypointListHandler = new S2CPayloadHandler.WaypointListHandler();
-        S2CPayloadHandler.DimensionWaypointHandler dimensionWaypointHandler = new S2CPayloadHandler.DimensionWaypointHandler();
-        S2CPayloadHandler.WorldWaypointHandler worldWaypointHandler = new S2CPayloadHandler.WorldWaypointHandler();
-        S2CPayloadHandler.WaypointModificationHandler waypointModificationHandler = new S2CPayloadHandler.WaypointModificationHandler();
+        S2CPayloadHandler.MessageChunkHandler messageChunkHandler = new S2CPayloadHandler.MessageChunkHandler();
         S2CPayloadHandler.ServerHandshakeHandler serverHandshakeHandler = new S2CPayloadHandler.ServerHandshakeHandler();
-        S2CPayloadHandler.UpdatesBundleHandler updatesBundleHandler = new S2CPayloadHandler.UpdatesBundleHandler();
-        ClientPlayNetworking.registerGlobalReceiver(WaypointListS2CPayload.ID, waypointListHandler::handle);
-        ClientPlayNetworking.registerGlobalReceiver(DimensionWaypointS2CPayload.ID, dimensionWaypointHandler::handle);
-        ClientPlayNetworking.registerGlobalReceiver(WorldWaypointS2CPayload.ID, worldWaypointHandler::handle);
-        ClientPlayNetworking.registerGlobalReceiver(WaypointModificationS2CPayload.ID, waypointModificationHandler::handle);
+        S2CPayloadHandler.UploadRequestHandler uploadRequestHandler = new S2CPayloadHandler.UploadRequestHandler();
+        ClientPlayNetworking.registerGlobalReceiver(MessageChunkS2CPayload.ID, messageChunkHandler::handle);
         ClientPlayNetworking.registerGlobalReceiver(ServerHandshakeS2CPayload.ID, serverHandshakeHandler::handle);
-        ClientPlayNetworking.registerGlobalReceiver(UpdatesBundleS2CPayload.ID, updatesBundleHandler::handle);
+        ClientPlayNetworking.registerGlobalReceiver(UploadRequestS2CPayload.ID, uploadRequestHandler::handle);
     }
 }
 //?}

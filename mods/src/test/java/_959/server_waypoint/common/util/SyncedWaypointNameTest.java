@@ -1,0 +1,87 @@
+package _959.server_waypoint.common.util;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class SyncedWaypointNameTest {
+    @Test
+    void formatsAndParsesServerWaypointName() {
+        String formatted = SyncedWaypointName.format("Bases", "Spawn");
+        SyncedWaypointName.ParsedName parsed = SyncedWaypointName.parse(formatted);
+
+        assertEquals("sw\u241FBases\u241FSpawn", formatted);
+        assertEquals("Bases", parsed.listName());
+        assertEquals("Spawn", parsed.waypointName());
+    }
+
+    @Test
+    void rejectsAmbiguousNames() {
+        assertNull(SyncedWaypointName.format("Bad\u241FList", "Spawn"));
+        assertNull(SyncedWaypointName.format("Bases", "Bad\u241FName"));
+        assertNull(SyncedWaypointName.parse("Spawn"));
+        assertNull(SyncedWaypointName.parse("sw\u241FBases"));
+        assertNull(SyncedWaypointName.parse("sw\u241FBases\u241FSpawn\u241FExtra"));
+    }
+
+    @Test
+    void formatsAndParsesSingleSyncedName() {
+        String formatted = SyncedWaypointName.formatSyncedName("Bases");
+
+        assertEquals("sw\u241FBases", formatted);
+        assertEquals("Bases", SyncedWaypointName.parseSyncedName(formatted));
+    }
+
+    @Test
+    void identifiesSingleSyncedNames() {
+        assertTrue(SyncedWaypointName.isSinglePartSyncedName("sw\u241FBases"));
+        assertFalse(SyncedWaypointName.isSinglePartSyncedName("Bases"));
+        assertFalse(SyncedWaypointName.isSinglePartSyncedName("sw\u241FBases\u241FSpawn"));
+        assertFalse(SyncedWaypointName.isSinglePartSyncedName(null));
+    }
+
+    @Test
+    void identifiesVoxelMapSyncedWaypointNames() {
+        assertTrue(SyncedWaypointName.isVoxelMapSyncedWaypointName("sw\u241FBases\u241FSpawn"));
+        assertFalse(SyncedWaypointName.isVoxelMapSyncedWaypointName("sw\u241FBases"));
+        assertFalse(SyncedWaypointName.isVoxelMapSyncedWaypointName("Bases"));
+        assertFalse(SyncedWaypointName.isVoxelMapSyncedWaypointName(null));
+    }
+
+    @Test
+    void rejectsAmbiguousSingleSyncedName() {
+        assertNull(SyncedWaypointName.formatSyncedName("Bad\u241FName"));
+        assertNull(SyncedWaypointName.parseSyncedName("Bases"));
+        assertNull(SyncedWaypointName.parseSyncedName("sw\u241FBases\u241FSpawn"));
+    }
+
+    @Test
+    void displaysSyncedWaypointNamesWithoutMarker() {
+        assertEquals("Spawn", SyncedWaypointName.toDisplayWaypointName("sw\u241FSpawn"));
+        assertEquals("Spawn", SyncedWaypointName.toDisplayVoxelMapWaypointName("sw\u241FBases\u241FSpawn"));
+    }
+
+    @Test
+    void reportsSyncedStateBeforeDisplayNameIsCleaned() {
+        SyncedWaypointName.DisplayName displayName = SyncedWaypointName.toWaypointDisplayName("sw\u241FBases");
+
+        assertEquals("Bases", displayName.name());
+        assertTrue(displayName.synced());
+        assertFalse(SyncedWaypointName.isSinglePartSyncedName(displayName.name()));
+    }
+
+    @Test
+    void displaysXaerosWorldMapNamesWithoutMarker() {
+        assertEquals("Spawn", SyncedWaypointName.toDisplayXaerosWorldMapName("sw\u241FSpawn"));
+        assertEquals("Bases", SyncedWaypointName.toDisplayXaerosWorldMapName("sw\u241FBases"));
+    }
+
+    @Test
+    void leavesUnsyncedDisplayNamesUnchanged() {
+        assertEquals("Spawn", SyncedWaypointName.toDisplayWaypointName("Spawn"));
+        assertEquals("Spawn", SyncedWaypointName.toDisplayVoxelMapWaypointName("Spawn"));
+    }
+}

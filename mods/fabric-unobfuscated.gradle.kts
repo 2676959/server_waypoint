@@ -20,6 +20,10 @@ base {
     archivesName.set("$mod_id-$mod_version-$loader-mc$mcVersionRange")
 }
 
+loom {
+    accessWidenerPath.set(rootProject.file("mods/src/main/resources/server_waypoint-official.accesswidener"))
+}
+
 stonecutter {
     constants.match(loader, "fabric", "neoforge", "forge")
     val usesTwentySixApi = eval(current.version, ">=26")
@@ -47,6 +51,7 @@ sourceSets.main {
     resources {
         exclude("META-INF")
         exclude("pack.mcmeta")
+        exclude("server_waypoint-official.accesswidener")
     }
 }
 
@@ -83,6 +88,8 @@ dependencies {
     val fabric_loader: String by project
     val fabric_permissions_api: String by project
     val xaeros_minimap_fabric: String by project
+    val xaeros_world_map_fabric: String by project
+    val voxelmap_fabric: String by project
 
     implementation("net.fabricmc:fabric-loader:$fabric_loader")
     implementation("net.fabricmc.fabric-api:fabric-api:$fabric_api")
@@ -98,6 +105,13 @@ dependencies {
     }
 
     implementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_fabric")
+    implementation("maven.modrinth:xaeros-world-map:$xaeros_world_map_fabric")
+
+    // Use Modrinth version IDs because some VoxelMap version numbers collide with Forge uploads.
+    implementation("maven.modrinth:voxelmap-updated:$voxelmap_fabric")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.processResources {
@@ -108,6 +122,15 @@ tasks.processResources {
 
     filesMatching(listOf("*.mixins.json")) {
         expand("java_version" to targetJavaVersion)
+        filter { line: String ->
+            if (line.trim() == "\"refmap\": \"server_waypoint-common.refmap.json\",") "" else line
+        }
+    }
+
+    filesMatching("server_waypoint.accesswidener") {
+        filter { line: String ->
+            if (line == "accessWidener v2 named") "accessWidener v2 official" else line
+        }
     }
 
     val fabric_loader: String by project
@@ -147,9 +170,6 @@ tasks.named("processResources") {
 
 tasks.jar {
     archiveClassifier.set("thin")
-    from(rootProject.file("LICENSE")) {
-        rename { "${it}_$mod_name" }
-    }
 }
 
 tasks.shadowJar {
@@ -159,9 +179,22 @@ tasks.shadowJar {
         exclude("mappings/*")
     }
     archiveClassifier.set("")
+}
+
+tasks.withType<Jar>().configureEach {
     from(rootProject.file("LICENSE")) {
         rename { "${it}_$mod_name" }
     }
+    from(rootProject.file("THIRD_PARTY_NOTICES.md")) {
+        into("META-INF")
+    }
+    from(rootProject.file("LICENSES/Apache-2.0.txt")) {
+        into("META-INF/licenses")
+    }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.assemble {

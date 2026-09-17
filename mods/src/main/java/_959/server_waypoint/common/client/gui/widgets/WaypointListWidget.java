@@ -1,92 +1,80 @@
-//~ resource_location_import
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
-import _959.server_waypoint.common.client.gui.Expandable;
-import _959.server_waypoint.common.client.gui.Padding;
+import _959.server_waypoint.common.client.gui.render.WidgetTextures;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
+import _959.server_waypoint.common.client.util.ColorHelper;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
-import _959.server_waypoint.common.util.MathHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
-import _959.server_waypoint.util.Pair;
+import _959.server_waypoint.core.waypoint.WaypointListDisplayModel;
+import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
+import _959.server_waypoint.core.waypoint.WaypointSorting;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 
-import static _959.server_waypoint.ModInfo.MOD_ID;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.texture;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.WaypointClientMod.getCurrentDimensionName;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pop;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.push;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scale;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.texture;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.FOCUS_RING;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.PANEL_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.ROW_HOVER_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SELECTION_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_DISABLED;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_MUTED;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
-import static _959.server_waypoint.util.CommandGenerator.*;
+import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
+import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
-import static _959.server_waypoint.util.ListMapUtils.getLastElement;
-import static java.util.Collections.binarySearch;
+import static _959.server_waypoint.util.StringCommandBuilder.removeCmd;
+import static _959.server_waypoint.util.StringCommandBuilder.removeListCmd;
+import static _959.server_waypoint.util.StringCommandBuilder.tpCmd;
 
-public class WaypointListWidget extends ShiftableScrollableWidget implements Padding, Expandable {
+public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNode> {
     public static int TELEPORT_KEY = 84;
     public static final Component EMPTY_INFO_TEXT = Component.translatable("waypoint.empty_mark");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    SHOW_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/show.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    HIDE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/hide.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    ADD_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/add.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    EDIT_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/edit.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/delete.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    CONFIRM_REMOVE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/confirm_delete.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    LIST_EMPTY = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_empty.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    LIST_EXPAND_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_expand.png");
-    public static final
-    //$ resource_location_type_swap
-    Identifier
-    LIST_COLLAPSE_ICON = _959.server_waypoint.common.util.ResourceLocationHelper.id(MOD_ID, "textures/gui/list_collapse.png");
     private static final int listIconSize = 16;
     private static final int buttonIconSize = 12;
-    private static double SCROLLED_POSITION = 0.0D;
+    private static final int itemHeight = 20;
+    private static final int treeIndent = 10;
+    private static final int labelTextGap = 3;
+    private static final int labelLineGap = 1;
+    private static final float metadataTextScale = 0.75F;
+    private static final int metersPerKilometer = 1000;
+    private static final String minecraftNamespace = "minecraft:";
+    private static final Map<String, Boolean> DIMENSION_EXPANSION_STATES = new HashMap<>();
+    private static double sessionScrollPosition;
     private final WaypointManagerScreen parentScreen;
+    private final WaypointQueryEngine queryEngine;
     private final Font textRenderer;
-    private final PaddingBackground paddingBackground = new PaddingBackground(this, 5, 7, 10, 10, TRANSPARENT_BG_COLOR, TRANSPARENT_BG_COLOR, false);
-    private volatile @Unmodifiable List<WaypointList> waypointLists = new ArrayList<>();
-    private final List<Integer> listPositions = new ArrayList<>();
-    private final int itemHeight = 20;
+    private final Consumer<WaypointSelection> selectionCallback;
     private final int textVertOffset;
     private final int listIconVertOffset;
     private final int buttonIconVertOffset;
@@ -95,414 +83,930 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
     private int thirdBtnXPos = width - btnWidth;
     private int secondBtnXPos = thirdBtnXPos - btnWidth;
     private int firstBtnXPos = secondBtnXPos - btnWidth;
-    private boolean empty = true;
-    private int contentHeight = 0;
+    private int distanceColumnX = firstBtnXPos;
     private int removeClickedPos = -1;
-    private int hoverPos = -2;
-    private boolean hideButtonEnabled = true;
+    private String selectedDimensionName = "";
+    private String searchQuery = "";
+    private WaypointSorting.SortMode sortMode = WaypointSorting.SortMode.DEFAULT;
+    private boolean sortReversed = false;
+    private boolean groupByLists = true;
+    private boolean showAllDimensions = false;
+    private WaypointPos lastQueryPlayerPosition;
+    private String lastQueryPlayerDimension;
+    private WaypointPos renderedPlayerPosition;
+    private boolean sessionScrollRestorePending = true;
+    private @Nullable WaypointSelection selectedWaypoint;
 
-    public WaypointListWidget(int x, int y, int width, int height, WaypointManagerScreen parent, Font textRenderer) {
-        super(x, y, width, height, Component.literal("Waypoint lists"));
+    public WaypointListWidget(
+            int x,
+            int y,
+            int width,
+            int height,
+            WaypointManagerScreen parent,
+            WaypointQueryEngine queryEngine,
+            Font textRenderer,
+            Consumer<WaypointSelection> selectionCallback
+    ) {
+        super(x, y, width, height, itemHeight, Component.literal("Waypoint lists"), 4, 4, 4, 4,
+                PANEL_BACKGROUND, BORDER, true);
         this.parentScreen = parent;
+        this.queryEngine = queryEngine;
         this.textRenderer = textRenderer;
-        recalculateListPositions();
-        recalculateContentHeight();
-        setScrollY(SCROLLED_POSITION);
+        this.selectionCallback = Objects.requireNonNull(selectionCallback, "selectionCallback");
         textVertOffset = centered(itemHeight, textRenderer.lineHeight) + 1;
         listIconVertOffset = centered(itemHeight, listIconSize);
         buttonIconVertOffset = centered(itemHeight, buttonIconSize);
         buttonIconHrzOffset = centered(btnWidth, buttonIconSize);
     }
 
-    public static void resetScroll() {
-        SCROLLED_POSITION = 0.0D;
-    }
-
-    public void setHideButtonEnabled(boolean hideButtonEnabled) {
-        this.hideButtonEnabled = hideButtonEnabled;
-    }
-
     /**
-     * updates the reference of {@link #waypointLists}, if newWaypointLists is empty only clears the current list
-     * */
-    public void updateWaypointLists(@Unmodifiable List<WaypointList> newWaypointLists) {
-        if (newWaypointLists.isEmpty()) {
-            this.empty = true;
-            this.listPositions.clear();
-        } else {
-            this.empty = false;
-        }
-        this.waypointLists = newWaypointLists;
-        recalculateListPositions();
-        recalculateContentHeight();
-        setScrollY(MathHelper.clamp(SCROLLED_POSITION, 0, getContentHeight()));
-    }
-
-    /**
-     * only recalculate rendering related data, do not change the content
+     * Clears scroll and dimension-node expansion state at the start of a new server or local-world
+     * session. Dimension expansion survives manager reconstruction within the session; scroll does
+     * so only while all-dimensions mode is active.
      */
-    public void reCalculateRenderData() {
-        recalculateListPositions();
-        recalculateContentHeight();
+    public static void resetSessionStates() {
+        sessionScrollPosition = 0.0D;
+        DIMENSION_EXPANSION_STATES.clear();
     }
 
-    private void recalculateListPositions() {
-        this.listPositions.clear();
-        if (this.waypointLists.isEmpty()) return;
-        this.listPositions.add(0);
-        for (int i = 1; i < this.waypointLists.size(); i++) {
-            int prev = i - 1;
-            WaypointList waypointList = this.waypointLists.get(prev);
-            int prevPosition = this.listPositions.get(prev);
-            if (waypointList.isExpand()) {
-                this.listPositions.add(prevPosition + waypointList.size() + 1);
+    static double getSessionScrollPosition() {
+        return sessionScrollPosition;
+    }
+
+    static void rememberSessionScrollPosition(boolean showAllDimensions, double scrollPosition) {
+        if (showAllDimensions) {
+            sessionScrollPosition = scrollPosition;
+        }
+    }
+
+    static boolean isDimensionExpanded(String dimensionName) {
+        return DIMENSION_EXPANSION_STATES.getOrDefault(dimensionName, true);
+    }
+
+    static void setDimensionExpanded(String dimensionName, boolean expanded) {
+        DIMENSION_EXPANSION_STATES.put(dimensionName, expanded);
+    }
+
+    /**
+     * Changes the selected-dimension scope and immediately rebuilds the displayed rows. A
+     * {@code null} dimension clears the selected scope.
+     *
+     * @param dimensionName the dimension to display in selected-dimension mode
+     */
+    public void setSelectedDimension(String dimensionName) {
+        this.selectedDimensionName = dimensionName == null ? "" : dimensionName;
+        if (!this.showAllDimensions) {
+            resetScrollPosition();
+        }
+        applySearchAndSort();
+        restoreSessionScrollPositionIfPending();
+    }
+
+    /**
+     * Requeries and rebuilds the displayed rows using the current dimension scope, search query,
+     * grouping mode, sort mode, and sort direction. This method does not alter any of those view
+     * settings and should be called only when data visible to the active scope may have changed.
+     */
+    public void refreshView() {
+        applySearchAndSort();
+    }
+
+    public void setSearchQuery(String searchQuery) {
+        this.searchQuery = searchQuery == null ? "" : searchQuery;
+        applySearchAndSort();
+    }
+
+    public void setSortMode(WaypointSorting.SortMode sortMode) {
+        this.sortMode = sortMode == null ? WaypointSorting.SortMode.DEFAULT : sortMode;
+        this.sortReversed = false;
+        if (this.sortMode == WaypointSorting.SortMode.DEFAULT) {
+            this.groupByLists = true;
+        }
+        applySearchAndSort();
+    }
+
+    public WaypointSorting.SortMode getSortMode() {
+        return this.sortMode;
+    }
+
+    public boolean isSortReversed() {
+        return this.sortReversed;
+    }
+
+    public void toggleGroupByLists() {
+        setGroupByLists(!isGroupByLists());
+    }
+
+    public void setGroupByLists(boolean groupByLists) {
+        this.groupByLists = this.sortMode == WaypointSorting.SortMode.DEFAULT || groupByLists;
+        applySearchAndSort();
+    }
+
+    public boolean isGroupByLists() {
+        return this.sortMode == WaypointSorting.SortMode.DEFAULT || this.groupByLists;
+    }
+
+    public void setShowAllDimensions(boolean showAllDimensions) {
+        this.showAllDimensions = showAllDimensions;
+        if (!showAllDimensions) {
+            resetScrollPosition();
+            this.sessionScrollRestorePending = false;
+        }
+        applySearchAndSort();
+    }
+
+    public boolean isShowingAllDimensions() {
+        return this.showAllDimensions;
+    }
+
+    public void sortByName() {
+        this.toggleSortMode(WaypointSorting.SortMode.NAME);
+    }
+
+    public void sortByDistance() {
+        this.toggleSortMode(WaypointSorting.SortMode.DISTANCE);
+    }
+
+    public void sortByColor() {
+        this.toggleSortMode(WaypointSorting.SortMode.COLOR);
+    }
+
+    public List<String> getSearchSuggestions() {
+        return this.queryEngine.getSearchSuggestions(this.selectedDimensionName);
+    }
+
+    private void applySearchAndSort() {
+        applySearchAndSort(
+                getPlayerWaypointPos(),
+                getCurrentDimensionName()
+        );
+    }
+
+    private void applySearchAndSort(WaypointPos playerPosition, String playerDimension) {
+        this.lastQueryPlayerPosition = playerPosition;
+        this.lastQueryPlayerDimension = playerDimension;
+        WaypointQueryEngine.Query query = new WaypointQueryEngine.Query(
+                this.searchQuery,
+                this.sortMode,
+                playerPosition,
+                playerDimension,
+                this.sortReversed
+        );
+        WaypointQueryEngine.QueryResult result = this.showAllDimensions
+                ? this.queryEngine.queryAll(query)
+                : this.queryEngine.queryDimension(this.selectedDimensionName, query);
+        WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(result, isGroupByLists());
+        List<RowNode> roots;
+        if (display.groupByLists()) {
+            if (this.showAllDimensions) {
+                roots = display.dimensions().stream()
+                        .map(this::createDimensionNode)
+                        .map(RowNode.class::cast)
+                        .toList();
             } else {
-                this.listPositions.add(prevPosition + 1);
+                roots = display.lists().stream()
+                        .map(this::createListNode)
+                        .map(RowNode.class::cast)
+                        .toList();
+            }
+        } else {
+            roots = display.flatWaypoints().stream()
+                    .map(waypoint -> new WaypointNode(
+                            waypoint.dimensionName(),
+                            waypoint.sourceList(),
+                            waypoint.waypoint(),
+                            true,
+                            this.showAllDimensions
+                    ))
+                    .map(RowNode.class::cast)
+                    .toList();
+        }
+        updateRoots(roots);
+        reconcileSelection(display);
+    }
+
+    private void reconcileSelection(WaypointListDisplayModel.Display display) {
+        if (this.selectedWaypoint == null) {
+            return;
+        }
+        WaypointSelection matchingSelection = null;
+        if (display.groupByLists()) {
+            outer:
+            for (WaypointListDisplayModel.DisplayList list : display.lists()) {
+                for (SimpleWaypoint waypoint : list.waypoints()) {
+                    WaypointSelection selection = createSelection(
+                            list.dimensionName(),
+                            list.sourceList(),
+                            waypoint
+                    );
+                    if (this.selectedWaypoint.matches(selection)) {
+                        matchingSelection = selection;
+                        break outer;
+                    }
+                }
+            }
+        } else {
+            for (WaypointListDisplayModel.DisplayWaypoint row : display.flatWaypoints()) {
+                WaypointSelection selection = createSelection(
+                        row.dimensionName(),
+                        row.sourceList(),
+                        row.waypoint()
+                );
+                if (this.selectedWaypoint.matches(selection)) {
+                    matchingSelection = selection;
+                    break;
+                }
             }
         }
+        setSelectedWaypoint(matchingSelection, true);
     }
 
-    /**
-     * must be called after {@link #recalculateListPositions()} to set the correct content height
-     */
-    private void recalculateContentHeight() {
-        if (this.empty) {
-            this.contentHeight = 0;
-        } else {
-            WaypointList waypointList = getLastElement(this.waypointLists);
-            int lastSize = waypointList.isExpand() ? waypointList.size() + 1 : 1;
-            this.contentHeight = (getLastElement(listPositions) + lastSize) * itemHeight;
+    private void restoreSessionScrollPositionIfPending() {
+        if (!this.sessionScrollRestorePending || !this.showAllDimensions) {
+            return;
+        }
+        setScrollY(getSessionScrollPosition());
+        this.sessionScrollRestorePending = false;
+        rememberSessionScrollPosition(true, getScrollY());
+    }
+
+    private void resetScrollPosition() {
+        setScrollY(0.0D);
+        sessionScrollPosition = 0.0D;
+    }
+
+    public void refreshDistanceSortIfPlayerMoved() {
+        WaypointPos playerPosition = getPlayerWaypointPos();
+        String playerDimension = getCurrentDimensionName();
+        if (shouldRefreshDistanceSort(
+                this.sortMode,
+                this.lastQueryPlayerPosition,
+                playerPosition,
+                this.lastQueryPlayerDimension,
+                playerDimension
+        )) {
+            applySearchAndSort(playerPosition, playerDimension);
         }
     }
 
-    /**
-     * get waypoint and its list by the result of the binary search on {@link #listPositions} </br>
-     * @param index must strictly less than 0
-     * */
-    private Pair<@NotNull WaypointList, @NotNull SimpleWaypoint> getWaypointByIndex(int pos, int index) {
-        // listIndex = insertIndex - 1; insertIndex = -index - 1
-        if (index == -1) return null;
-        int listIndex = -index - 2;
-        int waypointIndex = pos - listPositions.get(listIndex) - 1;
-        WaypointList waypointList = waypointLists.get(listIndex);
-        List<SimpleWaypoint> simpleWaypoints = waypointList.simpleWaypoints();
-        if (waypointIndex >= simpleWaypoints.size()) {
+    static boolean shouldRefreshDistanceSort(
+            WaypointSorting.SortMode sortMode,
+            WaypointPos previousPosition,
+            WaypointPos currentPosition,
+            String previousDimension,
+            String currentDimension
+    ) {
+        return sortMode == WaypointSorting.SortMode.DISTANCE
+                && (!Objects.equals(previousPosition, currentPosition)
+                || !Objects.equals(previousDimension, currentDimension));
+    }
+
+    private DimensionNode createDimensionNode(WaypointListDisplayModel.DisplayDimension dimension) {
+        return new DimensionNode(
+                dimension.dimensionName(),
+                dimension.lists().stream()
+                        .map(this::createListNode)
+                        .toList()
+        );
+    }
+
+    private ListNode createListNode(WaypointListDisplayModel.DisplayList list) {
+        return new ListNode(
+                list.dimensionName(),
+                new ViewWaypointList(list.sourceList(), list.waypoints())
+        );
+    }
+
+    public void toggleSortMode(WaypointSorting.SortMode sortMode) {
+        WaypointSorting.SortMode resolvedSortMode = sortMode == null ? WaypointSorting.SortMode.DEFAULT : sortMode;
+        if (resolvedSortMode == WaypointSorting.SortMode.DEFAULT) {
+            setSortMode(resolvedSortMode);
+            return;
+        }
+        if (this.sortMode == resolvedSortMode) {
+            this.sortReversed = !this.sortReversed;
+        } else {
+            this.sortMode = resolvedSortMode;
+            this.sortReversed = false;
+        }
+        applySearchAndSort();
+    }
+
+    private static WaypointPos getPlayerWaypointPos() {
+        BlockPos playerPos = getPlayerBlockPos();
+        if (playerPos == null) {
             return null;
         }
-        return new Pair<>(waypointList, simpleWaypoints.get(waypointIndex));
+        return new WaypointPos(playerPos.getX(), playerPos.getY(), playerPos.getZ());
+    }
+
+    private static BlockPos getPlayerBlockPos() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.getCameraEntity() == null) {
+            return null;
+        }
+        return minecraft.getCameraEntity().blockPosition();
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        boolean bl = super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
-        SCROLLED_POSITION = getScrollY();
-        return bl;
+    protected @NotNull List<RowNode> getChildren(RowNode value) {
+        if (value instanceof DimensionNode dimensionNode) {
+            return dimensionNode.lists().stream()
+                    .map(RowNode.class::cast)
+                    .toList();
+        }
+        if (value instanceof ListNode listNode) {
+            return listNode.waypointList().simpleWaypoints().stream()
+                    .map(waypoint -> new WaypointNode(
+                            listNode.dimensionName(),
+                            listNode.waypointList(),
+                            waypoint,
+                            false,
+                            false
+                    ))
+                    .map(RowNode.class::cast)
+                    .toList();
+        }
+        return List.of();
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (empty) {
+    protected boolean isExpanded(RowNode value) {
+        if (value instanceof DimensionNode dimensionNode) {
+            return isDimensionExpanded(dimensionNode.dimensionName());
+        }
+        return value instanceof ListNode listNode && listNode.waypointList().isExpand();
+    }
+
+    @Override
+    protected void setExpanded(RowNode value, boolean expanded) {
+        if (value instanceof DimensionNode dimensionNode) {
+            setDimensionExpanded(dimensionNode.dimensionName(), expanded);
+        } else if (value instanceof ListNode listNode) {
+            listNode.waypointList().setExpand(expanded);
+        }
+    }
+
+    @Override
+    protected boolean onEntryClicked(TreeEntry<RowNode> entry, double contentMouseX, double contentMouseY, int button) {
+        if (button != 0) {
             return false;
         }
-        if (this.checkScrollbarDragged(mouseX, mouseY, button)) {
-            return super.mouseClicked(mouseX, mouseY, button);
+        RowNode value = entry.value();
+        if (value instanceof ListNode listNode) {
+            return onListClicked(
+                    entry.row(),
+                    listNode.dimensionName(),
+                    listNode.waypointList(),
+                    contentMouseX
+            );
         }
-        int x = getX();
-        int y = getY();
-        int x1 = x + this.width;
-        int y1 = y + this.height;
-        if (mouseX < x1 && mouseX > x && mouseY < y1 && mouseY > y) {
-            double scrollDistance = mouseY - y + getScrollY();
-            int pos = (int) Math.floor(scrollDistance / itemHeight);
-            WaypointList lastWaypointList = getLastElement(this.waypointLists);
-            int lastSize = lastWaypointList.isExpand() ? lastWaypointList.size() : 0;
-            int lastPos = getLastElement(listPositions) + lastSize;
-            if (pos > lastPos) {
-                return false;
-            }
+        if (value instanceof WaypointNode waypointNode) {
+            return onWaypointClicked(
+                    entry.row(),
+                    waypointNode.dimensionName(),
+                    waypointNode.waypointList(),
+                    waypointNode.waypoint(),
+                    contentMouseX
+            );
+        }
+        return false;
+    }
 
-            int index = binarySearch(listPositions, pos);
-            int firstBtn = x + firstBtnXPos;
-            int secondBtn = x + secondBtnXPos;
-            int thirdBtn = x + thirdBtnXPos;
-            if (index >= 0) {
-                // clicked on list
-                WaypointList waypointList = waypointLists.get(index);
-                if (waypointList.isEmpty()) {
-                    if (mouseX > thirdBtn) {
-                        // clicked on remove button
-                        if (removeClickedPos == pos) {
-                            if (sendCommand(removeListCmd(this.parentScreen.getSelectedDimension(), waypointList.name(), false))) {
-                                this.removeClickedPos = -1;
-                                return true;
-                            }
-                        }
-                        removeClickedPos = pos;
-                        return true;
-                    } else if (mouseX > secondBtn) {
-                        // clicked on add button
-                        MinecraftClientHelper.setScreen(new WaypointAddScreen(this.parentScreen, this.parentScreen.getSelectedDimension(), waypointList.name()));
+    private boolean onListClicked(
+            int row,
+            String dimensionName,
+            WaypointList waypointList,
+            double contentMouseX
+    ) {
+        if (waypointList.isEmpty()) {
+            if (contentMouseX > thirdBtnXPos) {
+                if (removeClickedPos == row) {
+                    if (sendCommand(removeListCmd(dimensionName, waypointList.name(), false))) {
                         this.removeClickedPos = -1;
                         return true;
                     }
-                } else {
-                    if (mouseX > thirdBtn) {
-                        // clicked on add button
-                        MinecraftClientHelper.setScreen(new WaypointAddScreen(this.parentScreen, this.parentScreen.getSelectedDimension(), waypointList.name()));
-                        this.removeClickedPos = -1;
-                        return true;
-                    } else if (mouseX > secondBtn) {
-                        // clicked on hide button
-                        if (hideButtonEnabled) {
-                            waypointList.setShow(!waypointList.isShow());
-                            List<SimpleWaypoint> list = waypointList.simpleWaypoints();
-                            if (waypointList.isShow()) {
-                                OptimizedWaypointRenderer.addList(list);
-                            } else {
-                                OptimizedWaypointRenderer.removeList(list);
-                            }
-                        }
-                        return true;
-                    }
                 }
-                int size = waypointList.size();
-                if (waypointList.isExpand()) {
-                    for (int i = index + 1; i < listPositions.size(); i++) {
-                        listPositions.set(i, listPositions.get(i) - size);
-                    }
-                    waypointList.setExpand(false);
-                } else {
-                    for (int i = index + 1; i < listPositions.size(); i++) {
-                        listPositions.set(i, listPositions.get(i) + size);
-                    }
-                    waypointList.setExpand(true);
-                }
-                recalculateContentHeight();
-                SCROLLED_POSITION = getScrollY();
-                refreshScroll();
+                removeClickedPos = row;
                 return true;
-            } else {
-                Pair<WaypointList, SimpleWaypoint> result = getWaypointByIndex(pos, index);
-                if (result == null) {
-                    return false;
-                }
-                WaypointList waypointList = result.left();
-                SimpleWaypoint waypoint = result.right();
-                if (mouseX > thirdBtn) {
-                    // clicked on remove button
-                    if (removeClickedPos == pos) {
-                        if (sendCommand(removeCmd(this.parentScreen.getSelectedDimension(), waypointList.name(), waypoint, false))) {
-                            this.removeClickedPos = -1;
-                            return true;
-                        }
+            } else if (contentMouseX > secondBtnXPos) {
+                MinecraftClientHelper.setScreen(new WaypointAddScreen(
+                        this.parentScreen,
+                        dimensionName,
+                        waypointList.name()
+                ));
+                this.removeClickedPos = -1;
+                return true;
+            }
+        } else {
+            if (contentMouseX > thirdBtnXPos) {
+                MinecraftClientHelper.setScreen(new WaypointAddScreen(
+                        this.parentScreen,
+                        dimensionName,
+                        waypointList.name()
+                ));
+                this.removeClickedPos = -1;
+                return true;
+            } else if (contentMouseX > secondBtnXPos) {
+                if (canToggleVisibility(dimensionName)) {
+                    waypointList.setShow(!waypointList.isShow());
+                    List<SimpleWaypoint> list = waypointList.simpleWaypoints();
+                    if (waypointList.isShow()) {
+                        OptimizedWaypointRenderer.addList(list);
+                    } else {
+                        OptimizedWaypointRenderer.removeList(list);
                     }
-                    this.removeClickedPos = pos;
-                } else if (mouseX > secondBtn) {
-                    // clicked on edit button
-                    MinecraftClientHelper.setScreen(new WaypointEditScreen(this.parentScreen, this.parentScreen.getSelectedDimension(), waypointList.name(), waypoint));
-                    return true;
-                } else if (mouseX > firstBtn) {
-                    // clicked on show button
-                    if (hideButtonEnabled) {
-                        if (waypoint.isRendered()) {
-                            OptimizedWaypointRenderer.remove(waypoint);
-                        } else {
-                            OptimizedWaypointRenderer.add(waypoint);
-                        }
-                    }
-                    return true;
+                    refreshSelectedWaypointDetails(dimensionName, waypointList.name());
                 }
+                return true;
             }
         }
         return false;
+    }
+
+    private boolean onWaypointClicked(
+            int row,
+            String dimensionName,
+            WaypointList waypointList,
+            SimpleWaypoint waypoint,
+            double contentMouseX
+    ) {
+        if (contentMouseX <= firstBtnXPos) {
+            setSelectedWaypoint(createSelection(dimensionName, waypointList, waypoint));
+            this.removeClickedPos = -1;
+            return true;
+        }
+        if (contentMouseX > thirdBtnXPos) {
+            if (removeClickedPos == row) {
+                if (sendCommand(removeCmd(dimensionName, waypointList.name(), waypoint, false))) {
+                    this.removeClickedPos = -1;
+                    return true;
+                }
+            }
+            this.removeClickedPos = row;
+            return true;
+        } else if (contentMouseX > secondBtnXPos) {
+            MinecraftClientHelper.setScreen(new WaypointEditScreen(
+                        this.parentScreen,
+                        dimensionName,
+                        waypointList.name(),
+                        waypointList.displayName(),
+                        waypoint
+            ));
+            return true;
+        } else if (contentMouseX > firstBtnXPos) {
+            if (canToggleVisibility(dimensionName)) {
+                if (waypoint.isRendered()) {
+                    OptimizedWaypointRenderer.remove(waypoint);
+                } else {
+                    OptimizedWaypointRenderer.add(waypoint);
+                }
+                refreshSelectedWaypointDetails(dimensionName, waypointList.name());
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private static WaypointSelection createSelection(
+            String dimensionName,
+            WaypointList waypointList,
+            SimpleWaypoint waypoint
+    ) {
+        return new WaypointSelection(
+                dimensionName,
+                waypointList.name(),
+                waypointList.displayName(),
+                waypoint
+        );
+    }
+
+    private void setSelectedWaypoint(@Nullable WaypointSelection selection) {
+        setSelectedWaypoint(selection, false);
+    }
+
+    private void setSelectedWaypoint(
+            @Nullable WaypointSelection selection,
+            boolean refreshDetails
+    ) {
+        if (Objects.equals(this.selectedWaypoint, selection)) {
+            if (refreshDetails && selection != null) {
+                this.selectionCallback.accept(selection);
+            }
+            return;
+        }
+        this.selectedWaypoint = selection;
+        this.selectionCallback.accept(selection);
+    }
+
+    private void refreshSelectedWaypointDetails(String dimensionName, String listName) {
+        if (this.selectedWaypoint != null
+                && Objects.equals(this.selectedWaypoint.dimensionName(), dimensionName)
+                && Objects.equals(this.selectedWaypoint.listName(), listName)) {
+            this.selectionCallback.accept(this.selectedWaypoint);
+        }
+    }
+
+    private boolean isSelected(WaypointNode waypointNode) {
+        return this.selectedWaypoint != null
+                && this.selectedWaypoint.matches(createSelection(
+                        waypointNode.dimensionName(),
+                        waypointNode.waypointList(),
+                        waypointNode.waypoint()
+                ));
+    }
+
+    private boolean canToggleVisibility(String dimensionName) {
+        return dimensionName.equals(getCurrentDimensionName());
+    }
+
+    @Override
+    protected void onHoveredEntryChanged(TreeEntry<RowNode> oldEntry, TreeEntry<RowNode> newEntry) {
+        if (newEntry == null || newEntry.row() != this.removeClickedPos) {
+            this.removeClickedPos = -1;
+        }
+    }
+
+    @Override
+    protected void onScrollChanged(double scrollY) {
+        if (!this.sessionScrollRestorePending) {
+            rememberSessionScrollPosition(this.showAllDimensions, scrollY);
+        }
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         boolean ret = false;
         if (keyCode == TELEPORT_KEY) {
-            int index = binarySearch(listPositions, hoverPos);
-            // hover on a waypoint
-            if (index < 0) {
-                Pair<WaypointList, SimpleWaypoint> result = getWaypointByIndex(hoverPos, index);
-                if (result != null) {
-                    WaypointList waypointList = result.left();
-                    SimpleWaypoint waypoint = result.right();
-                    sendCommand(tpCmd(this.parentScreen.getSelectedDimension(), waypointList.name(), waypoint.name(), false));
-                    ret = true;
-                }
+            TreeEntry<RowNode> hoveredEntry = getHoveredEntry();
+            if (hoveredEntry != null && hoveredEntry.value() instanceof WaypointNode waypointNode) {
+                sendCommand(tpCmd(
+                        waypointNode.dimensionName(),
+                        waypointNode.waypointList().name(),
+                        waypointNode.waypoint().name(),
+                        false
+                ));
+                ret = true;
             }
         }
         return ret || super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
-    public void onRelease(double mouseX, double mouseY) {
-        super.onRelease(mouseX, mouseY);
-        SCROLLED_POSITION = getScrollY();
+    protected void renderEmpty(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        drawText(context, textRenderer, EMPTY_INFO_TEXT, 5, textVertOffset, getColor(TEXT_DISABLED), true);
     }
 
     @Override
-    public int getContentHeight() {
-        return this.contentHeight;
+    protected void beforeRenderEntries(GuiGraphicsExtractor context, int contentWidth, int mouseX, int mouseY, float deltaTicks) {
+        thirdBtnXPos = contentWidth - btnWidth;
+        secondBtnXPos = thirdBtnXPos - btnWidth;
+        firstBtnXPos = secondBtnXPos - btnWidth;
+        renderedPlayerPosition = getPlayerWaypointPos();
+        int maxDistanceWidth = 0;
+        for (int index = 0; index < visibleEntryCount(); index++) {
+            if (getVisibleEntry(index).value() instanceof WaypointNode waypointNode) {
+                DistanceLabel distanceLabel = getDistanceLabel(waypointNode.waypoint(), waypointNode.dimensionName());
+                maxDistanceWidth = Math.max(
+                        maxDistanceWidth,
+                        (int)Math.ceil(textRenderer.width(distanceLabel.text()) * metadataTextScale)
+                );
+            }
+        }
+        distanceColumnX = Math.max(0, firstBtnXPos - labelTextGap - maxDistanceWidth);
     }
 
     @Override
-    public double getDeltaYPerScroll() {
-        return 5;
+    protected void renderEntry(GuiGraphicsExtractor context, TreeEntry<RowNode> entry, boolean hovered, int rowY, int contentWidth, int mouseX, int mouseY, float deltaTicks) {
+        RowNode value = entry.value();
+        int indent = this.showAllDimensions ? entry.depth() * treeIndent : 0;
+        if (value instanceof DimensionNode dimensionNode) {
+            renderDimension(context, dimensionNode, hovered, rowY, contentWidth);
+        } else if (value instanceof ListNode listNode) {
+            renderWaypointList(
+                    context,
+                    listNode.dimensionName(),
+                    listNode.waypointList(),
+                    hovered,
+                    rowY,
+                    contentWidth,
+                    indent
+            );
+        } else if (value instanceof WaypointNode waypointNode) {
+            renderWaypoint(context, waypointNode, hovered, rowY, contentWidth, indent);
+        }
     }
 
-    @Override
-    public void
-    //$ render_widget_method_swap
-    extractWidgetRenderState
-            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-        double scrollY = getScrollY();
-        int i = 0;
-        int x = getX();
-        int y = getY();
+    private void renderDimension(
+            GuiGraphicsExtractor context,
+            DimensionNode dimensionNode,
+            boolean hovered,
+            int rowY,
+            int contentWidth
+    ) {
+        if (hovered) {
+            context.fill(0, rowY, contentWidth, rowY + itemHeight, getColor(ROW_HOVER_BACKGROUND));
+            renderOutline(context, 0, rowY, contentWidth, itemHeight, getColor(FOCUS_RING));
+        }
+        drawText(
+                context,
+                textRenderer,
+                dimensionNode.dimensionName(),
+                18,
+                rowY + textVertOffset,
+                getDisplayDimensionColor(dimensionNode.dimensionName()),
+                true
+        );
+        texture(
+                context,
+                isExpanded(dimensionNode)
+                        ? WidgetTextures.LIST_EXPAND_ICON
+                        : WidgetTextures.LIST_COLLAPSE_ICON,
+                0,
+                rowY + listIconVertOffset,
+                0,
+                0,
+                listIconSize,
+                listIconSize,
+                listIconSize,
+                listIconSize
+        );
+    }
 
-        this.paddingBackground.
-        //$ render_method_swap
-        extractRenderState
-                (context, mouseX, mouseY, deltaTicks);
+    private void renderWaypointList(
+            GuiGraphicsExtractor context,
+            String dimensionName,
+            WaypointList waypointList,
+            boolean hovered,
+            int rowY,
+            int contentWidth,
+            int indent
+    ) {
+        boolean isListShow = waypointList.isShow();
+        int textColor = getColor(isListShow ? TEXT_PRIMARY : TEXT_DISABLED);
+        if (hovered) {
+            context.fill(0, rowY, contentWidth, rowY + itemHeight, getColor(ROW_HOVER_BACKGROUND));
+            renderOutline(context, 0, rowY, contentWidth, itemHeight, getColor(FOCUS_RING));
+        }
 
-        context.enableScissor(x, y, x + width, y + height);
+        int centeredBtnY = rowY + buttonIconVertOffset;
+        boolean isListEmpty = waypointList.isEmpty();
+        if (hovered) {
+            if (isListEmpty) {
+                texture(context, WidgetTextures.ADD_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                if (removeClickedPos == getHoveredRow()) {
+                    texture(context, WidgetTextures.CONFIRM_REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                } else {
+                    texture(context, WidgetTextures.REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    removeClickedPos = -1;
+                }
+            } else {
+                if (canToggleVisibility(dimensionName)) {
+                    if (isListShow) {
+                        texture(context, WidgetTextures.SHOW_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    } else {
+                        texture(context, WidgetTextures.HIDE_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    }
+                }
+                texture(context, WidgetTextures.ADD_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+            }
+        }
 
-        // offset
-        push(context);
-        translate(context, x, y);
+        drawText(context, textRenderer, parseFormattedText(waypointList.displayName()), indent + 18, rowY + textVertOffset, textColor, true);
+        if (isListEmpty) {
+            texture(context, WidgetTextures.LIST_EMPTY, indent, rowY + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
+        } else if (waypointList.isExpand()) {
+            texture(context, WidgetTextures.LIST_EXPAND_ICON, indent, rowY + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
+        } else {
+            texture(context, WidgetTextures.LIST_COLLAPSE_ICON, indent, rowY + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
+        }
+    }
 
-        int listWidth = overflows() ?  width - SCROLLBAR_WIDTH : width;
+    private void renderWaypoint(
+            GuiGraphicsExtractor context,
+            WaypointNode waypointNode,
+            boolean hovered,
+            int rowY,
+            int contentWidth,
+            int indent
+    ) {
+        SimpleWaypoint waypoint = waypointNode.waypoint();
+        Component name = parseFormattedText(waypoint.displayName());
+        String initials = waypoint.initials();
+        boolean wpRendered = waypoint.isRendered();
+        int bgAlpha = wpRendered ? 0xFF000000 : 0x80000000;
+        int textColor = applyWaypointTextOpacity(getColor(TEXT_PRIMARY), wpRendered);
+        int metadataTextColor = applyWaypointTextOpacity(getColor(TEXT_MUTED), wpRendered);
+        int rgb = waypoint.rgb();
+        int y2 = rowY + itemHeight;
+        boolean selected = isSelected(waypointNode);
+        if (hovered) {
+            context.fill(0, rowY, contentWidth, y2, 0x60000000 + rgb);
+            int wpCenteredBtnY = rowY + buttonIconVertOffset;
+            if (canToggleVisibility(waypointNode.dimensionName())) {
+                if (wpRendered) {
+                    texture(context, WidgetTextures.SHOW_ICON, firstBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                } else {
+                    texture(context, WidgetTextures.HIDE_ICON, firstBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                }
+            }
+            texture(context, WidgetTextures.EDIT_ICON, secondBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+            if (removeClickedPos == getHoveredRow()) {
+                texture(context, WidgetTextures.CONFIRM_REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+            } else {
+                texture(context, WidgetTextures.REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                removeClickedPos = -1;
+            }
+            renderOutline(context, 0, rowY, contentWidth, itemHeight, 0xFF000000 + rgb);
+        } else if (selected) {
+            context.fill(0, rowY, contentWidth, y2, getColor(SELECTION_BACKGROUND));
+            renderOutline(context, 0, rowY, contentWidth, itemHeight, getColor(FOCUS_RING));
+        } else {
+            context.fill(0, rowY, contentWidth, y2, 0x10000000 + rgb);
+        }
 
-        if (empty) {
-            drawText(context, textRenderer, EMPTY_INFO_TEXT, 5, textVertOffset, 0x55FFFFFF, true);
-            pop(context);
-            context.disableScissor();
-            this.drawScrollbar(context);
+        final int finalY = rowY + textVertOffset;
+        final int backgroundColor = bgAlpha | rgb;
+        if (waypoint.global()) {
+            drawText(context, textRenderer, "*", indent + 6, finalY, textColor);
+        }
+        drawInitialsBox(context, initials, indent + 15, finalY - 1, backgroundColor, getInitialsTextColor(rgb, wpRendered));
+        String dimensionLine = "";
+        Component listName = Component.empty();
+        int dimensionColor = metadataTextColor;
+        if (waypointNode.showListName()) {
+            if (waypointNode.showDimensionName()) {
+                dimensionLine = toDisplayDimensionName(waypointNode.dimensionName());
+                dimensionColor = applyWaypointTextOpacity(
+                        getDisplayDimensionColor(waypointNode.dimensionName()),
+                        wpRendered
+                );
+            }
+            listName = parseFormattedText(waypointNode.waypointList().displayName());
+        }
+        DistanceLabel distanceLabel = getDistanceLabel(waypoint, waypointNode.dimensionName());
+        if (!wpRendered && !distanceLabel.isEmpty()) {
+            distanceLabel = new DistanceLabel(
+                    distanceLabel.text(),
+                    applyWaypointTextOpacity(distanceLabel.color(), false)
+            );
+        }
+        renderWaypointLabel(
+                context,
+                dimensionLine,
+                listName,
+                name,
+                distanceLabel,
+                indent + 55,
+                rowY,
+                dimensionColor,
+                metadataTextColor,
+                textColor
+        );
+    }
+
+    private void renderWaypointLabel(
+            GuiGraphicsExtractor context,
+            String dimensionLine,
+            Component listName,
+            Component waypointName,
+            DistanceLabel distanceLabel,
+            int x,
+            int rowY,
+            int dimensionColor,
+            int metadataColor,
+            int nameColor
+    ) {
+        int availableWidth = Math.max(0, distanceColumnX - x - labelTextGap);
+        int metadataLineHeight = Math.round(textRenderer.lineHeight * metadataTextScale);
+        int listWidth = (int)Math.ceil(textRenderer.width(listName) * metadataTextScale);
+        int waypointX = listName.getString().isEmpty() ? 0 : listWidth + labelTextGap;
+        int detailWidth = waypointX + textRenderer.width(waypointName);
+        int dimensionWidth = (int)Math.ceil(textRenderer.width(dimensionLine) * metadataTextScale);
+        int labelWidth = Math.max(dimensionWidth, detailWidth);
+        if (availableWidth == 0 || labelWidth == 0) {
             return;
         }
 
-        translate(context, 0.0F, (float) -scrollY);
+        boolean twoLines = !dimensionLine.isEmpty();
+        float labelScale = Math.min(1.0F, (float)availableWidth / labelWidth);
+        int textHeight = twoLines
+                ? metadataLineHeight + labelLineGap + textRenderer.lineHeight
+                : textRenderer.lineHeight;
+        int scaledTextHeight = Math.round(textHeight * labelScale);
+        int y = rowY + centered(itemHeight, scaledTextHeight) + (twoLines ? 0 : 1);
+        int detailY = twoLines ? metadataLineHeight + labelLineGap : 0;
 
-        // highlight
-        hoverPos = -2;
-        if (mouseX < x + listWidth && mouseX > x && mouseY < y + this.contentHeight && mouseY > y) {
-            double scrollDistance = mouseY - y + getScrollY();
-            hoverPos = (int) scrollDistance / itemHeight;
-        } else {
-            removeClickedPos = -1;
+        push(context);
+        translate(context, x, y);
+        scale(context, labelScale, labelScale);
+        if (twoLines) {
+            renderMetadataText(context, dimensionLine, 0, 0, dimensionColor);
         }
-
-        // x for edit
-        thirdBtnXPos = listWidth - btnWidth;
-        // x for width
-        secondBtnXPos = thirdBtnXPos - btnWidth;
-        // x for show
-        firstBtnXPos = secondBtnXPos - btnWidth;
-        // waypoint text background alpha
-        int bgAlpha;
-
-        for (WaypointList waypointList : this.waypointLists) {
-            int y1 = i * itemHeight;
-            boolean isListShow = waypointList.isShow();
-            int textColor = 0x80FFFFFF;
-            if (isListShow) {
-                textColor = 0xFFFFFFFF;
-            }
-            // list highlight
-            boolean hoverOnList = hoverPos == i;
-            if (hoverOnList) {
-                context.fill(0, y1, listWidth, y1 + itemHeight, 0x30FFFFFF);
-                renderOutline(context, 0, y1, listWidth, itemHeight, 0xFFFFFFFF);
-            }
-            // plus one for list name row
-            i++;
-            int centeredBtnY = y1 + buttonIconVertOffset;
-            boolean isListEmpty = waypointList.isEmpty();
-            // render hover buttons on list
-            if (hoverOnList) {
-                if (isListEmpty) {
-                    texture(context, ADD_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
-                    if (removeClickedPos == hoverPos) {
-                        texture(context, CONFIRM_REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
-                    } else {
-                        texture(context, REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
-                        removeClickedPos = -1;
-                    }
-                } else {
-                    if (isListShow) {
-                        texture(context, SHOW_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
-                    } else {
-                        texture(context, HIDE_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
-                    }
-                    texture(context, ADD_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
-                }
-            }
-            // waypoint list name
-            drawText(context, textRenderer, waypointList.name(), 18, y1 + textVertOffset, textColor, true);
-            // render list expand icon
-            if (isListEmpty) {
-                texture(context, LIST_EMPTY, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
-                continue;
-            }
-            if (waypointList.isExpand()) {
-                texture(context, LIST_EXPAND_ICON, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
-            } else {
-                texture(context, LIST_COLLAPSE_ICON, 0, y1 + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
-                continue;
-            }
-            List<SimpleWaypoint> waypoints = waypointList.simpleWaypoints();
-            for (SimpleWaypoint waypoint : waypoints) {
-                String name = waypoint.name();
-                String initials = waypoint.initials();
-                boolean wpRendered = waypoint.isRendered();
-                bgAlpha = 0x80000000;
-                textColor = 0x80FFFFFF;
-                if (wpRendered) {
-                    bgAlpha = 0xFF000000;
-                    textColor = 0xFFFFFFFF;
-                }
-                int rgb = waypoint.rgb();
-                y1 = i * itemHeight;
-                int y2 = y1 + itemHeight;
-                if (hoverPos == i) {
-                    // highlight
-                    context.fill(0, y1, listWidth, y2, 0x60000000 + rgb);
-                    int wpCenteredBtnY = y1 + buttonIconVertOffset;
-                    // show button
-                    if (wpRendered) {
-                        texture(context, SHOW_ICON, firstBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
-                    } else {
-                        texture(context, HIDE_ICON, firstBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
-                    }
-                    // edit button
-                    texture(context, EDIT_ICON, secondBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
-                    // remove button
-                    if (removeClickedPos == hoverPos) {
-                        texture(context, CONFIRM_REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
-                    } else {
-                        texture(context, REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
-                        removeClickedPos = -1;
-                    }
-                    // border
-                    renderOutline(context, 0, y1, listWidth, itemHeight, 0xFF000000 + rgb);
-                } else {
-                    context.fill(0, y1, listWidth, y2, 0x10000000 + rgb);
-                }
-                final int finalY = y1 + textVertOffset;
-                final int backgroundColor = bgAlpha | rgb;
-                if (waypoint.global()) {
-                    drawText(context, textRenderer, "*", 6, finalY, textColor);
-                }
-                drawInitialsBox(context, initials, 15, finalY - 1, backgroundColor, getInitialsTextColor(rgb, wpRendered));
-                drawText(context, textRenderer, name, 55, finalY, textColor);
-                i++;
-            }
+        if (!listName.getString().isEmpty()) {
+            renderMetadataText(
+                    context,
+                    listName,
+                    0,
+                    detailY + textRenderer.lineHeight - metadataLineHeight,
+                    metadataColor
+            );
         }
+        drawText(context, textRenderer, waypointName, waypointX, detailY, nameColor);
         pop(context);
-        context.disableScissor();
-        this.drawScrollbar(context);
+
+        if (!distanceLabel.isEmpty()) {
+            push(context);
+            translate(context, distanceColumnX, y);
+            scale(context, labelScale, labelScale);
+            renderMetadataText(
+                    context,
+                    distanceLabel.text(),
+                    0,
+                    detailY + textRenderer.lineHeight - metadataLineHeight,
+                    distanceLabel.color()
+            );
+            pop(context);
+        }
+    }
+
+    private DistanceLabel getDistanceLabel(SimpleWaypoint waypoint, String waypointDimension) {
+        if (renderedPlayerPosition == null) {
+            return DistanceLabel.EMPTY;
+        }
+        String playerDimension = getCurrentDimensionName();
+        if (!shouldShowDistanceLabel(playerDimension, waypointDimension)) {
+            return DistanceLabel.EMPTY;
+        }
+        double distanceSquared = WaypointSorting.distanceSquared(
+                waypoint,
+                renderedPlayerPosition,
+                playerDimension,
+                waypointDimension
+        );
+        int color = Objects.equals(playerDimension, waypointDimension)
+                ? getColor(TEXT_MUTED)
+                : getDisplayDimensionColor(waypointDimension);
+        return new DistanceLabel(formatDistance(Math.sqrt(distanceSquared)), color);
+    }
+
+    static boolean shouldShowDistanceLabel(
+            String playerDimension,
+            String waypointDimension
+    ) {
+        return playerDimension != null
+                && WaypointSorting.canCompareDistance(playerDimension, waypointDimension);
+    }
+
+    static String formatDistance(double meters) {
+        long roundedMeters = Math.max(0L, Math.round(meters));
+        if (roundedMeters < metersPerKilometer) {
+            return roundedMeters + " m";
+        }
+        long tenthsOfKilometer = Math.round(meters / 100.0D);
+        long kilometers = tenthsOfKilometer / 10L;
+        long tenths = tenthsOfKilometer % 10L;
+        return tenths == 0L
+                ? kilometers + " km"
+                : kilometers + "." + tenths + " km";
+    }
+
+    private record DistanceLabel(String text, int color) {
+        private static final DistanceLabel EMPTY = new DistanceLabel("", 0);
+
+        private boolean isEmpty() {
+            return this.text.isEmpty();
+        }
+    }
+
+    private void renderMetadataText(GuiGraphicsExtractor context, String text, int x, int y, int color) {
+        push(context);
+        translate(context, x, y);
+        scale(context, metadataTextScale, metadataTextScale);
+        drawText(context, textRenderer, text, 0, 0, color);
+        pop(context);
+    }
+
+    private void renderMetadataText(GuiGraphicsExtractor context, Component text, int x, int y, int color) {
+        push(context);
+        translate(context, x, y);
+        scale(context, metadataTextScale, metadataTextScale);
+        drawText(context, textRenderer, text, 0, 0, color);
+        pop(context);
+    }
+
+    private static String toDisplayDimensionName(String dimensionName) {
+        if (dimensionName.startsWith(minecraftNamespace)) {
+            return dimensionName.substring(minecraftNamespace.length());
+        }
+        return dimensionName;
+    }
+
+    private static int getDisplayDimensionColor(String dimensionName) {
+        return ColorHelper.scaleRgb(
+                0xFF000000 | getDimensionColor(dimensionName).value(),
+                0.8F
+        );
     }
 
     @Override
@@ -527,53 +1031,95 @@ public class WaypointListWidget extends ShiftableScrollableWidget implements Pad
         return (color & 0x00FFFFFF) | 0x80000000;
     }
 
-    @Override
-    public void setWidth(int width) {
-        this.width = width;
+    static int applyWaypointTextOpacity(int color, boolean rendered) {
+        if (rendered) {
+            return color;
+        }
+        int reducedAlpha = ((color >>> 24) + 1) / 2;
+        return (color & 0x00FFFFFF) | (reducedAlpha << 24);
     }
 
-    @Override
-    public void setHeight(int height) {
-        this.height = height;
+    public sealed interface RowNode permits DimensionNode, ListNode, WaypointNode {
     }
 
-    @Override
-    public void setVisualHeight(int height) {
-        setHeight(height - (this.paddingBackground.getVisualHeight() - getHeight()));
+    private record DimensionNode(String dimensionName, List<ListNode> lists) implements RowNode {
     }
 
-    @Override
-    public void setVisualWidth(int width) {
-        setWidth(width - (this.paddingBackground.getVisualWidth() - getWidth()));
+    private record ListNode(String dimensionName, WaypointList waypointList) implements RowNode {
     }
 
-    @Override
-    public int getVisualHeight() {
-        return this.paddingBackground.getVisualHeight();
+    private record WaypointNode(
+            String dimensionName,
+            WaypointList waypointList,
+            SimpleWaypoint waypoint,
+            boolean showListName,
+            boolean showDimensionName
+    ) implements RowNode {
     }
 
-    @Override
-    public int getVisualWidth() {
-        return this.paddingBackground.getVisualWidth();
+    public record WaypointSelection(
+            String dimensionName,
+            String listName,
+            String listDisplayName,
+            SimpleWaypoint waypoint
+    ) {
+        public WaypointSelection {
+            Objects.requireNonNull(dimensionName, "dimensionName");
+            Objects.requireNonNull(listName, "listName");
+            Objects.requireNonNull(listDisplayName, "listDisplayName");
+            Objects.requireNonNull(waypoint, "waypoint");
+        }
+
+        private boolean matches(WaypointSelection other) {
+            return Objects.equals(this.dimensionName, other.dimensionName)
+                    && Objects.equals(this.listName, other.listName)
+                    && Objects.equals(this.waypoint.name(), other.waypoint.name());
+        }
     }
 
-    @Override
-    public int getVisualX() {
-        return this.paddingBackground.getVisualX();
-    }
+    private static class ViewWaypointList extends WaypointList {
+        private final WaypointList source;
+        private final List<SimpleWaypoint> waypoints;
 
-    @Override
-    public int getVisualY() {
-        return this.paddingBackground.getVisualY();
-    }
+        private ViewWaypointList(WaypointList source, List<SimpleWaypoint> waypoints) {
+            super(source.name(), source.displayName(), source.getSyncNum(), waypoints);
+            this.source = source;
+            this.waypoints = waypoints;
+        }
 
-    @Override
-    public void setPaddedX(int x) {
-        this.paddingBackground.setPaddedX(x);
-    }
+        @Override
+        public boolean isShow() {
+            return this.source.isShow();
+        }
 
-    @Override
-    public void setPaddedY(int y) {
-        this.paddingBackground.setPaddedY(y);
+        @Override
+        public void setShow(boolean show) {
+            this.source.setShow(show);
+        }
+
+        @Override
+        public boolean isExpand() {
+            return this.source.isExpand();
+        }
+
+        @Override
+        public void setExpand(boolean expand) {
+            this.source.setExpand(expand);
+        }
+
+        @Override
+        public int size() {
+            return this.waypoints.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return this.waypoints.isEmpty();
+        }
+
+        @Override
+        public List<SimpleWaypoint> simpleWaypoints() {
+            return Collections.unmodifiableList(new ArrayList<>(this.waypoints));
+        }
     }
 }

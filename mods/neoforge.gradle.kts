@@ -81,7 +81,14 @@ sourceSets.main {
         exclude("fabric.mod.json")
         exclude("META-INF/mods.toml")
         exclude("pack.mcmeta")
+        exclude("server_waypoint-official.accesswidener")
     }
+}
+
+sourceSets.test {
+    compileClasspath += sourceSets.main.get().compileClasspath
+    runtimeClasspath += sourceSets.main.get().compileClasspath
+    runtimeClasspath += sourceSets.main.get().runtimeClasspath
 }
 
 repositories {
@@ -99,12 +106,20 @@ repositories {
     }
     maven("https://maven.parchmentmc.org")
     maven("https://maven.neoforged.net/releases/")
+    maven {
+        name = "Xaero's Maven"
+        url = uri("https://chocolateminecraft.com/maven")
+        content {
+            includeGroup("xaero.lib")
+        }
+    }
 }
 
 neoForge {
     val neoforge_loader: String by project
     version = neoforge_loader
     validateAccessTransformers = true
+    accessTransformers.from(rootProject.file("mods/src/main/resources/META-INF/accesstransformer.cfg"))
 
     runs {
         configureEach {
@@ -134,12 +149,26 @@ dependencies {
     addAdventureSerializerDependency()
 
     val xaeros_minimap_neoforge: String by project
+    val xaeros_world_map_neoforge: String by project
+    if (project.hasProperty("xaerolib_neoforge")) {
+        val xaerolibMinecraft = findProperty("xaerolib_neoforge_minecraft")?.toString() ?: minecraft
+        val xaerolibDependency = "xaero.lib:xaerolib-neoforge-$xaerolibMinecraft:${property("xaerolib_neoforge")}"
+        compileOnly(xaerolibDependency)
+        runtimeOnly(xaerolibDependency)
+    }
+
     if (minecraft == "1.21.2") {
         compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
+        compileOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_neoforge")
     } else {
         compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
+        compileOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_neoforge")
         runtimeOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
+        runtimeOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_neoforge")
     }
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.processResources {
@@ -196,11 +225,28 @@ tasks.named("processResources") {
     dependsOn("stonecutterGenerate")
 }
 
+tasks.matching { it.name == "createMinecraftArtifacts" }.configureEach {
+    dependsOn("stonecutterGenerate")
+}
+
 tasks.jar {
     archiveClassifier.set("thin")
+}
+
+tasks.withType<Jar>().configureEach {
     from(rootProject.file("LICENSE")) {
         rename { "${it}_$mod_name" }
     }
+    from(rootProject.file("THIRD_PARTY_NOTICES.md")) {
+        into("META-INF")
+    }
+    from(rootProject.file("LICENSES/Apache-2.0.txt")) {
+        into("META-INF/licenses")
+    }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.shadowJar {

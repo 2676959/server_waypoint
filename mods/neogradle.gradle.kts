@@ -52,8 +52,18 @@ sourceSets.main {
     }
     resources {
         exclude("fabric.mod.json")
+        // The legacy metadata is generated from the expanded modern descriptor in
+        // processResources; excluding it here keeps the unexpanded copy out of the jar.
+        exclude("META-INF/mods.toml")
         exclude("pack.mcmeta")
+        exclude("server_waypoint-official.accesswidener")
     }
+}
+
+sourceSets.test {
+    compileClasspath += sourceSets.main.get().compileClasspath
+    runtimeClasspath += sourceSets.main.get().compileClasspath
+    runtimeClasspath += sourceSets.main.get().runtimeClasspath
 }
 
 repositories {
@@ -84,8 +94,14 @@ dependencies {
     add(shadedDependencies.name, adventureSerializer)
 
     val xaeros_minimap_neoforge: String by project
+    val xaeros_world_map_neoforge: String by project
     compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
+    compileOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_neoforge")
     runtimeOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_neoforge")
+    runtimeOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_neoforge")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 runs {
@@ -137,6 +153,7 @@ tasks.processResources {
             .replace(Regex("""type\s*=\s*"required""""), "mandatory=true")
             .replace(Regex("""type\s*=\s*"optional""""), "mandatory=false")
         metaInf.resolve("mods.toml").writeText(legacyMetadata)
+        metaInf.resolve("neoforge.mods.toml").delete()
     }
 }
 
@@ -151,6 +168,10 @@ tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+
 tasks.named("compileJava") {
     dependsOn("stonecutterGenerate")
 }
@@ -161,8 +182,17 @@ tasks.named("processResources") {
 
 tasks.jar {
     archiveClassifier.set("thin")
+}
+
+tasks.withType<Jar>().configureEach {
     from(rootProject.file("LICENSE")) {
         rename { "${it}_$mod_name" }
+    }
+    from(rootProject.file("THIRD_PARTY_NOTICES.md")) {
+        into("META-INF")
+    }
+    from(rootProject.file("LICENSES/Apache-2.0.txt")) {
+        into("META-INF/licenses")
     }
 }
 

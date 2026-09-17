@@ -27,6 +27,11 @@ public class PermissionStringKeys extends PermissionKeys<String> {
     }
 
     @Override
+    protected PermissionKeys<String>.PermissionKey createNavigatePermissionKey() {
+        return build("command.navigate");
+    }
+
+    @Override
     protected PermissionKeys<String>.PermissionKey createTpPermissionKey() {
         return build("command.tp");
     }
@@ -34,5 +39,15 @@ public class PermissionStringKeys extends PermissionKeys<String> {
     @Override
     protected PermissionKeys<String>.PermissionKey createReloadPermissionKey() {
         return build("command.reload");
+    }
+
+    @Override
+    protected PermissionKeys<String>.PermissionKey createUploadPermissionKey() {
+        return build("command.upload");
+    }
+
+    @Override
+    protected PermissionKeys<String>.PermissionKey createUploadDeletePermissionKey() {
+        return build("command.upload.delete");
     }
 }

@@ -1,27 +1,40 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.layout.Expandable;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeColors;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.IntSupplier;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.pop;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.push;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.scale;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.translate;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pop;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.push;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scale;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
 
-public class ScalableText extends ShiftableWidget {
+public class ScalableText extends ShiftableWidget implements Expandable {
     private final Font textRenderer;
     private Component text;
     private float scale;
-    private int color;
-    private final int maxWidth;
+    private IntSupplier colorSupplier;
+    private int maxWidth;
     private volatile List<FormattedCharSequence> warpLines = List.of();
 
     public ScalableText(int x, int y, Component text, int color, Font textRenderer) {
+        this(x, y, text, 1, color, textRenderer);
+    }
+
+    public ScalableText(int x, int y, Component text, WidgetThemeVariable color, Font textRenderer) {
+        this(x, y, text, 1, color, textRenderer);
+    }
+
+    public ScalableText(int x, int y, Component text, IntSupplier color, Font textRenderer) {
         this(x, y, text, 1, color, textRenderer);
     }
 
@@ -29,11 +42,27 @@ public class ScalableText extends ShiftableWidget {
         this(x, y, text, scale, color, -1, textRenderer);
     }
 
+    public ScalableText(int x, int y, Component text, float scale, WidgetThemeVariable color, Font textRenderer) {
+        this(x, y, text, scale, color, -1, textRenderer);
+    }
+
+    public ScalableText(int x, int y, Component text, float scale, IntSupplier color, Font textRenderer) {
+        this(x, y, text, scale, color, -1, textRenderer);
+    }
+
     public ScalableText(int x, int y, Component text, float scale, int color, int maxWidth, Font textRenderer) {
+        this(x, y, text, scale, () -> color, maxWidth, textRenderer);
+    }
+
+    public ScalableText(int x, int y, Component text, float scale, WidgetThemeVariable color, int maxWidth, Font textRenderer) {
+        this(x, y, text, scale, WidgetThemeColors.getColorSupplier(color), maxWidth, textRenderer);
+    }
+
+    public ScalableText(int x, int y, Component text, float scale, IntSupplier color, int maxWidth, Font textRenderer) {
         super(x, y, Math.round(textRenderer.width(text) * scale), Math.round(textRenderer.lineHeight * scale));
         this.text = text;
         this.scale = scale;
-        this.color = color;
+        this.colorSupplier = Objects.requireNonNull(color, "color");
         this.maxWidth = maxWidth;
         this.textRenderer = textRenderer;
         if (maxWidth != -1) {
@@ -42,8 +71,17 @@ public class ScalableText extends ShiftableWidget {
     }
 
     public void setMaxWidth(int width) {
-        if (maxWidth == -1) return;
-        this.warpLines = this.textRenderer.split(this.text, width);
+        this.maxWidth = Math.max(0, width);
+        this.warpLines = this.textRenderer.split(this.text, this.maxWidth);
+    }
+
+    @Override
+    public void setWidth(int width) {
+        this.setMaxWidth(Math.round(width / this.scale));
+    }
+
+    @Override
+    public void setHeight(int height) {
     }
 
     @Override
@@ -53,15 +91,19 @@ public class ScalableText extends ShiftableWidget {
 
     @Override
     public int getHeight() {
-        return Math.round((this.maxWidth == -1 ? 1 : this.warpLines.size()) * this.textRenderer.lineHeight * this.scale);
+        int lineCount = this.maxWidth == -1 ? 1 : Math.max(1, this.warpLines.size());
+        return Math.round(lineCount * this.textRenderer.lineHeight * this.scale);
     }
 
     public void setText(Component text) {
         this.text = text;
+        if (this.maxWidth != -1) {
+            this.warpLines = this.textRenderer.split(this.text, this.maxWidth);
+        }
     }
 
     public void setText(String text) {
-        this.text = Component.nullToEmpty(text);
+        this.setText(Component.nullToEmpty(text));
     }
 
     public void setScale(int scale) {
@@ -69,7 +111,15 @@ public class ScalableText extends ShiftableWidget {
     }
 
     public void setColor(int color) {
-        this.color = color;
+        this.colorSupplier = () -> color;
+    }
+
+    public void setColor(WidgetThemeVariable color) {
+        this.setColor(WidgetThemeColors.getColorSupplier(color));
+    }
+
+    public void setColor(IntSupplier color) {
+        this.colorSupplier = Objects.requireNonNull(color, "color");
     }
 
     @Override
@@ -80,11 +130,12 @@ public class ScalableText extends ShiftableWidget {
         push(context);
         translate(context, this.getShiftedX(), this.getShiftedY());
         scale(context, this.scale, this.scale);
+        int color = this.colorSupplier.getAsInt();
         if (this.maxWidth == -1) {
-            drawText(context, this.textRenderer, this.text, 0, 0, this.color, true);
+            drawText(context, this.textRenderer, this.text, 0, 0, color, true);
         } else {
             for (int i = 0; i < this.warpLines.size(); i++) {
-                drawText(context, this.textRenderer, this.warpLines.get(i), 0, i * this.textRenderer.lineHeight, this.color, true);
+                drawText(context, this.textRenderer, this.warpLines.get(i), 0, i * this.textRenderer.lineHeight, color, true);
             }
         }
         pop(context);

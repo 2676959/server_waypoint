@@ -3,8 +3,13 @@ package _959.server_waypoint.common.network;
 //? if <= 1.20.1
 /*import _959.server_waypoint.access.PlayerLocaleAccessor;*/
 import _959.server_waypoint.core.network.PlatformMessageSender;
-import _959.server_waypoint.core.network.buffer.MessageBuffer;
-import _959.server_waypoint.core.network.buffer.WaypointModificationBuffer;
+import _959.server_waypoint.core.network.ChunkedMessage;
+import _959.server_waypoint.core.network.ChunkedMessageDelivery;
+import _959.server_waypoint.core.network.ChunkedMessageSendResult;
+import _959.server_waypoint.core.network.MessageEncodingException;
+import _959.server_waypoint.core.network.SinglePacketMessage;
+import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
+import _959.server_waypoint.common.server.WaypointServerMod;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
@@ -12,12 +17,17 @@ import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.Translator;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
+
+import java.util.Collection;
 import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
 
 
-import static _959.server_waypoint.common.network.BufferPayloadMapping.getPayload;
-import static net.kyori.adventure.text.Component.text;
-
+import static _959.server_waypoint.common.network.MessagePayloadMapping.getPayload;
 //? if >= 1.20.3 {
 import com.mojang.serialization.JsonOps;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -35,6 +45,7 @@ import net.minecraftforge.network.PacketDistributor;
 
 public class ModMessageSender implements PlatformMessageSender<CommandSourceStack, ServerPlayer> {
     private static final ModMessageSender INSTANCE = new ModMessageSender();
+    private final Set<UUID> chunkedMessageCapablePlayers = ConcurrentHashMap.newKeySet();
 
     public static ModMessageSender getInstance() {
         return INSTANCE;
@@ -62,7 +73,7 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
         }
     }
 
-    private net.minecraft.network.chat.Component getTranslatedText(ServerPlayer player, Component component) {
+    public net.minecraft.network.chat.Component getTranslatedText(ServerPlayer player, Component component) {
         //? if <= 1.20.1 {
         /*String language = ((PlayerLocaleAccessor) player).sw$getLocale();
         *///?} else {
@@ -91,45 +102,128 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
     }
 
     @Override
-    public void broadcastWaypointModification(CommandSourceStack source, WaypointModificationBuffer modification) {
-        Component info = this.getModificationMessage(text(source.getTextName()), modification);
-//        if (executorPlayer != null) {
-//            info = Component.translatable("waypoint.modification.broadcast.player", Component.text(executorPlayer.getName().getString()), modification.type().toTranslatable(), waypointText);
-//        } else {
-//            info = Component.translatable("waypoint.modification.broadcast.server", modification.type().toTranslatable(), waypointText);
-//        }
-        source.getServer().getPlayerList().getPlayers().forEach(
-                player -> {
-                    sendPlayerMessage(player, info);
-                    sendPlayerPacket(player, modification);
-                }
-        );
+    public Collection<ServerPlayer> getBroadcastPlayers(CommandSourceStack source) {
+        return source.getServer().getPlayerList().getPlayers();
     }
 
     @Override
-    public void sendPlayerPacket(ServerPlayer player, MessageBuffer packet) {
+    public Collection<ServerPlayer> getBroadcastPlayersFromPlayer(ServerPlayer player) {
+        return WaypointServerMod.MINECRAFT_SERVER == null
+                ? java.util.List.of(player)
+                : WaypointServerMod.MINECRAFT_SERVER.getPlayerList().getPlayers();
+    }
+
+    @Override
+    public Component getSenderName(CommandSourceStack source) {
+        return Component.text(source.getTextName());
+    }
+
+    @Override
+    public void broadcastPacket(SinglePacketMessage message) {
+        if (WaypointServerMod.MINECRAFT_SERVER != null) {
+            WaypointServerMod.MINECRAFT_SERVER.getPlayerList().getPlayers()
+                    .forEach(player -> sendPlayerPacket(player, message));
+        }
+    }
+
+    @Override
+    public void broadcastChunkedMessage(ChunkedMessage message) {
+        if (WaypointServerMod.MINECRAFT_SERVER != null) {
+            this.broadcastChunkedMessage(
+                    WaypointServerMod.MINECRAFT_SERVER.getPlayerList().getPlayers(),
+                    message
+            );
+        }
+    }
+
+    @Override
+    public void sendPlayerPacket(ServerPlayer player, SinglePacketMessage message) {
+        this.sendPlayerPacketTracked(player, message);
+    }
+
+    @Override
+    public CompletionStage<ChunkedMessageSendResult> sendPlayerPacketTracked(
+            ServerPlayer player,
+            SinglePacketMessage message
+    ) {
+        try {
+            byte[] encodedMessage = SinglePacketMessageEncoder.encode(message);
         //? if fabric {
-        ServerPlayNetworking.send(player, getPayload(packet));
+        ServerPlayNetworking.send(player, getPayload(message, encodedMessage));
         //?} elif forge {
         /*//? if <= 1.20.1 {
-        /^ServerWaypointForge.PACKET_CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), getPayload(packet));
+        /^ServerWaypointForge.PACKET_CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), getPayload(message, encodedMessage));
         ^///?} else {
-        ServerWaypointForge.PACKET_CHANNEL.send(getPayload(packet), PacketDistributor.PLAYER.with(player));
+        ServerWaypointForge.PACKET_CHANNEL.send(getPayload(message, encodedMessage), PacketDistributor.PLAYER.with(player));
         //?}
         *///?} elif neoforge && = 1.20.2 {
-        /*ServerWaypointNeoForge.PACKET_CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), getPayload(packet));
+        /*ServerWaypointNeoForge.PACKET_CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), getPayload(message, encodedMessage));
         *///?} elif neoforge && = 1.20.4 {
-        /*PacketDistributor.PLAYER.with(player).send(getPayload(packet));
+        /*PacketDistributor.PLAYER.with(player).send(getPayload(message, encodedMessage));
         *///?} else {
-        /*PacketDistributor.sendToPlayer(player, getPayload(packet));
+        /*PacketDistributor.sendToPlayer(player, getPayload(message, encodedMessage));
          *///?}
+            return CompletableFuture.completedFuture(ChunkedMessageSendResult.DELIVERED);
+        } catch (MessageEncodingException exception) {
+            WaypointServerMod.LOGGER.warn(
+                    "Failed to encode single-packet message type {} within the {}-byte packet budget",
+                    message.getClass().getSimpleName(),
+                    SinglePacketMessageEncoder.MAX_ENCODED_BYTES,
+                    exception
+            );
+            return CompletableFuture.completedFuture(
+                    ChunkedMessageSendResult.ENCODING_FAILED
+            );
+        } catch (RuntimeException exception) {
+            WaypointServerMod.LOGGER.warn(
+                    "Failed to deliver single-packet message type {}",
+                    message.getClass().getSimpleName(),
+                    exception
+            );
+            return CompletableFuture.completedFuture(
+                    ChunkedMessageSendResult.DELIVERY_FAILED
+            );
+        }
     }
 
     @Override
-    public void sendPacket(CommandSourceStack source, MessageBuffer packet) {
+    public void sendPacket(CommandSourceStack source, SinglePacketMessage message) {
         ServerPlayer player = source.getPlayer();
         if (player != null) {
-            sendPlayerPacket(player, packet);
+            sendPlayerPacket(player, message);
         }
+    }
+
+    @Override
+    public ChunkedMessageDelivery sendChunkedMessage(
+            CommandSourceStack source,
+            ChunkedMessage message
+    ) {
+        ServerPlayer player = source.getPlayer();
+        if (player != null) {
+            return this.sendPlayerChunkedMessageTracked(player, message);
+        }
+        return ChunkedMessageDelivery.rejected(ChunkedMessageSendResult.UNSUPPORTED);
+    }
+
+    @Override
+    public void setChunkedMessageCapable(ServerPlayer player, boolean capable) {
+        UUID playerId = player.getUUID();
+        if (capable) {
+            this.chunkedMessageCapablePlayers.add(playerId);
+        } else {
+            this.chunkedMessageCapablePlayers.remove(playerId);
+            PlatformMessageSender.super.disconnectChunkedMessages(player);
+        }
+    }
+
+    @Override
+    public boolean canSendChunkedMessage(ServerPlayer player) {
+        return this.chunkedMessageCapablePlayers.contains(player.getUUID());
+    }
+
+    @Override
+    public void disconnectChunkedMessages(ServerPlayer player) {
+        this.setChunkedMessageCapable(player, false);
     }
 }

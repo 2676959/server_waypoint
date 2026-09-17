@@ -1,0 +1,226 @@
+2026-09-07T01:38:00.646897Z main WARN Advanced terminal features are not available in this environment
+[21:38:00] [main/INFO] [ne.ne.fm.st.Entrypoint/]: JVM Uptime at startup: 29ms
+[21:38:00] [main/INFO] [ne.ne.fm.lo.FMLLoader/]: Starting FancyModLoader version 11.0.13 (DEDICATED_SERVER in PROD)
+[21:38:00] [main/INFO] [ne.ne.fm.lo.FMLLoader/]: Game directory: /private/tmp/server-waypoint-step3-runtime-oxmlwttn/upload-baseline-neoforge-26.2
+[21:38:00] [main/INFO] [ne.ne.fm.lo.EarlyServiceDiscovery/]: Found 2 early service jars (out of 68) in 7ms
+[21:38:00] [main/INFO] [ne.ne.fm.lo.FMLLoader/]: Loading FML Early Services:
+[21:38:00] [main/INFO] [ne.ne.fm.lo.FMLLoader/]:  - libraries/net/neoforged/fancymodloader/loader/11.0.13/loader-11.0.13.jar
+[21:38:00] [main/INFO] [ne.ne.fm.lo.FMLLoader/]:  - libraries/net/neoforged/fancymodloader/earlydisplay/11.0.13/earlydisplay-11.0.13.jar
+[21:38:00] [main/INFO] [ne.ne.fm.lo.ImmediateWindowHandler/]: Not loading early display in headless mode.
+[21:38:00] [main/INFO] [ne.ne.fm.lo.mo.lo.GameLocator/]: Failed to find common Minecraft classes and resources on the classpath. Assuming we're launching production.
+[21:38:00] [main/INFO] [ne.ne.fm.lo.mo.lo.JarInJarDependencyLocator/]: Found 2 dependencies adding them to mods collection
+[21:38:00] [main/INFO] [ne.ne.fm.lo.mo.ModDiscoverer/]:
+     Mod List:
+        Name Version (Mod Id)
+
+        Minecraft 26.2 (minecraft)
+        NeoForge 26.2.0.3-beta (neoforge)
+        Server Waypoint 3.1.0 (server_waypoint)
+[21:38:00] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/upload-baseline-neoforge-26.2/libraries/net/fabricmc/sponge-mixin/0.17.3+mixin.0.8.7/sponge-mixin-0.17.3+mixin.0.8.7.jar Service=FML Env=SERVER
+[21:38:00] [main/INFO] [ne.ne.fm.lo.FMLLoader/]: Loading FML Plugins:
+[21:38:00] [main/INFO] [ne.ne.fm.lo.FMLLoader/]:  - ~libraries/net/neoforged/neoforge/26.2.0.3-beta/neoforge-26.2.0.3-beta-universal.jar > net.neoforged.neoforge-coremods-26.2.0.3-beta.jar
+[21:38:00] [main/INFO] [ne.ne.fm.lo.FMLLoader/]: Building game content classloader:
+ - minecraft (jar(~libraries/net/neoforged/minecraft-server-patched/26.2.0.3-beta/minecraft-server-patched-26.2.0.3-beta.jar))
+ - mixinextras.neoforge (jar(~libraries/net/neoforged/neoforge/26.2.0.3-beta/neoforge-26.2.0.3-beta-universal.jar > mixinextras-neoforge-0.5.4.jar))
+ - neoforge (jar(~libraries/net/neoforged/neoforge/26.2.0.3-beta/neoforge-26.2.0.3-beta-universal.jar))
+ - net.neoforged.fml.generated (empty(VirtualJar/net.neoforged.fml.generated))
+ - server_waypoint (jar(mods/server_waypoint-3.1.0-neoforge-mc26.2.jar))
+[21:38:00] [main/INFO] [ne.ne.fm.lo.FMLLoader/]: Built game content classloader in 12ms
+[21:38:00] [main/WARN] [mixin/]: Reference map 'server_waypoint-common.refmap.json' for server_waypoint-common.mixins.json could not be read. If this is a development environment you can ignore this message
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by com.sun.jna.Native in an unnamed module (file:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/upload-baseline-neoforge-26.2/libraries/net/java/dev/jna/jna/5.17.0/jna-5.17.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+[21:38:01] [main/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.4).
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/upload-baseline-neoforge-26.2/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[21:38:03] [modloading-worker-0/INFO] [ne.ne.ne.co.NeoForgeMod/NEOFORGE-MOD]: NeoForge mod loading, version 26.2.0.3-beta, for MC 26.2
+[21:38:03] [modloading-worker-0/INFO] [server_waypoint_translator/]: Internal translations: zh_cn, en_us, zh_hk, zh_tw, es_es, he_il
+[21:38:03] [modloading-worker-0/INFO] [server_waypoint_mod/]: xaero's mod is not loaded, set sendXaerosWorldId to true by config.json
+[21:38:03] [modloading-sync-worker/ERROR] [ne.ne.fm.ja.FMLModContainer/]: Exception caught during firing event: Cannot register payload server_waypoint:message_chunk as it is already registered.
+    Index: 0
+    Listeners:
+        0: _959.server_waypoint.neoforge.ServerWaypointNeoForge$$Lambda/0x00007ffc01dc95b8@4d738745
+java.lang.UnsupportedOperationException: Cannot register payload server_waypoint:message_chunk as it is already registered.
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.network.registration.NetworkRegistry.register(NetworkRegistry.java:189)
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.network.registration.PayloadRegistrar.register(PayloadRegistrar.java:232)
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.network.registration.PayloadRegistrar.playToServer(PayloadRegistrar.java:61)
+    at TRANSFORMER/server_waypoint@3.1.0/_959.server_waypoint.neoforge.ServerWaypointNeoForge.registerPayloads(ServerWaypointNeoForge.java:192)
+    at net.neoforged.bus.ConsumerEventHandler.invoke(ConsumerEventHandler.java:27)
+    at net.neoforged.bus.EventBus.post(EventBus.java:360)
+    at net.neoforged.bus.EventBus.post(EventBus.java:342)
+    at net.neoforged.fml.ModContainer.acceptEvent(ModContainer.java:177)
+    at net.neoforged.fml.ModLoader.lambda$postEvent$0(ModLoader.java:330)
+    at java.base/java.lang.Iterable.forEach(Iterable.java:75)
+    at net.neoforged.fml.ModList.forEachModInOrder(ModList.java:175)
+    at net.neoforged.fml.ModLoader.postEvent(ModLoader.java:330)
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.network.registration.NetworkRegistry.setup(NetworkRegistry.java:130)
+    at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1825)
+    at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)
+    at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)
+    at java.base/java.lang.Thread.run(Thread.java:1474)
+
+[21:38:03] [modloading-sync-worker/ERROR] [ne.ne.fm.ModContainer/LOADING]: Caught exception during event net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent@3731bc5c dispatch for modid server_waypoint
+java.lang.UnsupportedOperationException: Cannot register payload server_waypoint:message_chunk as it is already registered.
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.network.registration.NetworkRegistry.register(NetworkRegistry.java:189) ~[neoforge-26.2.0.3-beta-universal.jar:?] {}
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.network.registration.PayloadRegistrar.register(PayloadRegistrar.java:232) ~[neoforge-26.2.0.3-beta-universal.jar:?] {}
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.network.registration.PayloadRegistrar.playToServer(PayloadRegistrar.java:61) ~[neoforge-26.2.0.3-beta-universal.jar:?] {}
+    at TRANSFORMER/server_waypoint@3.1.0/_959.server_waypoint.neoforge.ServerWaypointNeoForge.registerPayloads(ServerWaypointNeoForge.java:192) ~[server_waypoint-3.1.0-neoforge-mc26.2.jar:?] {}
+    at net.neoforged.bus.ConsumerEventHandler.invoke(ConsumerEventHandler.java:27) ~[bus-8.0.5.jar:?] {}
+    at net.neoforged.bus.EventBus.post(EventBus.java:360) ~[bus-8.0.5.jar:?] {}
+    at net.neoforged.bus.EventBus.post(EventBus.java:342) ~[bus-8.0.5.jar:?] {}
+    at net.neoforged.fml.ModContainer.acceptEvent(ModContainer.java:177) [loader-11.0.13.jar:11.0] {}
+    at net.neoforged.fml.ModLoader.lambda$postEvent$0(ModLoader.java:330) [loader-11.0.13.jar:11.0] {}
+    at java.base/java.lang.Iterable.forEach(Iterable.java:75) [?:?] {}
+    at net.neoforged.fml.ModList.forEachModInOrder(ModList.java:175) [loader-11.0.13.jar:11.0] {}
+    at net.neoforged.fml.ModLoader.postEvent(ModLoader.java:330) [loader-11.0.13.jar:11.0] {}
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.network.registration.NetworkRegistry.setup(NetworkRegistry.java:130) [neoforge-26.2.0.3-beta-universal.jar:?] {}
+    at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1825) [?:?] {}
+    at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) [?:?] {}
+    at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) [?:?] {}
+    at java.base/java.lang.Thread.run(Thread.java:1474) [?:?] {}
+[21:38:03] [main/FATAL] [ne.ne.fm.ModLoader/LOADING]: Failed to wait for future Network registry lock, 1 errors found
+[21:38:04] [main/ERROR] [minecraft/CrashReport]: Negative index in crash report handler (0/4)
+[21:38:04] [main/FATAL] [ne.ne.ne.co.NeoForgeMod/]: Preparing crash report with UUID 428dac6b-7830-42bb-b397-ff909771b1b0
+[21:38:04] [main/FATAL] [ne.ne.ne.se.lo.ServerModLoader/]: Crash report saved to ./crash-reports/crash-2026-09-06_21.38.04-fml.txt
+[21:38:04] [main/FATAL] [ne.ne.ne.co.NeoForgeMod/]: Preparing crash report with UUID 28b74c75-1b05-4edb-9b85-a34713a2d291
+---- Minecraft Crash Report ----
+// Why did you do that?
+
+Time: 2026-09-06 21:38:04
+Description: Mod loading failures have occurred; consult the issue messages for more details
+
+net.neoforged.neoforge.logging.CrashReportExtender$ModLoadingCrashException: Mod loading has failed
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Thread: main
+Stacktrace:
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.network.registration.NetworkRegistry.register(NetworkRegistry.java:189) ~[neoforge-26.2.0.3-beta-universal.jar:?] {}
+-- Mod loading issue for: server_waypoint --
+Details:
+    Mod file: /private/tmp/server-waypoint-step3-runtime-oxmlwttn/upload-baseline-neoforge-26.2/mods/server_waypoint-3.1.0-neoforge-mc26.2.jar
+    Failure message: Server Waypoint (server_waypoint) encountered an error while dispatching the net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent event
+        java.lang.UnsupportedOperationException: Cannot register payload server_waypoint:message_chunk as it is already registered.
+    Mod version: 3.1.0
+    Mod issues URL: <No issues URL found>
+    Exception message: java.lang.UnsupportedOperationException: Cannot register payload server_waypoint:message_chunk as it is already registered.
+Stacktrace:
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.network.registration.NetworkRegistry.register(NetworkRegistry.java:189) ~[neoforge-26.2.0.3-beta-universal.jar:?] {}
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.network.registration.PayloadRegistrar.register(PayloadRegistrar.java:232) ~[neoforge-26.2.0.3-beta-universal.jar:?] {}
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.network.registration.PayloadRegistrar.playToServer(PayloadRegistrar.java:61) ~[neoforge-26.2.0.3-beta-universal.jar:?] {}
+    at TRANSFORMER/server_waypoint@3.1.0/_959.server_waypoint.neoforge.ServerWaypointNeoForge.registerPayloads(ServerWaypointNeoForge.java:192) ~[server_waypoint-3.1.0-neoforge-mc26.2.jar:?] {}
+    at net.neoforged.bus.ConsumerEventHandler.invoke(ConsumerEventHandler.java:27) ~[bus-8.0.5.jar:?] {}
+    at net.neoforged.bus.EventBus.post(EventBus.java:360) ~[bus-8.0.5.jar:?] {}
+    at net.neoforged.bus.EventBus.post(EventBus.java:342) ~[bus-8.0.5.jar:?] {}
+    at net.neoforged.fml.ModContainer.acceptEvent(ModContainer.java:177) ~[loader-11.0.13.jar:11.0] {}
+    at net.neoforged.fml.ModLoader.lambda$postEvent$0(ModLoader.java:330) ~[loader-11.0.13.jar:11.0] {}
+    at java.base/java.lang.Iterable.forEach(Iterable.java:75) ~[?:?] {}
+    at net.neoforged.fml.ModList.forEachModInOrder(ModList.java:175) ~[loader-11.0.13.jar:11.0] {}
+    at net.neoforged.fml.ModLoader.postEvent(ModLoader.java:330) ~[loader-11.0.13.jar:11.0] {}
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.network.registration.NetworkRegistry.setup(NetworkRegistry.java:130) ~[neoforge-26.2.0.3-beta-universal.jar:?] {}
+    at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1825) ~[?:?] {}
+    at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[?:?] {}
+    at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[?:?] {}
+    at java.base/java.lang.Thread.run(Thread.java:1474) ~[?:?] {}
+
+
+-- System Details --
+Details:
+    Minecraft Version: 26.2
+    Minecraft Version ID: 26.2
+    Operating System: Mac OS X (aarch64) version 26.5
+    Java Version: 25.0.3, Eclipse Adoptium
+    Java VM Version: OpenJDK 64-Bit Server VM (mixed mode, sharing), Eclipse Adoptium
+    Memory: 61637312 bytes (58 MiB) / 216006656 bytes (206 MiB) up to 1073741824 bytes (1024 MiB)
+    Memory (heap): init: 128MiB, used: 145MiB, committed: 206MiB, max: 1024MiB
+    Memory (non-head): init: 007MiB, used: 110MiB, committed: 112MiB, max: 000MiB
+    CPUs: 10
+    Processor Vendor: Apple Inc.
+    Processor Name: Apple M4
+    Identifier: Apple Inc. Family 0x1b588bb3 Model 0 Stepping 0
+    Microarchitecture: ARM64 SoC: Firestorm + Icestorm
+    Frequency (GHz): 0.00
+    Number of physical packages: 1
+    Number of physical CPUs: 10
+    Number of logical CPUs: 10
+    Graphics card #0 name: Apple M4
+    Graphics card #0 vendor: Apple (0x106b)
+    Graphics card #0 VRAM (MiB): 0.00
+    Graphics card #0 deviceId: unknown
+    Graphics card #0 versionInfo: unknown
+    Memory slot #0 capacity (MiB): 0.00
+    Memory slot #0 clockSpeed (GHz): 0.00
+    Memory slot #0 type: unknown
+    Virtual memory max (MiB): 18432.00
+    Virtual memory used (MiB): 13407.11
+    Swap memory total (MiB): 2048.00
+    Swap memory used (MiB): 1098.44
+    Space in storage for jna.tmpdir (MiB): <path not set>
+    Space in storage for org.lwjgl.system.SharedLibraryExtractPath (MiB): <path not set>
+    Space in storage for io.netty.native.workdir (MiB): <path not set>
+    Space in storage for java.io.tmpdir (MiB): available: 36497.39, total: 233752.44
+    Space in storage for workdir (MiB): available: 36497.39, total: 233752.44
+    Operating System Version: Apple macOS 26.5 (Tahoe) build 25F71
+    Process Elevated: false
+    Process Loads: Uptime: 4s, user: 10s (258.98%), kernel: 0s (6.43%), total: 10s (265.41%)
+    Process Virtual Size (MiB): 427971.50
+    Process Resident Size (MiB): 457.17
+    JVM Flags: 2 total; -Xms128M -Xmx1024M
+    Debug Flags: 0 total;
+    Class Processors:
+        00.00%: neoforge:computing_frames (marker)
+        00.00%: neoforge:runtime_enum_extender
+        04.85%: neoforge:access_transformer
+        00.36%: neoforge:mixin
+        00.00%: neoforge:simple_processors_default (marker)
+        00.02%: neoforge.coremods:field_to_getter.net.minecraft.world.level.biome.biome
+        00.02%: neoforge.coremods:field_to_getter.net.minecraft.world.level.block.flowerpotblock
+        00.02%: neoforge.coremods:field_to_getter.net.minecraft.world.level.levelgen.structure.structure
+        00.38%: neoforge.coremods:method_redirector
+    Mod List:
+        minecraft-server-patched-26.2.0.3-beta.jar        |Minecraft                     |minecraft                     |26.2                |Manifest: 2cc350f4f48ee0b8046e803cb71cadb60430a140c929dacf655bcf5b96210fd2
+        neoforge-26.2.0.3-beta-universal.jar              |NeoForge                      |neoforge                      |26.2.0.3-beta       |Manifest: 25662dba69978777d46f85c295f123d8a1a9dd84986b171e9285bbcf9fdbcdf8
+        server_waypoint-3.1.0-neoforge-mc26.2.jar         |Server Waypoint               |server_waypoint               |3.1.0               |Manifest: ee82c94ce82641d379cc60e7785d8ab95695fb9e2eeacae4f7c283a036e03b5d
+    Crash Report UUID: 428dac6b-7830-42bb-b397-ff909771b1b0
+    FML: 11.0.13
+    NeoForge: 26.2.0.3-beta
+    Class Processors:
+        00.00%: neoforge:computing_frames (marker)
+        00.00%: neoforge:runtime_enum_extender
+        04.85%: neoforge:access_transformer
+        00.36%: neoforge:mixin
+        00.00%: neoforge:simple_processors_default (marker)
+        00.02%: neoforge.coremods:field_to_getter.net.minecraft.world.level.biome.biome
+        00.02%: neoforge.coremods:field_to_getter.net.minecraft.world.level.block.flowerpotblock
+        00.02%: neoforge.coremods:field_to_getter.net.minecraft.world.level.levelgen.structure.structure
+        00.38%: neoforge.coremods:method_redirector
+    Mod List:
+        minecraft-server-patched-26.2.0.3-beta.jar        |Minecraft                     |minecraft                     |26.2                |Manifest: 2cc350f4f48ee0b8046e803cb71cadb60430a140c929dacf655bcf5b96210fd2
+        neoforge-26.2.0.3-beta-universal.jar              |NeoForge                      |neoforge                      |26.2.0.3-beta       |Manifest: 25662dba69978777d46f85c295f123d8a1a9dd84986b171e9285bbcf9fdbcdf8
+        server_waypoint-3.1.0-neoforge-mc26.2.jar         |Server Waypoint               |server_waypoint               |3.1.0               |Manifest: ee82c94ce82641d379cc60e7785d8ab95695fb9e2eeacae4f7c283a036e03b5d
+    Crash Report UUID: 28b74c75-1b05-4edb-9b85-a34713a2d291
+    FML: 11.0.13
+    NeoForge: 26.2.0.3-beta
+[21:38:04] [main/ERROR] [minecraft/Main]: Failed to start the minecraft server
+net.neoforged.fml.ModLoadingException: Loading errors encountered:
+    - Server Waypoint (server_waypoint) encountered an error while dispatching the net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent event
+      java.lang.UnsupportedOperationException: Cannot register payload server_waypoint:message_chunk as it is already registered.
+
+    at net.neoforged.fml.ModLoader.waitForFuture(ModLoader.java:253) ~[loader-11.0.13.jar:11.0] {}
+    at net.neoforged.fml.ModLoader.waitForTask(ModLoader.java:155) ~[loader-11.0.13.jar:11.0] {}
+    at net.neoforged.fml.ModLoader.runInitTask(ModLoader.java:135) ~[loader-11.0.13.jar:11.0] {}
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.internal.CommonModLoader.load(CommonModLoader.java:85) ~[neoforge-26.2.0.3-beta-universal.jar:?] {}
+    at TRANSFORMER/neoforge@26.2.0.3-beta/net.neoforged.neoforge.server.loading.ServerModLoader.load(ServerModLoader.java:31) ~[neoforge-26.2.0.3-beta-universal.jar:?] {}
+    at TRANSFORMER/minecraft@26.2/net.minecraft.server.Main.main(Main.java:117) [minecraft-server-patched-26.2.0.3-beta.jar:?] {}
+    at net.neoforged.fml.startup.Server.main(Server.java:19) [loader-11.0.13.jar:11.0] {}
+[21:38:04] [main/INFO] [ne.ne.fm.lo.FMLLoader/]: Closing FML Loader 1307e583
+[21:38:04] [main/INFO] [ne.ne.fm.ModLoader/]: Clearing ModLoader
+net.neoforged.fml.startup.FatalStartupException: Couldn't find Minecraft server thread. Startup likely failed.
+    at net.neoforged.fml.startup.Server.main(Server.java:23)

@@ -1,9 +1,14 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.drawText;
-import static _959.server_waypoint.common.client.gui.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.*;
+import _959.server_waypoint.common.client.gui.api.ButtonClickCallback;
+import _959.server_waypoint.common.client.gui.layout.AnchorMode;
+import _959.server_waypoint.common.client.gui.layout.Expandable;
+import _959.server_waypoint.common.client.gui.layout.Padding;
+import _959.server_waypoint.common.client.gui.layout.VisualBounds;
+
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 
 import net.minecraft.client.Minecraft;
@@ -12,23 +17,118 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public class TranslucentButton extends ShiftableClickableWidget {
+public class TranslucentButton extends ShiftableClickableWidget implements Expandable, Padding {
+    private static final int DEFAULT_Y_OFFSET = -1;
+    static final int OUTLINE_LEFT_PADDING = 1;
+    static final int OUTLINE_TOP_PADDING = 2;
+    private static final VisualBounds VISUAL_BOUNDS = new VisualBounds(OUTLINE_LEFT_PADDING, OUTLINE_TOP_PADDING, OUTLINE_LEFT_PADDING, 0);
+
     private final ButtonClickCallback callback;
-    protected final Component text;
+    private final AnchorMode anchorMode;
+    private int anchorX;
+    private int anchorY;
+    protected Component text;
     protected final Font textRenderer = Minecraft.getInstance().font;
-    protected final int textWidth;
+    protected int textWidth;
 
     public TranslucentButton(int x, int y, int width, int height, Component text, ButtonClickCallback callback) {
-        super(x, y, width, height, text);
+        this(x, y, width, height, text, callback, AnchorMode.CONTENT);
+    }
+
+    public TranslucentButton(int x, int y, int width, int height, Component text, ButtonClickCallback callback, AnchorMode anchorMode) {
+        super(
+                AnchorMode.normalize(anchorMode).getContentX(x, OUTLINE_LEFT_PADDING),
+                AnchorMode.normalize(anchorMode).getContentY(y, OUTLINE_TOP_PADDING),
+                width,
+                height,
+                text
+        );
+        this.anchorMode = AnchorMode.normalize(anchorMode);
         this.text = text;
         this.callback = callback;
         this.textWidth = textRenderer.width(text);
-        this.setYOffset(-1);
+        this.setX(x);
+        this.setY(y);
+        if (this.anchorMode == AnchorMode.CONTENT) {
+            this.setYOffset(DEFAULT_Y_OFFSET);
+        }
+    }
+
+    public void setText(Component text) {
+        this.text = text;
+        this.textWidth = textRenderer.width(text);
+        this.setMessage(text);
     }
 
     @Override
     public void onClick(double mouseX, double mouseY) {
         this.callback.onClick();
+    }
+
+    @Override
+    public void setX(int x) {
+        this.anchorX = x;
+        super.setX(this.anchorMode.getContentX(x, OUTLINE_LEFT_PADDING));
+        this.shiftedX = this.anchorMode.getContentX(x + this.xOffset, OUTLINE_LEFT_PADDING);
+    }
+
+    @Override
+    public void setY(int y) {
+        this.anchorY = y;
+        super.setY(this.anchorMode.getContentY(y, OUTLINE_TOP_PADDING));
+        this.shiftedY = this.anchorMode.getContentY(y + this.yOffset, OUTLINE_TOP_PADDING);
+    }
+
+    @Override
+    public void setXOffset(int x) {
+        this.xOffset = x;
+        this.shiftedX = this.anchorMode.getContentX(this.anchorX + x, OUTLINE_LEFT_PADDING);
+    }
+
+    @Override
+    public void setYOffset(int y) {
+        this.yOffset = y;
+        this.shiftedY = this.anchorMode.getContentY(this.anchorY + y, OUTLINE_TOP_PADDING);
+    }
+
+    @Override
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    @Override
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    @Override
+    public void setVisualWidth(int width) {
+        this.setWidth(VISUAL_BOUNDS.contentWidth(width));
+    }
+
+    @Override
+    public void setVisualHeight(int height) {
+        this.setHeight(VISUAL_BOUNDS.contentHeight(height));
+    }
+
+    @Override
+    public int getVisualHeight() {
+        return VISUAL_BOUNDS.height(this.height);
+    }
+
+    @Override
+    public int getVisualWidth() {
+        return VISUAL_BOUNDS.width(this.width);
+    }
+
+    @Override
+    public int getVisualX() {
+        return VISUAL_BOUNDS.x(getX());
+    }
+
+    @Override
+    public int getVisualY() {
+        return VISUAL_BOUNDS.y(getY());
     }
 
     @Override
@@ -38,14 +138,14 @@ public class TranslucentButton extends ShiftableClickableWidget {
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
-        int bdColor = isFocused() || isHovered() ? BORDER_FOCUS_COLOR : BORDER_COLOR;
+        int bdColor = WidgetThemeState.border(this.active, isFocused(), isHovered());
         renderOutline(context, x - 1, y - 2, width + 2, height + 2, bdColor);
-        int bgColor = isHovered() ? BUTTON_BG_HOVER_COLOR : BUTTON_BG_COLOR;
+        int bgColor = WidgetThemeState.controlBackground(this.active, isHovered());
         int fixedY = y - 1;
         context.fill(x, fixedY, x + width, fixedY + height, bgColor);
         int centerX = centered(this.width, textWidth);
         int centerY = centered(this.height, textRenderer.lineHeight);
-        drawText(context, textRenderer, this.text, x + centerX, y + centerY, 0xFFFFFFFF, true);
+        drawText(context, textRenderer, this.text, x + centerX, y + centerY, WidgetThemeState.text(this.active), true);
     }
 
     @Override

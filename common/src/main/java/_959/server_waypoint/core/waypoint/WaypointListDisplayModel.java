@@ -1,0 +1,260 @@
+package _959.server_waypoint.core.waypoint;
+
+import _959.server_waypoint.util.ColorUtils;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import static _959.server_waypoint.util.VanillaDimensionNames.dimensionNameComparator;
+
+public final class WaypointListDisplayModel {
+    private WaypointListDisplayModel() {
+    }
+
+    public static Display build(WaypointQueryEngine.QueryResult result, boolean requestedGroupByLists) {
+        WaypointSorting.SortMode sortMode = result.query().sortMode();
+        boolean groupByLists = sortMode == WaypointSorting.SortMode.DEFAULT || requestedGroupByLists;
+        List<DisplayList> lists = createDisplayLists(result, sortMode);
+        if (groupByLists) {
+            return new Display(true, Collections.unmodifiableList(lists), List.of());
+        }
+
+        List<DisplayWaypoint> flatWaypoints = createFlatWaypoints(lists);
+        sortDisplayWaypoints(
+                flatWaypoints,
+                sortMode,
+                result.query().origin(),
+                result.query().originDimension(),
+                result.query().reversed()
+        );
+        return new Display(false, List.of(), Collections.unmodifiableList(flatWaypoints));
+    }
+
+    private static List<DisplayList> createDisplayLists(
+            WaypointQueryEngine.QueryResult result,
+            WaypointSorting.SortMode sortMode
+    ) {
+        List<DisplayList> lists = new ArrayList<>();
+        for (WaypointQueryEngine.DimensionResult dimension : result.dimensions()) {
+            List<DisplayList> dimensionLists = new ArrayList<>();
+            for (WaypointQueryEngine.ListResult listResult : dimension.lists()) {
+                List<SimpleWaypoint> waypoints = new ArrayList<>(listResult.waypoints());
+                WaypointSorting.SortMode dimensionSortMode = sortMode;
+                if (dimensionSortMode == WaypointSorting.SortMode.DISTANCE
+                        && !WaypointSorting.canCompareDistance(
+                                result.query().originDimension(),
+                                dimension.dimensionName()
+                        )) {
+                    dimensionSortMode = WaypointSorting.SortMode.DEFAULT;
+                }
+                sortLiveWaypoints(
+                        waypoints,
+                        dimensionSortMode,
+                        result.query().origin(),
+                        result.query().originDimension(),
+                        dimension.dimensionName(),
+                        result.query().reversed()
+                );
+                dimensionLists.add(new DisplayList(
+                        dimension.dimensionName(),
+                        listResult.sourceList(),
+                        Collections.unmodifiableList(waypoints)
+                ));
+            }
+            if (sortMode == WaypointSorting.SortMode.NAME) {
+                dimensionLists.sort(DisplayList.BY_LIST_NAME);
+                if (result.query().reversed()) {
+                    Collections.reverse(dimensionLists);
+                }
+            }
+            lists.addAll(dimensionLists);
+        }
+        return lists;
+    }
+
+    private static List<DisplayWaypoint> createFlatWaypoints(List<DisplayList> lists) {
+        List<DisplayWaypoint> flatWaypoints = new ArrayList<>();
+        for (DisplayList list : lists) {
+            for (SimpleWaypoint waypoint : list.waypoints()) {
+                flatWaypoints.add(new DisplayWaypoint(
+                        list.dimensionName(),
+                        list.sourceList(),
+                        waypoint
+                ));
+            }
+        }
+        return flatWaypoints;
+    }
+
+    private static void sortDisplayWaypoints(
+            List<DisplayWaypoint> waypoints,
+            WaypointSorting.SortMode sortMode,
+            WaypointPos origin,
+            String originDimension,
+            boolean reversed
+    ) {
+        Map<DisplayWaypoint, DisplayWaypointSnapshot> snapshots = new IdentityHashMap<>();
+        for (DisplayWaypoint waypoint : waypoints) {
+            snapshots.put(
+                    waypoint,
+                    new DisplayWaypointSnapshot(
+                            new SimpleWaypoint(waypoint.waypoint()),
+                            waypoint.sourceList().name()
+                    )
+            );
+        }
+        Comparator<DisplayWaypoint> byName = Comparator.comparing(
+                        (DisplayWaypoint row) -> snapshots.get(row).waypoint().name(),
+                        String.CASE_INSENSITIVE_ORDER
+                )
+                .thenComparing(row -> snapshots.get(row).waypoint().name())
+                .thenComparing(row -> snapshots.get(row).listName(), String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(row -> snapshots.get(row).listName());
+        switch (sortMode) {
+            case DEFAULT -> {
+            }
+            case NAME -> waypoints.sort(byName);
+            case DISTANCE -> {
+                sortDisplayWaypointsByDistance(
+                        waypoints,
+                        snapshots,
+                        byName,
+                        origin,
+                        originDimension,
+                        reversed
+                );
+                return;
+            }
+            case COLOR -> ColorUtils.sortWaypointColors(
+                    waypoints,
+                    waypoint -> snapshots.get(waypoint).waypoint().rgb(),
+                    byName
+            );
+        }
+        if (sortMode != WaypointSorting.SortMode.DEFAULT && reversed) {
+            Collections.reverse(waypoints);
+        }
+    }
+
+    private static void sortDisplayWaypointsByDistance(
+            List<DisplayWaypoint> waypoints,
+            Map<DisplayWaypoint, DisplayWaypointSnapshot> snapshots,
+            Comparator<DisplayWaypoint> byName,
+            WaypointPos origin,
+            String originDimension,
+            boolean reversed
+    ) {
+        List<DisplayWaypoint> comparableWaypoints = new ArrayList<>();
+        List<DisplayWaypoint> otherWaypoints = new ArrayList<>();
+        for (DisplayWaypoint waypoint : waypoints) {
+            if (WaypointSorting.canCompareDistance(originDimension, waypoint.dimensionName())) {
+                comparableWaypoints.add(waypoint);
+            } else {
+                otherWaypoints.add(waypoint);
+            }
+        }
+        comparableWaypoints.sort(
+                Comparator.comparingDouble((DisplayWaypoint waypoint) ->
+                                WaypointSorting.distanceSquared(
+                                        snapshots.get(waypoint).waypoint(),
+                                        origin,
+                                        originDimension,
+                                        waypoint.dimensionName()
+                                ))
+                        .thenComparing(byName)
+        );
+        if (reversed) {
+            Collections.reverse(comparableWaypoints);
+        }
+        otherWaypoints.sort((left, right) -> dimensionNameComparator(
+                left.dimensionName(),
+                right.dimensionName()
+        ));
+        waypoints.clear();
+        waypoints.addAll(comparableWaypoints);
+        waypoints.addAll(otherWaypoints);
+    }
+
+    private static void sortLiveWaypoints(
+            List<SimpleWaypoint> liveWaypoints,
+            WaypointSorting.SortMode sortMode,
+            WaypointPos origin,
+            String originDimension,
+            String waypointDimension,
+            boolean reversed
+    ) {
+        Map<SimpleWaypoint, SimpleWaypoint> liveWaypointsBySnapshot = new IdentityHashMap<>();
+        List<SimpleWaypoint> snapshots = new ArrayList<>(liveWaypoints.size());
+        for (SimpleWaypoint liveWaypoint : liveWaypoints) {
+            SimpleWaypoint snapshot = new SimpleWaypoint(liveWaypoint);
+            snapshots.add(snapshot);
+            liveWaypointsBySnapshot.put(snapshot, liveWaypoint);
+        }
+        WaypointSorting.sort(
+                snapshots,
+                sortMode,
+                origin,
+                originDimension,
+                waypointDimension,
+                reversed
+        );
+        liveWaypoints.clear();
+        for (SimpleWaypoint snapshot : snapshots) {
+            liveWaypoints.add(liveWaypointsBySnapshot.get(snapshot));
+        }
+    }
+
+    private record DisplayWaypointSnapshot(SimpleWaypoint waypoint, String listName) {
+    }
+
+    public record Display(boolean groupByLists, List<DisplayList> lists, List<DisplayWaypoint> flatWaypoints) {
+        public List<DisplayDimension> dimensions() {
+            Map<String, List<DisplayList>> listsByDimension = new LinkedHashMap<>();
+            for (DisplayList list : this.lists) {
+                listsByDimension.computeIfAbsent(list.dimensionName(), key -> new ArrayList<>()).add(list);
+            }
+            List<DisplayDimension> dimensions = new ArrayList<>();
+            for (Map.Entry<String, List<DisplayList>> entry : listsByDimension.entrySet()) {
+                dimensions.add(new DisplayDimension(
+                        entry.getKey(),
+                        Collections.unmodifiableList(entry.getValue())
+                ));
+            }
+            return Collections.unmodifiableList(dimensions);
+        }
+    }
+
+    public record DisplayDimension(String dimensionName, List<DisplayList> lists) {
+    }
+
+    public record DisplayList(String dimensionName, WaypointList sourceList, List<SimpleWaypoint> waypoints) {
+        public DisplayList(WaypointList sourceList, List<SimpleWaypoint> waypoints) {
+            this("", sourceList, waypoints);
+        }
+
+        private static final Comparator<DisplayList> BY_LIST_NAME = Comparator.comparing(
+                        (DisplayList list) -> list.sourceList().name(),
+                        String.CASE_INSENSITIVE_ORDER
+                )
+                .thenComparing(list -> list.sourceList().name());
+    }
+
+    public record DisplayWaypoint(String dimensionName, WaypointList sourceList, SimpleWaypoint waypoint) {
+        public DisplayWaypoint(WaypointList sourceList, SimpleWaypoint waypoint) {
+            this("", sourceList, waypoint);
+        }
+
+        public static final Comparator<DisplayWaypoint> BY_WAYPOINT_NAME = Comparator.comparing(
+                        (DisplayWaypoint row) -> row.waypoint().name(),
+                        String.CASE_INSENSITIVE_ORDER
+                )
+                .thenComparing(row -> row.waypoint().name())
+                .thenComparing(row -> row.sourceList().name(), String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(row -> row.sourceList().name());
+
+    }
+}

@@ -1,7 +1,9 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
+import _959.server_waypoint.common.client.gui.render.PaddingBackground;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
@@ -12,15 +14,17 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.FONT_COLOR;
-import static _959.server_waypoint.common.client.gui.WidgetThemeColors.TRANSPARENT_BG_COLOR;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DIALOG_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 
-public abstract class DialogWidget extends ShiftableClickableWidget {
+public abstract class DialogWidget extends ShiftableClickableWidget implements Padding {
     protected final Font textRenderer;
     protected final WidgetStack content;
     protected final Component title;
     protected final WidgetStack mainLayout = new WidgetStack(0, 0, 10, true, false);
-    protected final PaddingBackground paddingBackground = new PaddingBackground(this.mainLayout, 6, 8, TRANSPARENT_BG_COLOR, FONT_COLOR, true);
+    protected final PaddingBackground paddingBackground = new PaddingBackground(this.mainLayout, 6, 8,
+            DIALOG_BACKGROUND, BORDER, true);
     protected final WidgetStack buttonRow = new WidgetStack(0, 0, 10, false);
 
     public DialogWidget(int x, int y, Component title, WidgetStack content, Font textRenderer) {
@@ -28,7 +32,7 @@ public abstract class DialogWidget extends ShiftableClickableWidget {
         this.textRenderer = textRenderer;
         this.title = title;
         this.content = content;
-        this.mainLayout.addChild(new ScalableText(0, 0, this.title, 1.2F, FONT_COLOR, this.textRenderer), 0);
+        this.mainLayout.addChild(new ScalableText(0, 0, this.title, 1.2F, TEXT_PRIMARY, this.textRenderer), 0);
         this.mainLayout.addChild(content);
         List<AbstractWidget> buttons = this.createButtons();
         this.buttonRow.addClickable(buttons.get(0), 0);
@@ -51,6 +55,26 @@ public abstract class DialogWidget extends ShiftableClickableWidget {
     @Override
     public int getHeight() {
         return this.mainLayout.getHeight();
+    }
+
+    @Override
+    public int getVisualHeight() {
+        return this.paddingBackground.getVisualHeight();
+    }
+
+    @Override
+    public int getVisualWidth() {
+        return this.paddingBackground.getVisualWidth();
+    }
+
+    @Override
+    public int getVisualX() {
+        return this.paddingBackground.getVisualX();
+    }
+
+    @Override
+    public int getVisualY() {
+        return this.paddingBackground.getVisualY();
     }
 
     @Override

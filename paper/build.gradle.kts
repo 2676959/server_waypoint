@@ -1,7 +1,7 @@
 plugins {
     id("java")
-    id("xyz.jpenilla.run-paper") version "2.3.1"
-    id("io.papermc.paperweight.userdev") version "2.0.0-beta.18"
+    id("xyz.jpenilla.run-paper") version "3.0.2"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.21"
     id("com.gradleup.shadow")
     id("com.modrinth.minotaur")
 }
@@ -11,6 +11,7 @@ val mod_version: String by project
 val mod_id: String by project
 val mcVersion : String by project
 val mcVersionRange : String by project
+val targetJavaVersion = if (stonecutter.eval(stonecutter.current.version, ">=26.1")) 25 else 21
 
 base {
     archivesName.set("$mod_id-$mod_version-paper-mc$mcVersionRange")
@@ -26,8 +27,10 @@ dependencies {
     val paperApiVersion : String by project
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     paperweight.paperDevBundle(paperApiVersion)
-    implementation("org.bstats:bstats-bukkit:3.1.0")
+    implementation("org.bstats:bstats-bukkit:3.2.1")
     implementation(project(":common"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks {
@@ -50,18 +53,50 @@ tasks.shadowJar {
     }
     relocate("org.bstats", project.group.toString())
     archiveClassifier.set("")
+    from(rootProject.file("LICENSE")) {
+        rename { "${it}_server_waypoint" }
+    }
 }
 
 tasks.processResources {
     inputs.property("version", mod_version)
-    filesMatching("paper-plugin.yml") {
-        expand("version" to mod_version)
+    inputs.property("mcVersion", mcVersion)
+    filesMatching(listOf("paper-plugin.yml")) {
+        expand(
+            "version" to mod_version,
+            "mcVersion" to mcVersion
+        )
+    }
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
+
+if (stonecutter.current.version == "1.21.11") {
+    val foliaLiveTestLoad = sourceSets.create("foliaLiveTestLoad") {
+        java.setSrcDirs(listOf(rootProject.file("paper/src/foliaLiveTestLoad/java")))
+        resources.setSrcDirs(listOf(rootProject.file("paper/src/foliaLiveTestLoad/resources")))
+        compileClasspath += sourceSets.main.get().compileClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+
+    tasks.register<Jar>("foliaLiveTestLoadJar") {
+        group = "verification"
+        description = "Builds the development-only bounded Folia region-load plugin."
+        archiveBaseName.set("server-waypoint-folia-live-test-load")
+        archiveVersion.set("")
+        from(foliaLiveTestLoad.output)
+        dependsOn(tasks.named("foliaLiveTestLoadClasses"))
     }
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
+    }
+    targetCompatibility = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = JavaVersion.toVersion(targetJavaVersion)
 }
 
 artifacts {
@@ -69,7 +104,7 @@ artifacts {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.release.set(21)
+    options.release.set(targetJavaVersion)
     options.encoding = "UTF-8"
     options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
 }

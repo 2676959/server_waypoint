@@ -1,11 +1,16 @@
 //~ resource_location_import
 package _959.server_waypoint.common.server.command;
 
+import _959.server_waypoint.common.server.LocalWaypointUpload;
+import _959.server_waypoint.core.network.ChunkedMessageSendResult;
+import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.command.CoreWaypointCommand;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.network.PlatformMessageSender;
+import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 
 import com.mojang.brigadier.Message;
@@ -26,13 +31,56 @@ import org.jetbrains.annotations.Nullable;
 
 //? if >= 1.21.2
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 
 public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, ServerPlayer,
     //$ resource_location_type_swap
     Identifier
     , Coordinates> {
-    public WaypointCommand(WaypointServerMod waypointServer, PlatformMessageSender<CommandSourceStack, ServerPlayer> networkAdapter, PermissionManager<CommandSourceStack, String, ServerPlayer> permissionManager) {
-        super(waypointServer, networkAdapter, permissionManager, DimensionArgument::dimension, BlockPosArgument::blockPos);
+    public WaypointCommand(
+            WaypointServerMod waypointServer,
+            PlatformMessageSender<CommandSourceStack, ServerPlayer> networkAdapter,
+            PermissionManager<CommandSourceStack, String, ServerPlayer> permissionManager,
+            UploadCoordinator<ServerPlayer> uploadCoordinator
+    ) {
+        super(
+                waypointServer,
+                networkAdapter,
+                permissionManager,
+                waypointServer.navigation().service(),
+                uploadCoordinator,
+                DimensionArgument::dimension,
+                BlockPosArgument::blockPos
+        );
+    }
+
+    @Override
+    protected boolean usesLocalUpload(CommandSourceStack source, ServerPlayer player) {
+        return LocalWaypointUpload.isAvailable()
+                && !source.getServer().isDedicatedServer()
+                && source.getServer().isSingleplayerOwner(
+                        //? if >=1.21.9 {
+                        new net.minecraft.server.players.NameAndId(player.getGameProfile())
+                        //?} else {
+                        /*player.getGameProfile()
+                        *///?}
+                );
+    }
+
+    @Override
+    protected CompletionStage<ChunkedMessageSendResult> dispatchUpload(
+            CommandSourceStack source, ServerPlayer player,
+            UploadRequestBuffer request,
+            Consumer<WaypointData> receiver
+    ) {
+        if (usesLocalUpload(source, player)) {
+            return LocalWaypointUpload.dispatch(
+                    source.getServer(), player, request, receiver
+            );
+        }
+        return super.dispatchUpload(source, player, request, receiver);
     }
 
     @Nullable
@@ -84,6 +132,12 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     }
 
     @Override
+    protected WaypointPos getSourcePosition(CommandSourceStack source) {
+        BlockPos blockPos = BlockPos.containing(source.getPosition());
+        return new WaypointPos(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+    }
+
+    @Override
     protected float getSourceYaw(CommandSourceStack source) {
         Entity entity;
         if ((entity = source.getEntity()) != null) {
@@ -119,5 +173,16 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     @Override
     protected Message getMessageFromComponent(Component component) {
         return ModMessageSender.toVanillaText(component);
+    }
+
+    @Override
+    protected List<String> getAvailableDimensionNames(CommandSourceStack source) {
+        return source.getServer().levelKeys().stream().map(key ->
+                //? if >= 1.21.11 {
+                key.identifier().toString()
+                //?} else {
+                /*key.location().toString()
+                *///?}
+        ).toList();
     }
 }

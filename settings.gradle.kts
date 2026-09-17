@@ -54,6 +54,11 @@ stonecutter {
 
     create("paper") {
         version("1.21-paper", "1.21")
+        // codes are identical with 1.21-paper, created because 1.21.11 complies the same method with different descriptor:
+        // 1.21    : Transformation(Vector3f, Quaternionf, Vector3f, Quaternionf)
+        // 1.21.11 : Transformation(Vector3fc, Quaternionfc, Vector3fc, Quaternionfc)
+        version("1.21.11-paper", "1.21.11")
+        version("26.2-paper", "26.2")
     }
 }
 

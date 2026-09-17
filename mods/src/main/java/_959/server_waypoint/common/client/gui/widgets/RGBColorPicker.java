@@ -1,12 +1,14 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.api.ColorPickerCallback;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.network.chat.Component;
 
 public class RGBColorPicker extends Abstract3ChannelColorPicker<RGBColorPicker.RGBChannelSlider> {
-    public RGBColorPicker(int x, int y, int slotWidth, int slotHeight, ColorPickerCallBack callback) {
+    public RGBColorPicker(int x, int y, int slotWidth, int slotHeight, ColorPickerCallback callback) {
         super(x, y, slotWidth, slotHeight, Component.nullToEmpty("RGB Color"),
                 new RGBChannelSlider(0, 0, slotWidth, slotHeight, 0xFF000000, 0xFFFF0000),
                 new RGBChannelSlider(0, 0, slotWidth, slotHeight, 0xFF000000, 0xFF00FF00),

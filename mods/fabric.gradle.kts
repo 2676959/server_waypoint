@@ -20,6 +20,10 @@ base {
     archivesName.set("$mod_id-$mod_version-$loader-mc$mcVersionRange")
 }
 
+loom {
+    accessWidenerPath.set(rootProject.file("mods/src/main/resources/server_waypoint.accesswidener"))
+}
+
 stonecutter {
     constants.match(loader, "fabric", "neoforge", "forge")
     val usesTwentySixApi = eval(current.version, ">=26")
@@ -60,6 +64,101 @@ sourceSets.main {
     resources {
         exclude("META-INF")
         exclude("pack.mcmeta")
+        exclude("server_waypoint-official.accesswidener")
+    }
+}
+
+if (minecraft == "1.21.11") {
+    val liveTestGameDirectory = providers.gradleProperty("foliaLiveTestGameDir")
+    val liveTestUsername = providers.gradleProperty("foliaLiveTestUsername")
+    val liveTestHost = providers.gradleProperty("foliaLiveTestHost").orElse("127.0.0.1")
+    val liveTestPort = providers.gradleProperty("foliaLiveTestPort").orElse("25611")
+    val liveTestRunDirectory = liveTestGameDirectory.orElse(
+        rootProject.layout.buildDirectory.dir("folia-live-test/probe").map { it.asFile.absolutePath }
+    ).map { path ->
+        project.projectDir.toPath().relativize(file(path).toPath()).toString()
+    }
+
+    if (liveTestGameDirectory.isPresent) {
+        loom.runs.named("client") {
+            runDir(liveTestRunDirectory.get())
+            if (liveTestUsername.isPresent) {
+                programArgs("--username", liveTestUsername.get())
+            }
+            programArgs(
+                "--quickPlayMultiplayer",
+                "${liveTestHost.get()}:${liveTestPort.get()}"
+            )
+        }
+    }
+
+    val foliaLiveTestProbe = sourceSets.create("foliaLiveTestProbe") {
+        java.setSrcDirs(listOf(rootProject.file("mods/src/foliaLiveTestProbe/java")))
+        resources.setSrcDirs(listOf(rootProject.file("mods/src/foliaLiveTestProbe/resources")))
+        compileClasspath += sourceSets.main.get().compileClasspath
+        runtimeClasspath += output + sourceSets.main.get().runtimeClasspath.minus(sourceSets.main.get().output)
+    }
+
+    loom.runs.create("foliaLiveTestProbe") {
+        client()
+        name("Folia Live Test Probe")
+        source(foliaLiveTestProbe)
+        runDir(liveTestRunDirectory.get())
+        programArgs(
+            "--username", liveTestUsername.orElse("SWProbe").get(),
+            "--quickPlayMultiplayer", "${liveTestHost.get()}:${liveTestPort.get()}"
+        )
+        property("serverWaypointProbe.mode", providers.gradleProperty("foliaLiveTestProbeMode").orElse("valid").get())
+        property("serverWaypointProbe.selectedFrame", providers.gradleProperty("foliaLiveTestProbeFrame").orElse("1").get())
+        property("serverWaypointProbe.waypoints", providers.gradleProperty("foliaLiveTestProbeWaypoints").orElse("4096").get())
+    }
+
+    tasks.named("compileFoliaLiveTestProbeJava") {
+        dependsOn("stonecutterGenerate")
+    }
+
+    val proxyLifecycleTest = sourceSets.create("proxyLifecycleTest") {
+        java.setSrcDirs(listOf(rootProject.file("mods/src/proxyLifecycleTest/java")))
+        resources.setSrcDirs(listOf(rootProject.file("mods/src/proxyLifecycleTest/resources")))
+        compileClasspath += sourceSets.main.get().output + sourceSets.main.get().compileClasspath
+        runtimeClasspath += output + sourceSets.main.get().runtimeClasspath
+    }
+
+    val proxyLifecycleTestJar = tasks.register<Jar>("proxyLifecycleTestJar") {
+        group = "verification"
+        description = "Builds the development-only proxy lifecycle control mod."
+        archiveBaseName.set("server-waypoint-proxy-lifecycle-test")
+        archiveVersion.set("")
+        archiveClassifier.set("dev")
+        from(proxyLifecycleTest.output)
+        dependsOn(tasks.named("proxyLifecycleTestClasses"))
+    }
+
+    tasks.register<net.fabricmc.loom.task.RemapJarTask>("remapProxyLifecycleTestJar") {
+        group = "verification"
+        description = "Remaps the development-only proxy lifecycle control mod."
+        inputFile.set(proxyLifecycleTestJar.flatMap { it.archiveFile })
+        archiveBaseName.set("server-waypoint-proxy-lifecycle-test")
+        archiveVersion.set("")
+        archiveClassifier.set("")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        sourceNamespace.set("named")
+        targetNamespace.set("intermediary")
+        classpath.from(proxyLifecycleTest.compileClasspath)
+        addNestedDependencies.set(false)
+        dependsOn(proxyLifecycleTestJar)
+    }
+
+    tasks.named("compileProxyLifecycleTestJava") {
+        dependsOn("stonecutterGenerate")
+    }
+}
+
+if (minecraft == "1.21.2") {
+    configurations.configureEach {
+        if (name == "modCompileClasspathMainMapped") {
+            sourceSets.test.get().runtimeClasspath += this
+        }
     }
 }
 
@@ -97,6 +196,8 @@ dependencies {
     val fabric_loader: String by project
     val fabric_permissions_api: String by project
     val xaeros_minimap_fabric: String by project
+    val xaeros_world_map_fabric: String by project
+    val voxelmap_fabric: String by project
 
     modImplementation("net.fabricmc:fabric-loader:$fabric_loader")
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_api")
@@ -113,9 +214,17 @@ dependencies {
 
     if (minecraft == "1.21.2") {
         modCompileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_fabric")
+        modCompileOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_fabric")
     } else {
         modImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_fabric")
+        modImplementation("maven.modrinth:xaeros-world-map:$xaeros_world_map_fabric")
     }
+
+    // Use Modrinth version IDs because some VoxelMap version numbers collide with Forge uploads.
+    modImplementation("maven.modrinth:voxelmap-updated:$voxelmap_fabric")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.processResources {
@@ -177,10 +286,20 @@ tasks.remapJar {
     dependsOn(tasks.shadowJar)
 }
 
-tasks.jar {
+tasks.withType<Jar>().configureEach {
     from(rootProject.file("LICENSE")) {
         rename { "${it}_$mod_name" }
     }
+    from(rootProject.file("THIRD_PARTY_NOTICES.md")) {
+        into("META-INF")
+    }
+    from(rootProject.file("LICENSES/Apache-2.0.txt")) {
+        into("META-INF/licenses")
+    }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 tasks.register<Copy>("buildAndCollect") {
