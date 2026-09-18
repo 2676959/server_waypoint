@@ -17,11 +17,11 @@ import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.Screen;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -515,13 +515,13 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE && closeOpenDropdownMenus()) {
+        if (keyCode == InputConstants.KEY_ESCAPE && closeOpenDropdownMenus()) {
             return true;
         }
         GuiEventListener focused = this.getFocused();
         boolean notTyping = !(focused instanceof EditBox);
         this.acceptMovementKeys(notTyping);
-        if (notTyping && keyCode == GLFW.GLFW_KEY_C) {
+        if (notTyping && keyCode == InputConstants.KEY_C) {
             closeOpenDropdownMenus();
             MinecraftClientHelper.setScreen(this.minecraft, new ClientConfigScreen(this));
             return true;

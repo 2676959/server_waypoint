@@ -33,7 +33,6 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 /^import net.neoforged.neoforge.network.PlayNetworkDirection;
 import net.neoforged.neoforge.network.simple.SimpleChannel;
 ^///?}
-import org.lwjgl.glfw.GLFW;
 
 import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
 
@@ -56,6 +55,7 @@ public class ServerWaypointNeoForgeClient {
     }
 
     private static KeyMapping createKeyBinding() {
+        InputConstants.Type keyboardType = InputConstants.UNKNOWN.getType();
         try {
             Class<?> categoryClass = Class.forName("net.minecraft.client.KeyMapping$Category");
             Object categoryId = modId("mod_name");
@@ -64,12 +64,12 @@ public class ServerWaypointNeoForgeClient {
                     .invoke(null, categoryId);
             return (KeyMapping) KeyMapping.class
                     .getConstructor(String.class, InputConstants.Type.class, int.class, categoryClass)
-                    .newInstance("server_waypoint.waypoint_manager_gui.keybind", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, category);
+                    .newInstance("server_waypoint.waypoint_manager_gui.keybind", keyboardType, InputConstants.KEY_RSHIFT, category);
         } catch (ClassNotFoundException e) {
             try {
                 return (KeyMapping) KeyMapping.class
                         .getConstructor(String.class, InputConstants.Type.class, int.class, String.class)
-                        .newInstance("server_waypoint.waypoint_manager_gui.keybind", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, "key.category.server_waypoint.mod_name");
+                        .newInstance("server_waypoint.waypoint_manager_gui.keybind", keyboardType, InputConstants.KEY_RSHIFT, "key.category.server_waypoint.mod_name");
             } catch (ReflectiveOperationException reflectiveException) {
                 throw new IllegalStateException("Failed to create key binding", reflectiveException);
             }

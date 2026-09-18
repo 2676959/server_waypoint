@@ -57,7 +57,7 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.WARNING;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.WARNING_BACKGROUND;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
+import static com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE;
 
 public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     private static final int CONTENT_WIDTH = 392;
@@ -490,7 +490,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW_KEY_ESCAPE) {
+        if (keyCode == KEY_ESCAPE) {
             if (this.swatchWidget.visible) {
                 this.closeSwatch();
             } else {

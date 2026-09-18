@@ -279,7 +279,7 @@ public abstract class MovementAllowedScreen extends Screen {
     //? if >= 1.21.9 {
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
-        return this.keyPressed(keyEvent.key(), keyEvent.scancode(), keyEvent.modifiers());
+        return this.keyPressed(keyEvent.key(), /*? if <26.3 {*/ keyEvent.scancode() /*?} else {*//* keyEvent.keycode() *//*?}*/, keyEvent.modifiers());
     }
     //?}
 
@@ -304,7 +304,7 @@ public abstract class MovementAllowedScreen extends Screen {
     //? if >= 1.21.9 {
     @Override
     public boolean keyReleased(KeyEvent keyEvent) {
-        return this.keyReleased(keyEvent.key(), keyEvent.scancode(), keyEvent.modifiers());
+        return this.keyReleased(keyEvent.key(), /*? if <26.3 {*/ keyEvent.scancode() /*?} else {*//* keyEvent.keycode() *//*?}*/, keyEvent.modifiers());
     }
     //?}
 

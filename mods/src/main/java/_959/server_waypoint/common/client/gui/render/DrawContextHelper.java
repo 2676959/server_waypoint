@@ -7,8 +7,12 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-//? if >= 1.21.6 {
+//? if >= 26.3 {
+/*import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+*///?} elif >= 1.21.6 {
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+//?}
+//? if >= 1.21.6 {
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;

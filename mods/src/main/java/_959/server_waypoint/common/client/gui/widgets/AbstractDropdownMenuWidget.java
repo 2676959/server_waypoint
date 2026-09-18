@@ -3,6 +3,7 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -10,7 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-import org.lwjgl.glfw.GLFW;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
@@ -216,7 +216,7 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!this.isActive() || button != GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+        if (!this.isActive() || button != InputConstants.MOUSE_BUTTON_LEFT) {
             return false;
         }
         if (contains(this, mouseX, mouseY)) {
@@ -245,15 +245,15 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         if (!this.isActive()) {
             return false;
         }
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+        if (keyCode == InputConstants.KEY_ESCAPE) {
             return this.closeMenuIfOpen();
         }
         int navigationStep = this.navigationStep(keyCode);
         if (this.expanded && navigationStep != 0) {
             return this.moveHighlight(navigationStep);
         }
-        if (keyCode == GLFW.GLFW_KEY_ENTER
-                || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+        if (keyCode == InputConstants.KEY_RETURN
+                || keyCode == InputConstants.KEY_NUMPADENTER) {
             if (!this.expanded) {
                 this.playClickSound();
                 this.setExpanded(true);
@@ -372,11 +372,11 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         int positiveKey;
         int negativeKey;
         if (this.expansionOrientation == LayoutFlow.Orientation.HORIZONTAL) {
-            positiveKey = GLFW.GLFW_KEY_RIGHT;
-            negativeKey = GLFW.GLFW_KEY_LEFT;
+            positiveKey = InputConstants.KEY_RIGHT;
+            negativeKey = InputConstants.KEY_LEFT;
         } else {
-            positiveKey = GLFW.GLFW_KEY_DOWN;
-            negativeKey = GLFW.GLFW_KEY_UP;
+            positiveKey = InputConstants.KEY_DOWN;
+            negativeKey = InputConstants.KEY_UP;
         }
         int directionMultiplier = this.expansionDirection == LayoutFlow.Direction.FORWARD ? 1 : -1;
         if (keyCode == positiveKey) {

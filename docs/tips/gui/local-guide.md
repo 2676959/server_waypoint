@@ -224,6 +224,11 @@ When popup items may overlap another registered widget, route the open dropdown 
 make Escape close the menu instead of the screen, call `closeMenuIfOpen` and return before
 `super.keyPressed`, because vanilla handles Escape before forwarding keys to the focused child.
 
+Use `InputConstants.KEY_*` and `InputConstants.MOUSE_BUTTON_*` for input comparisons and test
+events. Minecraft 26.3 uses SDL codes, so raw GLFW values and numeric mouse buttons no longer
+match the dispatched input. A `KeyEvent` carries its secondary code as `keycode()` on 26.3 and
+`scancode()` on earlier targets; keep that accessor behind a Stonecutter predicate.
+
 `ComboBoxWidget` combines editable text with a separately opened list of choices. It reuses
 `SuggestingTextInput` for cursor movement, selection, clipboard shortcuts, text rendering, and
 completion (also shared by `TranslucentTextField`), and

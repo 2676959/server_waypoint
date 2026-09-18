@@ -34,7 +34,6 @@ import net.minecraftforge.network.NetworkDirection;
 //? if <= 1.20.1 {
 /*import net.minecraftforge.network.NetworkEvent;
 *///?}
-import org.lwjgl.glfw.GLFW;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -70,7 +69,7 @@ public class ServerWaypointForgeClient {
         keyBinding = new KeyMapping(
                 "server_waypoint.waypoint_manager_gui.keybind",
                 InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_RIGHT_SHIFT,
+                InputConstants.KEY_RSHIFT,
                 /*? if >= 1.21.9 {*/ KeyMapping.Category.register(modId("mod_name")) /*?} else {*/ /*"key.category.server_waypoint.mod_name" *//*?}*/
         );
         event.register(keyBinding);

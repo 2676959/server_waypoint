@@ -16,10 +16,10 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_MUTED;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PLACEHOLDER;
 
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_TAB;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
+import static com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE;
+import static com.mojang.blaze3d.platform.InputConstants.KEY_TAB;
+import static com.mojang.blaze3d.platform.InputConstants.KEY_DOWN;
+import static com.mojang.blaze3d.platform.InputConstants.KEY_UP;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -325,7 +325,7 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     //? if >= 1.21.9 {
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
-        return this.keyPressed(keyEvent.key(), keyEvent.scancode(), keyEvent.modifiers());
+        return this.keyPressed(keyEvent.key(), /*? if <26.3 {*/ keyEvent.scancode() /*?} else {*//* keyEvent.keycode() *//*?}*/, keyEvent.modifiers());
     }
 
     @Override
@@ -389,19 +389,19 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
         if (!this.isFocused() || !this.active || !this.visible || !this.suggestionsEnabled) {
             return false;
         }
-        if (keyCode == GLFW_KEY_ESCAPE && this.isSuggestionListVisible()) {
+        if (keyCode == KEY_ESCAPE && this.isSuggestionListVisible()) {
             return this.closeSuggestionsIfOpen();
         }
-        if (keyCode == GLFW_KEY_UP || keyCode == GLFW_KEY_DOWN) {
+        if (keyCode == KEY_UP || keyCode == KEY_DOWN) {
             this.updateSuggestions();
             if (this.suggestions.isEmpty()) {
                 return false;
             }
-            this.cycleSuggestion(keyCode == GLFW_KEY_UP ? -1 : 1);
+            this.cycleSuggestion(keyCode == KEY_UP ? -1 : 1);
             this.tabCycles = false;
             return true;
         }
-        if (keyCode != GLFW_KEY_TAB) {
+        if (keyCode != KEY_TAB) {
             return false;
         }
         if (!this.tabCycles) {
