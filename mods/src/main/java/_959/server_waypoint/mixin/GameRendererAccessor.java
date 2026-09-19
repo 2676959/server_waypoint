@@ -23,10 +23,12 @@ public interface GameRendererAccessor {
     @Invoker(value = "bobView", remap = false)
     void serverWaypoint$bobView(CameraRenderState cameraState, PoseStack poseStack);
 
+    //? if < 26.3 {
     @Accessor(value = "spinningEffectTime", remap = false)
     float serverWaypoint$getSpinningEffectTime();
 
     @Accessor(value = "spinningEffectSpeed", remap = false)
     float serverWaypoint$getSpinningEffectSpeed();
+    //?}
     //?}
 }

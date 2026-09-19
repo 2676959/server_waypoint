@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import _959.server_waypoint.common.client.gui.render.WidgetTextures;
 import _959.server_waypoint.common.client.gui.render.WaypointRowRenderer;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
@@ -450,7 +451,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     @Override
     protected boolean onEntryClicked(TreeEntry<RowNode> entry, double contentMouseX, double contentMouseY, int button) {
-        if (button != 0) {
+        if (button != InputConstants.MOUSE_BUTTON_LEFT) {
             return false;
         }
         RowNode value = entry.value();

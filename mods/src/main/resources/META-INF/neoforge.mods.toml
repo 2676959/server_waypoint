@@ -10,6 +10,7 @@ authors = "2676959"
 description = "Manage waypoints and sync them to other player's client automatically. Compatible with Xaero's minimap."
 logoFile = "server_waypoint.png"
 logoBlur = false
+iconFile = "server_waypoint.png"
 
 [[dependencies.${id}]]
 modId="minecraft"

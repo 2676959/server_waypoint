@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.screens;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
@@ -914,7 +915,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
                 double contentMouseY,
                 int button
         ) {
-            if (button != 0) {
+            if (button != InputConstants.MOUSE_BUTTON_LEFT) {
                 return false;
             }
             this.selectionCallback.accept(entry.value());

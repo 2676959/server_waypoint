@@ -20,6 +20,7 @@ import static com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE;
 import static com.mojang.blaze3d.platform.InputConstants.KEY_TAB;
 import static com.mojang.blaze3d.platform.InputConstants.KEY_DOWN;
 import static com.mojang.blaze3d.platform.InputConstants.KEY_UP;
+import static com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -273,7 +274,7 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0 && this.handleSuggestionMouseClicked(mouseX, mouseY)) {
+        if (button == MOUSE_BUTTON_LEFT && this.handleSuggestionMouseClicked(mouseX, mouseY)) {
             return true;
         }
         //? if >= 1.21.9 {

@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.render.PaddingBackground;
@@ -177,7 +178,7 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
         if (onEntryClicked(entry, contentMouseX, contentMouseY, button)) {
             return true;
         }
-        if (button == 0 && isExpandable(entry.value())) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && isExpandable(entry.value())) {
             toggleEntryExpanded(entry);
             return true;
         }

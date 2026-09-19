@@ -199,6 +199,18 @@ public class LanguageFilesManager {
     }
 
     private List<Path> getInternalLanguageFiles() {
+        // Development loaders can group classes and resources from different projects
+        // under one code source. Locate the resource itself before inspecting that source.
+        URL fallbackLanguage = LanguageFilesManager.class.getClassLoader()
+                .getResource(ASSETS_PATH + FALL_BACK_LANGUAGE + ".json");
+        if (fallbackLanguage != null && "file".equals(fallbackLanguage.getProtocol())) {
+            try {
+                return getInternalLanguageFilesFromDirectory(Path.of(fallbackLanguage.toURI()).getParent());
+            } catch (URISyntaxException e) {
+                LOGGER.error("Failed to get path of internal language resource: {}", e.getMessage());
+            }
+        }
+
         Path codeSourcePath;
         try {
             URL location = getCodeSourceLocation();

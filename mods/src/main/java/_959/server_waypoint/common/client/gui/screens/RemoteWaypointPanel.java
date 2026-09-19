@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.screens;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import _959.server_waypoint.common.client.RemoteClientCatalogs;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.AnchorMode;
@@ -233,7 +234,7 @@ final class RemoteWaypointPanel {
         }
         @Override
         protected boolean onEntryClicked(TreeEntry<RemoteBrowserModel.Node> entry, double x, double y, int button) {
-            if (button != 0) return false;
+            if (button != InputConstants.MOUSE_BUTTON_LEFT) return false;
             var node = entry.value();
             selected = node.path().key();
             details.setRemoteSelection(selected, displayed.get(node.path().server()));

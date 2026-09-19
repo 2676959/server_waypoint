@@ -4,6 +4,7 @@ package _959.server_waypoint.common.client.gui.widgets;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -115,7 +116,7 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!this.isActive() || button != 0) {
+        if (!this.isActive() || button != InputConstants.MOUSE_BUTTON_LEFT) {
             return false;
         }
         if (this.input.mouseClickedSuggestion(mouseX, mouseY)) {
