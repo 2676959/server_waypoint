@@ -6,6 +6,10 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeJson;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeSelection;
+import _959.server_waypoint.common.client.gui.widgets.AbstractDropdownMenuWidget;
+import _959.server_waypoint.common.client.gui.widgets.ShiftableClickableWidget;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.ColorHexCodeField;
 import _959.server_waypoint.common.client.gui.widgets.ColorSquareButton;
@@ -30,6 +34,8 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -63,7 +69,7 @@ import static com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE;
 public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     private static final int CONTENT_WIDTH = 392;
     private static final int PANEL_PADDING = 8;
-    private static final int BODY_Y_OFFSET = 18;
+    private static final int BODY_Y_OFFSET = 38;
     private static final int BODY_HEIGHT = 152;
     private static final int LIST_WIDTH = 142;
     private static final int LIST_HEIGHT = 78;
@@ -85,6 +91,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     private static final int OPACITY_SLIDER_Y_OFFSET = 55;
     private static final int FOOTER_Y_OFFSET = BODY_Y_OFFSET + BODY_HEIGHT + PANEL_PADDING;
 
+    private final ThemeSelector themeSelector = new ThemeSelector();
     private final Screen parentScreen;
     private final WidgetThemeEditorSession session;
     private final ScalableText titleText = new ScalableText(
@@ -290,7 +297,8 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         this.parentScreen = parentScreen;
         this.session = new WidgetThemeEditorSession(
                 WidgetThemeManager.getTheme(),
-                WaypointClientMod.getInstance().getWidgetThemePath()
+                WaypointClientMod.getInstance().getWidgetThemePath(),
+                this.loadThemeSettings()
         );
         this.variableList.setSelected(this.selectedVariable);
         this.rgbField.setResponder(this::updateRgb);
@@ -322,10 +330,23 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         this.syncControls();
     }
 
+    private WidgetThemeJson.Settings loadThemeSettings() {
+        Path path = WaypointClientMod.getInstance().getWidgetThemePath();
+        if (Files.exists(path)) {
+            try {
+                return WidgetThemeJson.loadSettings(path);
+            } catch (IOException | RuntimeException exception) {
+                WaypointClientMod.LOGGER.error("Failed to load widget theme settings", exception);
+            }
+        }
+        return new WidgetThemeJson.Settings(WidgetThemeSelection.CUSTOM, WidgetThemeManager.getTheme());
+    }
+
     @Override
     protected void init() {
         super.init();
         this.acceptMovementKeys(false);
+        this.addRenderableWidget(this.themeSelector);
         this.addRenderableWidget(this.variableList);
         this.addRenderableWidget(this.rgbField);
         this.addRenderableWidget(this.colorPickerButton);
@@ -404,6 +425,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         int color = this.getSelectedColor();
         this.swatchWidget.setColor(color);
         this.swatchWidget.setPreviousColor(color);
+        this.themeSelector.closeMenuIfOpen();
         this.swatchWidget.visible = true;
         this.setEditorControlsActive(false);
         this.setFocused(this.swatchWidget);
@@ -416,6 +438,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     }
 
     private void setEditorControlsActive(boolean active) {
+        this.themeSelector.active = active;
         this.variableList.active = active;
         this.rgbField.active = active;
         this.colorPickerButton.active = active;
@@ -468,6 +491,9 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     //? if >= 1.21.9 {
     @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClicked) {
+        if (this.handleThemeSelectorClick(mouseButtonEvent.x(), mouseButtonEvent.y(), mouseButtonEvent.button())) {
+            return true;
+        }
         boolean handled = super.mouseClicked(mouseButtonEvent, doubleClicked);
         this.normalizeModalFocus();
         return handled;
@@ -475,11 +501,23 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     //?} else {
     /*@Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.handleThemeSelectorClick(mouseX, mouseY, button)) {
+            return true;
+        }
         boolean handled = super.mouseClicked(mouseX, mouseY, button);
         this.normalizeModalFocus();
         return handled;
     }
     *///?}
+
+    private boolean handleThemeSelectorClick(double mouseX, double mouseY, int button) {
+        if (this.themeSelector.isExpanded() && this.themeSelector.mouseClicked(mouseX, mouseY, button)) {
+            this.setFocused(this.themeSelector);
+            return true;
+        }
+        this.themeSelector.closeMenuIfOutside(mouseX, mouseY);
+        return false;
+    }
 
     private void normalizeModalFocus() {
         if (this.swatchWidget.visible) {
@@ -492,6 +530,9 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == KEY_ESCAPE) {
+            if (this.themeSelector.closeMenuIfOpen()) {
+                return true;
+            }
             if (this.swatchWidget.visible) {
                 this.closeSwatch();
             } else {
@@ -544,6 +585,10 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
+        this.themeSelector.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, deltaTicks);
         this.variableList.
         //$ render_method_swap
         extractRenderState
@@ -586,6 +631,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
 
+        this.themeSelector.renderPopup(context, mouseX, mouseY, deltaTicks);
         nextLayer(context);
         this.swatchWidget.
         //$ render_method_swap
@@ -708,6 +754,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
                 geometry.contentX() + centered(CONTENT_WIDTH, this.titleText.getWidth()),
                 geometry.contentY()
         );
+        this.themeSelector.setPosition(geometry.contentX(), geometry.contentY() + 18);
         this.variableList.setPosition(listContent.x(), listContent.y());
         this.selectedVariableText.setPosition(editorControls.x() + 6, editorControls.y() + 4);
         this.selectedKeyText.setPosition(editorControls.x() + 6, editorControls.y() + 15);
@@ -818,6 +865,72 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
                     this.gallery.width() - GALLERY_PADDING * 2,
                     statusHeight
             );
+        }
+    }
+
+    private final class ThemeSelector extends AbstractDropdownMenuWidget {
+        private final ScalableText label = new ScalableText(0, 0, Component.empty(), TEXT_PRIMARY, font);
+
+        private ThemeSelector() {
+            super(0, 0, CONTENT_WIDTH, 14, Component.translatable("server_waypoint.theme.selector"),
+                    LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD);
+            this.setRenderPopupSeparately(true);
+            for (WidgetThemeSelection selection : WidgetThemeSelection.values()) {
+                this.addMenuItem(new ThemeMenuItem(selection));
+            }
+        }
+
+        @Override
+        protected int getSelectedMenuItemIndex() {
+            return session.getSelection().ordinal();
+        }
+
+        @Override
+        protected void renderDropdownControl(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+            Component message = Component.translatable("server_waypoint.theme.selector.value",
+                    Component.translatable("server_waypoint.theme.preset." + session.getSelection().getId()));
+            this.setMessage(message);
+            this.renderChoice(context, this, message.copy().append("  ⏷"), mouseX, mouseY, deltaTicks);
+        }
+
+        private void renderChoice(GuiGraphicsExtractor context, ShiftableClickableWidget widget,
+                Component message, int mouseX, int mouseY, float deltaTicks) {
+            context.fill(widget.getX(), widget.getY(), widget.getX() + widget.getWidth(),
+                    widget.getY() + widget.getHeight(), getColor(POPUP_BACKGROUND));
+            if (widget.isHovered() || widget.isFocused()) {
+                context.fill(widget.getX(), widget.getY(), widget.getX() + widget.getWidth(),
+                        widget.getY() + widget.getHeight(), getColor(ROW_HOVER_BACKGROUND));
+            }
+            renderOutline(context, widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight(),
+                    getColor(widget.isFocused() ? WidgetThemeVariable.FOCUS_RING : BORDER));
+            this.label.setText(message);
+            this.label.setColor(widget.active ? TEXT_PRIMARY : WidgetThemeVariable.TEXT_DISABLED);
+            this.label.setPosition(widget.getX() + 4, widget.getY() + centered(widget.getHeight(), font.lineHeight));
+            this.label.
+            //$ render_method_swap
+            extractRenderState
+                    (context, mouseX, mouseY, deltaTicks);
+        }
+
+        private final class ThemeMenuItem extends AbstractMenuItem {
+            private final WidgetThemeSelection selection;
+
+            private ThemeMenuItem(WidgetThemeSelection selection) {
+                super(CONTENT_WIDTH, 14, Component.translatable("server_waypoint.theme.preset." + selection.getId()));
+                this.selection = selection;
+            }
+
+            @Override
+            protected void onSelected() {
+                session.select(this.selection);
+                syncControls();
+                statusText.setText(Component.empty());
+            }
+
+            @Override
+            protected void renderMenuItem(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+                renderChoice(context, this, this.getMessage(), mouseX, mouseY, deltaTicks);
+            }
         }
     }
 

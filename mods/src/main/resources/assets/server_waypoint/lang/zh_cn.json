@@ -173,5 +173,11 @@
   "waypoint.remote.state.available": "可用",
   "waypoint.remote.state.stale": "已过期 — 保留的数据可能不是最新的",
   "waypoint.remote.state.unavailable": "不可用",
-  "waypoint.remote.state.unauthorized": "未授权"
+  "waypoint.remote.state.unauthorized": "未授权",
+  "server_waypoint.theme.selector": "主题",
+  "server_waypoint.theme.selector.value": "主题：%s",
+  "server_waypoint.theme.preset.custom": "自定义",
+  "server_waypoint.theme.preset.translucent_dark": "半透明深色",
+  "server_waypoint.theme.preset.modern_dark": "现代深色",
+  "server_waypoint.theme.preset.high_contrast": "高对比度"
 }

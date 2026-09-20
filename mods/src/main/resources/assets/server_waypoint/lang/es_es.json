@@ -64,5 +64,11 @@
   "waypoint.remote.state.available": "Disponible",
   "waypoint.remote.state.stale": "Obsoleto — los datos conservados pueden estar desactualizados",
   "waypoint.remote.state.unavailable": "No disponible",
-  "waypoint.remote.state.unauthorized": "Sin autorización"
+  "waypoint.remote.state.unauthorized": "Sin autorización",
+  "server_waypoint.theme.selector": "Tema",
+  "server_waypoint.theme.selector.value": "Tema: %s",
+  "server_waypoint.theme.preset.custom": "Personalizado",
+  "server_waypoint.theme.preset.translucent_dark": "Oscuro translúcido",
+  "server_waypoint.theme.preset.modern_dark": "Oscuro moderno",
+  "server_waypoint.theme.preset.high_contrast": "Alto contraste"
 }

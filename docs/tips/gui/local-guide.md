@@ -319,7 +319,18 @@ visually separated. Standard and focus borders use black with stronger alpha, ma
 than their adjacent control fills. The true/false toggle is the deliberate grayscale exception:
 `SUCCESS_BACKGROUND` uses muted sage green and `DANGER_BACKGROUND` uses muted dusty red so its
 state is recognizable without high-saturation color. Other status roles use luminance differences
-instead of hue. `WidgetThemes.MODERN_DARK` remains available as the colored opaque alternative.
+instead of hue. `WidgetThemes.MODERN_DARK` uses the same glass surface opacity progression
+with a cool blue tint: roughly 30% for the screen overlay, 35% for panels, 45% for popups, and
+70% for dialogs. Controls and status fills are translucent too. Glassmorphism is the shared
+design style for every preset; text, accents, and focus outlines stay crisp.
+
+`WidgetThemes.HIGH_CONTRAST` uses stronger black and near-black glass tints, white primary
+text and borders, a yellow focus ring, and cyan accents. Its screen overlay is roughly 30%
+opaque, panels 50%, popups 60%, and dialogs 80%. Controls and status fills also remain
+translucent; contrast varies with the world behind the glass. Selected controls and status backgrounds stay dark to support white
+`TEXT_ON_ACCENT`; muted, disabled, and placeholder text remain bright enough to read. Apply the
+preset through the editor dropdown or `WidgetThemeManager.setTheme(WidgetThemes.HIGH_CONTRAST)`;
+it does not change the default theme.
 
 `DIALOG_BACKGROUND` is darker and more opaque than `POPUP_BACKGROUND` because `DialogWidget`
 always renders above other controls. Keep suggestion lists, color-picker popups, and other
@@ -744,8 +755,10 @@ The gallery is screen-local rather than a reusable widget API. Its interactive c
 The package-private `WidgetThemeEditorSession` owns the editing transaction; it is an implementation seam for the screen, not a public theme API:
 
 - `setColor` updates the immutable draft and publishes it for live preview.
-- Reset previews `WidgetThemes.DEFAULT`; it does not write the file by itself.
-- Save writes the draft to `widget-theme.json` and keeps the preview active.
+- The theme dropdown selects Custom, Translucent Dark, Modern Dark, or High Contrast and previews immediately. It reuses `AbstractDropdownMenuWidget`, registers once, routes popup clicks before covered controls, and renders the popup after the body. Escape closes the dropdown first; the swatch modal disables it.
+- Switching presets retains the custom palette. Editing a preset copies its colors into Custom; subsequent preset switches retain those edits.
+- Reset selects the default Translucent Dark preset without erasing Custom; it does not write the file by itself.
+- Save atomically writes the selected preset ID and custom palette to `widget-theme.json` and keeps the preview active. `WidgetThemeSelection` resolves presets; `WidgetThemeJson.Settings` contains the selection and custom colors. `loadSettings` reads both, while `load`/`fromJson` resolve the selected effective theme for startup and callers. The `colors` object always stores the custom palette; the optional `selection` defaults to `custom`.
 - Cancel, Escape, or removal before a successful save restores the original snapshot.
 - Cancel is idempotent so explicit close and subsequent `removed()` calls are safe.
 

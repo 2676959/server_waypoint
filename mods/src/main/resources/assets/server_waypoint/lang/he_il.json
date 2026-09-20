@@ -64,5 +64,11 @@
   "waypoint.remote.state.available": "זמין",
   "waypoint.remote.state.stale": "מיושן — ייתכן שהנתונים השמורים אינם עדכניים",
   "waypoint.remote.state.unavailable": "לא זמין",
-  "waypoint.remote.state.unauthorized": "ללא הרשאה"
+  "waypoint.remote.state.unauthorized": "ללא הרשאה",
+  "server_waypoint.theme.selector": "ערכת נושא",
+  "server_waypoint.theme.selector.value": "ערכת נושא: %s",
+  "server_waypoint.theme.preset.custom": "מותאם אישית",
+  "server_waypoint.theme.preset.translucent_dark": "כהה שקוף למחצה",
+  "server_waypoint.theme.preset.modern_dark": "כהה מודרני",
+  "server_waypoint.theme.preset.high_contrast": "ניגודיות גבוהה"
 }

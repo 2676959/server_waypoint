@@ -14,8 +14,8 @@ class WidgetThemeTest {
 
         assertEquals(WidgetThemeVariable.values().length, theme.getColors().size());
         assertEquals(0xFFE8F0F7, theme.getColor(WidgetThemeVariable.TEXT_PRIMARY));
-        assertEquals(0xFF0B1016, theme.getColor(WidgetThemeVariable.SCREEN_BACKGROUND));
-        assertEquals(0xFF236B87, theme.getColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND));
+        assertEquals(0x4D0B1016, theme.getColor(WidgetThemeVariable.SCREEN_BACKGROUND));
+        assertEquals(0x66236B87, theme.getColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND));
         assertEquals(0xFF5BC3DF, theme.getColor(WidgetThemeVariable.FOCUS_RING));
     }
 

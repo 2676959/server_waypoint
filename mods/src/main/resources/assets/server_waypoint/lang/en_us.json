@@ -173,5 +173,11 @@
   "waypoint.remote.state.available": "Available",
   "waypoint.remote.state.stale": "Stale — retained data may be outdated",
   "waypoint.remote.state.unavailable": "Unavailable",
-  "waypoint.remote.state.unauthorized": "Unauthorized"
+  "waypoint.remote.state.unauthorized": "Unauthorized",
+  "server_waypoint.theme.selector": "Theme",
+  "server_waypoint.theme.selector.value": "Theme: %s",
+  "server_waypoint.theme.preset.custom": "Custom",
+  "server_waypoint.theme.preset.translucent_dark": "Translucent Dark",
+  "server_waypoint.theme.preset.modern_dark": "Modern Dark",
+  "server_waypoint.theme.preset.high_contrast": "High Contrast"
 }
