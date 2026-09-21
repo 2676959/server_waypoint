@@ -117,6 +117,14 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
                 && mouseY >= this.suggestionsY && mouseY < this.suggestionsY + this.suggestionsHeight;
     }
 
+    protected int getSuggestionsX() {
+        return this.getTextAnchorX() - 1;
+    }
+
+    protected int getSuggestionsWidth(int maxTextWidth) {
+        return Math.max(this.getShiftedX() + this.width - this.getSuggestionsX() - 2, maxTextWidth + 2);
+    }
+
     protected int getSuggestionsY() {
         return this.getShiftedY() - 2 + this.backgroundHeight;
     }
@@ -181,9 +189,9 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
             if (selected) {
                 context.fill(
                         this.suggestionsX + 1,
-                        y,
+                        Math.max(y, this.suggestionsY + 1),
                         this.suggestionsX + this.suggestionsWidth - 1,
-                        y + SUGGESTION_LINE_HEIGHT,
+                        Math.min(y + SUGGESTION_LINE_HEIGHT, this.suggestionsY + this.suggestionsHeight - 1),
                         getColor(SELECTION_BACKGROUND)
                 );
             }
@@ -191,7 +199,8 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
             drawText(
                     context,
                     this.textRenderer,
-                    this.textRenderer.plainSubstrByWidth(suggestion, this.suggestionsWidth - 2),
+                    this.textRenderer.plainSubstrByWidth(suggestion,
+                            Math.max(0, this.suggestionsX + this.suggestionsWidth - 1 - this.getTextAnchorX())),
                     this.getTextAnchorX(),
                     y + 2,
                     color,
@@ -492,9 +501,9 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
         for (String suggestion : this.suggestions) {
             maxTextWidth = Math.max(maxTextWidth, this.textRenderer.width(suggestion));
         }
-        this.suggestionsX = this.getTextAnchorX() - 1;
+        this.suggestionsX = this.getSuggestionsX();
         this.suggestionsY = this.getSuggestionsY();
-        this.suggestionsWidth = Math.max(this.getShiftedX() + this.width - this.suggestionsX - 2, maxTextWidth + 2);
+        this.suggestionsWidth = this.getSuggestionsWidth(maxTextWidth);
         this.suggestionsHeight = Math.min(this.suggestions.size(), MAX_VISIBLE_SUGGESTIONS) * SUGGESTION_LINE_HEIGHT;
     }
 

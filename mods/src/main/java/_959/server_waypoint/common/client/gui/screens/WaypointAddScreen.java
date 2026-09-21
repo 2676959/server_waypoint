@@ -98,7 +98,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
                 WaypointClientMod.getAllAvailableDimensionNames(),
                 List.of(this.dimensionName)
         );
-        dimensionField = new ComboBoxWidget(0, 0, 155, 13, dimensionLabelText, font,
+        dimensionField = new ComboBoxWidget(0, 0, 155, dimensionLabelText, font,
                 dimensions, this.dimensionName, value -> {});
         dimensionField.setRenderPopupSeparately(true);
         dimensionRow.addChild(dimensionLabel, 0);

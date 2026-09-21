@@ -44,6 +44,7 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.dr
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutlineWithoutTop;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.ACCENT;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.ACCENT_HOVER;
@@ -869,10 +870,12 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     }
 
     private final class ThemeSelector extends AbstractDropdownMenuWidget {
+        private static final int TEXT_INSET = 2;
         private final ScalableText label = new ScalableText(0, 0, Component.empty(), TEXT_PRIMARY, font);
+        private final ScalableText arrow = new ScalableText(0, 0, Component.literal("⏷"), TEXT_PRIMARY, font);
 
         private ThemeSelector() {
-            super(0, 0, CONTENT_WIDTH, 14, Component.translatable("server_waypoint.theme.selector"),
+            super(0, 0, CONTENT_WIDTH, font.lineHeight + 2, Component.translatable("server_waypoint.theme.selector"),
                     LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD);
             this.setRenderPopupSeparately(true);
             for (WidgetThemeSelection selection : WidgetThemeSelection.values()) {
@@ -890,33 +893,49 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
             Component message = Component.translatable("server_waypoint.theme.selector.value",
                     Component.translatable("server_waypoint.theme.preset." + session.getSelection().getId()));
             this.setMessage(message);
-            this.renderChoice(context, this, message.copy().append("  ⏷"), mouseX, mouseY, deltaTicks);
+            this.renderChoice(context, this, message, false, mouseX, mouseY, deltaTicks);
+            this.arrow.setText(this.isExpanded() ? "⏶" : "⏷");
+            this.arrow.setColor(this.active ? TEXT_PRIMARY : WidgetThemeVariable.TEXT_DISABLED);
+            this.arrow.setPosition(this.getX() + this.getWidth() - 12, this.getY() + TEXT_INSET);
+            this.arrow.
+            //$ render_method_swap
+            extractRenderState
+                    (context, mouseX, mouseY, deltaTicks);
         }
 
         private void renderChoice(GuiGraphicsExtractor context, ShiftableClickableWidget widget,
-                Component message, int mouseX, int mouseY, float deltaTicks) {
+                Component message, boolean popup, int mouseX, int mouseY, float deltaTicks) {
             context.fill(widget.getX(), widget.getY(), widget.getX() + widget.getWidth(),
                     widget.getY() + widget.getHeight(), getColor(POPUP_BACKGROUND));
             if (widget.isHovered() || widget.isFocused()) {
                 context.fill(widget.getX(), widget.getY(), widget.getX() + widget.getWidth(),
                         widget.getY() + widget.getHeight(), getColor(ROW_HOVER_BACKGROUND));
             }
-            renderOutline(context, widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight(),
-                    getColor(widget.isFocused() ? WidgetThemeVariable.FOCUS_RING : BORDER));
+            int border = getColor(widget.isFocused() ? WidgetThemeVariable.FOCUS_RING : BORDER);
+            if (popup) {
+                renderOutlineWithoutTop(context, widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight(), border);
+            } else {
+                renderOutline(context, widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight(), border);
+            }
             this.label.setText(message);
             this.label.setColor(widget.active ? TEXT_PRIMARY : WidgetThemeVariable.TEXT_DISABLED);
-            this.label.setPosition(widget.getX() + 4, widget.getY() + centered(widget.getHeight(), font.lineHeight));
+            this.label.setPosition(widget.getX() + TEXT_INSET, widget.getY() + TEXT_INSET);
+            context.enableScissor(widget.getX() + TEXT_INSET, widget.getY() + 1,
+                    widget.getX() + widget.getWidth() - (popup ? TEXT_INSET : 14),
+                    widget.getY() + widget.getHeight() - 1);
             this.label.
             //$ render_method_swap
             extractRenderState
                     (context, mouseX, mouseY, deltaTicks);
+            context.disableScissor();
         }
 
         private final class ThemeMenuItem extends AbstractMenuItem {
             private final WidgetThemeSelection selection;
 
             private ThemeMenuItem(WidgetThemeSelection selection) {
-                super(CONTENT_WIDTH, 14, Component.translatable("server_waypoint.theme.preset." + selection.getId()));
+                super(ThemeSelector.this.getWidth(), ThemeSelector.this.getHeight(),
+                        Component.translatable("server_waypoint.theme.preset." + selection.getId()));
                 this.selection = selection;
             }
 
@@ -929,7 +948,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
 
             @Override
             protected void renderMenuItem(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-                renderChoice(context, this, this.getMessage(), mouseX, mouseY, deltaTicks);
+                renderChoice(context, this, this.getMessage(), true, mouseX, mouseY, deltaTicks);
             }
         }
     }

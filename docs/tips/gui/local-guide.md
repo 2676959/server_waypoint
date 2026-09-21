@@ -254,8 +254,10 @@ separately. Route popup clicks before overlapping controls using `isMouseOver(..
 
 `SuggestingTextInput` is the reusable surface-free input base. It owns editing, shifted layout,
 completion state, inline text, and suggestion rendering/hit testing; `TranslucentTextField` adds
-only its themed surface. Composites can override `getSuggestionsY()` to anchor suggestions below
-their outer bounds and use `setSuggestionsEnabled(...)` to temporarily suppress completion without
+only its themed surface. Composites can override `getSuggestionsX()`, `getSuggestionsY()`, and
+`getSuggestionsWidth(int maxTextWidth)` to anchor suggestions to their outer bounds. The combobox
+uses its full control width, including the arrow area, and clips suggestion text inside that outline.
+Drawing and hit testing use the same bounds. Use `setSuggestionsEnabled(...)` to temporarily suppress completion without
 losing focus. `refreshSuggestions()` invalidates a completion cycle after catalog changes; replacing
 the provider also refreshes it. `renderSuggestions(...)` remains an explicit overlay pass for standalone inputs.
 Escape dismissal persists until editing or refocusing, and disabled/hidden inputs do not accept
@@ -263,7 +265,17 @@ suggestion clicks. `AbstractDropdownMenuWidget.renderPopup(...)` may be overridd
 another popup when the full menu is closed; preserve its separate-rendering contract.
 
 An exact matching choice is omitted from the popup. Resizing also resizes the field and choice rows.
-The outline stays inside the content bounds; the popup is excluded from layout dimensions.
+Combobox popup rows draw side and bottom borders; the preceding control or row supplies the
+shared top edge, keeping separators one pixel thick without overlapping row hit areas.
+`DrawContextHelper.renderOutlineWithoutTop(...)` provides this three-sided outline for both
+combobox and theme-selector popup rows; use it when the preceding row owns the top separator.
+The constructor and position setters anchor the text, matching standalone text inputs and labels.
+The widget derives its default height from `font.lineHeight + 2`, matching `TranslucentTextField`,
+and places the outline two pixels above and left of the text. Callers supply width, not height.
+`getX`/`getY` and their shifted equivalents report the outer control position used for drawing,
+hit testing, and popup placement. Offsets and height changes preserve the text anchor.
+Width and height describe the complete control, including its outline;
+the popup is excluded from layout dimensions.
 Treat a focused combobox as text entry when deciding whether to forward movement keys, as
 `AbstractWaypointPropertiesScreen` does.
 
@@ -760,6 +772,7 @@ The package-private `WidgetThemeEditorSession` owns the editing transaction; it 
 
 - `setColor` updates the immutable draft and publishes it for live preview.
 - The theme dropdown selects Custom, Translucent Dark, Modern Dark, or High Contrast and previews immediately. It reuses `AbstractDropdownMenuWidget`, registers once, routes popup clicks before covered controls, and renders the popup after the body. Escape closes the dropdown first; the swatch modal disables it.
+- Its trigger and choices use `font.lineHeight + 2` height and a two-pixel text inset, matching text fields and comboboxes. The screen positions its full-width outline alongside the body panels. Popup rows share single-pixel separators; labels are clipped within the outline, with the trigger reserving space for a right-aligned open/closed arrow. This selection-only control has no suggestion popup.
 - Switching presets retains the custom palette. Editing a preset copies its colors into Custom; subsequent preset switches retain those edits.
 - Reset selects the default Translucent Dark preset without erasing Custom; it does not write the file by itself.
 - Save atomically writes the selected preset ID and custom palette to `widget-theme.json` and keeps the preview active. `WidgetThemeSelection` resolves presets; `WidgetThemeJson.Settings` contains the selection and custom colors. `loadSettings` reads both, while `load`/`fromJson` resolve the selected effective theme for startup and callers. The `colors` object always stores the custom palette; the optional `selection` defaults to `custom`.

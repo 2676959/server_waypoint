@@ -14,11 +14,13 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutlineWithoutTop;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 
 /** Editable text input with a separately opened list of choices. */
 public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
+    private static final int TEXT_INSET = SuggestingTextInput.OUTLINE_PADDING;
     private List<String> values = List.of();
     private final Component label;
     private final Consumer<String> onValueChanged;
@@ -27,9 +29,9 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
     private final Font font;
     private boolean settingValue;
 
-    public ComboBoxWidget(int x, int y, int width, int height, Component label, Font font,
+    public ComboBoxWidget(int x, int y, int width, Component label, Font font,
                           List<String> values, String initialValue, Consumer<String> onValueChanged) {
-        super(x, y, width, height, label, LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD);
+        super(x, y, width, font.lineHeight + 2, label, LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD);
         this.label = label;
         this.font = font;
         this.onValueChanged = Objects.requireNonNull(onValueChanged);
@@ -44,7 +46,7 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
                 this.onValueChanged.accept(value);
             }
         });
-        this.layoutInput();
+        this.setY(y);
         this.arrow = new ScalableText(0, 0, Component.literal("⏷"), () -> WidgetThemeState.text(this.active), font);
         this.setValues(values);
         this.setValue(initialValue);
@@ -148,13 +150,14 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
 
     @Override
     public void setX(int x) {
-        super.setX(x);
+        super.setX(x - TEXT_INSET);
         this.layoutInput();
     }
 
     @Override
     public void setY(int y) {
-        super.setY(y);
+        // Match standalone text inputs: callers position the text, not the surrounding border.
+        super.setY(y - TEXT_INSET);
         this.layoutInput();
     }
 
@@ -174,7 +177,7 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
         if (this.input == null) {
             return;
         }
-        this.input.setPosition(this.getX() + 3, this.getY() + (this.height - this.input.textHeight) / 2);
+        this.input.setPosition(this.getX() + TEXT_INSET, this.getY() + TEXT_INSET);
         this.input.setWidth(Math.max(1, this.width - 20));
     }
 
@@ -224,14 +227,23 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
         int color = popup && !widget.isHovered() && !widget.isFocused()
                 ? WidgetThemeManager.getColor(WidgetThemeVariable.POPUP_BACKGROUND)
                 : WidgetThemeState.controlBackground(widget.active, widget.isHovered() || widget.isFocused());
-        context.fill(widget.getX(), widget.getY(), widget.getX() + widget.getWidth(), widget.getY() + widget.getHeight(), color);
-        renderOutline(context, widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight(),
-                WidgetThemeState.border(widget.active, widget.isFocused(), widget.isHovered()));
+        int x = widget.getX();
+        int y = widget.getY();
+        int right = x + widget.getWidth();
+        int bottom = y + widget.getHeight();
+        int border = WidgetThemeState.border(widget.active, widget.isFocused(), widget.isHovered());
+        context.fill(x, y, right, bottom, color);
+        if (popup) {
+            // The preceding control/row owns the shared horizontal border.
+            renderOutlineWithoutTop(context, x, y, widget.getWidth(), widget.getHeight(), border);
+        } else {
+            renderOutline(context, x, y, widget.getWidth(), widget.getHeight(), border);
+        }
     }
 
     private static void renderLabel(GuiGraphicsExtractor context, ScalableText text, int x, int y,
                                     int width, int height, int mouseX, int mouseY, float deltaTicks) {
-        text.setPosition(x, y + (height - text.getHeight()) / 2);
+        text.setPosition(x, y + TEXT_INSET);
         // Keep a fixed-height control; ScalableText owns text drawing, the control clips long values.
         context.enableScissor(x, y + 1, x + width, y + height - 1);
         text.
@@ -243,11 +255,18 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
 
     /** The composite owns the surface; reuse the shared input's editing, completion, and text renderer. */
     private final class TextInput extends SuggestingTextInput {
-        private final int textHeight;
-
         private TextInput(Component label, Font font) {
             super(0, 0, 1, label, font);
-            this.textHeight = font.lineHeight;
+        }
+
+        @Override
+        protected int getSuggestionsX() {
+            return ComboBoxWidget.this.getX();
+        }
+
+        @Override
+        protected int getSuggestionsWidth(int maxTextWidth) {
+            return ComboBoxWidget.this.getWidth();
         }
 
         @Override
@@ -280,8 +299,8 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
         @Override
         protected void renderMenuItem(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
             drawSurface(context, this, true);
-            renderLabel(context, this.text, this.getX() + 3, this.getY(),
-                    Math.max(0, this.width - 6), this.height, mouseX, mouseY, deltaTicks);
+            renderLabel(context, this.text, this.getX() + TEXT_INSET, this.getY(),
+                    Math.max(0, this.width - 2 * TEXT_INSET), this.height, mouseX, mouseY, deltaTicks);
         }
     }
 }

@@ -148,6 +148,13 @@ public final class DrawContextHelper {
         //?}
     }
 
+    /** Draws a popup row whose top border is supplied by the preceding control or row. */
+    public static void renderOutlineWithoutTop(GuiGraphicsExtractor context, int x, int y, int width, int height, int color) {
+        context.fill(x, y, x + 1, y + height - 1, color);
+        context.fill(x + width - 1, y, x + width, y + height - 1, color);
+        context.fill(x, y + height - 1, x + width, y + height, color);
+    }
+
     private static void renderOutlineWithFill(GuiGraphicsExtractor context, int x, int y, int width, int height, int color) {
         context.fill(x, y, x + width, y + 1, color);
         context.fill(x, y + height - 1, x + width, y + height, color);
