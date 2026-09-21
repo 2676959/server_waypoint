@@ -335,6 +335,8 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             OptimizedWaypointRenderer.loadScene(getCurrentWaypointLists());
             this.waypointFilesDir = null;
             networkState = ClientNetworkState.SYNC_FINISHED;
+            // Shared waypoint storage still needs transport negotiation for edit requests/results.
+            sendPayloadToServer(clientHandshake);
         } else {
             // A server's id is only known after its plugin answers the handshake, so reset the server-local
             // caches now. A server without the plugin never answers, and without this reset it would keep
@@ -350,8 +352,13 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     @Override
     public void onServerHandshake(ServerHandshakeBuffer buffer) {
         this.remoteCatalogs.clear();
-        networkState = ClientNetworkState.HANDSHAKE_FINISHED;
         this.compressChunkedMessages = buffer.compressChunkedMessages();
+        if (WaypointServerMod.runsWithClient()) {
+            // Keep the shared server model; an integrated world has no remote cache directory.
+            networkState = ClientNetworkState.SYNC_FINISHED;
+            return;
+        }
+        networkState = ClientNetworkState.HANDSHAKE_FINISHED;
         int serverId = buffer.serverId();
         int serverVersion = buffer.version();
         if (serverVersion != ProtocolVersion.PROTOCOL_VERSION) {
