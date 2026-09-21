@@ -14,8 +14,8 @@ class WidgetThemeTest {
 
         assertEquals(WidgetThemeVariable.values().length, theme.getColors().size());
         assertEquals(0xFFE8F0F7, theme.getColor(WidgetThemeVariable.TEXT_PRIMARY));
-        assertEquals(0x4D0B1016, theme.getColor(WidgetThemeVariable.SCREEN_BACKGROUND));
-        assertEquals(0x66236B87, theme.getColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND));
+        assertEquals(0xA60B1016, theme.getColor(WidgetThemeVariable.SCREEN_BACKGROUND));
+        assertEquals(0xE61F4C60, theme.getColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND));
         assertEquals(0xFF5BC3DF, theme.getColor(WidgetThemeVariable.FOCUS_RING));
     }
 
@@ -25,84 +25,63 @@ class WidgetThemeTest {
 
         assertEquals(WidgetThemeVariable.values().length, theme.getColors().size());
         assertEquals(0xFFE8E8E8, theme.getColor(WidgetThemeVariable.TEXT_PRIMARY));
-        assertEquals(0x4D000000, theme.getColor(WidgetThemeVariable.SCREEN_BACKGROUND));
-        assertEquals(0x59080808, theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND));
-        assertEquals(0x73101010, theme.getColor(WidgetThemeVariable.POPUP_BACKGROUND));
-        assertEquals(0xB3000000, theme.getColor(WidgetThemeVariable.DIALOG_BACKGROUND));
-        assertEquals(0x4D0C0C0C, theme.getColor(WidgetThemeVariable.CONTROL_BACKGROUND));
-        assertEquals(0x66484848, theme.getColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND));
-        assertEquals(0x33484848, theme.getColor(WidgetThemeVariable.ROW_HOVER_BACKGROUND));
-        theme.getColors().forEach((variable, color) -> {
-            if (variable != WidgetThemeVariable.SUCCESS_BACKGROUND
-                    && variable != WidgetThemeVariable.DANGER_BACKGROUND) {
-                assertGrayscale(color);
-            }
-        });
-        assertMutedNonGrayscale(theme.getColor(WidgetThemeVariable.SUCCESS_BACKGROUND));
-        assertMutedNonGrayscale(theme.getColor(WidgetThemeVariable.DANGER_BACKGROUND));
         assertTrue(alpha(theme.getColor(WidgetThemeVariable.SCREEN_BACKGROUND))
                 < alpha(theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND)));
         assertTrue(alpha(theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND))
                 < alpha(theme.getColor(WidgetThemeVariable.POPUP_BACKGROUND)));
+        // Floating menus cover other labels, not just the world: limit bleed-through to 2%.
+        assertTrue(alpha(theme.getColor(WidgetThemeVariable.POPUP_BACKGROUND)) >= 250);
+        assertGrayscale(theme.getColor(WidgetThemeVariable.CONTROL_BACKGROUND));
+        assertMutedNonGrayscale(theme.getColor(WidgetThemeVariable.SUCCESS_BACKGROUND));
+        assertMutedNonGrayscale(theme.getColor(WidgetThemeVariable.WARNING_BACKGROUND));
+        assertMutedNonGrayscale(theme.getColor(WidgetThemeVariable.DANGER_BACKGROUND));
     }
 
     @Test
-    void translucentDarkThemeRetainsReadableContrastAcrossLayeredSurfaces() {
-        WidgetTheme theme = WidgetThemes.TRANSLUCENT_DARK;
-        int panel = theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND);
+    void translucentDarkThemeRetainsReadableContrastAcrossBrightAndDarkWorlds() {
+        assertReadableAcrossWorlds(WidgetThemes.TRANSLUCENT_DARK);
+    }
 
-        assertContrastAtLeast(
-                theme.getColor(WidgetThemeVariable.TEXT_PRIMARY), panel, 4.5D);
-        assertContrastAtLeast(
-                theme.getColor(WidgetThemeVariable.TEXT_PLACEHOLDER),
-                theme.getColor(WidgetThemeVariable.CONTROL_BACKGROUND),
-                panel,
-                4.5D
-        );
-        assertContrastAtLeast(
-                theme.getColor(WidgetThemeVariable.TEXT_ON_ACCENT),
-                theme.getColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND),
-                panel,
-                4.5D
-        );
-        assertContrastAtLeast(
-                theme.getColor(WidgetThemeVariable.TEXT_ON_ACCENT),
-                theme.getColor(WidgetThemeVariable.SUCCESS_BACKGROUND),
-                panel,
-                4.5D
-        );
-        assertContrastAtLeast(
-                theme.getColor(WidgetThemeVariable.TEXT_ON_ACCENT),
-                theme.getColor(WidgetThemeVariable.DANGER_BACKGROUND),
-                panel,
-                4.5D
-        );
-        assertDarkerThan(
-                theme.getColor(WidgetThemeVariable.BORDER),
-                theme.getColor(WidgetThemeVariable.CONTROL_BACKGROUND),
-                panel
-        );
-        assertDarkerThan(
-                theme.getColor(WidgetThemeVariable.FOCUS_RING),
-                theme.getColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND),
-                panel
-        );
-        assertDarkerThan(
-                theme.getColor(WidgetThemeVariable.DIALOG_BACKGROUND),
-                theme.getColor(WidgetThemeVariable.POPUP_BACKGROUND),
-                panel
-        );
-        assertDarkerThan(
-                theme.getColor(WidgetThemeVariable.CONTROL_BACKGROUND),
-                theme.getColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND),
-                panel
-        );
-        assertContrastAtLeast(
-                theme.getColor(WidgetThemeVariable.SCROLLBAR_THUMB),
-                theme.getColor(WidgetThemeVariable.SCROLLBAR_TRACK),
-                panel,
-                3.0D
-        );
+    @Test
+    void modernDarkThemeRetainsReadableContrastAcrossBrightAndDarkWorlds() {
+        assertReadableAcrossWorlds(WidgetThemes.MODERN_DARK);
+    }
+
+    private static void assertReadableAcrossWorlds(WidgetTheme theme) {
+        assertTrue(alpha(theme.getColor(WidgetThemeVariable.POPUP_BACKGROUND)) >= 250);
+        for (int world : new int[]{0xFF000000, 0xFFFFFFFF, 0xFF87B9F0}) {
+            int screen = compositeOver(theme.getColor(WidgetThemeVariable.SCREEN_BACKGROUND), world);
+            int panel = compositeOver(theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND), screen);
+            assertContrastAtLeast(theme.getColor(WidgetThemeVariable.TEXT_PRIMARY), screen, 4.5D);
+            assertContrastAtLeast(theme.getColor(WidgetThemeVariable.TEXT_MUTED), panel, 4.5D);
+            for (WidgetThemeVariable surface : new WidgetThemeVariable[]{
+                    WidgetThemeVariable.CONTROL_BACKGROUND, WidgetThemeVariable.CONTROL_HOVER_BACKGROUND,
+                    WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND, WidgetThemeVariable.SELECTION_BACKGROUND,
+                    WidgetThemeVariable.POPUP_BACKGROUND, WidgetThemeVariable.DIALOG_BACKGROUND}) {
+                int background = compositeOver(theme.getColor(surface), panel);
+                assertContrastAtLeast(theme.getColor(WidgetThemeVariable.TEXT_PRIMARY), background, 4.5D);
+                assertContrastAtLeast(theme.getColor(WidgetThemeVariable.TEXT_PLACEHOLDER), background, 4.5D);
+                assertContrastAtLeast(theme.getColor(WidgetThemeVariable.FOCUS_RING), background, 3.0D);
+                assertContrastAtLeast(theme.getColor(WidgetThemeVariable.BORDER), background, 3.0D);
+            }
+            assertContrastAtLeast(theme.getColor(WidgetThemeVariable.TEXT_DISABLED),
+                    theme.getColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND), panel, 3.0D);
+            for (WidgetThemeVariable surface : new WidgetThemeVariable[]{
+                    WidgetThemeVariable.ACCENT, WidgetThemeVariable.ACCENT_HOVER,
+                    WidgetThemeVariable.SUCCESS_BACKGROUND, WidgetThemeVariable.WARNING_BACKGROUND,
+                    WidgetThemeVariable.DANGER_BACKGROUND}) {
+                assertContrastAtLeast(theme.getColor(WidgetThemeVariable.TEXT_ON_ACCENT),
+                        theme.getColor(surface), panel, 4.5D);
+            }
+            assertContrastAtLeast(theme.getColor(WidgetThemeVariable.SUCCESS),
+                    theme.getColor(WidgetThemeVariable.SUCCESS_BACKGROUND), panel, 4.5D);
+            assertContrastAtLeast(theme.getColor(WidgetThemeVariable.WARNING),
+                    theme.getColor(WidgetThemeVariable.WARNING_BACKGROUND), panel, 4.5D);
+            assertContrastAtLeast(theme.getColor(WidgetThemeVariable.DANGER),
+                    theme.getColor(WidgetThemeVariable.DANGER_BACKGROUND), panel, 4.5D);
+            assertContrastAtLeast(theme.getColor(WidgetThemeVariable.SCROLLBAR_THUMB),
+                    theme.getColor(WidgetThemeVariable.SCROLLBAR_TRACK), panel, 3.0D);
+        }
     }
 
     @Test
@@ -227,14 +206,6 @@ class WidgetThemeTest {
         double contrast = (lighter + 0.05D) / (darker + 0.05D);
 
         assertTrue(contrast >= minimum, () -> "Expected contrast >= " + minimum + ", got " + contrast);
-    }
-
-    private static void assertDarkerThan(int foreground, int background, int parent) {
-        int opaqueParent = compositeOver(parent, 0xFF000000);
-        int composedForeground = compositeOver(foreground, opaqueParent);
-        int composedBackground = compositeOver(background, opaqueParent);
-
-        assertTrue(relativeLuminance(composedForeground) < relativeLuminance(composedBackground));
     }
 
     private static int alpha(int color) {

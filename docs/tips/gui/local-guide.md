@@ -312,17 +312,21 @@ These roles apply to GUI chrome and state. A waypoint's user-selected color is d
 `WidgetTheme` is an immutable, complete snapshot. A builder created with `WidgetTheme.builder()` must assign every variable before `build()`. For a partial change, start from an existing theme or use `withColor`:
 
 `WidgetThemes.DEFAULT` points to `WidgetThemes.TRANSLUCENT_DARK`, the built-in neutral grayscale
-glass palette. Its black and near-black surfaces use roughly 15–45% opacity so the world remains
-clearly visible beneath the GUI, while text and accent roles stay opaque for readability. Surface
-opacity still increases from the screen overlay through panels to popups so nested content remains
-visually separated. Standard and focus borders use black with stronger alpha, making them darker
-than their adjacent control fills. The true/false toggle is the deliberate grayscale exception:
-`SUCCESS_BACKGROUND` uses muted sage green and `DANGER_BACKGROUND` uses muted dusty red so its
-state is recognizable without high-saturation color. Other status roles use luminance differences
-instead of hue. `WidgetThemes.MODERN_DARK` uses the same glass surface opacity progression
-with a cool blue tint: roughly 30% for the screen overlay, 35% for panels, 45% for popups, and
-70% for dialogs. Controls and status fills are translucent too. Glassmorphism is the shared
-design style for every preset; text, accents, and focus outlines stay crisp.
+glass palette. The screen overlay is 65% opaque and panels are 70% opaque, preserving a
+view of the world while limiting bright-scene washout. Controls use 85–90% opacity and
+lighter charcoal fills so their shape remains visible at night. Opaque gray borders and a
+brighter focus ring distinguish control boundaries, hover, and keyboard focus. Popups are
+98% opaque and dialogs 99% opaque to suppress underlying labels showing through. Accent
+fills are dark gray with light text; selected rows have a stronger neutral fill. Success,
+warning, and danger use muted sage, amber, and dusty red foregrounds and backgrounds.
+Validate text and control contrast after compositing the screen, panel, and control over
+both black and white world backgrounds; checking raw RGB against black misses daylight failures.
+`WidgetThemes.MODERN_DARK` follows the same opacity progression with blue-gray surfaces,
+slate borders, and cyan focus highlights. Its accent and selected fills use dark teal to keep
+light labels readable, including the hovered accent state. Green, amber, and rose status text
+sits on darker matching fills. Both palettes are checked over black, white, and sky-blue
+world backgrounds, including status text on its matching background. Glassmorphism remains
+the shared design style; text, accents, and focus outlines stay crisp.
 
 `WidgetThemes.HIGH_CONTRAST` uses stronger black and near-black glass tints, white primary
 text and borders, a yellow focus ring, and cyan accents. Its screen overlay is roughly 30%
