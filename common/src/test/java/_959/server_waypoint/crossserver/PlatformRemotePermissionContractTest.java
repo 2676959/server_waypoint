@@ -23,7 +23,7 @@ class PlatformRemotePermissionContractTest {
         Map<String, String> sources = new HashMap<>();
         sources.put("fixture.Subject", """
                 package fixture;
-                public class Subject {
+                public class Subject implements org.bukkit.command.CommandSender {
                     public int level;
                     public boolean op;
                     public java.util.Map<String, Boolean> assignments = new java.util.HashMap<>();
@@ -32,6 +32,7 @@ class PlatformRemotePermissionContractTest {
                     public boolean isOp() { return op; }
                     public boolean hasPermission(int level) { return this.level >= level; }
                     public boolean hasPermissions(int level) { return this.level >= level; }
+                    public org.bukkit.Server getServer() { return new org.bukkit.craftbukkit.CraftServer(); }
                     public net.minecraft.server.permissions.PermissionSet permissions() {
                         return new net.minecraft.server.permissions.LevelBasedPermissionSet(
                             net.minecraft.server.permissions.PermissionLevel.byId(level));
@@ -61,11 +62,19 @@ class PlatformRemotePermissionContractTest {
                     }
                 }
                 """);
-        sources.put("net.minecraft.server.level.ServerPlayer",
-                "package net.minecraft.server.level; public class ServerPlayer extends fixture.Subject {}");
+        sources.put("net.minecraft.server.level.ServerPlayer", """
+                package net.minecraft.server.level;
+                public class ServerPlayer extends fixture.Subject {
+                    public net.minecraft.commands.CommandSourceStack createCommandSourceStack() {
+                        return new net.minecraft.commands.CommandSourceStack(this.level);
+                    }
+                }
+                """);
         sources.put("net.minecraft.commands.CommandSourceStack", """
                 package net.minecraft.commands;
                 public class CommandSourceStack extends fixture.Subject {
+                    public CommandSourceStack() {}
+                    public CommandSourceStack(int level) { this.level = level; }
                     public net.minecraft.server.level.ServerPlayer player;
                     public net.minecraft.server.level.ServerPlayer getPlayer() { return player; }
                 }
@@ -82,12 +91,56 @@ class PlatformRemotePermissionContractTest {
                     }
                 }
                 """);
-        sources.put("org.bukkit.entity.Player", "package org.bukkit.entity; public class Player extends fixture.Subject {}");
+        sources.put("org.bukkit.Server", "package org.bukkit; public interface Server {}");
+        sources.put("org.bukkit.command.CommandSender", """
+                package org.bukkit.command;
+                public interface CommandSender {
+                    boolean isPermissionSet(String node);
+                    boolean hasPermission(String node);
+                    org.bukkit.Server getServer();
+                }
+                """);
+        sources.put("org.bukkit.entity.Player", """
+                package org.bukkit.entity;
+                public interface Player extends org.bukkit.command.CommandSender {
+                    boolean isOp();
+                }
+                """);
+        sources.put("org.bukkit.craftbukkit.entity.CraftPlayer", """
+                package org.bukkit.craftbukkit.entity;
+                public class CraftPlayer extends net.minecraft.server.level.ServerPlayer implements org.bukkit.entity.Player {
+                    public net.minecraft.server.level.ServerPlayer getHandle() { return this; }
+                }
+                """);
+        sources.put("net.minecraft.server.MinecraftServer", """
+                package net.minecraft.server;
+                public class MinecraftServer {
+                    public net.minecraft.commands.CommandSourceStack createCommandSourceStack() {
+                        return new net.minecraft.commands.CommandSourceStack(4);
+                    }
+                }
+                """);
+        sources.put("net.minecraft.server.dedicated.DedicatedPlayerList", """
+                package net.minecraft.server.dedicated;
+                public class DedicatedPlayerList {
+                    public net.minecraft.server.MinecraftServer getServer() {
+                        return new net.minecraft.server.MinecraftServer();
+                    }
+                }
+                """);
+        sources.put("org.bukkit.craftbukkit.CraftServer", """
+                package org.bukkit.craftbukkit;
+                public class CraftServer implements org.bukkit.Server {
+                    public net.minecraft.server.dedicated.DedicatedPlayerList getHandle() {
+                        return new net.minecraft.server.dedicated.DedicatedPlayerList();
+                    }
+                }
+                """);
         sources.put("io.papermc.paper.command.brigadier.CommandSourceStack", """
                 package io.papermc.paper.command.brigadier;
                 public class CommandSourceStack {
                     public fixture.Subject sender = new fixture.Subject();
-                    public fixture.Subject getSender() { return sender; }
+                    public org.bukkit.command.CommandSender getSender() { return sender; }
                 }
                 """);
         String title = switch (platform) {
@@ -116,7 +169,7 @@ class PlatformRemotePermissionContractTest {
         try (URLClassLoader loader = new URLClassLoader(new java.net.URL[]{temporary.toUri().toURL()}, getClass().getClassLoader())) {
             Class<?> adapterClass = loader.loadClass(className);
             PermissionManager<Object, String, Object> manager = (PermissionManager<Object, String, Object>) adapterClass.getConstructor().newInstance();
-            Object player = loader.loadClass(platform.equals("paper") ? "org.bukkit.entity.Player" : "net.minecraft.server.level.ServerPlayer")
+            Object player = loader.loadClass(platform.equals("paper") ? "org.bukkit.craftbukkit.entity.CraftPlayer" : "net.minecraft.server.level.ServerPlayer")
                     .getConstructor().newInstance();
             Object source = loader.loadClass(platform.equals("paper") ? "io.papermc.paper.command.brigadier.CommandSourceStack"
                     : "net.minecraft.commands.CommandSourceStack").getConstructor().newInstance();
@@ -124,10 +177,13 @@ class PlatformRemotePermissionContractTest {
             Object subject = platform.equals("paper") ? source.getClass().getField("sender").get(source) : source;
             var permissions = new RemotePermissions<>(manager, CommandPermission::new, actual -> actual == player ? player : null);
             assertFalse(permissions.canRequestTeleport(console));
-            assertEquals(!platform.equals("paper"), permissions.canList(source));
+            assertTrue(permissions.canList(source));
+            assertFalse(permissions.canTeleportOnArrival(player));
+            player.getClass().getField("level").setInt(player, 1);
+            player.getClass().getField("op").setBoolean(player, false);
+            assertFalse(permissions.canRequestTeleport(player));
             assertFalse(permissions.canTeleportOnArrival(player));
             player.getClass().getField("level").setInt(player, 2);
-            player.getClass().getField("op").setBoolean(player, true);
             assertTrue(permissions.canRequestTeleport(player));
             assertTrue(permissions.canTeleportOnArrival(player));
             subject.getClass().getField("level").setInt(subject, 4);
