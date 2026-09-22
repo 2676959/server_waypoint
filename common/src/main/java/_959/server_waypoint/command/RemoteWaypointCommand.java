@@ -123,6 +123,8 @@ final class RemoteWaypointCommand<S> {
         return suggest(context, builder, depth, false);
     }
     private CompletableFuture<Suggestions> suggest(CommandContext<S> context, SuggestionsBuilder builder, int depth, boolean tp) {
+        // Brigadier supplies the outer context for redirected commands such as /execute ... run wp.
+        context = context.getLastChild();
         if (!(tp ? canTeleport : canList).test(context.getSource())) return Suggestions.empty();
         Map<RemoteServerId, CatalogReceiver.View> cached = store.get().snapshot();
         Collection<String> candidates = List.of();

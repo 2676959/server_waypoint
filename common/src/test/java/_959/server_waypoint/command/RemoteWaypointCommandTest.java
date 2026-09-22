@@ -108,6 +108,33 @@ class RemoteWaypointCommandTest {
         assertEquals(1, dispatcher.execute("wp remote list \"search\" " + quote(DIMENSION) + " \"\"", "console"));
         assertTrue(keys(last()).contains("waypoint.remote.empty"));
     }
+    @Test void redirectedSuggestionsResolveArgumentsAtEveryRemoteDepth() {
+        tpAllowed = true;
+        var execute = dispatcher.register(LiteralArgumentBuilder.<String>literal("execute"));
+        execute.addChild(LiteralArgumentBuilder.<String>literal("as")
+                .then(com.mojang.brigadier.builder.RequiredArgumentBuilder.<String, String>argument("target",
+                        com.mojang.brigadier.arguments.StringArgumentType.word())
+                        .fork(execute, context -> List.of("player"))).build());
+        execute.addChild(LiteralArgumentBuilder.<String>literal("run").redirect(dispatcher.getRoot()).build());
+        for (String prefix : List.of("execute as 7c00 run ", "execute as 7c00 run execute as 7c00 run ")) {
+            for (String command : List.of("list", "details", "tp")) {
+                String input = "wp remote " + command + " ";
+                assertEquals(suggestions(input), suggestions(prefix + input));
+                input += quote(A.value()) + " ";
+                assertTrue(suggestions(input).contains(quote(DIMENSION)));
+                assertEquals(suggestions(input), suggestions(prefix + input));
+                input += quote(DIMENSION) + " ";
+                assertTrue(suggestions(input).contains("\"search\""));
+                assertEquals(suggestions(input), suggestions(prefix + input));
+                if (!command.equals("list")) {
+                    input += "\"search\" ";
+                    assertTrue(suggestions(input).contains(quote("base 0")));
+                    assertEquals(suggestions(input), suggestions(prefix + input));
+                    assertEquals(suggestions(input + "\"base"), suggestions(prefix + input + "\"base"));
+                }
+            }
+        }
+    }
     @Test void combinedOptionsAndGeneratedPageLinksRetainExactScope() throws Exception {
         assertEquals(1, dispatcher.execute(target() + " search village sort name order descending page 1 limit 2 view flat", "console"));
         String next = clicks(last()).stream().filter(value -> value.contains("page 2")).findFirst().orElseThrow();
