@@ -533,6 +533,8 @@ Both lists use 20-pixel rows and `WaypointRowRenderer.background(...)` / `initia
 color washes, hover/selection outlines and initials badges. The initials method returns the badge
 width for label placement. The remote tree reuses `WidgetTextures` expand/collapse/empty icons,
 formatted display names and the tree's clipping and hit testing; exact identities remain in tooltips.
+Remote identity tooltips use the current hovered entry and vanilla cursor positioning after the
+panel render pass, rather than attaching a widget tooltip to the entire tree rectangle.
 Switching
 views preserves separate local and remote selection/scroll state; filtering/removal clears an
 invisible remote selection. Remote scope is owned by the screen instance, not persisted to disk.

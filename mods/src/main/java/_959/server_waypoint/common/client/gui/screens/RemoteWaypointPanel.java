@@ -101,7 +101,6 @@ final class RemoteWaypointPanel {
         var roots = RemoteBrowserModel.roots(displayed, filter, grouped, sortMode, reversed);
         // Filter/removal must not leave an actionable invisible selection.
         if (selected != null && !contains(roots, selected)) selected = null;
-        tree.setTooltip(null);
         tree.updateRoots(roots);
         details.setRemoteSelection(selected, selected == null ? null : displayed.get(selected.serverId()));
         teleportButton.active = teleportButton.visible && session == catalogs.session() && RemoteBrowserModel.prepare(catalogs, selected) != null;
@@ -150,6 +149,7 @@ final class RemoteWaypointPanel {
                 "waypoint.remote.state." + catalogs.state().name().toLowerCase(Locale.ROOT)));
         drawText(context, font, font.plainSubstrByWidth(status.getString(), tree.getWidth()),
                 tree.getX(), tree.getY() + tree.getHeight() + 3, getColor(TEXT_MUTED));
+        tree.renderHoveredTooltip(context, mouseX, mouseY);
 
     }
 
@@ -167,19 +167,22 @@ final class RemoteWaypointPanel {
         protected void setExpanded(RemoteBrowserModel.Node node, boolean expanded) {
             if (expanded) collapsed.remove(node.path()); else collapsed.add(node.path());
         }
-        @Override
-        protected void onHoveredEntryChanged(TreeEntry<RemoteBrowserModel.Node> oldEntry,
-                                             TreeEntry<RemoteBrowserModel.Node> newEntry) {
-            if (newEntry == null) {
-                setTooltip(null);
-                return;
-            }
-            var path = newEntry.value().path();
+        private void renderHoveredTooltip(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+            var entry = getHoveredEntry();
+            if (entry == null) return;
+            var path = entry.value().path();
             String identity = path.server().value()
                     + (path.dimension() == null ? "" : " / " + path.dimension())
                     + (path.list() == null ? "" : " / [" + path.list() + "]")
                     + (path.waypoint() == null ? "" : " / [" + path.waypoint() + "]");
-            setTooltip(Tooltip.create(Component.literal(identity)));
+            var client = net.minecraft.client.Minecraft.getInstance();
+            var lines = Tooltip.create(Component.literal(identity)).toCharSequence(client);
+            // Use the cursor position, not the bounds of the entire scrollable tree.
+            //? if >=1.21.6 {
+            context.setTooltipForNextFrame(lines, mouseX, mouseY);
+            //?} else {
+            /*if (client.screen != null) client.screen.setTooltipForNextRenderPass(lines);
+            *///?}
         }
         @Override
         protected void renderEmpty(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
