@@ -5,21 +5,38 @@ import _959.server_waypoint.config.CommandPermission;
 import _959.server_waypoint.crossserver.authorization.RemotePermissions;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import javax.tools.ToolProvider;
 import java.net.URLClassLoader;
 import java.nio.file.*;
 import java.util.*;
+import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 /** Executes the actual checked-in adapters against minimal platform API doubles, without booting a game. */
 class PlatformRemotePermissionContractTest {
     @TempDir Path temporary;
 
-    @ParameterizedTest
-    @ValueSource(strings = {"paper", "fabric", "forge", "neoforge"})
+    private enum AdapterVariant {
+        CURRENT,
+        LEGACY_PAPER
+    }
+
+    private static Stream<Arguments> adapterCases() {
+        return Stream.of(
+                Arguments.of("paper", AdapterVariant.CURRENT),
+                Arguments.of("paper", AdapterVariant.LEGACY_PAPER),
+                Arguments.of("fabric", AdapterVariant.CURRENT),
+                Arguments.of("forge", AdapterVariant.CURRENT),
+                Arguments.of("neoforge", AdapterVariant.CURRENT)
+        );
+    }
+
+    @ParameterizedTest(name = "{0}-{1}")
+    @MethodSource("adapterCases")
     @SuppressWarnings("unchecked")
-    void adapterAssignmentsFallbackConsoleAndRevocation(String platform) throws Exception {
+    void adapterAssignmentsFallbackConsoleAndRevocation(String platform, AdapterVariant variant) throws Exception {
         Map<String, String> sources = new HashMap<>();
         sources.put("fixture.Subject", """
                 package fixture;
@@ -156,7 +173,7 @@ class PlatformRemotePermissionContractTest {
         if (!Files.isDirectory(repository.resolve("common"))) repository = repository.getParent();
         Path adapter = repository.resolve(platform.equals("paper") ? "paper" : "mods")
                 .resolve("src/main/java/" + className.replace('.', '/') + ".java");
-        sources.put(className, Files.readString(adapter));
+        sources.put(className, adapterSource(adapter, variant));
         List<String> arguments = new ArrayList<>(List.of("--release", "17", "-d", temporary.toString(),
                 "-classpath", Path.of(PermissionManager.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toString()));
         for (var entry : sources.entrySet()) {
@@ -186,6 +203,9 @@ class PlatformRemotePermissionContractTest {
             player.getClass().getField("level").setInt(player, 2);
             assertTrue(permissions.canRequestTeleport(player));
             assertTrue(permissions.canTeleportOnArrival(player));
+            if (platform.equals("paper")) {
+                assertPaperPlayerSourceFallback(manager, source, player);
+            }
             subject.getClass().getField("level").setInt(subject, 4);
             subject.getClass().getField("op").setBoolean(subject, true);
             assertTrue(permissions.canList(console));
@@ -216,6 +236,62 @@ class PlatformRemotePermissionContractTest {
                 assertFalse(permissions.canRequestTeleport(player));
                 assertFalse(permissions.canTeleportOnArrival(player));
             }
+        }
+    }
+
+    private static String adapterSource(Path adapter, AdapterVariant variant) throws Exception {
+        String source = Files.readString(adapter);
+        if (variant != AdapterVariant.LEGACY_PAPER) {
+            return source;
+        }
+        source = replaceRequired(source, """
+                //? if >= 1.21.11 {
+                import net.minecraft.server.permissions.Permission;
+                import net.minecraft.server.permissions.PermissionLevel;
+                //?}
+                """, "");
+        return replaceRequired(source, """
+                        //? if >= 1.21.11 {
+                        return source.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(defaultLevel)));
+                        //?} else {
+                        /*return source.hasPermission(defaultLevel);
+                        *///?}
+                """, """
+                        return source.hasPermission(defaultLevel);
+                """);
+    }
+
+    private static String replaceRequired(String source, String target, String replacement) {
+        if (!source.contains(target)) {
+            throw new IllegalStateException("Expected Stonecutter branch was not found in the adapter source");
+        }
+        return source.replace(target, replacement);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void assertPaperPlayerSourceFallback(PermissionManager<Object, String, Object> manager,
+                                                         Object source, Object player) throws Exception {
+        var sender = source.getClass().getField("sender");
+        Object originalSender = sender.get(source);
+        var level = player.getClass().getField("level");
+        Map<String, Boolean> assignments =
+                (Map<String, Boolean>) player.getClass().getField("assignments").get(player);
+        try {
+            sender.set(source, player);
+            assignments.clear();
+            level.setInt(player, 1);
+            assertFalse(manager.hasPermission(source, manager.keys.tp(), 2));
+            level.setInt(player, 2);
+            assertTrue(manager.hasPermission(source, manager.keys.tp(), 2));
+            assignments.put("server_waypoint.command.tp", false);
+            assertFalse(manager.hasPermission(source, manager.keys.tp(), 2));
+            assignments.put("server_waypoint.command.tp", true);
+            level.setInt(player, 0);
+            assertTrue(manager.hasPermission(source, manager.keys.tp(), 2));
+        } finally {
+            assignments.clear();
+            level.setInt(player, 2);
+            sender.set(source, originalSender);
         }
     }
 }
