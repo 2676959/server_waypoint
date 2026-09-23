@@ -62,6 +62,109 @@ Optional:
 - `/wp restore <token>` restores a recently removed waypoint while its temporary token remains valid.
 - `/wp tp` teleport the executor player to a waypoint
 
+## Cross-server teleport setup
+
+Cross-server teleport is disabled by default and runs through Velocity. Install matching Server Waypoint versions on Velocity and at least two dedicated Paper, Fabric, Forge, or NeoForge backends. Velocity requires Java 25; use the Java version required by each backend. Players can use remote commands without a client mod. The remote GUI requires a matching client mod. Integrated servers do not participate.
+
+### No encryption: PLAINTEXT (same host)
+
+This setup is for servers on the **same host**. It has no encryption or cryptographic backend authentication, so use it only when local processes are trusted.
+
+1. Register both backends in Velocity, for example `survival` and `creative`. Start Velocity and each backend once to create their disabled `cross-server.json` files, then stop them. The files are in `<velocity-root>/plugins/server_waypoint/`, `<paper-root>/plugins/ServerWaypoint/`, `<fabric-root>/config/server_waypoint/`, or `<forge-or-neoforge-root>/defaultconfigs/server_waypoint/`.
+2. Set Velocity's `cross-server.json` to:
+
+   ```json
+   {
+       "enabled": true,
+       "transportMode": "PLAINTEXT",
+       "listen": "127.0.0.1:25580",
+       "backends": {
+           "survival": {
+               "enabled": true,
+               "velocityServer": "survival"
+           },
+           "creative": {
+               "enabled": true,
+               "velocityServer": "creative"
+           }
+       }
+   }
+   ```
+
+   Each `velocityServer` must match a registered Velocity server name. Each backend ID must be unique and remain stable.
+3. Set `survival`'s backend `cross-server.json` to:
+
+   ```json
+   {
+       "enabled": true,
+       "transportMode": "PLAINTEXT",
+       "serverId": "survival",
+       "coordinator": "127.0.0.1:25580",
+       "catalogExport": "PUBLIC"
+   }
+   ```
+
+   Use the same file on `creative`, changing `serverId` to `creative`. `PUBLIC` shares each backend's waypoint lists with the coordinator and authorized readers on participating servers.
+4. Remove `credentialsDirectory`, `coordinatorPublicKey`, and `requiredSuite` from plaintext configurations, and remove `publicKey` from Velocity's backend entries. Use a literal loopback IP at both ends: `localhost`, wildcard addresses, and non-loopback addresses are rejected. Restart Velocity and both backends after editing the files. Configure normal Velocity player forwarding so player UUIDs agree across servers.
+5. Join through Velocity and run `/wp remote servers`, then `/wp remote list survival`. Teleport to an existing exported waypoint, for example `/wp remote tp creative "minecraft:overworld" "Public list" "Home"`. Check the destination coordinates and feedback, then test the other direction. A server switch alone does not confirm waypoint arrival.
+
+### Encryption: NOISE_KK
+
+Use `NOISE_KK` when backends run on different hosts or when you want authenticated, encrypted backend connections on one host. Give the Velocity coordinator a private, reachable TCP address and allow its waypoint port only from backend hosts. This port is separate from Velocity's player port and the backends' Minecraft ports. The examples below use loopback for a same-host installation; replace `127.0.0.1` with the coordinator's private address on multiple hosts.
+
+1. Register `survival` and `creative` in Velocity. Start Velocity and each backend once to create their disabled `cross-server.json` files, then stop them. Use the configuration paths listed in the plaintext setup above.
+2. Set Velocity's `cross-server.json` to the following **without** the `publicKey` fields for the first start:
+
+   ```json
+   {
+       "enabled": true,
+       "transportMode": "NOISE_KK",
+       "listen": "127.0.0.1:25580",
+       "backends": {
+           "survival": {
+               "enabled": true,
+               "velocityServer": "survival"
+           },
+           "creative": {
+               "enabled": true,
+               "velocityServer": "creative"
+           }
+       }
+   }
+   ```
+
+3. Set `survival`'s backend `cross-server.json` to the following **without** `coordinatorPublicKey` for the first start. Use the same file on `creative`, changing `serverId` to `creative`:
+
+   ```json
+   {
+       "enabled": true,
+       "transportMode": "NOISE_KK",
+       "serverId": "survival",
+       "coordinator": "127.0.0.1:25580",
+       "catalogExport": "PUBLIC"
+   }
+   ```
+
+4. Start Velocity and both backends, then stop them. Startup reports missing public-key pins at this stage, but each component writes `cross-server-public-key.txt` beside its `cross-server.json`.
+5. Exchange and verify the full Base64 value in each public-key file through a trusted administrative channel. Add the Velocity key as `coordinatorPublicKey` to **each** backend's `cross-server.json`. Add the `survival` key as `publicKey` inside Velocity's `backends.survival` entry and the `creative` key inside `backends.creative`. For example, add these fields to the existing objects:
+
+   ```text
+   "coordinatorPublicKey": "<Velocity public key>"
+   ```
+
+   ```text
+   "survival": {
+       "enabled": true,
+       "velocityServer": "survival",
+       "publicKey": "<survival public key>"
+   }
+   ```
+
+   Replace the placeholders with the full Base64 public keys. Keep each component's `credentials/static.key` private; never copy it to another component. No pairing command is needed.
+6. Restart Velocity, then both backends. Configure authenticated Velocity player forwarding so player UUIDs agree across servers. Run `/wp remote servers` and `/wp remote list survival`, then test `/wp remote tp creative "minecraft:overworld" "Public list" "Home"` with an existing exported waypoint. Verify destination coordinates and feedback in both directions.
+
+Remote browsing uses `server_waypoint.command.remote.list` (default level 0). Remote teleport requires both `server_waypoint.command.tp` and `server_waypoint.command.remote.tp` at the source (default level 2), plus local teleport permission at the destination. See the [administrator guide](docs/features/cross-server/cross-server-admin.md) for permissions, key rotation, and troubleshooting.
+
 ## Uploading from client map mods
 
 Upload is initiated by the server but reads map data from the executing player’s client. The required `<source>` is `xaero` or `voxelmap`; the client must have both Server Waypoint and the selected map mod installed and ready. The server accepts only the dimensions and optional list/waypoint selected by the command.
@@ -191,9 +294,9 @@ Some changes made in `config.json` may take effects after server restarts.
   Remote teleport source authorization requires both `server_waypoint.command.tp` and
   `server_waypoint.command.remote.tp` (`remoteTp`, level 2). Remote teleport does not require the
   separate browsing permission. Arrival rechecks the destination player's local teleport permission.
-  Paper currently falls back to `isOp()` for unset nodes, regardless of these configured levels;
-  grant explicit nodes to ordinary players and use explicit denials when needed. Fabric's permissions
-  API supports node overrides; the current Forge/NeoForge adapters use vanilla levels.
+  Paper uses the vanilla command-source level for unset nodes; explicit permission grants or denials
+  take precedence. Fabric's permissions API supports node overrides; the current Forge/NeoForge
+  adapters use vanilla levels.
   See [remote authorization](docs/features/cross-server/specs/cross-server-authorization.md) for the integration boundary.
 
   Default value:
@@ -280,11 +383,13 @@ Some changes made in `config.json` may take effects after server restarts.
   - What is lost:
   Any waypoints you added to these shared lists. Any list you created that happens to share a name with a server list.
 
-Remote catalog synchronization requires matching protocol-11 clients and backends. Remote snapshots
-are kept separately from local waypoint files; client GUI integration is the next implementation
-step. See [client synchronization](docs/features/cross-server/specs/cross-server-client-sync.md).
+Remote catalog synchronization and the remote GUI require matching client and backend versions.
+Remote snapshots are kept separately from local waypoint files. See
+[client synchronization](docs/features/cross-server/specs/cross-server-client-sync.md).
 
 ### Cross-server administration
 
-Cross-server support is opt-in and disabled by default. See the [administrator guide](docs/features/cross-server/cross-server-admin.md),
-[release notes](docs/features/cross-server/cross-server-release-notes.md), and [release verification](docs/features/cross-server/validation/cross-server-release-readiness.md).
+Start with the [cross-server teleport setup](#cross-server-teleport-setup), or see the
+[administrator guide](docs/features/cross-server/cross-server-admin.md) for more deployment details.
+[Release notes](docs/features/cross-server/cross-server-release-notes.md) and
+[release verification](docs/features/cross-server/validation/cross-server-release-readiness.md) provide more detail.
