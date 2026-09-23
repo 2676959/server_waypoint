@@ -990,6 +990,11 @@ class CoreWaypointCommandListTest {
 
     private static final class TestWaypointCommand
             extends CoreWaypointCommand<TestSource, String, Object, String, String> {
+        @Override
+        protected boolean isServerConsoleWithHighestPermission(TestSource source) {
+            return false;
+        }
+
         private Object player;
         private boolean localUpload;
         private UploadTarget collectedTarget;

@@ -63,6 +63,10 @@ required after changing transport, mappings, pins or export configuration. Unkno
 are rejected; input is capped at 1 MiB. Default transport is `NOISE_KK`. Only `PUBLIC` catalog export
 is implemented; it exports the local server's waypoint lists. Private/player-specific export is not
 implemented. Cache/transport limits use the existing conservative defaults.
+The generated backend and coordinator templates include every supported top-level field with defaults
+or obvious placeholders. The generated coordinator also includes one disabled example backend entry.
+Replace IDs and public-key placeholders before enabling them. Switching a generated template to
+`PLAINTEXT` requires removing its crypto fields as described below.
 
 Example coordinator configuration (Velocity `plugins/server_waypoint/cross-server.json`):
 

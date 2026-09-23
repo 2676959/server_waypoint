@@ -15,13 +15,21 @@ See the [release verification record](validation/cross-server-release-readiness.
    Velocity server name, and mappings cannot share a destination name.
 2. Start each component once to create its disabled `cross-server.json`, then stop it. On Paper the
    directory is `plugins/ServerWaypoint`; on Velocity it is `plugins/server_waypoint`. On mod loaders
-   use the Server Waypoint configuration directory created by that installation.
+   use the Server Waypoint configuration directory created by that installation. Backend and
+   coordinator files have different editable templates with every supported top-level field.
+   Replace `replace-with-...` IDs and `PASTE_...` public keys with real values before enabling
+   their corresponding entries. The sample Velocity backend entry starts disabled.
 3. Use the [KK configuration examples](specs/cross-server-velocity-runtime.md#configuration). For each
    backend set `enabled`, `serverId`, `coordinator`, `transportMode: "NOISE_KK"` and
    `catalogExport: "PUBLIC"`. On Velocity set `enabled`, `listen`, `transportMode: "NOISE_KK"`
-   and two `backends` entries with their `velocityServer` mappings. Leave pins absent for this
-   generation pass. Start and stop the components: missing pins deliberately prevent operation,
-   but KK startup writes each component's `cross-server-public-key.txt`.
+   and two `backends` entries with their `velocityServer` mappings. Leave the public-key placeholders
+   in place for this generation pass. Start and stop the components: invalid pins deliberately
+   prevent operation, but KK startup writes each component's `cross-server-public-key.txt`.
+   On a Paper or dedicated mod backend, the server console can run
+   `/wp cross-server generate-key` after configuring `cross-server.json` to generate the backend's
+   `credentials/static.key` and `cross-server-public-key.txt` without a startup pass. The command
+   requires command level 4 and refuses to replace an existing key. With a custom
+   `credentialsDirectory`, it writes `static.key` there instead. Restart after pin exchange.
 4. Exchange **only those public-key files** through a trusted administrative channel. Compare the
    complete contents with the administrator of the other machine. Copy the coordinator's key into
    each backend's `coordinatorPublicKey`; copy each backend's key into that stable ID's `publicKey`

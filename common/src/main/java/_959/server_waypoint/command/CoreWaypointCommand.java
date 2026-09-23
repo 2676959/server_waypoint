@@ -3,6 +3,7 @@ package _959.server_waypoint.command;
 import _959.server_waypoint.crossserver.authorization.RemotePermissions;
 import _959.server_waypoint.crossserver.handoff.RemoteTeleportInitiator;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result;
+import _959.server_waypoint.crossserver.pairing.StaticKeyGenerator;
 
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
@@ -145,6 +146,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     public static final String UPLOAD_SOURCE_ARG = "source";
     public static final String TP_COMMAND = "tp";
     public static final String RELOAD_COMMAND = "reload";
+    public static final String GENERATE_KEY_COMMAND = "generate-key";
     public static final String NAVIGATE_COMMAND = "navigate";
     public static final String USE_COMMAND = "use";
     public static final String DISABLE_COMMAND = "disable";
@@ -226,6 +228,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     protected abstract WaypointPos getSourcePosition(S source);
     protected abstract float getSourceYaw(S source);
     protected abstract @Nullable P getPlayer(S source);
+    protected abstract boolean isServerConsoleWithHighestPermission(S source);
     protected abstract String getPlayerName(P player);
     protected abstract void teleportPlayer(S source, P player, D dimensionArgument, WaypointPos pos, int yaw);
     protected abstract Message getMessageFromComponent(Component component);
@@ -806,6 +809,20 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 .then((ArgumentBuilder<Object, ?>) remoteCommand.build())
                 .then((ArgumentBuilder<Object, ?>) listCommandNode())
                 .then((ArgumentBuilder<Object, ?>) navigationCommandNode())
+                .then(literal("cross-server")
+                        .then(literal(GENERATE_KEY_COMMAND)
+                                .requires(source -> isServerConsoleWithHighestPermission((S) source))
+                                .executes(context -> {
+                                    S source = (S) context.getSource();
+                                    try {
+                                        var publicFile = StaticKeyGenerator.generate(waypointServer.configDirectory());
+                                        sender.sendMessage(source, text("Cross-server static key generated. Public key: " + publicFile));
+                                        return Command.SINGLE_SUCCESS;
+                                    } catch (IOException | IllegalArgumentException exception) {
+                                        sender.sendError(source, text("Could not generate cross-server static key: " + exception.getMessage()));
+                                        return 0;
+                                    }
+                                })))
                 .then(literal(RELOAD_COMMAND)
                         .requires(source -> hasReloadPermission((S) source))
                         .executes(

@@ -11,11 +11,16 @@ import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
+import _959.server_waypoint.mixin.CommandSourceStackAccessor;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 
 import com.mojang.brigadier.Message;
 import net.kyori.adventure.text.Component;
 import net.minecraft.commands.CommandSourceStack;
+//? if >= 1.21.11 {
+import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.PermissionLevel;
+//?}
 import net.minecraft.commands.arguments.DimensionArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
@@ -150,6 +155,19 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     @Override
     protected ServerPlayer getPlayer(CommandSourceStack source) {
         return source.getPlayer();
+    }
+
+    @Override
+    protected boolean isServerConsoleWithHighestPermission(CommandSourceStack source) {
+        if (!source.getServer().isDedicatedServer()
+                || ((CommandSourceStackAccessor) source).serverWaypoint$getSource() != source.getServer()) {
+            return false;
+        }
+        //? if >= 1.21.11 {
+        return source.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(4)));
+        //?} else {
+        /*return source.hasPermission(4);
+        *///?}
     }
 
     @Override

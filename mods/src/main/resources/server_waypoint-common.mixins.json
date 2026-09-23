@@ -10,6 +10,7 @@
     "ArmorStandNavigationMixin",
     "CartographyTableMenuNavigationMixin",
     "CompassItemNavigationMixin",
+    "CommandSourceStackAccessor",
     "CraftingMenuNavigationMixin",
     "DecoratedPotBlockEntityNavigationMixin",
     "DecoratedPotBlockNavigationMixin",

@@ -28,10 +28,14 @@ public final class BackendRuntime<S, P> extends AsyncTransportLifecycle implemen
         this.directory = directory; this.manager = manager; this.sourcePlatform = sourcePlatform; this.destinationPlatform = destinationPlatform;
     }
     @Override protected TransportResult startResources() throws Exception {
-        var config = RuntimeConfiguration.read(directory, Set.of("enabled", "transportMode", "serverId", "coordinator", "protocolVersion",
-                "requiredSuite", "credentialsDirectory", "coordinatorPublicKey", "catalogExport", "serverIconItem"));
+        var config = RuntimeConfiguration.readBackend(directory);
         if (!RuntimeConfiguration.enabled(config)) return TransportResult.DISABLED;
-        RuntimeConfiguration.rejectCryptoInPlaintext(config);
+        try {
+            RuntimeConfiguration.rejectCryptoInPlaintext(config);
+        } catch (java.io.IOException | IllegalArgumentException failure) {
+            WaypointServerCore.LOGGER.warn("Cross-server backend configuration rejected: {}", failure.getMessage());
+            throw failure;
+        }
         RemoteServerId id = new RemoteServerId(RuntimeConfiguration.text(config, "serverId", ""));
         if (!RuntimeConfiguration.text(config, "catalogExport", "PUBLIC").equals("PUBLIC")) throw new IllegalArgumentException("Only PUBLIC export is supported");
         var mode = RuntimeConfiguration.mode(config);

@@ -23,7 +23,7 @@ public final class ServerWaypointVelocity {
     private final ProxyServer proxy;
     private final VelocityRuntime runtime;
     @Inject public ServerWaypointVelocity(ProxyServer proxy, Logger logger, @DataDirectory Path directory) {
-        this.proxy = proxy; this.logger = logger; runtime = new VelocityRuntime(proxy, directory);
+        this.proxy = proxy; this.logger = logger; runtime = new VelocityRuntime(proxy, directory, logger);
     }
     @Subscribe public void onInitialize(ProxyInitializeEvent event) {
         proxy.getChannelRegistrar().register(RESERVED);

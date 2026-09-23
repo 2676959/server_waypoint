@@ -694,6 +694,11 @@ class CoreWaypointCommandNavigationTest {
 
     private static final class TestWaypointCommand
             extends CoreWaypointCommand<TestSource, String, TestPlayer, String, String> {
+        @Override
+        protected boolean isServerConsoleWithHighestPermission(TestSource source) {
+            return false;
+        }
+
         private final List<String> validatedDimensions = new ArrayList<>();
 
         private TestWaypointCommand(

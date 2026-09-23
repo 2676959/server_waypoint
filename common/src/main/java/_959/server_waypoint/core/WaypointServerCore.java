@@ -49,6 +49,7 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
         remoteCatalogStore = Objects.requireNonNull(store);
     }
     public RemoteCatalogStore remoteCatalogStore() { return remoteCatalogStore; }
+    public Path configDirectory() { return configDir; }
 
     /**
      * constructor for a dedicated server </br>

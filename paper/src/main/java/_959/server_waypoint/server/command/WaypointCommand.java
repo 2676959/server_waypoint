@@ -21,6 +21,12 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.craftbukkit.CraftServer;
+//? if >= 1.21.11 {
+import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.PermissionLevel;
+//?}
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.Nullable;
 
@@ -100,6 +106,17 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
             return player;
         }
         return null;
+    }
+
+    @Override
+    protected boolean isServerConsoleWithHighestPermission(CommandSourceStack source) {
+        if (!(source.getSender() instanceof ConsoleCommandSender)) return false;
+        var vanilla = ((CraftServer) source.getSender().getServer()).getHandle().getServer().createCommandSourceStack();
+        //? if >= 1.21.11 {
+        return vanilla.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(4)));
+        //?} else {
+        /*return vanilla.hasPermission(4);
+        *///?}
     }
 
     @Override

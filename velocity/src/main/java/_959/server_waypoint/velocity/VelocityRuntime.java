@@ -8,6 +8,7 @@ import _959.server_waypoint.crossserver.transport.*;
 import _959.server_waypoint.proxy.handoff.CoordinatorHandoffRuntime;
 import _959.server_waypoint.proxy.transport.CoordinatorAgent;
 import com.velocitypowered.api.proxy.ProxyServer;
+import org.slf4j.Logger;
 import java.nio.file.*;
 import java.util.*;
 
@@ -15,18 +16,23 @@ import java.util.*;
 final class VelocityRuntime extends AsyncTransportLifecycle {
     private final ProxyServer proxy;
     private final Path directory;
+    private final Logger logger;
     private CredentialFiles credentials;
     private NoiseKeys keys;
     private CoordinatorAgent agent;
     private volatile CoordinatorHandoffRuntime handoffs;
-    VelocityRuntime(ProxyServer proxy, Path directory) {
-        super("server-waypoint-velocity-startup"); this.proxy = proxy; this.directory = directory;
+    VelocityRuntime(ProxyServer proxy, Path directory, Logger logger) {
+        super("server-waypoint-velocity-startup"); this.proxy = proxy; this.directory = directory; this.logger = logger;
     }
     @Override protected TransportResult startResources() throws Exception {
-        var config = RuntimeConfiguration.read(directory, Set.of("enabled", "transportMode", "listen", "protocolVersion",
-                "requiredSuite", "credentialsDirectory", "backends", "proxyPermission"));
+        var config = RuntimeConfiguration.readCoordinator(directory);
         if (!RuntimeConfiguration.enabled(config)) return TransportResult.DISABLED;
-        RuntimeConfiguration.rejectCryptoInPlaintext(config);
+        try {
+            RuntimeConfiguration.rejectCryptoInPlaintext(config);
+        } catch (java.io.IOException | IllegalArgumentException failure) {
+            logger.warn("Server Waypoint coordinator configuration rejected: {}", failure.getMessage());
+            throw failure;
+        }
         var mode = RuntimeConfiguration.mode(config);
         if (mode == TransportMode.NOISE_KK) {
             credentials = new CredentialFiles(directory.resolve(RuntimeConfiguration.text(config, "credentialsDirectory", "credentials")));
@@ -42,10 +48,15 @@ final class VelocityRuntime extends AsyncTransportLifecycle {
             var value = entry.getValue().getAsJsonObject();
             if (!Set.of("enabled", "velocityServer", "publicKey").containsAll(value.keySet())) throw new IllegalArgumentException("Unknown backend field");
             if (!RuntimeConfiguration.enabled(value)) continue;
+            if (mode == TransportMode.PLAINTEXT && value.has("publicKey")) {
+                String reason = "transportMode PLAINTEXT conflicts with publicKey in enabled backend '" + entry.getKey()
+                        + "' in cross-server.json; remove that publicKey for plaintext, or set transportMode to NOISE_KK";
+                logger.warn("Server Waypoint coordinator configuration rejected: {}", reason);
+                throw new IllegalArgumentException(reason);
+            }
             RemoteServerId id = new RemoteServerId(entry.getKey());
             String name = RuntimeConfiguration.text(value, "velocityServer", "");
             if (proxy.getServer(name).isEmpty()) throw new IllegalArgumentException("Unknown Velocity server mapping");
-            if (mode == TransportMode.PLAINTEXT && value.has("publicKey")) throw new IllegalArgumentException("Plaintext cannot configure a public key");
             mappings.put(id, name);
             pins.put(id, mode == TransportMode.PLAINTEXT ? new byte[0] : CanonicalKey.rawPublic(RuntimeConfiguration.text(value, "publicKey", "")));
         }
