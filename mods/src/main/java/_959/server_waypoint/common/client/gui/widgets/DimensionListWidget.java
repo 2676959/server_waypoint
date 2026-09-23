@@ -4,6 +4,7 @@ package _959.server_waypoint.common.client.gui.widgets;
 import _959.server_waypoint.common.client.gui.api.DimensionListCallback;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
+import _959.server_waypoint.common.client.util.ColorHelper;
 
 import java.util.List;
 import net.minecraft.client.gui.Font;
@@ -14,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.*;
+import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import static _959.server_waypoint.util.VanillaDimensionNames.*;
 
 public class DimensionListWidget extends IconListWidget<String> {
@@ -108,6 +110,12 @@ public class DimensionListWidget extends IconListWidget<String> {
 
     public String getSelectedDimensionName() {
         return getSelectedEntry() == null ? "none" : getSelectedEntry();
+    }
+
+    @Override
+    protected Component entryLabel(String dimensionName) {
+        int color = ColorHelper.scaleRgb(0xFF000000 | getDimensionColor(dimensionName).value(), 0.8F);
+        return Component.literal(dimensionName).withStyle(style -> style.withColor(color & 0x00FFFFFF));
     }
 
     @Override

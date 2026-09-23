@@ -11,6 +11,7 @@ import _959.server_waypoint.common.client.gui.render.PaddingBackground;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
@@ -156,7 +157,14 @@ public abstract class IconListWidget<T> extends ShiftableClickableWidget impleme
                 ? this.iconLayout.iconIndexAt(mouseX - x, mouseY - y, scrolledPosition, this.entries.size(), viewport)
                 : -1;
         if (hoverIndex >= 0) {
-            this.setTooltip(net.minecraft.client.gui.components.Tooltip.create(entryLabel(entries.get(hoverIndex))));
+            Minecraft client = Minecraft.getInstance();
+            var lines = Tooltip.create(entryLabel(entries.get(hoverIndex))).toCharSequence(client);
+            // Anchor the entry label to the cursor, not the entire scrollable icon rail.
+            //? if >=1.21.6 {
+            context.setTooltipForNextFrame(lines, mouseX, mouseY);
+            //?} else {
+            /*if (client.screen != null) client.screen.setTooltipForNextRenderPass(lines);
+            *///?}
             this.renderIconBackground(context, hoverIndex, viewport, getColor(ROW_HOVER_BACKGROUND), false);
         }
         this.renderIconBackground(context, index, viewport, getColor(this.active ? FOCUS_RING : BORDER), true);
