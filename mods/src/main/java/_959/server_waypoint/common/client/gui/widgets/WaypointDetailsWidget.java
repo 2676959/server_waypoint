@@ -82,7 +82,8 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
             details.add(detail("waypoint.details.select", Component.empty()));
         } else {
             details.add(detail("waypoint.remote.gui.server", Component.literal(key.serverId().value())));
-            details.add(detail("waypoint.details.dimension", Component.literal(key.dimensionName())));
+            details.add(coloredDetail("waypoint.details.dimension", Component.literal(key.dimensionName()),
+                    () -> getDisplayDimensionColor(key.dimensionName())));
             details.add(detail("waypoint.details.list_name", Component.literal(key.listName())));
             details.add(detail("waypoint.details.name", Component.literal(key.waypointName())));
             details.add(detail("waypoint.details.display_name", Component.literal(waypoint.displayName())));

@@ -186,7 +186,7 @@ final class RemoteWaypointCommand<S> {
                 if (row.dimension() != null && !row.dimension().equals(lastDimension)) {
                     output = output.appendNewline().append(text("  ")).append(scopeLink(
                             safe(row.dimension()).color(getDimensionColor(row.dimension())), row.server().value(), row.dimension(), null,
-                            options, translatable("button.list.dimension", safe(row.dimension()))));
+                            options, translatable("button.list.dimension", safe(row.dimension()).color(getDimensionColor(row.dimension())))));
                     lastDimension = row.dimension(); lastList = null;
                 }
                 if (row.list() != null && !row.list().equals(lastList)) {

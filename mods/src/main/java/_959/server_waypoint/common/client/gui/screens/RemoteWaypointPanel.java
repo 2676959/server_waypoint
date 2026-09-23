@@ -8,6 +8,7 @@ import _959.server_waypoint.common.client.gui.layout.AnchorMode;
 import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.ClientCommandUtils;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
+import _959.server_waypoint.common.client.util.ColorHelper;
 import _959.server_waypoint.crossserver.*;
 import _959.server_waypoint.crossserver.catalog.CatalogReceiver;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -18,6 +19,7 @@ import _959.server_waypoint.common.client.gui.render.WidgetTextures;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.*;
 import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
+import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
@@ -188,12 +190,14 @@ final class RemoteWaypointPanel {
             var entry = getHoveredEntry();
             if (entry == null) return;
             var path = entry.value().path();
-            String identity = path.server().value()
-                    + (path.dimension() == null ? "" : " / " + path.dimension())
-                    + (path.list() == null ? "" : " / [" + path.list() + "]")
-                    + (path.waypoint() == null ? "" : " / [" + path.waypoint() + "]");
+            Component identity = Component.literal(path.server().value());
+            if (path.dimension() != null) identity = identity.copy().append(" / ")
+                    .append(Component.literal(path.dimension()).withStyle(style ->
+                            style.withColor(displayDimensionColor(path.dimension()) & 0x00FFFFFF)));
+            if (path.list() != null) identity = identity.copy().append(" / [" + path.list() + "]");
+            if (path.waypoint() != null) identity = identity.copy().append(" / [" + path.waypoint() + "]");
             var client = net.minecraft.client.Minecraft.getInstance();
-            var lines = Tooltip.create(Component.literal(identity)).toCharSequence(client);
+            var lines = Tooltip.create(identity).toCharSequence(client);
             // Use the cursor position, not the bounds of the entire scrollable tree.
             //? if >=1.21.6 {
             context.setTooltipForNextFrame(lines, mouseX, mouseY);
@@ -230,8 +234,10 @@ final class RemoteWaypointPanel {
                         0xFF000000 | waypoint.rgb(), getSafeTextColor(waypoint.rgb()));
                 int nameX = indent + 18 + badgeWidth;
                 Component label = parseFormattedText(waypoint.displayName());
-                if (!grouped) label = label.copy().append(Component.literal(" · " + key.serverId().value()
-                        + " / " + key.dimensionName() + " / [" + key.listName() + "]"));
+                if (!grouped) label = label.copy().append(Component.literal(" · " + key.serverId().value() + " / "))
+                        .append(Component.literal(key.dimensionName()).withStyle(style ->
+                                style.withColor(displayDimensionColor(key.dimensionName()) & 0x00FFFFFF)))
+                        .append(Component.literal(" / [" + key.listName() + "]"));
                 drawText(context, font, label, nameX, textY, textColor, true);
             } else {
                 if (hovered) {
@@ -248,8 +254,9 @@ final class RemoteWaypointPanel {
                 } else label = Component.literal(node.label());
                 if (node.path().dimension() == null) label = label.copy().append(" · ").append(Component.translatable(
                         "waypoint.remote.state." + node.state().name().toLowerCase(Locale.ROOT)));
-                drawText(context, font, label, indent + 18,
-                        textY, textColor, true);
+                drawText(context, font, label, indent + 18, textY,
+                        node.path().dimension() != null && node.path().list() == null
+                                ? displayDimensionColor(node.path().dimension()) : textColor, true);
             }
         }
         @Override
@@ -264,5 +271,9 @@ final class RemoteWaypointPanel {
         }
         @Override
         protected void updateWidgetNarration(NarrationElementOutput output) { }
+    }
+
+    private static int displayDimensionColor(String dimensionName) {
+        return ColorHelper.scaleRgb(0xFF000000 | getDimensionColor(dimensionName).value(), 0.8F);
     }
 }

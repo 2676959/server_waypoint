@@ -13,6 +13,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.kyori.adventure.text.*;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.junit.jupiter.api.*;
 import java.time.Instant;
 import java.util.*;
@@ -166,6 +167,20 @@ class RemoteWaypointCommandTest {
         dispatcher.execute(target() + " view flat", "console");
         assertTrue(keys(last()).contains("waypoint.list.view.tree"));
         assertTrue(clicks(last()).stream().anyMatch(value -> value.contains("sort name order descending")));
+    }
+
+    @Test void remoteDimensionUsesLocalDimensionColorInListsAndDetails() throws Exception {
+        publish(new RemoteServerId("colored"), Map.of("minecraft:the_nether", Map.of("list",
+                new RemoteListSnapshot("list", new RemoteRevision(1), Map.of("point", waypoint("point", 0))))));
+        for (String command : List.of("wp remote list colored", "wp remote list colored view flat",
+                "wp remote details colored " + quote("minecraft:the_nether") + " list point")) {
+            assertEquals(1, dispatcher.execute(command, "console"));
+            assertTrue(components(last()).stream().anyMatch(component -> component instanceof TextComponent value
+                    && value.content().equals("minecraft:the_nether")
+                    && component.color() == NamedTextColor.RED), command);
+        }
+        assertTrue(components(last()).stream().noneMatch(component -> component instanceof TextComponent value
+                && value.content().equals("minecraft:the_nether") && component.clickEvent() != null));
     }
 
     @Test void initialsTeleportOnlyWhenAvailableAndPermittedAndDoNotLeakToNames() throws Exception {
