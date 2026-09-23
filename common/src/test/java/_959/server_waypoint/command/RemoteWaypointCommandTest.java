@@ -70,7 +70,7 @@ class RemoteWaypointCommandTest {
         index.connected(id, owner, TransportMode.NOISE_KK, ProtocolLimits.DEFAULT);
         RemoteCatalogSnapshot snapshot = new RemoteCatalogSnapshot(id, new RemoteRevision(1), data, Instant.EPOCH);
         UUID request = UUID.randomUUID(); byte[] bytes = new ApplicationCodec(ProtocolLimits.DEFAULT).encodeCatalog(snapshot);
-        index.receive(id, owner, received(request, new ApplicationMessage.CatalogMetadata(id, "Server " + id.value(), new RemoteRevision(1), CatalogExportPolicy.PUBLIC), null));
+        index.receive(id, owner, received(request, new ApplicationMessage.CatalogMetadata(id, "Server " + id.value(), new RemoteRevision(1), CatalogExportPolicy.PUBLIC, "minecraft:compass"), null));
         index.receive(id, owner, received(request, new ApplicationMessage.CatalogSnapshot(id, new RemoteRevision(1), UUID.randomUUID(), 0,
                 bytes.length, new ApplicationMessage.Bytes(bytes)), snapshot));
     }
@@ -358,7 +358,7 @@ class RemoteWaypointCommandTest {
     }
     @Test void unauthorizedViewsNeverExposeRetainedCoordinates() {
         var existing = index.views().get(A);
-        var hidden = new CatalogReceiver.View(existing.snapshot(), RemoteCatalogState.UNAUTHORIZED, existing.displayName(), existing.mode());
+        var hidden = new CatalogReceiver.View(existing.snapshot(), RemoteCatalogState.UNAUTHORIZED, existing.displayName(), existing.mode(), "minecraft:compass");
         var result = queries.query(Map.of(A, hidden), new RemoteCatalogQuery.Scope(null, null, null), options("", WaypointSorting.SortMode.DEFAULT, false, true));
         assertEquals(1, result.rows().size()); assertNull(result.rows().get(0).waypoint()); assertNull(result.rows().get(0).dimension());
     }

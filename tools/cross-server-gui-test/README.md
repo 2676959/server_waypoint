@@ -2,7 +2,8 @@
 
 This explicitly invoked test mod boots Fabric **26.1.2** in a disposable offline flat world.
 It opens the real local manager, uses registered mouse input to toggle the remote panel in place, selects
-an exact quoted target, sends teleport immediately without a dialog, resizes the browser, toggles list/flat view and sort
+a server from a 13-server catalog, verifies dimension changes, independent scrolling and opposing
+selector anchors, checks add-button visibility, selects an exact quoted target, sends teleport immediately without a dialog, resizes the browser, toggles list/flat view and sort
 direction through the shared sidebar controls, returns to local and remote views, filters rows, refreshes stale
 catalogs and invalidates the teleport action by resetting the cache session. It checks the original
 local manager object and saved files remain unchanged. A fixture populates the real remote cache;

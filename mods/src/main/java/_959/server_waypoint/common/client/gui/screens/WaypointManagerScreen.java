@@ -5,6 +5,10 @@ package _959.server_waypoint.common.client.gui.screens;
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
+import _959.server_waypoint.common.client.gui.layout.OpposedExpansionLayout;
+import _959.server_waypoint.crossserver.RemoteServerId;
+import _959.server_waypoint.crossserver.catalog.CatalogReceiver;
+import java.util.Map;
 import _959.server_waypoint.common.client.gui.layout.WidgetPack;
 import _959.server_waypoint.common.client.gui.render.WaypointSortButtonLabel;
 import _959.server_waypoint.common.client.gui.render.WidgetTextures;
@@ -93,11 +97,14 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private final IconToggleButton serverScopeToggle;
     private final RemoteWaypointPanel remotePanel;
     private boolean showingRemote;
+    private final ServerListWidget serverListWidget;
+    private final SeparatorWidget serverControlSeparator;
+    private String localDimension;
+    private Map<RemoteServerId, CatalogReceiver.View> remoteServers = Map.of();
     private boolean requestedAvailableDimensions;
     private List<String> availableDimensionNames = List.of();
     private final WaypointClientMod waypointClientMod;
     private boolean hasInitialized = false;
-    private final WidgetPack leftLayout;
     private final WidgetPack controlAnchor;
     private final WidgetPack middleLayout;
     private ManagerLayoutGeometry layoutGeometry = calculateLayoutGeometry(0, 0);
@@ -114,6 +121,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 WidgetTextures.LAN_SERVERS_ICON,
                 this::setShowingRemote
         );
+        this.serverListWidget = new ServerListWidget(DIMENSION_ICON_SIZE, DIMENSION_ICON_GAP, server -> refreshRemoteSelectors(true));
+        this.serverControlSeparator = new SeparatorWidget(0, 0, LEFT_PART_WIDTH, 1, WidgetThemeVariable.BORDER);
         dimensionListWidget = new DimensionListWidget(
                 0,
                 0,
@@ -245,13 +254,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 LayoutFlow.Orientation.HORIZONTAL
         );
         this.controlAnchor.addChild(controlColumn, LayoutFlow.Direction.FORWARD);
-        this.leftLayout = new WidgetPack(
-                LEFT_PART_WIDTH,
-                MAX_CONTENT_HEIGHT,
-                LayoutFlow.Orientation.VERTICAL
-        );
-        this.leftLayout.addChild(dimensionListWidget, LayoutFlow.Direction.FORWARD);
-        this.leftLayout.addChild(this.controlAnchor, LayoutFlow.Direction.REVERSE);
     }
 
     public WaypointManagerScreen(WaypointClientMod waypointClientMod) {
@@ -264,7 +266,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
      * local-world session.
      */
     public static void resetWidgetStates() {
-        DimensionListWidget.resetStates();
+        if (dimensionListWidget != null) dimensionListWidget.resetSelection();
     }
 
     /**
@@ -346,6 +348,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
      *         {@code false} when the caller still needs to decide whether waypoint rows changed
      */
     private static boolean updateDimensionWidgetSelection() {
+        if (activeScreen != null && activeScreen.showingRemote) return false;
         WaypointClientMod waypointClient = WaypointClientMod.getInstance();
         String previousSelection = dimensionListWidget.getSelectedDimensionName();
         List<String> dimensionNames = activeScreen == null
@@ -361,6 +364,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         if (selectedDimension != null) {
             dimensionListWidget.setDimensionName(selectedDimension);
         }
+        if (activeScreen != null) activeScreen.layoutSidebar();
         if (Objects.equals(previousSelection, selectedDimension)) {
             return false;
         }
@@ -405,6 +409,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             }
             this.availableDimensionNames = dimensionNames;
             updateDimensionWidgetSelection();
+            layoutSidebar();
         });
     }
 
@@ -442,16 +447,55 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         waypointDetailsWidget.setX(this.layoutGeometry.detailsContentX());
         waypointDetailsWidget.setY(this.layoutGeometry.contentY());
 
-        int dimensionListHeight = this.layoutGeometry.dimensionListHeight();
-        boolean dimensionListVisible = dimensionListHeight >= MIN_DIMENSION_LIST_HEIGHT;
-        dimensionListWidget.visible = dimensionListVisible;
-        dimensionListWidget.active = resolveDimensionListActive(dimensionListVisible);
-        dimensionListWidget.setVisualHeight(Math.max(MIN_DIMENSION_LIST_HEIGHT, dimensionListHeight));
-
-        boolean controlsVisible = this.layoutGeometry.contentHeight() >= CONTROL_COLUMN_HEIGHT;
-        setControlVisibility(controlsVisible);
-        this.leftLayout.setDimensions(LEFT_PART_WIDTH, this.layoutGeometry.contentHeight());
+        layoutSidebar();
         updatePanelVisibility();
+    }
+
+    private void layoutSidebar() {
+        int controlsHeight = CONTROL_COLUMN_HEIGHT - (showingRemote ? CONTROL_BUTTON_SIZE + CONTROL_GAP : 0);
+        int controlsY = layoutGeometry.contentY() + layoutGeometry.contentHeight() - controlsHeight;
+        controlAnchor.setPosition(layoutGeometry.leftX(), controlsY);
+        int available = Math.max(0, controlsY - SECTION_GAP - layoutGeometry.contentY());
+        int top = Math.min(available, dimensionListWidget.preferredHeight());
+        int bottom = 0;
+        if (showingRemote) {
+            var sizes = OpposedExpansionLayout.allocate(
+                    available, MIN_DIMENSION_LIST_HEIGHT, dimensionListWidget.preferredHeight(),
+                    serverListWidget.preferredHeight(), SECTION_GAP);
+            top = sizes.top();
+            bottom = sizes.bottom();
+        }
+        dimensionListWidget.visible = dimensionListWidget.active = top >= MIN_DIMENSION_LIST_HEIGHT;
+        dimensionListWidget.setVisualHeight(Math.max(MIN_DIMENSION_LIST_HEIGHT, top));
+        dimensionListWidget.setPosition(layoutGeometry.leftX(), layoutGeometry.contentY());
+        serverListWidget.visible = serverListWidget.active = showingRemote && bottom >= MIN_DIMENSION_LIST_HEIGHT;
+        serverListWidget.setVisualHeight(Math.max(MIN_DIMENSION_LIST_HEIGHT, bottom));
+        serverListWidget.setPosition(layoutGeometry.leftX(), controlsY - SECTION_GAP - bottom);
+        setControlVisibility(layoutGeometry.contentHeight() >= controlsHeight);
+        serverControlSeparator.setPosition(
+                layoutGeometry.leftX(),
+                (serverListWidget.getY() + serverListWidget.getHeight() + serverScopeToggle.getY()) / 2
+        );
+        serverControlSeparator.setVisible(serverListWidget.visible && serverScopeToggle.visible);
+    }
+
+    private void refreshRemoteSelectors(boolean force) {
+        var servers = remotePanel.servers();
+        if (!force && servers.equals(remoteServers)) return;
+        remoteServers = servers;
+        serverListWidget.setServers(servers);
+        var view = serverListWidget.getSelectedEntry() == null ? null : servers.get(serverListWidget.getSelectedEntry());
+        List<String> dimensions = view == null || view.snapshot() == null ? List.of()
+                : view.snapshot().dimensions().keySet().stream()
+                .sorted(_959.server_waypoint.util.VanillaDimensionNames::dimensionNameComparator).toList();
+        dimensionListWidget.updateDimensionNames(dimensions);
+        refreshRemoteScope();
+        layoutSidebar();
+    }
+
+    private void refreshRemoteScope() {
+        remotePanel.setScope(serverListWidget.getSelectedEntry(),
+                waypointListWidget.isShowingAllDimensions() ? null : dimensionListWidget.getSelectedEntry());
     }
 
     @Override
@@ -484,13 +528,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 this.layoutGeometry.middleX(),
                 this.layoutGeometry.contentY()
         );
-        this.leftLayout.setPosition(
-                this.layoutGeometry.leftX(),
-                this.layoutGeometry.contentY()
-        );
 
-        dimensionListWidget.updateDimensionNames(this.getDisplayedDimensionNames());
-        if (hasInitialized) {
+
+        if (!showingRemote) dimensionListWidget.updateDimensionNames(this.getDisplayedDimensionNames());
+        if (showingRemote) {
+            refreshRemoteSelectors(true);
+        } else if (hasInitialized) {
             syncSelectedDimension(getSelectedDimension());
         } else {
             dimensionListWidget.setDimensionName(getCurrentDimensionName());
@@ -498,19 +541,24 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             hasInitialized = true;
         }
 
-        this.leftLayout.visitWidgets(this::addRenderableWidget);
+        this.addRenderableWidget(dimensionListWidget);
+        this.controlAnchor.visitWidgets(this::addRenderableWidget);
         this.middleLayout.visitWidgets(this::addRenderableWidget);
+        this.addRenderableWidget(serverListWidget);
         this.addRenderableWidget(this.waypointDetailsWidget);
         remotePanel.register(this::addRenderableWidget);
         updatePanelVisibility();
+        layoutSidebar();
         this.requestAvailableDimensionNames();
     }
 
     @Override
     public void tick() {
         super.tick();
-        if (showingRemote) remotePanel.tick();
-        else waypointListWidget.refreshDistanceSortIfPlayerMoved();
+        if (showingRemote) {
+            remotePanel.tick();
+            refreshRemoteSelectors(false);
+        } else waypointListWidget.refreshDistanceSortIfPlayerMoved();
     }
 
     @Override
@@ -561,11 +609,13 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     *///?}
 
     private void onSelectDimension(String dimensionName) {
-        syncSelectedDimension(dimensionName);
+        if (showingRemote) refreshRemoteScope();
+        else syncSelectedDimension(dimensionName);
     }
 
     private void setShowAllDimensions(boolean showAllDimensions) {
         waypointListWidget.setShowAllDimensions(showAllDimensions);
+        if (showingRemote) refreshRemoteScope();
         dimensionListWidget.active = resolveDimensionListActive(dimensionListWidget.visible);
         persistManagerState();
     }
@@ -661,6 +711,14 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, delta);
+        serverListWidget.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
+        serverControlSeparator.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
         serverScopeToggle.
         //$ render_method_swap
         extractRenderState
@@ -704,7 +762,15 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
     private void setShowingRemote(boolean remote) {
         closeOpenDropdownMenus();
+        if (remote && !showingRemote) localDimension = dimensionListWidget.getSelectedDimensionName();
         showingRemote = remote;
+        if (remote) refreshRemoteSelectors(true);
+        else {
+            dimensionListWidget.updateDimensionNames(getDisplayedDimensionNames());
+            dimensionListWidget.setDimensionName(resolveSelectedDimension(localDimension, getCurrentDimensionName(), getDisplayedDimensionNames()));
+            syncSelectedDimension(dimensionListWidget.getSelectedDimensionName());
+        }
+        layoutSidebar();
         setFocused(null);
         // Distance has no shared origin across servers.
         if (remote && waypointListWidget.getSortMode() == WaypointSorting.SortMode.DISTANCE) {
@@ -726,8 +792,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         boolean visible = layoutGeometry.waypointListHeight(searchField.getVisualHeight()) >= MIN_WAYPOINT_LIST_HEIGHT;
         waypointListWidget.visible = waypointListWidget.active = visible && !showingRemote;
         waypointDetailsWidget.visible = waypointDetailsWidget.active = !showingRemote;
-        dimensionListWidget.active = dimensionListWidget.visible && !showingRemote;
-        allDimensionsToggle.active = allDimensionsToggle.visible && !showingRemote;
+        dimensionListWidget.active = dimensionListWidget.visible;
+        allDimensionsToggle.active = allDimensionsToggle.visible;
         addWaypointButton.active = addWaypointButton.visible && !showingRemote;
         remotePanel.layout(layoutGeometry.middleX(), layoutGeometry.contentY() + searchField.getVisualHeight() + SEARCH_GAP,
                 layoutGeometry.middlePartWidth(), Math.max(1, layoutGeometry.waypointListHeight(searchField.getVisualHeight()) - 14),
@@ -851,7 +917,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     private void setControlVisibility(boolean visible) {
-        addWaypointButton.visible = visible;
+        addWaypointButton.visible = visible && !showingRemote;
         addWaypointButton.active = visible && !showingRemote;
         serverScopeToggle.visible = serverScopeToggle.active = visible;
         groupModeToggle.visible = visible;
@@ -862,7 +928,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         sortingModeDropdown.visible = visible;
         sortingModeDropdown.active = visible;
         allDimensionsToggle.visible = visible;
-        allDimensionsToggle.active = visible && !showingRemote;
+        allDimensionsToggle.active = visible;
         if (!visible) {
             closeOpenDropdownMenus();
         }

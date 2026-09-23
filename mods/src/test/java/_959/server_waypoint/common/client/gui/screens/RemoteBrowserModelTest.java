@@ -27,7 +27,7 @@ class RemoteBrowserModelTest {
         for (String name : names) values.put(name, waypoint);
         var snapshot = new RemoteCatalogSnapshot(id, new RemoteRevision(revision), Map.of("dimension with spaces",
                 Map.of("", new RemoteListSnapshot("Same list", new RemoteRevision(1), values))), Instant.EPOCH);
-        return new CatalogReceiver.View(state == RemoteCatalogState.UNAVAILABLE ? null : snapshot, state, "Same server", null);
+        return new CatalogReceiver.View(state == RemoteCatalogState.UNAVAILABLE ? null : snapshot, state, "Same server", null, "minecraft:compass");
     }
 
     private void install(RemoteCatalogState state, Map<RemoteServerId, CatalogReceiver.View> servers) {
@@ -42,6 +42,21 @@ class RemoteBrowserModelTest {
             result.addAll(leaves(node.children()));
         }
         return result;
+    }
+
+    @Test void sidebarScopeFiltersBothListAndFlatViewsByExactServerAndDimension() {
+        var views = Map.of(a, view(a, RemoteCatalogState.AVAILABLE, 1, "target"),
+                b, view(b, RemoteCatalogState.AVAILABLE, 1, "target"));
+        for (boolean grouped : List.of(true, false)) {
+            var rows = leaves(RemoteBrowserModel.scopedRoots(views, b, "dimension with spaces", "",
+                    grouped, WaypointSorting.SortMode.NAME, false));
+            assertEquals(1, rows.size());
+            assertEquals(b, rows.get(0).path().server());
+            assertTrue(RemoteBrowserModel.scopedRoots(views, b, "missing", "", grouped,
+                    WaypointSorting.SortMode.NAME, false).isEmpty());
+            assertTrue(RemoteBrowserModel.scopedRoots(views, null, null, "", grouped,
+                    WaypointSorting.SortMode.NAME, false).isEmpty());
+        }
     }
 
     @Test void duplicateLabelsRetainServerAndExactIdentityThroughFilteringAndReverseSort() {
@@ -133,7 +148,7 @@ class RemoteBrowserModelTest {
 
     @Test void emptyAvailableServerRemainsDistinctFromUnavailableAndDenied() {
         var empty = new CatalogReceiver.View(new RemoteCatalogSnapshot(a, new RemoteRevision(1), Map.of(), Instant.EPOCH),
-                RemoteCatalogState.AVAILABLE, "empty", null);
+                RemoteCatalogState.AVAILABLE, "empty", null, "minecraft:compass");
         var roots = RemoteBrowserModel.roots(Map.of(a, empty, b, view(b, RemoteCatalogState.UNAUTHORIZED, 1, "hidden")), "", true, WaypointSorting.SortMode.NAME, false);
         assertEquals(1, roots.size());
         assertEquals(RemoteCatalogState.AVAILABLE, roots.get(0).state());

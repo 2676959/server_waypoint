@@ -18,7 +18,7 @@ class ClientCatalogSyncTest {
         var snapshot = state == RemoteCatalogState.AVAILABLE || state == RemoteCatalogState.STALE
                 ? new RemoteCatalogSnapshot(ID, new RemoteRevision(4), Map.of("Case:Dimension", Map.of(
                         "", new RemoteListSnapshot("", new RemoteRevision(3), Map.of()))), Instant.EPOCH) : null;
-        return new CatalogReceiver.View(snapshot, state, "Same display", TransportMode.NOISE_KK);
+        return new CatalogReceiver.View(snapshot, state, "Same display", TransportMode.NOISE_KK, "minecraft:diamond");
     }
     @Test void roundTripRetainsExactIdentityAndStatuses() {
         for (var state : List.of(RemoteCatalogState.AVAILABLE, RemoteCatalogState.STALE, RemoteCatalogState.UNAVAILABLE)) {
@@ -29,6 +29,7 @@ class ClientCatalogSyncTest {
                 var copy = (RemoteCatalogMessage) ChunkedMessageRegistry.decode(6, buffer, new DecodingContext(64 * 1024 * 1024, 1000000));
                 assertEquals(message.requestId(), copy.requestId());
                 assertEquals(state, copy.servers().get(ID).state());
+                assertEquals("minecraft:diamond", copy.servers().get(ID).iconItem());
                 assertEquals(message.servers().get(ID).mode(), copy.servers().get(ID).mode());
                 if (state != RemoteCatalogState.UNAVAILABLE) assertEquals(message.servers().get(ID).snapshot().dimensions(), copy.servers().get(ID).snapshot().dimensions());
                 assertFalse(buffer.isReadable());
@@ -82,7 +83,7 @@ class ClientCatalogSyncTest {
         for (int i = 0; i < 9; i++) {
             var id = new RemoteServerId("s" + i);
             views.put(id, new CatalogReceiver.View(new RemoteCatalogSnapshot(id, new RemoteRevision(0), dimensions, Instant.EPOCH),
-                    RemoteCatalogState.AVAILABLE, id.value(), TransportMode.NOISE_KK));
+                    RemoteCatalogState.AVAILABLE, id.value(), TransportMode.NOISE_KK, "minecraft:diamond"));
         }
         var response = ClientCatalogSync.snapshot(UUID.randomUUID(), true, views);
         assertEquals(RemoteCatalogState.UNAVAILABLE, response.state()); assertTrue(response.servers().isEmpty());

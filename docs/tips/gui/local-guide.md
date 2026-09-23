@@ -465,7 +465,7 @@ Those cases do not justify duplicating standalone message rendering elsewhere.
 | Hex color input | `ColorHexCodeField` |
 | Color selection | `ColorSquareButton`, `SwatchWidget`, `RGBColorPicker`, or `HSVColorPicker` |
 | Scrollable hierarchical rows | Extend `TreeViewWidget<T>` |
-| Dimension icon strip | `DimensionListWidget` |
+| Selectable item icon strip | `IconListWidget<T>`, `DimensionListWidget`, `ServerListWidget` |
 | Directional popup with custom items | Extend `AbstractDropdownMenuWidget` and `AbstractMenuItem` |
 | Confirmation overlay | `ConfirmationDialog` |
 
@@ -495,8 +495,8 @@ Dimension, list, and distance metadata render smaller than the waypoint name. Ro
 the retained dimension rather than the sidebar's selected dimension. The displayed dimension omits
 the `minecraft:` namespace for vanilla dimensions but preserves namespaces for modded dimensions,
 and uses the shared dimension-color mapping in both grouped dimension roots and flat waypoint rows
-while list metadata remains muted. The owning screen must disable `DimensionListWidget` while the
-all-dimensions scope is active and reapply that disabled state after layout or screen reinitialization.
+while list metadata remains muted. The dimension rail remains selectable in all-dimensions mode;
+its selection is retained for returning to selected-dimension scope.
 
 `WaypointListWidget` reports row-body selection through the `Consumer<WaypointSelection>` supplied
 to its constructor. Its action columns remain independent: visibility, edit, and remove clicks do
@@ -522,10 +522,36 @@ details panel between current-server and remote waypoints without opening anothe
 `RemoteWaypointPanel` is a package-private screen composition helper: the manager registers its
 widgets once, supplies layout and visibility, forwards ticks, and owns its manual render pass.
 Search, list/flat mode, name/color/default sorting, and sort direction control both views. Remote
-flat mode sorts across servers while retaining server, dimension, list, and waypoint identity;
-grouped mode uses server/dimension/list roots. Remote distance sorting is unavailable because there
+flat mode sorts within the selected server and dimension scope while retaining server, dimension,
+list, and waypoint identity; grouped mode shows list roots for a selected dimension or dimension/list roots for all dimensions. Remote distance sorting is unavailable because there
 is no shared player origin across servers (entering remote mode from distance sorting selects name).
-The local dimension scope and add controls are disabled while remote waypoints are shown.
+In remote mode, `ServerListWidget` appears immediately above the scope toggle and the add button
+is hidden, releasing its layout slot. The dimension rail shows dimensions from the selected remote
+server's catalog (including exported empty dimensions); the all-dimensions toggle applies within
+that server. A one-pixel themed border line separates the server rail from the control buttons when
+both are visible. `SeparatorWidget` owns that non-interactive line; the manager positions it midway
+in the gap and renders it explicitly. The reusable widget accepts a theme color or color supplier,
+and its width and height allow either horizontal or vertical separators. Returning to local mode
+restores the local dimension selection.
+
+`IconListWidget<T>` owns per-instance selection, scroll, clipping, item positioning, padding,
+hover labels and left-click dispatch for both `DimensionListWidget` and `ServerListWidget`.
+Specializations supply `drawIcon` and optionally `entryLabel`. `setEntries` copies its catalog,
+preserves selection by identity, and falls back to the first entry; an empty catalog clears selection.
+`setSelectedEntry` does not fire callbacks; `resetSelection` replaces the former static dimension
+reset. Register and manually render each rail once through its high-level wrapper.
+
+`preferredHeight()` reports the icon strip's natural content height with a one-icon minimum.
+`OpposedExpansionLayout.allocate` reserves the fixed minimum for each rail and shares constrained
+space equally, giving unused space from a short rail to the longer rail. The manager anchors the
+dimension rail at the sidebar top and the server rail just above the controls; they grow down and
+up respectively, stop at their content sizes, and scroll when constrained. The helper returns zero
+sizes if even both minima plus their gap cannot fit; the screen hides the rails at that tiny size.
+Catalog changes, mode switches and resize all recalculate the allocation. Local mutation callbacks
+must not replace the remote dimension catalog.
+
+Server item icons resolve from `CatalogReceiver.View.iconItem()` through the client's item registry.
+Missing registry entries and air use a compass; tooltip labels include the exact server ID.
 Remote data stays in `RemoteClientCatalogs`; no remote row creates a local waypoint or mutation
 handle. The remote details remain read-only. The teleport button sends immediately without a
 confirmation dialog, after rechecking session, catalog revision, exact identity, and waypoint data.

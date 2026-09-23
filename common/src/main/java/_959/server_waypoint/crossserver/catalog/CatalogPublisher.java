@@ -13,6 +13,7 @@ public final class CatalogPublisher {
     @FunctionalInterface public interface Revisions { long next() throws IOException; }
     private final RemoteServerId id;
     private final String displayName;
+    private final String iconItem;
     private final CatalogSource source;
     private final Revisions revisions;
     private final ProtocolLimits limits;
@@ -25,14 +26,15 @@ public final class CatalogPublisher {
     private boolean unavailable;
 
     public CatalogPublisher(RemoteServerId id, String displayName, CatalogSource source, Revisions revisions,
-                            ProtocolLimits limits, int intervalMillis) {
+                            ProtocolLimits limits, int intervalMillis, String iconItem) {
         this.id = Objects.requireNonNull(id); this.displayName = Objects.requireNonNull(displayName);
+        this.iconItem = ServerIcon.validate(iconItem);
         this.source = Objects.requireNonNull(source); this.revisions = Objects.requireNonNull(revisions);
         this.limits = Objects.requireNonNull(limits); codec = new ApplicationCodec(limits);
         if (intervalMillis < 1 || intervalMillis > 60_000) throw new IllegalArgumentException("Invalid publication interval");
         this.intervalMillis = intervalMillis;
         codec.encode(new ApplicationEnvelope(0, UUID.randomUUID(), new ApplicationMessage.CatalogMetadata(id, displayName,
-                new RemoteRevision(0), CatalogExportPolicy.PUBLIC)));
+                new RemoteRevision(0), CatalogExportPolicy.PUBLIC, iconItem)));
     }
     public RemoteServerId serverId() { return id; }
     public int intervalMillis() { return intervalMillis; }
@@ -88,7 +90,7 @@ public final class CatalogPublisher {
             } catch (IllegalArgumentException oversized) { /* Fall back to a bounded full catalog, not a different protocol. */ }
         }
         if (!deltaSent) {
-            channel.send(request, new ApplicationMessage.CatalogMetadata(id, displayName, current.catalogRevision(), CatalogExportPolicy.PUBLIC));
+            channel.send(request, new ApplicationMessage.CatalogMetadata(id, displayName, current.catalogRevision(), CatalogExportPolicy.PUBLIC, iconItem));
             UUID snapshot = UUID.randomUUID();
             int chunkBytes = Math.min(limits.chunkBytes(), limits.frameBytes() - 160);
             if (chunkBytes <= 0) throw new IOException("Frame budget cannot carry catalog chunks");

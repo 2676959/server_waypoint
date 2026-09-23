@@ -9,7 +9,9 @@ import java.util.UUID;
 
 /** One retained backend publication, separate from the later coordinator-wide fan-out/index. */
 public final class CatalogReceiver {
-    public record View(RemoteCatalogSnapshot snapshot, RemoteCatalogState state, String displayName, TransportMode mode) { }
+    public record View(RemoteCatalogSnapshot snapshot, RemoteCatalogState state, String displayName, TransportMode mode, String iconItem) {
+        public View { ServerIcon.validate(iconItem); }
+    }
     private final RemoteServerId id;
     private final ApplicationCodec codec;
     private RemoteCatalogSnapshot current;
@@ -18,6 +20,7 @@ public final class CatalogReceiver {
     private final java.util.function.Predicate<RemoteCatalogSnapshot> admission;
     private RemoteCatalogState state = RemoteCatalogState.UNAVAILABLE;
     private String displayName;
+    private String iconItem = ServerIcon.DEFAULT;
     private TransportMode mode;
     private Object owner;
     private UUID request;
@@ -55,7 +58,7 @@ public final class CatalogReceiver {
     public synchronized View view() {
         RemoteCatalogState visible = owner instanceof TcpChannel channel && channel.isClosed()
                 ? current == null ? RemoteCatalogState.UNAVAILABLE : RemoteCatalogState.STALE : state;
-        return new View(current, visible, displayName, mode);
+        return new View(current, visible, displayName, mode, iconItem);
     }
 
     /** Returns true only when a delta gap requires a correlated full-snapshot request. */
@@ -90,7 +93,7 @@ public final class CatalogReceiver {
                         throw new IllegalArgumentException("Conflicting list revision");
                     }
                 }));
-                install(completed); displayName = metadata.displayName(); metadata = null; request = null;
+                install(completed); displayName = metadata.displayName(); iconItem = metadata.iconItem(); metadata = null; request = null;
                 state = RemoteCatalogState.AVAILABLE; return false;
             }
             if (message instanceof ApplicationMessage.CatalogDelta m) {

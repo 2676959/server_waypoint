@@ -42,6 +42,8 @@ final class RemoteWaypointPanel {
     private RemoteCatalogState displayedState;
     private RemoteWaypointKey selected;
     private String filter = "";
+    private RemoteServerId serverFilter;
+    private String dimensionFilter;
     private boolean reversed;
     private boolean grouped = true;
     private WaypointSorting.SortMode sortMode = WaypointSorting.SortMode.NAME;
@@ -94,11 +96,26 @@ final class RemoteWaypointPanel {
         rebuild();
     }
 
+    Map<RemoteServerId, CatalogReceiver.View> servers() {
+        Map<RemoteServerId, CatalogReceiver.View> visible = new HashMap<>();
+        catalogs.snapshot().forEach((id, view) -> {
+            if (view.state() != RemoteCatalogState.UNAUTHORIZED) visible.put(id, view);
+        });
+        return Map.copyOf(visible);
+    }
+
+    void setScope(RemoteServerId server, String dimension) {
+        if (Objects.equals(serverFilter, server) && Objects.equals(dimensionFilter, dimension)) return;
+        serverFilter = server;
+        dimensionFilter = dimension;
+        rebuild();
+    }
+
     private void rebuild() {
         displayed = catalogs.snapshot();
         displayedState = catalogs.state();
         teleportButton.setTooltip(Tooltip.create(Component.translatable(feedback)));
-        var roots = RemoteBrowserModel.roots(displayed, filter, grouped, sortMode, reversed);
+        var roots = RemoteBrowserModel.scopedRoots(displayed, serverFilter, dimensionFilter, filter, grouped, sortMode, reversed);
         // Filter/removal must not leave an actionable invisible selection.
         if (selected != null && !contains(roots, selected)) selected = null;
         tree.updateRoots(roots);

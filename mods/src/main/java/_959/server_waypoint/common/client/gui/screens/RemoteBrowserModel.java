@@ -69,6 +69,22 @@ final class RemoteBrowserModel {
         return List.copyOf(roots);
     }
 
+    static List<Node> scopedRoots(Map<RemoteServerId, CatalogReceiver.View> servers, RemoteServerId server,
+                                  String dimension, String filter, boolean grouped,
+                                  WaypointSorting.SortMode sortMode, boolean reversed) {
+        if (server == null) return List.of();
+        var view = servers.get(server);
+        if (view == null) return List.of();
+        var roots = roots(Map.of(server, view), filter, grouped, sortMode, reversed);
+        if (!grouped) return roots.stream().filter(node -> dimension == null
+                || dimension.equals(node.path().dimension())).toList();
+        if (roots.isEmpty()) return List.of();
+        if (dimension == null) return roots.get(0).children();
+        return roots.get(0).children().stream()
+                .filter(node -> dimension == null || dimension.equals(node.path().dimension()))
+                .flatMap(node -> node.children().stream()).toList();
+    }
+
     private static void flatten(List<Node> nodes, List<Node> flat) {
         for (Node node : nodes) {
             if (node.path().key() != null) flat.add(node);

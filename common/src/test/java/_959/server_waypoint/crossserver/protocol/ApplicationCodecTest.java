@@ -29,10 +29,10 @@ class ApplicationCodecTest {
     static Stream<ApplicationMessage> messages() {
         byte[] catalog = CODEC.encodeCatalog(catalog());
         return Stream.of(
-                new RegisterServer(SOURCE, 1, Set.of(1, 42)),
+                new RegisterServer(SOURCE, _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, Set.of(1, 42)),
                 new RegisterResult(SOURCE, Result.SUCCESS),
                 new Heartbeat(),
-                new CatalogMetadata(DESTINATION, "Other world", REVISION, CatalogExportPolicy.PUBLIC),
+                new CatalogMetadata(DESTINATION, "Other world", REVISION, CatalogExportPolicy.PUBLIC, "minecraft:compass"),
                 new CatalogSnapshot(DESTINATION, REVISION, HANDOFF, 0, catalog.length, new Bytes(catalog)),
                 new CatalogDelta(DESTINATION, new RemoteRevision(8), REVISION, catalog().dimensions(),
                         Map.of("removed", Set.of("gone", "")), Set.of("deleted")),
@@ -131,8 +131,8 @@ class ApplicationCodecTest {
         second.put("z", Map.of());
         assertArrayEquals(CODEC.encodeCatalog(new RemoteCatalogSnapshot(SOURCE, REVISION, first, Instant.EPOCH)),
                 CODEC.encodeCatalog(new RemoteCatalogSnapshot(SOURCE, REVISION, second, Instant.EPOCH)));
-        assertArrayEquals(CODEC.encode(envelope(new RegisterServer(SOURCE, 1, new LinkedHashSet<>(List.of(42, 1))))),
-                CODEC.encode(envelope(new RegisterServer(SOURCE, 1, new LinkedHashSet<>(List.of(1, 42))))));
+        assertArrayEquals(CODEC.encode(envelope(new RegisterServer(SOURCE, _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, new LinkedHashSet<>(List.of(42, 1))))),
+                CODEC.encode(envelope(new RegisterServer(SOURCE, _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, new LinkedHashSet<>(List.of(1, 42))))));
     }
 
     @Test
@@ -145,7 +145,7 @@ class ApplicationCodecTest {
             bad[34] = replacement;
             assertThrows(IllegalArgumentException.class, () -> CODEC.decodeCatalog(bad, Instant.EPOCH));
         }
-        byte[] register = CODEC.encode(envelope(new RegisterServer(SOURCE, 1, Set.of(1, 42))));
+        byte[] register = CODEC.encode(envelope(new RegisterServer(SOURCE, _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, Set.of(1, 42))));
         for (int replacement : new int[]{0, 1, -1}) {
             byte[] bad = register.clone();
             ByteBuffer.wrap(bad).putInt(bad.length - 4, replacement);
@@ -155,20 +155,20 @@ class ApplicationCodecTest {
 
     @Test
     void rejectsMalformedUtf8AndUnpairedSurrogatesWithoutNormalization() {
-        byte[] register = CODEC.encode(envelope(new RegisterServer(SOURCE, 1, Set.of())));
+        byte[] register = CODEC.encode(envelope(new RegisterServer(SOURCE, _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, Set.of())));
         register[40] = (byte) 0xFF;
         assertThrows(IllegalArgumentException.class, () -> CODEC.decode(register));
         for (String malformed : List.of("\uD800", "\uDC00", "x\uD800x")) {
             assertThrows(IllegalArgumentException.class, () -> CODEC.encode(envelope(
-                    new CatalogMetadata(SOURCE, malformed, REVISION, CatalogExportPolicy.PUBLIC))));
+                    new CatalogMetadata(SOURCE, malformed, REVISION, CatalogExportPolicy.PUBLIC, "minecraft:compass"))));
         }
-        var supplementary = envelope(new CatalogMetadata(SOURCE, "😀", REVISION, CatalogExportPolicy.PUBLIC));
+        var supplementary = envelope(new CatalogMetadata(SOURCE, "😀", REVISION, CatalogExportPolicy.PUBLIC, "minecraft:compass"));
         assertEquals(supplementary, CODEC.decode(CODEC.encode(supplementary)));
     }
 
     @Test
     void rejectsInvalidStringCollectionAndScalarDeclarations() {
-        byte[] register = CODEC.encode(envelope(new RegisterServer(SOURCE, 1, Set.of())));
+        byte[] register = CODEC.encode(envelope(new RegisterServer(SOURCE, _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, Set.of())));
         for (int size : new int[]{-1, Integer.MAX_VALUE, 65_537}) {
             byte[] bad = register.clone();
             ByteBuffer.wrap(bad).putInt(36, size);
@@ -182,7 +182,7 @@ class ApplicationCodecTest {
         byte[] result = CODEC.encode(envelope(new RegisterResult(SOURCE, Result.SUCCESS)));
         ByteBuffer.wrap(result).putInt(result.length - 4, 999);
         assertThrows(IllegalArgumentException.class, () -> CODEC.decode(result));
-        byte[] metadata = CODEC.encode(envelope(new CatalogMetadata(SOURCE, "", REVISION, CatalogExportPolicy.PUBLIC)));
+        byte[] metadata = CODEC.encode(envelope(new CatalogMetadata(SOURCE, "", REVISION, CatalogExportPolicy.PUBLIC, "minecraft:compass")));
         ByteBuffer.wrap(metadata).putInt(metadata.length - 4, 2);
         assertThrows(IllegalArgumentException.class, () -> CODEC.decode(metadata));
         byte[] prepare = CODEC.encode(envelope(new PrepareHandoff(PLAYER, SOURCE, KEY, Action.TELEPORT, REVISION, REVISION)));
@@ -217,7 +217,7 @@ class ApplicationCodecTest {
         assertThrows(IllegalArgumentException.class, () -> frameLimited.decode(new byte[37]));
         assertThrows(IllegalArgumentException.class, () -> CODEC.decode(new byte[1_048_577]));
         var stringLimited = codec(1_048_576, 1_048_576, 262_144, 1, 16_384, 65_536, 8_388_608);
-        var metadata = envelope(new CatalogMetadata(SOURCE, "é", REVISION, CatalogExportPolicy.PUBLIC));
+        var metadata = envelope(new CatalogMetadata(SOURCE, "é", REVISION, CatalogExportPolicy.PUBLIC, "minecraft:compass"));
         assertThrows(IllegalArgumentException.class, () -> stringLimited.encode(metadata));
         assertThrows(IllegalArgumentException.class, () -> stringLimited.decode(CODEC.encode(metadata)));
         var objectLimited = codec(1_048_576, 1_048_576, 262_144, 65_536, 16_384, 2, 8_388_608);
@@ -227,7 +227,7 @@ class ApplicationCodecTest {
         assertThrows(IllegalArgumentException.class, () -> allocationLimited.decode(CODEC.encode(metadata)));
         assertThrows(IllegalArgumentException.class, () -> allocationLimited.encode(metadata));
         var collectionLimited = codec(1_048_576, 1_048_576, 262_144, 65_536, 1, 65_536, 8_388_608);
-        var register = envelope(new RegisterServer(SOURCE, 1, Set.of(1, 2)));
+        var register = envelope(new RegisterServer(SOURCE, _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, Set.of(1, 2)));
         assertThrows(IllegalArgumentException.class, () -> collectionLimited.encode(register));
         assertThrows(IllegalArgumentException.class, () -> collectionLimited.decode(CODEC.encode(register)));
         var catalogLimited = codec(1_048_576, 1, 262_144, 65_536, 16_384, 65_536, 8_388_608);
@@ -295,7 +295,7 @@ class ApplicationCodecTest {
                 new byte[]{(byte) 0xED, (byte) 0xA0, (byte) 0x80},
                 new byte[]{(byte) 0xF4, (byte) 0x90, (byte) 0x80, (byte) 0x80}, new byte[]{(byte) 0xC2})) {
             byte[] bytes = CODEC.encode(envelope(new CatalogMetadata(SOURCE, "x".repeat(malformed.length),
-                    REVISION, CatalogExportPolicy.PUBLIC)));
+                    REVISION, CatalogExportPolicy.PUBLIC, "minecraft:compass")));
             System.arraycopy(malformed, 0, bytes, 45, malformed.length);
             assertThrows(IllegalArgumentException.class, () -> CODEC.decode(bytes));
         }
@@ -303,10 +303,10 @@ class ApplicationCodecTest {
 
     @Test
     void utf8ByteLimitHasExactBoundaryAndRevisionRejectsNegativeWireValue() {
-        var maximum = envelope(new CatalogMetadata(SOURCE, "é".repeat(32_768), REVISION, CatalogExportPolicy.PUBLIC));
+        var maximum = envelope(new CatalogMetadata(SOURCE, "é".repeat(32_768), REVISION, CatalogExportPolicy.PUBLIC, "minecraft:compass"));
         assertEquals(maximum, CODEC.decode(CODEC.encode(maximum)));
         assertThrows(IllegalArgumentException.class, () -> CODEC.encode(envelope(new CatalogMetadata(
-                SOURCE, "é".repeat(32_769), REVISION, CatalogExportPolicy.PUBLIC))));
+                SOURCE, "é".repeat(32_769), REVISION, CatalogExportPolicy.PUBLIC, "minecraft:compass"))));
         byte[] empty = CODEC.encodeCatalog(new RemoteCatalogSnapshot(SOURCE, REVISION, Map.of(), Instant.EPOCH));
         assertEquals("000000010000000161000000000000000900000000", HexFormat.of().formatHex(empty));
         ByteBuffer.wrap(empty).putLong(9, -1);
@@ -316,7 +316,7 @@ class ApplicationCodecTest {
     @Test
     void deltasAndCapabilitiesOwnAllMutableInputCollections() {
         var capabilities = new HashSet<>(Set.of(1));
-        var register = new RegisterServer(SOURCE, 1, capabilities);
+        var register = new RegisterServer(SOURCE, _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, capabilities);
         capabilities.clear();
         assertEquals(Set.of(1), register.capabilities());
         var names = new HashSet<>(Set.of("gone"));

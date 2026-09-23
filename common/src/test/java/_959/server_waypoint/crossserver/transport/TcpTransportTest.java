@@ -70,7 +70,7 @@ class TcpTransportTest {
                 assertEquals(mode == TransportMode.NOISE_KK, coordinator.authenticated());
                 assertEquals(Set.of(1, 7), coordinator.capabilities());
                 UUID request = UUID.randomUUID();
-                backend.send(request, new ApplicationMessage.RegisterServer(ID, 1, Set.of(1, 7)));
+                backend.send(request, new ApplicationMessage.RegisterServer(ID, _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, Set.of(1, 7)));
                 assertEquals(0, coordinator.receive().envelope().sequence());
                 coordinator.send(request, new ApplicationMessage.RegisterResult(ID, ApplicationMessage.Result.SUCCESS));
                 assertEquals(request, backend.receive().envelope().requestId());
@@ -377,7 +377,7 @@ class TcpTransportTest {
                 peer.socket.setReceiveBufferSize(1024);
                 Future<?> writing = f.workers.submit(() -> {
                     for (int i = 0; i < 1000; i++) channel.send(UUID.randomUUID(),
-                            new ApplicationMessage.CatalogMetadata(ID, "x".repeat(60_000), new RemoteRevision(i), CatalogExportPolicy.PUBLIC));
+                            new ApplicationMessage.CatalogMetadata(ID, "x".repeat(60_000), new RemoteRevision(i), CatalogExportPolicy.PUBLIC, "minecraft:compass"));
                     return null;
                 });
                 assertThrows(ExecutionException.class, () -> writing.get(3, TimeUnit.SECONDS));
@@ -395,7 +395,7 @@ class TcpTransportTest {
                 for (int sequence = 0; sequence < 128; sequence++) {
                     var expected = new ApplicationEnvelope(sequence, new UUID(19, sequence),
                             new ApplicationMessage.CatalogMetadata(ID, "世界".repeat(random.nextInt(100)),
-                                    new RemoteRevision(sequence), CatalogExportPolicy.PUBLIC));
+                                    new RemoteRevision(sequence), CatalogExportPolicy.PUBLIC, "minecraft:compass"));
                     byte[] frame = CODEC.encode(expected);
                     for (int offset = 0; offset < frame.length;) {
                         int count = 1 + random.nextInt(Math.min(97, frame.length - offset));

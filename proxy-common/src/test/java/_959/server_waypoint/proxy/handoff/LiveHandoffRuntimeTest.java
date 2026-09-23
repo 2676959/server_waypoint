@@ -97,7 +97,7 @@ class LiveHandoffRuntimeTest {
             AtomicLong revision = new AtomicLong();
             BackendAgent first = new BackendAgent(endpoint, mode, a, Set.of(), noise ? ak : null, pin, tcp, ProtocolLimits.DEFAULT, life);
             BackendAgent second = new BackendAgent(endpoint, mode, b, Set.of(), noise ? bk : null, pin, tcp, ProtocolLimits.DEFAULT, life,
-                    new CatalogPublisher(b, "b", () -> data, revision::incrementAndGet, ProtocolLimits.DEFAULT, 50));
+                    new CatalogPublisher(b, "b", () -> data, revision::incrementAndGet, ProtocolLimits.DEFAULT, 50, "minecraft:compass"));
             first.setSessionFactory(channel -> {
                 var session = new BackendHandoffSession<>(a, channel, sourcePlatform, destinationPlatform,
                         target -> DestinationResolver.Resolution.denied(Result.NOT_FOUND)); firstSession.set(session); return session;

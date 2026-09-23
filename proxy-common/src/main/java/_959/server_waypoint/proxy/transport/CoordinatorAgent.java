@@ -100,7 +100,7 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
                 channel = listener.accept();
                 ApplicationEnvelope envelope = channel.receive().envelope();
                 if (!(envelope.message() instanceof ApplicationMessage.RegisterServer registration)
-                        || !registration.serverId().equals(channel.serverId()) || registration.protocolVersion() != 1
+                        || !registration.serverId().equals(channel.serverId()) || registration.protocolVersion() != _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION
                         || !registration.capabilities().equals(channel.capabilities())) {
                     throw new IOException("Registration does not match admitted transcript");
                 }

@@ -215,7 +215,7 @@ class ConnectionLifecycleTest {
                 try (TcpChannel raw = TcpBackend.connect(new TcpEndpoint("127.0.0.1", coordinator.status().port()), TransportMode.PLAINTEXT,
                         ID, Set.of(1), null, null, LIMITS, ProtocolLimits.DEFAULT)) {
                     assertTrue(coordinator.status().backends().isEmpty());
-                    if (mismatch) raw.send(UUID.randomUUID(), new ApplicationMessage.RegisterServer(new RemoteServerId("other"), 1, Set.of(1)));
+                    if (mismatch) raw.send(UUID.randomUUID(), new ApplicationMessage.RegisterServer(new RemoteServerId("other"), _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, Set.of(1)));
                     assertThrows(IOException.class, raw::receive);
                     assertTrue(coordinator.status().backends().isEmpty());
                 }
@@ -228,7 +228,7 @@ class ConnectionLifecycleTest {
             CoordinatorAgent coordinator = f.coordinator(0);
             try (TcpChannel raw = TcpBackend.connect(new TcpEndpoint("127.0.0.1", coordinator.status().port()), TransportMode.PLAINTEXT,
                     ID, Set.of(), null, null, LIMITS, ProtocolLimits.DEFAULT)) {
-                raw.send(UUID.randomUUID(), new ApplicationMessage.RegisterServer(ID, 1, Set.of()));
+                raw.send(UUID.randomUUID(), new ApplicationMessage.RegisterServer(ID, _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, Set.of()));
                 raw.receive();
                 await(() -> coordinator.status().backends().containsKey(ID));
                 await(() -> coordinator.status().backends().isEmpty() && coordinator.status().metrics().disconnects() >= 1);

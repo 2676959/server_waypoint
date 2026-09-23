@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-/** V1 application values only; receipt does not authenticate, authorize, or execute an operation. */
+/** Application values only; receipt does not authenticate, authorize, or execute an operation. */
 public sealed interface ApplicationMessage {
     record RegisterServer(RemoteServerId serverId, int protocolVersion, Set<Integer> capabilities) implements ApplicationMessage {
         public RegisterServer {
@@ -34,10 +34,11 @@ public sealed interface ApplicationMessage {
     record Heartbeat() implements ApplicationMessage { }
 
     record CatalogMetadata(RemoteServerId serverId, String displayName, RemoteRevision revision,
-                           CatalogExportPolicy exportPolicy) implements ApplicationMessage {
+                           CatalogExportPolicy exportPolicy, String iconItem) implements ApplicationMessage {
         public CatalogMetadata {
             Objects.requireNonNull(serverId, "serverId");
             Objects.requireNonNull(displayName, "displayName");
+            ServerIcon.validate(iconItem);
             Objects.requireNonNull(revision, "revision");
             Objects.requireNonNull(exportPolicy, "exportPolicy");
         }

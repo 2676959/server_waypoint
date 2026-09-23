@@ -29,7 +29,7 @@ public final class CatalogDistributor {
             Sent previous = sent.get(id);
             RemoteRevision revision = publication.revision();
             if (revision.value() == 0 && view.snapshot() == null && previous == null) continue; // no validated publication yet
-            String metadataFingerprint = fingerprint(view.displayName());
+            String metadataFingerprint = fingerprint(view.displayName() + "\u0000" + view.iconItem());
             if (previous != null && previous.revision().equals(revision) && previous.state() == view.state()
                     && previous.metadataFingerprint().equals(metadataFingerprint)) continue;
             UUID request = UUID.randomUUID();
@@ -37,7 +37,8 @@ public final class CatalogDistributor {
             Sent stamp = new Sent(revision, view.state(), metadataFingerprint, request);
             sent.put(id, stamp);
             if (view.snapshot() != null) {
-                boolean delta = previous != null && previous.state() == RemoteCatalogState.AVAILABLE
+                boolean delta = previous != null && previous.metadataFingerprint().equals(metadataFingerprint)
+                        && previous.state() == RemoteCatalogState.AVAILABLE
                         && view.state() == RemoteCatalogState.AVAILABLE && publication.delta() != null
                         && previous.revision().equals(publication.delta().baseRevision());
                 if (delta) {
@@ -48,7 +49,7 @@ public final class CatalogDistributor {
                 else if (previous == null || !previous.revision().equals(revision)
                         || view.state() == RemoteCatalogState.AVAILABLE) {
                     byte[] bytes = codec.encodeCatalog(view.snapshot());
-                    channel.send(request, new ApplicationMessage.CatalogMetadata(id, view.displayName(), revision, CatalogExportPolicy.PUBLIC));
+                    channel.send(request, new ApplicationMessage.CatalogMetadata(id, view.displayName(), revision, CatalogExportPolicy.PUBLIC, view.iconItem()));
                     int chunk = Math.min(channel.protocolLimits().chunkBytes(), channel.protocolLimits().frameBytes() - 160);
                     if (chunk <= 0) throw new IOException("Catalog frame budget");
                     UUID snapshot = UUID.randomUUID();

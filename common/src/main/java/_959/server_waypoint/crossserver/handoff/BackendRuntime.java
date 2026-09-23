@@ -29,7 +29,7 @@ public final class BackendRuntime<S, P> extends AsyncTransportLifecycle implemen
     }
     @Override protected TransportResult startResources() throws Exception {
         var config = RuntimeConfiguration.read(directory, Set.of("enabled", "transportMode", "serverId", "coordinator", "protocolVersion",
-                "requiredSuite", "credentialsDirectory", "coordinatorPublicKey", "catalogExport"));
+                "requiredSuite", "credentialsDirectory", "coordinatorPublicKey", "catalogExport", "serverIconItem"));
         if (!RuntimeConfiguration.enabled(config)) return TransportResult.DISABLED;
         RuntimeConfiguration.rejectCryptoInPlaintext(config);
         RemoteServerId id = new RemoteServerId(RuntimeConfiguration.text(config, "serverId", ""));
@@ -49,7 +49,7 @@ public final class BackendRuntime<S, P> extends AsyncTransportLifecycle implemen
             revisions = new CatalogRevisionSequence(directory.resolve("cross-server-catalog-state"));
             var selection = CatalogSelection.allPublic();
             var publisher = new CatalogPublisher(id, id.value(), CatalogSource.fromManager(manager, selection, 65536),
-                    revisions::next, ProtocolLimits.DEFAULT, 1000);
+                    revisions::next, ProtocolLimits.DEFAULT, 1000, RuntimeConfiguration.text(config, "serverIconItem", ServerIcon.DEFAULT));
             agent = new BackendAgent(RuntimeConfiguration.endpoint(config, "coordinator"), mode, id, Set.of(), keys, pin,
                     TcpLimits.DEFAULT, ProtocolLimits.DEFAULT, new LifecycleSettings(true, 1000, 1000, 30000), publisher);
             agent.setSessionFactory(channel -> {

@@ -52,9 +52,9 @@ class CatalogDistributionTest {
             AtomicReference<String> source = new AtomicReference<>("from A");
             AtomicLong ar = new AtomicLong(), br = new AtomicLong();
             BackendAgent first = new BackendAgent(endpoint, mode, A, Set.of(), noise ? ak : null, pin, TCP, ProtocolLimits.DEFAULT, LIFE,
-                    new CatalogPublisher(A, "A display", () -> data(source.get()), ar::incrementAndGet, ProtocolLimits.DEFAULT, 20), cache);
+                    new CatalogPublisher(A, "A display", () -> data(source.get()), ar::incrementAndGet, ProtocolLimits.DEFAULT, 20, "minecraft:diamond"), cache);
             BackendAgent second = new BackendAgent(endpoint, mode, B, Set.of(), noise ? bk : null, pin, TCP, ProtocolLimits.DEFAULT, LIFE,
-                    new CatalogPublisher(B, "B display", () -> data("from B"), br::incrementAndGet, ProtocolLimits.DEFAULT, 20), cache);
+                    new CatalogPublisher(B, "B display", () -> data("from B"), br::incrementAndGet, ProtocolLimits.DEFAULT, 20, "minecraft:compass"), cache);
             try {
                 first.start().toCompletableFuture().get(); second.start().toCompletableFuture().get();
                 await(() -> second.remoteCatalogs().containsKey(A) && second.remoteCatalogs().get(A).state() == RemoteCatalogState.AVAILABLE
@@ -63,6 +63,7 @@ class CatalogDistributionTest {
                 assertEquals("from B", label(first.remoteCatalogs().get(B)));
                 assertFalse(first.remoteCatalogs().containsKey(A)); assertFalse(second.remoteCatalogs().containsKey(B));
                 assertEquals(mode, coordinator.catalogs().get(A).mode());
+                assertEquals("minecraft:diamond", second.remoteCatalogs().get(A).iconItem());
                 assertNull(second.remoteCatalogs().get(A).mode()); // no source-link authentication claim
                 Map<RemoteServerId, CatalogReceiver.View> detached = coordinator.catalogs();
                 source.set("edited A");
@@ -86,17 +87,20 @@ class CatalogDistributionTest {
         return new TcpChannel.Received(new ApplicationEnvelope(0, request, message), snapshot);
     }
     private static void full(CatalogIndex index, RemoteServerId id, Object owner, long revision, String label) throws Exception {
+        full(index, id, owner, revision, label, "minecraft:compass");
+    }
+    private static void full(CatalogIndex index, RemoteServerId id, Object owner, long revision, String label, String iconItem) throws Exception {
         RemoteCatalogSnapshot snapshot = new RemoteCatalogSnapshot(id, new RemoteRevision(revision),
                 Map.of("world", Map.of("shared-name", new RemoteListSnapshot(label, new RemoteRevision(revision), Map.of()))), Instant.EPOCH);
         byte[] bytes = CODEC.encodeCatalog(snapshot); UUID request = UUID.randomUUID();
-        index.receive(id, owner, received(new ApplicationMessage.CatalogMetadata(id, id.value(), snapshot.catalogRevision(), CatalogExportPolicy.PUBLIC), request, null));
+        index.receive(id, owner, received(new ApplicationMessage.CatalogMetadata(id, id.value(), snapshot.catalogRevision(), CatalogExportPolicy.PUBLIC, iconItem), request, null));
         index.receive(id, owner, received(new ApplicationMessage.CatalogSnapshot(id, snapshot.catalogRevision(), UUID.randomUUID(), 0,
                 bytes.length, new ApplicationMessage.Bytes(bytes)), request, snapshot));
     }
     @Test void cacheBudgetsExpiryAndHighWaterMarksAreAtomic() throws Exception {
         AtomicLong clock = new AtomicLong(); Object a = new Object(), b = new Object();
         int bytes = CODEC.encodeCatalog(new RemoteCatalogSnapshot(A, new RemoteRevision(1), data("x"), Instant.EPOCH)).length;
-        CatalogIndex index = new CatalogIndex(new CatalogCacheLimits(2, bytes + 10, bytes + 10, 10), clock::get);
+        CatalogIndex index = new CatalogIndex(new CatalogCacheLimits(2, bytes + 64, bytes + 64, 10), clock::get);
         index.connected(A, a, TransportMode.NOISE_KK, ProtocolLimits.DEFAULT);
         index.connected(B, b, TransportMode.PLAINTEXT, ProtocolLimits.DEFAULT);
         full(index, A, a, 5, "x");
@@ -106,7 +110,7 @@ class CatalogDistributionTest {
         assertEquals("x", label(index.views().get(A)));
         assertThrows(IOException.class, () -> index.connected(new RemoteServerId("third"), new Object(), null, ProtocolLimits.DEFAULT));
         index.disconnected(A, a); clock.set(11_000_000);
-        assertNull(index.views().get(A).snapshot()); assertTrue(index.retainedBytes() <= 10); // bounded identity metadata remains
+        assertNull(index.views().get(A).snapshot()); assertTrue(index.retainedBytes() <= 64); // bounded identity metadata remains
         index.connected(A, a, TransportMode.NOISE_KK, ProtocolLimits.DEFAULT);
         assertThrows(IOException.class, () -> full(index, A, a, 4, "x")); // expiry never permits revision rollback
         assertThrows(IOException.class, () -> full(index, A, a, 5, "y")); // equal-revision conflict after eviction
@@ -142,6 +146,12 @@ class CatalogDistributionTest {
                 distributor.publish();
                 assertInstanceOf(ApplicationMessage.CatalogMetadata.class, backend.receive().envelope().message());
                 assertEquals(1, backend.receive().completedCatalog().catalogRevision().value());
+                // An icon-only restart must fan out even when catalog content/revision are unchanged.
+                full(index, A, owner, 1, "first", "minecraft:diamond");
+                distributor.publish();
+                var iconUpdate = (ApplicationMessage.CatalogMetadata) backend.receive().envelope().message();
+                assertEquals("minecraft:diamond", iconUpdate.iconItem());
+                assertEquals(1, backend.receive().completedCatalog().catalogRevision().value());
                 var delta = new ApplicationMessage.CatalogDelta(A, new RemoteRevision(1), new RemoteRevision(2),
                         Map.of("world", Map.of("shared-name", new RemoteListSnapshot("second", new RemoteRevision(2), Map.of()))), Map.of(), Set.of());
                 index.receive(A, owner, received(delta, UUID.randomUUID(), null));
@@ -174,7 +184,7 @@ class CatalogDistributionTest {
         RemoteCatalogSnapshot updated = new RemoteCatalogSnapshot(A, new RemoteRevision(2),
                 Map.of("world", Map.of("shared-name", new RemoteListSnapshot("second", new RemoteRevision(2), Map.of()))), Instant.EPOCH);
         UUID request = UUID.randomUUID(); byte[] bytes = CODEC.encodeCatalog(updated);
-        index.receive(A, owner, received(new ApplicationMessage.CatalogMetadata(A, "display", updated.catalogRevision(), CatalogExportPolicy.PUBLIC), request, null));
+        index.receive(A, owner, received(new ApplicationMessage.CatalogMetadata(A, "display", updated.catalogRevision(), CatalogExportPolicy.PUBLIC, "minecraft:compass"), request, null));
         clock.set(11_000_000); index.maintain(); assertNull(index.views().get(A).snapshot());
         index.receive(A, owner, received(new ApplicationMessage.CatalogSnapshot(A, updated.catalogRevision(), UUID.randomUUID(), 0,
                 bytes.length, new ApplicationMessage.Bytes(bytes)), request, updated));

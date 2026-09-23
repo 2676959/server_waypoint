@@ -11,6 +11,7 @@ backend/proxy boundary.
 
 | Document | Scope |
 | --- | --- |
+| [Server selector metadata](specs/server-selector-metadata.md) | Icon fields in the version-1 wire formats |
 | [Protocol v1](specs/cross-server-protocol-v1.md) | Normative feature contract (step 1) |
 | [Module contracts](specs/cross-server-proxy-module-contracts.md) | Module boundaries and packaging (step 3) |
 | [Catalog models](specs/cross-server-catalog-models.md) | Shared catalog domain types (step 4) |
@@ -41,6 +42,8 @@ backend/proxy boundary.
 - [Remote waypoint manager GUI](specs/cross-server-gui.md) (step 18)
 
 ## Release
+
+- [Server selector validation](validation/2026-09-22-server-selector.md) — 2026-09-22
 
 - [Remote UI, permission preflight and logging validation](validation/2026-09-13-remote-ui-permission-logging.md) — 2026-09-13
 

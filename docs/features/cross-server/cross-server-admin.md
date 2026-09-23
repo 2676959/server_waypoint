@@ -134,3 +134,16 @@ control characters in labels are replaced and logged labels are bounded.
 
 Destination teleport permission is checked before the proxy switches servers, then checked again
 on arrival. See [offline provider behavior](specs/cross-server-authorization.md#permission-check-before-transfer).
+
+## Remote server selector icon
+
+Set `"serverIconItem": "minecraft:diamond"` in each backend's `cross-server.json` and restart
+that backend to advertise its selector icon. The default is `minecraft:compass`. Use an exact
+namespaced item identifier, at most 256 ASCII characters; malformed identifiers reject backend
+startup. A valid item unavailable on a client's registry (or air) renders as a compass.
+This setting applies to both modded and Paper backends and is not a coordinator setting.
+
+Server icon metadata keeps application protocol **1** and Minecraft custom-payload protocol **1**.
+Update the coordinator, all backends, and modded clients together; if `protocolVersion` is explicitly
+set in `cross-server.json`, keep it at `1`. Builds from before the selector change advertise the
+same protocol number but do not understand the new icon field.

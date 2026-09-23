@@ -76,11 +76,30 @@ public final class RemoteGuiProbe implements ClientModInitializer {
                 remote = (RemoteWaypointPanel) field(WaypointManagerScreen.class, "remotePanel").get(local);
                 check((boolean) field(WaypointManagerScreen.class, "showingRemote").get(local), "remote scope selected");
                 check(!((AbstractWidget) field(WaypointManagerScreen.class, "addWaypointButton").get(local)).active, "local add disabled");
+                var add = (AbstractWidget) field(WaypointManagerScreen.class, "addWaypointButton").get(local);
+                var servers = (ServerListWidget) field(WaypointManagerScreen.class, "serverListWidget").get(local);
+                var dimensions = (DimensionListWidget) field(WaypointManagerScreen.class, "dimensionListWidget").get(null);
+                var scope = (AbstractWidget) field(WaypointManagerScreen.class, "serverScopeToggle").get(local);
+                check(!add.visible && servers.visible, "remote mode swaps add for server selector");
+                check(servers.getY() + servers.getHeight() + 6 == scope.getY(), "server rail bottom anchor");
+                check(dimensions.getY() + dimensions.getHeight() + 6 <= servers.getY(), "opposed rails do not overlap");
+                check(dimensions.getSelectedDimensionName().equals("minecraft:overworld"), "remote dimension catalog selected");
+                clickAt(local, servers.getX() + 8, servers.getY() + servers.getHeight() - 26);
+                check(!servers.getSelectedEntry().equals(id), "native second-server selection");
+                check(dimensions.getSelectedDimensionName().equals("minecraft:the_nether"), "server switch changes dimension catalog");
+                clickAt(local, servers.getX() + 8, servers.getY() + servers.getHeight() - 8);
+                check(servers.getSelectedEntry().equals(id), "native first-server selection");
+                check(dimensions.getSelectedDimensionName().equals("minecraft:overworld"), "dimension selection restored by fallback");
+                check(servers.mouseScrolled(servers.getX() + 8, servers.getY() + 8, 0, -100), "server strip consumes scrolling");
+                check(dimensions.getSelectedDimensionName().equals("minecraft:overworld"), "server scrolling leaves dimension state independent");
+                servers.mouseScrolled(servers.getX() + 8, servers.getY() + 8, 0, 100);
+
+
             }
             case 2 -> {
                 var tree = (TreeViewWidget<?>) field(RemoteWaypointPanel.class, "tree").get(remote);
-                // Server, dimension, list, then first waypoint; dispatch through the real screen input path.
-                clickAt(local, tree.getX() + 24, tree.getY() + 3 * 20 + 10);
+                // List, then first waypoint within the sidebar scope; use the real screen input path.
+                clickAt(local, tree.getX() + 24, tree.getY() + 20 + 10);
                 check(button().active, "available exact target enables teleport");
                 var key = (RemoteWaypointKey) field(RemoteWaypointPanel.class, "selected").get(remote);
                 check(key.serverId().equals(id) && key.listName().isEmpty() && key.waypointName().equals("Exact \"Name\""), "exact selection identity");
@@ -110,6 +129,10 @@ public final class RemoteGuiProbe implements ClientModInitializer {
                 var scope = (AbstractWidget) field(WaypointManagerScreen.class, "serverScopeToggle").get(local);
                 click(local, scope);
                 check(mc.screen == local && !button().visible, "local view hides remote actions");
+                check(((AbstractWidget) field(WaypointManagerScreen.class, "addWaypointButton").get(local)).visible,
+                        "local mode restores add button");
+                check(!((AbstractWidget) field(WaypointManagerScreen.class, "serverListWidget").get(local)).visible,
+                        "local mode hides server selector");
                 click(local, scope);
                 check(button().active, "remote view restores selection");
                 click(local, grouping);
@@ -122,7 +145,7 @@ public final class RemoteGuiProbe implements ClientModInitializer {
             }
             case 5 -> {
                 var tree = (TreeViewWidget<?>) field(RemoteWaypointPanel.class, "tree").get(remote);
-                clickAt(local, tree.getX() + 24, tree.getY() + 3 * 20 + 10);
+                clickAt(local, tree.getX() + 24, tree.getY() + 20 + 10);
                 check(!button().active, "stale target remains read-only");
                 install(RemoteCatalogState.AVAILABLE);
             }
@@ -158,8 +181,16 @@ public final class RemoteGuiProbe implements ClientModInitializer {
                 0, true, List.of("keyword"), "Remote read-only description");
         var snapshot = new RemoteCatalogSnapshot(id, new RemoteRevision(1), Map.of("minecraft:overworld",
                 Map.of("", new RemoteListSnapshot("Shared list", new RemoteRevision(1), Map.of("Exact \"Name\"", waypoint)))), Instant.EPOCH);
+        Map<RemoteServerId, CatalogReceiver.View> views = new HashMap<>();
+        views.put(id, new CatalogReceiver.View(snapshot, state, "Shared server", null, "minecraft:diamond"));
+        for (int i = 0; i < 12; i++) {
+            var other = new RemoteServerId("remote-b" + i);
+            var otherSnapshot = new RemoteCatalogSnapshot(other, new RemoteRevision(1),
+                    Map.of("minecraft:the_nether", Map.of()), Instant.EPOCH);
+            views.put(other, new CatalogReceiver.View(otherSnapshot, state, "Other server", null, "minecraft:netherrack"));
+        }
         check(client.remoteCatalogs().apply(new RemoteCatalogMessage(request.requestId(), RemoteCatalogState.AVAILABLE,
-                Map.of(id, new CatalogReceiver.View(snapshot, state, "Shared server", null)))), "fixture refresh applied");
+                views)), "fixture refresh applied");
     }
     private static Field field(Class<?> type, String name) throws Exception {
         Field field = type.getDeclaredField(name); field.setAccessible(true); return field;
@@ -168,7 +199,7 @@ public final class RemoteGuiProbe implements ClientModInitializer {
         clickAt(screen, widget.getX() + widget.getWidth() / 2.0, widget.getY() + widget.getHeight() / 2.0);
     }
     private static void clickAt(Screen screen, double x, double y) {
-        check(screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, 0)), false), "native click handled");
+        check(screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0)), false), "native click handled");
     }
     private static Map<Path, String> localFiles(Minecraft mc) throws Exception {
         Map<Path, String> files = new HashMap<>();

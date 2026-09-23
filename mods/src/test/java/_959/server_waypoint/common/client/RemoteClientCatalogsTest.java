@@ -22,7 +22,7 @@ class RemoteClientCatalogsTest {
         AtomicLong now = new AtomicLong(); var cache = new RemoteClientCatalogs(now::get); cache.clear();
         var id = new RemoteServerId("server");
         var view = new CatalogReceiver.View(new RemoteCatalogSnapshot(id, new RemoteRevision(0), Map.of(), Instant.EPOCH),
-                RemoteCatalogState.AVAILABLE, "Display", null);
+                RemoteCatalogState.AVAILABLE, "Display", null, "minecraft:compass");
         assertTrue(cache.apply(new RemoteCatalogMessage(cache.poll().requestId(), RemoteCatalogState.AVAILABLE, Map.of(id, view))));
         assertThrows(UnsupportedOperationException.class, () -> cache.snapshot().clear());
         now.set(5_000_000_000L);

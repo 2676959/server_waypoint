@@ -53,7 +53,7 @@ class CatalogPublicationTest {
             AtomicReference<Map<String, Map<String, RemoteListSnapshot>>> source = new AtomicReference<>(data("first"));
             CatalogPublisher publisher = new CatalogPublisher(ID, "Backend display", () -> {
                 if (source.get() == null) throw new IOException("source unavailable"); return source.get();
-            }, revisions::next, ProtocolLimits.DEFAULT, 30);
+            }, revisions::next, ProtocolLimits.DEFAULT, 30, "minecraft:compass");
             BackendAgent backend = new BackendAgent(new TcpEndpoint("127.0.0.1", coordinator.status().port()), mode, ID, Set.of(1),
                     mode == TransportMode.NOISE_KK ? backendKey : null,
                     mode == TransportMode.NOISE_KK ? CanonicalKey.rawPublic(CanonicalKey.publicFromPrivate(serverPrivate)) : null,
@@ -88,7 +88,7 @@ class CatalogPublicationTest {
     }
     private static void full(CatalogReceiver receiver, Object owner, RemoteCatalogSnapshot catalog) throws Exception {
         UUID request = UUID.randomUUID(); byte[] bytes = CODEC.encodeCatalog(catalog);
-        receiver.receive(owner, received(0, request, new ApplicationMessage.CatalogMetadata(ID, "display", catalog.catalogRevision(), CatalogExportPolicy.PUBLIC), null));
+        receiver.receive(owner, received(0, request, new ApplicationMessage.CatalogMetadata(ID, "display", catalog.catalogRevision(), CatalogExportPolicy.PUBLIC, "minecraft:compass"), null));
         receiver.receive(owner, received(1, request, new ApplicationMessage.CatalogSnapshot(ID, catalog.catalogRevision(), UUID.randomUUID(),
                 0, bytes.length, new ApplicationMessage.Bytes(bytes)), catalog));
     }
@@ -118,7 +118,7 @@ class CatalogPublicationTest {
             captured.countDown();
             try { release.await(); } catch (InterruptedException failure) { throw new IOException(); }
             return 1;
-        }, ProtocolLimits.DEFAULT, 100);
+        }, ProtocolLimits.DEFAULT, 100, "minecraft:compass");
         ExecutorService workers = Executors.newFixedThreadPool(2);
         try (TcpCoordinator listener = new TcpCoordinator(new TcpEndpoint("127.0.0.1", 0), TransportMode.PLAINTEXT, null,
                 Map.of(ID, new byte[0]), TCP, ProtocolLimits.DEFAULT)) {
@@ -147,7 +147,7 @@ class CatalogPublicationTest {
     @Test void deltaGapRequestsFullSnapshotOverTheLiveChannel() throws Exception {
         AtomicReference<Map<String, Map<String, RemoteListSnapshot>>> source = new AtomicReference<>(data("first"));
         AtomicLong revision = new AtomicLong();
-        CatalogPublisher publisher = new CatalogPublisher(ID, "display", source::get, revision::incrementAndGet, ProtocolLimits.DEFAULT, 30);
+        CatalogPublisher publisher = new CatalogPublisher(ID, "display", source::get, revision::incrementAndGet, ProtocolLimits.DEFAULT, 30, "minecraft:compass");
         try (TcpCoordinator listener = new TcpCoordinator(new TcpEndpoint("127.0.0.1", 0), TransportMode.PLAINTEXT, null,
                 Map.of(ID, new byte[0]), TCP, ProtocolLimits.DEFAULT)) {
             BackendAgent backend = new BackendAgent(new TcpEndpoint("127.0.0.1", listener.port()), TransportMode.PLAINTEXT,
@@ -180,7 +180,7 @@ class CatalogPublicationTest {
         ProtocolLimits limits = new ProtocolLimits(32768, 1_048_576, 262144, 65536, 16384, 65536, 8388608);
         AtomicReference<Map<String, Map<String, RemoteListSnapshot>>> source = new AtomicReference<>(data("first"));
         AtomicLong revisions = new AtomicLong();
-        CatalogPublisher publisher = new CatalogPublisher(ID, "display", source::get, revisions::incrementAndGet, limits, 30);
+        CatalogPublisher publisher = new CatalogPublisher(ID, "display", source::get, revisions::incrementAndGet, limits, 30, "minecraft:compass");
         ExecutorService workers = Executors.newFixedThreadPool(2);
         try (TcpCoordinator listener = new TcpCoordinator(new TcpEndpoint("127.0.0.1", 0), TransportMode.PLAINTEXT, null,
                 Map.of(ID, new byte[0]), TCP, limits)) {
@@ -230,7 +230,7 @@ class CatalogPublicationTest {
         manager.addWaypoint("dimension", "keep", new SimpleWaypoint("keep", "K", new WaypointPos(4,5,6), 0,0,false), ignored -> { });
         AtomicLong revisions = new AtomicLong();
         CatalogPublisher publisher = new CatalogPublisher(ID, "display", CatalogSource.fromManager(manager, CatalogSelection.allPublic(), 100),
-                revisions::incrementAndGet, ProtocolLimits.DEFAULT, 100);
+                revisions::incrementAndGet, ProtocolLimits.DEFAULT, 100, "minecraft:compass");
         ExecutorService worker = Executors.newSingleThreadExecutor();
         try (TcpCoordinator listener = new TcpCoordinator(new TcpEndpoint("127.0.0.1", 0), TransportMode.PLAINTEXT, null,
                 Map.of(ID, new byte[0]), TCP, ProtocolLimits.DEFAULT)) {

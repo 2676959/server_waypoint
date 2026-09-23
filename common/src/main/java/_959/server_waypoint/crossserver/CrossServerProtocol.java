@@ -1,8 +1,8 @@
 package _959.server_waypoint.crossserver;
 
 /**
- * Frozen v1 contract shared by backends and the coordinator.
- * See docs/features/cross-server/cross-server-protocol-v1.md. This does not register runtime features.
+ * Version 1 contract shared by backends and the coordinator.
+ * See docs/features/cross-server/specs/cross-server-protocol-v1.md. This does not register runtime features.
  */
 public final class CrossServerProtocol {
     /** Independent of the Minecraft custom-payload ProtocolVersion. */

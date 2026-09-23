@@ -10,7 +10,7 @@ import io.netty.buffer.ByteBuf;
 import java.time.Instant;
 import java.util.*;
 
-/** Bounded outer message; remote catalog bytes retain their canonical v1 representation. */
+/** Bounded outer message; remote catalog bytes retain their canonical application representation. */
 public final class RemoteCatalogMessageCodec {
     public static final int MAX_BYTES = 8 * 1024 * 1024;
     private static final ApplicationCodec CATALOG = new ApplicationCodec(ProtocolLimits.DEFAULT);
@@ -24,6 +24,7 @@ public final class RemoteCatalogMessageCodec {
             UtfStringCodec.encode(out, entry.getKey().value(), context);
             if (view.displayName().length() > 65536) throw new IllegalArgumentException("Display name too long");
             UtfStringCodec.encode(out, view.displayName(), context);
+            UtfStringCodec.encode(out, view.iconItem(), context);
             out.writeInt(stateId(view.state()));
             out.writeInt(view.mode() == null ? 0 : view.mode() == TransportMode.NOISE_KK ? 1 : 2);
             byte[] data = view.snapshot() == null ? new byte[0] : CATALOG.encodeCatalog(view.snapshot());
@@ -42,6 +43,7 @@ public final class RemoteCatalogMessageCodec {
             context.claimObject(); context.claimBytes(128);
             RemoteServerId id = new RemoteServerId(text(in, context, 64));
             String display = text(in, context, 262144);
+            String iconItem = ServerIcon.validate(text(in, context, 256));
             RemoteCatalogState status = state(in.readInt());
             TransportMode mode = switch (in.readInt()) {
                 case 0 -> null; case 1 -> TransportMode.NOISE_KK; case 2 -> TransportMode.PLAINTEXT;
@@ -52,7 +54,7 @@ public final class RemoteCatalogMessageCodec {
             context.claimBytes(length);
             byte[] bytes = new byte[length]; in.readBytes(bytes);
             var snapshot = length == 0 ? null : CATALOG.decodeCatalog(bytes, Instant.now(), context);
-            if (servers.put(id, new CatalogReceiver.View(snapshot, status, display, mode)) != null) throw new IllegalArgumentException("Duplicate server");
+            if (servers.put(id, new CatalogReceiver.View(snapshot, status, display, mode, iconItem)) != null) throw new IllegalArgumentException("Duplicate server");
         }
         return new RemoteCatalogMessage(request, state, servers);
     }

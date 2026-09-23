@@ -126,7 +126,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
                 channel = current;
                 if (stopping) throw new IOException("Agent stopped");
                 UUID request = UUID.randomUUID();
-                current.send(request, new ApplicationMessage.RegisterServer(id, 1, capabilities));
+                current.send(request, new ApplicationMessage.RegisterServer(id, _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, capabilities));
                 ApplicationEnvelope response = current.receive().envelope();
                 if (!request.equals(response.requestId()) || !(response.message() instanceof ApplicationMessage.RegisterResult result)
                         || !id.equals(result.serverId()) || result.result() != ApplicationMessage.Result.SUCCESS) {

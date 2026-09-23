@@ -38,7 +38,7 @@ class RemoteClientDispatchTest {
             var snapshot = new RemoteCatalogSnapshot(id, new RemoteRevision(9), Map.of("minecraft:overworld",
                     Map.of("local-marker", new RemoteListSnapshot("local-marker", new RemoteRevision(8), Map.of("Exact Name", waypoint)))), Instant.EPOCH);
             var message = new RemoteCatalogMessage(request.requestId(), RemoteCatalogState.AVAILABLE,
-                    Map.of(id, new CatalogReceiver.View(snapshot, RemoteCatalogState.AVAILABLE, "same name", null)));
+                    Map.of(id, new CatalogReceiver.View(snapshot, RemoteCatalogState.AVAILABLE, "same name", null, "minecraft:compass")));
             var frames = ChunkedMessageManager.createTransfer(message, false);
             assertTrue(frames.size() > 1);
             for (int i = 0; i < frames.size() - 1; i++) client.onMessageChunk(frames.get(i));

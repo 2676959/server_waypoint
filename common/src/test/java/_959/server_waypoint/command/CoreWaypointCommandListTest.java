@@ -122,7 +122,7 @@ class CoreWaypointCommandListTest {
         index.receive(id, owner, new TcpChannel.Received(
                 new ApplicationEnvelope(0, request,
                         new ApplicationMessage.CatalogMetadata(id, "Remote only", revision,
-                                CatalogExportPolicy.PUBLIC)), null));
+                                CatalogExportPolicy.PUBLIC, "minecraft:compass")), null));
         index.receive(id, owner, new TcpChannel.Received(
                 new ApplicationEnvelope(1, request,
                         new ApplicationMessage.CatalogSnapshot(id, revision, UUID.randomUUID(), 0,

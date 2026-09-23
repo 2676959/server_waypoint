@@ -34,7 +34,7 @@ public final class CatalogIndex {
         if (entry == null) {
             if (entries.size() >= limits.servers()) throw new IOException("Catalog identity limit");
             entry = new Entry();
-            entry.metadataBytes = id.value().getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+            entry.metadataBytes = id.value().getBytes(java.nio.charset.StandardCharsets.UTF_8).length + ServerIcon.DEFAULT.length();
             if (entry.metadataBytes > limits.perServerBytes() || retainedBytes() + entry.metadataBytes > limits.totalBytes()) {
                 throw new IOException("Catalog metadata cache limit");
             }
@@ -63,7 +63,7 @@ public final class CatalogIndex {
         try {
             if (received.envelope().message() instanceof ApplicationMessage.CatalogMetadata metadata) {
                 entries.values().forEach(value -> { value.delta = null; value.deltaBytes = 0; });
-                int bytes = metadata.displayName().getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+                int bytes = metadata.displayName().getBytes(java.nio.charset.StandardCharsets.UTF_8).length + metadata.iconItem().length();
                 if (entry.bytes + entry.metadataBytes + bytes > limits.perServerBytes()
                         || retainedBytes() - entry.pendingMetadataBytes + bytes > limits.totalBytes()) {
                     throw new IOException("Catalog metadata cache limit");
@@ -80,7 +80,7 @@ public final class CatalogIndex {
             }
             if (received.completedCatalog() != null || received.envelope().message() instanceof ApplicationMessage.CatalogInvalidate) {
                 entry.pendingMetadataBytes = 0;
-                entry.metadataBytes = entry.receiver.view().displayName().getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+                entry.metadataBytes = entry.receiver.view().displayName().getBytes(java.nio.charset.StandardCharsets.UTF_8).length + entry.receiver.view().iconItem().length();
             }
             return gap;
         } catch (IOException | RuntimeException failure) {

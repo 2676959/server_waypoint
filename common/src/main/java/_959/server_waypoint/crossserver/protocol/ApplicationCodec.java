@@ -124,6 +124,7 @@ public final class ApplicationCodec {
             w.string(m.displayName());
             w.revision(m.revision());
             w.i(1);
+            w.string(m.iconItem());
         }
         else if (message instanceof CatalogSnapshot m) {
             w.server(m.serverId());
@@ -191,7 +192,7 @@ public final class ApplicationCodec {
             case 1 -> new RegisterServer(r.server(), r.i(), r.capabilities());
             case 2 -> new RegisterResult(r.server(), r.result());
             case 3 -> new Heartbeat();
-            case 10 -> new CatalogMetadata(r.server(), r.string(), r.revision(), r.policy());
+            case 10 -> new CatalogMetadata(r.server(), r.string(), r.revision(), r.policy(), r.string());
             case 11 -> new CatalogSnapshot(r.server(), r.revision(), r.uuid(), r.i(), r.total(), r.bytes());
             case 12 -> new CatalogDelta(r.server(), r.revision(), r.revision(), r.dimensions(), r.removals(), r.names());
             case 13 -> new CatalogInvalidate(r.server(), r.revision(), r.state());

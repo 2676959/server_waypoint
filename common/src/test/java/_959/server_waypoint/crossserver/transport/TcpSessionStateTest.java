@@ -70,7 +70,7 @@ class TcpSessionStateTest {
 
     @Test void boundedRequestsAllowMatchingResponseButKeepReplayHistory() throws Exception {
         TcpSessionState state = state(1, 1000, 100);
-        var register = new ApplicationMessage.RegisterServer(id, 1, Set.of());
+        var register = new ApplicationMessage.RegisterServer(id, _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, Set.of());
         state.accept(envelope(0, request, register), codec);
         state.response(envelope(0, request, new ApplicationMessage.RegisterResult(id, ApplicationMessage.Result.SUCCESS)));
         state.accept(envelope(1, UUID.randomUUID(), register), codec);
@@ -86,7 +86,7 @@ class TcpSessionStateTest {
         assertTrue(state.expired(System.nanoTime() + 1_100_000_000L));
         state.clear();
         assertFalse(state.expired(System.nanoTime() + 1_100_000_000L));
-        state.accept(envelope(1, request, new ApplicationMessage.RegisterServer(id, 1, Set.of())), codec);
+        state.accept(envelope(1, request, new ApplicationMessage.RegisterServer(id, _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, Set.of())), codec);
         assertTrue(state.expired(System.nanoTime() + 1_100_000_000L));
     }
 }
