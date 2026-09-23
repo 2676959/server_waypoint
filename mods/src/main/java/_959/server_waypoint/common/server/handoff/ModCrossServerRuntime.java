@@ -46,7 +46,11 @@ public final class ModCrossServerRuntime {
             }
         }, destination);
         command.setRemoteTeleportInitiator(runtime);
-        runtime.start().thenAccept(result -> WaypointServerCore.LOGGER.info("Cross-server backend startup: {}", result));
+        runtime.start().thenAccept(result -> {
+            String details = runtime.startupFailureDetails();
+            if (details == null) WaypointServerCore.LOGGER.info("Cross-server backend startup: {}", result);
+            else WaypointServerCore.LOGGER.warn("Cross-server backend startup: {}. {}", result, details);
+        });
     }
     public void stop() { if (runtime != null) runtime.stop(); }
     public void arrived(ServerPlayer player) {

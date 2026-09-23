@@ -23,11 +23,15 @@ public final class ServerWaypointVelocity {
     private final ProxyServer proxy;
     private final VelocityRuntime runtime;
     @Inject public ServerWaypointVelocity(ProxyServer proxy, Logger logger, @DataDirectory Path directory) {
-        this.proxy = proxy; this.logger = logger; runtime = new VelocityRuntime(proxy, directory, logger);
+        this.proxy = proxy; this.logger = logger; runtime = new VelocityRuntime(proxy, directory);
     }
     @Subscribe public void onInitialize(ProxyInitializeEvent event) {
         proxy.getChannelRegistrar().register(RESERVED);
-        runtime.start().thenAccept(result -> logger.info("Server Waypoint coordinator startup: {}", result));
+        runtime.start().thenAccept(result -> {
+            String details = runtime.startupFailureDetails();
+            if (details == null) logger.info("Server Waypoint coordinator startup: {}", result);
+            else logger.warn("Server Waypoint coordinator startup: {}. {}", result, details);
+        });
     }
     @Subscribe public void onDisconnect(DisconnectEvent event) { runtime.disconnected(event.getPlayer().getUniqueId()); }
     @Subscribe public void onPluginMessage(PluginMessageEvent event) {

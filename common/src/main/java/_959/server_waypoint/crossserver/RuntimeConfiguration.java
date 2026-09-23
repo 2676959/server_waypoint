@@ -62,8 +62,22 @@ public final class RuntimeConfiguration {
         if (!Files.exists(path)) Files.writeString(path, defaultContent, StandardOpenOption.CREATE_NEW);
         if (Files.size(path) > 1024 * 1024) throw new IOException("Cross-server configuration too large");
         JsonObject config = JsonParser.parseString(Files.readString(path)).getAsJsonObject();
-        if (!fields.containsAll(config.keySet())) throw new IOException("Unknown cross-server configuration field");
-        if (config.has("protocolVersion") && config.get("protocolVersion").getAsInt() != CrossServerProtocol.PROTOCOL_VERSION) throw new IOException("Unsupported cross-server protocol");
+        List<String> unknownFields = config.keySet().stream().filter(field -> !fields.contains(field)).sorted().toList();
+        if (!unknownFields.isEmpty()) {
+            throw new IllegalArgumentException("Unknown entries in cross-server.json: " + String.join(", ", unknownFields)
+                    + "; remove them or correct their names");
+        }
+        if (config.has("protocolVersion")) {
+            try {
+                if (config.get("protocolVersion").getAsInt() != CrossServerProtocol.PROTOCOL_VERSION) {
+                    throw new IllegalArgumentException("Invalid protocolVersion in cross-server.json; use "
+                            + CrossServerProtocol.PROTOCOL_VERSION + " and matching backend and coordinator builds");
+                }
+            } catch (NumberFormatException | IllegalStateException failure) {
+                throw new IllegalArgumentException("Invalid protocolVersion in cross-server.json; use "
+                        + CrossServerProtocol.PROTOCOL_VERSION + " and matching backend and coordinator builds", failure);
+            }
+        }
         return config;
     }
     public static boolean enabled(JsonObject config) { return config.has("enabled") && config.get("enabled").getAsBoolean(); }
@@ -82,9 +96,17 @@ public final class RuntimeConfiguration {
     public static TcpEndpoint endpoint(JsonObject config, String key) throws IOException {
         String address = text(config, key, "127.0.0.1:25580");
         int colon = address.lastIndexOf(':');
-        if (colon <= 0) throw new IOException("Endpoint requires host and port");
-        TcpEndpoint endpoint = new TcpEndpoint(address.substring(0, colon), Integer.parseInt(address.substring(colon + 1)));
-        endpoint.validate(mode(config)); return endpoint;
+        if (colon <= 0) throw new IllegalArgumentException("Invalid " + key + " in cross-server.json; use host:port");
+        try {
+            TcpEndpoint endpoint = new TcpEndpoint(address.substring(0, colon), Integer.parseInt(address.substring(colon + 1)));
+            endpoint.validate(mode(config));
+            return endpoint;
+        } catch (NumberFormatException | java.net.UnknownHostException failure) {
+            throw new IllegalArgumentException("Invalid " + key + " in cross-server.json; use a resolvable host and port from 0 to 65535", failure);
+        } catch (IllegalArgumentException failure) {
+            throw new IllegalArgumentException("Invalid " + key + " in cross-server.json: " + failure.getMessage()
+                    + "; use a valid host and port, and a literal loopback address for PLAINTEXT", failure);
+        }
     }
     public static void rejectCryptoInPlaintext(JsonObject config) throws IOException {
         if (mode(config) == TransportMode.PLAINTEXT) {

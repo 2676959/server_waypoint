@@ -24,6 +24,7 @@ public abstract class AsyncTransportLifecycle implements TransportLifecycle {
             try { result = stopping ? TransportResult.UNAVAILABLE : startResources(); }
             catch (Exception failure) {
                 try { stopResources(); } catch (Exception ignored) { }
+                onStartFailure(failure);
                 result = failure instanceof IllegalArgumentException ? TransportResult.INVALID_CONFIGURATION : TransportResult.UNAVAILABLE;
             }
             started.complete(result);
@@ -53,6 +54,7 @@ public abstract class AsyncTransportLifecycle implements TransportLifecycle {
         return result.minimalCompletionStage();
     }
     protected abstract TransportResult startResources() throws Exception;
+    protected void onStartFailure(Exception failure) { }
     protected abstract void stopResources() throws Exception;
 
     /** Called only by the control owner after all sockets have been closed. */

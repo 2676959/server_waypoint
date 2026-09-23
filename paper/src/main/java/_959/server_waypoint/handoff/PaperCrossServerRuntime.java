@@ -41,7 +41,11 @@ public final class PaperCrossServerRuntime implements Listener {
         command.setRemoteTeleportInitiator(runtime);
     }
     private static Player player(CommandSourceStack source) { return source.getExecutor() instanceof Player player ? player : null; }
-    public void start() { runtime.start().thenAccept(result -> WaypointServerCore.LOGGER.info("Cross-server backend startup: {}", result)); }
+    public void start() { runtime.start().thenAccept(result -> {
+        String details = runtime.startupFailureDetails();
+        if (details == null) WaypointServerCore.LOGGER.info("Cross-server backend startup: {}", result);
+        else WaypointServerCore.LOGGER.warn("Cross-server backend startup: {}. {}", result, details);
+    }); }
     public void stop() { runtime.stop(); }
     @EventHandler(priority = EventPriority.MONITOR) public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
