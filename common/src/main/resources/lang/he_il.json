@@ -1,4 +1,9 @@
 {
+  "waypoint.menu.title": "Server Waypoint",
+  "waypoint.menu.browse": "עיון",
+  "waypoint.menu.transfer": "העברה",
+  "waypoint.menu.manage": "ניהול",
+  "waypoint.menu.more": "עוד",
   "waypoint.save.failed": "הכתיבה אל {0} נכשלה",
   "waypoint.updates.sent": "עדכוני נקודות הציון נשלחו",
   "waypoint.incompatible.client": "גרסת המוד \"Server Waypoint\" אינה תואמת. נא להתקין את גרסה: {0}",

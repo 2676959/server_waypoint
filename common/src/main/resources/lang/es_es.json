@@ -1,4 +1,9 @@
 {
+  "waypoint.menu.title": "Server Waypoint",
+  "waypoint.menu.browse": "Explorar",
+  "waypoint.menu.transfer": "Transferir",
+  "waypoint.menu.manage": "Gestionar",
+  "waypoint.menu.more": "Más",
   "waypoint.save.failed": "No se pudo escribir en {0}",
   "waypoint.updates.sent": "Se han enviado las actualizaciones de los waypoints",
   "waypoint.incompatible.client": "Versión incompatible del mod Server Waypoint. Instale la versión: {0}",

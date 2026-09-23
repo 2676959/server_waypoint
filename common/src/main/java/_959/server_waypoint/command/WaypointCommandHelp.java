@@ -7,6 +7,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
@@ -37,7 +40,74 @@ final class WaypointCommandHelp {
     private WaypointCommandHelp() {
     }
 
-    static Component mainMenu(
+    static Component menu(
+            boolean withAdd,
+            boolean withEdit,
+            boolean withRemove,
+            boolean withNavigate,
+            boolean withTp,
+            boolean withReload,
+            boolean withUpload,
+            boolean withRemoteAccess,
+            boolean withRemoteList,
+            boolean detailed
+    ) {
+        return detailed
+                ? detailedHelp(withAdd, withEdit, withRemove, withNavigate, withTp, withReload, withUpload, withRemoteAccess)
+                : mainMenu(withAdd, withEdit, withRemove, withNavigate, withTp, withReload, withUpload,
+                        withRemoteAccess, withRemoteList);
+    }
+
+    private static Component mainMenu(
+            boolean withAdd,
+            boolean withEdit,
+            boolean withRemove,
+            boolean withNavigate,
+            boolean withTp,
+            boolean withReload,
+            boolean withUpload,
+            boolean withRemoteAccess,
+            boolean withRemoteList
+    ) {
+        Component menu = translatable("waypoint.menu.title", NamedTextColor.GOLD)
+                .decorate(TextDecoration.BOLD)
+                .append(newline())
+                .append(text("| ", NamedTextColor.DARK_GRAY))
+                .append(translatable("waypoint.menu.browse", NamedTextColor.GRAY));
+        List<Component> browse = new ArrayList<>(List.of(
+                menuButton("List", "/wp list", true),
+                menuButton("All", "/wp list all", true)
+        ));
+        if (withRemoteList) browse.add(menuButton("Remote List", "/wp remote list", true));
+        else if (withRemoteAccess) browse.add(menuButton("Remote", "/wp remote", true));
+        menu = menu.append(menuRow(browse));
+
+        menu = menu.append(newline()).append(text("| ", NamedTextColor.DARK_GRAY))
+                .append(translatable("waypoint.menu.transfer", NamedTextColor.GRAY));
+        List<Component> transfer = new ArrayList<>(List.of(menuButton("Download", "/wp download", false)));
+        if (withUpload) transfer.add(menuButton("Upload", "/wp upload", false));
+        menu = menu.append(menuRow(transfer));
+
+        List<Component> manage = new ArrayList<>();
+        if (withNavigate) manage.add(menuButton("Navigate", "/wp navigate", false));
+        if (withAdd) manage.add(menuButton("Add", "/wp add", false));
+        if (withEdit) manage.add(menuButton("Edit", "/wp edit", false));
+        if (withRemove) manage.add(menuButton("Remove", "/wp remove", false));
+        if (withTp) manage.add(menuButton("TP", "/wp tp", false));
+        if (!manage.isEmpty()) {
+            menu = menu.append(newline()).append(text("| ", NamedTextColor.DARK_GRAY))
+                    .append(translatable("waypoint.menu.manage", NamedTextColor.GRAY))
+                    .append(menuRow(manage));
+        }
+
+        List<Component> footer = new ArrayList<>(List.of(menuButton("Help", MAIN_HELP_COMMAND, true)));
+        if (withReload) footer.add(menuButton("Reload", "/wp reload", false));
+        return menu.append(newline()).append(text("| ", NamedTextColor.DARK_GRAY))
+                .append(translatable("waypoint.menu.more", NamedTextColor.GRAY))
+                .append(menuRow(footer));
+    }
+
+    private static Component detailedHelp(
             boolean withAdd,
             boolean withEdit,
             boolean withRemove,
@@ -134,6 +204,23 @@ final class WaypointCommandHelp {
                     "/wp remote tp ", "waypoint.help.remote.tp"));
         }
         return help.append(backButton());
+    }
+
+    static Component remoteMenu(boolean canList, boolean canTeleport) {
+        Component menu = topicHeader("waypoint.help.remote.title", "waypoint.help.remote.summary")
+                .append(section("waypoint.help.section.usage"));
+        if (canList) {
+            menu = menu.append(runEntry("/wp remote servers", "waypoint.help.remote.servers"))
+                    .append(runEntry("/wp remote list", "waypoint.help.remote.list"))
+                    .append(commandEntry("/wp remote details <server> <dimension> <list> [<waypoint>]",
+                            "/wp remote details ", "button.details"));
+        }
+        if (canTeleport) {
+            menu = menu.append(commandEntry("/wp remote tp <server> <dimension> <list> <waypoint>",
+                    "/wp remote tp ", "waypoint.help.remote.tp"));
+        }
+        return menu.append(runEntry("/wp help remote", "waypoint.help.remote"))
+                .append(backButton());
     }
 
     static Component addHelp() {
@@ -461,6 +548,27 @@ final class WaypointCommandHelp {
 
     private static Component commandEntry(String usage, String suggestion, String descriptionKey) {
         return describedLine(suggestCommand(usage, suggestion), descriptionKey);
+    }
+
+    private static Component runEntry(String command, String descriptionKey) {
+        return describedLine(text(command, NamedTextColor.AQUA)
+                .clickEvent(ClickEvent.runCommand(command)), descriptionKey);
+    }
+
+    private static Component menuRow(List<Component> buttons) {
+        var row = Component.text().append(newline()).append(text("|   ", NamedTextColor.DARK_GRAY));
+        for (int index = 0; index < buttons.size(); index++) {
+            if (index > 0) row.appendSpace();
+            row.append(buttons.get(index));
+        }
+        return row.build();
+    }
+
+    private static Component menuButton(String label, String command, boolean run) {
+        return text("[" + label + "]", run ? NamedTextColor.GREEN : NamedTextColor.AQUA)
+                .decoration(TextDecoration.BOLD, false)
+                .clickEvent(run ? ClickEvent.runCommand(command) : ClickEvent.suggestCommand(command + " "))
+                .hoverEvent(HoverEvent.showText(text(command, NamedTextColor.YELLOW)));
     }
 
     private static Component usageEntry(String usage, String suggestion, String descriptionKey) {

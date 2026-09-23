@@ -261,6 +261,38 @@ class CoreWaypointCommandListTest {
     }
 
     @Test
+    void bareRootShowsACompactInteractiveMenu() throws CommandSyntaxException {
+        this.dispatcher.execute("wp help", this.source);
+        Component help = lastMessage();
+
+        assertEquals(1, this.dispatcher.execute("wp", this.source));
+        Component menu = lastMessage();
+        assertFalse(plainText(menu).contains("├"));
+        assertFalse(plainText(menu).contains("│"));
+        assertTrue(plainText(menu).contains("|   [List] [All] [Remote List]"));
+        assertTrue(plainText(menu).contains("|   [Download] [Upload]"));
+        assertTrue(plainText(menu).contains("[Help]"));
+        assertFalse(plainText(menu).contains("<dimension>"));
+        assertFalse(translationKeys(menu).contains("waypoint.help.download"));
+        assertTrue(translationKeys(menu).containsAll(List.of("waypoint.menu.title", "waypoint.menu.browse",
+                "waypoint.menu.transfer", "waypoint.menu.manage", "waypoint.menu.more")));
+        assertTrue(plainText(help).contains("<dimension>"));
+        assertEquals(List.of("/wp list", "/wp list all", "/wp remote list", "/wp help"), runCommands(menu));
+        assertEquals(List.of("/wp download ", "/wp upload ", "/wp navigate ", "/wp add ",
+                "/wp edit ", "/wp remove ", "/wp tp ", "/wp reload "), suggestedCommands(menu));
+        assertClicksOnlyOnLeaves(menu);
+    }
+
+    @Test
+    void menuOffersRemoteEntryWithoutRemoteListPermission() {
+        Component menu = WaypointCommandHelp.menu(false, false, false, false, false, false,
+                false, true, false, false);
+
+        assertTrue(runCommands(menu).contains("/wp remote"));
+        assertFalse(runCommands(menu).contains("/wp remote list"));
+    }
+
+    @Test
     void addHelpShowsAllFormsArgumentsAndExamples() throws CommandSyntaxException {
         this.dispatcher.execute("wp help add", this.source);
 
@@ -575,6 +607,13 @@ class CoreWaypointCommandListTest {
         Component help = restrictedSender.messages.get(0);
         assertEquals(List.of("/wp list ", "/wp download "), suggestedCommands(help));
         assertEquals(List.of("/wp help list"), runCommands(help));
+        restrictedDispatcher.execute("wp", this.source);
+        Component menu = restrictedSender.messages.get(1);
+        assertTrue(plainText(menu).contains("[List] [All]"));
+        assertTrue(plainText(menu).contains("[Download]"));
+        assertFalse(plainText(menu).contains("[Remote List]"));
+        assertEquals(List.of("/wp download "), suggestedCommands(menu));
+        assertEquals(List.of("/wp list", "/wp list all", "/wp help"), runCommands(menu));
         for (String denied : List.of("wp remote", "wp remote servers", "wp remote list", "wp help remote")) {
             assertThrows(CommandSyntaxException.class, () -> restrictedDispatcher.execute(denied, this.source));
         }
@@ -918,6 +957,13 @@ class CoreWaypointCommandListTest {
         List<String> commands = new ArrayList<>();
         collectRunCommands(component, commands);
         return commands;
+    }
+
+    private static void assertClicksOnlyOnLeaves(Component component) {
+        if (component.clickEvent() != null) {
+            assertTrue(component.children().isEmpty());
+        }
+        component.children().forEach(CoreWaypointCommandListTest::assertClicksOnlyOnLeaves);
     }
 
     private static List<String> suggestedCommands(Component component) {

@@ -87,7 +87,7 @@ final class RemoteWaypointCommand<S> {
     boolean canUse(S source) { return canList.test(source) || canTeleport.test(source); }
     int help(S source) {
         if (!canUse(source)) return 0;
-        send.accept(source, WaypointCommandHelp.remoteHelp(canList.test(source), canTeleport.test(source)));
+        send.accept(source, WaypointCommandHelp.remoteMenu(canList.test(source), canTeleport.test(source)));
         return Command.SINGLE_SUCCESS;
     }
     private int teleport(CommandContext<S> context) {

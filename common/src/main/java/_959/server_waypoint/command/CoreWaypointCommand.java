@@ -572,6 +572,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     @SuppressWarnings("unchecked")
     public @NotNull LiteralCommandNode<S> build() {
         return (LiteralCommandNode<S>) literal(WAYPOINT_COMMAND)
+                .executes(context -> {
+                    executeMenu((S) context.getSource(), false);
+                    return Command.SINGLE_SUCCESS;
+                })
                 .then(literal(HELP_COMMAND)
                         .executes(context -> {
                             executeHelp((S) context.getSource());
@@ -893,7 +897,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
     }
 
     private void executeHelp(S source) {
-        this.sender.sendMessage(source, WaypointCommandHelp.mainMenu(
+        executeMenu(source, true);
+    }
+
+    private void executeMenu(S source, boolean detailed) {
+        this.sender.sendMessage(source, WaypointCommandHelp.menu(
                 hasAddPermission(source),
                 hasEditPermission(source),
                 hasRemovePermission(source),
@@ -901,7 +909,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B> {
                 hasTpPermission(source),
                 hasReloadPermission(source),
                 hasUploadPermission(source),
-                remoteCommand.canUse(source)
+                remoteCommand.canUse(source),
+                remoteCommand.canList(source),
+                detailed
         ));
     }
 

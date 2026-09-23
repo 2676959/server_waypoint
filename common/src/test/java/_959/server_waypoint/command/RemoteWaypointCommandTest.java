@@ -288,6 +288,8 @@ class RemoteWaypointCommandTest {
         dispatcher.execute("wp remote", "console");
         assertTrue(keys(last()).contains("waypoint.help.remote.summary"));
         assertFalse(text(last()).contains("/wp remote tp"));
+        assertTrue(clicks(last()).containsAll(List.of("/wp remote servers", "/wp remote list",
+                "/wp remote details ", "/wp help remote")));
         assertNotNull(dispatcher.getRoot().getChild("wp").getChild("remote").getChild("tp"));
     }
     @Test void permissionDenialAndRevocationBlockCommandsAndCachedSuggestions() throws Exception {
@@ -328,6 +330,8 @@ class RemoteWaypointCommandTest {
         var suggestionParse = dispatcher.parse("wp remote tp ", "player");
         dispatcher.execute("wp remote", "player");
         assertTrue(text(last()).contains("/wp remote tp")); assertFalse(text(last()).contains("/wp remote list"));
+        assertTrue(clicks(last()).contains("/wp remote tp "));
+        assertFalse(clicks(last()).contains("/wp remote servers"));
         tpAllowed = false;
         assertEquals(0, dispatcher.execute(parsed)); assertNull(preparation);
         assertTrue(keys(errors.get(0)).contains("waypoint.remote.tp.unauthorized"));

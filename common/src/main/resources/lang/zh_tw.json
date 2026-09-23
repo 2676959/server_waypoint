@@ -1,4 +1,9 @@
 {
+  "waypoint.menu.title": "Server Waypoint",
+  "waypoint.menu.browse": "瀏覽",
+  "waypoint.menu.transfer": "傳輸",
+  "waypoint.menu.manage": "管理",
+  "waypoint.menu.more": "更多",
   "waypoint.save.failed": "寫入檔案失敗：{0}",
   "waypoint.updates.sent": "已將路徑點傳送至用戶端",
   "waypoint.incompatible.client": "Server Waypoint模組版本不相容，請安裝：{0}版本",

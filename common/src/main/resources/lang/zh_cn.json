@@ -107,6 +107,11 @@
   "waypoint.reload": "正在重新加载配置文件和语言文件",
   "waypoint.loaded.languages": "已加载{0}种语言: {1}",
 
+  "waypoint.menu.title": "Server Waypoint",
+  "waypoint.menu.browse": "浏览",
+  "waypoint.menu.transfer": "传输",
+  "waypoint.menu.manage": "管理",
+  "waypoint.menu.more": "更多",
   "waypoint.help.title": "Server Waypoint 帮助",
   "waypoint.help.list": "列出和搜索服务器路径点",
   "waypoint.help.download": "将服务器路径点发送到你的客户端",

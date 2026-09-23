@@ -107,6 +107,11 @@
   "waypoint.reload": "Reload config file and language files",
   "waypoint.loaded.languages": "Loaded {0} languages: {1}",
 
+  "waypoint.menu.title": "Server Waypoint",
+  "waypoint.menu.browse": "Browse",
+  "waypoint.menu.transfer": "Transfer",
+  "waypoint.menu.manage": "Manage",
+  "waypoint.menu.more": "More",
   "waypoint.help.title": "Server Waypoint Help",
   "waypoint.help.list": "List and search server waypoints",
   "waypoint.help.download": "Send server waypoints to your client",
