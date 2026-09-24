@@ -5,17 +5,17 @@ import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 
 import java.util.Objects;
 
-public final class DimensionIconLayout {
+public final class IconListLayout {
     private final int iconSize;
     private final Orientation orientation;
     private final Direction direction;
     private final int iconSpacing;
 
-    public DimensionIconLayout(int iconSize, Orientation orientation, Direction direction) {
+    public IconListLayout(int iconSize, Orientation orientation, Direction direction) {
         this(iconSize, orientation, direction, 0);
     }
 
-    public DimensionIconLayout(
+    public IconListLayout(
             int iconSize,
             Orientation orientation,
             Direction direction,

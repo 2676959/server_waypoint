@@ -1,7 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
-import _959.server_waypoint.common.client.gui.layout.DimensionIconLayout;
+import _959.server_waypoint.common.client.gui.layout.IconListLayout;
 import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
@@ -30,7 +30,7 @@ public abstract class IconListWidget<T> extends ShiftableClickableWidget impleme
     private final PaddingBackground paddingBackground;
     private final float itemIconScale;
     private final int iconSize;
-    private final DimensionIconLayout iconLayout;
+    private final IconListLayout iconLayout;
     private boolean empty = true;
 
     protected IconListWidget(int x, int y, int width, int height, int iconSize,
@@ -45,7 +45,7 @@ public abstract class IconListWidget<T> extends ShiftableClickableWidget impleme
         this.callback = callback;
         this.iconSize = iconSize;
         this.itemIconScale = iconSize / 16F;
-        this.iconLayout = new DimensionIconLayout(iconSize, orientation, direction, iconSpacing);
+        this.iconLayout = new IconListLayout(iconSize, orientation, direction, iconSpacing);
         this.paddingBackground = new PaddingBackground(
                 this,
                 verticalPadding,
@@ -102,7 +102,7 @@ public abstract class IconListWidget<T> extends ShiftableClickableWidget impleme
         if (!this.active || !this.visible || !this.isMouseOver(mouseX, mouseY)) {
             return false;
         }
-        DimensionIconLayout.Bounds viewport = this.getIconViewport();
+        IconListLayout.Bounds viewport = this.getIconViewport();
         scrolledPosition = this.iconLayout.scrollBy(scrolledPosition, verticalAmount * 5, this.entries.size(), viewport);
         return true;
     }
@@ -144,7 +144,7 @@ public abstract class IconListWidget<T> extends ShiftableClickableWidget impleme
             return;
         }
 
-        DimensionIconLayout.Bounds viewport = this.getIconViewport();
+        IconListLayout.Bounds viewport = this.getIconViewport();
         if (viewport.width() <= 0 || viewport.height() <= 0) {
             return;
         }
@@ -170,7 +170,7 @@ public abstract class IconListWidget<T> extends ShiftableClickableWidget impleme
         this.renderIconBackground(context, index, viewport, getColor(this.active ? FOCUS_RING : BORDER), true);
 
         for (int i = 0; i < this.entries.size(); i++) {
-            DimensionIconLayout.Position position = this.iconLayout.iconPosition(i, scrolledPosition, viewport);
+            IconListLayout.Position position = this.iconLayout.iconPosition(i, scrolledPosition, viewport);
             push(context);
             translate(context, position.x(), position.y());
             scale(context, itemIconScale, itemIconScale);
@@ -194,8 +194,8 @@ public abstract class IconListWidget<T> extends ShiftableClickableWidget impleme
         return this.iconLayout.iconSpacing();
     }
 
-    private void renderIconBackground(GuiGraphicsExtractor context, int iconIndex, DimensionIconLayout.Bounds viewport, int color, boolean outline) {
-        DimensionIconLayout.Position position = this.iconLayout.iconPosition(iconIndex, scrolledPosition, viewport);
+    private void renderIconBackground(GuiGraphicsExtractor context, int iconIndex, IconListLayout.Bounds viewport, int color, boolean outline) {
+        IconListLayout.Position position = this.iconLayout.iconPosition(iconIndex, scrolledPosition, viewport);
         push(context);
         translate(context, position.x(), position.y());
         if (outline) {
@@ -210,7 +210,7 @@ public abstract class IconListWidget<T> extends ShiftableClickableWidget impleme
 
     protected abstract void drawIcon(GuiGraphicsExtractor context, T entry);
 
-    private DimensionIconLayout.Bounds getIconViewport() {
+    private IconListLayout.Bounds getIconViewport() {
         return this.iconLayout.viewport(this.width, this.height, 0);
     }
 

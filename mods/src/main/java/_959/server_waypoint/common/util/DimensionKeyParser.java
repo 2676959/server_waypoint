@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import static _959.server_waypoint.common.util.ResourceLocationHelper.mcId;
 
-public class DimensionFileHelper {
+public class DimensionKeyParser {
     @Nullable
     public static ResourceKey<Level> getDimensionKey(String dimensionName) {
         String[] idParts = dimensionName.split(":");

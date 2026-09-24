@@ -25,7 +25,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
-import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionKey;
+import static _959.server_waypoint.common.util.DimensionKeyParser.getDimensionKey;
 
 public class XaeroMinimapHelper {
     public static MinimapSession getMinimapSession() {

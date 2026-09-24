@@ -30,7 +30,7 @@ import java.util.List;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
 import static _959.server_waypoint.common.network.ModMessageSender.toVanillaText;
-import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionKey;
+import static _959.server_waypoint.common.util.DimensionKeyParser.getDimensionKey;
 import static _959.server_waypoint.common.util.TextHelper.getDimensionColor;
 import static _959.server_waypoint.common.util.XaeroMinimapHelper.*;
 import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;

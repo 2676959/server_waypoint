@@ -1,6 +1,6 @@
 package _959.server_waypoint.common.server.navigation;
 
-import _959.server_waypoint.common.util.DimensionFileHelper;
+import _959.server_waypoint.common.util.DimensionKeyParser;
 import _959.server_waypoint.navigation.NavigationMethod;
 import _959.server_waypoint.navigation.NavigationMethodHandler;
 import _959.server_waypoint.navigation.NavigationResult;
@@ -78,7 +78,7 @@ final class CompassNavigationHandler implements NavigationMethodHandler<ServerPl
     }
 
     private @Nullable ItemStack createCompass(NavigationTarget target) {
-        ResourceKey<Level> dimension = DimensionFileHelper.getDimensionKey(target.dimensionName());
+        ResourceKey<Level> dimension = DimensionKeyParser.getDimensionKey(target.dimensionName());
         if (dimension == null) {
             return null;
         }

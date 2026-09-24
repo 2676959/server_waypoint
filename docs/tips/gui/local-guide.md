@@ -178,7 +178,8 @@ toolbar.addChild(doneButton, LayoutFlow.Direction.REVERSE);
 Like `ExpandableManager`, `WidgetPack` is layout-only. Its children still need to be registered for
 input and rendered by their owning screen or composite.
 
-Use `DimensionIconLayout` only for the geometry of an oriented, scrollable dimension-icon strip.
+Use `IconListLayout` for the geometry of an oriented, scrollable icon strip shared by dimension
+and server lists.
 It is a pure layout helper, not a widget or input handler. Its optional non-negative icon spacing
 participates in positioning and scroll extent; spacing gaps are deliberately non-interactive.
 Legacy `DimensionListWidget` constructors preserve zero icon spacing, while every pre-existing
