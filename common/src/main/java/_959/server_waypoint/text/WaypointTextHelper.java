@@ -154,7 +154,7 @@ public class WaypointTextHelper {
             @Nullable String listCommand
     ) {
         String listName = waypointList.name();
-        Component listTitle = text("  ".repeat(indentLevel)).append(parse(waypointList.displayName()).colorIfAbsent(NamedTextColor.WHITE));
+        Component listTitle = parse(waypointList.displayName()).colorIfAbsent(NamedTextColor.WHITE);
         if (listCommand != null) {
             listTitle = listTitle
                     .clickEvent(ClickEvent.runCommand(listCommand))
@@ -164,6 +164,7 @@ public class WaypointTextHelper {
                     )));
         }
         Component listHeader = text("")
+                .append(text("  ".repeat(indentLevel)))
                 .append(showMoreButton(detailsListCmd(dimensionName, listName)))
                 .appendSpace()
                 .append(listTitle);
