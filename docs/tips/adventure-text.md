@@ -8,10 +8,14 @@ overflow into the text that follows it.
 Build each line from a neutral parent and append buttons and ordinary text as siblings:
 
 ```java
-TextComponent.Builder line = Component.text();
-line.append(editButton).appendSpace();
-line.append(propertyText);
+Component line = Component.empty();
+line = line.append(editButton).appendSpace();
+line = line.append(propertyText);
 ```
+
+Compose immutable `Component` values for Paper feedback instead of calling
+`TextComponent.Builder.build()`. Adventure versions can differ in that builder
+method's binary return type, causing a `NoSuchMethodError` on the server.
 
 Do not build the same line by appending ordinary text to the button:
 

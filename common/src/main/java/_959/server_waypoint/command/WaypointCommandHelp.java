@@ -556,12 +556,12 @@ final class WaypointCommandHelp {
     }
 
     private static Component menuRow(List<Component> buttons) {
-        var row = Component.text().append(newline()).append(text("|   ", NamedTextColor.DARK_GRAY));
+        Component row = Component.empty().append(newline()).append(text("|   ", NamedTextColor.DARK_GRAY));
         for (int index = 0; index < buttons.size(); index++) {
-            if (index > 0) row.appendSpace();
-            row.append(buttons.get(index));
+            if (index > 0) row = row.appendSpace();
+            row = row.append(buttons.get(index));
         }
-        return row.build();
+        return row;
     }
 
     private static Component menuButton(String label, String command, boolean run) {

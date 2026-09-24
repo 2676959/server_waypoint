@@ -3,7 +3,6 @@ package _959.server_waypoint.text;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -166,16 +165,15 @@ public final class WaypointDetailsTextBuilder {
     }
 
     private static Component property(String key, Component value, Component controls) {
-        TextComponent.Builder line = text();
+        Component line = Component.empty();
         if (!controls.equals(Component.empty())) {
-            line.append(controls).appendSpace();
+            line = line.append(controls).appendSpace();
         }
         return line.append(translatable(key, NamedTextColor.GRAY)
                 .decoration(TextDecoration.BOLD, TextDecoration.State.FALSE)
                 .append(text(": "))
                 .append(value.colorIfAbsent(NamedTextColor.WHITE)))
-                .appendNewline()
-                .build();
+                .appendNewline();
     }
 
     private static Component editControl(boolean enabled, String command) {
