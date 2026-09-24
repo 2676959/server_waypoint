@@ -21,18 +21,25 @@ final class VelocityRuntime extends AsyncTransportLifecycle {
     private CoordinatorAgent agent;
     private volatile CoordinatorHandoffRuntime handoffs;
     private volatile String startupFailureDetails;
+    private volatile TransportResult startupResult;
+    private volatile TransportMode transportMode;
+    private volatile Set<RemoteServerId> configuredBackends = Set.of();
+    record Status(boolean stopping, TransportResult startupResult, TransportMode transportMode,
+                  Set<RemoteServerId> configuredBackends, CoordinatorAgent.Status coordinator,
+                  String failureDetails) { }
     VelocityRuntime(ProxyServer proxy, Path directory) {
         super("server-waypoint-velocity-startup"); this.proxy = proxy; this.directory = directory;
     }
     @Override protected TransportResult startResources() throws Exception {
         var config = RuntimeConfiguration.readCoordinator(directory);
-        if (!RuntimeConfiguration.enabled(config)) return TransportResult.DISABLED;
+        if (!RuntimeConfiguration.enabled(config)) return startupResult = TransportResult.DISABLED;
+        var mode = RuntimeConfiguration.mode(config);
+        transportMode = mode;
         try {
             RuntimeConfiguration.rejectCryptoInPlaintext(config);
         } catch (java.io.IOException failure) {
             throw new IllegalArgumentException(failure.getMessage(), failure);
         }
-        var mode = RuntimeConfiguration.mode(config);
         if (mode == TransportMode.NOISE_KK) {
             credentials = new CredentialFiles(directory.resolve(RuntimeConfiguration.text(config, "credentialsDirectory", "credentials")));
             var local = new LocalCredentials(credentials);
@@ -87,6 +94,7 @@ final class VelocityRuntime extends AsyncTransportLifecycle {
                 }
             }
         }
+        configuredBackends = Set.copyOf(mappings.keySet());
         var endpoint = RuntimeConfiguration.endpoint(config, "listen");
         var router = new VelocityPlayerRouter(proxy, mappings, RuntimeConfiguration.text(config, "proxyPermission", ""));
         agent = new CoordinatorAgent(() -> new TcpCoordinator(endpoint, mode, keys, pins, TcpLimits.DEFAULT, ProtocolLimits.DEFAULT),
@@ -96,10 +104,19 @@ final class VelocityRuntime extends AsyncTransportLifecycle {
             return router.allowed(request.playerId()) ? Result.SUCCESS : Result.UNAUTHORIZED;
         }, router, agent::catalogs);
         agent.setSessionFactory(handoffs::attach);
-        return agent.start().toCompletableFuture().get();
+        return startupResult = agent.start().toCompletableFuture().get();
     }
-    @Override protected void onStartFailure(Exception failure) { startupFailureDetails = failure.getMessage(); }
+    @Override protected void onStartFailure(Exception failure) {
+        startupFailureDetails = failure.getMessage();
+        startupResult = failure instanceof IllegalArgumentException
+                ? TransportResult.INVALID_CONFIGURATION : TransportResult.UNAVAILABLE;
+    }
     String startupFailureDetails() { return startupFailureDetails; }
+    Status status() {
+        CoordinatorAgent current = agent;
+        return new Status(stopping, startupResult, transportMode, configuredBackends,
+                current == null ? null : current.status(), startupFailureDetails);
+    }
     void disconnected(UUID id) { var current = handoffs; if (current != null) current.playerDisconnected(id); }
     @Override protected void stopResources() throws Exception {
         if (handoffs != null) handoffs.close();

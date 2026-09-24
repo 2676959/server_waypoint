@@ -27,6 +27,9 @@ public final class ServerWaypointVelocity {
     }
     @Subscribe public void onInitialize(ProxyInitializeEvent event) {
         proxy.getChannelRegistrar().register(RESERVED);
+        proxy.getCommandManager().register(
+                proxy.getCommandManager().metaBuilder("serverwaypoint").plugin(this).build(),
+                new CrossServerStatusCommand(runtime));
         runtime.start().thenAccept(result -> {
             String details = runtime.startupFailureDetails();
             if (details == null) logger.info("Server Waypoint coordinator startup: {}", result);

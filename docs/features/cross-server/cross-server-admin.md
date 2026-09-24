@@ -105,6 +105,15 @@ Do not paste private keys, pairing codes or complete credential directories into
 
 ## Recovery and troubleshooting
 
+On the Velocity console, run `/serverwaypoint status` to see whether the coordinator is starting,
+disabled, running, or unavailable. It reports the configured transport mode (`NOISE_KK` encrypted or
+`PLAINTEXT` unencrypted), the listening port when running, and online and offline enabled backend
+server IDs. The mode shows as inactive when the feature is disabled. Disabled backend entries are
+not included. Players need
+`server_waypoint.command.cross_server.status` to use this command;
+it shows the same administrative information. The command reads current in-memory state and does
+not reload configuration. Use the startup log and the reported error to diagnose a failed start.
+
 | Symptom | Check and recovery |
 | --- | --- |
 | Disabled/unavailable after install | Configuration is disabled by default; verify `enabled` on both ends and restart. |
