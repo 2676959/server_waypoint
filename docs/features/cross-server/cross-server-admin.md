@@ -155,7 +155,7 @@ on arrival. See [offline provider behavior](specs/cross-server-authorization.md#
 ## Remote server selector icon
 
 Set `"serverIconItem": "minecraft:diamond"` in each backend's `cross-server.json` and restart
-that backend to advertise its selector icon. The default is `minecraft:compass`. Use an exact
+that backend to advertise its selector icon. The default is `minecraft:beacon`. Use an exact
 namespaced item identifier, at most 256 ASCII characters; malformed identifiers reject backend
 startup. A valid item unavailable on a client's registry (or air) renders as a compass.
 This setting applies to both modded and Paper backends and is not a coordinator setting.

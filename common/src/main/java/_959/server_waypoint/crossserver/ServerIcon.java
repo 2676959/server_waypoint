@@ -2,7 +2,7 @@ package _959.server_waypoint.crossserver;
 
 /** Registry-independent item identifier validation shared by backends and catalog codecs. */
 public final class ServerIcon {
-    public static final String DEFAULT = "minecraft:compass";
+    public static final String DEFAULT = "minecraft:beacon";
     private ServerIcon() { }
 
     public static String validate(String identifier) {

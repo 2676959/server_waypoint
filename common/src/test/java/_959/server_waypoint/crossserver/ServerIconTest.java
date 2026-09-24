@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ServerIconTest {
     @Test void acceptsNamespacedVanillaAndModdedIdentifiers() {
-        assertEquals("minecraft:compass", ServerIcon.validate(ServerIcon.DEFAULT));
+        assertEquals("minecraft:beacon", ServerIcon.validate(ServerIcon.DEFAULT));
         assertEquals("my_mod:icons/server", ServerIcon.validate("my_mod:icons/server"));
     }
 

@@ -15,6 +15,6 @@ of the client, backends, and coordinator together.
 - Minecraft remote-catalog messages encode the icon immediately after each server's display name,
   before catalog state and transport mode. The decoder bounds it before allocation.
 
-Backend `cross-server.json` accepts `serverIconItem` (default `minecraft:compass`); its value is
+Backend `cross-server.json` accepts `serverIconItem` (default `minecraft:beacon`); its value is
 validated when creating the publisher. Registry resolution belongs only to the mods GUI, so Paper
 and the coordinator do not depend on Minecraft item classes.
