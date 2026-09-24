@@ -23,7 +23,7 @@ public final class ServerListWidget extends IconListWidget<RemoteServerId> {
 
     public ServerListWidget(int iconSize, int gap, Consumer<RemoteServerId> callback) {
         super(0, 0, iconSize, iconSize, iconSize, callback, LayoutFlow.Orientation.VERTICAL,
-                LayoutFlow.Direction.REVERSE, gap, 0, 0, Component.translatable("waypoint.remote.title"));
+                LayoutFlow.Direction.FORWARD, gap, 0, 0, Component.translatable("waypoint.remote.title"));
     }
 
     public void setServers(Map<RemoteServerId, CatalogReceiver.View> servers) {

@@ -524,13 +524,15 @@ widgets once, supplies layout and visibility, forwards ticks, and owns its manua
 Search, list/flat mode, name/color/default sorting, and sort direction control both views. Remote
 flat mode sorts within the selected server and dimension scope while retaining server, dimension,
 list, and waypoint identity; grouped mode shows list roots for a selected dimension or dimension/list roots for all dimensions. Remote distance sorting is unavailable because there
-is no shared player origin across servers (entering remote mode from distance sorting selects name).
+is no shared player origin across servers (entering remote mode from distance sorting selects name,
+and the distance sort choice is hidden).
 In remote mode, `ServerListWidget` appears immediately above the scope toggle and the add button
 is hidden, releasing its layout slot. The dimension rail shows dimensions from the selected remote
 server's catalog (including exported empty dimensions); the all-dimensions toggle applies within
-that server. A one-pixel themed border line separates the server rail from the control buttons when
-both are visible. `SeparatorWidget` owns that non-interactive line; the manager positions it midway
-in the gap and renders it explicitly. The reusable widget accepts a theme color or color supplier,
+that server. One-pixel themed border lines separate the dimension and server rails, and the server
+rail from the control buttons, when each adjacent pair is visible. `SeparatorWidget` owns these
+non-interactive lines; the manager positions each midway in its gap and renders it explicitly.
+The reusable widget accepts a theme color or color supplier,
 and its width and height allow either horizontal or vertical separators. Returning to local mode
 restores the local dimension selection.
 
@@ -549,7 +551,8 @@ reset. Register and manually render each rail once through its high-level wrappe
 `OpposedExpansionLayout.allocate` reserves the fixed minimum for each rail and shares constrained
 space equally, giving unused space from a short rail to the longer rail. The manager anchors the
 dimension rail at the sidebar top and the server rail just above the controls; they grow down and
-up respectively, stop at their content sizes, and scroll when constrained. The helper returns zero
+up respectively, stop at their content sizes, and scroll when constrained. Icons in both rails flow
+top to bottom, so their wheel scrolling follows the same direction. The helper returns zero
 sizes if even both minima plus their gap cannot fit; the screen hides the rails at that tiny size.
 Catalog changes, mode switches and resize all recalculate the allocation. Local mutation callbacks
 must not replace the remote dimension catalog.

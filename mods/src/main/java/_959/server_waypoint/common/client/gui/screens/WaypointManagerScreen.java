@@ -98,6 +98,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private final RemoteWaypointPanel remotePanel;
     private boolean showingRemote;
     private final ServerListWidget serverListWidget;
+    private final SeparatorWidget selectorSeparator;
     private final SeparatorWidget serverControlSeparator;
     private String localDimension;
     private Map<RemoteServerId, CatalogReceiver.View> remoteServers = Map.of();
@@ -122,6 +123,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 this::setShowingRemote
         );
         this.serverListWidget = new ServerListWidget(DIMENSION_ICON_SIZE, DIMENSION_ICON_GAP, server -> refreshRemoteSelectors(true));
+        this.selectorSeparator = new SeparatorWidget(0, 0, LEFT_PART_WIDTH, 1, WidgetThemeVariable.BORDER);
         this.serverControlSeparator = new SeparatorWidget(0, 0, LEFT_PART_WIDTH, 1, WidgetThemeVariable.BORDER);
         dimensionListWidget = new DimensionListWidget(
                 0,
@@ -472,6 +474,11 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         serverListWidget.setVisualHeight(Math.max(MIN_DIMENSION_LIST_HEIGHT, bottom));
         serverListWidget.setPosition(layoutGeometry.leftX(), controlsY - SECTION_GAP - bottom);
         setControlVisibility(layoutGeometry.contentHeight() >= controlsHeight);
+        selectorSeparator.setPosition(
+                layoutGeometry.leftX(),
+                (dimensionListWidget.getY() + dimensionListWidget.getHeight() + serverListWidget.getY()) / 2
+        );
+        selectorSeparator.setVisible(dimensionListWidget.visible && serverListWidget.visible);
         serverControlSeparator.setPosition(
                 layoutGeometry.leftX(),
                 (serverListWidget.getY() + serverListWidget.getHeight() + serverScopeToggle.getY()) / 2
@@ -715,6 +722,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, delta);
+        selectorSeparator.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, delta);
         serverControlSeparator.
         //$ render_method_swap
         extractRenderState
@@ -776,7 +787,11 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         if (remote && waypointListWidget.getSortMode() == WaypointSorting.SortMode.DISTANCE) {
             setSortMode(WaypointSorting.SortMode.NAME);
         }
-        sortingModeDropdown.iconItems.get(2).active = !remote;
+        IconMenuItem distanceSortItem = sortingModeDropdown.iconItems.get(2);
+        distanceSortItem.visible = distanceSortItem.active = !remote;
+        sortingModeDropdown.setPopupXOffset(this.layoutGeometry.dropdownXOffset(
+                sortingModeDropdown.getPopupItemCount()
+        ));
         updatePanelVisibility();
         refreshRemoteOptions();
     }
