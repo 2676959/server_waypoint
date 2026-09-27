@@ -1,4 +1,7 @@
 {
+  "waypoint.icon.invalid": "无效的路径点图标 ID：%1$s",
+  "waypoint.icon.label": "图标",
+  "waypoint.icon.clear": "清除",
   "button.initials.tp": "点击传送",
 
   "server_waypoint.list.added.xaeros": "路径点列表“%1$s”已成功添加至Xaero's minimap",

@@ -1,4 +1,7 @@
 {
+  "waypoint.icon.invalid": "Invalid waypoint icon ID: %1$s",
+  "waypoint.icon.label": "Icon",
+  "waypoint.icon.clear": "Clear",
   "button.initials.tp": "click to tp",
 
   "server_waypoint.list.added.xaeros": "Waypoint list \"%1$s\" has been added to Xaero's minimap successfully",

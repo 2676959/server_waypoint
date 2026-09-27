@@ -1,6 +1,9 @@
 package _959.server_waypoint.crossserver;
 
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
+import _959.server_waypoint.util.NamespacedId;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
@@ -14,7 +17,8 @@ public record RemoteWaypointSnapshot(
         int yaw,
         boolean global,
         List<String> keywords,
-        String description
+        String description,
+        @Nullable NamespacedId icon
 ) {
     public RemoteWaypointSnapshot {
         Objects.requireNonNull(displayName, "displayName");
@@ -22,6 +26,7 @@ public record RemoteWaypointSnapshot(
         Objects.requireNonNull(position, "position");
         keywords = List.copyOf(keywords);
         Objects.requireNonNull(description, "description");
+        icon = WaypointIconPolicy.validate(icon);
         if (rgb < 0 || rgb > 0xFFFFFF) {
             throw new IllegalArgumentException("RGB must be a 24-bit color");
         }

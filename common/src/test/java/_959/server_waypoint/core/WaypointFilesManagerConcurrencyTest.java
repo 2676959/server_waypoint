@@ -286,8 +286,7 @@ class WaypointFilesManagerConcurrencyTest {
                 new WaypointPatch(
                         PatchField.unchanged(), PatchField.unchanged(), PatchField.set("I" + index),
                         PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
-                        PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged()
-                ),
+                        PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged()),
                 ignored -> {
                 }
         ));

@@ -78,6 +78,17 @@ class StringCommandBuilderTest {
     }
 
     @Test
+    void addCommandIncludesIconAfterEmptyMetadataSlots() {
+        SimpleWaypoint waypoint = new SimpleWaypoint(
+                "Home", "Home", "H", new WaypointPos(1, 2, 3), 0x123456,
+                0, true, List.of(), "", NamespacedId.parse("minecraft:diamond")
+        );
+
+        assertEquals("/wp add minecraft:overworld list 1 2 3 Home H 123456 0 true \"\" \"\" icon minecraft:diamond",
+                StringCommandBuilder.addCmd("minecraft:overworld", "list", waypoint));
+    }
+
+    @Test
     void forceLocalUploadCommandPreservesVoxelMapSource() {
         UploadRequestBuffer request = new UploadRequestBuffer(
                 UUID.randomUUID(),

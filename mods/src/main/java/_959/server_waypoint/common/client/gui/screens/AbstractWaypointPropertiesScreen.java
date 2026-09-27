@@ -1,15 +1,20 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
+import _959.server_waypoint.common.client.gui.render.WaypointIconRenderer;
+import _959.server_waypoint.common.client.gui.render.WaypointRowRenderer;
 import _959.server_waypoint.common.client.gui.widgets.*;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.common.util.CoordinateInputParser;
 import _959.server_waypoint.common.util.CoordinateSuggestions;
+import com.mojang.blaze3d.platform.InputConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -45,6 +50,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected final int CONTENT_HEIGHT;
     protected static final int BG_PADDING_X = 20;
     protected static final int BG_PADDING_Y = 15;
+    private static final int ICON_PREVIEW_GAP = 5;
     protected final WidgetStack titleRow;
     protected final WidgetStack buttonRow;
     // main layout
@@ -92,6 +98,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     protected final boolean global;
     protected final List<String> keywords;
     protected final String description;
+    protected final @Nullable NamespacedId originalIcon;
+    protected final WaypointIconPicker iconPicker;
     protected WaypointPos coordinateDefaultPos;
     private boolean enforcingCoordinateMode;
 
@@ -116,6 +124,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.previousScreen = previousScreen;
         this.dimensionName = dimensionName;
         this.listName = listName;
+        this.originalIcon = waypoint == null ? null : waypoint.icon();
+        this.iconPicker = new WaypointIconPicker(174, ignored -> {});
+        this.iconPicker.setSelectedIcon(this.originalIcon);
         if (waypoint == null) {
             this.waypointName = "";
             this.waypointDisplayName = "";
@@ -232,6 +243,14 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         visibilityRow.addChild(visibilityLabel, 0);
         visibilityRow.addChild(this.globalToggle);
 
+        WidgetStack iconRow = new WidgetStack(0, 0, 6);
+        iconRow.addChild(new ScalableText(0, 0,
+                Component.translatable("waypoint.icon.label").append(Component.literal(": ")),
+                WidgetThemeVariable.TEXT_PRIMARY, font), 0);
+        iconRow.addChild(this.iconPicker.menu(),
+                this.iconPicker.menu().getHeight() + ICON_PREVIEW_GAP);
+        iconRow.addChild(this.iconPicker.clearButton());
+
         // buttons row
         this.buttonRow = createButtonRow();
 
@@ -244,6 +263,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.mainLayout.addChild(this.coordsLabel);
         this.mainLayout.addChild(coordsRow);
         this.mainLayout.addChild(visibilityRow);
+        this.mainLayout.addChild(iconRow);
         this.mainLayout.addChild(this.buttonRow);
 
         CONTENT_WIDTH = this.mainLayout.getWidth();
@@ -419,6 +439,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.zEditBox.active = false;
         this.yawEditBox.active = false;
         this.globalToggle.active = false;
+        this.iconPicker.menu().active = false;
+        this.iconPicker.clearButton().active = false;
         for (var child : this.getTitleRowClickableWidgets()) {
             child.active = false;
         }
@@ -439,6 +461,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.zEditBox.active = true;
         this.yawEditBox.active = true;
         this.globalToggle.active = true;
+        this.iconPicker.menu().active = true;
+        this.iconPicker.clearButton().active = true;
         for (var child : this.getTitleRowClickableWidgets()) {
             child.active = true;
         }
@@ -476,6 +500,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.addRenderableWidget(this.zEditBox);
         this.addRenderableWidget(this.yawEditBox);
         this.addRenderableWidget(this.globalToggle);
+        this.addRenderableWidget(this.iconPicker.menu());
+        this.addRenderableWidget(this.iconPicker.clearButton());
         for (var child : this.getButtonRowClickableWidgets()) {
             this.addRenderableWidget(child);
         }
@@ -485,6 +511,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     //? if >= 1.21.9 {
     @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClicked) {
+        if (this.clickIconMenu(mouseButtonEvent.x(), mouseButtonEvent.y(), mouseButtonEvent.button())) {
+            return true;
+        }
         if (this.mouseClickedTextFieldSuggestion(mouseButtonEvent.x(), mouseButtonEvent.y())) {
             return true;
         }
@@ -493,6 +522,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     //?} else {
     /*@Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.clickIconMenu(mouseX, mouseY, button)) {
+            return true;
+        }
         if (this.mouseClickedTextFieldSuggestion(mouseX, mouseY)) {
             return true;
         }
@@ -500,8 +532,53 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
     *///?}
 
+    //? if >= 1.21.9 {
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        if (this.releaseIconMenu(event.x(), event.y(), event.button())) {
+            return true;
+        }
+        return super.mouseReleased(event);
+    }
+    //?} else {
+    /*@Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (this.releaseIconMenu(mouseX, mouseY, button)) {
+            return true;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+    *///?}
+
+    //? if <= 1.20.1 {
+    /*@Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double verticalAmount) {
+        if (this.scrollIconMenu(mouseX, mouseY, verticalAmount)) {
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, verticalAmount);
+    }
+    *///?} else {
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (this.scrollIconMenu(mouseX, mouseY, verticalAmount)) {
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+    //?}
+
+    private boolean scrollIconMenu(double mouseX, double mouseY, double verticalAmount) {
+        ComboBoxWidget menu = this.iconPicker.menu();
+        return menu.isExpanded() && menu.mouseScrolled(mouseX, mouseY, 0, verticalAmount);
+    }
+
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == 256 && (this.iconPicker.menu().closeMenuIfOpen()
+                || this.iconPicker.menu().closeSuggestionsIfOpen())) {
+            return true;
+        }
         GuiEventListener focused = this.getFocused();
         this.acceptMovementKeys(!(focused instanceof EditBox) && !(focused instanceof ComboBoxWidget));
         if (keyCode == 256 && this.swatchWidget.visible) {
@@ -517,16 +594,30 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         int centeredX = getCenteredX();
         int centeredY = getCenteredY();
         setOffsets(centeredX, centeredY);
+        this.layoutIconPopup();
 
         this.drawBackground(context);
         this.mainLayout.
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, delta);
+        var resolvedIcon = this.iconPicker.preview();
+        ComboBoxWidget iconMenu = this.iconPicker.menu();
+        int previewSize = iconMenu.getHeight();
+        int previewX = iconMenu.getX() - previewSize - ICON_PREVIEW_GAP;
+        int previewY = iconMenu.getY();
+        if (resolvedIcon.kind() == WaypointIconRenderer.Kind.INITIALS) {
+            WaypointRowRenderer.initials(context, font, this.initialsEditBox.getValue(), previewX,
+                    previewY + (previewSize - font.lineHeight) / 2,
+                    this.colorPickerButton.getColor(), WidgetThemeManager.getColor(WidgetThemeVariable.TEXT_PRIMARY));
+        } else {
+            WaypointIconRenderer.draw(context, resolvedIcon, previewX, previewY, previewSize);
+        }
         nextLayer(context);
         this.renderTextFieldSuggestions(context, mouseX, mouseY);
         previousLayer(context);
         this.renderTitleRowOverlays(context, mouseX, mouseY, delta);
+        this.iconPicker.menu().renderPopup(context, mouseX, mouseY, delta);
         nextLayer(context);
         this.swatchWidget.
         //$ render_widget_method_swap
@@ -536,6 +627,37 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     protected void renderTitleRowOverlays(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    }
+
+    private boolean clickIconMenu(double mouseX, double mouseY, int button) {
+        ComboBoxWidget menu = this.iconPicker.menu();
+        if (menu.isMouseOver(mouseX, mouseY) && menu.mouseClicked(mouseX, mouseY, button)) {
+            this.setFocused(menu);
+            if (button == InputConstants.MOUSE_BUTTON_LEFT) {
+                this.setDragging(true);
+            }
+            return true;
+        }
+        menu.closeMenuIfOutside(mouseX, mouseY);
+        return false;
+    }
+
+    private boolean releaseIconMenu(double mouseX, double mouseY, int button) {
+        if (this.iconPicker.menu().mouseReleased(mouseX, mouseY, button)) {
+            this.setDragging(false);
+            return true;
+        }
+        return false;
+    }
+
+    private void layoutIconPopup() {
+        ComboBoxWidget menu = this.iconPicker.menu();
+        int above = Math.max(0, menu.getY() - 4);
+        int below = Math.max(0, this.height - menu.getY() - menu.getHeight() - 4);
+        boolean openUp = above > below;
+        menu.setExpansionDirection(openUp ? LayoutFlow.Direction.REVERSE : LayoutFlow.Direction.FORWARD);
+        menu.setMaxPopupHeight(Math.max(menu.getHeight(),
+                Math.min(menu.getHeight() * 8, openUp ? above : below)));
     }
 
     private void drawBackground(GuiGraphicsExtractor context) {

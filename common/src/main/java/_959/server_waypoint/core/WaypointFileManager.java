@@ -6,6 +6,8 @@ import _959.server_waypoint.core.edit.WaypointEditResult;
 import _959.server_waypoint.core.edit.WaypointListEditResult;
 import _959.server_waypoint.core.edit.WaypointListPatch;
 import _959.server_waypoint.core.edit.WaypointPatch;
+import _959.server_waypoint.core.edit.PatchField;
+import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
@@ -313,7 +315,8 @@ public class WaypointFileManager {
                             replacement.yaw(),
                             replacement.global(),
                             replacement.keywords(),
-                            replacement.description()
+                            replacement.description(),
+                            replacement.icon() == null ? PatchField.clear() : PatchField.set(replacement.icon())
                     );
             this.changed |= result.status() == WaypointFilesManagerCore.UpdateWaypointStatus.UPDATED;
             return result;
@@ -823,7 +826,8 @@ public class WaypointFileManager {
             int yaw,
             boolean global,
             List<String> keywords,
-            String description
+            String description,
+            PatchField<NamespacedId> iconPatch
     ) {
         return this.writeState(() -> {
             WaypointList waypointList = this.waypointListMap.get(listName);
@@ -841,7 +845,8 @@ public class WaypointFileManager {
                     yaw,
                     global,
                     keywords,
-                    description
+                    description,
+                    iconPatch
             );
             WaypointFilesManagerCore.UpdateWaypointStatus status = switch (result.status()) {
                 case UPDATED -> WaypointFilesManagerCore.UpdateWaypointStatus.UPDATED;

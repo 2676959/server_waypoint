@@ -9,6 +9,7 @@ import _959.server_waypoint.core.edit.WaypointEditResult;
 import _959.server_waypoint.core.edit.WaypointListEditResult;
 import _959.server_waypoint.core.edit.WaypointListPatch;
 import _959.server_waypoint.core.edit.WaypointPatch;
+import _959.server_waypoint.core.edit.PatchField;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -437,7 +438,8 @@ public class WaypointFilesManagerCore {
                                     yaw,
                                     global,
                                     keywords,
-                                    description
+                                    description,
+                                    PatchField.unchanged()
                             );
                 },
                 resultAction

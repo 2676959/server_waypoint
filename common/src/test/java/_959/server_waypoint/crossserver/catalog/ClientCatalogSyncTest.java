@@ -77,7 +77,7 @@ class ClientCatalogSyncTest {
     @Test void oversizedAggregateFailsClosedInsteadOfPublishingAPartialDirectory() {
         var waypoints = new HashMap<String, RemoteWaypointSnapshot>();
         for (int i = 0; i < 16; i++) waypoints.put("w" + i, new RemoteWaypointSnapshot("w", "W",
-                new _959.server_waypoint.core.waypoint.WaypointPos(1, 2, 3), 0, 0, false, List.of(), "x".repeat(60000)));
+                new _959.server_waypoint.core.waypoint.WaypointPos(1, 2, 3), 0, 0, false, List.of(), "x".repeat(60000), null));
         var dimensions = Map.of("world", Map.of("list", new RemoteListSnapshot("list", new RemoteRevision(0), waypoints)));
         var views = new HashMap<RemoteServerId, CatalogReceiver.View>();
         for (int i = 0; i < 9; i++) {

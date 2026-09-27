@@ -825,7 +825,13 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         if (waypoint.global()) {
             drawText(context, textRenderer, "*", indent + 6, finalY, textColor);
         }
-        drawInitialsBox(context, initials, indent + 15, finalY - 1, backgroundColor, getInitialsTextColor(rgb, wpRendered));
+        var resolvedIcon = _959.server_waypoint.common.client.gui.render.WaypointIconRenderer.resolve(waypoint.icon());
+        if (resolvedIcon.kind() == _959.server_waypoint.common.client.gui.render.WaypointIconRenderer.Kind.INITIALS) {
+            drawInitialsBox(context, initials, indent + 15, finalY - 1, backgroundColor,
+                    getInitialsTextColor(rgb, wpRendered));
+        } else {
+            WaypointRowRenderer.icon(context, textRenderer, resolvedIcon, indent + 15, finalY - 4, 16);
+        }
         String dimensionLine = "";
         Component listName = Component.empty();
         int dimensionColor = metadataTextColor;

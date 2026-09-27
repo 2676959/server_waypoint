@@ -507,8 +507,13 @@ and refreshes preserve a still-visible selection while filtering or removal clea
 `WaypointDetailsWidget` consumes that selection and presents every stored waypoint field plus its
 dimension/list context in a separately scrollable viewport. Keep formatted display names and
 descriptions parsed only at this render boundary, and reserve scrollbar width while wrapping so
-content does not relayout when overflow begins. The dimension row uses the same shared
-dimension-color mapping as the waypoint list, and boolean render state uses the theme's semantic
+content does not relayout when overflow begins. Its optional icon row uses the same `Icon:` label
+as the waypoint form, draws the resolved item or VoxelMap image beside the saved ID, and shows
+initials if the image cannot be resolved. Keep the preview one font line high and align its image
+with the text baseline. Reserve its width in both rendering and content-height calculations so
+wrapped IDs and following rows do not overlap it. The dimension
+row uses the same shared dimension-color mapping as the waypoint list, and boolean render state
+uses the theme's semantic
 `SUCCESS` / `DANGER` text roles. `WaypointManagerScreen` always renders this panel and centers the
 left rail, middle waypoint list, and right details panel as one group with two-pixel inter-panel
 gaps. Calculate the middle content width as 38% of the scaled viewport clamped to 180–360 pixels,
@@ -565,7 +570,9 @@ handle. The remote details remain read-only. The teleport button sends immediate
 confirmation dialog, after rechecking session, catalog revision, exact identity, and waypoint data.
 Both lists use 20-pixel rows and `WaypointRowRenderer.background(...)` / `initials(...)` for waypoint
 color washes, hover/selection outlines and initials badges. The initials method returns the badge
-width for label placement. The remote tree reuses `WidgetTextures` expand/collapse/empty icons,
+width for label placement. `WaypointRowRenderer.icon(...)` centers a 16-pixel item or VoxelMap image
+over the minimum initials badge width so icon centers stay aligned across rows. The remote tree
+reuses `WidgetTextures` expand/collapse/empty icons,
 formatted display names and the tree's clipping and hit testing; exact identities remain in tooltips.
 Remote identity tooltips use the current hovered entry and vanilla cursor positioning after the
 panel render pass, rather than attaching a widget tooltip to the entire tree rectangle.
@@ -830,6 +837,18 @@ Calling `setSuggestionsProvider` is only the data step. A suggestion-enabled fie
 3. `mouseClickedSuggestion` checked before normal screen click dispatch while that field is focused.
 
 `AbstractWaypointPropertiesScreen` is the reference for several fields, while `WaypointManagerScreen` shows the same pattern for a single search field. If any one of the three pieces is missing, suggestions may exist internally but fail to appear or accept clicks.
+
+`SuggestingTextInput.getSuggestionsY(int suggestionHeight)` positions a popup after its visible height is known. A `ComboBoxWidget` uses its expansion direction for both its choice list and typed suggestions: upward suggestions end at the top of the field, and downward suggestions begin below it. Keep render, hover, and click bounds on that same computed rectangle.
+
+## Waypoint icon picker and renderer
+
+`WaypointIconPicker` owns a searchable `ComboBoxWidget`, a clear button, and the selected nullable `NamespacedId`. Add and edit screens register the menu and button once for input, render the menu's popup after the main form, and read `getSelectedIcon()` when submitting. `setSelectedIcon()` restores a saved choice, including an ID missing from the current client registry; it does not send an edit. The picker lists the current item registry and known VoxelMap image IDs. Search filters the catalog while a partial query leaves the saved choice intact.
+
+The icon combobox keeps the full catalog in its popup. `AbstractDropdownMenuWidget.setMaxPopupHeight()` limits the visible vertical rows; the remaining choices stay reachable with the wheel, arrow keys, or draggable scrollbar. `setExpansionDirection()` lets the owning screen place the popup above or below its control. The add/edit screen chooses the roomier side, caps the popup to eight rows and the available screen space, and routes wheel input to the open popup before other controls. When it handles a popup click before vanilla dispatch, the screen must establish drag focus and forward release events so scrollbar dragging works. Popup click and hover handling must use only the visible rows so covered form buttons cannot accidentally receive a click intended for the popup.
+
+Vertical popup choices retain their logical top-to-bottom order when opening upward; Up and Down follow that visual order. Upward combobox rows draw their top border and share the bottom border with the next row or trigger via `renderOutlineWithoutBottom`; downward rows use `renderOutlineWithoutTop`. In the waypoint form, the icon row's first label has no leading padding. Reserve the combobox height plus the preview-to-field gap before the combobox, so the preview starts directly after the label like other form controls.
+
+`WaypointIconRenderer.resolve()` converts a stored ID to an item stack, a packaged VoxelMap texture, or the initials fallback on the client thread. Draw resolved icons with `draw()` in GUI rows and `drawScaled()` at the projected world-marker position. Keep the stored ID when resolution falls back to initials. World rendering caches the resolved handle in per-waypoint state and clears it when the waypoint or scene is removed. Re-resolve after resource or scene rebuild so resource-pack changes are reflected.
 
 ## Widget render entry points
 

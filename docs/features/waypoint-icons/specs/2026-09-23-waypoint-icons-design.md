@@ -8,6 +8,8 @@ Let a player choose an icon for each waypoint from the current Minecraft item re
 
 The optional `icon` property is a `NamespacedId` record in `common` with validated `namespace` and `path` components using Minecraft `Identifier`/`ResourceLocation` syntax. `null` means no icon and preserves the current initials marker. The reusable record parses a canonical, lowercase `namespace:path` string once, and `toString()` writes that form. Waypoint-specific length and JSON fallback rules stay in `WaypointIconPolicy`, outside the record. Item icons use the item's registry ID, such as `minecraft:diamond` or `examplemod:gem`. VoxelMap built-ins use `voxelmap:<suffix>`, where `<suffix>` is the suffix VoxelMap stores in `Waypoint.imageSuffix`; for example, `voxelmap:star` maps to `star`. Reserve the `voxelmap` namespace for these images. The plain default VoxelMap image is `voxelmap:waypoint` in the picker and maps to the empty image suffix.
 
+The command layer uses a generic icon argument type. Fabric, Forge, and NeoForge provide Minecraft's native identifier argument and registry suggestions; Paper provides its native namespaced-key argument and item suggestions. Each platform also suggests the supported `voxelmap:` IDs. Command IDs use the native unquoted identifier syntax and are converted to `NamespacedId` before storage.
+
 The server stores the record without consulting a client item registry. The waypoint's GSON adapter writes it as one string and network codecs send that same string; both parse it into the record once on input. A missing item or unavailable VoxelMap image stays stored as selected and uses the current initials presentation on that client. Existing waypoint JSON without `icon` loads as `null`; an invalid JSON icon is logged and treated as unselected so the rest of that waypoint file remains readable. This is ordinary optional-field loading, not a legacy protocol branch. All network participants must run matching builds after the wire-format change.
 
 ## Selection and display
@@ -27,7 +29,7 @@ Xaero uploads have no equivalent icon mapping and use no icon. Reupload/update m
 - Java 17, GSON JSON, four-space indentation, Kotlin DSL Gradle.
 - `common` owns the reusable `NamespacedId` record in `util`, the waypoint-specific icon policy, waypoint state, patch, codecs, commands, upload merge, and cross-server catalog fields. `mods` converts the record to version-specific `Identifier`/`ResourceLocation` using its existing `ResourceLocationHelper` and owns registry lookup, picker, rendering, and VoxelMap API integration. Paper may construct `NamespacedKey` from the record's validated components when it has a real icon consumer; the record itself has no Paper or Minecraft dependency.
 - Maintain every supported Stonecutter branch from `settings.gradle.kts`; use versioned predicates for API differences and update `docs/tips/gui/local-guide.md` for the new GUI contract.
-- No backward-compatible wire encoding is added; matched client, backend, and coordinator builds are required. Bump the applicable protocol versions when their payloads change.
+- No backward-compatible wire encoding is added; matched client, backend, and coordinator builds are required. The protocol constants remain 1 at the user's direction despite the changed payloads.
 - The plan and spec are documentation only. Implementation, live visual verification, commits, and release are separate steps.
 
 ## Acceptance evidence

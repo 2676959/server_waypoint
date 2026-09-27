@@ -45,7 +45,7 @@
 - `/wp download` 下载路径点并添加到 Xaero 小地图（需客户端安装本模组才生效）。
 - `/wp details list <维度> <列表标识符>` 和 `/wp details waypoint <维度> <列表标识符> <路径点标识符>` 显示全部属性及可用操作。
 - `/wp edit list ...` 和 `/wp edit waypoint ...` 每次设置一个属性，或清除一个可选属性。完整命令格式请运行 `/wp help edit`。
-  - `/wp edit waypoint <维度> <列表> <路径点> set icon "minecraft:diamond"` 选用物品图标；使用 `clear icon` 恢复首字母标记。`voxelmap:star` 等 `voxelmap:` ID 可选用 VoxelMap 内置图片。`/wp add` 也接受在可选关键词和描述之后添加 `icon "<namespace:path>"`。
+  - `/wp edit waypoint <维度> <列表> <路径点> set icon minecraft:diamond` 选用物品图标；使用 `clear icon` 恢复首字母标记。`voxelmap:star` 等 `voxelmap:` ID 可选用 VoxelMap 内置图片。`/wp add` 也接受在可选关键词和描述之后添加 `icon <namespace:path>`。图标 ID 不加引号；图标参数会补全服务器物品 ID 和 VoxelMap 内置图片 ID；`/wp details waypoint` 的图标行提供编辑和清除按钮。
 - `/wp upload <xaero|voxelmap>` 从执行玩家客户端上所选的地图模组导入路径点。冲突、强制覆盖和删除行为详见[从客户端地图模组上传](#从客户端地图模组上传)。
 - `/wp list` 列出当前维度中的路径点。可使用 `all`、维度，或维度加列表名称来更改范围。结果按照服务端配置的每页数量分页（默认 10 个），并提供可点击的排序和翻页按钮。
   - 添加 `search <查询内容>` 可按路径点名称筛选。
@@ -65,14 +65,28 @@
 
 ## 跨服务器传送配置
 
-跨服务器传送默认禁用，通过 Velocity 工作。请在 Velocity 和至少两台专用 Paper、Fabric、Forge 或 NeoForge 后端服务器上安装相匹配的 Server Waypoint 版本。Velocity 需要 Java 25；各后端使用其所需的 Java 版本。玩家无需安装客户端模组即可使用远程命令；远程图形界面需要匹配的客户端模组。单人游戏的集成服务器不参与跨服务器传送。
+跨服务器传送默认关闭，需要一台供玩家进入的 Velocity 服务器，以及至少两台 Paper、Fabric、Forge 或 NeoForge 游戏服务器（例如 `survival` 和 `creative`）。以下将游戏服务器称为“后端”。先根据机器的摆放方式选择一种连接方式：
 
-### 不加密：PLAINTEXT（同一主机）
+- **所有服务器都在同一台电脑上：**使用下面的 `PLAINTEXT` 配置。它设置简单，但服务器之间的连接不加密。
+- **服务器分布在不同电脑上，或需要加密连接：**使用 `NOISE_KK` 配置。它需要多一步交换公钥。
 
-此配置仅适用于运行在**同一主机**上的服务器。连接既不加密，也不通过密码学方式验证后端身份，只应在信任本机进程时使用。
+Velocity 和每台后端必须安装相匹配的 Server Waypoint 版本。Velocity 需要 Java 25；后端使用对应版本要求的 Java。玩家使用远程命令无需安装客户端模组；使用远程图形界面则需要匹配的客户端模组。单人游戏不能使用跨服务器传送。
 
-1. 在 Velocity 中注册两台后端，例如 `survival` 和 `creative`。启动 Velocity 和各后端一次，让它们生成默认禁用的 `cross-server.json`，然后停止。配置文件分别位于 `<velocity-root>/plugins/server_waypoint/`、`<paper-root>/plugins/ServerWaypoint/`、`<fabric-root>/config/server_waypoint/` 或 `<forge-or-neoforge-root>/defaultconfigs/server_waypoint/`。
-2. 将 Velocity 的 `cross-server.json` 设置为：
+### 开始前
+
+1. 在 Velocity 中注册 `survival` 和 `creative` 等后端服务器。先启动 Velocity 和每台后端一次，让 Server Waypoint 自动生成 `cross-server.json`，然后停止它们。
+2. 找到各自的配置文件：
+   - Velocity：`<velocity-root>/plugins/server_waypoint/cross-server.json`
+   - Paper：`<paper-root>/plugins/ServerWaypoint/cross-server.json`
+   - Fabric：`<fabric-root>/config/server_waypoint/cross-server.json`
+   - Forge 或 NeoForge：`<forge-or-neoforge-root>/defaultconfigs/server_waypoint/cross-server.json`
+3. 按 Velocity 和后端服务器的说明设置玩家转发。这样同一位玩家在各服务器上的身份编号（UUID）才会相同。使用 `NOISE_KK` 时，玩家转发还需要启用身份验证。
+
+### 方式一：同一台电脑（PLAINTEXT）
+
+只有 Velocity 和所有后端都运行在**同一台电脑**上时，才能使用此方式。请将它们之间的地址写为 `127.0.0.1`，不要写 `localhost`、`0.0.0.0` 或其他 IP 地址。
+
+1. 将 Velocity 的 `cross-server.json` 改为：
 
    ```json
    {
@@ -92,8 +106,8 @@
    }
    ```
 
-   每个 `velocityServer` 必须与 Velocity 注册的服务器名称一致。每个后端 ID 必须唯一且保持稳定。
-3. 将 `survival` 后端的 `cross-server.json` 设置为：
+   `velocityServer` 必须与 Velocity 中注册的服务器名称一致。`survival` 和 `creative` 是各后端的唯一 ID；设置后不要随意更改。
+2. 将 `survival` 后端的 `cross-server.json` 改为：
 
    ```json
    {
@@ -105,16 +119,16 @@
    }
    ```
 
-   `creative` 使用相同配置，但将 `serverId` 改为 `creative`。`PUBLIC` 会将各后端的路径点列表分享给协调器及参与服务器上的授权浏览者。
-4. 从明文模式配置中移除 `credentialsDirectory`、`coordinatorPublicKey` 和 `requiredSuite`，并从 Velocity 的后端条目中移除 `publicKey`。两端均须使用字面形式的环回 IP；`localhost`、通配地址及非环回地址都会被拒绝。编辑后重启 Velocity 和两台后端。配置正常的 Velocity 玩家转发，使各服务器上的玩家 UUID 一致。
-5. 通过 Velocity 加入服务器，运行 `/wp remote servers`，再运行 `/wp remote list survival`。传送至一个已导出的路径点，例如 `/wp remote tp creative "minecraft:overworld" "Public list" "Home"`。检查目的地坐标和反馈，再测试反方向。仅发生服务器切换不能证明玩家已抵达路径点。
+   在 `creative` 后端使用相同内容，只将 `serverId` 改为 `creative`。`PUBLIC` 表示把该服务器的路径点列表提供给有权限浏览的玩家。
+3. 确认配置文件与上面的示例一致，保存后启动 Velocity 和两台后端。
 
-### 加密：NOISE_KK
+### 方式二：不同电脑或需要加密（NOISE_KK）
 
-后端运行在不同主机，或希望在同一主机上验证后端身份并加密连接时，请使用 `NOISE_KK`。为 Velocity 协调器指定后端可访问的私有 TCP 地址，仅允许后端主机访问路径点端口。此端口不同于 Velocity 的玩家端口和后端的 Minecraft 端口。下例使用环回地址，适用于同一主机；跨主机部署时将 `127.0.0.1` 替换为协调器的私有地址。
+此方式会加密服务器之间的连接，并用公钥确认连接的是自己配置的服务器。每台服务器会生成自己的**公钥**和**私钥**：公钥是一串可以发给其他服务器的文字；私钥保存在 `credentials/static.key`，不能分享或复制到别的服务器。
 
-1. 在 Velocity 中注册 `survival` 和 `creative`。启动 Velocity 和各后端一次，让它们生成默认禁用的 `cross-server.json`，然后停止。配置路径与上面的明文模式相同。
-2. 将 Velocity 的 `cross-server.json` 设置为以下内容，**首次启动时不要添加** `publicKey` 字段：
+不同电脑上的后端需要能连接到 Velocity。下面的 `127.0.0.1:25580` 只适用于同一台电脑；不同电脑时，请把示例中的 `127.0.0.1` 换成后端可以访问的 Velocity 内网 IP，并在防火墙中只允许后端连接 `25580`。这个端口与玩家连接 Velocity 的端口、后端的 Minecraft 端口不同。
+
+1. 将 Velocity 的 `cross-server.json` 改为以下内容。**首次启动先不要添加公钥：**
 
    ```json
    {
@@ -134,7 +148,7 @@
    }
    ```
 
-3. 将 `survival` 后端的 `cross-server.json` 设置为以下内容，**首次启动时不要添加** `coordinatorPublicKey`。`creative` 使用相同配置，但将 `serverId` 改为 `creative`：
+2. 将 `survival` 后端的 `cross-server.json` 改为以下内容。`creative` 使用相同内容，只将 `serverId` 改为 `creative`。**首次启动先不要添加公钥：**
 
    ```json
    {
@@ -146,25 +160,54 @@
    }
    ```
 
-4. 启动 Velocity 和两台后端，然后停止。此时启动日志会报告缺少公钥固定值，但每个组件都会在其 `cross-server.json` 旁生成 `cross-server-public-key.txt`。
-5. 通过可信的管理渠道交换并核对每份公钥文件中的完整 Base64 值。将 Velocity 公钥作为 `coordinatorPublicKey` 加入**每台**后端的 `cross-server.json`；将 `survival` 公钥作为 `publicKey` 加入 Velocity 的 `backends.survival` 条目，并将 `creative` 公钥加入 `backends.creative`。例如，在现有对象中添加：
+3. 启动 Velocity 和两台后端，再停止它们。此时日志提示缺少公钥是正常的。每台服务器都会在自己的 `cross-server.json` 旁生成 `cross-server-public-key.txt`。
+4. 打开这三份公钥文件，复制其中**完整的一行文字**，不要复制 `credentials/static.key`。通过可信的管理渠道核对并交换公钥，然后修改配置：
+   - 在 **`survival` 和 `creative` 两台后端**的 `cross-server.json` 中添加 `"coordinatorPublicKey": "<Velocity 的公钥>"`。
+   - 在 **Velocity** 配置的 `backends.survival` 中添加 `"publicKey": "<survival 的公钥>"`；在 `backends.creative` 中添加 `"publicKey": "<creative 的公钥>"`。
 
-   ```text
-   "coordinatorPublicKey": "<Velocity 公钥>"
-   ```
+   例如，`survival` 的后端配置在填入真实公钥后应是：
 
-   ```text
-   "survival": {
+   ```json
+   {
        "enabled": true,
-       "velocityServer": "survival",
-       "publicKey": "<survival 公钥>"
+       "transportMode": "NOISE_KK",
+       "serverId": "survival",
+       "coordinator": "127.0.0.1:25580",
+       "catalogExport": "PUBLIC",
+       "coordinatorPublicKey": "<Velocity 的完整公钥>"
    }
    ```
 
-   将占位内容替换为完整的 Base64 公钥。各组件的 `credentials/static.key` 必须保密，绝不能复制到其他组件。无需运行配对命令。
-6. 先重启 Velocity，再重启两台后端。配置经过身份验证的 Velocity 玩家转发，使各服务器上的玩家 UUID 一致。运行 `/wp remote servers` 和 `/wp remote list survival`，然后对已有的已导出路径点测试 `/wp remote tp creative "minecraft:overworld" "Public list" "Home"`。双向检查目的地坐标和反馈。
+   Velocity 的配置在填入两台后端的真实公钥后应是：
 
-远程浏览使用 `server_waypoint.command.remote.list`（默认等级 0）。远程传送在来源服务器上同时需要 `server_waypoint.command.tp` 和 `server_waypoint.command.remote.tp`（默认等级 2），在目的地还需要本地传送权限。权限、公钥轮换和故障排查详见[管理员指南](docs/features/cross-server/cross-server-admin.md)。
+   ```json
+   {
+       "enabled": true,
+       "transportMode": "NOISE_KK",
+       "listen": "127.0.0.1:25580",
+       "backends": {
+           "survival": {
+               "enabled": true,
+               "velocityServer": "survival",
+               "publicKey": "<survival 的完整公钥>"
+           },
+           "creative": {
+               "enabled": true,
+               "velocityServer": "creative",
+               "publicKey": "<creative 的完整公钥>"
+           }
+       }
+   }
+   ```
+
+   把尖括号中的示例文字换成对应公钥文件里的真实内容。无需运行配对命令。
+5. 保存配置后，先启动 Velocity，再启动两台后端。不同电脑时，请再次确认 Velocity 的 `listen` 地址以及后端的 `coordinator` 地址均已改为可互相访问的地址。
+
+### 检查是否成功
+
+通过 Velocity 加入服务器，运行 `/wp remote servers` 和 `/wp remote list survival`。找一个已分享的路径点，执行类似 `/wp remote tp creative "minecraft:overworld" "Public list" "Home"` 的命令。检查玩家到达后的坐标和反馈，再从 `creative` 测试返回 `survival`。仅切换到另一台服务器不代表已到达路径点。
+
+远程浏览默认对所有玩家开放。远程传送默认需要等级 2 的来源服务器权限，并在目的地再次检查本地传送权限。具体权限、公钥更换和故障排查参见[管理员指南](docs/features/cross-server/cross-server-admin.md)。
 
 ## 从客户端地图模组上传
 

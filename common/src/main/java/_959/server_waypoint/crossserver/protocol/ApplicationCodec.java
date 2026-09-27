@@ -3,6 +3,8 @@ package _959.server_waypoint.crossserver.protocol;
 import _959.server_waypoint.crossserver.*;
 import _959.server_waypoint.core.network.DecodingContext;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
+import _959.server_waypoint.util.NamespacedId;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
@@ -15,7 +17,7 @@ import java.util.*;
 
 import static _959.server_waypoint.crossserver.protocol.ApplicationMessage.*;
 
-/** Canonical big-endian v1 serialization. No sockets, replay registry, authorization, or reassembly. */
+/** Canonical big-endian serialization. No sockets, replay registry, authorization, or reassembly. */
 public final class ApplicationCodec {
     public static final int HEADER_BYTES = 36;
     private final ProtocolLimits limits;
@@ -374,6 +376,8 @@ public final class ApplicationCodec {
             count(waypoint.keywords().size());
             for (String keyword : waypoint.keywords()) string(keyword);
             string(waypoint.description());
+            buf.writeByte(waypoint.icon() == null ? 0 : 1);
+            if (waypoint.icon() != null) string(waypoint.icon().toString());
         }
 
         private void key(RemoteWaypointKey key) {
@@ -512,7 +516,12 @@ public final class ApplicationCodec {
             int count = count(4);
             List<String> keywords = new ArrayList<>(Math.min(count, 64));
             for (int n = 0; n < count; n++) keywords.add(string());
-            return new RemoteWaypointSnapshot(display, initials, position, rgb, yaw, global == 1, keywords, string());
+            String description = string();
+            int hasIcon = buf.readUnsignedByte();
+            if (hasIcon > 1) throw invalid();
+            NamespacedId icon = hasIcon == 0 ? null : WaypointIconPolicy.validate(NamespacedId.parse(string()));
+            return new RemoteWaypointSnapshot(display, initials, position, rgb, yaw, global == 1, keywords,
+                    description, icon);
         }
 
         private RemoteWaypointKey key() { object(); return new RemoteWaypointKey(server(), string(), string(), string()); }

@@ -3,6 +3,8 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,12 +28,15 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pr
 public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidget implements Expandable {
     private final List<AbstractMenuItem> menuItems = new ArrayList<>();
     private final LayoutFlow.Orientation expansionOrientation;
-    private final LayoutFlow.Direction expansionDirection;
+    private LayoutFlow.Direction expansionDirection;
     private final int itemSpacing;
     private boolean expanded;
     private boolean renderPopupSeparately;
     private int selectedMenuItemIndex = -1;
     private int highlightedItemIndex = -1;
+    private int maxPopupHeight = Integer.MAX_VALUE;
+    private int scrollOffset;
+    private boolean draggingScrollIndicator;
 
     protected AbstractDropdownMenuWidget(
             int x,
@@ -80,6 +85,14 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         this.setHighlightedItemIndex(-1);
         this.menuItems.clear();
         this.selectedMenuItemIndex = -1;
+        this.scrollOffset = 0;
+    }
+
+    /** Rebuilds the choices and lays them out once. */
+    protected final void replaceMenuItems(List<? extends AbstractMenuItem> items) {
+        this.clearMenuItems();
+        this.menuItems.addAll(items);
+        this.layoutMenuItems();
     }
 
     public final List<AbstractMenuItem> getMenuItems() {
@@ -93,7 +106,19 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         int selectedMenuItemIndex = this.expanded
                 ? this.selectedMenuItemIndex
                 : this.resolveSelectedMenuItemIndex();
-        return this.countDisplayedMenuItems(selectedMenuItemIndex);
+        return this.visibleMenuItemIndexes(selectedMenuItemIndex).size();
+    }
+
+    /** Caps the popup's vertical extent; wheel and arrow keys can reach the remaining choices. */
+    public final void setMaxPopupHeight(int height) {
+        if (height <= 0) {
+            throw new IllegalArgumentException("Popup height must be positive");
+        }
+        if (this.maxPopupHeight != height) {
+            this.maxPopupHeight = height;
+            this.scrollOffset = Math.min(this.scrollOffset, this.maxScrollOffset(this.selectedMenuItemIndex));
+            this.layoutMenuItems();
+        }
     }
 
     public final LayoutFlow.Orientation getExpansionOrientation() {
@@ -102,6 +127,15 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
 
     public final LayoutFlow.Direction getExpansionDirection() {
         return this.expansionDirection;
+    }
+
+    /** Changes which side of the control receives the popup. */
+    public final void setExpansionDirection(LayoutFlow.Direction direction) {
+        LayoutFlow.Direction resolved = Objects.requireNonNull(direction);
+        if (this.expansionDirection != resolved) {
+            this.expansionDirection = resolved;
+            this.layoutMenuItems();
+        }
     }
 
     public final int getItemSpacing() {
@@ -125,6 +159,7 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         }
         if (resolvedExpanded) {
             this.selectedMenuItemIndex = selectedMenuItemIndex;
+            this.scrollOffset = 0;
             this.layoutMenuItems();
             this.expanded = true;
             this.setHighlightedItemIndex(-1);
@@ -132,9 +167,11 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
             return;
         }
         this.expanded = false;
+        this.draggingScrollIndicator = false;
         this.setHighlightedItemIndex(-1);
         this.onExpandedChanged(false);
         this.selectedMenuItemIndex = -1;
+        this.scrollOffset = 0;
         this.layoutMenuItems();
     }
 
@@ -205,11 +242,32 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         if (!this.expanded) {
             return false;
         }
-        for (int i = 0; i < this.menuItems.size(); i++) {
+        if (this.isOverScrollIndicator(mouseX, mouseY)) {
+            return true;
+        }
+        for (int i : this.visibleMenuItemIndexes(this.selectedMenuItemIndex)) {
             AbstractMenuItem menuItem = this.menuItems.get(i);
-            if (this.isMenuItemDisplayed(i) && contains(menuItem, mouseX, mouseY)) {
+            if (contains(menuItem, mouseX, mouseY)) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (!this.draggingScrollIndicator || button != InputConstants.MOUSE_BUTTON_LEFT) {
+            return false;
+        }
+        this.scrollIndicatorTo(mouseY);
+        return true;
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && this.draggingScrollIndicator) {
+            this.draggingScrollIndicator = false;
+            return true;
         }
         return false;
     }
@@ -227,9 +285,14 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         if (!this.expanded) {
             return false;
         }
-        for (int i = 0; i < this.menuItems.size(); i++) {
+        if (this.isOverScrollIndicator(mouseX, mouseY)) {
+            this.draggingScrollIndicator = true;
+            this.scrollIndicatorTo(mouseY);
+            return true;
+        }
+        for (int i : this.visibleMenuItemIndexes(this.selectedMenuItemIndex)) {
             AbstractMenuItem menuItem = this.menuItems.get(i);
-            if (!this.isMenuItemDisplayed(i) || !contains(menuItem, mouseX, mouseY)) {
+            if (!contains(menuItem, mouseX, mouseY)) {
                 continue;
             }
             if (menuItem.isActive()) {
@@ -238,6 +301,21 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (!this.expanded || !this.isMouseOver(mouseX, mouseY) || verticalAmount == 0) {
+            return false;
+        }
+        int offset = (int) Math.max(1, Math.ceil(Math.abs(verticalAmount)));
+        int nextOffset = Math.max(0, Math.min(this.maxScrollOffset(this.selectedMenuItemIndex),
+                this.scrollOffset + (verticalAmount < 0 ? offset : -offset)));
+        if (nextOffset != this.scrollOffset) {
+            this.scrollOffset = nextOffset;
+            this.layoutMenuItems();
+        }
+        return true;
     }
 
     @Override
@@ -297,16 +375,14 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         }
         nextLayer(context);
         try {
-            for (int i = 0; i < this.menuItems.size(); i++) {
+            for (int i : this.visibleMenuItemIndexes(this.selectedMenuItemIndex)) {
                 AbstractMenuItem menuItem = this.menuItems.get(i);
-                if (!this.isMenuItemDisplayed(i)) {
-                    continue;
-                }
                 menuItem.
                 //$ render_method_swap
                 extractRenderState
                         (context, mouseX, mouseY, deltaTicks);
             }
+            this.renderScrollIndicator(context);
         } finally {
             previousLayer(context);
         }
@@ -349,6 +425,10 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         } else {
             this.layoutVerticalMenuItems();
         }
+        if (this.expanded && this.highlightedItemIndex >= 0
+                && !this.visibleMenuItemIndexes(this.selectedMenuItemIndex).contains(this.highlightedItemIndex)) {
+            this.setHighlightedItemIndex(-1);
+        }
     }
 
     private boolean activateMenuItem(AbstractMenuItem menuItem, double mouseX, double mouseY) {
@@ -377,6 +457,13 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         } else {
             positiveKey = InputConstants.KEY_DOWN;
             negativeKey = InputConstants.KEY_UP;
+            if (keyCode == positiveKey) {
+                return 1;
+            }
+            if (keyCode == negativeKey) {
+                return -1;
+            }
+            return 0;
         }
         int directionMultiplier = this.expansionDirection == LayoutFlow.Direction.FORWARD ? 1 : -1;
         if (keyCode == positiveKey) {
@@ -432,18 +519,33 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         this.highlightedItemIndex = highlightedItemIndex;
         if (this.highlightedItemIndex >= 0) {
             this.menuItems.get(this.highlightedItemIndex).setFocused(true);
+            this.scrollToItem(this.highlightedItemIndex);
         }
+    }
+
+    private void scrollToItem(int itemIndex) {
+        if (!this.expanded || this.expansionOrientation != LayoutFlow.Orientation.VERTICAL) {
+            return;
+        }
+        int ordinal = this.displayedMenuItemIndexes(this.selectedMenuItemIndex).indexOf(itemIndex);
+        if (ordinal < 0) {
+            return;
+        }
+        if (ordinal < this.scrollOffset) {
+            this.scrollOffset = ordinal;
+        }
+        while (!this.visibleMenuItemIndexes(this.selectedMenuItemIndex).contains(itemIndex)) {
+            this.scrollOffset++;
+        }
+        this.layoutMenuItems();
     }
 
     private void layoutHorizontalMenuItems() {
         int cursor = this.expansionDirection == LayoutFlow.Direction.FORWARD
                 ? this.getX() + this.getWidth()
                 : this.getX();
-        for (int i = 0; i < this.menuItems.size(); i++) {
+        for (int i : this.visibleMenuItemIndexes(this.selectedMenuItemIndex)) {
             AbstractMenuItem menuItem = this.menuItems.get(i);
-            if (!this.isMenuItemDisplayed(i)) {
-                continue;
-            }
             int itemX;
             if (this.expansionDirection == LayoutFlow.Direction.FORWARD) {
                 cursor += this.itemSpacing;
@@ -462,20 +564,21 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         int cursor = this.expansionDirection == LayoutFlow.Direction.FORWARD
                 ? this.getY() + this.getHeight()
                 : this.getY();
-        for (int i = 0; i < this.menuItems.size(); i++) {
-            AbstractMenuItem menuItem = this.menuItems.get(i);
-            if (!this.isMenuItemDisplayed(i)) {
-                continue;
-            }
-            int itemY;
-            if (this.expansionDirection == LayoutFlow.Direction.FORWARD) {
-                cursor += this.itemSpacing;
-                itemY = cursor;
-                cursor += menuItem.getHeight();
-            } else {
+        List<Integer> visibleIndexes = this.visibleMenuItemIndexes(this.selectedMenuItemIndex);
+        if (this.expansionDirection == LayoutFlow.Direction.REVERSE) {
+            for (int position = visibleIndexes.size() - 1; position >= 0; position--) {
+                AbstractMenuItem menuItem = this.menuItems.get(visibleIndexes.get(position));
                 cursor -= this.itemSpacing + menuItem.getHeight();
-                itemY = cursor;
+                int itemX = this.getX() + (this.getWidth() - menuItem.getWidth()) / 2;
+                menuItem.setPosition(itemX, cursor);
             }
+            return;
+        }
+        for (int i : visibleIndexes) {
+            AbstractMenuItem menuItem = this.menuItems.get(i);
+            cursor += this.itemSpacing;
+            int itemY = cursor;
+            cursor += menuItem.getHeight();
             int itemX = this.getX() + (this.getWidth() - menuItem.getWidth()) / 2;
             menuItem.setPosition(itemX, itemY);
         }
@@ -500,6 +603,109 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
 
     private boolean isMenuItemDisplayed(int itemIndex) {
         return itemIndex != this.selectedMenuItemIndex && this.menuItems.get(itemIndex).visible;
+    }
+
+    private List<Integer> displayedMenuItemIndexes(int selectedIndex) {
+        List<Integer> indexes = new ArrayList<>();
+        for (int i = 0; i < this.menuItems.size(); i++) {
+            if (i != selectedIndex && this.menuItems.get(i).visible) {
+                indexes.add(i);
+            }
+        }
+        return indexes;
+    }
+
+    private int maxScrollOffset(int selectedIndex) {
+        if (this.expansionOrientation != LayoutFlow.Orientation.VERTICAL) {
+            return 0;
+        }
+        List<Integer> indexes = this.displayedMenuItemIndexes(selectedIndex);
+        int height = 0;
+        int visible = 0;
+        for (int i = indexes.size() - 1; i >= 0; i--) {
+            int next = this.menuItems.get(indexes.get(i)).getHeight() + (visible == 0 ? 0 : this.itemSpacing);
+            if (visible > 0 && height + next > this.maxPopupHeight) {
+                break;
+            }
+            height += next;
+            visible++;
+        }
+        return indexes.size() - visible;
+    }
+
+    private List<Integer> visibleMenuItemIndexes(int selectedIndex) {
+        List<Integer> indexes = this.displayedMenuItemIndexes(selectedIndex);
+        if (this.expansionOrientation != LayoutFlow.Orientation.VERTICAL) {
+            return indexes;
+        }
+        int from = Math.min(this.scrollOffset, this.maxScrollOffset(selectedIndex));
+        int height = 0;
+        int to = from;
+        while (to < indexes.size()) {
+            int next = this.menuItems.get(indexes.get(to)).getHeight() + (to == from ? 0 : this.itemSpacing);
+            if (to > from && height + next > this.maxPopupHeight) {
+                break;
+            }
+            height += next;
+            to++;
+        }
+        return indexes.subList(from, to);
+    }
+
+    private void renderScrollIndicator(GuiGraphicsExtractor context) {
+        if (this.expansionOrientation != LayoutFlow.Orientation.VERTICAL) {
+            return;
+        }
+        List<Integer> visible = this.visibleMenuItemIndexes(this.selectedMenuItemIndex);
+        int total = this.countDisplayedMenuItems(this.selectedMenuItemIndex);
+        if (visible.isEmpty() || visible.size() == total) {
+            return;
+        }
+        AbstractMenuItem first = this.menuItems.get(visible.get(0));
+        AbstractMenuItem last = this.menuItems.get(visible.get(visible.size() - 1));
+        int top = Math.min(first.getY(), last.getY());
+        int bottom = Math.max(first.getY() + first.getHeight(), last.getY() + last.getHeight());
+        int trackHeight = bottom - top;
+        int thumbHeight = Math.min(trackHeight, Math.max(4, trackHeight * visible.size() / total));
+        int maxOffset = this.maxScrollOffset(this.selectedMenuItemIndex);
+        int thumbY = top + (trackHeight - thumbHeight) * this.scrollOffset / Math.max(1, maxOffset);
+        int right = this.getX() + this.getWidth() - 1;
+        context.fill(right - 3, top, right, bottom,
+                WidgetThemeManager.getColor(WidgetThemeVariable.SCROLLBAR_TRACK));
+        context.fill(right - 3, thumbY, right, thumbY + thumbHeight,
+                WidgetThemeManager.getColor(WidgetThemeVariable.SCROLLBAR_THUMB));
+    }
+
+    private boolean isOverScrollIndicator(double mouseX, double mouseY) {
+        if (this.expansionOrientation != LayoutFlow.Orientation.VERTICAL
+                || this.countDisplayedMenuItems(this.selectedMenuItemIndex) <= this.getPopupItemCount()) {
+            return false;
+        }
+        List<Integer> visible = this.visibleMenuItemIndexes(this.selectedMenuItemIndex);
+        if (visible.isEmpty()) {
+            return false;
+        }
+        AbstractMenuItem first = this.menuItems.get(visible.get(0));
+        AbstractMenuItem last = this.menuItems.get(visible.get(visible.size() - 1));
+        int top = Math.min(first.getY(), last.getY());
+        int bottom = Math.max(first.getY() + first.getHeight(), last.getY() + last.getHeight());
+        return mouseX >= this.getX() + this.getWidth() - 4
+                && mouseX < this.getX() + this.getWidth()
+                && mouseY >= top && mouseY < bottom;
+    }
+
+    private void scrollIndicatorTo(double mouseY) {
+        List<Integer> visible = this.visibleMenuItemIndexes(this.selectedMenuItemIndex);
+        if (visible.isEmpty()) {
+            return;
+        }
+        AbstractMenuItem first = this.menuItems.get(visible.get(0));
+        AbstractMenuItem last = this.menuItems.get(visible.get(visible.size() - 1));
+        int top = Math.min(first.getY(), last.getY());
+        int bottom = Math.max(first.getY() + first.getHeight(), last.getY() + last.getHeight());
+        double fraction = Math.max(0, Math.min(1, (mouseY - top) / Math.max(1, bottom - top)));
+        this.scrollOffset = (int) Math.round(fraction * this.maxScrollOffset(this.selectedMenuItemIndex));
+        this.layoutMenuItems();
     }
 
     private static boolean contains(

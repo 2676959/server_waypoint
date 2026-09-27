@@ -65,7 +65,7 @@ class RemoteWaypointCommandTest {
     }
     private static RemoteWaypointSnapshot waypoint(String display, int position) {
         return new RemoteWaypointSnapshot(display, "B", new WaypointPos(position, 64, 0), position % 2 == 0 ? 0xFF0000 : 0x00FF00,
-                0, false, List.of("village"), "description");
+                0, false, List.of("village"), "description", null);
     }
     private void publish(RemoteServerId id, Map<String, Map<String, RemoteListSnapshot>> data) throws Exception {
         index.connected(id, owner, TransportMode.NOISE_KK, ProtocolLimits.DEFAULT);

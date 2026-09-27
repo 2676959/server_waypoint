@@ -1,4 +1,7 @@
 {
+  "waypoint.icon.invalid": "מזהה סמל נקודת ציון לא חוקי: %1$s",
+  "waypoint.icon.label": "סמל",
+  "waypoint.icon.clear": "נקה",
   "button.initials.tp": "לחץ כדי להשתגר",
   "server_waypoint.list.added.xaeros": "רשימת נקודות הציון \"%1$s\" נוספה בהצלחה למפת המיני של Xaero",
   "server_waypoint.save.failed.xaeros": "מפת המיני של Xaero לא הצליחה לשמור את נקודות הציון",

@@ -10,6 +10,8 @@ import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
+import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.text.TextButtonBuilder;
@@ -408,7 +410,7 @@ public final class UploadCoordinator<P> {
                     if (++pending.waypointCount > MAX_WAYPOINTS_PER_REQUEST) {
                         throw new IllegalArgumentException("Upload exceeds waypoint limit");
                     }
-                    SimpleWaypoint sanitized = sanitizeUploadedWaypoint(waypoint);
+                    SimpleWaypoint sanitized = sanitizeUploadedWaypoint(waypoint, pending.request.target());
                     if (pending.request.waypointName() != null
                             && (sanitized == null
                             || !pending.request.waypointName().equals(sanitized.name()))) {
@@ -657,7 +659,8 @@ public final class UploadCoordinator<P> {
                 && serverWaypoint.pos().equals(uploadedWaypoint.pos())
                 && serverWaypoint.rgb() == uploadedWaypoint.rgb()
                 && serverWaypoint.yaw() == uploadedWaypoint.yaw()
-                && serverWaypoint.global() == uploadedWaypoint.global();
+                && serverWaypoint.global() == uploadedWaypoint.global()
+                && (uploadedWaypoint.icon() == null || Objects.equals(serverWaypoint.icon(), uploadedWaypoint.icon()));
     }
 
     static SimpleWaypoint mergeXaeroProperties(SimpleWaypoint serverWaypoint, SimpleWaypoint uploadedWaypoint) {
@@ -670,24 +673,31 @@ public final class UploadCoordinator<P> {
                 uploadedWaypoint.yaw(),
                 uploadedWaypoint.global(),
                 serverWaypoint.keywords(),
-                serverWaypoint.description()
+                serverWaypoint.description(),
+                uploadedWaypoint.icon() == null ? serverWaypoint.icon() : uploadedWaypoint.icon()
         );
     }
 
     static @org.jetbrains.annotations.Nullable SimpleWaypoint sanitizeUploadedWaypoint(
-            SimpleWaypoint waypoint
+            SimpleWaypoint waypoint, UploadTarget target
     ) {
         if (waypoint == null) {
             return null;
         }
         try {
+            NamespacedId icon = target == UploadTarget.VOXELMAP && waypoint.icon() != null
+                    && WaypointIconPolicy.isKnownVoxelMapIcon(waypoint.icon()) ? waypoint.icon() : null;
             return new SimpleWaypoint(
+                    waypoint.name(),
                     waypoint.name(),
                     waypoint.initials(),
                     waypoint.pos(),
                     waypoint.rgb(),
                     waypoint.yaw(),
-                    waypoint.global()
+                    waypoint.global(),
+                    List.of(),
+                    "",
+                    icon
             );
         } catch (RuntimeException exception) {
             return null;
@@ -723,7 +733,8 @@ public final class UploadCoordinator<P> {
         if (waypoint == null) {
             return 1;
         }
-        return 32L + utf8Length(waypoint.name()) + utf8Length(waypoint.initials());
+        return 32L + utf8Length(waypoint.name()) + utf8Length(waypoint.initials())
+                + (waypoint.icon() == null ? 0 : utf8Length(waypoint.icon().toString()));
     }
 
     private static int utf8Length(String value) {

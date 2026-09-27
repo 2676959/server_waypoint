@@ -125,7 +125,7 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
         return Math.max(this.getShiftedX() + this.width - this.getSuggestionsX() - 2, maxTextWidth + 2);
     }
 
-    protected int getSuggestionsY() {
+    protected int getSuggestionsY(int suggestionHeight) {
         return this.getShiftedY() - 2 + this.backgroundHeight;
     }
 
@@ -502,9 +502,9 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
             maxTextWidth = Math.max(maxTextWidth, this.textRenderer.width(suggestion));
         }
         this.suggestionsX = this.getSuggestionsX();
-        this.suggestionsY = this.getSuggestionsY();
-        this.suggestionsWidth = this.getSuggestionsWidth(maxTextWidth);
         this.suggestionsHeight = Math.min(this.suggestions.size(), MAX_VISIBLE_SUGGESTIONS) * SUGGESTION_LINE_HEIGHT;
+        this.suggestionsY = this.getSuggestionsY(this.suggestionsHeight);
+        this.suggestionsWidth = this.getSuggestionsWidth(maxTextWidth);
     }
 
     private boolean isSuggestionListVisible() {

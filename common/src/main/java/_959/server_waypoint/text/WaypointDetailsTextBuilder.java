@@ -124,6 +124,12 @@ public final class WaypointDetailsTextBuilder {
                 .append(property("waypoint.details.source_list_identifier", text(listIdentifier), text("")))
                 .append(property("waypoint.details.dimension", WaypointTextHelper.dimensionNameWithColor(dimensionName), text("")))
                 .append(property("waypoint.details.initials", text(snapshot.initials()), editControl(canEdit, editWaypointSetSuggestionCmd(dimensionName, listIdentifier, identifier, "initials", snapshot.initials()))))
+                .append(property("waypoint.icon.label",
+                        snapshot.icon() == null ? text("—") : text(snapshot.icon().toString()),
+                        editControl(canEdit, editWaypointIconSuggestionCmd(
+                                dimensionName, listIdentifier, identifier, snapshot.icon()))
+                                .append(snapshot.icon() == null ? text("") : clearControl(canEdit,
+                                        editWaypointClearCmd(dimensionName, listIdentifier, identifier, "icon")))))
                 .append(property("waypoint.details.position", text(snapshot.pos().toShortString()), editControl(canEdit, editWaypointPositionCmd(dimensionName, listIdentifier, identifier, snapshot))))
                 .append(property(
                         "waypoint.details.color",

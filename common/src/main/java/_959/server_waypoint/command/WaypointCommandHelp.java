@@ -237,12 +237,12 @@ final class WaypointCommandHelp {
                         "waypoint.help.add.usage.quick"
                 ))
                 .append(usageEntry(
-                        "/wp add <position> <list-identifier> <waypoint-identifier> <initials> <color> <yaw> <global> [<keywords> [<description>]]",
+                        "/wp add <position> <list-identifier> <waypoint-identifier> <initials> <color> <yaw> <global> [<keywords> [<description>]] [icon <namespace:path>]",
                         ADD_COMMAND_PREFIX,
                         "waypoint.help.add.usage.current"
                 ))
                 .append(usageEntry(
-                        "/wp add <dimension> <list-identifier> <position> <waypoint-identifier> <initials> <color> <yaw> <global> [<keywords> [<description>]]",
+                        "/wp add <dimension> <list-identifier> <position> <waypoint-identifier> <initials> <color> <yaw> <global> [<keywords> [<description>]] [icon <namespace:path>]",
                         ADD_COMMAND_PREFIX,
                         "waypoint.help.add.usage.dimension"
                 ))
@@ -256,6 +256,7 @@ final class WaypointCommandHelp {
                 .append(argumentEntry("<global>", "waypoint.help.argument.global"))
                 .append(argumentEntry("<keywords>", "waypoint.help.argument.keywords"))
                 .append(argumentEntry("<description>", "waypoint.help.argument.description"))
+                .append(argumentEntry("<namespace:path>", "waypoint.help.argument.icon"))
                 .append(section("waypoint.help.section.examples"))
                 .append(exampleEntry(
                         "/wp add minecraft:overworld \"Home Bases\"",
@@ -282,6 +283,19 @@ final class WaypointCommandHelp {
                         exampleArgument("0", YAW_COLOR),
                         exampleArgument("true", GLOBAL_COLOR)
                 ))
+                .append(exampleEntry(
+                        "/wp add minecraft:overworld \"Home Bases\" ~ ~ ~ \"Gem Mine\" GM gold 0 true icon minecraft:diamond",
+                        "waypoint.help.add.example.icon",
+                        exampleArgument("minecraft:overworld", DIMENSION_COLOR),
+                        exampleArgument("\"Home Bases\"", LIST_COLOR),
+                        exampleArgument("~ ~ ~", POSITION_COLOR),
+                        exampleArgument("\"Gem Mine\"", WAYPOINT_COLOR),
+                        exampleArgument("GM", INITIALS_COLOR),
+                        exampleArgument("gold", COLOR_COLOR),
+                        exampleArgument("0", YAW_COLOR),
+                        exampleArgument("true", GLOBAL_COLOR),
+                        exampleArgument("minecraft:diamond", NEW_NAME_COLOR)
+                ))
                 .append(backButton());
     }
 
@@ -304,7 +318,17 @@ final class WaypointCommandHelp {
                         "waypoint.help.edit.usage"
                 ))
                 .append(usageEntry(
-                        "/wp edit waypoint <dimension> <list-identifier> <waypoint-identifier> clear <display-name|keywords|description>",
+                        "/wp edit waypoint <dimension> <list-identifier> <waypoint-identifier> set icon <namespace:path>",
+                        EDIT_COMMAND_PREFIX,
+                        "waypoint.help.edit.usage"
+                ))
+                .append(usageEntry(
+                        "/wp edit waypoint <dimension> <list-identifier> <waypoint-identifier> clear <display-name|keywords|description|icon>",
+                        EDIT_COMMAND_PREFIX,
+                        "waypoint.help.edit.usage"
+                ))
+                .append(usageEntry(
+                        "/wp edit waypoint <dimension> <list-identifier> <waypoint-identifier> clear icon",
                         EDIT_COMMAND_PREFIX,
                         "waypoint.help.edit.usage"
                 ))
@@ -314,6 +338,7 @@ final class WaypointCommandHelp {
                         "<list-identifier> / <waypoint-identifier>",
                         "waypoint.help.argument.names"
                 ))
+                .append(argumentEntry("<namespace:path>", "waypoint.help.argument.icon"))
                 .append(section("waypoint.help.section.examples"))
                 .append(exampleEntry(
                         "/wp edit waypoint minecraft:overworld \"Home Bases\" \"Main Home\" set identifier \"Mountain Home\"",
@@ -322,6 +347,14 @@ final class WaypointCommandHelp {
                         exampleArgument("\"Home Bases\"", LIST_COLOR),
                         exampleArgument("\"Main Home\"", WAYPOINT_COLOR),
                         exampleArgument("\"Mountain Home\"", NEW_NAME_COLOR)
+                ))
+                .append(exampleEntry(
+                        "/wp edit waypoint minecraft:overworld \"Home Bases\" \"Main Home\" set icon minecraft:diamond",
+                        "waypoint.help.edit.example.icon",
+                        exampleArgument("minecraft:overworld", DIMENSION_COLOR),
+                        exampleArgument("\"Home Bases\"", LIST_COLOR),
+                        exampleArgument("\"Main Home\"", WAYPOINT_COLOR),
+                        exampleArgument("minecraft:diamond", NEW_NAME_COLOR)
                 ))
                 .append(backButton());
     }

@@ -230,8 +230,11 @@ final class RemoteWaypointPanel {
             if (waypoint != null) {
                 WaypointRowRenderer.background(context, rowY, contentWidth, 20, waypoint.rgb(), hovered, key.equals(selected));
                 if (waypoint.global()) drawText(context, font, "*", indent + 6, textY, textColor);
-                int badgeWidth = WaypointRowRenderer.initials(context, font, waypoint.initials(), indent + 15, textY - 1,
-                        0xFF000000 | waypoint.rgb(), getSafeTextColor(waypoint.rgb()));
+                var resolvedIcon = _959.server_waypoint.common.client.gui.render.WaypointIconRenderer.resolve(waypoint.icon());
+                int badgeWidth = resolvedIcon.kind() == _959.server_waypoint.common.client.gui.render.WaypointIconRenderer.Kind.INITIALS
+                        ? WaypointRowRenderer.initials(context, font, waypoint.initials(), indent + 15, textY - 1,
+                                0xFF000000 | waypoint.rgb(), getSafeTextColor(waypoint.rgb()))
+                        : WaypointRowRenderer.icon(context, font, resolvedIcon, indent + 15, textY - 4, 16);
                 int nameX = indent + 18 + badgeWidth;
                 Component label = parseFormattedText(waypoint.displayName());
                 if (!grouped) label = label.copy().append(Component.literal(" · " + key.serverId().value() + " / "))

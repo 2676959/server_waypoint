@@ -11,6 +11,7 @@ import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.navigation.NavigationPlatform;
 import _959.server_waypoint.navigation.NavigationMethod;
 import _959.server_waypoint.navigation.NavigationMethodHandler;
@@ -50,6 +51,19 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UploadCoordinatorTest {
+    @Test
+    void mergePreservesExistingIconUnlessNativeUploadSelectsOne() {
+        SimpleWaypoint server = new SimpleWaypoint("home", "home", "H", new WaypointPos(1, 2, 3),
+                0xFFFFFF, 0, true, List.of(), "", NamespacedId.parse("minecraft:diamond"));
+        SimpleWaypoint xaero = new SimpleWaypoint("home", "H", new WaypointPos(1, 2, 3),
+                0xFFFFFF, 0, true);
+        SimpleWaypoint voxelmap = new SimpleWaypoint("home", "home", "H", new WaypointPos(1, 2, 3),
+                0xFFFFFF, 0, true, List.of(), "", NamespacedId.parse("voxelmap:star"));
+
+        assertEquals(server.icon(), UploadCoordinator.mergeXaeroProperties(server, xaero).icon());
+        assertEquals(voxelmap.icon(), UploadCoordinator.mergeXaeroProperties(server, voxelmap).icon());
+        assertFalse(UploadCoordinator.hasSameXaeroProperties(server, voxelmap));
+    }
     @TempDir
     private Path tempDir;
 

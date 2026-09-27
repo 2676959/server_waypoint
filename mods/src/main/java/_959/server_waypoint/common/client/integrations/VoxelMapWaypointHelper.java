@@ -122,6 +122,7 @@ public final class VoxelMapWaypointHelper {
                     | Math.round(waypoint.blue * 255.0F);
             SimpleWaypoint uploaded = new SimpleWaypoint(
                     waypointName,
+                    waypointName,
                     "",
                     new WaypointPos(
                             (int) Math.round(waypoint.x / coordinateScale),
@@ -130,7 +131,10 @@ public final class VoxelMapWaypointHelper {
                     ),
                     rgb,
                     0,
-                    false
+                    false,
+                    List.of(),
+                    "",
+                    VoxelMapIconIds.fromSuffix(waypoint.imageSuffix)
             );
             uploadedByList.computeIfAbsent(listName, ignored -> new ArrayList<>()).add(uploaded);
         }
@@ -244,7 +248,7 @@ public final class VoxelMapWaypointHelper {
                 ((rgb >> 16) & 0xFF) / 255.0F,
                 ((rgb >> 8) & 0xFF) / 255.0F,
                 (rgb & 0xFF) / 255.0F,
-                "",
+                VoxelMapIconIds.toSuffix(simpleWaypoint.icon()),
                 manager.getCurrentSubworldDescriptor(false),
                 dimensions
         );

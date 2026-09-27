@@ -21,7 +21,7 @@ public interface CatalogSource {
                     Map<String, RemoteWaypointSnapshot> waypoints = new HashMap<>();
                     list.simpleWaypoints().forEach(waypoint -> waypoints.put(waypoint.name(), new RemoteWaypointSnapshot(
                             waypoint.displayName(), waypoint.initials(), waypoint.pos(), waypoint.rgb(), waypoint.yaw(),
-                            waypoint.global(), waypoint.keywords(), waypoint.description())));
+                            waypoint.global(), waypoint.keywords(), waypoint.description(), waypoint.icon())));
                     // Publication assigns independent durable revisions, not the local int sync counter.
                     exported.put(list.name(), new RemoteListSnapshot(list.displayName(), new RemoteRevision(0), waypoints));
                 });

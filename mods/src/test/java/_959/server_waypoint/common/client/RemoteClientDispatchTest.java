@@ -34,7 +34,7 @@ class RemoteClientDispatchTest {
             var request = client.remoteCatalogs().poll();
             var id = new RemoteServerId("elsewhere");
             var waypoint = new RemoteWaypointSnapshot("local-marker", "R", new WaypointPos(1, 2, 3), 0, 0, false,
-                    List.of("k".repeat(60000)), "d".repeat(60000));
+                    List.of("k".repeat(60000)), "d".repeat(60000), null);
             var snapshot = new RemoteCatalogSnapshot(id, new RemoteRevision(9), Map.of("minecraft:overworld",
                     Map.of("local-marker", new RemoteListSnapshot("local-marker", new RemoteRevision(8), Map.of("Exact Name", waypoint)))), Instant.EPOCH);
             var message = new RemoteCatalogMessage(request.requestId(), RemoteCatalogState.AVAILABLE,

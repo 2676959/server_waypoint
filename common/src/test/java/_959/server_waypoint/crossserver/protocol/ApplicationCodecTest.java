@@ -2,6 +2,7 @@ package _959.server_waypoint.crossserver.protocol;
 
 import _959.server_waypoint.crossserver.*;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.NamespacedId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -15,6 +16,20 @@ import static _959.server_waypoint.crossserver.protocol.ApplicationMessage.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ApplicationCodecTest {
+    @Test
+    void catalogPreservesNativeIcon() {
+        RemoteWaypointSnapshot waypoint = new RemoteWaypointSnapshot("Star", "S",
+                new WaypointPos(1, 2, 3), 0x123456, 0, true, List.of(), "",
+                NamespacedId.parse("voxelmap:star"));
+        RemoteCatalogSnapshot snapshot = new RemoteCatalogSnapshot(new RemoteServerId("a"),
+                new RemoteRevision(1), Map.of("minecraft:overworld", Map.of("bases",
+                        new RemoteListSnapshot("Bases", new RemoteRevision(1), Map.of("star", waypoint)))),
+                Instant.EPOCH);
+
+        var decoded = CODEC.decodeCatalog(CODEC.encodeCatalog(snapshot), Instant.EPOCH);
+        assertEquals(NamespacedId.parse("voxelmap:star"), decoded.dimensions()
+                .get("minecraft:overworld").get("bases").waypoints().get("star").icon());
+    }
     private static final ApplicationCodec CODEC = new ApplicationCodec(ProtocolLimits.DEFAULT);
     private static final RemoteServerId SOURCE = new RemoteServerId("a");
     private static final RemoteServerId DESTINATION = new RemoteServerId("b");
@@ -192,20 +207,20 @@ class ApplicationCodecTest {
 
     @Test
     void rejectsMalformedWaypointRatherThanClampingValues() {
-        var waypoint = new RemoteWaypointSnapshot("", "", new WaypointPos(0, 0, 0), 0, 0, false, List.of(), "");
+        var waypoint = new RemoteWaypointSnapshot("", "", new WaypointPos(0, 0, 0), 0, 0, false, List.of(), "", null);
         byte[] bytes = CODEC.encodeCatalog(new RemoteCatalogSnapshot(SOURCE, REVISION,
                 Map.of("d", Map.of("l", new RemoteListSnapshot("", REVISION, Map.of("w", waypoint)))), Instant.EPOCH));
-        // Empty description and keyword count occupy the final 8 bytes; global precedes them.
+        // Empty description and keyword count precede the optional icon flag.
         byte[] global = bytes.clone();
-        global[global.length - 9] = 2;
+        global[global.length - 10] = 2;
         assertThrows(IllegalArgumentException.class, () -> CODEC.decodeCatalog(global, Instant.EPOCH));
         for (int yaw : new int[]{-181, 181, Integer.MAX_VALUE}) {
             byte[] bad = bytes.clone();
-            ByteBuffer.wrap(bad).putInt(bad.length - 13, yaw);
+            ByteBuffer.wrap(bad).putInt(bad.length - 14, yaw);
             assertThrows(IllegalArgumentException.class, () -> CODEC.decodeCatalog(bad, Instant.EPOCH));
         }
         byte[] rgb = bytes.clone();
-        ByteBuffer.wrap(rgb).putInt(rgb.length - 17, 0x1000000);
+        ByteBuffer.wrap(rgb).putInt(rgb.length - 18, 0x1000000);
         assertThrows(IllegalArgumentException.class, () -> CODEC.decodeCatalog(rgb, Instant.EPOCH));
     }
 
@@ -371,7 +386,7 @@ class ApplicationCodecTest {
 
     private static RemoteCatalogSnapshot catalog() {
         var waypoint = new RemoteWaypointSnapshot("Visible label", "😀", new WaypointPos(Integer.MIN_VALUE, 64, Integer.MAX_VALUE),
-                0xABCDEF, -180, true, List.of(" One ", "世界", " One "), "Description");
+                0xABCDEF, -180, true, List.of(" One ", "世界", " One "), "Description", null);
         var list = new RemoteListSnapshot("List label", new RemoteRevision(3), Map.of("Café", waypoint, "Cafe\u0301", waypoint));
         return new RemoteCatalogSnapshot(DESTINATION, REVISION, Map.of("世界", Map.of(" List ", list), "", Map.of()), Instant.EPOCH);
     }

@@ -9,6 +9,7 @@ import _959.server_waypoint.core.network.upload.UploadStatus;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.util.NamespacedId;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import org.junit.jupiter.api.Test;
 
@@ -18,8 +19,23 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class VoxelMapUploadTest {
+    @Test
+    void importsOnlyKnownNativeImages() {
+        Waypoint nativeImage = waypoint("Star", 1, 2, 3, true, 1, 1, 1);
+        nativeImage.imageSuffix = "star";
+        Waypoint unsafeImage = waypoint("Unsafe", 1, 2, 3, true, 1, 1, 1);
+        unsafeImage.imageSuffix = "../star";
+
+        var result = VoxelMapWaypointHelper.collectUploadDimension(
+                request("minecraft:overworld", null, null), "minecraft:overworld",
+                List.of(nativeImage, unsafeImage), ignored -> false, 1.0);
+        var imported = list(result, "VoxelMap").simpleWaypoints();
+        assertEquals(NamespacedId.parse("voxelmap:star"), imported.get(0).icon());
+        assertNull(imported.get(1).icon());
+    }
     @Test
     void collectsSyncedAndLocalWaypointsWithScaleAndColorConversion() {
         Waypoint local = waypoint("Local", 16, 70, -24, true, 0.5F, 0.25F, 1.0F);

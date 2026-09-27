@@ -26,14 +26,21 @@ import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.NamespacedId;
+import _959.server_waypoint.util.StringCommandBuilder;
 import _959.server_waypoint.navigation.NavigationPlatform;
 import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationSnapshot;
 import _959.server_waypoint.navigation.NavigationTarget;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
+import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
@@ -306,8 +313,13 @@ class CoreWaypointCommandListTest {
         assertTrue(helpText.contains(
                 "/wp add <dimension> <list-identifier> <position> <waypoint-identifier> <initials> <color> <yaw> <global>"
         ));
+        assertTrue(helpText.contains("[icon <namespace:path>]"));
+        assertTrue(helpText.contains("<namespace:path>"));
         assertTrue(suggestedCommands(help).contains(
                 "/wp add minecraft:overworld \"Home Bases\" ~ ~ ~ \"Main Home\" MH gold 0 true"
+        ));
+        assertTrue(suggestedCommands(help).contains(
+                "/wp add minecraft:overworld \"Home Bases\" ~ ~ ~ \"Gem Mine\" GM gold 0 true icon minecraft:diamond"
         ));
         assertTrue(translationKeys(help).containsAll(List.of(
                 "waypoint.help.add.title",
@@ -343,10 +355,15 @@ class CoreWaypointCommandListTest {
         String helpText = plainText(help);
         assertTrue(helpText.contains("/wp edit list <dimension> <list-identifier> set identifier <identifier>"));
         assertTrue(helpText.contains("/wp edit waypoint <dimension> <list-identifier> <waypoint-identifier> set <property> <value>"));
-        assertTrue(helpText.contains("clear <display-name|keywords|description>"));
+        assertTrue(helpText.contains("clear <display-name|keywords|description|icon>"));
+        assertTrue(helpText.contains("set icon <namespace:path>"));
+        assertTrue(helpText.contains("clear icon"));
         assertTrue(suggestedCommands(help).contains(
                 "/wp edit waypoint minecraft:overworld \"Home Bases\" \"Main Home\" "
                         + "set identifier \"Mountain Home\""
+        ));
+        assertTrue(suggestedCommands(help).contains(
+                "/wp edit waypoint minecraft:overworld \"Home Bases\" \"Main Home\" set icon minecraft:diamond"
         ));
         assertTrue(translationKeys(help).containsAll(List.of(
                 "waypoint.help.edit.title",
@@ -425,6 +442,84 @@ class CoreWaypointCommandListTest {
         assertNull(bases.getWaypointByName("duplicate"));
         assertEquals(1, this.sender.errors.size());
         assertTrue(this.sender.errors.get(0).toString().contains("argument.keywords.duplicate"));
+    }
+
+    @Test
+    void addSetAndClearIconThroughCommandTree() throws CommandSyntaxException {
+        this.dispatcher.execute(
+                "wp add overworld bases position icon-test I FFAA00 0 true \"\" \"\" icon minecraft:diamond",
+                this.source);
+        WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
+        assertEquals("minecraft:diamond", bases.getWaypointByName("icon-test").icon().toString());
+
+        this.dispatcher.execute("wp edit waypoint overworld bases icon-test set icon voxelmap:star", this.source);
+        assertEquals("voxelmap:star", bases.getWaypointByName("icon-test").icon().toString());
+
+        assertThrows(CommandSyntaxException.class, () -> this.dispatcher.execute(
+                "wp edit waypoint overworld bases icon-test set icon Minecraft:Diamond", this.source));
+        assertEquals("voxelmap:star", bases.getWaypointByName("icon-test").icon().toString());
+
+        this.dispatcher.execute("wp edit waypoint overworld bases icon-test clear icon", this.source);
+        assertNull(bases.getWaypointByName("icon-test").icon());
+    }
+
+    @Test
+    void addIconWorksWithBothFullFormsAndRejectsInvalidId() throws CommandSyntaxException {
+        this.dispatcher.execute("wp add position bases local-icon L FFAA00 0 true icon minecraft:diamond", this.source);
+        this.dispatcher.execute("wp add overworld bases position remote-icon R FFAA00 0 true \"home\" icon voxelmap:star", this.source);
+        assertThrows(CommandSyntaxException.class, () -> this.dispatcher.execute(
+                "wp add position bases invalid-icon I FFAA00 0 true icon Minecraft:Diamond", this.source));
+
+        WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
+        assertEquals("minecraft:diamond", bases.getWaypointByName("local-icon").icon().toString());
+        assertEquals("voxelmap:star", bases.getWaypointByName("remote-icon").icon().toString());
+        assertNull(bases.getWaypointByName("invalid-icon"));
+    }
+
+    @Test
+    void iconArgumentUsesPlatformParserAndCanonicalId() throws CommandSyntaxException {
+        this.dispatcher.execute("wp add position bases native-icon N FFAA00 0 true icon diamond", this.source);
+
+        WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
+        assertEquals("minecraft:diamond", bases.getWaypointByName("native-icon").icon().toString());
+    }
+
+    @Test
+    void generatedAddCommandCreatesWaypointWithIcon() throws CommandSyntaxException {
+        SimpleWaypoint waypoint = new SimpleWaypoint("generated-icon", "generated-icon", "G",
+                new WaypointPos(1, 64, 2), 0xFFFFFF, 0, true, List.of(), "",
+                NamespacedId.parse("minecraft:diamond"));
+        String generated = StringCommandBuilder.addCmd("overworld", "bases", waypoint, false);
+        assertTrue(generated.endsWith("icon minecraft:diamond"));
+        // This fixture accepts a single position token; production loaders parse three coordinates.
+        this.dispatcher.execute(generated.replace(" 1 64 2 ", " position "), this.source);
+
+        WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
+        assertEquals(waypoint.icon(), bases.getWaypointByName("generated-icon").icon());
+    }
+
+    @Test
+    void iconArgumentsSuggestAvailableItemAndVoxelMapIds() {
+        List<String> editSuggestions = this.dispatcher.getCompletionSuggestions(this.dispatcher.parse(
+                "wp edit waypoint overworld bases base0 set icon diam", this.source)).join().getList()
+                .stream().map(suggestion -> suggestion.getText()).toList();
+        assertTrue(editSuggestions.contains("minecraft:diamond"));
+        assertFalse(editSuggestions.contains("voxelmap:star"));
+
+        List<String> addSuggestions = this.dispatcher.getCompletionSuggestions(this.dispatcher.parse(
+                "wp add overworld bases position new N FFAA00 0 true icon voxelmap:st", this.source))
+                .join().getList().stream().map(suggestion -> suggestion.getText()).toList();
+        assertTrue(addSuggestions.contains("voxelmap:star"));
+
+        List<String> customSuggestions = this.dispatcher.getCompletionSuggestions(this.dispatcher.parse(
+                "wp add position bases new N FFAA00 0 true \"\" icon mod:blue", this.source))
+                .join().getList().stream().map(suggestion -> suggestion.getText()).toList();
+        assertTrue(customSuggestions.contains("mod:blue_gem"));
+
+        List<String> descriptionSuggestions = this.dispatcher.getCompletionSuggestions(this.dispatcher.parse(
+                "wp add position bases new N FFAA00 0 true \"\" \"\" icon voxelmap:st", this.source))
+                .join().getList().stream().map(suggestion -> suggestion.getText()).toList();
+        assertTrue(descriptionSuggestions.contains("voxelmap:star"));
     }
 
     @Test
@@ -1035,7 +1130,40 @@ class CoreWaypointCommandListTest {
     }
 
     private static final class TestWaypointCommand
-            extends CoreWaypointCommand<TestSource, String, Object, String, String> {
+            extends CoreWaypointCommand<TestSource, String, Object, String, String, NamespacedId> {
+        @Override
+        protected NamespacedId toIconId(NamespacedId iconArgument) {
+            return iconArgument;
+        }
+
+        @Override
+        protected CompletableFuture<Suggestions> suggestIconIds(CommandContext<TestSource> context,
+                                                                  SuggestionsBuilder builder) {
+            String remaining = builder.getRemaining();
+            for (String id : List.of("minecraft:diamond", "mod:blue_gem", "voxelmap:star")) {
+                if (id.startsWith(remaining) || !remaining.contains(":")
+                        && id.substring(id.indexOf(':') + 1).startsWith(remaining)) {
+                    builder.suggest(id);
+                }
+            }
+            return builder.buildFuture();
+        }
+
+        private static ArgumentType<NamespacedId> iconArgument() {
+            return reader -> {
+                int start = reader.getCursor();
+                while (reader.canRead() && !Character.isWhitespace(reader.peek())) {
+                    reader.skip();
+                }
+                String value = reader.getString().substring(start, reader.getCursor());
+                try {
+                    return NamespacedId.parse(value.contains(":") ? value : "minecraft:" + value);
+                } catch (IllegalArgumentException invalid) {
+                    throw new SimpleCommandExceptionType(() -> "Invalid icon ID").createWithContext(reader);
+                }
+            };
+        }
+
         @Override
         protected boolean isServerConsoleWithHighestPermission(TestSource source) {
             return false;
@@ -1093,7 +1221,8 @@ class CoreWaypointCommandListTest {
                             player -> new UUID(0L, 0L)
                     ),
                     StringArgumentType::string,
-                    StringArgumentType::string
+                    StringArgumentType::string,
+                    TestWaypointCommand::iconArgument
             );
         }
 

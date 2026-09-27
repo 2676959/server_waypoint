@@ -21,12 +21,16 @@ import _959.server_waypoint.navigation.NavigationSnapshot;
 import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.navigation.TextDisplayTransformation;
 import _959.server_waypoint.navigation.TextDisplayTransformationHandler;
+import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.util.StringCommandBuilder;
 import com.google.gson.JsonParseException;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
@@ -50,6 +54,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -693,7 +698,18 @@ class CoreWaypointCommandNavigationTest {
     }
 
     private static final class TestWaypointCommand
-            extends CoreWaypointCommand<TestSource, String, TestPlayer, String, String> {
+            extends CoreWaypointCommand<TestSource, String, TestPlayer, String, String, String> {
+        @Override
+        protected NamespacedId toIconId(String iconArgument) {
+            return NamespacedId.parse(iconArgument);
+        }
+
+        @Override
+        protected CompletableFuture<Suggestions> suggestIconIds(
+                CommandContext<TestSource> context, SuggestionsBuilder builder) {
+            return builder.buildFuture();
+        }
+
         @Override
         protected boolean isServerConsoleWithHighestPermission(TestSource source) {
             return false;
@@ -723,6 +739,7 @@ class CoreWaypointCommandNavigationTest {
                             navigationService,
                             TestPlayer::uuid
                     ),
+                    StringArgumentType::string,
                     StringArgumentType::string,
                     StringArgumentType::string
             );

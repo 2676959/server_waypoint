@@ -1,4 +1,7 @@
 {
+  "waypoint.icon.invalid": "ID de icono de punto de ruta no válido: %1$s",
+  "waypoint.icon.label": "Icono",
+  "waypoint.icon.clear": "Borrar",
   "button.initials.tp": "Haz clic para teletransportarte",
   "server_waypoint.list.added.xaeros": "La lista de waypoints \"%1$s\" se ha añadido correctamente al minimapa de Xaero",
   "server_waypoint.save.failed.xaeros": "El minimapa de Xaero no ha podido guardar los waypoints",

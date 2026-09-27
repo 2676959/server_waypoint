@@ -16,6 +16,7 @@ import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.util.WaypointInitials;
+import _959.server_waypoint.util.NamespacedId;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
@@ -24,6 +25,7 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
@@ -203,8 +205,7 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
                 changed(this.yaw, this.yawEditBox.getIntValue()),
                 changed(this.global, this.globalToggle.getState()),
                 PatchField.unchanged(),
-                PatchField.unchanged()
-        );
+                PatchField.unchanged(), this.iconPatch());
         long requestId = NEXT_REQUEST_ID.incrementAndGet();
         this.responseDeadline.begin(requestId, System.nanoTime());
         this.updateButton.active = false;
@@ -231,6 +232,12 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
             return PatchField.set(this.displayNameEditBox.getValue());
         }
         return PatchField.unchanged();
+    }
+
+    private PatchField<NamespacedId> iconPatch() {
+        NamespacedId selected = this.iconPicker.getSelectedIcon();
+        if (Objects.equals(this.originalIcon, selected)) return PatchField.unchanged();
+        return selected == null ? PatchField.clear() : PatchField.set(selected);
     }
 
     private void acceptResult(WaypointEditResultMessage result) {
@@ -271,6 +278,7 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
         this.zEditBox.setValue(Integer.toString(this.z));
         this.yawEditBox.setValue(Integer.toString(this.yaw));
         this.globalToggle.setState(this.global);
+        this.iconPicker.setSelectedIcon(this.originalIcon);
         this.clearFieldErrors();
     }
 

@@ -153,22 +153,22 @@ class RemoteCatalogSnapshotTest {
     void preservesCoordinatesAndRejectsInvalidPresentationNumbers() {
         assertEquals(new WaypointPos(Integer.MIN_VALUE, 0, Integer.MAX_VALUE), waypoint(List.of()).position());
         assertThrows(IllegalArgumentException.class, () -> new RemoteWaypointSnapshot("", "",
-                new WaypointPos(0, 0, 0), -1, 0, false, List.of(), ""));
+                new WaypointPos(0, 0, 0), -1, 0, false, List.of(), "", null));
         assertThrows(IllegalArgumentException.class, () -> new RemoteWaypointSnapshot("", "",
-                new WaypointPos(0, 0, 0), 0x1000000, 0, false, List.of(), ""));
+                new WaypointPos(0, 0, 0), 0x1000000, 0, false, List.of(), "", null));
         for (int yaw : new int[]{-181, 181}) {
             assertThrows(IllegalArgumentException.class, () -> new RemoteWaypointSnapshot("", "",
-                    new WaypointPos(0, 0, 0), 0, yaw, false, List.of(), ""));
+                    new WaypointPos(0, 0, 0), 0, yaw, false, List.of(), "", null));
         }
         for (int yaw : new int[]{-180, 180}) {
             assertEquals(yaw, new RemoteWaypointSnapshot("", "", new WaypointPos(0, 0, 0),
-                    0xFFFFFF, yaw, false, List.of(), "").yaw());
+                    0xFFFFFF, yaw, false, List.of(), "", null).yaw());
         }
     }
 
     private static RemoteWaypointSnapshot waypoint(List<String> keywords) {
         return new RemoteWaypointSnapshot("Display", "D", new WaypointPos(Integer.MIN_VALUE, 0, Integer.MAX_VALUE),
-                0xABCDEF, -180, true, keywords, "Description");
+                0xABCDEF, -180, true, keywords, "Description", null);
     }
 
     private static RemoteCatalogSnapshot snapshot(long revision, Map<String, Map<String, RemoteListSnapshot>> dimensions) {

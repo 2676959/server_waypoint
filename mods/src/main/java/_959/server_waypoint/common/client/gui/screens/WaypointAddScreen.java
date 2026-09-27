@@ -191,13 +191,15 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         sendCommand(addCmd(this.dimensionField.getValue(), this.listNameField.getValue(),
                 new SimpleWaypoint(
                         this.nameEditBox.getValue(),
+                        this.nameEditBox.getValue(),
                         this.initialsEditBox.getValue(),
                         resolvedPos,
                         this.colorPickerButton.getColor() & 0xFFFFFF,
                         this.yawEditBox.getIntValue(),
                         this.globalToggle.getState(),
                         List.of(),
-                        ""
+                        "",
+                        this.iconPicker.getSelectedIcon()
                 ), false));
     }
 

@@ -1,6 +1,6 @@
 package _959.server_waypoint.crossserver.protocol;
 
-/** Per-operation limits. Negotiation/configuration may lower these v1 hard maxima, never raise them. */
+/** Per-operation limits. Negotiation/configuration may lower these hard maxima, never raise them. */
 public record ProtocolLimits(int frameBytes, int catalogBytes, int chunkBytes, int stringBytes,
                              int collectionEntries, int objects, int allocationBytes) {
     public static final ProtocolLimits DEFAULT = new ProtocolLimits(
@@ -18,7 +18,7 @@ public record ProtocolLimits(int frameBytes, int catalogBytes, int chunkBytes, i
 
     private static void bounded(int value, int maximum) {
         if (value <= 0 || value > maximum) {
-            throw new IllegalArgumentException("Limit outside v1 range");
+            throw new IllegalArgumentException("Limit outside protocol range");
         }
     }
 }

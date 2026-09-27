@@ -155,6 +155,13 @@ public final class DrawContextHelper {
         context.fill(x, y + height - 1, x + width, y + height, color);
     }
 
+    /** Draws a popup row whose bottom border is supplied by the following control or row. */
+    public static void renderOutlineWithoutBottom(GuiGraphicsExtractor context, int x, int y, int width, int height, int color) {
+        context.fill(x, y, x + width, y + 1, color);
+        context.fill(x, y + 1, x + 1, y + height, color);
+        context.fill(x + width - 1, y + 1, x + width, y + height, color);
+    }
+
     private static void renderOutlineWithFill(GuiGraphicsExtractor context, int x, int y, int width, int height, int color) {
         context.fill(x, y, x + width, y + 1, color);
         context.fill(x, y + height - 1, x + width, y + height, color);

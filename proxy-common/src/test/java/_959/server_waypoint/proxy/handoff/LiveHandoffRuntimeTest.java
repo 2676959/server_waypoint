@@ -93,7 +93,7 @@ class LiveHandoffRuntimeTest {
             var endpoint = new TcpEndpoint("127.0.0.1", coordinator.status().port());
             byte[] pin = noise ? CanonicalKey.rawPublic(CanonicalKey.publicFromPrivate(cp)) : null;
             var data = Map.of("world", Map.of("list", new RemoteListSnapshot("list", new RemoteRevision(0), Map.of("target",
-                    new RemoteWaypointSnapshot("target", "T", new WaypointPos(1, 64, 2), 0, 0, false, List.of(), "")))));
+                    new RemoteWaypointSnapshot("target", "T", new WaypointPos(1, 64, 2), 0, 0, false, List.of(), "", null)))));
             AtomicLong revision = new AtomicLong();
             BackendAgent first = new BackendAgent(endpoint, mode, a, Set.of(), noise ? ak : null, pin, tcp, ProtocolLimits.DEFAULT, life);
             BackendAgent second = new BackendAgent(endpoint, mode, b, Set.of(), noise ? bk : null, pin, tcp, ProtocolLimits.DEFAULT, life,

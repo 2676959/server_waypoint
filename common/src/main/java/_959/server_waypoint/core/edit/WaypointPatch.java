@@ -1,6 +1,8 @@
 package _959.server_waypoint.core.edit;
 
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
+import _959.server_waypoint.util.NamespacedId;
 
 import java.util.List;
 import java.util.Objects;
@@ -14,7 +16,8 @@ public record WaypointPatch(
         PatchField<Integer> yaw,
         PatchField<Boolean> visibility,
         PatchField<List<String>> keywords,
-        PatchField<String> description
+        PatchField<String> description,
+        PatchField<NamespacedId> icon
 ) {
     public WaypointPatch {
         Objects.requireNonNull(identifier, "identifier");
@@ -26,6 +29,10 @@ public record WaypointPatch(
         Objects.requireNonNull(visibility, "visibility");
         Objects.requireNonNull(keywords, "keywords");
         Objects.requireNonNull(description, "description");
+        Objects.requireNonNull(icon, "icon");
+        if (icon.isSet()) {
+            icon = PatchField.set(WaypointIconPolicy.validate(icon.requiredValue()));
+        }
         if (keywords.isSet()) {
             keywords = PatchField.set(List.copyOf(keywords.requiredValue()));
         }
@@ -33,6 +40,7 @@ public record WaypointPatch(
 
     public static WaypointPatch empty() {
         return new WaypointPatch(
+                PatchField.unchanged(),
                 PatchField.unchanged(),
                 PatchField.unchanged(),
                 PatchField.unchanged(),

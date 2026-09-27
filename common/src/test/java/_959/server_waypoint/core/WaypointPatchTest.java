@@ -9,10 +9,12 @@ import _959.server_waypoint.core.network.MessageEncodingException;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.NamespacedId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,6 +28,54 @@ class WaypointPatchTest {
 
     @TempDir
     private Path tempDir;
+
+    @Test
+    void iconOnlyPatchUpdatesRevisionAndCanBeCleared() {
+        WaypointFilesManagerCore manager = populatedManager();
+        WaypointList list = list(manager, "source");
+        int revision = list.getSyncNum();
+        NamespacedId icon = NamespacedId.parse("minecraft:diamond");
+        WaypointPatch set = new WaypointPatch(
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.set(icon)
+        );
+        var changed = manager.updateWaypoint(EditTarget.waypoint(DIMENSION, "source", "original"),
+                revision, set, ignored -> {});
+        assertEquals(EditResultStatus.SUCCESS, changed.status());
+        assertEquals(revision + 1, changed.syncNum());
+        assertEquals(icon, changed.afterSnapshot().icon());
+        assertEquals("original", changed.afterSnapshot().name());
+
+        var cleared = manager.updateWaypoint(EditTarget.waypoint(DIMENSION, "source", "original"),
+                changed.syncNum(), new WaypointPatch(
+                        PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                        PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                        PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                        PatchField.clear()), ignored -> {});
+        assertEquals(EditResultStatus.SUCCESS, cleared.status());
+        assertNull(cleared.afterSnapshot().icon());
+    }
+
+    @Test
+    void iconOnlyPatchSurvivesSaveAndReload() throws IOException {
+        WaypointFilesManagerCore manager = populatedManager();
+        NamespacedId icon = NamespacedId.parse("minecraft:diamond");
+        WaypointPatch patch = new WaypointPatch(
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.set(icon));
+        var changed = manager.updateWaypoint(EditTarget.waypoint(DIMENSION, "source", "original"),
+                list(manager, "source").getSyncNum(), patch, ignored -> {});
+        assertEquals(EditResultStatus.SUCCESS, changed.status());
+
+        WaypointFileManager file = manager.getWaypointFileManager(DIMENSION);
+        file.saveDimension();
+        file.readDimension();
+        assertEquals(icon, file.getWaypointListByName("source").getWaypointByName("original").icon());
+    }
 
     @Test
     void addPreservesExactIdentifiersAndCreatesNoDisplayNameOverrides() {
@@ -60,8 +110,7 @@ class WaypointPatchTest {
                 PatchField.set(135),
                 PatchField.set(false),
                 PatchField.set(List.of("one", "two")),
-                PatchField.set("{\"text\":\"Description\"}")
-        );
+                PatchField.set("{\"text\":\"Description\"}"), PatchField.unchanged());
 
         var setResult = manager.updateWaypoint(
                 EditTarget.waypoint(DIMENSION, "source", "original"),
@@ -86,8 +135,7 @@ class WaypointPatchTest {
         WaypointPatch clearPatch = new WaypointPatch(
                 PatchField.unchanged(), PatchField.clear(), PatchField.unchanged(),
                 PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
-                PatchField.unchanged(), PatchField.clear(), PatchField.clear()
-        );
+                PatchField.unchanged(), PatchField.clear(), PatchField.clear(), PatchField.unchanged());
         var clearResult = manager.updateWaypoint(
                 EditTarget.waypoint(DIMENSION, "source", "renamed"),
                 setResult.syncNum(),
@@ -142,8 +190,7 @@ class WaypointPatchTest {
                 PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
                 PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
                 PatchField.unchanged(), PatchField.set(List.of("home", "HOME")),
-                PatchField.unchanged()
-        );
+                PatchField.unchanged(), PatchField.unchanged());
 
         var result = manager.updateWaypoint(
                 EditTarget.waypoint(DIMENSION, "source", "original"),
@@ -201,8 +248,7 @@ class WaypointPatchTest {
                 new WaypointPatch(
                         PatchField.unchanged(), PatchField.set(""), PatchField.unchanged(),
                         PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
-                        PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged()
-                ),
+                        PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged()),
                 ignored -> {
                 }
         );
@@ -254,8 +300,7 @@ class WaypointPatchTest {
         return new WaypointPatch(
                 PatchField.set(identifier), PatchField.unchanged(), PatchField.unchanged(),
                 PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
-                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged()
-        );
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged());
     }
 
     private static SimpleWaypoint waypoint(String identifier) {

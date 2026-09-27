@@ -134,7 +134,13 @@ public class StringCommandBuilder {
         sb.append(' ').append(rgbToNameOrHexCode(waypoint.rgb(), false));
         sb.append(' ').append(waypoint.yaw());
         sb.append(' ').append(waypoint.global());
-        appendExtraInfo(sb, waypoint);
+        if (waypoint.icon() == null) {
+            appendExtraInfo(sb, waypoint);
+        } else {
+            sb.append(' ').append(escapeArgument(String.join(", ", waypoint.keywords())));
+            sb.append(' ').append(escapeArgument(waypoint.description()));
+            sb.append(" icon ").append(waypoint.icon());
+        }
         return sb.toString();
     }
 
@@ -480,6 +486,17 @@ public class StringCommandBuilder {
                 + escapeArgument(listIdentifier) + ' ' + escapeArgument(waypointIdentifier)
                 + " set " + property + ' ';
         return suggestionWithValue(prefix, value);
+    }
+
+    public static String editWaypointIconSuggestionCmd(
+            String dimensionName,
+            String listIdentifier,
+            String waypointIdentifier,
+            @Nullable NamespacedId icon
+    ) {
+        return WAYPOINT_COMMAND_WITH_SLASH + " edit waypoint " + dimensionName + ' '
+                + escapeArgument(listIdentifier) + ' ' + escapeArgument(waypointIdentifier)
+                + " set icon " + (icon == null ? "" : icon.toString());
     }
 
     private static String suggestionWithValue(String prefix, String value) {

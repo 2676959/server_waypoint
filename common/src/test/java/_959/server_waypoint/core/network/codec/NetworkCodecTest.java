@@ -21,6 +21,7 @@ import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.NamespacedId;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.jupiter.api.Test;
@@ -178,6 +179,24 @@ class NetworkCodecTest {
     }
 
     @Test
+    void selectedIconAndIconPatchRoundTrip() {
+        SimpleWaypoint waypoint = new SimpleWaypoint("Home", "Home", "H",
+                new WaypointPos(1, 2, 3), 0x123456, 0, true, List.of(), "",
+                NamespacedId.parse("examplemod:gem"));
+        ByteBuf waypointBytes = Unpooled.buffer();
+        SimpleWaypointCodec.encode(waypointBytes, waypoint, encoding());
+        assertEquals(waypoint.icon(), SimpleWaypointCodec.decode(waypointBytes, decoding()).icon());
+
+        WaypointPatch patch = new WaypointPatch(PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                PatchField.unchanged(), PatchField.set(NamespacedId.parse("minecraft:diamond")));
+        ByteBuf patchBytes = Unpooled.buffer();
+        WaypointPatchCodec.encode(patchBytes, patch, encoding());
+        assertEquals(patch, WaypointPatchCodec.decode(patchBytes, decoding()));
+    }
+
+    @Test
     void logicalMessageCodecsRoundTripCanonicalSnapshots() {
         WaypointModificationMessage modification = new WaypointModificationMessage(
                 "minecraft:overworld",
@@ -204,8 +223,7 @@ class NetworkCodecTest {
                 PatchField.set(90),
                 PatchField.set(false),
                 PatchField.clear(),
-                PatchField.clear()
-        );
+                PatchField.clear(), PatchField.unchanged());
         WaypointEditRequestMessage request = new WaypointEditRequestMessage(
                 42L,
                 "minecraft:overworld",

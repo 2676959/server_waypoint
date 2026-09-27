@@ -29,4 +29,11 @@ public final class WaypointRowRenderer {
         drawText(context, font, initials, x + textX, y + 1, textColor, true);
         return width;
     }
+
+    public static int icon(GuiGraphicsExtractor context, Font font, WaypointIconRenderer.ResolvedIcon icon,
+                           int x, int y, int size) {
+        int badgeWidth = font.lineHeight;
+        WaypointIconRenderer.draw(context, icon, x + (badgeWidth - size) / 2, y, size);
+        return size;
+    }
 }

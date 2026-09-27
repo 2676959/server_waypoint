@@ -1,4 +1,7 @@
 {
+  "waypoint.icon.invalid": "無效的路徑點圖示 ID：%1$s",
+  "waypoint.icon.label": "圖示",
+  "waypoint.icon.clear": "清除",
   "button.initials.tp": "點擊傳送",
   "server_waypoint.list.added.xaeros": "路徑點清單「%1$s」已成功新增至Xaero's minimap",
   "server_waypoint.save.failed.xaeros": "路徑點儲存失敗",

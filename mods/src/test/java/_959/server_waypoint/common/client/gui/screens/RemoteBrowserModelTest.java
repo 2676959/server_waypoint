@@ -20,7 +20,7 @@ class RemoteBrowserModelTest {
     private final RemoteClientCatalogs cache = new RemoteClientCatalogs(clock::get);
     private final RemoteServerId a = new RemoteServerId("a"), b = new RemoteServerId("b");
     private final RemoteWaypointSnapshot waypoint = new RemoteWaypointSnapshot("Same label", "S",
-            new WaypointPos(1, 2, 3), 0x123456, 0, true, List.of("keyword"), "Description");
+            new WaypointPos(1, 2, 3), 0x123456, 0, true, List.of("keyword"), "Description", null);
 
     private CatalogReceiver.View view(RemoteServerId id, RemoteCatalogState state, long revision, String... names) {
         Map<String, RemoteWaypointSnapshot> values = new HashMap<>();

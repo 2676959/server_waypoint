@@ -17,7 +17,7 @@
 - Store `icon` as nullable `NamespacedId(namespace, path)`; `null` retains the initials marker. Serialize it as canonical `namespace:path` and reserve `voxelmap:` for native VoxelMap images.
 - Keep `NamespacedId` in `common/util`, independent of waypoint, GSON, Minecraft, and Bukkit policy. Convert with `ResourceLocationHelper.mcId(id.namespace(), id.path())` in `mods`, or `new NamespacedKey(id.namespace(), id.path())` in Paper only when Paper needs an icon key.
 - Keep the optional JSON field absent for unselected icons and accept old waypoint JSON with no field.
-- Do not add an old/new wire-format branch; bump changed protocols and deploy matching builds.
+- Do not add an old/new wire-format branch. Keep both protocol constants at 1 per the user's later direction and deploy matching builds for the changed payloads.
 - Read `docs/tips/gui/local-guide.md` before GUI edits and update it when the new picker/resolver API is added.
 - Do not commit unless the user separately requests a commit. At each task boundary, run `rtk git diff --check` and record test results; leave the worktree uncommitted.
 
@@ -158,7 +158,7 @@ NamespacedId newIcon = patch.icon().isClear() ? null
 ```
 
 Pass `newIcon` into `compareProperties` and `updateProperties`. Update all existing `new WaypointPatch(...)` call sites and static patch factories to supply `PatchField.unchanged()`; a changed constructor is internal code migration, not wire compatibility.
-- [ ] **Step 4: Implement Brigadier nodes and add builder.** Add the two icon edit nodes beside the existing `display-name` nodes. Extend the existing optional add-argument tree with a literal `icon` and one `StringArgumentType.word()` ID under each valid metadata endpoint; pass the parsed value to `addWaypointDirectly`. `StringCommandBuilder.addCmd` must insert empty keyword/description arguments before `icon` when they are omitted, using the existing `escapeArgument` method. Validate before mutation and return localized command feedback for an invalid ID; add translations to all six `mods/src/main/resources/assets/server_waypoint/lang/*.json` files.
+- [ ] **Step 4: Implement Brigadier nodes and add builder.** Add the two icon edit nodes beside the existing `display-name` nodes. Extend the existing optional add-argument tree with a literal `icon` and a leaf `StringArgumentType.greedyString()` ID under each valid metadata endpoint; `word()` cannot parse the colon in a namespaced ID. Accept quoted and unquoted IDs, then pass the parsed value to `addWaypointDirectly`. `StringCommandBuilder.addCmd` must insert empty keyword/description arguments before `icon` when they are omitted and emit the validated ID directly. Validate before mutation and return localized command feedback for an invalid ID; add the server feedback key to `common` languages and client translations to all six `mods/src/main/resources/assets/server_waypoint/lang/*.json` files.
 
 ```java
 NamespacedId icon = NamespacedId.parse(getString(context, VALUE_ARG));
@@ -190,7 +190,7 @@ if (waypoint.icon() != null) sb.append(" icon ").append(waypoint.icon());
 - [ ] **Step 1: Add failing packet tests.** Round-trip a `SimpleWaypoint` with `examplemod:gem`, one with `null`, and patches that set and clear an icon. Assert decoding an invalid/oversized icon fails through the existing packet rejection path rather than reaching rendering.
 - [ ] **Step 2: Add failing remote tests.** Round-trip a remote snapshot with `voxelmap:star`; assert `CatalogSource` carries the ID, the metadata fingerprint changes on an icon-only edit, and a remote catalog with many maximum-length IDs respects the configured byte limit.
 - [ ] **Step 3: Run the targeted tests.** Run `rtk proxy ./gradlew :common:test --tests _959.server_waypoint.core.network.codec.NetworkCodecTest --tests _959.server_waypoint.crossserver.protocol.ApplicationCodecTest --tests _959.server_waypoint.crossserver.catalog.CatalogSourceTest`; expect failures for the missing field.
-- [ ] **Step 4: Update codecs and protocol constants.** Append the optional icon to `SimpleWaypointCodec` and `WaypointPatchCodec` in the same order on encode/decode. Add the field to `RemoteWaypointSnapshot`, `CatalogSource`, and `ApplicationCodec` writer/reader; the remote snapshot constructor calls `WaypointIconPolicy.validate(icon)`. Include icon bytes in all related limits and fingerprints. Increment `ProtocolVersion.PROTOCOL_VERSION` and `CrossServerProtocol.PROTOCOL_VERSION` because payloads change, then update exact-value tests/docs that assert those numbers.
+- [ ] **Step 4: Update codecs and protocol constants.** Append the optional icon to `SimpleWaypointCodec` and `WaypointPatchCodec` in the same order on encode/decode. Add the field to `RemoteWaypointSnapshot`, `CatalogSource`, and `ApplicationCodec` writer/reader; the remote snapshot constructor calls `WaypointIconPolicy.validate(icon)`. Include icon bytes in all related limits and fingerprints. Keep `ProtocolVersion.PROTOCOL_VERSION` and `CrossServerProtocol.PROTOCOL_VERSION` at 1 per the user's later direction, and update exact-value tests/docs accordingly. Deploy matching builds because the payload layout changed without a version change.
 
 ```java
 NamespacedId icon = snapshot.icon();

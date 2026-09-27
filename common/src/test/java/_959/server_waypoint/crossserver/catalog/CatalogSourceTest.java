@@ -2,14 +2,50 @@ package _959.server_waypoint.crossserver.catalog;
 
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.waypoint.*;
+import _959.server_waypoint.util.NamespacedId;
+import _959.server_waypoint.core.edit.EditTarget;
+import _959.server_waypoint.core.edit.PatchField;
+import _959.server_waypoint.core.edit.WaypointPatch;
+import _959.server_waypoint.crossserver.RemoteCatalogSnapshot;
+import _959.server_waypoint.crossserver.RemoteRevision;
+import _959.server_waypoint.crossserver.RemoteServerId;
+import _959.server_waypoint.crossserver.protocol.ApplicationCodec;
+import _959.server_waypoint.crossserver.protocol.ProtocolLimits;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CatalogSourceTest {
     @TempDir Path temporary;
+    @Test void captureAndEncodingChangeOnIconOnlyEdit() throws Exception {
+        WaypointFilesManagerCore manager = new WaypointFilesManagerCore(temporary);
+        SimpleWaypoint waypoint = new SimpleWaypoint("name", "N", new WaypointPos(1, 2, 3), 0, 0, false);
+        manager.addWaypoint("dimension", "list", waypoint, ignored -> { });
+        CatalogSource source = CatalogSource.fromManager(manager,
+                new CatalogSelection(false, Map.of("dimension", Set.of("list"))), 100);
+        var before = source.capture();
+        assertNull(before.get("dimension").get("list").waypoints().get("name").icon());
+
+        manager.updateWaypoint(EditTarget.waypoint("dimension", "list", "name"), null,
+                new WaypointPatch(PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                        PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                        PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                        PatchField.set(NamespacedId.parse("voxelmap:star"))), ignored -> { });
+        var after = source.capture();
+        assertEquals(NamespacedId.parse("voxelmap:star"),
+                after.get("dimension").get("list").waypoints().get("name").icon());
+        assertNotEquals(before, after);
+        ApplicationCodec codec = new ApplicationCodec(ProtocolLimits.DEFAULT);
+        RemoteServerId server = new RemoteServerId("test");
+        byte[] previousBytes = codec.encodeCatalog(new RemoteCatalogSnapshot(server,
+                new RemoteRevision(1), before, Instant.EPOCH));
+        byte[] changedBytes = codec.encodeCatalog(new RemoteCatalogSnapshot(server,
+                new RemoteRevision(1), after, Instant.EPOCH));
+        assertFalse(Arrays.equals(previousBytes, changedBytes));
+    }
     @Test void detachedCaptureFiltersExactPublicSelectionAndPreservesIdentity() throws Exception {
         WaypointFilesManagerCore manager = new WaypointFilesManagerCore(temporary);
         manager.addWaypoint("dimension", "public", new SimpleWaypoint("identity", "Display", "I", new WaypointPos(1,2,3),

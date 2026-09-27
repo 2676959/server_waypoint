@@ -3,6 +3,7 @@ package _959.server_waypoint.text;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.NamespacedId;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WaypointDetailsTextBuilderTest {
     @Test
@@ -77,6 +79,55 @@ class WaypointDetailsTextBuilderTest {
         assertFalse(hasEffectiveClickEvent(details, "waypoint.details.display_name"));
         assertEquals(TextColor.color(0xFFAA00), requireText(details, "■").color());
         assertEquals(NamedTextColor.WHITE, requireText(details, "#FFAA00").color());
+    }
+
+    @Test
+    void waypointIconHasEditableValueAndClearAction() {
+        SimpleWaypoint waypoint = new SimpleWaypoint("home", "Home", "H",
+                new WaypointPos(1, 64, 2), 0xFFAA00, 0, true, List.of(), "",
+                NamespacedId.parse("minecraft:diamond"));
+        WaypointList list = new WaypointList("bases", 1, List.of(waypoint));
+
+        Component editable = WaypointDetailsTextBuilder.waypointDetails(
+                "minecraft:overworld", list, waypoint, true, true, true, true);
+        assertTrue(findTranslation(editable, "waypoint.icon.label").isPresent());
+        assertTrue(suggestedCommands(editable).contains(
+                "/wp edit waypoint minecraft:overworld bases home set icon minecraft:diamond"));
+        assertTrue(suggestedCommands(editable).contains(
+                "/wp edit waypoint minecraft:overworld bases home clear icon"));
+        assertFalse(hasEffectiveClickEvent(editable, "waypoint.icon.label"));
+
+        Component readOnly = WaypointDetailsTextBuilder.waypointDetails(
+                "minecraft:overworld", list, waypoint, false, true, true, true);
+        assertFalse(suggestedCommands(readOnly).stream().anyMatch(command -> command.contains(" icon")));
+    }
+
+    @Test
+    void unselectedIconOffersSetCommandWithoutClear() {
+        SimpleWaypoint waypoint = new SimpleWaypoint("home", "H", new WaypointPos(1, 64, 2),
+                0xFFAA00, 0, true);
+        Component details = WaypointDetailsTextBuilder.waypointDetails("minecraft:overworld",
+                new WaypointList("bases", 1, List.of(waypoint)), waypoint, true, true, true, true);
+
+        assertTrue(suggestedCommands(details).contains(
+                "/wp edit waypoint minecraft:overworld bases home set icon "));
+        assertFalse(suggestedCommands(details).stream().anyMatch(command -> command.endsWith(" clear icon")));
+    }
+
+    private static List<String> suggestedCommands(Component component) {
+        List<String> commands = new ArrayList<>();
+        collectSuggestedCommands(component, commands);
+        return commands;
+    }
+
+    private static void collectSuggestedCommands(Component component, List<String> commands) {
+        ClickEvent clickEvent = component.clickEvent();
+        if (clickEvent != null && clickEvent.action() == ClickEvent.Action.SUGGEST_COMMAND) {
+            commands.add(clickEvent.value());
+        }
+        for (Component child : component.children()) {
+            collectSuggestedCommands(child, commands);
+        }
     }
 
     private static List<String> displayNameLineOrder(Component component) {

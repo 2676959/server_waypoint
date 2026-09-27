@@ -5,6 +5,7 @@ import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import com.mojang.blaze3d.platform.InputConstants;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -14,6 +15,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutlineWithoutBottom;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutlineWithoutTop;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
@@ -55,10 +57,11 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
     /** Replaces popup choices without changing the current text or invoking its callback. */
     public void setValues(List<String> values) {
         this.values = Objects.requireNonNull(values).stream().distinct().toList();
-        this.clearMenuItems();
+        List<AbstractMenuItem> items = new ArrayList<>(this.values.size());
         for (String option : this.values) {
-            this.addMenuItem(new TextMenuItem(option, this.width, this.height, this.font));
+            items.add(new TextMenuItem(option, this.width, this.height, this.font));
         }
+        this.replaceMenuItems(items);
         this.input.refreshSuggestions();
     }
 
@@ -223,7 +226,7 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
                 9, this.height, mouseX, mouseY, deltaTicks);
     }
 
-    private static void drawSurface(GuiGraphicsExtractor context, ShiftableClickableWidget widget, boolean popup) {
+    private void drawSurface(GuiGraphicsExtractor context, ShiftableClickableWidget widget, boolean popup) {
         int color = popup && !widget.isHovered() && !widget.isFocused()
                 ? WidgetThemeManager.getColor(WidgetThemeVariable.POPUP_BACKGROUND)
                 : WidgetThemeState.controlBackground(widget.active, widget.isHovered() || widget.isFocused());
@@ -234,8 +237,12 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
         int border = WidgetThemeState.border(widget.active, widget.isFocused(), widget.isHovered());
         context.fill(x, y, right, bottom, color);
         if (popup) {
-            // The preceding control/row owns the shared horizontal border.
-            renderOutlineWithoutTop(context, x, y, widget.getWidth(), widget.getHeight(), border);
+            if (this.getExpansionDirection() == LayoutFlow.Direction.REVERSE) {
+                renderOutlineWithoutBottom(context, x, y, widget.getWidth(), widget.getHeight(), border);
+            } else {
+                // The preceding control/row owns the shared horizontal border.
+                renderOutlineWithoutTop(context, x, y, widget.getWidth(), widget.getHeight(), border);
+            }
         } else {
             renderOutline(context, x, y, widget.getWidth(), widget.getHeight(), border);
         }
@@ -270,8 +277,10 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
         }
 
         @Override
-        protected int getSuggestionsY() {
-            return ComboBoxWidget.this.getY() + ComboBoxWidget.this.getHeight();
+        protected int getSuggestionsY(int suggestionHeight) {
+            return ComboBoxWidget.this.getExpansionDirection() == LayoutFlow.Direction.REVERSE
+                    ? ComboBoxWidget.this.getY() - suggestionHeight
+                    : ComboBoxWidget.this.getY() + ComboBoxWidget.this.getHeight();
         }
 
     }

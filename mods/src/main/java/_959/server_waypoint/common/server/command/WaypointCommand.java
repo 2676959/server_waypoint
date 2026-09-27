@@ -13,10 +13,22 @@ import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.mixin.CommandSourceStackAccessor;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
+import _959.server_waypoint.util.NamespacedId;
+import _959.server_waypoint.common.util.ResourceLocationHelper;
 
 import com.mojang.brigadier.Message;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.kyori.adventure.text.Component;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.SharedSuggestionProvider;
+//? if >= 1.21.11 {
+import net.minecraft.commands.arguments.IdentifierArgument;
+//?} else {
+/*import net.minecraft.commands.arguments.ResourceLocationArgument;
+*///?}
 //? if >= 1.21.11 {
 import net.minecraft.server.permissions.Permission;
 import net.minecraft.server.permissions.PermissionLevel;
@@ -26,24 +38,50 @@ import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.coordinates.Coordinates;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
 //? if >= 1.21.2
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, ServerPlayer,
     //$ resource_location_type_swap
     Identifier
-    , Coordinates> {
+    , Coordinates,
+    //$ resource_location_type_swap
+    Identifier
+    > {
+    @Override
+    protected NamespacedId toIconId(
+            //$ resource_location_type_swap
+            Identifier
+            iconArgument) {
+        return new NamespacedId(iconArgument.getNamespace(), iconArgument.getPath());
+    }
+
+    @Override
+    protected CompletableFuture<Suggestions> suggestIconIds(CommandContext<CommandSourceStack> context,
+                                                               SuggestionsBuilder builder) {
+        var itemIds = BuiltInRegistries.ITEM.keySet().stream()
+                .filter(id -> BuiltInRegistries.ITEM.getOptional(id).orElse(Items.AIR) != Items.AIR);
+        var voxelMapIds = Stream.concat(
+                Stream.of(ResourceLocationHelper.mcId("voxelmap", "waypoint")),
+                WaypointIconPolicy.voxelMapSuffixes().stream().map(suffix -> ResourceLocationHelper.mcId("voxelmap", suffix)));
+        return SharedSuggestionProvider.suggestResource(Stream.concat(itemIds, voxelMapIds), builder);
+    }
+
     public WaypointCommand(
             WaypointServerMod waypointServer,
             PlatformMessageSender<CommandSourceStack, ServerPlayer> networkAdapter,
@@ -57,7 +95,12 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
                 waypointServer.navigation().service(),
                 uploadCoordinator,
                 DimensionArgument::dimension,
-                BlockPosArgument::blockPos
+                BlockPosArgument::blockPos,
+                //? if >= 1.21.11 {
+                IdentifierArgument::id
+                //?} else {
+                /*ResourceLocationArgument::id
+                *///?}
         );
     }
 

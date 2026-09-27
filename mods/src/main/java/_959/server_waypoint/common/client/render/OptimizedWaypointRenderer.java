@@ -2,6 +2,7 @@
 package _959.server_waypoint.common.client.render;
 
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
+import _959.server_waypoint.common.client.gui.render.WaypointIconRenderer;
 import _959.server_waypoint.common.util.MathHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
@@ -76,6 +77,7 @@ public final class OptimizedWaypointRenderer {
     private static int[] fgColor;
     private static Component[] names;
     private static String[] initials;
+    private static WaypointIconRenderer.ResolvedIcon[] icons;
     private static float[] nameTextWidth;
     private static float[] nameTextBgWidth;
     private static float[] initialsTextWidth;
@@ -121,6 +123,7 @@ public final class OptimizedWaypointRenderer {
         int fgColor;
         Component name;
         String initials;
+        WaypointIconRenderer.ResolvedIcon icon;
         SimpleWaypoint waypoint;
         float initialsWidth;
         float nameWidth;
@@ -138,6 +141,7 @@ public final class OptimizedWaypointRenderer {
         float[] bulkInitialsWidth;
         float[] bulkInitialsBgWidth;
         boolean[] bulkLocal;
+        WaypointIconRenderer.ResolvedIcon[] bulkIcons;
     }
 
     // =========================================================
@@ -157,6 +161,7 @@ public final class OptimizedWaypointRenderer {
         fgColor = new int[MAX_WAYPOINTS];
         names = new Component[MAX_WAYPOINTS];
         initials = new String[MAX_WAYPOINTS];
+        icons = new WaypointIconRenderer.ResolvedIcon[MAX_WAYPOINTS];
         nameTextWidth = new float[MAX_WAYPOINTS];
         nameTextBgWidth = new float[MAX_WAYPOINTS];
         initialsTextWidth = new float[MAX_WAYPOINTS];
@@ -243,6 +248,7 @@ public final class OptimizedWaypointRenderer {
         float[] nameBgWidth = new float[estimatedSize];
         float[] initialsBgWidth = new float[estimatedSize];
         boolean[] locals = new boolean[estimatedSize];
+        WaypointIconRenderer.ResolvedIcon[] resolvedIcons = new WaypointIconRenderer.ResolvedIcon[estimatedSize];
 
         int index = 0;
         for (WaypointList list : lists) {
@@ -250,7 +256,7 @@ public final class OptimizedWaypointRenderer {
             if (!list.isShow()) continue;
 
             for (SimpleWaypoint wp : list.simpleWaypoints()) {
-                if (generateBulkData(wps, renderIds, fgColors, nameWidth, initialsWidth, nameBgWidth, initialsBgWidth, locals, index, wp)) {
+                if (generateBulkData(wps, renderIds, fgColors, nameWidth, initialsWidth, nameBgWidth, initialsBgWidth, locals, resolvedIcons, index, wp)) {
                     index++;
                 }
             }
@@ -258,7 +264,7 @@ public final class OptimizedWaypointRenderer {
 
         if (index == 0) return;
 
-        sendBulkData(wps, renderIds, index, fgColors, nameWidth, initialsWidth, nameBgWidth, initialsBgWidth, locals);
+        sendBulkData(wps, renderIds, index, fgColors, nameWidth, initialsWidth, nameBgWidth, initialsBgWidth, locals, resolvedIcons);
     }
 
     /**
@@ -285,18 +291,19 @@ public final class OptimizedWaypointRenderer {
         float[] nameBgWith = new float[size];
         float[] initialsBgWidth = new float[size];
         boolean[] locals = new boolean[size];
+        WaypointIconRenderer.ResolvedIcon[] resolvedIcons = new WaypointIconRenderer.ResolvedIcon[size];
 
         int index = 0;
         for (int i = 0; i < size; i++) {
             SimpleWaypoint wp = newWaypoints.get(i);
-            if (generateBulkData(bulkData, renderIds, fgColor, nameWidth, initialsWidth, nameBgWith, initialsBgWidth, locals, index, wp)) {
+            if (generateBulkData(bulkData, renderIds, fgColor, nameWidth, initialsWidth, nameBgWith, initialsBgWidth, locals, resolvedIcons, index, wp)) {
                 index++;
             }
         }
-        sendBulkData(bulkData, renderIds, index, fgColor, nameWidth, initialsWidth, nameBgWith, initialsBgWidth, locals);
+        sendBulkData(bulkData, renderIds, index, fgColor, nameWidth, initialsWidth, nameBgWith, initialsBgWidth, locals, resolvedIcons);
     }
 
-    private static boolean generateBulkData(SimpleWaypoint[] bulkData, int[] renderIds, int[] fgColor, float[] nameWidth, float[] initialsWidth, float[] nameBgWith, float[] initialsBgWidth, boolean[] locals, int i, SimpleWaypoint wp) {
+    private static boolean generateBulkData(SimpleWaypoint[] bulkData, int[] renderIds, int[] fgColor, float[] nameWidth, float[] initialsWidth, float[] nameBgWith, float[] initialsBgWidth, boolean[] locals, WaypointIconRenderer.ResolvedIcon[] resolvedIcons, int i, SimpleWaypoint wp) {
         if (wp.renderId != -1 || !assignRenderId(wp)) {
             return false;
         }
@@ -310,10 +317,11 @@ public final class OptimizedWaypointRenderer {
         nameBgWith[i] = getTextBgWidth(name);
         initialsBgWidth[i] = getTextBgWidth(initials1);
         locals[i] = !wp.global();
+        resolvedIcons[i] = WaypointIconRenderer.resolve(wp.icon());
         return true;
     }
 
-    private static void sendBulkData(SimpleWaypoint[] bulkData, int[] renderIds, int size, int[] fgColor, float[] nameWidth, float[] initialsWidth, float[] nameBgWith, float[] initialsBgWidth, boolean[] locals) {
+    private static void sendBulkData(SimpleWaypoint[] bulkData, int[] renderIds, int size, int[] fgColor, float[] nameWidth, float[] initialsWidth, float[] nameBgWith, float[] initialsBgWidth, boolean[] locals, WaypointIconRenderer.ResolvedIcon[] resolvedIcons) {
         if (size == 0) return;
         WaypointRendererCommand cmd = obtainCommand();
         clearCommandReferences(cmd);
@@ -327,6 +335,7 @@ public final class OptimizedWaypointRenderer {
         cmd.bulkNameBgWidth = nameBgWith;
         cmd.bulkInitialsBgWidth = initialsBgWidth;
         cmd.bulkLocal = locals;
+        cmd.bulkIcons = resolvedIcons;
         offerCommand(cmd);
     }
 
@@ -441,12 +450,14 @@ public final class OptimizedWaypointRenderer {
         cmd.bulkInitialsBgWidth = null;
         cmd.bulkNameBgWidth = null;
         cmd.bulkLocal = null;
+        cmd.bulkIcons = null;
     }
 
     private static void cleanCommandWaypointData(WaypointRendererCommand cmd) {
         cmd.waypoint = null;
         cmd.name = null;
         cmd.initials = null;
+        cmd.icon = null;
     }
 
     private static void clearCommandReferences(WaypointRendererCommand cmd) {
@@ -474,6 +485,7 @@ public final class OptimizedWaypointRenderer {
         cmd.fgColor = getSafeTextColor(color);
         cmd.name = parseFormattedText(name);
         cmd.initials = initials;
+        cmd.icon = WaypointIconRenderer.resolve(waypoint == null ? null : waypoint.icon());
         cmd.initialsWidth = getTextWidth(initials);
         cmd.nameWidth = getTextWidth(cmd.name);
         cmd.initialsBgWidth = getTextBgWidth(initials);
@@ -640,11 +652,20 @@ public final class OptimizedWaypointRenderer {
             int visibleSlot = unpackVisibleSlot(visibleDepthSortKey[sortedIndex]);
             int waypointIndex = visibleIndex[visibleSlot];
             float iconScale = visibleIconScale[visibleSlot];
-            float bgWidth = initialsTextBgWidth[waypointIndex];
+            WaypointIconRenderer.ResolvedIcon icon = icons[waypointIndex];
+            float bgWidth = icon.kind() == WaypointIconRenderer.Kind.INITIALS
+                    ? initialsTextBgWidth[waypointIndex] : 16;
             float left = getBoxLeft(visibleWinX[visibleSlot], bgWidth, iconScale);
-            float top = visibleWinY[visibleSlot] - textBgHeight * iconScale * 0.5F;
+            float top = visibleWinY[visibleSlot] - (icon.kind() == WaypointIconRenderer.Kind.INITIALS
+                    ? textBgHeight : 16) * iconScale * 0.5F;
 
-            drawTextBoxAt(context, initials[waypointIndex], left, top, iconScale, initialsTextWidth[waypointIndex], bgWidth, WAYPOINT_BG_ALPHA_MASK | bgColor[waypointIndex], fgColor[waypointIndex]);
+            if (icon.kind() == WaypointIconRenderer.Kind.INITIALS) {
+                drawTextBoxAt(context, initials[waypointIndex], left, top, iconScale,
+                        initialsTextWidth[waypointIndex], bgWidth,
+                        WAYPOINT_BG_ALPHA_MASK | bgColor[waypointIndex], fgColor[waypointIndex]);
+            } else {
+                WaypointIconRenderer.drawScaled(context, icon, left, top, iconScale);
+            }
         }
     }
 
@@ -785,7 +806,7 @@ public final class OptimizedWaypointRenderer {
     private static void processCommand(WaypointRendererCommand cmd) {
         switch (cmd.type) {
             case ADD:
-                addInternal(cmd.waypoint, cmd.renderId, cmd.x, cmd.y, cmd.z, cmd.bgColor, cmd.fgColor, cmd.name, cmd.initials, cmd.nameWidth, cmd.initialsWidth, cmd.nameBgWidth, cmd.initialsBgWidth, cmd.local);
+                addInternal(cmd.waypoint, cmd.renderId, cmd.x, cmd.y, cmd.z, cmd.bgColor, cmd.fgColor, cmd.name, cmd.initials, cmd.nameWidth, cmd.initialsWidth, cmd.nameBgWidth, cmd.initialsBgWidth, cmd.local, cmd.icon);
                 break;
             case REMOVE:
                 removeInternal(cmd.renderId);
@@ -802,6 +823,7 @@ public final class OptimizedWaypointRenderer {
                     fgColor[idx] = cmd.fgColor;
                     names[idx] = cmd.name;
                     initials[idx] = cmd.initials;
+                    icons[idx] = cmd.icon;
                     nameTextWidth[idx] = cmd.nameWidth;
                     initialsTextWidth[idx] = cmd.initialsWidth;
                     nameTextBgWidth[idx] = cmd.nameBgWidth;
@@ -816,7 +838,7 @@ public final class OptimizedWaypointRenderer {
                 if (cmd.bulkWaypoints != null) {
                     for (int i = 0; i < cmd.bulkSize; i++) {
                         SimpleWaypoint wp = cmd.bulkWaypoints[i];
-                        addInternal(wp, cmd.bulkIds[i], getWaypointX(wp), getWaypointY(wp), getWaypointZ(wp), wp.rgb(), cmd.bulkFgColor[i], parseFormattedText(wp.displayName()), wp.initials(), cmd.bulkNameWidth[i], cmd.bulkInitialsWidth[i], cmd.bulkNameBgWidth[i], cmd.bulkInitialsBgWidth[i], cmd.bulkLocal[i]);
+                        addInternal(wp, cmd.bulkIds[i], getWaypointX(wp), getWaypointY(wp), getWaypointZ(wp), wp.rgb(), cmd.bulkFgColor[i], parseFormattedText(wp.displayName()), wp.initials(), cmd.bulkNameWidth[i], cmd.bulkInitialsWidth[i], cmd.bulkNameBgWidth[i], cmd.bulkInitialsBgWidth[i], cmd.bulkLocal[i], cmd.bulkIcons[i]);
                     }
                 }
                 break;
@@ -832,7 +854,7 @@ public final class OptimizedWaypointRenderer {
         }
     }
 
-    private static void addInternal(SimpleWaypoint waypoint, int id, double x, double y, double z, int bg_color, int fg_color, Component name, String initial, float nameWidth, float initialsWidth, float nameBgWidth, float initialsBgWidth, boolean isLocal) {
+    private static void addInternal(SimpleWaypoint waypoint, int id, double x, double y, double z, int bg_color, int fg_color, Component name, String initial, float nameWidth, float initialsWidth, float nameBgWidth, float initialsBgWidth, boolean isLocal, WaypointIconRenderer.ResolvedIcon icon) {
         if (waypoint != null && waypoint.renderId != id) return;
         if (id < 0 || id >= MAX_RENDER_ID) {
             releaseRenderId(waypoint, id);
@@ -859,6 +881,7 @@ public final class OptimizedWaypointRenderer {
         fgColor[i] = fg_color;
         names[i] = name;
         initials[i] = initial;
+        icons[i] = icon;
         initialsTextWidth[i] = initialsWidth;
         nameTextWidth[i] = nameWidth;
         initialsTextBgWidth[i] = initialsBgWidth;
@@ -887,6 +910,7 @@ public final class OptimizedWaypointRenderer {
             fgColor[indexToRemove] = fgColor[lastIndex];
             names[indexToRemove] = names[lastIndex];
             initials[indexToRemove] = initials[lastIndex];
+            icons[indexToRemove] = icons[lastIndex];
             initialsTextWidth[indexToRemove] = initialsTextWidth[lastIndex];
             nameTextWidth[indexToRemove] = nameTextWidth[lastIndex];
             initialsTextBgWidth[indexToRemove] = initialsTextBgWidth[lastIndex];
@@ -899,6 +923,7 @@ public final class OptimizedWaypointRenderer {
         // Clean up string reference to assist GC
         names[lastIndex] = null;
         initials[lastIndex] = null;
+        icons[lastIndex] = null;
         waypointRefs[lastIndex] = null;
         idMap[id] = -1;
         count--;
@@ -909,6 +934,7 @@ public final class OptimizedWaypointRenderer {
         for (int i = 0; i < count; i++) {
             names[i] = null;
             initials[i] = null;
+            icons[i] = null;
             waypointRefs[i] = null;
         }
         Arrays.fill(idMap, -1);
