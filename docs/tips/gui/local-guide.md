@@ -554,6 +554,13 @@ Specializations supply `drawIcon` and optionally `entryLabel`. `setEntries` copi
 preserves selection by identity, and falls back to the first entry; an empty catalog clears selection.
 `setSelectedEntry` does not fire callbacks; `resetSelection` replaces the former static dimension
 reset. Register and manually render each rail once through its high-level wrapper.
+Specializations may also override `entryBadgeColor` to return a theme role. After drawing every
+icon, the rail draws a 5×5 dot (a 3×3 fill in that role inside a one-pixel `BORDER` edge) flush
+with the top-right corner of each badged icon cell, above the icons through
+`DrawContextHelper.nextItemOverlayLayer` and inside the rail's scissor. `ServerListWidget` badges
+stale servers with `WARNING` and unavailable ones with `DANGER`; available servers get no badge.
+Its hover label adds the state on a second line, colored by `ServerListWidget.stateColor`, which
+also colors the remote list footer.
 
 `preferredHeight()` reports the icon strip's natural content height with a one-icon minimum.
 `OpposedExpansionLayout.allocate` reserves the fixed minimum for each rail and shares constrained
@@ -714,6 +721,10 @@ Do not both render a widget through a container and render it again explicitly. 
 4. Modal or color-picker overlays on a later layer.
 
 Use `nextLayer`/`previousLayer` around suggestions and overlays when they must appear above normal controls.
+Use `nextItemOverlayLayer`/`previousItemOverlayLayer` for marks drawn over GUI item icons, such as the
+server rail badges. On 1.21.6 and later both pairs start a new render stratum, but before 1.21.6
+`nextLayer` moves drawing up by only 1 in z while vanilla draws GUI item models near z 150;
+`nextItemOverlayLayer` translates 200, the depth vanilla uses for item stack counts.
 
 #### 4. Input: preserve focus and text entry
 

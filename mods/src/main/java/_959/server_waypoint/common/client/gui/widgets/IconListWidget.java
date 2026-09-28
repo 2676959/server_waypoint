@@ -7,6 +7,7 @@ import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.render.PaddingBackground;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 
 import java.util.List;
 import net.minecraft.client.Minecraft;
@@ -14,6 +15,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.*;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
@@ -23,6 +25,7 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.ROW_HOVER_BACKGROUND;
 
 public abstract class IconListWidget<T> extends ShiftableClickableWidget implements Padding, Expandable {
+    private static final int BADGE_SIZE = 5;
     private float scrolledPosition;
     private int index;
     private final java.util.function.Consumer<T> callback;
@@ -177,6 +180,7 @@ public abstract class IconListWidget<T> extends ShiftableClickableWidget impleme
             this.drawIcon(context, this.entries.get(i));
             pop(context);
         }
+        this.renderBadges(context, viewport);
 
         pop(context);
         context.disableScissor();
@@ -209,6 +213,38 @@ public abstract class IconListWidget<T> extends ShiftableClickableWidget impleme
     protected Component entryLabel(T entry) { return Component.literal(entry.toString()); }
 
     protected abstract void drawIcon(GuiGraphicsExtractor context, T entry);
+
+    /**
+     * Returns the theme role of an entry's status badge, or {@code null} for no badge. Badges are
+     * drawn in the top-right corner of the icon cell, above the icons.
+     */
+    protected @Nullable WidgetThemeVariable entryBadgeColor(T entry) {
+        return null;
+    }
+
+    private void renderBadges(GuiGraphicsExtractor context, IconListLayout.Bounds viewport) {
+        boolean overlay = false;
+        for (int i = 0; i < this.entries.size(); i++) {
+            WidgetThemeVariable badge = this.entryBadgeColor(this.entries.get(i));
+            if (badge == null) {
+                continue;
+            }
+            if (!overlay) {
+                nextItemOverlayLayer(context);
+                overlay = true;
+            }
+            IconListLayout.Position position = this.iconLayout.iconPosition(i, scrolledPosition, viewport);
+            int left = this.iconSize - BADGE_SIZE;
+            push(context);
+            translate(context, position.x(), position.y());
+            context.fill(left, 0, this.iconSize, BADGE_SIZE, getColor(BORDER));
+            context.fill(left + 1, 1, this.iconSize - 1, BADGE_SIZE - 1, getColor(badge));
+            pop(context);
+        }
+        if (overlay) {
+            previousItemOverlayLayer(context);
+        }
+    }
 
     private IconListLayout.Bounds getIconViewport() {
         return this.iconLayout.viewport(this.width, this.height, 0);

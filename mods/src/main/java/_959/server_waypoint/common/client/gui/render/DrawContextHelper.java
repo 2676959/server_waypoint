@@ -136,6 +136,26 @@ public final class DrawContextHelper {
         *///?}
     }
 
+    /**
+     * Moves later drawing above GUI items drawn earlier, such as a badge over an item icon. Newer
+     * versions start a new render stratum. Older versions translate past the depth of GUI item
+     * models, as vanilla does for item stack counts. Pair each call with
+     * {@link #previousItemOverlayLayer}.
+     */
+    public static void nextItemOverlayLayer(GuiGraphicsExtractor context) {
+        //? if >= 1.21.6 {
+        context.nextStratum();
+        //?} else {
+        /*context.pose().translate(0.0F, 0.0F, 200.0F);
+        *///?}
+    }
+
+    public static void previousItemOverlayLayer(GuiGraphicsExtractor context) {
+        //? if < 1.21.6 {
+        /*context.pose().translate(0.0F, 0.0F, -200.0F);
+        *///?}
+    }
+
     public static void renderOutline(GuiGraphicsExtractor context, int x, int y, int width, int height, int color) {
         //? if = 1.21.9 {
         /*renderOutlineWithFill(context, x, y, width, height, color);
