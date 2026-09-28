@@ -54,7 +54,6 @@ final class RemoteWaypointPanel {
     private boolean reversed;
     private boolean grouped = true;
     private WaypointSorting.SortMode sortMode = WaypointSorting.SortMode.NAME;
-    private String feedback = "waypoint.remote.gui.feedback";
     private final ScalableText footer;
     private boolean footerVisible;
     private boolean footerHasServer;
@@ -152,8 +151,7 @@ final class RemoteWaypointPanel {
         tree.visible = tree.active = visible;
         details.visible = details.active = visible;
         teleportButton.visible = visible;
-        teleportButton.active = visible && session == catalogs.session()
-                && RemoteBrowserModel.prepare(catalogs, selected) != null;
+        updateTeleportAction();
     }
 
     void setOptions(String filter, boolean grouped, WaypointSorting.SortMode sortMode, boolean reversed) {
@@ -182,15 +180,15 @@ final class RemoteWaypointPanel {
     private void rebuild() {
         displayed = catalogs.snapshot();
         displayedState = catalogs.state();
-        teleportButton.setTooltip(Tooltip.create(Component.translatable(feedback)));
         var roots = RemoteBrowserModel.scopedRoots(displayed, serverFilter, dimensionFilter, filter, grouped, sortMode, reversed);
         // Filter/removal must not leave an actionable invisible selection.
-        if (selected != null && !contains(roots, selected)) selected = null;
+        if (selected != null && !contains(roots, selected)) select(null);
         tree.updateRoots(roots);
         tree.setEmptyReason(RemoteBrowserModel.emptyReason(displayedState, hasServers(),
                 serverFilter == null ? null : displayed.get(serverFilter), filter, dimensionFilter));
         details.setRemoteSelection(selected, selected == null ? null : displayed.get(selected.serverId()));
-        teleportButton.active = teleportButton.visible && session == catalogs.session() && RemoteBrowserModel.prepare(catalogs, selected) != null;
+        updateFooter();
+        updateTeleportAction();
     }
 
     private boolean hasServers() {
@@ -221,20 +219,20 @@ final class RemoteWaypointPanel {
         long current = catalogs.session();
         if (current == session) return false;
         session = current;
-        selected = null;
+        select(null);
         rebuild();
         return true;
     }
 
     private void teleport() {
         var request = RemoteBrowserModel.prepare(catalogs, selected);
-        if (session != catalogs.session() || request == null || !RemoteBrowserModel.isCurrent(catalogs, request)) {
-            feedback = "waypoint.remote.gui.changed";
+        if (!isSessionCurrent() || request == null || !RemoteBrowserModel.isCurrent(catalogs, request)) {
+            failure = "waypoint.remote.gui.changed";
         } else if (ClientCommandUtils.sendCommand(request.command())) {
             MinecraftClientHelper.setScreen(null);
             return;
         } else {
-            feedback = "waypoint.remote.gui.send_failed";
+            failure = "waypoint.remote.gui.send_failed";
         }
         rebuild();
     }
@@ -253,12 +251,13 @@ final class RemoteWaypointPanel {
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
-        Component status = Component.translatable("waypoint.remote.gui.status", Component.translatable(
-                "waypoint.remote.state." + catalogs.state().name().toLowerCase(Locale.ROOT)));
-        drawText(context, font, font.plainSubstrByWidth(status.getString(), tree.getWidth()),
-                tree.getX(), tree.getY() + tree.getHeight() + 3, getColor(TEXT_MUTED));
+        if (footerVisible) {
+            footer.
+            //$ render_method_swap
+            extractRenderState
+                    (context, mouseX, mouseY, deltaTicks);
+        }
         tree.renderHoveredTooltip(context, mouseX, mouseY);
-
     }
 
     // Local WaypointListWidget requires mutable local lists. Share its row presentation while keeping remote snapshots immutable.
@@ -361,10 +360,9 @@ final class RemoteWaypointPanel {
         protected boolean onEntryClicked(TreeEntry<RemoteBrowserModel.Node> entry, double x, double y, int button) {
             if (button != InputConstants.MOUSE_BUTTON_LEFT) return false;
             var node = entry.value();
-            selected = node.path().key();
+            select(node.path().key());
             details.setRemoteSelection(selected, displayed.get(node.path().server()));
-            teleportButton.active = teleportButton.visible && session == catalogs.session()
-                    && RemoteBrowserModel.prepare(catalogs, selected) != null;
+            updateTeleportAction();
             return selected != null;
         }
         @Override
