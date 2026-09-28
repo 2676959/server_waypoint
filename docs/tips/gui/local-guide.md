@@ -142,7 +142,7 @@ Use `ExpandableManager` for responsive layouts that must consume available width
 - Nested managers relayout their children when the parent changes their size.
 - Padded children are measured and positioned by visual bounds.
 
-`ExpandableManager` is layout-only and does not render its children. Register and render the managed widgets separately, as `WaypointManagerScreen` does.
+`ExpandableManager` is layout-only and does not render its children. Register and render the managed widgets separately.
 
 For example, a fixed-width rail next to a flexible main panel is:
 
@@ -524,7 +524,9 @@ available vertical margins. Resize the search field and waypoint list by visual 
 their panels so drawing and hitboxes continue to match the calculated geometry.
 
 The manager's sidebar `HOME_ICON` / `LAN_SERVERS_ICON` toggle switches its middle list and right
-details panel between current-server and remote waypoints without opening another screen.
+details panel between current-server and remote waypoints without opening another screen. The
+toggle is shown only while `RemoteWaypointPanel.servers()` is non-empty or the remote view is open,
+so singleplayer and servers without cross-server never show it.
 `RemoteWaypointPanel` is a package-private screen composition helper: the manager registers its
 widgets once, supplies layout and visibility, forwards ticks, and owns its manual render pass.
 Search, list/flat mode, name/color/default sorting, and sort direction control both views. Remote
@@ -560,7 +562,10 @@ dimension rail at the sidebar top and the server rail just above the controls; t
 up respectively, stop at their content sizes, and scroll when constrained. Icons in both rails flow
 top to bottom, so their wheel scrolling follows the same direction. The helper returns zero
 sizes if even both minima plus their gap cannot fit; the screen hides the rails at that tiny size.
-Catalog changes, mode switches and resize all recalculate the allocation. Local mutation callbacks
+The pure `WaypointManagerScreen.calculateSidebarLayout` combines this allocation with the number of
+visible controls, which stack upward from the content bottom with 4-pixel gaps, so a hidden toggle
+or add button releases its slot to the rails. Catalog changes, mode switches, resize and changes in
+remote-server availability all recalculate it. Local mutation callbacks
 must not replace the remote dimension catalog.
 
 Server item icons resolve from `CatalogReceiver.View.iconItem()` through the client's item registry.
@@ -669,7 +674,7 @@ If this widget draws outside `x/y/width/height`, add a `VisualBounds` constant a
 
 Use current screens as focused examples:
 
-- `WaypointManagerScreen` demonstrates nested `ExpandableManager` layouts, fixed and flexible children, a `TreeViewWidget`, sorting controls, and responsive resizing.
+- `WaypointManagerScreen` demonstrates pure, unit-tested geometry (`calculateLayoutGeometry` and `calculateSidebarLayout`), a `WidgetPack` for the search field and list, `TreeViewWidget` lists, sorting controls, and responsive resizing.
 - `WaypointManagerScreen` forwards screen ticks to `WaypointListWidget.refreshDistanceSortIfPlayerMoved()`. The widget caches the last query origin and only rebuilds distance-sorted rows after the player's block position or relevant dimension changes.
 - `WaypointManagerScreen` separates full refreshes, dimension-list changes, and ordinary waypoint mutations. `updateAllWidgets()` rebuilds the dimension rail and refreshes waypoint rows exactly once. `updateWidgetsForDimensionListChange(...)` rebuilds the dimension rail but refreshes waypoint rows only when selection fallback or the active viewing scope requires it. `updateWaypointWidget(...)` skips dimension-name copying and sorting entirely, and it ignores changes outside the selected dimension unless all-dimensions mode is active. The selection is preserved by name and falls back to the current or first available dimension. Callers report the changed dimension instead of passing waypoint-list snapshots because `WaypointListWidget` owns the active search, sort, grouping, and dimension-scope query state.
 - The manager's dimension rail includes empty dimensions that have no synchronized waypoint file. In an integrated world it reads the integrated server's level keys directly. On a remote connection it asynchronously extracts fully namespaced dimension identifiers from the `/wp list ` command suggestions, merges them with the synchronized client cache as a fallback, and ignores the command's literal list/search/sort options.

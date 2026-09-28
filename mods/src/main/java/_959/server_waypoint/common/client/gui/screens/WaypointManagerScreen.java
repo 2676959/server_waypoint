@@ -75,7 +75,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private static final int CONTROL_ICON_PADDING = 2;
     private static final int CONTROL_COLUMN_X_OFFSET =
             (LEFT_PART_WIDTH - CONTROL_BUTTON_SIZE) / 2;
-    private static final int CONTROL_COLUMN_HEIGHT = CONTROL_BUTTON_SIZE * 6 + CONTROL_GAP * 5;
     private static final int MIN_DIMENSION_LIST_HEIGHT = DIMENSION_ICON_SIZE + DIMENSION_VERTICAL_PADDING * 2;
     private static final int MIN_WAYPOINT_LIST_HEIGHT = 28;
     private static final float RELATIVE_HEIGHT = 0.82F;
@@ -106,7 +105,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private final IconMenuItem distanceSortItem;
     private ManagerViewState builtState = ManagerViewState.LOADING;
     private boolean hasInitialized = false;
-    private final WidgetPack controlAnchor;
+    private boolean hasRemoteServers;
     private final WidgetPack middleLayout;
     private ManagerLayoutGeometry layoutGeometry = calculateLayoutGeometry(0, 0);
 
@@ -234,29 +233,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         this.middleLayout.addChild(searchField, LayoutFlow.Direction.FORWARD);
         this.middleLayout.addChild(SpacerElement.height(SEARCH_GAP), LayoutFlow.Direction.FORWARD);
         this.middleLayout.addChild(waypointListWidget, LayoutFlow.Direction.FORWARD);
-
-        WidgetPack controlColumn = new WidgetPack(
-                CONTROL_BUTTON_SIZE,
-                CONTROL_COLUMN_HEIGHT,
-                LayoutFlow.Orientation.VERTICAL
-        );
-        controlColumn.addChild(serverScopeToggle, LayoutFlow.Direction.FORWARD);
-        controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
-        controlColumn.addChild(allDimensionsToggle, LayoutFlow.Direction.FORWARD);
-        controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
-        controlColumn.addChild(groupModeToggle, LayoutFlow.Direction.FORWARD);
-        controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
-        controlColumn.addChild(sortOrderToggle, LayoutFlow.Direction.FORWARD);
-        controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
-        controlColumn.addChild(sortingModeDropdown, LayoutFlow.Direction.FORWARD);
-        controlColumn.addChild(SpacerElement.height(CONTROL_GAP), LayoutFlow.Direction.FORWARD);
-        controlColumn.addChild(addWaypointButton, LayoutFlow.Direction.FORWARD);
-        this.controlAnchor = new WidgetPack(
-                LEFT_PART_WIDTH,
-                CONTROL_COLUMN_HEIGHT,
-                LayoutFlow.Orientation.HORIZONTAL
-        );
-        this.controlAnchor.addChild(controlColumn, LayoutFlow.Direction.FORWARD);
     }
 
     public WaypointManagerScreen(WaypointClientMod waypointClientMod) {
@@ -461,36 +437,59 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     private void layoutSidebar() {
-        int controlsHeight = CONTROL_COLUMN_HEIGHT - (showingRemote ? CONTROL_BUTTON_SIZE + CONTROL_GAP : 0);
-        int controlsY = layoutGeometry.contentY() + layoutGeometry.contentHeight() - controlsHeight;
-        controlAnchor.setPosition(layoutGeometry.leftX(), controlsY);
-        int available = Math.max(0, controlsY - SECTION_GAP - layoutGeometry.contentY());
-        int top = Math.min(available, dimensionListWidget.preferredHeight());
-        int bottom = 0;
-        if (showingRemote) {
-            var sizes = OpposedExpansionLayout.allocate(
-                    available, MIN_DIMENSION_LIST_HEIGHT, dimensionListWidget.preferredHeight(),
-                    serverListWidget.preferredHeight(), SECTION_GAP);
-            top = sizes.top();
-            bottom = sizes.bottom();
+        List<ShiftableClickableWidget> controls = visibleSidebarControls();
+        SidebarLayout sidebar = calculateSidebarLayout(
+                layoutGeometry.contentY(),
+                layoutGeometry.contentHeight(),
+                controls.size(),
+                dimensionListWidget.preferredHeight(),
+                serverListWidget.preferredHeight(),
+                showingRemote
+        );
+        for (int index = 0; index < controls.size(); index++) {
+            controls.get(index).setPosition(layoutGeometry.controlX(), sidebar.controlY(index));
         }
-        dimensionListWidget.visible = dimensionListWidget.active = top >= MIN_DIMENSION_LIST_HEIGHT;
-        dimensionListWidget.setVisualHeight(Math.max(MIN_DIMENSION_LIST_HEIGHT, top));
-        dimensionListWidget.setPosition(layoutGeometry.leftX(), layoutGeometry.contentY());
-        serverListWidget.visible = serverListWidget.active = showingRemote && bottom >= MIN_DIMENSION_LIST_HEIGHT;
-        serverListWidget.setVisualHeight(Math.max(MIN_DIMENSION_LIST_HEIGHT, bottom));
-        serverListWidget.setPosition(layoutGeometry.leftX(), controlsY - SECTION_GAP - bottom);
-        setControlVisibility(layoutGeometry.contentHeight() >= controlsHeight);
-        selectorSeparator.setPosition(
-                layoutGeometry.leftX(),
-                (dimensionListWidget.getY() + dimensionListWidget.getHeight() + serverListWidget.getY()) / 2
-        );
-        selectorSeparator.setVisible(dimensionListWidget.visible && serverListWidget.visible);
-        serverControlSeparator.setPosition(
-                layoutGeometry.leftX(),
-                (serverListWidget.getY() + serverListWidget.getHeight() + serverScopeToggle.getY()) / 2
-        );
-        serverControlSeparator.setVisible(serverListWidget.visible && serverScopeToggle.visible);
+        setControlVisibility(sidebar.controlsVisible());
+        dimensionListWidget.visible = dimensionListWidget.active = sidebar.dimensionVisible();
+        dimensionListWidget.setVisualHeight(Math.max(MIN_DIMENSION_LIST_HEIGHT, sidebar.dimensionHeight()));
+        dimensionListWidget.setPosition(layoutGeometry.leftX(), sidebar.dimensionY());
+        serverListWidget.visible = serverListWidget.active = sidebar.serverVisible();
+        serverListWidget.setVisualHeight(Math.max(MIN_DIMENSION_LIST_HEIGHT, sidebar.serverHeight()));
+        serverListWidget.setPosition(layoutGeometry.leftX(), sidebar.serverY());
+        selectorSeparator.setPosition(layoutGeometry.leftX(), sidebar.railSeparatorY());
+        selectorSeparator.setVisible(sidebar.dimensionVisible() && sidebar.serverVisible());
+        serverControlSeparator.setPosition(layoutGeometry.leftX(), sidebar.controlSeparatorY());
+        serverControlSeparator.setVisible(sidebar.serverVisible() && serverScopeToggle.visible);
+    }
+
+    /** Sidebar controls in top-to-bottom order; hidden controls are left out and release their slots. */
+    private List<ShiftableClickableWidget> visibleSidebarControls() {
+        List<ShiftableClickableWidget> controls = new ArrayList<>(6);
+        if (isScopeToggleAvailable()) {
+            controls.add(serverScopeToggle);
+        }
+        controls.add(allDimensionsToggle);
+        controls.add(groupModeToggle);
+        controls.add(sortOrderToggle);
+        controls.add(sortingModeDropdown);
+        if (!showingRemote) {
+            controls.add(addWaypointButton);
+        }
+        return controls;
+    }
+
+    /** The local/remote toggle appears once remote servers are cached, and stays while viewing them. */
+    private boolean isScopeToggleAvailable() {
+        return hasRemoteServers || showingRemote;
+    }
+
+    private void updateRemoteServerAvailability() {
+        boolean available = !this.remotePanel.servers().isEmpty();
+        if (available == this.hasRemoteServers) {
+            return;
+        }
+        this.hasRemoteServers = available;
+        layoutSidebar();
     }
 
     private void refreshRemoteSelectors(boolean force) {
@@ -547,6 +546,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         } else {
             WaypointClientMod.getInstance().getOrCreateWaypointFileManager(currentDimension);
         }
+        this.hasRemoteServers = !this.remotePanel.servers().isEmpty();
         updateWidgetDimension();
         this.middleLayout.setPosition(
                 this.layoutGeometry.middleX(),
@@ -566,7 +566,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         }
 
         this.addRenderableWidget(dimensionListWidget);
-        this.controlAnchor.visitWidgets(this::addRenderableWidget);
+        this.addRenderableWidget(serverScopeToggle);
+        this.addRenderableWidget(allDimensionsToggle);
+        this.addRenderableWidget(groupModeToggle);
+        this.addRenderableWidget(sortOrderToggle);
+        this.addRenderableWidget(sortingModeDropdown);
+        this.addRenderableWidget(addWaypointButton);
         this.middleLayout.visitWidgets(this::addRenderableWidget);
         this.addRenderableWidget(serverListWidget);
         this.addRenderableWidget(this.waypointDetailsWidget);
@@ -635,6 +640,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         } else {
             waypointListWidget.refreshDistanceSortIfPlayerMoved();
         }
+        updateRemoteServerAvailability();
     }
 
     @Override
@@ -1004,7 +1010,11 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private void setControlVisibility(boolean visible) {
         addWaypointButton.visible = visible && !showingRemote;
         addWaypointButton.active = visible && !showingRemote;
-        serverScopeToggle.visible = serverScopeToggle.active = visible;
+        boolean scopeVisible = visible && isScopeToggleAvailable();
+        if (!scopeVisible && getFocused() == serverScopeToggle) {
+            setFocused(null);
+        }
+        serverScopeToggle.visible = serverScopeToggle.active = scopeVisible;
         groupModeToggle.visible = visible;
         groupModeToggle.active = visible;
         sortOrderToggle.visible = visible;
@@ -1073,6 +1083,83 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             case NO_SERVERSIDE_SUPPORT -> ManagerViewState.UNSUPPORTED;
             case INCOMPATIBLE_PROTOCOL -> ManagerViewState.INCOMPATIBLE;
         };
+    }
+
+    /**
+     * Lays out the sidebar. Visible controls stack upward from the content bottom, so a hidden
+     * control releases its slot. The dimension rail grows down from the top; in the remote view the
+     * server rail grows up from above the controls, and {@link OpposedExpansionLayout} divides the
+     * space. A rail below its one-icon minimum is hidden (zero height).
+     */
+    static SidebarLayout calculateSidebarLayout(
+            int contentY,
+            int contentHeight,
+            int visibleControlCount,
+            int dimensionPreferredHeight,
+            int serverPreferredHeight,
+            boolean showingRemote
+    ) {
+        int controlsHeight = visibleControlCount <= 0
+                ? 0
+                : visibleControlCount * CONTROL_BUTTON_SIZE + (visibleControlCount - 1) * CONTROL_GAP;
+        int controlsY = contentY + contentHeight - controlsHeight;
+        int available = Math.max(0, controlsY - SECTION_GAP - contentY);
+        int dimensionHeight = Math.min(available, dimensionPreferredHeight);
+        int serverHeight = 0;
+        if (showingRemote) {
+            OpposedExpansionLayout.Sizes sizes = OpposedExpansionLayout.allocate(
+                    available,
+                    MIN_DIMENSION_LIST_HEIGHT,
+                    dimensionPreferredHeight,
+                    serverPreferredHeight,
+                    SECTION_GAP
+            );
+            dimensionHeight = sizes.top();
+            serverHeight = sizes.bottom();
+        }
+        if (dimensionHeight < MIN_DIMENSION_LIST_HEIGHT) {
+            dimensionHeight = 0;
+        }
+        if (serverHeight < MIN_DIMENSION_LIST_HEIGHT) {
+            serverHeight = 0;
+        }
+        return new SidebarLayout(
+                contentHeight >= controlsHeight,
+                controlsY,
+                contentY,
+                dimensionHeight,
+                controlsY - SECTION_GAP - serverHeight,
+                serverHeight
+        );
+    }
+
+    record SidebarLayout(
+            boolean controlsVisible,
+            int controlsY,
+            int dimensionY,
+            int dimensionHeight,
+            int serverY,
+            int serverHeight
+    ) {
+        boolean dimensionVisible() {
+            return this.dimensionHeight > 0;
+        }
+
+        boolean serverVisible() {
+            return this.serverHeight > 0;
+        }
+
+        int controlY(int index) {
+            return this.controlsY + index * (CONTROL_BUTTON_SIZE + CONTROL_GAP);
+        }
+
+        int railSeparatorY() {
+            return (this.dimensionY + this.dimensionHeight + this.serverY) / 2;
+        }
+
+        int controlSeparatorY() {
+            return (this.serverY + this.serverHeight + this.controlsY) / 2;
+        }
     }
 
     static ManagerLayoutGeometry calculateLayoutGeometry(int screenWidth, int screenHeight) {
@@ -1186,10 +1273,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
         int completeWidth() {
             return this.detailsPanelX + this.detailsPanelWidth - this.leftPanelX();
-        }
-
-        int dimensionListHeight() {
-            return Math.max(0, this.contentHeight - CONTROL_COLUMN_HEIGHT - SECTION_GAP);
         }
 
         int waypointListHeight(int searchBarHeight) {
