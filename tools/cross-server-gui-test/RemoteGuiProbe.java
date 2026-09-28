@@ -138,6 +138,9 @@ public final class RemoteGuiProbe implements ClientModInitializer {
                 click(local, grouping);
                 ((WaypointSearchBarWidget) field(WaypointManagerScreen.class, "searchField").get(local)).setValue("not-found");
                 check(!button().active, "filtered-out selection disables teleport");
+                var filteredTree = field(RemoteWaypointPanel.class, "tree").get(remote);
+                var emptyMessage = (ScalableText) field(filteredTree.getClass(), "emptyMessage").get(filteredTree);
+                check(text(emptyMessage).contains("not-found"), "search miss explains the empty tree");
             }
             case 4 -> {
                 ((WaypointSearchBarWidget) field(WaypointManagerScreen.class, "searchField").get(local)).setValue("");
