@@ -884,7 +884,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         allDimensionsToggle.active = allDimensionsToggle.visible;
         addWaypointButton.active = addWaypointButton.visible && !showingRemote;
         remotePanel.layout(layoutGeometry.middleX(), layoutGeometry.contentY() + searchField.getVisualHeight() + SEARCH_GAP,
-                layoutGeometry.middlePartWidth(), Math.max(1, layoutGeometry.waypointListHeight(searchField.getVisualHeight()) - 14),
+                layoutGeometry.middlePartWidth(), Math.max(1, layoutGeometry.waypointListHeight(searchField.getVisualHeight())),
                 layoutGeometry.detailsContentX(), layoutGeometry.contentY(),
                 layoutGeometry.detailsContentWidth(), layoutGeometry.contentHeight());
         remotePanel.setVisible(showingRemote && visible);
