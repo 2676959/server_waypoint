@@ -523,6 +523,9 @@ to its constructor. Its action columns remain independent: visibility, edit, and
 not replace the current selection. `WaypointSelection` carries the source dimension, plain and
 display list names, and live waypoint; the widget reconciles that identity after queries so sorting
 and refreshes preserve a still-visible selection while filtering or removal clears it.
+In the local view, `WaypointManagerScreen.keyPressed` offers every key to the list before its own
+handling, so pressing T while a waypoint row is hovered sends that waypoint's teleport command.
+`isTeleportKey` compares against `InputConstants.KEY_T`, which is 23 on 26.3 and 84 before it.
 `WaypointDetailsWidget` consumes that selection and presents every stored waypoint field plus its
 dimension/list context in a separately scrollable viewport. Keep formatted display names and
 descriptions parsed only at this render boundary, and reserve scrollbar width while wrapping so
@@ -777,8 +780,8 @@ Let registered widgets receive ordinary input through the screen. Intercept only
   Enter still press the button. Inactive or hidden buttons claim no keys, and other movement keys
   keep moving the player while a button is focused.
 - Screen shortcuts should normally be disabled while the focused listener is an `EditBox`.
-  Shortcuts that run before `super.keyPressed`, such as the manager's `C` binding, must leave
-  Enter, Space and keypad Enter to the focused widget.
+  Shortcuts that run before `super.keyPressed`, such as the manager's `C` binding and the list's
+  T teleport, must leave Enter, Space and keypad Enter to the focused widget.
 - Call `acceptMovementKeys(false)` while text entry or another control must own movement-key input.
 - A modal should disable underlying controls and move focus into the modal; restore both when it closes.
 

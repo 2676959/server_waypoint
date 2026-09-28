@@ -60,7 +60,6 @@ import static _959.server_waypoint.util.StringCommandBuilder.removeListCmd;
 import static _959.server_waypoint.util.StringCommandBuilder.tpCmd;
 
 public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNode> {
-    public static int TELEPORT_KEY = 84;
     private static final int EMPTY_MESSAGE_INSET = 5;
     private static final int listIconSize = 16;
     private static final int buttonIconSize = 12;
@@ -669,7 +668,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         boolean ret = false;
-        if (keyCode == TELEPORT_KEY) {
+        if (isTeleportKey(keyCode)) {
             TreeEntry<RowNode> hoveredEntry = getHoveredEntry();
             if (hoveredEntry != null && hoveredEntry.value() instanceof WaypointNode waypointNode) {
                 sendCommand(tpCmd(
@@ -682,6 +681,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             }
         }
         return ret || super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    static boolean isTeleportKey(int keyCode) {
+        return keyCode == InputConstants.KEY_T;
     }
 
     @Override
