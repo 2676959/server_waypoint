@@ -3,5 +3,6 @@
 - [Cross-server waypoints](cross-server/) — discovery and teleportation over Velocity.
 - [Upload transport](upload/) — chunked upload/download transport and startup fixes.
 - [Waypoint icons](waypoint-icons/) — item and VoxelMap icon selection and display plan.
+- [Waypoint manager](waypoint-manager/) — manager screen states, layout and empty states.
 
 Each feature owns `plans/`, `specs/` and `validation/`, indexed by its README.
