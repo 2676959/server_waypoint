@@ -16,7 +16,6 @@
   "server_waypoint.modification.update.xaeros": "路径点%1$s已更新至Xaero's minimap",
   "server_waypoint.dimension.decode.fail": "无法解码维度“%1$s”",
 
-  "waypoint.empty_mark": "<空>",
   "waypoint.empty.no_matches": "没有与“%s”匹配的路径点。",
   "waypoint.empty.all": "还没有路径点。使用 + 按钮添加一个。",
   "waypoint.empty.dimension": "此维度还没有路径点。使用 + 按钮添加一个。",

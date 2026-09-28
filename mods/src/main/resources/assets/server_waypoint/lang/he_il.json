@@ -12,7 +12,6 @@
   "server_waypoint.modification.remove.xaeros": "נקודת הציון %1$s נמחקה ממפת המיני של Xaero",
   "server_waypoint.modification.update.xaeros": "נקודת הציון %1$s עודכנה במפת המיני של Xaero",
   "server_waypoint.dimension.decode.fail": "פענוח המימד %1$s נכשל",
-  "waypoint.empty_mark": "<ריק>",
   "waypoint.empty.no_matches": "אין נקודות ציון שתואמות ל-\"%s\".",
   "waypoint.empty.all": "אין עדיין נקודות ציון. השתמשו בכפתור + כדי להוסיף אחת.",
   "waypoint.empty.dimension": "אין עדיין נקודות ציון בממד הזה. השתמשו בכפתור + כדי להוסיף אחת.",

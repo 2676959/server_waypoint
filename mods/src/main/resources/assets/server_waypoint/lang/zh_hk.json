@@ -12,7 +12,6 @@
   "server_waypoint.modification.remove.xaeros": "路徑點%1$s已從Xaero's Minimap刪除",
   "server_waypoint.modification.update.xaeros": "徑點%1$s已更新至 Xaero's Minimap",
   "server_waypoint.dimension.decode.fail": "無法解析維度「%1$s」",
-  "waypoint.empty_mark": "<空>",
   "waypoint.empty.no_matches": "沒有符合「%s」的路徑點。",
   "waypoint.empty.all": "尚未有路徑點。使用 + 按鈕新增一個。",
   "waypoint.empty.dimension": "此維度尚未有路徑點。使用 + 按鈕新增一個。",

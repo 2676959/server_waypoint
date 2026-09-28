@@ -12,7 +12,6 @@
   "server_waypoint.modification.remove.xaeros": "El waypoint %1$s se ha eliminado del minimapa de Xaero",
   "server_waypoint.modification.update.xaeros": "El waypoint %1$s se ha actualizado en el minimapa de Xaero",
   "server_waypoint.dimension.decode.fail": "No se ha podido descifrar la dimensión %1$s",
-  "waypoint.empty_mark": "<Vacío>",
   "waypoint.empty.no_matches": "Ningún punto de ruta coincide con \"%s\".",
   "waypoint.empty.all": "Aún no hay puntos de ruta. Usa el botón + para añadir uno.",
   "waypoint.empty.dimension": "Aún no hay puntos de ruta en esta dimensión. Usa el botón + para añadir uno.",

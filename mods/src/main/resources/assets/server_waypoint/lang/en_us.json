@@ -16,7 +16,6 @@
   "server_waypoint.modification.update.xaeros": "Waypoint %1$s has been updated on Xaero's minimap",
   "server_waypoint.dimension.decode.fail": "Failed to decode dimension %1$s",
 
-  "waypoint.empty_mark": "<Empty>",
   "waypoint.empty.no_matches": "No waypoints match \"%s\".",
   "waypoint.empty.all": "No waypoints yet. Use the + button to add one.",
   "waypoint.empty.dimension": "No waypoints in this dimension yet. Use the + button to add one.",
