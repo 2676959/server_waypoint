@@ -170,6 +170,9 @@ public final class RemoteGuiProbe implements ClientModInitializer {
         stage++;
     }
 
+    private static String text(ScalableText label) throws Exception {
+        return ((net.minecraft.network.chat.Component) field(ScalableText.class, "text").get(label)).getString();
+    }
     private TranslucentButton button() throws Exception {
         return (TranslucentButton) field(RemoteWaypointPanel.class, "teleportButton").get(remote);
     }
