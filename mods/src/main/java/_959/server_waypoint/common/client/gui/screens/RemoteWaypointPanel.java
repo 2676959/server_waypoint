@@ -34,6 +34,7 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 
 /** Read-only remote panel owned and rendered by the waypoint manager. */
 final class RemoteWaypointPanel {
+    private static final int EMPTY_MESSAGE_INSET = 5;
     private final Font font;
     private final RemoteClientCatalogs catalogs;
     private long session;
@@ -121,8 +122,14 @@ final class RemoteWaypointPanel {
         // Filter/removal must not leave an actionable invisible selection.
         if (selected != null && !contains(roots, selected)) selected = null;
         tree.updateRoots(roots);
+        tree.setEmptyReason(RemoteBrowserModel.emptyReason(displayedState, hasServers(),
+                serverFilter == null ? null : displayed.get(serverFilter), filter, dimensionFilter));
         details.setRemoteSelection(selected, selected == null ? null : displayed.get(selected.serverId()));
         teleportButton.active = teleportButton.visible && session == catalogs.session() && RemoteBrowserModel.prepare(catalogs, selected) != null;
+    }
+
+    private boolean hasServers() {
+        return displayed.values().stream().anyMatch(view -> view.state() != RemoteCatalogState.UNAUTHORIZED);
     }
 
     private static boolean contains(List<RemoteBrowserModel.Node> nodes, RemoteWaypointKey key) {
@@ -192,9 +199,14 @@ final class RemoteWaypointPanel {
     // Local WaypointListWidget requires mutable local lists. Share its row presentation while keeping remote snapshots immutable.
     private final class BrowserTree extends TreeViewWidget<RemoteBrowserModel.Node> {
         private final Set<RemoteBrowserModel.Path> collapsed = new HashSet<>();
+        // Where the first row's text sits: inset from the left, centered in the first 20-pixel row.
         private final ScalableText emptyMessage = new ScalableText(
-                2, 2, Component.translatable("waypoint.remote.no_servers"), TEXT_MUTED, font);
+                EMPTY_MESSAGE_INSET, MovementAllowedScreen.centered(20, font.lineHeight) + 1,
+                Component.translatable("waypoint.remote.no_servers"), TEXT_MUTED, font);
         BrowserTree() { super(0, 0, 160, 160, 20, Component.translatable("waypoint.remote.title")); }
+        void setEmptyReason(RemoteBrowserModel.EmptyReason reason) {
+            emptyMessage.setText(Component.translatable(reason.translationKey(), filter));
+        }
         @Override
         protected List<RemoteBrowserModel.Node> getChildren(RemoteBrowserModel.Node node) { return node.children(); }
         @Override
@@ -224,7 +236,7 @@ final class RemoteWaypointPanel {
         }
         @Override
         protected void renderEmpty(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-            int availableWidth = Math.max(1, getContentWidth() - 4);
+            int availableWidth = Math.max(1, getContentWidth() - EMPTY_MESSAGE_INSET * 2);
             if (emptyMessage.getWidth() != availableWidth) {
                 emptyMessage.setMaxWidth(availableWidth);
             }
