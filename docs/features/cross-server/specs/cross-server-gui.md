@@ -12,7 +12,8 @@ describes the whole screen.
 Remote data stays in the Step 17 session cache. No remote row becomes a local waypoint, file,
 renderer, map-mod export, or local navigation target. The details explain why mutation and local
 rendering controls are absent. Stale data remains readable, while stale/unavailable/denied data cannot
-initiate teleport. Server availability is shown beside its label and in the panel status.
+initiate teleport. Server availability appears as a badge and a tooltip line on the server rail, and
+in the footer under the list.
 
 Teleport sends immediately without a confirmation dialog. The click rechecks the cache session,
 catalog revision, exact target and waypoint snapshot before submitting the existing remote teleport
