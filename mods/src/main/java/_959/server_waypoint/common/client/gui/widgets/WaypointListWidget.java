@@ -61,7 +61,7 @@ import static _959.server_waypoint.util.StringCommandBuilder.tpCmd;
 
 public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNode> {
     public static int TELEPORT_KEY = 84;
-    public static final Component EMPTY_INFO_TEXT = Component.translatable("waypoint.empty_mark");
+    private static final int EMPTY_MESSAGE_INSET = 5;
     private static final int listIconSize = 16;
     private static final int buttonIconSize = 12;
     private static final int itemHeight = 20;
@@ -81,6 +81,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private final int listIconVertOffset;
     private final int buttonIconVertOffset;
     private final int buttonIconHrzOffset;
+    private final ScalableText emptyMessage;
     private final int btnWidth = 19;
     private int thirdBtnXPos = width - btnWidth;
     private int secondBtnXPos = thirdBtnXPos - btnWidth;
@@ -119,6 +120,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         listIconVertOffset = centered(itemHeight, listIconSize);
         buttonIconVertOffset = centered(itemHeight, buttonIconSize);
         buttonIconHrzOffset = centered(btnWidth, buttonIconSize);
+        emptyMessage = new ScalableText(EMPTY_MESSAGE_INSET, textVertOffset, Component.empty(), TEXT_MUTED, textRenderer);
     }
 
     /**
@@ -147,6 +149,30 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     static void setDimensionExpanded(String dimensionName, boolean expanded) {
         DIMENSION_EXPANSION_STATES.put(dimensionName, expanded);
+    }
+
+    /** Why the list has no rows; {@link #renderEmpty} shows the matching message. */
+    enum EmptyReason {
+        NO_MATCHES("waypoint.empty.no_matches"),
+        NO_WAYPOINTS("waypoint.empty.all"),
+        NO_WAYPOINTS_IN_DIMENSION("waypoint.empty.dimension");
+
+        private final String translationKey;
+
+        EmptyReason(String translationKey) {
+            this.translationKey = translationKey;
+        }
+
+        String translationKey() {
+            return this.translationKey;
+        }
+    }
+
+    static EmptyReason resolveEmptyReason(String query, boolean showAllDimensions) {
+        if (!query.isBlank()) {
+            return EmptyReason.NO_MATCHES;
+        }
+        return showAllDimensions ? EmptyReason.NO_WAYPOINTS : EmptyReason.NO_WAYPOINTS_IN_DIMENSION;
     }
 
     /**
@@ -284,6 +310,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                     .toList();
         }
         updateRoots(roots);
+        emptyMessage.setText(Component.translatable(
+                resolveEmptyReason(this.searchQuery, this.showAllDimensions).translationKey(),
+                this.searchQuery
+        ));
         reconcileSelection(display);
     }
 
@@ -656,7 +686,14 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     @Override
     protected void renderEmpty(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-        drawText(context, textRenderer, EMPTY_INFO_TEXT, 5, textVertOffset, getColor(TEXT_DISABLED), true);
+        int availableWidth = Math.max(1, getContentWidth() - EMPTY_MESSAGE_INSET * 2);
+        if (emptyMessage.getWidth() != availableWidth) {
+            emptyMessage.setMaxWidth(availableWidth);
+        }
+        emptyMessage.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, deltaTicks);
     }
 
     @Override
