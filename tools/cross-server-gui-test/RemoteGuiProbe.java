@@ -150,6 +150,9 @@ public final class RemoteGuiProbe implements ClientModInitializer {
                 var tree = (TreeViewWidget<?>) field(RemoteWaypointPanel.class, "tree").get(remote);
                 clickAt(local, tree.getX() + 24, tree.getY() + 20 + 10);
                 check(!button().active, "stale target remains read-only");
+                var footer = (ScalableText) field(RemoteWaypointPanel.class, "footer").get(remote);
+                check((boolean) field(RemoteWaypointPanel.class, "footerVisible").get(remote)
+                        && text(footer).contains("Stale"), "footer shows the selected server's stale state");
                 install(RemoteCatalogState.AVAILABLE);
             }
             case 6 -> {
