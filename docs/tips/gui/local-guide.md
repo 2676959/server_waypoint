@@ -536,8 +536,9 @@ is no shared player origin across servers (entering remote mode from distance so
 and the distance sort choice is hidden).
 In remote mode, `ServerListWidget` appears immediately above the scope toggle and the add button
 is hidden, releasing its layout slot. The dimension rail shows dimensions from the selected remote
-server's catalog (including exported empty dimensions); the all-dimensions toggle applies within
-that server. One-pixel themed border lines separate the dimension and server rails, and the server
+server's catalog (including exported empty dimensions); `RemoteBrowserModel.dimensionNames` leaves
+it empty for an unavailable server, whose retained snapshot the tree also hides. The all-dimensions
+toggle applies within that server. One-pixel themed border lines separate the dimension and server rails, and the server
 rail from the control buttons, when each adjacent pair is visible. `SeparatorWidget` owns these
 non-interactive lines; the manager positions each midway in its gap and renders it explicitly.
 The reusable widget accepts a theme color or color supplier,
@@ -592,6 +593,11 @@ panel render pass, rather than attaching a widget tooltip to the entire tree rec
 Switching
 views preserves separate local and remote selection/scroll state; filtering/removal clears an
 invisible remote selection. Remote scope is owned by the screen instance, not persisted to disk.
+An empty remote tree explains itself: `RemoteBrowserModel.emptyReason(catalogState, hasServers,
+selectedServer, query, dimensionScope)` returns an `EmptyReason` (unauthorized, no servers, an
+unavailable selected server, a search miss, an empty server or an empty dimension, checked in that
+order), and the tree renders its translation through a retained muted `ScalableText` at the first
+row's text position, wrapped to the content width minus 5 pixels on each side.
 
 Waypoint and waypoint-list `name` fields are always unformatted plain-text identities used by
 commands, lookup, sorting, searching, initials, and external map integrations. They are also the
