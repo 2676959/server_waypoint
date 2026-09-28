@@ -6,7 +6,9 @@ a server from a 13-server catalog, verifies dimension changes, independent scrol
 selector anchors, checks add-button visibility, selects an exact quoted target, sends teleport immediately without a dialog, resizes the browser, toggles list/flat view and sort
 direction through the shared sidebar controls, returns to local and remote views, filters rows, refreshes stale
 catalogs and invalidates the teleport action by resetting the cache session. It checks the original
-local manager object and saved files remain unchanged. A fixture populates the real remote cache;
+local manager object and saved files remain unchanged. It also checks that a search miss explains
+the empty tree, that the footer reports a stale server, and that an empty remote cache hides the
+local/remote toggle. A fixture populates the real remote cache;
 this probe does not test TCP, permissions or a real cross-server teleport.
 
 The probe and its Gradle init script are outside production source sets. Normal builds do not
