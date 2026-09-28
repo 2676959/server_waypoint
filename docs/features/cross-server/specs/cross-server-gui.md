@@ -1,9 +1,13 @@
 # Step 18: remote waypoint manager
 
-Open the waypoint manager and choose **Server: Local / Remote…** above its dimension/list hierarchy.
-The remote branch displays server → dimension → list → waypoint rows. Expand/collapse the hierarchy,
-search by identifier/list/keyword, and reverse the name ordering. Select a waypoint to see its exact
-server identity and read-only metadata. The Local button returns to the existing local manager.
+Open the waypoint manager and use the local/remote toggle in its sidebar. The toggle appears once
+the remote catalog holds at least one server. The server rail above the controls selects a server,
+the dimension rail shows that server's catalog, and the list shows its list → waypoint rows, or
+dimension → list → waypoint rows in all-dimensions mode. Expand/collapse the hierarchy, search by
+identifier/list/keyword, and use the shared sort and group controls. Select a waypoint to see its
+exact server identity and read-only metadata. The toggle returns to the local view. The
+[waypoint manager screen design](../../waypoint-manager/specs/2026-09-28-waypoint-manager-screen-design.md)
+describes the whole screen.
 
 Remote data stays in the Step 17 session cache. No remote row becomes a local waypoint, file,
 renderer, map-mod export, or local navigation target. The details explain why mutation and local
