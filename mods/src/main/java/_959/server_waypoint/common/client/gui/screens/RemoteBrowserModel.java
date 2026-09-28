@@ -7,6 +7,8 @@ import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import _959.server_waypoint.util.ColorUtils;
 import _959.server_waypoint.util.StringCommandBuilder;
+import _959.server_waypoint.util.VanillaDimensionNames;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -83,6 +85,41 @@ final class RemoteBrowserModel {
         return roots.get(0).children().stream()
                 .filter(node -> dimension == null || dimension.equals(node.path().dimension()))
                 .flatMap(node -> node.children().stream()).toList();
+    }
+
+    /** Why the scoped remote tree has no rows; the panel shows the matching message. */
+    enum EmptyReason {
+        UNAUTHORIZED("waypoint.remote.empty.unauthorized"),
+        NO_SERVERS("waypoint.remote.no_servers"),
+        SERVER_UNAVAILABLE("waypoint.remote.empty.server_unavailable"),
+        NO_MATCHES("waypoint.empty.no_matches"),
+        SERVER_EMPTY("waypoint.remote.empty.server"),
+        DIMENSION_EMPTY("waypoint.remote.empty.dimension");
+
+        private final String translationKey;
+
+        EmptyReason(String translationKey) { this.translationKey = translationKey; }
+
+        String translationKey() { return translationKey; }
+    }
+
+    /** Picks the empty-tree message; catalog failures come before the selected server, then the search. */
+    static EmptyReason emptyReason(RemoteCatalogState catalogState, boolean hasServers,
+                                   @Nullable CatalogReceiver.View selectedServer, String query,
+                                   @Nullable String dimensionScope) {
+        if (catalogState == RemoteCatalogState.UNAUTHORIZED) return EmptyReason.UNAUTHORIZED;
+        if (!hasServers) return EmptyReason.NO_SERVERS;
+        if (selectedServer == null || selectedServer.snapshot() == null
+                || selectedServer.state() == RemoteCatalogState.UNAVAILABLE) return EmptyReason.SERVER_UNAVAILABLE;
+        if (!query.isBlank()) return EmptyReason.NO_MATCHES;
+        return dimensionScope == null ? EmptyReason.SERVER_EMPTY : EmptyReason.DIMENSION_EMPTY;
+    }
+
+    /** Rail dimensions of a server; like {@link #roots}, hides an unavailable server's retained snapshot. */
+    static List<String> dimensionNames(@Nullable CatalogReceiver.View view) {
+        if (view == null || view.snapshot() == null || view.state() == RemoteCatalogState.UNAVAILABLE) return List.of();
+        return view.snapshot().dimensions().keySet().stream()
+                .sorted(VanillaDimensionNames::dimensionNameComparator).toList();
     }
 
     private static void flatten(List<Node> nodes, List<Node> flat) {
