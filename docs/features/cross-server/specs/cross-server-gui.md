@@ -45,7 +45,8 @@ handoffs, the full version matrix, screenshot review and soak/security release c
   bindings. `roots` filters/sorts one immutable cache view; `prepare` and `isCurrent` bind and
   recheck the session generation, key, catalog revision, waypoint value and escaped command.
 - `RemoteClientCatalogs.session()` increments on `clear()` and is independent of remote revisions.
-  The screen closes on generation changes, including after a handshake.
+  In the remote view the screen closes on generation changes, including after a handshake; the
+  local view rebuilds the screen and rebinds the panel to the new session instead.
 - The remote screen renders each registered widget once through the high-level Stonecutter swap.
   Exact identities are available in hover details even when
   labels are clipped. No client API or payload is added for teleport results; existing server
