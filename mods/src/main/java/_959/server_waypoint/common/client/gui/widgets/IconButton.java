@@ -13,7 +13,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-public class IconButton extends ShiftableClickableWidget implements Expandable {
+public class IconButton extends ShiftableButtonWidget implements Expandable {
     private static final int ICON_PADDING = 2;
     private final
     //$ resource_location_type_swap
@@ -31,7 +31,7 @@ public class IconButton extends ShiftableClickableWidget implements Expandable {
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY) {
+    protected void onPress() {
         this.callback.onClick();
     }
 

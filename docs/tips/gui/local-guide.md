@@ -67,7 +67,7 @@ Adding a child to `WidgetStack` or `ExpandableManager` does not automatically re
 
 Use the existing interfaces when their meaning matches the new component:
 
-- `ButtonClickCallback` reports a button click.
+- `ButtonClickCallback` reports a button press, from a left click or an activation key.
 - `ToggleButtonCallback` reports the new boolean state.
 - `ColorPickerCallback` reports an updated ARGB/RGB value.
 - `DimensionListCallback` reports a selected dimension name.
@@ -483,7 +483,15 @@ Screen-local icon controls should use the same inset so adjacent icon actions re
 The main base classes have distinct roles:
 
 - Extend `ShiftableWidget` for a non-interactive `LayoutElement`/`Renderable`.
-- Extend `ShiftableClickableWidget` for a normal `AbstractWidget` with input.
+- Extend `ShiftableClickableWidget` for a normal `AbstractWidget` with input. Its `keyPressed`
+  ignores keys unless overridden, so controls that own their key handling (text fields,
+  `IntegerSlider`, `ComboBoxWidget`, dropdowns, and color pickers) build on it directly.
+- Extend `ShiftableButtonWidget` for a pressable control, as `TranslucentButton`, `ToggleButton`,
+  and `IconButton` do. Implement `onPress()`: like vanilla `AbstractButton`, a left click and
+  Enter, Space or keypad Enter while the button is focused, active and visible both play the
+  click sound and run it. `onClick` is final so the two paths cannot diverge, and
+  `activatesOn(keyCode)` reports whether a key would press the button. Screens route those keys
+  as described in [Input](#4-input-preserve-focus-and-text-entry).
 - Extend `ShiftableScrollableWidget` when the widget has a vertically scrollable viewport.
 - Extend `TreeViewWidget<T>` when the content is a flattened visible view of expandable hierarchical data. Implement child lookup, expansion state, empty rendering, and row rendering; the base class handles scroll bounds, hit testing, visible-row calculation, clipping, and scrollbar drawing.
 
@@ -652,7 +660,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public final class ExampleButton extends ShiftableClickableWidget implements Expandable {
+public final class ExampleButton extends ShiftableButtonWidget implements Expandable {
     private final ButtonClickCallback callback;
 
     public ExampleButton(int x, int y, int width, int height, Component message, ButtonClickCallback callback) {
@@ -663,7 +671,7 @@ public final class ExampleButton extends ShiftableClickableWidget implements Exp
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY) {
+    protected void onPress() {
         this.callback.onClick();
     }
 
@@ -760,7 +768,17 @@ Let registered widgets receive ordinary input through the screen. Intercept only
   intercepts. A screen whose Escape handling does not reach `super.keyPressed` calls
   `closeFocusedPopup()` first, as `WidgetThemeConfigScreen` does. Compare against
   `InputConstants.KEY_ESCAPE`, never 256, which is not Escape on 26.3.
+- A focused `ShiftableButtonWidget` is pressed by Enter, Space and keypad Enter, but
+  `MovementAllowedScreen` also forwards movement keys, and Space is the default jump key. Each
+  press is handled once. After Tab or arrow-key navigation (vanilla's
+  `getLastInputType().isKeyboard()`), the focused button takes its activation keys and they are
+  not forwarded as movement. A mouse click also leaves the clicked button focused, so after one an
+  activation key that is bound to movement (Space) only moves the player, while Enter and keypad
+  Enter still press the button. Inactive or hidden buttons claim no keys, and other movement keys
+  keep moving the player while a button is focused.
 - Screen shortcuts should normally be disabled while the focused listener is an `EditBox`.
+  Shortcuts that run before `super.keyPressed`, such as the manager's `C` binding, must leave
+  Enter, Space and keypad Enter to the focused widget.
 - Call `acceptMovementKeys(false)` while text entry or another control must own movement-key input.
 - A modal should disable underlying controls and move focus into the modal; restore both when it closes.
 
@@ -1005,6 +1023,10 @@ Good test targets include:
 - Nested relayout after resize.
 - Tree expansion, visible rows, viewport ranges, and scroll clamping.
 - Input parsing and callback-driven state changes.
+- Keyboard activation, and routing a key between the focused widget and movement forwarding.
+  `MovementAllowedScreenButtonKeyTest` shows a screen double that overrides
+  `isKeyboardNavigating()` and `testMovementKeysDown(int)` instead of reading the game's input
+  state and key mappings.
 - Pure label or presentation calculations.
 - Theme completeness, runtime updates, JSON round trips, invalid input, and file persistence.
 - Theme-editor preview, reset, save, cancel, and idempotent rollback transitions.

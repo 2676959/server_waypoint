@@ -21,7 +21,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public class ToggleButton extends ShiftableClickableWidget implements Expandable, Padding {
+public class ToggleButton extends ShiftableButtonWidget implements Expandable, Padding {
     private static final int DEFAULT_Y_OFFSET = -1;
     private static final VisualBounds VISUAL_BOUNDS = new VisualBounds(0, 1, 0, -1);
     static final int OUTLINE_LEFT_PADDING = 1;
@@ -102,7 +102,7 @@ public class ToggleButton extends ShiftableClickableWidget implements Expandable
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY) {
+    protected void onPress() {
         this.state = !this.state;
         this.callback.onToggle(this.state);
     }

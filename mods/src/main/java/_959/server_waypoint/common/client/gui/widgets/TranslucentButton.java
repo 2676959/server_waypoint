@@ -17,7 +17,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public class TranslucentButton extends ShiftableClickableWidget implements Expandable, Padding {
+public class TranslucentButton extends ShiftableButtonWidget implements Expandable, Padding {
     private static final int DEFAULT_Y_OFFSET = -1;
     static final int OUTLINE_LEFT_PADDING = 1;
     static final int OUTLINE_TOP_PADDING = 2;
@@ -61,7 +61,7 @@ public class TranslucentButton extends ShiftableClickableWidget implements Expan
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY) {
+    protected void onPress() {
         this.callback.onClick();
     }
 

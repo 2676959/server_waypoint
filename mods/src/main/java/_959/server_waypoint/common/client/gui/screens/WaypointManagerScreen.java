@@ -1492,7 +1492,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         }
     }
 
-    private static final class IconToggleButton extends ShiftableClickableWidget {
+    private static final class IconToggleButton extends ShiftableButtonWidget {
         private final
         //$ resource_location_type_swap
         Identifier
@@ -1527,7 +1527,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         }
 
         @Override
-        public void onClick(double mouseX, double mouseY) {
+        protected void onPress() {
             this.setState(!this.state);
             this.callback.accept(this.state);
         }

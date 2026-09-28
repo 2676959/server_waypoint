@@ -4,6 +4,7 @@ package _959.server_waypoint.common.client.gui.screens;
 import _959.server_waypoint.common.client.gui.api.PopupOwner;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
+import _959.server_waypoint.common.client.gui.widgets.ShiftableButtonWidget;
 import _959.server_waypoint.mixin.BoundKeyAccessor;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
@@ -125,6 +126,15 @@ public abstract class MovementAllowedScreen extends Screen {
         return false;
     }
 
+    /** Whether the player last used Tab or the arrow keys rather than a mouse button. */
+    boolean isKeyboardNavigating() {
+        return this.minecraft.getLastInputType().isKeyboard();
+    }
+
+    private boolean focusedButtonActivatesOn(int keyCode) {
+        return this.getFocused() instanceof ShiftableButtonWidget button && button.activatesOn(keyCode);
+    }
+
     @Override
     protected void init() {
         forwardKeyBinding = this.minecraft.options.keyUp;
@@ -162,7 +172,7 @@ public abstract class MovementAllowedScreen extends Screen {
         sprintKeyBinding.setDown(false);
     }
 
-    private boolean testMovementKeysDown(int keyCode) {
+    boolean testMovementKeysDown(int keyCode) {
         boolean ret = false;
         if (keyCode == forwardKeyCode) {
             forwardKeyBinding.setDown(true);
@@ -283,7 +293,13 @@ public abstract class MovementAllowedScreen extends Screen {
             /*return super.keyPressed(keyCode, scanCode, modifiers);
             *///?}
         }
-        boolean ret = testMovementKeysDown(keyCode);
+        // An activation key that is also bound to movement (Space jumps by default) is handled once:
+        // a button reached with Tab or the arrow keys is pressed, otherwise the player moves.
+        boolean buttonKey = this.focusedButtonActivatesOn(keyCode);
+        boolean ret = !(buttonKey && this.isKeyboardNavigating()) && testMovementKeysDown(keyCode);
+        if (buttonKey && ret) {
+            return true;
+        }
         //? if >= 1.21.9 {
         boolean ret2 = super.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
         //?} else {
