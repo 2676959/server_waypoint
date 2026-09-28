@@ -26,7 +26,7 @@ Keep new helpers at the narrowest useful scope:
 
 | Package | Responsibility | Typical contents |
 | --- | --- | --- |
-| `client.gui.api` | Small GUI-facing contracts and callbacks | Button, toggle, color-picker, and dimension-selection callbacks; `Colorable` |
+| `client.gui.api` | Small GUI-facing contracts and callbacks | Button, toggle, color-picker, and dimension-selection callbacks; `Colorable`; `PopupOwner` |
 | `client.gui.layout` | Positioning, sizing, padding, and flow | `WidgetStack`, `WidgetPack`, `ExpandableManager`, `LayoutFlow`, `Padding`, `AnchorMode`, `VisualBounds` |
 | `client.gui.render` | Cross-version drawing helpers, semantic theme state, and presentation constants | `DrawContextHelper`, `PaddingBackground`, `WidgetTheme`, `WidgetThemeManager`, `WaypointTextures` |
 | `client.gui.screens` | Screen lifecycle and feature composition | Manager, add/edit, configuration, theme-editor, and movement-aware screens |
@@ -72,6 +72,9 @@ Use the existing interfaces when their meaning matches the new component:
 - `ColorPickerCallback` reports an updated ARGB/RGB value.
 - `DimensionListCallback` reports a selected dimension name.
 - `Colorable` standardizes `getColor` and `setColor` for color-aware widgets.
+- `PopupOwner` marks a control with a transient popup, such as a menu or suggestion list.
+  `closePopupIfOpen` closes it and reports whether it was open, so Escape can dismiss it (see
+  [Input](#4-input-preserve-focus-and-text-entry)).
 
 Keep callbacks small and synchronous. Prefer passing the callback into a widget constructor, as `TranslucentButton`, `ToggleButton`, and `DimensionListWidget` do. Do not make a reusable widget reach into a particular screen through static fields merely to report an ordinary click or value change.
 
@@ -221,9 +224,11 @@ Minecraft screens resolve a child by `isMouseOver` before dispatching the click.
 
 When popup items may overlap another registered widget, route the open dropdown before
 `super.mouseClicked`; render layers do not define input priority. For an outside click, call
-`closeMenuIfOutside` and then continue normal dispatch so the same click can reach its target. To
-make Escape close the menu instead of the screen, call `closeMenuIfOpen` and return before
-`super.keyPressed`, because vanilla handles Escape before forwarding keys to the focused child.
+`closeMenuIfOutside` and then continue normal dispatch so the same click can reach its target.
+A dropdown is a `PopupOwner`, so Escape closes an open menu and the dropdown yields focus before
+the screen can close; screens need no Escape code of their own for it (see
+[Input](#4-input-preserve-focus-and-text-entry)). Losing focus closes the menu, so an open menu
+always belongs to the focused control.
 
 Use `InputConstants.KEY_*` and `InputConstants.MOUSE_BUTTON_*` for input comparisons and test
 events. Minecraft 26.3 uses SDL codes, so raw GLFW values and numeric mouse buttons no longer
@@ -250,8 +255,9 @@ prefix matching, deduplicated and sorted, with an inline suffix and up to five p
 Up/Down selects a suggestion and Tab/Shift-Tab accepts/cycles completions. Clicking a suggestion
 also accepts it through the normal user-change callback. The full choice popup suppresses
 suggestions while open. `renderPopup(...)` draws whichever popup is active, including when rendered
-separately. Route popup clicks before overlapping controls using `isMouseOver(...)`, and call
-`closeSuggestionsIfOpen()` after `closeMenuIfOpen()` when intercepting Escape at screen level.
+separately. Route popup clicks before overlapping controls using `isMouseOver(...)`. Its
+`closePopupIfOpen()` closes the choice list, or the suggestions when the list is closed, so
+Escape dismisses whichever is showing.
 
 `SuggestingTextInput` is the reusable surface-free input base. It owns editing, shifted layout,
 completion state, inline text, and suggestion rendering/hit testing; `TranslucentTextField` adds
@@ -261,8 +267,9 @@ uses its full control width, including the arrow area, and clips suggestion text
 Drawing and hit testing use the same bounds. Use `setSuggestionsEnabled(...)` to temporarily suppress completion without
 losing focus. `refreshSuggestions()` invalidates a completion cycle after catalog changes; replacing
 the provider also refreshes it. `renderSuggestions(...)` remains an explicit overlay pass for standalone inputs.
-Escape dismissal persists until editing or refocusing, and disabled/hidden inputs do not accept
-suggestion clicks. `AbstractDropdownMenuWidget.renderPopup(...)` may be overridden to provide
+Escape closes the suggestion list and the input yields focus. A dismissal through
+`closeSuggestionsIfOpen()` persists until editing or refocusing, and disabled/hidden inputs do not
+accept suggestion clicks. `AbstractDropdownMenuWidget.renderPopup(...)` may be overridden to provide
 another popup when the full menu is closed; preserve its separate-rendering contract.
 
 An exact matching choice is omitted from the popup. Resizing also resizes the field and choice rows.
@@ -747,6 +754,12 @@ server rail badges. On 1.21.6 and later both pairs start a new render stratum, b
 Let registered widgets receive ordinary input through the screen. Intercept only behavior the screen must prioritize:
 
 - Suggestion clicks must be checked before delegating to `super.mouseClicked`.
+- Vanilla closes the screen on Escape before the focused child sees the key. Before that,
+  `MovementAllowedScreen.keyPressed` closes the focused `PopupOwner`'s open menu or suggestion
+  list and clears focus, so a second Escape closes the screen. Do not add per-widget Escape
+  intercepts. A screen whose Escape handling does not reach `super.keyPressed` calls
+  `closeFocusedPopup()` first, as `WidgetThemeConfigScreen` does. Compare against
+  `InputConstants.KEY_ESCAPE`, never 256, which is not Escape on 26.3.
 - Screen shortcuts should normally be disabled while the focused listener is an `EditBox`.
 - Call `acceptMovementKeys(false)` while text entry or another control must own movement-key input.
 - A modal should disable underlying controls and move focus into the modal; restore both when it closes.
@@ -870,7 +883,7 @@ Calling `setSuggestionsProvider` is only the data step. A suggestion-enabled fie
 2. `renderSuggestions` called after the field, usually on a later layer.
 3. `mouseClickedSuggestion` checked before normal screen click dispatch while that field is focused.
 
-`AbstractWaypointPropertiesScreen` is the reference for several fields, while `WaypointManagerScreen` shows the same pattern for a single search field. If any one of the three pieces is missing, suggestions may exist internally but fail to appear or accept clicks.
+`AbstractWaypointPropertiesScreen` is the reference for several fields, while `WaypointManagerScreen` shows the same pattern for a single search field. If any one of the three pieces is missing, suggestions may exist internally but fail to appear or accept clicks. Escape needs no fourth piece on a `MovementAllowedScreen`: the focused field closes its list before the screen closes.
 
 `SuggestingTextInput.getSuggestionsY(int suggestionHeight)` positions a popup after its visible height is known. A `ComboBoxWidget` uses its expansion direction for both its choice list and typed suggestions: upward suggestions end at the top of the field, and downward suggestions begin below it. Keep render, hover, and click bounds on that same computed rectangle.
 
