@@ -95,18 +95,57 @@ final class RemoteWaypointPanel {
         register.accept(teleportButton);
     }
 
+    /** Receives the whole list area below the search field and the details content area. */
     void layout(int x, int y, int width, int height, int detailsX, int detailsY, int detailsWidth, int detailsHeight) {
-        tree.setX(x);
-        tree.setY(y);
-        tree.setWidth(width);
-        tree.setHeight(height);
+        listX = x;
+        listY = y;
+        listWidth = width;
+        listHeight = height;
+        layoutList();
+        // The outline bottom lines up with the content bottom, like every other panel's content.
+        int buttonHeight = teleportButton.getVisualHeight();
         details.setX(detailsX);
         details.setY(detailsY);
         details.setWidth(detailsWidth);
-        details.setHeight(Math.max(1, detailsHeight - 24));
+        details.setHeight(Math.max(1, detailsHeight - buttonHeight - DETAILS_ACTION_GAP));
         teleportButton.setX(detailsX);
-        teleportButton.setY(detailsY + detailsHeight - 20);
+        teleportButton.setY(detailsY + detailsHeight - buttonHeight);
         teleportButton.setVisualWidth(detailsWidth);
+    }
+
+    private void layoutList() {
+        footer.setMaxWidth(Math.max(1, listWidth));
+        var split = splitListArea(listHeight, footer.getHeight(), footerHasServer);
+        footerVisible = split.footerVisible();
+        tree.setX(listX);
+        tree.setY(listY);
+        tree.setWidth(listWidth);
+        tree.setHeight(split.treeHeight());
+        footer.setPosition(listX, listY + listHeight - footer.getHeight());
+    }
+
+    private void updateFooter() {
+        var view = serverFilter == null ? null : displayed.get(serverFilter);
+        footerHasServer = view != null;
+        if (view != null) {
+            footer.setText(Component.translatable("waypoint.remote.gui.server_status", view.displayName(),
+                    Component.translatable(ServerListWidget.stateTranslationKey(view.state()))));
+            footer.setColor(ServerListWidget.stateColor(view.state()));
+        }
+        layoutList();
+    }
+
+    private void select(@Nullable RemoteWaypointKey key) {
+        if (!Objects.equals(selected, key)) failure = null;
+        selected = key;
+    }
+
+    private void updateTeleportAction() {
+        teleportButton.active = teleportButton.visible && isSessionCurrent()
+                && RemoteBrowserModel.prepare(catalogs, selected) != null;
+        String tooltip = failure != null ? failure
+                : teleportButton.active ? "waypoint.remote.gui.feedback" : "waypoint.remote.gui.teleport_hint";
+        teleportButton.setTooltip(Tooltip.create(Component.translatable(tooltip)));
     }
 
     void setVisible(boolean visible) {
