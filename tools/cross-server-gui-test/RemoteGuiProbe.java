@@ -167,7 +167,12 @@ public final class RemoteGuiProbe implements ClientModInitializer {
                 check(mc.screen == null, "session reset closes the manager");
                 check(manager == client.getWaypointFileManager("minecraft:overworld"), "local manager untouched");
                 check(files.equals(localFiles(mc)), "local files unchanged");
-                System.out.println("REMOTE_GUI_PROBE PASS: native Fabric 26.1.2 screen input, immediate teleport, resize, cache transitions and local isolation");
+                var emptyManager = new WaypointManagerScreen(client);
+                mc.setScreen(emptyManager);
+                check(!((AbstractWidget) field(WaypointManagerScreen.class, "serverScopeToggle").get(emptyManager)).visible,
+                        "empty remote cache hides the local/remote toggle");
+                mc.setScreen(null);
+                System.out.println("REMOTE_GUI_PROBE PASS: native Fabric 26.1.2 screen input, immediate teleport, resize, cache transitions, footer, empty states, toggle availability and local isolation");
                 Files.writeString(mc.gameDirectory.toPath().resolve("remote-gui-result.txt"), "PASS\n");
                 mc.stop();
             }
