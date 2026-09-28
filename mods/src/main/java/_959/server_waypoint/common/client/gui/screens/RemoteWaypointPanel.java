@@ -25,6 +25,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import java.util.function.Consumer;
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -34,7 +35,10 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 
 /** Read-only remote panel owned and rendered by the waypoint manager. */
 final class RemoteWaypointPanel {
+    static final int FOOTER_GAP = 4;
+    static final int TREE_ROW_HEIGHT = 20;
     private static final int EMPTY_MESSAGE_INSET = 5;
+    private static final int DETAILS_ACTION_GAP = 4;
     private final Font font;
     private final RemoteClientCatalogs catalogs;
     private long session;
@@ -51,6 +55,15 @@ final class RemoteWaypointPanel {
     private boolean grouped = true;
     private WaypointSorting.SortMode sortMode = WaypointSorting.SortMode.NAME;
     private String feedback = "waypoint.remote.gui.feedback";
+    private final ScalableText footer;
+    private boolean footerVisible;
+    private boolean footerHasServer;
+    private int listX;
+    private int listY;
+    private int listWidth;
+    private int listHeight;
+    // A failed teleport's message; shown until the selection changes.
+    private @Nullable String failure;
 
     RemoteWaypointPanel(WaypointClientMod client, Font font) {
         this.font = font;
@@ -61,6 +74,19 @@ final class RemoteWaypointPanel {
         this.teleportButton = new TranslucentButton(0, 0, 100, 16,
                 Component.translatable("waypoint.remote.gui.teleport"), this::teleport, AnchorMode.OUTLINE);
         this.teleportButton.setTooltip(Tooltip.create(Component.translatable("waypoint.remote.gui.teleport_hint")));
+        this.footer = new ScalableText(0, 0, Component.empty(), TEXT_MUTED, font);
+    }
+
+    record ListAreaSplit(int treeHeight, boolean footerVisible) { }
+
+    /**
+     * Splits the list area below the search field between the tree and the status footer. The
+     * footer needs a selected server and must leave the tree at least one row.
+     */
+    static ListAreaSplit splitListArea(int height, int footerHeight, boolean hasServer) {
+        int treeHeight = height - FOOTER_GAP - footerHeight;
+        if (!hasServer || treeHeight < TREE_ROW_HEIGHT) return new ListAreaSplit(Math.max(1, height), false);
+        return new ListAreaSplit(treeHeight, true);
     }
 
     void register(Consumer<AbstractWidget> register) {
