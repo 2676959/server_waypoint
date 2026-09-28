@@ -299,6 +299,27 @@ class AbstractDropdownMenuWidgetTest {
         assertEquals(4, dropdown.expandedChangeCount);
     }
 
+    @Test
+    void losingFocusClosesTheMenu() {
+        TestDropdown dropdown = new TestDropdown(
+                10,
+                20,
+                16,
+                16,
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.FORWARD,
+                2
+        );
+        dropdown.addItem(16, 16, () -> {
+        });
+        dropdown.setFocused(true);
+        dropdown.setExpanded(true);
+
+        dropdown.setFocused(false);
+
+        assertFalse(dropdown.isExpanded());
+    }
+
     @ParameterizedTest
     @MethodSource("flowDirections")
     void arrowNavigationFollowsTheVisualExpansionDirection(
