@@ -649,9 +649,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == InputConstants.KEY_ESCAPE && closeOpenDropdownMenus()) {
-            return true;
-        }
         GuiEventListener focused = this.getFocused();
         boolean notTyping = !(focused instanceof EditBox);
         this.acceptMovementKeys(notTyping);

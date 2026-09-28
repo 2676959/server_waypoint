@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.api.PopupOwner;
 import _959.server_waypoint.common.client.gui.layout.AnchorMode;
 import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.Padding;
@@ -40,7 +41,7 @@ import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.network.chat.Component;
 
 /** Surface-free editable input with shared completion, popup, and layout behavior. */
-public class SuggestingTextInput extends EditBox implements Shiftable, Expandable, Padding {
+public class SuggestingTextInput extends EditBox implements Shiftable, Expandable, Padding, PopupOwner {
     static final int OUTLINE_PADDING = 2;
     private static final int SUGGESTION_LINE_HEIGHT = 12;
     private static final int MAX_VISIBLE_SUGGESTIONS = 5;
@@ -106,6 +107,11 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
         this.hideSuggestions();
         this.suggestionsDismissed = true;
         return true;
+    }
+
+    @Override
+    public boolean closePopupIfOpen() {
+        return this.closeSuggestionsIfOpen();
     }
 
     public boolean isMouseOverSuggestion(double mouseX, double mouseY) {

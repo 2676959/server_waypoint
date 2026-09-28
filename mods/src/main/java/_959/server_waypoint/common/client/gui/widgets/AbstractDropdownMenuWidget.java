@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.api.PopupOwner;
 import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
@@ -25,7 +26,7 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pr
  * The dropdown owns item rendering and click routing, so the owning screen registers only this
  * widget.
  */
-public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidget implements Expandable {
+public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidget implements Expandable, PopupOwner {
     private final List<AbstractMenuItem> menuItems = new ArrayList<>();
     private final LayoutFlow.Orientation expansionOrientation;
     private LayoutFlow.Direction expansionDirection;
@@ -193,6 +194,20 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         }
         this.setExpanded(false);
         return true;
+    }
+
+    @Override
+    public boolean closePopupIfOpen() {
+        return this.closeMenuIfOpen();
+    }
+
+    /** An open menu always belongs to the focused control, where Escape can reach it. */
+    @Override
+    public void setFocused(boolean focused) {
+        super.setFocused(focused);
+        if (!focused) {
+            this.closeMenuIfOpen();
+        }
     }
 
     @Override

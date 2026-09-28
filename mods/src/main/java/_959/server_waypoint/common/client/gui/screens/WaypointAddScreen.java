@@ -177,15 +177,6 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         return false;
     }
 
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == 256 && (this.dimensionField.closeMenuIfOpen()
-                || this.dimensionField.closeSuggestionsIfOpen())) {
-            return true;
-        }
-        return super.keyPressed(keyCode, scanCode, modifiers);
-    }
-
     private void sendAddCommand() {
         WaypointPos resolvedPos = this.resolveCoordinateFields();
         sendCommand(addCmd(this.dimensionField.getValue(), this.listNameField.getValue(),

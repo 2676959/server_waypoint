@@ -575,13 +575,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == 256 && (this.iconPicker.menu().closeMenuIfOpen()
-                || this.iconPicker.menu().closeSuggestionsIfOpen())) {
-            return true;
-        }
         GuiEventListener focused = this.getFocused();
         this.acceptMovementKeys(!(focused instanceof EditBox) && !(focused instanceof ComboBoxWidget));
-        if (keyCode == 256 && this.swatchWidget.visible) {
+        if (keyCode == InputConstants.KEY_ESCAPE && this.swatchWidget.visible) {
             this.closeSwatch();
             return true;
         }

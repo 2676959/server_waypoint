@@ -75,6 +75,11 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
     }
 
     @Override
+    public boolean closePopupIfOpen() {
+        return this.closeMenuIfOpen() || this.closeSuggestionsIfOpen();
+    }
+
+    @Override
     protected void onExpandedChanged(boolean expanded) {
         if (this.input != null) {
             this.input.setSuggestionsEnabled(!expanded);
@@ -189,9 +194,6 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
         super.setFocused(focused);
         if (this.input != null) {
             this.input.setFocused(focused);
-        }
-        if (!focused) {
-            this.closeMenuIfOpen();
         }
     }
 

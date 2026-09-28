@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.common.client.gui.api.PopupOwner;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.mixin.BoundKeyAccessor;
@@ -110,6 +111,18 @@ public abstract class MovementAllowedScreen extends Screen {
 
     public void acceptMovementKeys(boolean bool) {
         this.movementAllowed = bool;
+    }
+
+    /**
+     * Vanilla closes the screen on Escape before the focused widget receives the key, so an open
+     * menu or suggestion list is dismissed here first and its owner yields focus.
+     */
+    protected boolean closeFocusedPopup() {
+        if (this.getFocused() instanceof PopupOwner owner && owner.closePopupIfOpen()) {
+            this.setFocused(null);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -259,6 +272,9 @@ public abstract class MovementAllowedScreen extends Screen {
     *///?}
 
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == InputConstants.KEY_ESCAPE && this.closeFocusedPopup()) {
+            return true;
+        }
         if (!movementAllowed) {
             unpressAllMovementKeys();
             //? if >= 1.21.9 {
