@@ -581,6 +581,12 @@ Missing registry entries and air use a compass; tooltip labels include the exact
 Remote data stays in `RemoteClientCatalogs`; no remote row creates a local waypoint or mutation
 handle. The remote details remain read-only. The teleport button sends immediately without a
 confirmation dialog, after rechecking session, catalog revision, exact identity, and waypoint data.
+The bottom of its outline lines up with the details content bottom, 4 pixels below the details
+viewport. Its tooltip shows `teleport_hint` while disabled, the chat-feedback note while enabled,
+and the failure message after a failed attempt until the selection changes. Below the remote tree,
+a `ScalableText` footer shows the selected server's display name and state in
+`ServerListWidget.stateColor`; `RemoteWaypointPanel.splitListArea` gives the tree the rest of the
+list area and hides the footer when no server is selected or the tree would drop below one row.
 Both lists use 20-pixel rows and `WaypointRowRenderer.background(...)` / `initials(...)` for waypoint
 color washes, hover/selection outlines and initials badges. The initials method returns the badge
 width for label placement. `WaypointRowRenderer.icon(...)` centers a 16-pixel item or VoxelMap image
