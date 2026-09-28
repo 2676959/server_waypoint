@@ -24,7 +24,7 @@ class RemoteGuiTranslationTest {
             "waypoint.remote.empty.server",
             "waypoint.remote.empty.dimension"
     );
-    private static final List<String> RETIRED_KEYS = List.of("waypoint.remote.gui.selector");
+    private static final List<String> RETIRED_KEYS = List.of("waypoint.remote.gui.selector", "waypoint.empty_mark");
 
     @Test void allSixLocalesCoverRemoteGuiKeysAndPlaceholders() throws Exception {
         JsonObject english = read("en_us");
