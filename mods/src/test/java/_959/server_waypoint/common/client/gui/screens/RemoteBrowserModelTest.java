@@ -154,4 +154,64 @@ class RemoteBrowserModelTest {
         assertEquals(RemoteCatalogState.AVAILABLE, roots.get(0).state());
         assertTrue(roots.get(0).children().isEmpty());
     }
+
+    @Test void emptyReasonReportsCatalogFailuresFirst() {
+        var available = view(a, RemoteCatalogState.AVAILABLE, 1, "name");
+        assertEquals(RemoteBrowserModel.EmptyReason.UNAUTHORIZED, RemoteBrowserModel.emptyReason(
+                RemoteCatalogState.UNAUTHORIZED, true, available, "query", "dimension with spaces"));
+        assertEquals(RemoteBrowserModel.EmptyReason.NO_SERVERS, RemoteBrowserModel.emptyReason(
+                RemoteCatalogState.UNAVAILABLE, false, null, "query", null));
+        assertEquals(RemoteBrowserModel.EmptyReason.NO_SERVERS, RemoteBrowserModel.emptyReason(
+                RemoteCatalogState.AVAILABLE, false, null, "", null));
+    }
+
+    @Test void emptyReasonReportsAnUnusableSelectedServerBeforeTheSearch() {
+        var available = view(a, RemoteCatalogState.AVAILABLE, 1, "name");
+        var retained = new CatalogReceiver.View(available.snapshot(), RemoteCatalogState.UNAVAILABLE,
+                "retained", null, "minecraft:compass");
+        var noSnapshot = new CatalogReceiver.View(null, RemoteCatalogState.STALE, "empty", null, "minecraft:compass");
+        for (var server : Arrays.asList(null, retained, noSnapshot)) {
+            assertEquals(RemoteBrowserModel.EmptyReason.SERVER_UNAVAILABLE, RemoteBrowserModel.emptyReason(
+                    RemoteCatalogState.AVAILABLE, true, server, "query", "dimension with spaces"));
+        }
+    }
+
+    @Test void emptyReasonSeparatesSearchMissesFromEmptyScopes() {
+        var available = view(a, RemoteCatalogState.AVAILABLE, 1, "name");
+        var stale = view(a, RemoteCatalogState.STALE, 1, "name");
+        assertEquals(RemoteBrowserModel.EmptyReason.NO_MATCHES, RemoteBrowserModel.emptyReason(
+                RemoteCatalogState.AVAILABLE, true, available, "query", "dimension with spaces"));
+        assertEquals(RemoteBrowserModel.EmptyReason.DIMENSION_EMPTY, RemoteBrowserModel.emptyReason(
+                RemoteCatalogState.AVAILABLE, true, available, " ", "dimension with spaces"));
+        assertEquals(RemoteBrowserModel.EmptyReason.SERVER_EMPTY, RemoteBrowserModel.emptyReason(
+                RemoteCatalogState.AVAILABLE, true, stale, "", null));
+    }
+
+    @Test void emptyReasonsUseTheirTranslationKeys() {
+        assertEquals("waypoint.remote.empty.unauthorized",
+                RemoteBrowserModel.EmptyReason.UNAUTHORIZED.translationKey());
+        assertEquals("waypoint.remote.no_servers",
+                RemoteBrowserModel.EmptyReason.NO_SERVERS.translationKey());
+        assertEquals("waypoint.remote.empty.server_unavailable",
+                RemoteBrowserModel.EmptyReason.SERVER_UNAVAILABLE.translationKey());
+        assertEquals("waypoint.empty.no_matches",
+                RemoteBrowserModel.EmptyReason.NO_MATCHES.translationKey());
+        assertEquals("waypoint.remote.empty.server",
+                RemoteBrowserModel.EmptyReason.SERVER_EMPTY.translationKey());
+        assertEquals("waypoint.remote.empty.dimension",
+                RemoteBrowserModel.EmptyReason.DIMENSION_EMPTY.translationKey());
+    }
+
+    @Test void railDimensionsUseVanillaOrderAndHideUnavailableSnapshots() {
+        var snapshot = new RemoteCatalogSnapshot(a, new RemoteRevision(1), Map.of(
+                "custom:zeta", Map.of(), "minecraft:the_end", Map.of(),
+                "minecraft:overworld", Map.of(), "custom:alpha", Map.of()), Instant.EPOCH);
+        var stale = new CatalogReceiver.View(snapshot, RemoteCatalogState.STALE, "a", null, "minecraft:compass");
+        var unavailable = new CatalogReceiver.View(snapshot, RemoteCatalogState.UNAVAILABLE, "a", null,
+                "minecraft:compass");
+        assertEquals(List.of("minecraft:overworld", "minecraft:the_end", "custom:alpha", "custom:zeta"),
+                RemoteBrowserModel.dimensionNames(stale));
+        assertTrue(RemoteBrowserModel.dimensionNames(unavailable).isEmpty());
+        assertTrue(RemoteBrowserModel.dimensionNames(null).isEmpty());
+    }
 }
