@@ -36,7 +36,7 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 final class RemoteWaypointPanel {
     private final Font font;
     private final RemoteClientCatalogs catalogs;
-    private final long session;
+    private long session;
     private final BrowserTree tree;
     private final WaypointDetailsWidget details;
     private final TranslucentButton teleportButton;
@@ -129,12 +129,29 @@ final class RemoteWaypointPanel {
         return nodes.stream().anyMatch(node -> key.equals(node.path().key()) || contains(node.children(), key));
     }
 
-    void tick() {
-        if (session != catalogs.session()) {
+    /** Refreshes changed catalog data; returns {@code false} after closing the screen for a new session. */
+    boolean tick() {
+        if (!isSessionCurrent()) {
             MinecraftClientHelper.setScreen(null);
-            return;
+            return false;
         }
         if (displayed != catalogs.snapshot() || displayedState != catalogs.state()) rebuild();
+        return true;
+    }
+
+    /** The catalog session this panel's selection and teleport guard belong to. */
+    long session() { return session; }
+
+    boolean isSessionCurrent() { return session == catalogs.session(); }
+
+    /** Binds a changed catalog session, clearing the old session's selection; returns whether it changed. */
+    boolean bindSession() {
+        long current = catalogs.session();
+        if (current == session) return false;
+        session = current;
+        selected = null;
+        rebuild();
+        return true;
     }
 
     private void teleport() {

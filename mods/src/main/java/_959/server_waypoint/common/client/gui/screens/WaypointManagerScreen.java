@@ -41,11 +41,8 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-import static _959.server_waypoint.common.client.WaypointClientMod.ClientNetworkState.INCOMPATIBLE_PROTOCOL;
-import static _959.server_waypoint.common.client.WaypointClientMod.ClientNetworkState.NO_SERVERSIDE_SUPPORT;
 import static _959.server_waypoint.common.client.WaypointClientMod.getCurrentDimensionName;
 import static _959.server_waypoint.common.client.WaypointClientMod.getNetworkState;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
@@ -105,16 +102,20 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     private boolean requestedAvailableDimensions;
     private List<String> availableDimensionNames = List.of();
     private final WaypointClientMod waypointClientMod;
+    private final ScalableText statusMessage;
+    private final IconMenuItem distanceSortItem;
+    private ManagerViewState builtState = ManagerViewState.LOADING;
     private boolean hasInitialized = false;
     private final WidgetPack controlAnchor;
     private final WidgetPack middleLayout;
     private ManagerLayoutGeometry layoutGeometry = calculateLayoutGeometry(0, 0);
 
     public WaypointManagerScreen(WaypointClientMod waypointClientMod, Screen parentScreen) {
-        super(Component.nullToEmpty("Server Waypoints"));
+        super(Component.translatable("server_waypoint.manager.title"));
         this.parentScreen = parentScreen;
         this.waypointClientMod = waypointClientMod;
         this.remotePanel = new RemoteWaypointPanel(waypointClientMod, this.font);
+        this.statusMessage = new ScalableText(0, 0, Component.empty(), WidgetThemeVariable.TEXT_PRIMARY, this.font);
         this.serverScopeToggle = new IconToggleButton(
                 Component.translatable("waypoint.remote.gui.local"),
                 Component.translatable("waypoint.remote.title"),
@@ -212,7 +213,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 WidgetTextures.SORT_NAME_ICON,
                 () -> toggleSortMode(WaypointSorting.SortMode.NAME)
         );
-        sortingModeDropdown.addIconItem(
+        this.distanceSortItem = sortingModeDropdown.addIconItem(
                 Component.translatable("waypoint.sort.distance"),
                 WidgetTextures.SORT_DISTANCE_ICON,
                 () -> toggleSortMode(WaypointSorting.SortMode.DISTANCE)
@@ -405,11 +406,17 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             return;
         }
         this.requestedAvailableDimensions = true;
+        long requestSession = this.remotePanel.session();
         ClientDimensionCatalog.getAvailableDimensionNames().thenAccept(dimensionNames -> {
+            // A reply to an earlier session lists the previous server's dimensions.
+            if (this.remotePanel.session() != requestSession) {
+                return;
+            }
+            // Keep the reply while a child screen is open; the next init() reads it.
+            this.availableDimensionNames = dimensionNames;
             if (activeScreen != this) {
                 return;
             }
-            this.availableDimensionNames = dimensionNames;
             updateDimensionWidgetSelection();
             layoutSidebar();
         });
@@ -517,18 +524,28 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
 
     @Override
     protected void init() {
+        super.init();
+        this.builtState = resolveViewState(WaypointServerMod.runsWithClient(), getNetworkState());
+        if (this.builtState != ManagerViewState.READY) {
+            // rebuildWidgets() doesn't call removed(), so a ready screen that rebuilds as loading
+            // must stop receiving refreshes here.
+            this.stopReceivingRefreshes();
+            this.resetToLocalView();
+            this.layoutStatusMessage();
+            return;
+        }
         isRendering = true;
         activeScreen = this;
-        super.init();
-        String currentDimension = WaypointClientMod.getCurrentDimensionName();
+        if (this.remotePanel.bindSession()) {
+            // A new catalog session belongs to another connection; request its dimensions again.
+            this.requestedAvailableDimensions = false;
+            this.availableDimensionNames = List.of();
+        }
+        String currentDimension = getCurrentDimensionName();
         if (WaypointServerMod.runsWithClient()) {
             WaypointServerMod.getInstance().getOrCreateWaypointFileManager(currentDimension);
         } else {
-            if (WaypointClientMod.getNetworkState() == WaypointClientMod.ClientNetworkState.SYNC_FINISHED) {
-                WaypointClientMod.getInstance().getOrCreateWaypointFileManager(currentDimension);
-            } else {
-                return;
-            }
+            WaypointClientMod.getInstance().getOrCreateWaypointFileManager(currentDimension);
         }
         updateWidgetDimension();
         this.middleLayout.setPosition(
@@ -559,13 +576,72 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         this.requestAvailableDimensionNames();
     }
 
+    /** Ends this manager's static refresh registration (see {@link #canUpdateWidgets()}). */
+    private void stopReceivingRefreshes() {
+        isRendering = false;
+        if (activeScreen == this) {
+            activeScreen = null;
+        }
+    }
+
+    private void layoutStatusMessage() {
+        Component message = Component.translatable(Objects.requireNonNull(this.builtState.messageKey()));
+        int availableWidth = Math.max(1, this.width - SCREEN_MARGIN * 2);
+        this.statusMessage.setText(message);
+        this.statusMessage.setMaxWidth(Math.min(this.font.width(message), availableWidth));
+        this.statusMessage.setPosition(
+                centered(this.width, this.statusMessage.getWidth()),
+                centered(this.height, this.statusMessage.getHeight())
+        );
+    }
+
+    /** Leaving the ready state drops the remote view, so the next ready build starts local. */
+    private void resetToLocalView() {
+        if (!this.showingRemote) {
+            return;
+        }
+        this.showingRemote = false;
+        this.serverScopeToggle.setState(false);
+        this.distanceSortItem.visible = this.distanceSortItem.active = true;
+        List<String> localDimensions = this.getDisplayedDimensionNames();
+        dimensionListWidget.updateDimensionNames(localDimensions);
+        dimensionListWidget.setDimensionName(resolveSelectedDimension(
+                this.localDimension,
+                getCurrentDimensionName(),
+                localDimensions
+        ));
+    }
+
     @Override
     public void tick() {
         super.tick();
-        if (showingRemote) {
-            remotePanel.tick();
+        if (this.builtState == ManagerViewState.READY && this.showingRemote && !this.remotePanel.tick()) {
+            // Step 18: a catalog session change in the remote view closed the manager.
+            return;
+        }
+        ManagerViewState state = resolveViewState(WaypointServerMod.runsWithClient(), getNetworkState());
+        boolean staleLocalSession = state == ManagerViewState.READY
+                && !this.showingRemote
+                && !this.remotePanel.isSessionCurrent();
+        if (state != this.builtState || staleLocalSession) {
+            this.rebuildWidgets();
+            return;
+        }
+        if (state != ManagerViewState.READY) {
+            return;
+        }
+        if (this.showingRemote) {
             refreshRemoteSelectors(false);
-        } else waypointListWidget.refreshDistanceSortIfPlayerMoved();
+        } else {
+            waypointListWidget.refreshDistanceSortIfPlayerMoved();
+        }
+    }
+
+    @Override
+    public void removed() {
+        super.removed();
+        // Child screens and every close path end this manager's static refresh registration.
+        this.stopReceivingRefreshes();
     }
 
     @Override
@@ -581,7 +657,9 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             MinecraftClientHelper.setScreen(this.minecraft, new ClientConfigScreen(this));
             return true;
         }
-        return !showingRemote && waypointListWidget.keyPressed(keyCode, scanCode, modifiers)
+        return this.builtState == ManagerViewState.READY
+                && !showingRemote
+                && waypointListWidget.keyPressed(keyCode, scanCode, modifiers)
                 || super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -666,18 +744,11 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     @Override
     protected void renderScreenContents
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-        WaypointClientMod.ClientNetworkState networkState = getNetworkState();
-        if (networkState == NO_SERVERSIDE_SUPPORT) {
-            Component info = Component.translatable("server_waypoint.no_serverside_support");
-            int infoWidth = font.width(info);
-            drawText(context, this.font, info, centered(this.width, infoWidth), this.height / 2,
-                    WidgetThemeManager.getColor(WidgetThemeVariable.TEXT_PRIMARY));
-            return;
-        } else if (networkState == INCOMPATIBLE_PROTOCOL) {
-            Component info = Component.translatable("server_waypoint.incompatible_protocol_version");
-            int infoWidth = font.width(info);
-            drawText(context, this.font, info, centered(this.width, infoWidth), this.height / 2,
-                    WidgetThemeManager.getColor(WidgetThemeVariable.TEXT_PRIMARY));
+        if (this.builtState != ManagerViewState.READY) {
+            this.statusMessage.
+            //$ render_method_swap
+            extractRenderState
+                    (context, mouseX, mouseY, delta);
             return;
         }
         this.renderPanel(
@@ -787,8 +858,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         if (remote && waypointListWidget.getSortMode() == WaypointSorting.SortMode.DISTANCE) {
             setSortMode(WaypointSorting.SortMode.NAME);
         }
-        IconMenuItem distanceSortItem = sortingModeDropdown.iconItems.get(2);
-        distanceSortItem.visible = distanceSortItem.active = !remote;
+        this.distanceSortItem.visible = this.distanceSortItem.active = !remote;
         sortingModeDropdown.setPopupXOffset(this.layoutGeometry.dropdownXOffset(
                 sortingModeDropdown.getPopupItemCount()
         ));
@@ -965,6 +1035,44 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 height,
                 WidgetThemeManager.getColor(WidgetThemeVariable.BORDER)
         );
+    }
+
+    /** What the manager shows, chosen from the client connection state. */
+    enum ManagerViewState {
+        LOADING("server_waypoint.manager.loading"),
+        UNSUPPORTED("server_waypoint.no_serverside_support"),
+        INCOMPATIBLE("server_waypoint.incompatible_protocol_version"),
+        READY(null);
+
+        private final @Nullable String messageKey;
+
+        ManagerViewState(@Nullable String messageKey) {
+            this.messageKey = messageKey;
+        }
+
+        /** The centered message of a non-ready state, or {@code null} for the full manager. */
+        @Nullable String messageKey() {
+            return this.messageKey;
+        }
+    }
+
+    /**
+     * Chooses the manager content. An integrated server shares the server's waypoint model and is
+     * always ready; a dedicated server is ready once waypoint synchronization finishes.
+     */
+    static ManagerViewState resolveViewState(
+            boolean integratedServer,
+            WaypointClientMod.ClientNetworkState networkState
+    ) {
+        if (integratedServer) {
+            return ManagerViewState.READY;
+        }
+        return switch (networkState) {
+            case SYNC_FINISHED -> ManagerViewState.READY;
+            case NOT_READY, HANDSHAKE_FINISHED -> ManagerViewState.LOADING;
+            case NO_SERVERSIDE_SUPPORT -> ManagerViewState.UNSUPPORTED;
+            case INCOMPATIBLE_PROTOCOL -> ManagerViewState.INCOMPATIBLE;
+        };
     }
 
     static ManagerLayoutGeometry calculateLayoutGeometry(int screenWidth, int screenHeight) {
@@ -1191,7 +1299,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             this.setTooltip(Tooltip.create(message));
         }
 
-        private void addIconItem(
+        private IconMenuItem addIconItem(
                 Component message,
                 //$ resource_location_type_swap
                 Identifier
@@ -1200,6 +1308,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         ) {
             IconMenuItem menuItem = this.addMenuItem(new IconMenuItem(message, icon, callback));
             this.iconItems.add(menuItem);
+            return menuItem;
         }
 
         private void setSelectedIndex(int selectedIndex) {
