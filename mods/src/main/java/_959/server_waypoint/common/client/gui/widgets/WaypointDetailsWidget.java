@@ -198,8 +198,8 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
                             iconX, y - 1,
                             0xFF000000 | iconValue.rgb(), getSafeTextColor(iconValue.rgb()));
                 } else {
-                    WaypointIconRenderer.draw(context, icon,
-                            iconX + (iconWidth - iconSize) / 2, y - 1, iconSize);
+                    WaypointIconRenderer.drawForWaypoint(context, icon,
+                            iconX + (iconWidth - iconSize) / 2, y - 1, iconSize, iconValue.rgb());
                 }
                 textX = iconX + iconWidth + ICON_GAP;
             }

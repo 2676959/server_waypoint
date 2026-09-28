@@ -44,6 +44,8 @@ public final class OptimizedWaypointRenderer {
     private static final int DEPTH_RADIX_BITS = 8;
     private static final int DEPTH_RADIX_SIZE = 1 << DEPTH_RADIX_BITS;
     private static final int DEPTH_RADIX_MASK = DEPTH_RADIX_SIZE - 1;
+    // Temporarily disabled to compare in-world icons with and without their colored fill.
+    private static final boolean DRAW_ICON_BACKGROUND = false;
     private static boolean DISABLED = false;
     private static float WAYPOINT_BASE_SCALE = 1.0F;
     private static int WAYPOINT_BG_ALPHA_MASK = 0x80000000;
@@ -573,8 +575,11 @@ public final class OptimizedWaypointRenderer {
             float ndcX = projected.x() / depth;
             float ndcY = projected.y() / depth;
             float iconScale = getIconScale(depth, projectionScale, minBaseScale);
-            float marginX = initialsTextBgWidth[i] * iconScale / (scaledWidth >> 1);
-            float marginY = textBgHeight * iconScale / (scaledHeight >> 1);
+            WaypointIconRenderer.Kind iconKind = icons[i].kind();
+            int markerWidth = WorldWaypointMarkerLayout.width(iconKind, initialsTextBgWidth[i]);
+            int markerHeight = WorldWaypointMarkerLayout.height(iconKind, textBgHeight);
+            float marginX = markerWidth * iconScale / (scaledWidth >> 1);
+            float marginY = markerHeight * iconScale / (scaledHeight >> 1);
             if (ndcX < -1.0F - marginX || ndcX > 1.0F + marginX || ndcY < -1.0F - marginY || ndcY > 1.0F + marginY) {
                 continue;
             }
@@ -598,9 +603,8 @@ public final class OptimizedWaypointRenderer {
                     detailDistance = Math.sqrt(horizontalDistanceSquared + relY * relY);
                 }
             } else {
-                float halfWidth = initialsTextBgWidth[i] * iconScale * 0.5F;
-                float halfHeight = textBgHeight * iconScale * 0.5F;
-                if (isIn2DBox(windowCenterX, windowCenterY, winX - halfWidth, winY - halfHeight, winX + halfWidth, winY + halfHeight) && depth < minDepth) {
+                if (WorldWaypointMarkerLayout.contains(iconKind, initialsTextBgWidth[i], textBgHeight,
+                        winX, winY, iconScale, windowCenterX, windowCenterY) && depth < minDepth) {
                     minDepth = depth;
                     HOVERED_ID = i;
                     detailIndex = i;
@@ -612,14 +616,14 @@ public final class OptimizedWaypointRenderer {
             }
         }
 
-        drawWaypointIcons(context, renderCount);
+        drawWaypointIcons(context, renderCount, detailIndex);
 
         if (detailIndex != -1) {
             Component name = names[detailIndex];
             float textWidth = nameTextWidth[detailIndex];
             float bgWidth = nameTextBgWidth[detailIndex];
-            float halfHeight = textBgHeight * detailScale * 0.5F;
-            float labelTop = detailWinY - halfHeight;
+            WaypointIconRenderer.Kind detailKind = icons[detailIndex].kind();
+            float labelTop = WorldWaypointMarkerLayout.labelTop(detailKind, textBgHeight, detailWinY, detailScale);
             float labelBgLeft = getBoxLeft(detailWinX, bgWidth, detailScale);
             float labelBgBottom = labelTop + textBgHeight * detailScale;
             drawComponentBox(context, name, detailWinX, labelTop, detailScale, textWidth, bgWidth, 0xFF000000 | bgColor[detailIndex], fgColor[detailIndex]);
@@ -631,10 +635,12 @@ public final class OptimizedWaypointRenderer {
             float scaledRealBgWidth = bgWidth * detailScale;
             float scaledRealBgHeight = textBgHeight * detailScale;
             float upperCornerX = detailWinX - scaledRealBgWidth * 0.5F;
-            float upperCornerY = detailWinY - scaledRealBgHeight * 0.5F;
+            float upperCornerY = labelTop;
             float lowerCornerX = upperCornerX + scaledRealBgWidth;
             float lowerCornerY = upperCornerY + scaledRealBgHeight;
-            IS_HOVERED = isIn2DBox(windowCenterX, windowCenterY, upperCornerX, upperCornerY, lowerCornerX, lowerCornerY);
+            IS_HOVERED = isIn2DBox(windowCenterX, windowCenterY, upperCornerX, upperCornerY, lowerCornerX, lowerCornerY)
+                    || WorldWaypointMarkerLayout.contains(detailKind, initialsTextBgWidth[detailIndex], textBgHeight,
+                    detailWinX, detailWinY, detailScale, windowCenterX, windowCenterY);
             HOVERED_ID = IS_HOVERED ? detailIndex : -1;
         } else {
             HOVERED_ID = -1;
@@ -642,7 +648,7 @@ public final class OptimizedWaypointRenderer {
         }
     }
 
-    private static void drawWaypointIcons(GuiGraphicsExtractor context, int renderCount) {
+    private static void drawWaypointIcons(GuiGraphicsExtractor context, int renderCount, int hoveredIndex) {
         if (renderCount == 0) {
             return;
         }
@@ -653,20 +659,47 @@ public final class OptimizedWaypointRenderer {
             int waypointIndex = visibleIndex[visibleSlot];
             float iconScale = visibleIconScale[visibleSlot];
             WaypointIconRenderer.ResolvedIcon icon = icons[waypointIndex];
-            float bgWidth = icon.kind() == WaypointIconRenderer.Kind.INITIALS
-                    ? initialsTextBgWidth[waypointIndex] : 16;
-            float left = getBoxLeft(visibleWinX[visibleSlot], bgWidth, iconScale);
-            float top = visibleWinY[visibleSlot] - (icon.kind() == WaypointIconRenderer.Kind.INITIALS
-                    ? textBgHeight : 16) * iconScale * 0.5F;
+            WaypointIconRenderer.Kind kind = icon.kind();
+            float initialsWidth = initialsTextBgWidth[waypointIndex];
+            int markerWidth = WorldWaypointMarkerLayout.width(kind, initialsWidth);
+            int markerHeight = WorldWaypointMarkerLayout.height(kind, textBgHeight);
+            float left = getBoxLeft(visibleWinX[visibleSlot], markerWidth, iconScale);
+            float top = WorldWaypointMarkerLayout.markerTop(kind, textBgHeight,
+                    visibleWinY[visibleSlot], iconScale);
+            int backgroundColor = WAYPOINT_BG_ALPHA_MASK | bgColor[waypointIndex];
 
-            if (icon.kind() == WaypointIconRenderer.Kind.INITIALS) {
-                drawTextBoxAt(context, initials[waypointIndex], left, top, iconScale,
-                        initialsTextWidth[waypointIndex], bgWidth,
-                        WAYPOINT_BG_ALPHA_MASK | bgColor[waypointIndex], fgColor[waypointIndex]);
-            } else {
-                WaypointIconRenderer.drawScaled(context, icon, left, top, iconScale);
+            float badgeLeft = left + (kind != WaypointIconRenderer.Kind.INITIALS
+                    ? WorldWaypointMarkerLayout.initialsLeft(initialsWidth) * iconScale : 0.0F);
+            float badgeTop = top + WorldWaypointMarkerLayout.initialsTop(kind) * iconScale;
+            drawTextBoxAt(context, initials[waypointIndex], badgeLeft, badgeTop,
+                    iconScale, initialsTextWidth[waypointIndex], initialsWidth,
+                    backgroundColor, fgColor[waypointIndex]);
+            if (kind != WaypointIconRenderer.Kind.INITIALS) {
+                float iconLeft = left + WorldWaypointMarkerLayout.iconLeft(initialsWidth) * iconScale;
+                if (DRAW_ICON_BACKGROUND) {
+                    drawIconFill(context, iconLeft, top, iconScale, backgroundColor);
+                }
+                int iconAlpha = waypointIndex == hoveredIndex ? 255 : WAYPOINT_BG_ALPHA_MASK >>> 24;
+                if (kind == WaypointIconRenderer.Kind.ITEM) {
+                    WaypointIconRenderer.drawScaledWorldItem(context, icon,
+                            iconLeft, top, iconScale, iconAlpha);
+                } else {
+                    WaypointIconRenderer.drawScaledVoxelMap(context, icon,
+                            iconLeft, top, iconScale, iconAlpha, bgColor[waypointIndex]);
+                }
+                finishGuiLayer(context);
             }
         }
+    }
+
+    private static void drawIconFill(GuiGraphicsExtractor context, float left, float top,
+                                     float iconScale, int color) {
+        push(context);
+        translate(context, left, top);
+        scale(context, iconScale, iconScale);
+        context.fill(0, 0, 16, 16, color);
+        pop(context);
+        finishGuiLayer(context);
     }
 
     private static long packDepthSortKey(float depth, int visibleSlot) {

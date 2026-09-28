@@ -830,7 +830,8 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             drawInitialsBox(context, initials, indent + 15, finalY - 1, backgroundColor,
                     getInitialsTextColor(rgb, wpRendered));
         } else {
-            WaypointRowRenderer.icon(context, textRenderer, resolvedIcon, indent + 15, finalY - 4, 16);
+            WaypointRowRenderer.icon(context, textRenderer, resolvedIcon, indent + 15, finalY - 4, 16,
+                    waypoint.rgb());
         }
         String dimensionLine = "";
         Component listName = Component.empty();

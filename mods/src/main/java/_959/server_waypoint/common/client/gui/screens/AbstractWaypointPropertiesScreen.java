@@ -611,7 +611,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
                     previewY + (previewSize - font.lineHeight) / 2,
                     this.colorPickerButton.getColor(), WidgetThemeManager.getColor(WidgetThemeVariable.TEXT_PRIMARY));
         } else {
-            WaypointIconRenderer.draw(context, resolvedIcon, previewX, previewY, previewSize);
+            WaypointIconRenderer.drawForWaypoint(context, resolvedIcon, previewX, previewY, previewSize,
+                    this.colorPickerButton.getColor());
         }
         nextLayer(context);
         this.renderTextFieldSuggestions(context, mouseX, mouseY);

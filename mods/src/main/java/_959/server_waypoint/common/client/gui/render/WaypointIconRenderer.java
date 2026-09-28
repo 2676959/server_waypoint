@@ -3,17 +3,22 @@
 package _959.server_waypoint.common.client.gui.render;
 
 import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
+import _959.server_waypoint.common.client.render.WaypointItemAlpha;
 import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.common.util.ResourceLocationHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.registries.BuiltInRegistries;
+//? if >= 1.21.6
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Predicate;
+//? if < 1.21.6
+/*import com.mojang.blaze3d.systems.RenderSystem;*/
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.*;
 
@@ -81,6 +86,16 @@ public final class WaypointIconRenderer {
         }
     }
 
+    /** Draws a saved waypoint's icon, tinting VoxelMap images with its RGB color. */
+    public static void drawForWaypoint(GuiGraphicsExtractor context, ResolvedIcon icon,
+                                       int x, int y, int size, int waypointColor) {
+        if (icon.kind() == Kind.VOXELMAP) {
+            drawScaledVoxelMap(context, icon, x, y, size / 16.0F, 255, waypointColor);
+        } else {
+            draw(context, icon, x, y, size);
+        }
+    }
+
     public static void drawScaled(GuiGraphicsExtractor context, ResolvedIcon icon,
                                   float left, float top, float scale) {
         push(context);
@@ -88,5 +103,54 @@ public final class WaypointIconRenderer {
         scale(context, scale, scale);
         draw(context, icon, 0, 0, 16);
         pop(context);
+    }
+
+    /** Draws only the in-world item icon with the marker background alpha. */
+    public static void drawScaledWorldItem(GuiGraphicsExtractor context, ResolvedIcon icon,
+                                           float left, float top, float scale, int alpha) {
+        //? if >= 1.21.6 {
+        int previous = WaypointItemAlpha.pushWorldItemTint(alpha);
+        try {
+            drawScaled(context, icon, left, top, scale);
+        } finally {
+            WaypointItemAlpha.restoreTint(previous);
+        }
+        //?} else {
+        /*float[] previous = RenderSystem.getShaderColor().clone();
+        RenderSystem.setShaderColor(previous[0], previous[1], previous[2],
+                previous[3] * (alpha / 255.0F));
+        try {
+            drawScaled(context, icon, left, top, scale);
+        } finally {
+            RenderSystem.setShaderColor(previous[0], previous[1], previous[2], previous[3]);
+        }
+        *///?}
+    }
+
+    /** Draws a VoxelMap image with the waypoint RGB and a caller-selected alpha. */
+    public static void drawScaledVoxelMap(GuiGraphicsExtractor context, ResolvedIcon icon,
+                                          float left, float top, float scale, int alpha, int waypointColor) {
+        if (icon.kind() != Kind.VOXELMAP || icon.texture() == null) return;
+        //? if >= 1.21.6 {
+        push(context);
+        translate(context, left, top);
+        scale(context, scale / 2.0F, scale / 2.0F);
+        context.blit(RenderPipelines.GUI_TEXTURED, icon.texture(),
+                0, 0, 0, 0, 32, 32, 32, 32, (alpha << 24) | (waypointColor & 0x00FFFFFF));
+        pop(context);
+        //?} else {
+        /*context.flush();
+        float[] previous = RenderSystem.getShaderColor().clone();
+        RenderSystem.setShaderColor(previous[0] * ((waypointColor >> 16) & 0xFF) / 255.0F,
+                previous[1] * ((waypointColor >> 8) & 0xFF) / 255.0F,
+                previous[2] * (waypointColor & 0xFF) / 255.0F,
+                previous[3] * (alpha / 255.0F));
+        try {
+            drawScaled(context, icon, left, top, scale);
+            context.flush();
+        } finally {
+            RenderSystem.setShaderColor(previous[0], previous[1], previous[2], previous[3]);
+        }
+        *///?}
     }
 }
