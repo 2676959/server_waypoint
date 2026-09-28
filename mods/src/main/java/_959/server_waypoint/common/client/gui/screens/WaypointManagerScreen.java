@@ -498,10 +498,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         remoteServers = servers;
         serverListWidget.setServers(servers);
         var view = serverListWidget.getSelectedEntry() == null ? null : servers.get(serverListWidget.getSelectedEntry());
-        List<String> dimensions = view == null || view.snapshot() == null ? List.of()
-                : view.snapshot().dimensions().keySet().stream()
-                .sorted(_959.server_waypoint.util.VanillaDimensionNames::dimensionNameComparator).toList();
-        dimensionListWidget.updateDimensionNames(dimensions);
+        dimensionListWidget.updateDimensionNames(RemoteBrowserModel.dimensionNames(view));
         refreshRemoteScope();
         layoutSidebar();
     }
