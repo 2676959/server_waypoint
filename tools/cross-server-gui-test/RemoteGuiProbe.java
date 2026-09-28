@@ -192,7 +192,7 @@ public final class RemoteGuiProbe implements ClientModInitializer {
         field(client.remoteCatalogs().getClass(), "nextRequest").setLong(client.remoteCatalogs(), 0);
         var request = client.remoteCatalogs().poll();
         var waypoint = new RemoteWaypointSnapshot("Shared label", "R", new WaypointPos(1, 64, 3), 0x12AB34,
-                0, true, List.of("keyword"), "Remote read-only description");
+                0, true, List.of("keyword"), "Remote read-only description", null);
         var snapshot = new RemoteCatalogSnapshot(id, new RemoteRevision(1), Map.of("minecraft:overworld",
                 Map.of("", new RemoteListSnapshot("Shared list", new RemoteRevision(1), Map.of("Exact \"Name\"", waypoint)))), Instant.EPOCH);
         Map<RemoteServerId, CatalogReceiver.View> views = new HashMap<>();
