@@ -6,6 +6,7 @@ import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.ShiftableButtonWidget;
 import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
+import _959.server_waypoint.common.client.gui.widgets.IntegerSlider;
 import _959.server_waypoint.mixin.BoundKeyAccessor;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
@@ -149,11 +150,14 @@ public abstract class MovementAllowedScreen extends Screen {
     /**
      * Vanilla closes the screen on Escape before the focused widget receives the key. Dismiss
      * an open popup or leave text entry first, even when no suggestions or choices are showing.
+     * An {@link IntegerSlider} is text entry while its number field has focus; leaving the field
+     * commits the typed number.
      */
     protected boolean dismissFocusedInput() {
         GuiEventListener focused = this.getFocused();
         boolean closedPopup = focused instanceof PopupOwner owner && owner.closePopupIfOpen();
-        if (closedPopup || focused instanceof EditBox || focused instanceof ComboBoxWidget) {
+        if (closedPopup || focused instanceof EditBox || focused instanceof ComboBoxWidget
+                || focused instanceof IntegerSlider slider && slider.isEditingNumber()) {
             this.setFocused(null);
             return true;
         }
