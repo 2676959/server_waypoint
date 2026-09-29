@@ -60,7 +60,7 @@ class VelocityPlayerRouterTest {
         assertFalse(router.allowed(UUID.randomUUID()));
     }
     @Test void spoofedClientAndBackendPluginMessagesAreConsumedWithoutAnyTransfer(@TempDir Path directory) {
-        var plugin = new ServerWaypointVelocity(proxy, fake(org.slf4j.Logger.class, Map.of()), directory);
+        var plugin = new ServerWaypointVelocity(proxy, fake(org.slf4j.Logger.class, Map.of()), directory, null);
         var client = new PluginMessageEvent(player, source, ServerWaypointVelocity.RESERVED, new byte[32]);
         plugin.onPluginMessage(client); assertFalse(client.getResult().isAllowed());
         var backend = new PluginMessageEvent(source, player, ServerWaypointVelocity.RESERVED, new byte[0]);
