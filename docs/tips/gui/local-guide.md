@@ -706,7 +706,10 @@ control's `visitWidgets` reports, and it can take focus while any of them is act
   list overflows and reaches a slider under the cursor only when it doesn't. The list isn't a Tab
   stop. After a key press moves focus to a row widget, call `reveal(focused)`: vanilla Tab skips
   invisible and inactive widgets, and `reveal` scrolls the row and the nearest rows with an active
-  widget into view. If scrolling hides the focused widget, clear focus.
+  widget into view. If the wheel hides the focused widget, clear focus. A relayout or a focus change
+  made in code can hide it too, as when a longer status message shrinks the list; then reveal it
+  instead, and clear focus only if its row can't be shown. `ClientConfigScreen.keepFocusVisible`
+  does this after every relayout and every focus request.
 - **Tooltips:** the hovered row gets `ROW_HOVER_BACKGROUND`. After the pointer rests on a row for
   500 ms, the list schedules the row's tooltip at the cursor, except over the row's action, which
   keeps its own vanilla tooltip.

@@ -407,8 +407,12 @@ component. This function, the `MapModRowState` mapping and both enums live in a 
   editor's `normalizeModalFocus`. A key press doesn't move focus after the callback, so the focus it
   set stands.
 - After a key press moves focus to a row widget, the screen calls `list.reveal(...)`.
-- If scrolling hides the focused row widget, the screen clears focus. That commits a half-typed
-  number.
+- If the mouse wheel scrolls the focused row widget out of view, the screen clears focus. That
+  commits a half-typed number.
+- A relayout or a focus change made by the screen can leave the focused row widget hidden too: a
+  longer status message or a smaller window shortens the list, and closing a Sync dialog then
+  focuses a Sync button that's out of view. After every relayout and every focus request, the
+  screen reveals a hidden focused row widget, and clears focus only if its row can't be shown.
 
 ### Lifecycle
 

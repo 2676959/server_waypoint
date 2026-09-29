@@ -209,6 +209,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         for (ConfirmationDialog dialog : this.dialogs()) {
             dialog.setPosition(centered(this.width, dialog.getWidth()), centered(this.height, dialog.getHeight()));
         }
+        keepFocusVisible(this, this.settingsList);
     }
 
     @Override
@@ -593,11 +594,13 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     /**
      * Focuses {@code target} now, and again after the current click: vanilla focuses the clicked
      * widget after its callback runs, which would undo the change. Enter and Space don't move focus
-     * after a button's callback, so {@link #keyPressed} only drops the pending request.
+     * after a button's callback, so {@link #keyPressed} only drops the pending request. A hidden row
+     * widget, such as a Sync button that a longer status pushed out of view, is scrolled into view.
      */
     private void requestFocus(GuiEventListener target) {
         this.setFocused(target);
-        this.pendingFocus = target;
+        keepFocusVisible(this, this.settingsList);
+        this.pendingFocus = this.getFocused();
     }
 
     private void applyPendingFocus() {
@@ -615,6 +618,20 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     static void handOverFocus(ContainerEventHandler screen, GuiEventListener target) {
         screen.setFocused(target);
         screen.setDragging(false);
+    }
+
+    /**
+     * Scrolls a focused row widget that a relayout or a refocus left hidden back into view, so focus
+     * never sits where nobody can see it. When its row can't be shown, focus leaves it, as it does
+     * when scrolling hides it.
+     */
+    static void keepFocusVisible(ContainerEventHandler screen, SettingsListWidget list) {
+        if (screen.getFocused() instanceof AbstractWidget widget && !widget.visible) {
+            list.reveal(widget);
+            if (!widget.visible) {
+                screen.setFocused(null);
+            }
+        }
     }
 
     private record SettingControl(ClientConfigSettings.Setting setting, AbstractWidget widget, IconButton resetButton) {
