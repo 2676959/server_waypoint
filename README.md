@@ -379,7 +379,7 @@ it, and **Reset to defaults…** resets them all.
   - **Auto sync**: keeps the waypoints Server Waypoint adds to the map mod up to date as they change on the server. Default: `On`.
   - **Sync now**: after a confirmation, replaces the waypoints Server Waypoint added with the server's current waypoints. Available once you're in a world whose waypoints have synced.
 
-  Server Waypoint marks what it adds: Xaero's Minimap sets and VoxelMap waypoint names carry an internal `sw␟` prefix. Sync only touches these, so your own waypoints are never changed, even ones named like a server list. Changes you made to synced waypoints, and waypoints from lists removed on the server, are replaced. Upload maps the managed names back to their server list and waypoint names.
+  Server Waypoint marks what it adds: Xaero's Minimap sets and VoxelMap waypoint names carry an internal `sw␟` prefix. Sync only touches these, so your own waypoints and lists are never changed, even ones named like a server list. Changes you made to synced waypoints, waypoints you put in Server Waypoint's lists, and lists removed on the server are lost. Upload maps the managed names back to their server list and waypoint names.
 - #### Appearance
   - **Color theme**: opens the theme editor.
 

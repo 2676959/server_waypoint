@@ -364,9 +364,9 @@ component. This function, the `MapModRowState` mapping and both enums live in a 
   | --- | --- |
   | Replaces the waypoints Server Waypoint added to *Mod* with this server's current waypoints. | `TEXT_PRIMARY` |
   | What stays: | `SUCCESS` |
-  | Everything you created yourself, even with the same name as a server list. | `TEXT_PRIMARY` |
+  | Your own waypoints and lists, even ones named like a server list. | `TEXT_PRIMARY` |
   | What is lost: | `DANGER` |
-  | Changes you made to waypoints Server Waypoint added, and waypoints from lists removed on the server. | `TEXT_PRIMARY` |
+  | Changes you made to waypoints Server Waypoint added, waypoints you put in its lists, and lists removed on the server. | `TEXT_PRIMARY` |
 
   The buttons are Cancel and Sync. `ConfirmationDialog` gains a constructor that takes the confirm
   button's label, and exposes its Cancel button so a screen can focus it. The existing constructor
@@ -546,9 +546,9 @@ locales.
 | `config.sync.title` | Sync to %s? | 要同步到%s吗？ |
 | `config.sync.body` | Replaces the waypoints Server Waypoint added to %s with this server's current waypoints. | 用此服务器当前的路径点替换本模组添加到%s的路径点。 |
 | `config.sync.stays` | What stays: | 保留的内容： |
-| `config.sync.stays.detail` | Everything you created yourself, even with the same name as a server list. | 你自己创建的所有内容，即使与服务器列表同名。 |
+| `config.sync.stays.detail` | Your own waypoints and lists, even ones named like a server list. | 你自己的路径点和列表，即使与服务器列表同名。 |
 | `config.sync.lost` | What is lost: | 丢失的内容： |
-| `config.sync.lost.detail` | Changes you made to waypoints Server Waypoint added, and waypoints from lists removed on the server. | 你对本模组所添加路径点的修改，以及服务器上已删除列表中的路径点。 |
+| `config.sync.lost.detail` | Changes you made to waypoints Server Waypoint added, waypoints you put in its lists, and lists removed on the server. | 你对本模组所添加路径点的修改、你放入本模组列表中的路径点，以及服务器上已删除的列表。 |
 | `config.sync.done` | Synced waypoints to %s. | 已将路径点同步到%s。 |
 | `config.sync.failed` | Couldn't sync to %s. See the game log. | 无法同步到%s。请查看游戏日志。 |
 | `config.sync.no_world` | Join a world to sync. | 进入世界后才能同步。 |
