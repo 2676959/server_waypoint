@@ -33,11 +33,13 @@ Required:
 Optional:
   - [LuckPerms](https://modrinth.com/plugin/luckperms)
   - [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap)
+  - [VoxelMap](https://modrinth.com/mod/voxelmap-updated) (Fabric)
+  - [Mod Menu](https://modrinth.com/mod/modmenu) (Fabric): opens the client settings from the mod list
 
 ## Keybinds
 - Press `Right Shift` (default keybind) or use `/wp_gui` to open the waypoint manager screen in game.
 - In the waypoint manager screen, hover over a waypoint and press `T` to teleport (requires `/wp tp` command permission). 
-- In the waypoint manager screen, press `C` to open client configuration screen.
+- In the waypoint manager screen, press `C` to open the client settings. The config button in Mod Menu (Fabric) or the Mods screen (NeoForge and Forge) opens them too.
 
 ## Commands
 - `/wp add` adds a new waypoint. Identifiers must be unique within their list.
@@ -360,31 +362,26 @@ Some changes made in `config.json` may take effects after server restarts.
      ```
 
 ## Client Configurations
-- #### Enable Waypoint Rendering
-  Default value: `true`
-- #### Waypoint Rendering Scaling Factor (Percentage)
-  Default value: `100`
-- #### Waypoint Background Transparence
-  Default value: `128`
-- #### Waypoint Vertical Offset (Percentage)
-  Default value: `0`
-- #### Local Waypoint View Distance (Chunks)
-  Default value: `12`
-- #### Auto Sync to Xaero's Minimap
-  Default value: `true`
 
-  Requires Xaero's Minimap mod installed.
-  Server-managed Xaero waypoint sets use an internal `sw␟` prefix, so automatic sync updates only those sets and preserves personal Xaero waypoint sets. Upload maps these managed names back to their server list and waypoint names.
-- #### Manually Sync to Xaero's Minimap
-  Default value: `None`
-  
-  Triggered manually, requires Xaero's Minimap mod installed.
-  
-  This will replace any waypoint sets on Xaeros' Minimap that has the same name as a list on the server.
-  - What stays:
-  Waypoint sets with unique names that do not exist on the server.
-  - What is lost:
-  Any waypoints you added to these shared lists. Any list you created that happens to share a name with a server list.
+Open the client settings with `C` in the waypoint manager, or with the config button in Mod Menu
+(Fabric) or the Mods screen (NeoForge and Forge). Changes apply immediately and are saved when the
+screen closes. Hover a row to see what it does and its default. The ↺ button next to a setting resets
+it, and **Reset to defaults…** resets them all.
+
+- #### Waypoint rendering
+  - **Show in-world waypoints**: draws waypoint markers in the world. Default: `On`.
+  - **Scale**: size of the markers, from `0` to `500` percent. Default: `100%`.
+  - **Vertical offset**: moves the markers up or down by up to half a block, from `-100` to `100` percent. Default: `0%`.
+  - **Background opacity**: opacity of marker backgrounds and icons, from `0` (clear) to `255` (solid). Default: `128`.
+  - **Local waypoint range**: waypoints with local visibility are drawn only within this many chunks, from `0` to `1024`; global waypoints are always drawn. Default: `12` chunks.
+- #### Map mods
+  Xaero's Minimap is supported on every loader and VoxelMap on Fabric. A supported map mod that isn't installed is listed as not installed.
+  - **Auto sync**: keeps the waypoints Server Waypoint adds to the map mod up to date as they change on the server. Default: `On`.
+  - **Sync now**: after a confirmation, replaces the waypoints Server Waypoint added with the server's current waypoints. Available once you're in a world whose waypoints have synced.
+
+  Server Waypoint marks what it adds: Xaero's Minimap sets and VoxelMap waypoint names carry an internal `sw␟` prefix. Sync only touches these, so your own waypoints are never changed, even ones named like a server list. Changes you made to synced waypoints, and waypoints from lists removed on the server, are replaced. Upload maps the managed names back to their server list and waypoint names.
+- #### Appearance
+  - **Color theme**: opens the theme editor.
 
 Remote catalog synchronization and the remote GUI require matching client and backend versions.
 Remote snapshots are kept separately from local waypoint files. See
