@@ -123,7 +123,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
 
     /**
      * Scrolls the least amount that fully shows the row owning {@code widget} and, when they fit, the
-     * nearest rows above and below that have an interactive widget. Does nothing for other listeners.
+     * nearest rows above and below that have an active widget. Does nothing for other listeners.
      */
     public void reveal(GuiEventListener widget) {
         int index = this.rowIndexOf(widget);
@@ -504,8 +504,10 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             return widget == this.control || widget == this.action;
         }
 
+        /** Whether Tab can stop in this row now: vanilla skips inactive widgets. */
         boolean isInteractive() {
-            return this.control instanceof AbstractWidget || this.action != null;
+            return this.control instanceof AbstractWidget widget && widget.active
+                    || this.action != null && this.action.active;
         }
 
         boolean isOverAction(int mouseX, int mouseY) {
