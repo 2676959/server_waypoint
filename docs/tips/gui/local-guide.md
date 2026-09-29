@@ -838,8 +838,10 @@ Let registered widgets receive ordinary input through the screen. Intercept only
 - Vanilla closes the screen on Escape before the focused child sees the key. Before that,
   `MovementAllowedScreen.keyPressed` calls `dismissFocusedInput()` to close the focused
   `PopupOwner`'s open menu or suggestion list and clear focus. A focused `EditBox` or
-  `ComboBoxWidget` also yields focus and consumes Escape when no popup is open, so the first
-  Escape leaves text entry and a second Escape closes the screen. Do not add per-widget Escape
+  `ComboBoxWidget` also yields focus and consumes Escape when no popup is open, and so does an
+  `IntegerSlider` whose number field rather than its track has focus (`isEditingNumber()`); an
+  `IntegerField` commits its number when it loses focus. So the first Escape leaves text entry
+  and a second Escape closes the screen. Do not add per-widget Escape
   intercepts. A screen whose Escape handling does not reach `super.keyPressed` calls
   `dismissFocusedInput()` first, as `WidgetThemeConfigScreen` does. Compare against
   `InputConstants.KEY_ESCAPE`, never 256, which is not Escape on 26.3.
