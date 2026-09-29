@@ -516,6 +516,16 @@ sorting. End and modded dimension labels remain hidden unless the player is curr
 dimension. In an all-dimensions flat distance sort, waypoints from the current and convertible
 dimensions are sorted first. Other dimensions follow in `dimensionNameComparator` order while
 preserving their default waypoint order.
+Local rows prefer a shared aligned distance column. As the list narrows, the gap after each
+formatted name/context shrinks to a minimum of 3 GUI pixels; a longer label pushes its distance
+rightward instead of overlapping it. Names scale only after the minimum gap and distance width
+have been reserved inside the row. Distance text keeps its metadata scale independently of the
+name. Non-hovered rows can use the space occupied by hidden action buttons. On hover, a distance
+that would enter the three action columns is hidden, and the name fits before the buttons.
+Distances already clear of the buttons remain visible. Button positions and hitboxes are unchanged.
+Long initials shrink to the same 16-pixel slot as item and VoxelMap icons to avoid overlapping names.
+An empty waypoint name and context use an unshrunk label scale so the distance still renders
+whenever the distance column is visible.
 Dimension, list, and distance metadata render smaller than the waypoint name. Row actions must use
 the retained dimension rather than the sidebar's selected dimension. The displayed dimension omits
 the `minecraft:` namespace for vanilla dimensions but preserves namespaces for modded dimensions,

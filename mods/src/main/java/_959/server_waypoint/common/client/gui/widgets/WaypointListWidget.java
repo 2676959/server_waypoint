@@ -715,7 +715,11 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 );
             }
         }
-        distanceColumnX = Math.max(0, firstBtnXPos - labelTextGap - maxDistanceWidth);
+        distanceColumnX = firstBtnXPos - labelTextGap - maxDistanceWidth;
+    }
+
+    static int waypointLabelX(int indent) {
+        return indent + 35;
     }
 
     @Override
@@ -899,8 +903,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 listName,
                 name,
                 distanceLabel,
-                indent + 55,
+                waypointLabelX(indent),
                 rowY,
+                contentWidth,
+                hovered,
                 dimensionColor,
                 metadataTextColor,
                 textColor
@@ -915,23 +921,27 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             DistanceLabel distanceLabel,
             int x,
             int rowY,
+            int contentWidth,
+            boolean hovered,
             int dimensionColor,
             int metadataColor,
             int nameColor
     ) {
-        int availableWidth = Math.max(0, distanceColumnX - x - labelTextGap);
         int metadataLineHeight = Math.round(textRenderer.lineHeight * metadataTextScale);
         int listWidth = (int)Math.ceil(textRenderer.width(listName) * metadataTextScale);
         int waypointX = listName.getString().isEmpty() ? 0 : listWidth + labelTextGap;
         int detailWidth = waypointX + textRenderer.width(waypointName);
         int dimensionWidth = (int)Math.ceil(textRenderer.width(dimensionLine) * metadataTextScale);
         int labelWidth = Math.max(dimensionWidth, detailWidth);
-        if (availableWidth == 0 || labelWidth == 0) {
+        int distanceWidth = (int)Math.ceil(textRenderer.width(distanceLabel.text()) * metadataTextScale);
+        NameDistanceLayout layout = resolveNameDistanceLayout(x, labelWidth, distanceWidth,
+                contentWidth, firstBtnXPos, distanceColumnX, hovered);
+        float labelScale = layout.nameScale();
+        if (labelScale == 0.0F) {
             return;
         }
 
         boolean twoLines = !dimensionLine.isEmpty();
-        float labelScale = Math.min(1.0F, (float)availableWidth / labelWidth);
         int textHeight = twoLines
                 ? metadataLineHeight + labelLineGap + textRenderer.lineHeight
                 : textRenderer.lineHeight;
@@ -957,19 +967,55 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         drawText(context, textRenderer, waypointName, waypointX, detailY, nameColor);
         pop(context);
 
-        if (!distanceLabel.isEmpty()) {
+        if (layout.showDistance()) {
             push(context);
-            translate(context, distanceColumnX, y);
-            scale(context, labelScale, labelScale);
+            int distanceY = y + Math.round((detailY + textRenderer.lineHeight) * labelScale) - metadataLineHeight;
+            translate(context, layout.distanceX(), distanceY);
             renderMetadataText(
                     context,
                     distanceLabel.text(),
                     0,
-                    detailY + textRenderer.lineHeight - metadataLineHeight,
+                    0,
                     distanceLabel.color()
             );
             pop(context);
         }
+    }
+
+    static float resolveLabelScale(int availableWidth, int labelWidth) {
+        if (availableWidth == 0) {
+            return 0.0F;
+        }
+        // Keep an ordinary baseline for distance-only rows with no name or context.
+        if (labelWidth == 0) {
+            return 1.0F;
+        }
+        float scale = Math.min(1.0F, (float)availableWidth / labelWidth);
+        // Division can round upward; do not let the text consume a pixel of its reserved gap.
+        return (double)labelWidth * scale > availableWidth ? Math.nextDown(scale) : scale;
+    }
+
+    record NameDistanceLayout(float nameScale, int distanceX, boolean showDistance) { }
+
+    static NameDistanceLayout resolveNameDistanceLayout(int x, int labelWidth, int distanceWidth,
+                                                       int contentWidth, int firstActionX,
+                                                       int preferredDistanceX, boolean buttonsVisible) {
+        int availableWidth = Math.max(0, contentWidth - x - labelTextGap);
+        boolean hasDistance = distanceWidth > 0
+                && availableWidth >= distanceWidth + labelTextGap + (labelWidth > 0 ? 1 : 0);
+        int nameWidth = Math.max(0, availableWidth - (hasDistance ? distanceWidth + labelTextGap : 0));
+        float nameScale = resolveLabelScale(nameWidth, labelWidth);
+        // Start with the non-hovered geometry so hovering never moves the distance into a
+        // different column. Only names that cannot fit beside the buttons shrink on hover.
+        int nameEnd = x + (int)Math.ceil(labelWidth * nameScale);
+        int distanceX = Math.max(preferredDistanceX, nameEnd + labelTextGap);
+        if (buttonsVisible) {
+            nameScale = Math.min(nameScale,
+                    resolveLabelScale(Math.max(0, firstActionX - x - labelTextGap), labelWidth));
+        }
+        int rightEdge = (buttonsVisible ? firstActionX : contentWidth) - labelTextGap;
+        return new NameDistanceLayout(nameScale, distanceX,
+                hasDistance && distanceX + distanceWidth <= rightEdge);
     }
 
     private DistanceLabel getDistanceLabel(SimpleWaypoint waypoint, String waypointDimension) {
@@ -1057,7 +1103,14 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     }
 
     private void drawInitialsBox(GuiGraphicsExtractor context, String initials, int x, int y, int backgroundColor, int textColor) {
-        WaypointRowRenderer.initials(context, textRenderer, initials, x, y, backgroundColor, textColor);
+        // Initials share the icon's 16-pixel slot, leaving the compact name offset clear.
+        int badgeWidth = Math.max(textRenderer.width(initials) + 2, textRenderer.lineHeight);
+        float badgeScale = Math.min(1.0F, 16.0F / badgeWidth);
+        push(context);
+        translate(context, x, y + (textRenderer.lineHeight * (1.0F - badgeScale)) / 2.0F);
+        scale(context, badgeScale, badgeScale);
+        WaypointRowRenderer.initials(context, textRenderer, initials, 0, 0, backgroundColor, textColor);
+        pop(context);
     }
 
     private static int getInitialsTextColor(int rgb, boolean rendered) {
