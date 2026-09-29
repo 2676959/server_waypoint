@@ -1,5 +1,6 @@
 # Features
 
+- [Client config](client-config/) — client settings screen, settings list widget and mod-list entry points.
 - [Cross-server waypoints](cross-server/) — discovery and teleportation over Velocity.
 - [Upload transport](upload/) — chunked upload/download transport and startup fixes.
 - [Waypoint icons](waypoint-icons/) — item and VoxelMap icon selection and display plan.
