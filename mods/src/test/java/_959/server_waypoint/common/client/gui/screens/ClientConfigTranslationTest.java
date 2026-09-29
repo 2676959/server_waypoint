@@ -79,7 +79,15 @@ class ClientConfigTranslationTest {
     );
     private static final List<String> RETIRED_KEYS = List.of(
             "server_waypoint.config.true",
-            "server_waypoint.config.false"
+            "server_waypoint.config.false",
+            "server_waypoint.config.waypoint_bg_alpha",
+            "server_waypoint.config.auto_sync_to_xaeros",
+            "server_waypoint.config.sync_to_xaeros",
+            "server_waypoint.config.sync_to_xaeros.warn.1",
+            "server_waypoint.config.sync_to_xaeros.warn.2",
+            "server_waypoint.config.sync_to_xaeros.warn.3",
+            "server_waypoint.config.sync_to_xaeros.warn.4",
+            "server_waypoint.config.sync_to_xaeros.warn.5"
     );
 
     @Test
