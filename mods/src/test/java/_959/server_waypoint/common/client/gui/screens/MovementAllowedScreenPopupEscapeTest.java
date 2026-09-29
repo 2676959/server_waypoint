@@ -4,6 +4,8 @@ package _959.server_waypoint.common.client.gui.screens;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.widgets.AbstractDropdownMenuWidget;
 import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
+import _959.server_waypoint.common.client.gui.widgets.IntegerField;
+import _959.server_waypoint.common.client.gui.widgets.IntegerSlider;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
@@ -33,6 +35,41 @@ class MovementAllowedScreenPopupEscapeTest {
         inputField.set(comboBox, input);
         assertEscapeLeavesTextEntry(comboBox);
         assertFalse(input.isFocused());
+    }
+
+    @Test
+    void escapeLeavesAnIntegerSliderNumberFieldBeforeClosingTheScreen() throws ReflectiveOperationException {
+        FocusOnlyField field = allocate(FocusOnlyField.class);
+        IntegerSlider slider = integerSlider(field, field);
+        assertEscapeLeavesTextEntry(slider);
+        assertFalse(field.isFocused());
+    }
+
+    @Test
+    void escapeClosesTheScreenWhenAnIntegerSliderTrackHasFocus() throws ReflectiveOperationException {
+        FocusOnlyListener track = new FocusOnlyListener();
+        IntegerSlider slider = integerSlider(allocate(FocusOnlyField.class), track);
+        TestScreen screen = TestScreen.create();
+        screen.setFocused(slider);
+        assertTrue(track.isFocused());
+
+        assertTrue(screen.keyPressed(InputConstants.KEY_ESCAPE, 0, 0));
+        assertTrue(screen.closed);
+    }
+
+    /** An {@code IntegerSlider} whose number field and selected part are test doubles. */
+    private static IntegerSlider integerSlider(IntegerField field, GuiEventListener selectedPart)
+            throws ReflectiveOperationException {
+        IntegerSlider slider = allocate(IntegerSlider.class);
+        setField(slider, "integerField", field);
+        setField(slider, "focused", selectedPart);
+        return slider;
+    }
+
+    private static void setField(Object target, String name, Object value) throws ReflectiveOperationException {
+        var field = target.getClass().getDeclaredField(name);
+        field.setAccessible(true);
+        field.set(target, value);
     }
 
     private static void assertEscapeLeavesTextEntry(GuiEventListener input) {
@@ -155,6 +192,41 @@ class MovementAllowedScreenPopupEscapeTest {
 
         @Override
         protected void renderMenuItem(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        }
+    }
+
+    /** A number field that only records focus; {@code allocate} skips the text state a real one needs. */
+    private static final class FocusOnlyField extends IntegerField {
+        private boolean focusedForTest;
+
+        // Never runs: the tests create this double with allocate(), which skips constructors.
+        private FocusOnlyField() {
+            super(0, 0, 0, Component.empty(), null);
+        }
+
+        @Override
+        public void setFocused(boolean focused) {
+            this.focusedForTest = focused;
+        }
+
+        @Override
+        public boolean isFocused() {
+            return this.focusedForTest;
+        }
+    }
+
+    /** Stands in for the slider track, which only needs to take and lose focus here. */
+    private static final class FocusOnlyListener implements GuiEventListener {
+        private boolean focused;
+
+        @Override
+        public void setFocused(boolean focused) {
+            this.focused = focused;
+        }
+
+        @Override
+        public boolean isFocused() {
+            return this.focused;
         }
     }
 }
