@@ -33,6 +33,7 @@ import java.util.Set;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.Screen;
@@ -592,9 +593,14 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
     private void applyPendingFocus() {
         if (this.pendingFocus != null) {
-            this.setFocused(this.pendingFocus);
+            handOverFocus(this, this.pendingFocus);
             this.pendingFocus = null;
         }
+    }
+
+    /** Moves focus away from the widget a click just focused. */
+    static void handOverFocus(ContainerEventHandler screen, GuiEventListener target) {
+        screen.setFocused(target);
     }
 
     private record SettingControl(ClientConfigSettings.Setting setting, AbstractWidget widget, IconButton resetButton) {
