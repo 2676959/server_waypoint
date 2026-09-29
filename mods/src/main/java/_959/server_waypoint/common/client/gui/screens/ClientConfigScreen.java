@@ -483,7 +483,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
                 controls.integration().syncAll(WaypointClientMod.getInstance());
                 this.showStatus(Component.translatable("server_waypoint.config.sync.done", controls.name()), SUCCESS);
             } catch (RuntimeException exception) {
-                WaypointClientMod.LOGGER.error("Failed to sync waypoints to {}", controls.target(), exception);
+                WaypointClientMod.LOGGER.error("Failed to sync waypoints to {}", controls.name().getString(), exception);
                 this.showStatus(Component.translatable("server_waypoint.config.sync.failed", controls.name()), DANGER);
             }
         }
