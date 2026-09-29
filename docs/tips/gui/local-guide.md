@@ -181,6 +181,11 @@ toolbar.addChild(doneButton, LayoutFlow.Direction.REVERSE);
 Like `ExpandableManager`, `WidgetPack` is layout-only. Its children still need to be registered for
 input and rendered by their owning screen or composite.
 
+Children touch the top of a horizontal pack, or the left of a vertical pack. Call
+`setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER)` to center them across the pack by
+their visual bounds instead, rounding toward the start; changing the alignment lays the children out
+again. `SettingsListWidget` rows use this to line up labels and controls of different heights.
+
 Use `IconListLayout` for the geometry of an oriented, scrollable icon strip shared by dimension
 and server lists.
 It is a pure layout helper, not a widget or input handler. Its optional non-negative icon spacing
