@@ -4,7 +4,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +17,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClientConfigTranslationTest {
     private static final List<String> LOCALES = List.of("en_us", "es_es", "he_il", "zh_cn", "zh_hk", "zh_tw");
-    private static final Pattern PLACEHOLDER = Pattern.compile("%s");
+    // As Minecraft reads a translation: %% is a literal percent sign, %s takes the next argument and
+    // %<n>$s takes argument n.
+    private static final Pattern FORMAT_SPECIFIER = Pattern.compile("%(?:(\\d+)\\$)?([s%])");
     private static final List<String> SCREEN_KEYS = List.of(
             "server_waypoint.config.screen.title",
             "server_waypoint.config.on",
@@ -91,14 +95,14 @@ class ClientConfigTranslationTest {
     );
 
     @Test
-    void allSixLocalesDefineTheScreenKeysWithMatchingPlaceholders() throws Exception {
+    void allSixLocalesDefineTheScreenKeysWithTheArgumentsOfEnglish() throws Exception {
         JsonObject english = read("en_us");
         for (String locale : LOCALES) {
             JsonObject translated = read(locale);
             for (String key : SCREEN_KEYS) {
                 assertTrue(translated.has(key), locale + ": " + key);
-                assertEquals(placeholders(english.get(key).getAsString()),
-                        placeholders(translated.get(key).getAsString()), locale + ": " + key);
+                assertEquals(arguments(english.get(key).getAsString()),
+                        arguments(translated.get(key).getAsString()), locale + ": " + key);
             }
         }
     }
@@ -141,7 +145,21 @@ class ClientConfigTranslationTest {
         }
     }
 
-    private static long placeholders(String value) {
-        return PLACEHOLDER.matcher(value).results().count();
+    /**
+     * The positions of the arguments a translation shows, sorted, so {@code %s} and {@code %1$s}
+     * compare equal. A literal {@code %%} shows none.
+     */
+    private static List<Integer> arguments(String value) {
+        List<Integer> arguments = new ArrayList<>();
+        int next = 1;
+        Matcher matcher = FORMAT_SPECIFIER.matcher(value);
+        while (matcher.find()) {
+            if (matcher.group(2).equals("%")) {
+                continue;
+            }
+            arguments.add(matcher.group(1) != null ? Integer.parseInt(matcher.group(1)) : next++);
+        }
+        arguments.sort(null);
+        return arguments;
     }
 }
