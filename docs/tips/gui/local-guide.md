@@ -478,7 +478,7 @@ Those cases do not justify duplicating standalone message rendering elsewhere.
 | Text label, optional scaling/wrapping | `ScalableText` |
 | Text action | `TranslucentButton` |
 | Icon action | `IconButton` |
-| Boolean state | `ToggleButton` or `TrueFalseToggleButton` |
+| Boolean state | `ToggleButton` or `OnOffToggleButton` |
 | Text input with optional suggestions | `TranslucentTextField` |
 | Editable text with a popup choice list | `ComboBoxWidget` |
 | Bounded integer input | `IntegerField` |
@@ -697,6 +697,16 @@ every control's right edge lines up.
   500 ms, the list schedules the row's tooltip at the cursor, except over the row's action, which
   keeps its own vanilla tooltip.
 - **Limitations:** row controls can't open popups, because the scissor would clip them.
+
+### Confirmation dialogs
+
+`ConfirmationDialog` takes an optional confirm label; the shorter constructor keeps "Confirm". Both
+buttons are at least 50 pixels wide and grow to fit their text, so longer translations don't
+overflow. `getCancelButton()` returns the Cancel button so a screen can focus it when the dialog
+opens. `DialogWidget` receives its buttons through its constructor, and the first one sits on the
+right. Register the buttons through the dialog's `visitWidgets`, keep them inactive while the dialog
+is hidden, and render the open dialog on a later layer. Escape should close an open dialog before the
+screen; `ClientConfigScreen` shows the pattern.
 
 ### New interactive widget checklist
 
