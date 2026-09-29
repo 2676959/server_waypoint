@@ -56,7 +56,7 @@ public abstract class MovementAllowedScreen extends Screen {
     extractRenderState
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         //? if < 1.21.6 {
-        /*this.renderThemedBackground(context);
+        /*this.renderScreenBackground(context, deltaTicks);
         *///?}
         this.renderScreenContents(context, mouseX, mouseY, deltaTicks);
     }
@@ -68,32 +68,61 @@ public abstract class MovementAllowedScreen extends Screen {
             float deltaTicks
     );
 
-    private void renderThemedBackground(GuiGraphicsExtractor context) {
+    /**
+     * The themed overlay. Without a world, as when the screen opens from a mod list, vanilla's
+     * background for screens outside a world goes underneath it.
+     */
+    private void renderScreenBackground(GuiGraphicsExtractor context, float deltaTicks) {
+        if (this.minecraft.level == null) {
+            this.renderBackgroundWithoutWorld(context, deltaTicks);
+        }
         context.fill(0, 0, this.width, this.height,
                 WidgetThemeManager.getColor(WidgetThemeVariable.SCREEN_BACKGROUND));
+    }
+
+    private void renderBackgroundWithoutWorld(GuiGraphicsExtractor context, float deltaTicks) {
+        //? if < 1.20.5 {
+        /*this.renderDirtBackground(context);
+        *///?} elif < 1.21.2 {
+        /*this.renderPanorama(context, deltaTicks);
+        this.renderBlurredBackground(deltaTicks);
+        this.renderMenuBackground(context);
+        *///?} elif < 1.21.6 {
+        /*this.renderPanorama(context, deltaTicks);
+        this.renderBlurredBackground();
+        this.renderMenuBackground(context);
+        *///?} elif < 26 {
+        /*this.renderPanorama(context, deltaTicks);
+        this.renderBlurredBackground(context);
+        this.renderMenuBackground(context);
+        *///?} else {
+        this.extractPanorama(context, deltaTicks);
+        this.extractBlurredBackground(context);
+        this.extractMenuBackground(context);
+        //?}
     }
 
     //? if = 1.21.6 {
     /*@Override
     public void renderBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-        this.renderThemedBackground(context);
+        this.renderScreenBackground(context, deltaTicks);
     }
     *///?} elif >= 1.21.9 && < 26 {
     /*@Override
     public void renderBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-        this.renderThemedBackground(context);
+        this.renderScreenBackground(context, deltaTicks);
         this.minecraft.gui.renderDeferredSubtitles();
     }
     *///?} elif >= 26 && < 26.2 {
     @Override
     public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-        this.renderThemedBackground(context);
+        this.renderScreenBackground(context, deltaTicks);
         this.minecraft.gui.extractDeferredSubtitles();
     }
     //?} elif >= 26.2 {
     /*@Override
     public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-        this.renderThemedBackground(context);
+        this.renderScreenBackground(context, deltaTicks);
         this.minecraft.gui.hud.extractDeferredSubtitles();
     }
     *///?}
