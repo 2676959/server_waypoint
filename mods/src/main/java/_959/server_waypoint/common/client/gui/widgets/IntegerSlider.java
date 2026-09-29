@@ -107,7 +107,7 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!this.active) {
+        if (!this.isActive()) {
             return false;
         }
         if (this.integerField.mouseClicked(mouseX, mouseY, button)) {
@@ -125,7 +125,7 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (!this.active) {
+        if (!this.isActive()) {
             return false;
         }
         if (this.focused == this.slider) {
@@ -137,7 +137,7 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        if (!this.active) {
+        if (!this.isActive()) {
             return false;
         }
         if (mouseX >= this.slider.getX() && mouseX <= this.slider.getX() + this.slider.getWidth() &&
@@ -150,12 +150,12 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        return this.active && this.integerField.keyPressed(keyCode, scanCode, modifiers);
+        return this.isActive() && this.integerField.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        return this.active && this.integerField.charTyped(chr, modifiers);
+        return this.isActive() && this.integerField.charTyped(chr, modifiers);
     }
 
     @Override
