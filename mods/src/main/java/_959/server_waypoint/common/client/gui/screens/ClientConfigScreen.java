@@ -62,7 +62,9 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     private static final float TITLE_SCALE = 1.2F;
     private static final int FOOTER_BUTTON_GAP = 6;
     private static final int STATUS_GAP = 8;
-    private static final int MIN_STATUS_WIDTH = 40;
+    // Below this width beside the buttons, the status moves to its own line above them.
+    private static final int MIN_STATUS_WIDTH = 100;
+    private static final int STATUS_LINE_GAP = 4;
     private static final int MIN_BUTTON_WIDTH = 50;
     private static final int BUTTON_TEXT_PADDING = 10;
     private static final int BUTTON_HEIGHT = 11;
@@ -92,6 +94,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     // True while the constructor builds the controls and while they're refreshed from the config,
     // so their change callbacks don't write the values straight back.
     private boolean updatingControls = true;
+    private boolean hasStatus;
     private int contentWidth;
     private int contentHeight;
 
@@ -137,7 +140,6 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         this.shownSettings = ClientConfigSettings.forScreen(installedMapMods);
 
         this.footer.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
-        this.footer.addChild(this.statusText, Direction.FORWARD);
         this.footer.addChild(this.doneButton, Direction.REVERSE);
         this.footer.addChild(SpacerElement.width(FOOTER_BUTTON_GAP), Direction.REVERSE);
         this.footer.addChild(this.resetAllButton, Direction.REVERSE);
@@ -180,9 +182,13 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         this.settingsList.setVisualWidth(panelWidth);
         this.titleText.setWidth(panelWidth);
         int buttonsWidth = this.resetAllButton.getVisualWidth() + FOOTER_BUTTON_GAP + this.doneButton.getVisualWidth();
-        this.statusText.setMaxWidth(Math.max(MIN_STATUS_WIDTH, panelWidth - buttonsWidth - STATUS_GAP));
+        boolean statusAbove = statusAboveButtons(panelWidth, buttonsWidth);
+        this.statusText.setMaxWidth(statusAbove ? panelWidth : panelWidth - buttonsWidth - STATUS_GAP);
         int buttonHeight = Math.max(this.resetAllButton.getVisualHeight(), this.doneButton.getVisualHeight());
-        int footerHeight = Math.max(buttonHeight, this.statusText.getHeight());
+        int statusHeight = this.hasStatus ? this.statusText.getHeight() : 0;
+        int footerHeight = statusAbove && statusHeight > 0
+                ? statusHeight + STATUS_LINE_GAP + buttonHeight
+                : Math.max(buttonHeight, statusHeight);
         int titleHeight = this.titleText.getHeight();
         int minimumPanelHeight = SettingsListWidget.PANEL_PADDING * 2 + SettingsListLayout.MIN_ROW_HEIGHT;
         int availablePanelHeight = this.height - SCREEN_MARGIN * 2 - titleHeight - footerHeight - SECTION_SPACING * 2;
@@ -199,8 +205,11 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         this.titleText.setPosition(x, y);
         int panelY = y + titleHeight + SECTION_SPACING;
         this.settingsList.setPosition(x + SettingsListWidget.PANEL_PADDING, panelY + SettingsListWidget.PANEL_PADDING);
-        this.footer.setDimensions(panelWidth, footerHeight);
-        this.footer.setPosition(x, panelY + panelHeight + SECTION_SPACING);
+        int footerY = panelY + panelHeight + SECTION_SPACING;
+        int buttonRowHeight = statusAbove ? buttonHeight : footerHeight;
+        this.footer.setDimensions(panelWidth, buttonRowHeight);
+        this.footer.setPosition(x, footerY + footerHeight - buttonRowHeight);
+        this.statusText.setPosition(x, statusAbove ? footerY : footerY + centered(footerHeight, statusHeight));
         for (ConfirmationDialog dialog : this.dialogs()) {
             dialog.setPosition(centered(this.width, dialog.getWidth()), centered(this.height, dialog.getHeight()));
         }
@@ -541,7 +550,16 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         return tooltip;
     }
 
+    /**
+     * Whether the footer's status goes on its own line above the buttons, because they leave it
+     * less than {@link #MIN_STATUS_WIDTH} beside them, as with Spanish at a 320-pixel GUI.
+     */
+    static boolean statusAboveButtons(int panelWidth, int buttonsWidth) {
+        return panelWidth - buttonsWidth - STATUS_GAP < MIN_STATUS_WIDTH;
+    }
+
     private void showStatus(Component message, WidgetThemeVariable color) {
+        this.hasStatus = true;
         this.statusText.setColor(color);
         this.statusText.setText(message);
         // A wrapped status can change the footer's height, so the layout runs again.
