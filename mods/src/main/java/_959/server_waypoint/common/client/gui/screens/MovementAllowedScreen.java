@@ -170,6 +170,33 @@ public abstract class MovementAllowedScreen extends Screen {
         return this.minecraft.getLastInputType().isKeyboard();
     }
 
+    /**
+     * Whether a modal, such as a dialog, is open and holds focus. A rebuild, as after a resize, then
+     * leaves focus where the modal put it.
+     */
+    protected boolean hasOpenModal() {
+        return false;
+    }
+
+    //? if >= 1.20.5 {
+    /**
+     * After every rebuild, vanilla moves focus to the next Tab stop when the keyboard was used last,
+     * which would take it from a dialog's Cancel button to its confirm button. An open modal keeps
+     * its focus instead.
+     */
+    @Override
+    protected void setInitialFocus() {
+        if (!this.hasOpenModal()) {
+            this.pickInitialFocus();
+        }
+    }
+
+    /** Vanilla's pick, which reads the game's last input type. */
+    void pickInitialFocus() {
+        super.setInitialFocus();
+    }
+    //?}
+
     private boolean focusedButtonActivatesOn(int keyCode) {
         return this.getFocused() instanceof ShiftableButtonWidget button && button.activatesOn(keyCode);
     }

@@ -432,8 +432,11 @@ component. This function, the `MapModRowState` mapping and both enums live in a 
 - **Constructor:** builds the settings model, the rows and the dialogs, so they survive resizes.
 - **`init()`:** sizes and positions the title, panel, footer and dialog from the window size.
   Registers the row widgets, then the list, then the footer buttons, then the dialog buttons. Then
-  refreshes the control states. An open dialog stays open through a resize, and the list keeps its
-  scroll position.
+  refreshes the control states. An open dialog stays open through a resize and keeps its Cancel
+  button focused, and the list keeps its scroll position. From 1.20.5, vanilla moves focus to the
+  next Tab stop after every rebuild when the keyboard was used last, which would focus the
+  dialog's confirm button; the screen reports the open dialog through `hasOpenModal()`, which stops
+  that.
 - **Rendering** only draws. Layout no longer runs every frame. Besides `init()`, it runs again only
   when the status message changes, because a wrapped status can change the footer's height.
 - **`tick()`** checks the sync blockers again.
@@ -653,6 +656,8 @@ In the mods test source set:
 - `ClientConfigScreenFocusTest`: a focused row widget that a relayout hid is revealed, one in view
   leaves the list where it is, and focus leaves a row that can't be shown.
 - `MovementAllowedScreenPauseTest`: a screen pauses exactly when its parent does.
+- `MovementAllowedScreenInitialFocusTest`: a rebuild leaves focus with an open modal, and lets
+  vanilla pick it otherwise.
 - `WidgetThemeStateTest`: an inactive icon takes the `TEXT_DISABLED` tint.
 
 ### Gradle
@@ -681,6 +686,8 @@ results recorded in `validation/`. Compiling can't prove these:
   blocker shows on the title screen, while waypoints sync, and on a server without Server Waypoint.
 - Escape and focus return for every dialog, and Escape in a number field. At a short window, a
   status message that pushes the Sync button out of view still leaves it focused and in view.
+  Resizing the window with a dialog open, after using the keyboard, keeps its Cancel button
+  focused.
 - Opening the screen from each mod list, on the title screen and in game. From the pause menu's
   mod list in singleplayer, the game stays paused, also in the theme editor.
 - A disconnect with the screen open keeps the changes.

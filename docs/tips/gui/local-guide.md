@@ -888,6 +888,11 @@ Let registered widgets receive ordinary input through the screen. Intercept only
   T teleport, must leave Enter, Space and keypad Enter to the focused widget.
 - Call `acceptMovementKeys(false)` while text entry or another control must own movement-key input.
 - A modal should disable underlying controls and move focus into the modal; restore both when it closes.
+  On a `MovementAllowedScreen`, override `hasOpenModal()` to report it: from 1.20.5, vanilla moves
+  focus to the next Tab stop after every rebuild, such as a resize, when the keyboard was used last,
+  which would take it from a dialog's Cancel button to its confirm button. The screen skips that
+  while a modal is open, so the focus `init()` gives the modal stands. `ClientConfigScreen` shows the
+  pattern.
 
 #### 5. `onClose`: return and clean up
 

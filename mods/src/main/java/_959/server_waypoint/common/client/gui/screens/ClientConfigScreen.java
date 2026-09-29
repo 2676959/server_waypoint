@@ -348,6 +348,12 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         return pausesWith(this.parentScreen);
     }
 
+    /** An open dialog keeps its Cancel button focused through a resize; {@link #init} focuses it. */
+    @Override
+    protected boolean hasOpenModal() {
+        return this.openDialog != null;
+    }
+
     private SettingsListWidget.Row createSettingRow(ClientConfigSettings.Setting setting) {
         AbstractWidget widget;
         Component unit = null;
