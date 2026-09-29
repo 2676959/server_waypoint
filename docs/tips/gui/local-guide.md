@@ -259,6 +259,15 @@ separately. Route popup clicks before overlapping controls using `isMouseOver(..
 `closePopupIfOpen()` closes the choice list, or the suggestions when the list is closed, so
 Escape dismisses whichever is showing.
 
+Call `ComboBoxWidget.layoutPopup(screenHeight, maxRows)` after positioning the control and before
+rendering its popups to opt into screen-aware vertical placement (the waypoint icon picker uses
+eight rows). Refresh it as the screen size, control position, or choices change. The choice list
+prefers downward expansion whenever its visible rows fit within a four-pixel screen margin;
+otherwise it uses the side with more room and limits its scrollable height. Suggestions choose
+their direction independently using their actual height, so a shorter suggestion list can still
+open downward when the full choice list needs to open upward. Other comboboxes retain their
+explicit expansion direction until this method is used.
+
 `SuggestingTextInput` is the reusable surface-free input base. It owns editing, shifted layout,
 completion state, inline text, and suggestion rendering/hit testing; `TranslucentTextField` adds
 only its themed surface. Composites can override `getSuggestionsX()`, `getSuggestionsY()`, and

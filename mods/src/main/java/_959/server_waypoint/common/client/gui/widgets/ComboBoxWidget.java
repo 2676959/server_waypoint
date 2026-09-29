@@ -30,6 +30,26 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
     private final ScalableText arrow;
     private final Font font;
     private boolean settingValue;
+    private int popupScreenHeight = -1;
+
+    static boolean shouldOpenUp(int y, int controlHeight, int popupHeight, int screenHeight) {
+        int above = Math.max(0, y - 4);
+        int below = Math.max(0, screenHeight - y - controlHeight - 4);
+        return popupHeight > below && above > below;
+    }
+
+    /** Places popups within the screen, preferring down whenever the visible rows fit. */
+    public void layoutPopup(int screenHeight, int maxRows) {
+        if (maxRows <= 0) {
+            throw new IllegalArgumentException("Popup row limit must be positive");
+        }
+        this.popupScreenHeight = screenHeight;
+        int desiredHeight = this.getHeight() * Math.min(maxRows, this.getPopupItemCount());
+        boolean openUp = shouldOpenUp(this.getY(), this.getHeight(), desiredHeight, screenHeight);
+        this.setExpansionDirection(openUp ? LayoutFlow.Direction.REVERSE : LayoutFlow.Direction.FORWARD);
+        int available = openUp ? this.getY() - 4 : screenHeight - this.getY() - this.getHeight() - 4;
+        this.setMaxPopupHeight(Math.max(this.getHeight(), Math.min(desiredHeight, available)));
+    }
 
     public ComboBoxWidget(int x, int y, int width, Component label, Font font,
                           List<String> values, String initialValue, Consumer<String> onValueChanged) {
@@ -280,7 +300,11 @@ public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
 
         @Override
         protected int getSuggestionsY(int suggestionHeight) {
-            return ComboBoxWidget.this.getExpansionDirection() == LayoutFlow.Direction.REVERSE
+            boolean openUp = ComboBoxWidget.this.popupScreenHeight >= 0
+                    ? shouldOpenUp(ComboBoxWidget.this.getY(), ComboBoxWidget.this.getHeight(),
+                            suggestionHeight, ComboBoxWidget.this.popupScreenHeight)
+                    : ComboBoxWidget.this.getExpansionDirection() == LayoutFlow.Direction.REVERSE;
+            return openUp
                     ? ComboBoxWidget.this.getY() - suggestionHeight
                     : ComboBoxWidget.this.getY() + ComboBoxWidget.this.getHeight();
         }

@@ -1,7 +1,6 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.screens;
 
-import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
@@ -648,13 +647,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     private void layoutIconPopup() {
-        ComboBoxWidget menu = this.iconPicker.menu();
-        int above = Math.max(0, menu.getY() - 4);
-        int below = Math.max(0, this.height - menu.getY() - menu.getHeight() - 4);
-        boolean openUp = above > below;
-        menu.setExpansionDirection(openUp ? LayoutFlow.Direction.REVERSE : LayoutFlow.Direction.FORWARD);
-        menu.setMaxPopupHeight(Math.max(menu.getHeight(),
-                Math.min(menu.getHeight() * 8, openUp ? above : below)));
+        this.iconPicker.menu().layoutPopup(this.height, 8);
     }
 
     private void drawBackground(GuiGraphicsExtractor context) {
