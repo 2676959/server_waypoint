@@ -13,6 +13,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
+import org.bstats.velocity.Metrics;
 import org.slf4j.Logger;
 
 @Plugin(id = "server_waypoint", name = "Server Waypoint", version = ModInfo.MOD_VERSION,
@@ -22,10 +23,15 @@ public final class ServerWaypointVelocity {
     private final Logger logger;
     private final ProxyServer proxy;
     private final VelocityRuntime runtime;
-    @Inject public ServerWaypointVelocity(ProxyServer proxy, Logger logger, @DataDirectory Path directory) {
+    private final Metrics.Factory metricsFactory;
+    private Metrics metrics;
+    @Inject public ServerWaypointVelocity(ProxyServer proxy, Logger logger, @DataDirectory Path directory,
+                                         Metrics.Factory metricsFactory) {
         this.proxy = proxy; this.logger = logger; runtime = new VelocityRuntime(proxy, directory);
+        this.metricsFactory = metricsFactory;
     }
     @Subscribe public void onInitialize(ProxyInitializeEvent event) {
+        metrics = metricsFactory.make(this, 34382);
         proxy.getChannelRegistrar().register(RESERVED);
         proxy.getCommandManager().register(
                 proxy.getCommandManager().metaBuilder("serverwaypoint").plugin(this).build(),
@@ -45,6 +51,9 @@ public final class ServerWaypointVelocity {
         }
     }
     @Subscribe public com.velocitypowered.api.event.EventTask onShutdown(ProxyShutdownEvent event) {
+        if (metrics != null) {
+            metrics.shutdown();
+        }
         proxy.getChannelRegistrar().unregister(RESERVED);
         return com.velocitypowered.api.event.EventTask.withContinuation(continuation -> runtime.stop().whenComplete((result, failure) -> {
             logger.info("Server Waypoint coordinator stopped: {}", result); continuation.resume();

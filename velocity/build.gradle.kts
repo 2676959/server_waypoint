@@ -14,6 +14,7 @@ repositories {
 
 dependencies {
     implementation(project(":proxy-common"))
+    implementation("org.bstats:bstats-velocity:3.2.1")
     compileOnly("com.velocitypowered:velocity-api:${property("velocity_api_version")}")
     testImplementation("com.velocitypowered:velocity-api:${property("velocity_api_version")}")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
@@ -37,8 +38,10 @@ tasks.jar {
 }
 
 tasks.shadowJar {
+    relocate("org.bstats", project.group.toString())
     relocate("com.southernstorm.noise", "_959.server_waypoint.internal.noisekk")
     dependencies {
+        include(dependency("org.bstats:.*:.*"))
         include(dependency("org.signal.forks:noise-java:.*"))
     }
     archiveClassifier.set("")
