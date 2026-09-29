@@ -22,6 +22,9 @@ public class TranslucentButton extends ShiftableButtonWidget implements Expandab
     static final int OUTLINE_LEFT_PADDING = 1;
     static final int OUTLINE_TOP_PADDING = 2;
     private static final VisualBounds VISUAL_BOUNDS = new VisualBounds(OUTLINE_LEFT_PADDING, OUTLINE_TOP_PADDING, OUTLINE_LEFT_PADDING, 0);
+    private static final int FITTED_MIN_WIDTH = 50;
+    private static final int FITTED_TEXT_PADDING = 10;
+    private static final int FITTED_HEIGHT = 11;
 
     private final ButtonClickCallback callback;
     private final AnchorMode anchorMode;
@@ -52,6 +55,20 @@ public class TranslucentButton extends ShiftableButtonWidget implements Expandab
         if (this.anchorMode == AnchorMode.CONTENT) {
             this.setYOffset(DEFAULT_Y_OFFSET);
         }
+    }
+
+    /**
+     * A button 11 pixels high and as wide as its label plus 5 pixels on each side, but at least 50,
+     * so short labels line up and long translations still fit.
+     */
+    public static TranslucentButton fitted(Component label, ButtonClickCallback callback) {
+        TranslucentButton button = new TranslucentButton(0, 0, 0, FITTED_HEIGHT, label, callback);
+        button.setWidth(fittedWidth(button.textWidth));
+        return button;
+    }
+
+    static int fittedWidth(int textWidth) {
+        return Math.max(FITTED_MIN_WIDTH, textWidth + FITTED_TEXT_PADDING);
     }
 
     public void setText(Component text) {

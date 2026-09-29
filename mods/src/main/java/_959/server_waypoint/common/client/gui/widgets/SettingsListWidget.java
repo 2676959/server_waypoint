@@ -6,6 +6,7 @@ import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.layout.SettingsListLayout;
+import _959.server_waypoint.common.client.gui.layout.VisualPositioning;
 import _959.server_waypoint.common.client.gui.layout.WidgetPack;
 import _959.server_waypoint.common.client.gui.render.PaddingBackground;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
@@ -29,6 +30,7 @@ import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.NO_MOUSE;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.PANEL_BACKGROUND;
@@ -49,7 +51,6 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
     private static final long TOOLTIP_DELAY_NANOS = 500_000_000L;
     private static final int HEADER_LINE_GAP = 4;
     private static final int MIN_HEADER_LINE = 8;
-    private static final int NO_MOUSE = -10_000;
 
     private final Font font;
     private final PaddingBackground panel;
@@ -362,22 +363,6 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         return Math.max(0, this.width - this.SCROLLBAR_WIDTH - SCROLLBAR_GAP);
     }
 
-    private static int visualX(LayoutElement element) {
-        return element instanceof Padding padding ? padding.getVisualX() : element.getX();
-    }
-
-    private static int visualY(LayoutElement element) {
-        return element instanceof Padding padding ? padding.getVisualY() : element.getY();
-    }
-
-    private static int visualWidth(LayoutElement element) {
-        return element instanceof Padding padding ? padding.getVisualWidth() : element.getWidth();
-    }
-
-    private static int visualHeight(LayoutElement element) {
-        return element instanceof Padding padding ? padding.getVisualHeight() : element.getHeight();
-    }
-
     /** An entry of the list: a {@link Header} or a {@link Row}. */
     public abstract static sealed class Entry permits Header, Row {
         private Entry() {
@@ -498,7 +483,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         }
 
         int actionWidth() {
-            return this.action == null ? 0 : visualWidth(this.action);
+            return this.action == null ? 0 : VisualPositioning.getVisualWidth(this.action);
         }
 
         boolean owns(GuiEventListener widget) {
@@ -521,10 +506,10 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             if (this.action == null) {
                 return false;
             }
-            int x = visualX(this.action);
-            int y = visualY(this.action);
-            return mouseX >= x && mouseX < x + visualWidth(this.action)
-                    && mouseY >= y && mouseY < y + visualHeight(this.action);
+            int x = VisualPositioning.getVisualX(this.action);
+            int y = VisualPositioning.getVisualY(this.action);
+            return mouseX >= x && mouseX < x + VisualPositioning.getVisualWidth(this.action)
+                    && mouseY >= y && mouseY < y + VisualPositioning.getVisualHeight(this.action);
         }
 
         @Nullable Component tooltipText() {
@@ -535,7 +520,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         int layout(SettingsListWidget list, int rowWidth) {
             int suffixColumn = list.suffixColumnWidth;
             int actionColumn = list.actionColumnWidth;
-            int labelWidth = SettingsListLayout.labelWidth(rowWidth, visualWidth(this.control), suffixColumn, actionColumn);
+            int labelWidth = SettingsListLayout.labelWidth(rowWidth, VisualPositioning.getVisualWidth(this.control), suffixColumn, actionColumn);
             if (this.labelText == null) {
                 this.labelText = new ScalableText(0, 0, this.label, 1.0F, this.labelColor, labelWidth, list.font);
             } else {
@@ -549,9 +534,9 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
                     this.suffixText.setMaxWidth(suffixColumn);
                 }
             }
-            int actionHeight = this.action == null ? 0 : visualHeight(this.action);
+            int actionHeight = this.action == null ? 0 : VisualPositioning.getVisualHeight(this.action);
             int height = SettingsListLayout.rowHeight(
-                    Math.max(this.labelText.getHeight(), Math.max(visualHeight(this.control), actionHeight)));
+                    Math.max(this.labelText.getHeight(), Math.max(VisualPositioning.getVisualHeight(this.control), actionHeight)));
 
             WidgetPack pack = new WidgetPack(0, 0, rowWidth, height, Orientation.HORIZONTAL);
             pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
@@ -583,8 +568,8 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         void position(int x, int y, int viewportTop, int viewportBottom) {
             this.pack.setPosition(x, y);
             this.visitWidgets(widget -> {
-                int top = visualY(widget);
-                widget.visible = SettingsListLayout.fullyVisible(top, top + visualHeight(widget), viewportTop, viewportBottom);
+                int top = VisualPositioning.getVisualY(widget);
+                widget.visible = SettingsListLayout.fullyVisible(top, top + VisualPositioning.getVisualHeight(widget), viewportTop, viewportBottom);
             });
         }
 
@@ -606,7 +591,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
 
         @Override
         int preferredWidth(SettingsListWidget list) {
-            return SettingsListLayout.rowPreferredWidth(list.font.width(this.label), visualWidth(this.control),
+            return SettingsListLayout.rowPreferredWidth(list.font.width(this.label), VisualPositioning.getVisualWidth(this.control),
                     list.suffixColumnWidth, list.actionColumnWidth);
         }
 

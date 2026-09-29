@@ -31,6 +31,11 @@ import net.minecraft.world.item.ItemStack;
 import org.joml.Matrix4f;
 
 public final class DrawContextHelper {
+    /**
+     * A mouse coordinate outside any screen. Pass it as both coordinates to draw widgets with no
+     * hover state or tooltip, as under a dialog.
+     */
+    public static final int NO_MOUSE = -10_000;
     private static final Matrix4f IDENTITY_MATRIX = new Matrix4f();
 
     public static void texture(GuiGraphicsExtractor context,

@@ -27,7 +27,7 @@ Keep new helpers at the narrowest useful scope:
 | Package | Responsibility | Typical contents |
 | --- | --- | --- |
 | `client.gui.api` | Small GUI-facing contracts and callbacks | Button, toggle, color-picker, and dimension-selection callbacks; `Colorable`; `PopupOwner` |
-| `client.gui.layout` | Positioning, sizing, padding, and flow | `WidgetStack`, `WidgetPack`, `ExpandableManager`, `LayoutFlow`, `Padding`, `AnchorMode`, `VisualBounds` |
+| `client.gui.layout` | Positioning, sizing, padding, and flow | `WidgetStack`, `WidgetPack`, `ExpandableManager`, `LayoutFlow`, `Padding`, `AnchorMode`, `VisualBounds`, `VisualPositioning` |
 | `client.gui.render` | Cross-version drawing helpers, semantic theme state, and presentation constants | `DrawContextHelper`, `PaddingBackground`, `WidgetTheme`, `WidgetThemeManager`, `WaypointTextures` |
 | `client.gui.screens` | Screen lifecycle and feature composition | Manager, add/edit, configuration, theme-editor, and movement-aware screens |
 | `client.gui.widgets` | Reusable visible and interactive components | Buttons, fields, sliders, dialogs, color pickers, lists, and tree views |
@@ -97,6 +97,9 @@ Some widgets draw borders or backgrounds outside their Minecraft content rectang
 - `getX`, `getY`, `getWidth`, and `getHeight` describe the content bounds used by the widget.
 - `getVisualX`, `getVisualY`, `getVisualWidth`, and `getVisualHeight` describe the complete drawn bounds, including padding or outlines.
 - `VisualBounds` converts between content and visual dimensions for fixed padding.
+- `VisualPositioning.getVisualX`, `getVisualY`, `getVisualWidth` and `getVisualHeight` read any
+  `LayoutElement`'s visual bounds: a `Padding` element's complete drawn rectangle, and any other
+  element's own bounds. Use them instead of repeating the `instanceof Padding` check.
 - `PaddingBackground` draws a padded background and optionally a border around a `LayoutElement`.
 
 Implement `Padding` whenever pixels extend outside the content bounds and the widget may participate in layout. If the widget can be resized by a container, also implement `Expandable` and make `setVisualWidth`, `setVisualHeight`, or `setVisualDimensions` convert the requested outer size back to the content size.
@@ -316,6 +319,9 @@ fields, outside clicks continue to their targets, and Escape closes the popup be
 
 Use `DrawContextHelper` for drawing operations whose Minecraft API changes across supported versions. It centralizes text, texture, item, matrix, layer, outline, and custom-quad differences. Before adding a new Stonecutter branch at every call site, check whether the difference belongs in this helper.
 
+To draw widgets with no hover state or tooltip, as under a dialog or for a clipped settings row,
+pass `DrawContextHelper.NO_MOUSE` as both mouse coordinates.
+
 Use the other render classes as follows:
 
 - `WidgetThemeVariable`, `WidgetTheme`, `WidgetThemes`, and `WidgetThemeManager` define and expose the runtime color theme.
@@ -491,6 +497,10 @@ Those cases do not justify duplicating standalone message rendering elsewhere.
 | Selectable item icon strip | `IconListWidget<T>`, `DimensionListWidget`, `ServerListWidget` |
 | Directional popup with custom items | Extend `AbstractDropdownMenuWidget` and `AbstractMenuItem` |
 | Confirmation overlay | `ConfirmationDialog` |
+
+`TranslucentButton.fitted(label, callback)` makes an 11-pixel-high text button as wide as its label
+plus 5 pixels on each side, and at least 50 pixels wide, so short labels line up and long
+translations still fit. Dialog and footer buttons use it.
 
 `IconButton` keeps its full configured hitbox while drawing its texture with a 2-pixel inner inset.
 Screen-local icon controls should use the same inset so adjacent icon actions remain visually consistent.
@@ -707,8 +717,8 @@ control's `visitWidgets` reports, and it can take focus while any of them is act
 ### Confirmation dialogs
 
 `ConfirmationDialog` takes an optional confirm label; the shorter constructor keeps "Confirm". Both
-buttons are at least 50 pixels wide and grow to fit their text, so longer translations don't
-overflow. `getCancelButton()` returns the Cancel button so a screen can focus it when the dialog
+buttons come from `TranslucentButton.fitted`, so they're at least 50 pixels wide and grow to fit
+their text, and longer translations don't overflow. `getCancelButton()` returns the Cancel button so a screen can focus it when the dialog
 opens. `DialogWidget` receives its buttons through its constructor, and the first one sits on the
 right. Register the buttons through the dialog's `visitWidgets`, keep them inactive while the dialog
 is hidden, and render the open dialog on a later layer. Escape should close an open dialog before the

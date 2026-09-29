@@ -4,7 +4,6 @@ package _959.server_waypoint.common.client.gui.screens;
 import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
-import _959.server_waypoint.common.client.gui.api.ButtonClickCallback;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import _959.server_waypoint.common.client.gui.layout.SettingsListLayout;
@@ -45,6 +44,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
 
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.NO_MOUSE;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DANGER;
@@ -65,15 +65,11 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     // Below this width beside the buttons, the status moves to its own line above them.
     private static final int MIN_STATUS_WIDTH = 100;
     private static final int STATUS_LINE_GAP = 4;
-    private static final int MIN_BUTTON_WIDTH = 50;
-    private static final int BUTTON_TEXT_PADDING = 10;
-    private static final int BUTTON_HEIGHT = 11;
     private static final int RESET_BUTTON_SIZE = 13;
     private static final int SLIDER_TRACK_WIDTH = 100;
     private static final int SLIDER_FIELD_WIDTH = 30;
     private static final int DIALOG_TEXT_WIDTH = 220;
     private static final int DIALOG_LINE_GAP = 5;
-    private static final int NO_MOUSE = -10_000;
 
     private final Screen parentScreen;
     private final ClientConfig config = WaypointClientMod.getClientConfig();
@@ -103,11 +99,11 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         this.parentScreen = parentScreen;
         this.titleText = new ScalableText(0, 0, this.title, TITLE_SCALE, TEXT_PRIMARY, this.font);
         this.settingsList = new SettingsListWidget(this.font);
-        this.themeButton = this.textButton(Component.translatable("server_waypoint.config.theme.open"),
+        this.themeButton = TranslucentButton.fitted(Component.translatable("server_waypoint.config.theme.open"),
                 this::openThemeConfigScreen);
-        this.resetAllButton = this.textButton(Component.translatable("server_waypoint.config.reset_all"),
+        this.resetAllButton = TranslucentButton.fitted(Component.translatable("server_waypoint.config.reset_all"),
                 this::openResetAllDialog);
-        this.doneButton = this.textButton(CommonComponents.GUI_DONE, this::onClose);
+        this.doneButton = TranslucentButton.fitted(CommonComponents.GUI_DONE, this::onClose);
         this.statusText = new ScalableText(0, 0, Component.empty(), 1.0F, SUCCESS, MIN_STATUS_WIDTH, this.font);
         this.resetAllDialog = new ConfirmationDialog(
                 0,
@@ -405,7 +401,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
                 this::closeDialog,
                 this.font
         );
-        TranslucentButton syncButton = this.textButton(
+        TranslucentButton syncButton = TranslucentButton.fitted(
                 Component.translatable("server_waypoint.config.map_mod.sync_button"), () -> this.openSyncDialog(target));
         MapModControls controls = new MapModControls(target, name, integration, syncButton, dialog);
         this.mapModControls.add(controls);
@@ -424,11 +420,6 @@ public class ClientConfigScreen extends MovementAllowedScreen {
             }
         }
         return stack;
-    }
-
-    private TranslucentButton textButton(Component label, ButtonClickCallback callback) {
-        int width = Math.max(MIN_BUTTON_WIDTH, this.font.width(label) + BUTTON_TEXT_PADDING);
-        return new TranslucentButton(0, 0, width, BUTTON_HEIGHT, label, callback);
     }
 
     private void onIntChanged(ClientConfigSettings.IntSetting setting, int value) {
