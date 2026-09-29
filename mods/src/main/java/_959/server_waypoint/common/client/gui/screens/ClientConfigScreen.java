@@ -343,6 +343,11 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         MinecraftClientHelper.setScreen(this.minecraft, this.parentScreen);
     }
 
+    @Override
+    public boolean isPauseScreen() {
+        return pausesWith(this.parentScreen);
+    }
+
     private SettingsListWidget.Row createSettingRow(ClientConfigSettings.Setting setting) {
         AbstractWidget widget;
         Component unit = null;

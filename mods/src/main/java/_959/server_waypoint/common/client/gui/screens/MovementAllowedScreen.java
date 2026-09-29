@@ -21,6 +21,7 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 //?}
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class MovementAllowedScreen extends Screen {
     protected final Font font = Minecraft.getInstance().font;
@@ -378,8 +379,17 @@ public abstract class MovementAllowedScreen extends Screen {
     }
     //?}
 
+    /** Players can move while these screens are open, so by default they don't pause singleplayer. */
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    /**
+     * Whether a screen opened from {@code parent} pauses: exactly when {@code parent} does, so a
+     * screen reached from the pause menu, such as through a mod list, keeps the game paused.
+     */
+    static boolean pausesWith(@Nullable Screen parent) {
+        return parent != null && parent.isPauseScreen();
     }
 }

@@ -439,6 +439,9 @@ component. This function, the `MapModRowState` mapping and both enums live in a 
 - **`tick()`** checks the sync blockers again.
 - **Saving** moves to `removed()`, which every exit reaches: Done, Escape, opening the theme editor,
   or a disconnect with the screen open. `onClose()` only returns to the parent screen.
+- **Pausing:** the screen pauses singleplayer exactly when its parent screen does, and the theme
+  editor it opens follows the same rule. Opened from the pause menu's mod list, the game stays
+  paused. Opened from the waypoint manager, which lets players move, it doesn't pause either.
 
 ### Opening from mod lists
 
