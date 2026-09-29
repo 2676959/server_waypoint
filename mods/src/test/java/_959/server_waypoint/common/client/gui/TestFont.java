@@ -43,6 +43,18 @@ public final class TestFont extends Font {
     }
 
     @Override
+    public String plainSubstrByWidth(String text, int maxWidth) {
+        return this.plainSubstrByWidth(text, maxWidth, false);
+    }
+
+    /** The whole characters that fit, from the start of the text or, when reversed, from its end. */
+    @Override
+    public String plainSubstrByWidth(String text, int maxWidth, boolean reverse) {
+        int fitting = Math.min(text.length(), Math.max(0, maxWidth) / CHARACTER_WIDTH);
+        return reverse ? text.substring(text.length() - fitting) : text.substring(0, fitting);
+    }
+
+    @Override
     public List<FormattedCharSequence> split(FormattedText text, int maxWidth) {
         return List.of(FormattedCharSequence.forward(text.getString(), Style.EMPTY));
     }

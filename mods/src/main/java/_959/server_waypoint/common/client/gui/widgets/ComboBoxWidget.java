@@ -99,6 +99,13 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget {
         return this.closeMenuIfOpen() || this.closeSuggestionsIfOpen();
     }
 
+    /** Scrolls the suggestion list; the choice list, which is open instead of it, scrolls through {@code mouseScrolled}. */
+    @Override
+    public boolean scrollPopupIfOver(double mouseX, double mouseY, double verticalAmount) {
+        return this.isActive() && this.input != null
+                && this.input.scrollPopupIfOver(mouseX, mouseY, verticalAmount);
+    }
+
     @Override
     protected void onExpandedChanged(boolean expanded) {
         if (this.input != null) {

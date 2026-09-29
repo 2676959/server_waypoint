@@ -114,21 +114,45 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
         return this.closeSuggestionsIfOpen();
     }
 
+    /**
+     * Scrolls the suggestion list with the wheel while the pointer is over it, at least a row per
+     * event like the choice dropdown. The row under the pointer becomes the selected one, as when
+     * the pointer moves, because a selection that scrolled out of view is scrolled back to at the
+     * next redraw. A list that fits still takes the wheel, so it does not scroll what it covers.
+     */
+    @Override
+    public boolean scrollPopupIfOver(double mouseX, double mouseY, double verticalAmount) {
+        if (verticalAmount == 0 || !this.isMouseOverSuggestion(mouseX, mouseY)) {
+            return false;
+        }
+        int rows = (int) Math.max(1, Math.ceil(Math.abs(verticalAmount)));
+        int maxOffset = Math.max(this.suggestions.size() - MAX_VISIBLE_SUGGESTIONS, 0);
+        int offset = Math.max(0, Math.min(maxOffset, this.suggestionOffset + (verticalAmount < 0 ? rows : -rows)));
+        if (offset != this.suggestionOffset) {
+            this.suggestionOffset = offset;
+            this.selectedSuggestion = this.suggestionIndexAt(mouseY);
+            this.updateInlineSuggestion();
+        }
+        return true;
+    }
+
     public boolean isMouseOverSuggestion(double mouseX, double mouseY) {
         if (!this.isSuggestionListVisible()) {
             return false;
         }
         this.updateSuggestionBounds();
-        return mouseX >= this.suggestionsX && mouseX < this.suggestionsX + this.suggestionsWidth
-                && mouseY >= this.suggestionsY && mouseY < this.suggestionsY + this.suggestionsHeight;
+        return this.isOverSuggestionBounds(mouseX, mouseY);
     }
 
+    /** The list starts at the field's outline, so their left edges line up. */
     protected int getSuggestionsX() {
-        return this.getTextAnchorX() - 1;
+        return this.getVisualX();
     }
 
+    /** The outline's width, widened to the right when the text needs it, with a border column after it. */
     protected int getSuggestionsWidth(int maxTextWidth) {
-        return Math.max(this.getShiftedX() + this.width - this.getSuggestionsX() - 2, maxTextWidth + 2);
+        int textInset = this.getTextAnchorX() - this.getSuggestionsX();
+        return Math.max(this.getVisualWidth(), textInset + maxTextWidth + 1);
     }
 
     protected int getSuggestionsY(int suggestionHeight) {
@@ -165,11 +189,9 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     }
 
     public void renderSuggestions(GuiGraphicsExtractor context, int mouseX, int mouseY) {
-        if (!this.isSuggestionListVisible()) {
+        if (!this.layoutSuggestions(mouseX, mouseY)) {
             return;
         }
-        this.updateSuggestionBounds();
-        this.updateHoveredSuggestion(mouseX, mouseY);
 
         int visibleSuggestions = Math.min(this.suggestions.size(), MAX_VISIBLE_SUGGESTIONS);
         context.fill(
@@ -213,6 +235,16 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
                     true
             );
         }
+    }
+
+    /** Positions a visible list and selects the row under the pointer if it has moved; false when hidden. */
+    boolean layoutSuggestions(int mouseX, int mouseY) {
+        if (!this.isSuggestionListVisible()) {
+            return false;
+        }
+        this.updateSuggestionBounds();
+        this.updateHoveredSuggestion(mouseX, mouseY);
+        return true;
     }
 
     public boolean mouseClickedSuggestion(double mouseX, double mouseY) {
@@ -438,7 +470,7 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
         if (!this.isMouseOverSuggestion(mouseX, mouseY)) {
             return false;
         }
-        int suggestionIndex = this.suggestionOffset + (int) ((mouseY - this.suggestionsY) / SUGGESTION_LINE_HEIGHT);
+        int suggestionIndex = this.suggestionIndexAt(mouseY);
         if (suggestionIndex >= 0 && suggestionIndex < this.suggestions.size()) {
             this.selectedSuggestion = suggestionIndex;
             this.useSuggestion(this.getValue());
@@ -455,14 +487,24 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
         }
         this.lastSuggestionMouseX = mouseX;
         this.lastSuggestionMouseY = mouseY;
-        if (mouseX < this.suggestionsX || mouseX > this.suggestionsX + this.suggestionsWidth || mouseY < this.suggestionsY || mouseY > this.suggestionsY + this.suggestionsHeight) {
+        if (!this.isOverSuggestionBounds(mouseX, mouseY)) {
             return;
         }
-        int suggestionIndex = this.suggestionOffset + (mouseY - this.suggestionsY) / SUGGESTION_LINE_HEIGHT;
+        int suggestionIndex = this.suggestionIndexAt(mouseY);
         if (suggestionIndex >= 0 && suggestionIndex < this.suggestions.size()) {
             this.selectedSuggestion = suggestionIndex;
             this.updateInlineSuggestion();
         }
+    }
+
+    private boolean isOverSuggestionBounds(double mouseX, double mouseY) {
+        return mouseX >= this.suggestionsX && mouseX < this.suggestionsX + this.suggestionsWidth
+                && mouseY >= this.suggestionsY && mouseY < this.suggestionsY + this.suggestionsHeight;
+    }
+
+    /** The index of the suggestion in the row at this height, which must be inside the list. */
+    private int suggestionIndexAt(double mouseY) {
+        return this.suggestionOffset + (int) ((mouseY - this.suggestionsY) / SUGGESTION_LINE_HEIGHT);
     }
 
     private void updateSuggestions() {

@@ -74,7 +74,9 @@ Use the existing interfaces when their meaning matches the new component:
 - `Colorable` standardizes `getColor` and `setColor` for color-aware widgets.
 - `PopupOwner` marks a control with a transient popup, such as a menu or suggestion list.
   `closePopupIfOpen` closes it and reports whether it was open, so Escape can dismiss it (see
-  [Input](#4-input-preserve-focus-and-text-entry)).
+  [Input](#4-input-preserve-focus-and-text-entry)). `scrollPopupIfOver` scrolls the popup with the
+  mouse wheel when the pointer is over it and reports whether the wheel was used; the default
+  answer is no, so a popup that has no wheel behavior of its own needs no override.
 
 Keep callbacks small and synchronous. Prefer passing the callback into a widget constructor, as `TranslucentButton`, `ToggleButton`, and `DimensionListWidget` do. Do not make a reusable widget reach into a particular screen through static fields merely to report an ordinary click or value change.
 
@@ -260,7 +262,8 @@ popup, and preserves the current text without invoking the callback. User edits 
 Suggestions default to the current choices; `setSuggestionsProvider(Supplier<List<String>>)` can
 supply a separate dynamic catalog, and `null` disables suggestions. Matching is case-insensitive
 prefix matching, deduplicated and sorted, with an inline suffix and up to five popup rows.
-Up/Down selects a suggestion and Tab/Shift-Tab accepts/cycles completions. Clicking a suggestion
+Up/Down selects a suggestion and Tab/Shift-Tab accepts/cycles completions, and the mouse wheel
+scrolls a longer list while the pointer is over it. Clicking a suggestion
 also accepts it through the normal user-change callback. The full choice popup suppresses
 suggestions while open. `renderPopup(...)` draws whichever popup is active, including when rendered
 separately. Route popup clicks before overlapping controls using `isMouseOver(...)`. Its
@@ -278,9 +281,12 @@ explicit expansion direction until this method is used.
 
 `SuggestingTextInput` is the reusable surface-free input base. It owns editing, shifted layout,
 completion state, inline text, and suggestion rendering/hit testing; `TranslucentTextField` adds
-only its themed surface. Composites can override `getSuggestionsX()`, `getSuggestionsY()`, and
-`getSuggestionsWidth(int maxTextWidth)` to anchor suggestions to their outer bounds. The combobox
-uses its full control width, including the arrow area, and clips suggestion text inside that outline.
+only its themed surface. By default the list takes the field's outline: it starts at `getVisualX()`
+and is `getVisualWidth()` wide, so its edges line up with the field's, and it widens to the right
+only when a suggestion's text needs more room. Composites can override `getSuggestionsX()`,
+`getSuggestionsY()`, and `getSuggestionsWidth(int maxTextWidth)` to anchor suggestions to their outer
+bounds. The combobox uses its full control width, including the arrow area, and clips suggestion text
+inside that outline.
 Drawing and hit testing use the same bounds. Use `setSuggestionsEnabled(...)` to temporarily suppress completion without
 losing focus. `refreshSuggestions()` invalidates a completion cycle after catalog changes; replacing
 the provider also refreshes it. `renderSuggestions(...)` remains an explicit overlay pass for standalone inputs.
@@ -866,6 +872,12 @@ server rail badges. On 1.21.6 and later both pairs start a new render stratum, b
 Let registered widgets receive ordinary input through the screen. Intercept only behavior the screen must prioritize:
 
 - Suggestion clicks must be checked before delegating to `super.mouseClicked`.
+- The wheel needs no such check: vanilla gives it to the widget under the pointer, and a popup hangs
+  outside its owner, so `MovementAllowedScreen.mouseScrolled` first offers it to the focused
+  `PopupOwner` through `scrollPopupIfOver`. A screen that overrides `mouseScrolled` keeps that
+  behavior by calling `super.mouseScrolled` for the events it does not use itself, as
+  `AbstractWaypointPropertiesScreen` and `ClientConfigScreen` do. `mouseScrolled` takes three
+  doubles up to 1.20.1 and four from 1.20.2, so split the override with a Stonecutter predicate.
 - Vanilla closes the screen on Escape before the focused child sees the key. Before that,
   `MovementAllowedScreen.keyPressed` calls `dismissFocusedInput()` to close the focused
   `PopupOwner`'s open menu or suggestion list and clear focus. A focused `EditBox` or
@@ -1015,7 +1027,9 @@ Calling `setSuggestionsProvider` is only the data step. A suggestion-enabled fie
 2. `renderSuggestions` called after the field, usually on a later layer.
 3. `mouseClickedSuggestion` checked before normal screen click dispatch while that field is focused.
 
-`AbstractWaypointPropertiesScreen` is the reference for several fields, while `WaypointManagerScreen` shows the same pattern for a single search field. If any one of the three pieces is missing, suggestions may exist internally but fail to appear or accept clicks. Escape needs no fourth piece on a `MovementAllowedScreen`: the focused field closes its list before the screen closes.
+`AbstractWaypointPropertiesScreen` is the reference for several fields, while `WaypointManagerScreen` shows the same pattern for a single search field. If any one of the three pieces is missing, suggestions may exist internally but fail to appear or accept clicks. Escape needs no fourth piece on a `MovementAllowedScreen`: the focused field closes its list before the screen closes. Nor does the mouse wheel: the screen offers it to the focused field through `scrollPopupIfOver`, so a list of more than five suggestions scrolls while the pointer is over it.
+
+The wheel moves the list at least one row per event, like the choice dropdown, and stops at both ends. The row under the pointer becomes the selected one, as when the pointer moves, so the suggestion Tab accepts stays in view; a selection left outside the window would be scrolled back to at the next redraw. A list that fits still takes the event, so it does not scroll whatever it covers. Hover selection counts only the pixels inside the list, so the row just below a scrolled list cannot select a hidden suggestion.
 
 `SuggestingTextInput.getSuggestionsY(int suggestionHeight)` positions a popup after its visible height is known. A `ComboBoxWidget` uses its expansion direction for both its choice list and typed suggestions: upward suggestions end at the top of the field, and downward suggestions begin below it. Keep render, hover, and click bounds on that same computed rectangle.
 
@@ -1148,6 +1162,11 @@ Good test targets include:
   when it takes focus, so a unit test can't focus a real text field. `MovementAllowedScreenPopupEscapeTest`
   stands in for a combo box with a `ComboBoxWidget` subclass that skips the constructor and reports
   no suggestions open, which is why `ComboBoxWidget` isn't `final`.
+- A suggestion list. `SuggestingTextInputTest` builds a real `TranslucentTextField` with `TestFont`
+  and overrides `isFocused()` to report focus, since a list shows only for a focused field. It
+  checks the list's rectangle with `isMouseOverSuggestion(...)`, reads which suggestions the rows
+  show by clicking one, and drives hover through the package-private `layoutSuggestions(...)`, the
+  layout half of `renderSuggestions(...)`, so nothing needs a graphics context.
 - Drawing decisions that don't need a real graphics context. `SettingsListWidget.renderPart` is
   package-private and static, so `SettingsListWidgetTest` calls it with a null context and a
   `WidgetStack` double whose render method records its widgets' `visible` flags and the mouse
