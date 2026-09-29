@@ -78,8 +78,10 @@ The title, the panel and the footer form one group, centered on screen as today.
 - **Panel:** the `SettingsListWidget`, which draws its own themed panel (section 2).
 - **Footer:** as wide as the panel. A status message sits on the left, and "Reset to defaults…" and
   Done sit on the right. Done returns to the previous screen, like Escape. A `WidgetPack` places the
-  status from the left and the buttons from the right. The status is a `ScalableText` wrapped to the
-  width left of the buttons minus an 8-pixel gap, and the footer is as tall as its taller side.
+  buttons from the right. The status is a `ScalableText` wrapped to the width left of the buttons
+  minus an 8-pixel gap, and the footer is as tall as its taller side. When that leaves the status
+  less than 100 pixels, as with Spanish at a 320-pixel GUI, the status takes its own full-width line
+  above the buttons instead.
 
 ### Sections and rows
 
@@ -209,8 +211,9 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
 - **Keyboard:** the list itself isn't a Tab stop; `nextFocusPath` returns null. Vanilla's Tab skips
   invisible widgets, so after a key press moves focus to a row widget, the screen calls `reveal`.
   It scrolls by the smallest amount that fully shows that row. When they fit, it also shows the
-  nearest rows above and below that have an interactive widget, extended over any header between
-  them. Tab and Shift-Tab then always reach the neighboring rows. Mouse clicks never scroll the list.
+  nearest rows above and below that have an active widget, extended over any header between them.
+  Tab and Shift-Tab then always reach the neighboring rows, even past a row whose widgets are
+  disabled, such as a blocked Sync button. Mouse clicks never scroll the list.
 
 ### Hover and tooltips
 

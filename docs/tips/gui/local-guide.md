@@ -687,12 +687,14 @@ every control's right edge lines up.
   its rows. The list renders all of them once, inside its scissor. Don't render row widgets again.
 - **Visibility:** the list owns `visible` for its row widgets. A widget is visible only while it's
   entirely inside the rows' area, so clipped parts can't be clicked or focused. Partly visible
-  widgets are still drawn, clipped, with no hover state. Screens set only `active`.
+  widgets are still drawn, clipped, with no hover state. Screens set only `active`. A control that
+  handles input itself, like `IntegerSlider`, must check `isActive()`, which includes `visible`:
+  before 1.21.5, vanilla offers every click to every child, hidden or not.
 - **Input:** offer the mouse wheel to the list before `super.mouseScrolled`, so it scrolls while the
   list overflows and reaches a slider under the cursor only when it doesn't. The list isn't a Tab
   stop. After a key press moves focus to a row widget, call `reveal(focused)`: vanilla Tab skips
-  invisible widgets, and `reveal` scrolls the row and its interactive neighbors into view. If
-  scrolling hides the focused widget, clear focus.
+  invisible and inactive widgets, and `reveal` scrolls the row and the nearest rows with an active
+  widget into view. If scrolling hides the focused widget, clear focus.
 - **Tooltips:** the hovered row gets `ROW_HOVER_BACKGROUND`. After the pointer rests on a row for
   500 ms, the list schedules the row's tooltip at the cursor, except over the row's action, which
   keeps its own vanilla tooltip.
