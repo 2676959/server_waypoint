@@ -640,10 +640,20 @@ In the mods test source set:
 - `ClientConfigSyncTest`: every blocker in its order, and the `MapModRowState` mapping.
 - `MapModIntegrationsTest`: `find` returns Xaero's Minimap on every loader and VoxelMap only on
   Fabric, and `syncNow` skips a map mod that isn't installed.
-- `ClientConfigTranslationTest`: every key the screen uses exists in all six locales with the same
-  placeholders as `en_us`, and the removed keys are gone from all six.
+- `ClientConfigTranslationTest`: every key the screen uses exists in all six locales and fills in
+  the same arguments as `en_us`, whether written `%s` or `%1$s`, not counting a literal `%%`; and the
+  removed keys are gone from all six.
 - `MovementAllowedScreenPopupEscapeTest`: Escape leaves a focused `IntegerSlider`'s number field
   before closing the screen, and closes the screen at once when the slider's track has focus.
+- `SettingsListWidgetTest`: a row owns every widget of a composite control, and is a Tab stop while
+  one of them is active.
+- `SettingsListWidgetTabTest`: Tab wraps around from Done to the first row and Shift-Tab reaches the
+  last row while they're out of view, Tab reaches a row a click left out of view and skips rows
+  whose widgets are inactive, and leaving the list doesn't scroll it.
+- `ClientConfigScreenFocusTest`: a focused row widget that a relayout hid is revealed, one in view
+  leaves the list where it is, and focus leaves a row that can't be shown.
+- `MovementAllowedScreenPauseTest`: a screen pauses exactly when its parent does.
+- `WidgetThemeStateTest`: an inactive icon takes the `TEXT_DISABLED` tint.
 
 ### Gradle
 
@@ -662,13 +672,16 @@ results recorded in `validation/`. Compiling can't prove these:
 - The layout at GUI widths of 480, 378 and 320 pixels, including wrapped labels at 320, and at
   heights of 240 and 270 pixels, including scrolling.
 - Tooltips after 500 ms, the reset icon's tooltip, and no tooltip through a dialog.
-- Tab and Shift-Tab through every row while the list scrolls, and Enter and Space on focused
-  buttons, including in the dialogs.
+- Tab and Shift-Tab through every row while the list scrolls, Tab from Done back to the first row
+  and Shift-Tab from the footer to the last row with the list scrolled away from them, and Enter and
+  Space on focused buttons, including in the dialogs.
 - The mouse wheel over a slider, with the list overflowing and not overflowing.
 - Row reset and "Reset to defaults…", with the changes visible live in the world.
 - Both sync dialogs: personal waypoints stay untouched, the status message appears, and each
   blocker shows on the title screen, while waypoints sync, and on a server without Server Waypoint.
-- Escape and focus return for every dialog, and Escape in a number field.
-- Opening the screen from each mod list, on the title screen and in game.
+- Escape and focus return for every dialog, and Escape in a number field. At a short window, a
+  status message that pushes the Sync button out of view still leaves it focused and in view.
+- Opening the screen from each mod list, on the title screen and in game. From the pause menu's
+  mod list in singleplayer, the game stays paused, also in the theme editor.
 - A disconnect with the screen open keeps the changes.
-- The three built-in themes.
+- The three built-in themes, including the tinted reset icons of settings at their defaults.
