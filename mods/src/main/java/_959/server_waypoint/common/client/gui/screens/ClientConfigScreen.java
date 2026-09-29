@@ -159,7 +159,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
     private void runXaerosSync() {
         if (isXaerosMinimapLoaded) {
-            MapModIntegrations.syncXaerosMinimap(WaypointClientMod.getInstance());
+            MapModIntegrations.syncNow(_959.server_waypoint.core.network.upload.UploadTarget.XAERO, WaypointClientMod.getInstance());
         }
         this.closeXaerosSyncConfirmationDialog();
     }
