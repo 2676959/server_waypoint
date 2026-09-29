@@ -21,7 +21,7 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.ne
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 
 /** Editable text input with a separately opened list of choices. */
-public final class ComboBoxWidget extends AbstractDropdownMenuWidget {
+public class ComboBoxWidget extends AbstractDropdownMenuWidget {
     private static final int TEXT_INSET = SuggestingTextInput.OUTLINE_PADDING;
     private List<String> values = List.of();
     private final Component label;

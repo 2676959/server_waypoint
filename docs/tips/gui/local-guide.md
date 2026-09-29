@@ -1142,7 +1142,10 @@ Good test targets include:
 - Composite widgets built around a test double. `IntegerSlider`'s protected constructor takes the
   `IntegerField` to use, so `IntegerSliderTest` and `MovementAllowedScreenPopupEscapeTest` pass a
   number-field double instead of setting private fields by name through reflection, which a rename
-  would break only at run time.
+  would break only at run time. From 26.1, an editable `EditBox` asks the game to start text input
+  when it takes focus, so a unit test can't focus a real text field. `MovementAllowedScreenPopupEscapeTest`
+  stands in for a combo box with a `ComboBoxWidget` subclass that skips the constructor and reports
+  no suggestions open, which is why `ComboBoxWidget` isn't `final`.
 - Pure label or presentation calculations.
 - Theme completeness, runtime updates, JSON round trips, invalid input, and file persistence.
 - Theme-editor preview, reset, save, cancel, and idempotent rollback transitions.
