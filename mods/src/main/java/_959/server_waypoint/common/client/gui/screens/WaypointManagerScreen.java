@@ -650,17 +650,22 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         GuiEventListener focused = this.getFocused();
-        boolean notTyping = !(focused instanceof EditBox);
+        boolean notTyping = canUseShortcuts(focused);
         this.acceptMovementKeys(notTyping);
         if (notTyping && keyCode == InputConstants.KEY_C) {
             closeOpenDropdownMenus();
             MinecraftClientHelper.setScreen(this.minecraft, new ClientConfigScreen(this));
             return true;
         }
-        return this.builtState == ManagerViewState.READY
+        return notTyping
+                && this.builtState == ManagerViewState.READY
                 && !showingRemote
                 && waypointListWidget.keyPressed(keyCode, scanCode, modifiers)
                 || super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    static boolean canUseShortcuts(@Nullable GuiEventListener focused) {
+        return !(focused instanceof EditBox) && !(focused instanceof ComboBoxWidget);
     }
 
     //? if >= 1.21.9 {

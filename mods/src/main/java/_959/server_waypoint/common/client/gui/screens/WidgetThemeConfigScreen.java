@@ -531,7 +531,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == KEY_ESCAPE) {
-            if (this.closeFocusedPopup()) {
+            if (this.dismissFocusedInput()) {
                 return true;
             }
             if (this.swatchWidget.visible) {

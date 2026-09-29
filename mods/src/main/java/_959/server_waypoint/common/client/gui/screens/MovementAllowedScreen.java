@@ -5,12 +5,15 @@ import _959.server_waypoint.common.client.gui.api.PopupOwner;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.ShiftableButtonWidget;
+import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
 import _959.server_waypoint.mixin.BoundKeyAccessor;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 //? if >= 1.21.9 {
 import net.minecraft.client.input.KeyEvent;
@@ -115,11 +118,13 @@ public abstract class MovementAllowedScreen extends Screen {
     }
 
     /**
-     * Vanilla closes the screen on Escape before the focused widget receives the key, so an open
-     * menu or suggestion list is dismissed here first and its owner yields focus.
+     * Vanilla closes the screen on Escape before the focused widget receives the key. Dismiss
+     * an open popup or leave text entry first, even when no suggestions or choices are showing.
      */
-    protected boolean closeFocusedPopup() {
-        if (this.getFocused() instanceof PopupOwner owner && owner.closePopupIfOpen()) {
+    protected boolean dismissFocusedInput() {
+        GuiEventListener focused = this.getFocused();
+        boolean closedPopup = focused instanceof PopupOwner owner && owner.closePopupIfOpen();
+        if (closedPopup || focused instanceof EditBox || focused instanceof ComboBoxWidget) {
             this.setFocused(null);
             return true;
         }
@@ -282,7 +287,7 @@ public abstract class MovementAllowedScreen extends Screen {
     *///?}
 
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == InputConstants.KEY_ESCAPE && this.closeFocusedPopup()) {
+        if (keyCode == InputConstants.KEY_ESCAPE && this.dismissFocusedInput()) {
             return true;
         }
         if (!movementAllowed) {

@@ -523,8 +523,12 @@ to its constructor. Its action columns remain independent: visibility, edit, and
 not replace the current selection. `WaypointSelection` carries the source dimension, plain and
 display list names, and live waypoint; the widget reconciles that identity after queries so sorting
 and refreshes preserve a still-visible selection while filtering or removal clears it.
-In the local view, `WaypointManagerScreen.keyPressed` offers every key to the list before its own
-handling, so pressing T while a waypoint row is hovered sends that waypoint's teleport command.
+In the ready local view, `WaypointManagerScreen.keyPressed` offers keys to the list before
+`super.keyPressed` only when `canUseShortcuts(focused)` permits them: neither an `EditBox`
+(including the search field) nor a `ComboBoxWidget` may be focused. The same guard controls the
+manager's C shortcut and movement keys. With non-text focus, pressing T while a waypoint row is
+hovered sends that waypoint's teleport command; typing T in a text control leaves input to that
+control even while the mouse hovers over a waypoint.
 `isTeleportKey` compares against `InputConstants.KEY_T`, which is 23 on 26.3 and 84 before it.
 `WaypointDetailsWidget` consumes that selection and presents every stored waypoint field plus its
 dimension/list context in a separately scrollable viewport. Keep formatted display names and
@@ -766,10 +770,12 @@ Let registered widgets receive ordinary input through the screen. Intercept only
 
 - Suggestion clicks must be checked before delegating to `super.mouseClicked`.
 - Vanilla closes the screen on Escape before the focused child sees the key. Before that,
-  `MovementAllowedScreen.keyPressed` closes the focused `PopupOwner`'s open menu or suggestion
-  list and clears focus, so a second Escape closes the screen. Do not add per-widget Escape
+  `MovementAllowedScreen.keyPressed` calls `dismissFocusedInput()` to close the focused
+  `PopupOwner`'s open menu or suggestion list and clear focus. A focused `EditBox` or
+  `ComboBoxWidget` also yields focus and consumes Escape when no popup is open, so the first
+  Escape leaves text entry and a second Escape closes the screen. Do not add per-widget Escape
   intercepts. A screen whose Escape handling does not reach `super.keyPressed` calls
-  `closeFocusedPopup()` first, as `WidgetThemeConfigScreen` does. Compare against
+  `dismissFocusedInput()` first, as `WidgetThemeConfigScreen` does. Compare against
   `InputConstants.KEY_ESCAPE`, never 256, which is not Escape on 26.3.
 - A focused `ShiftableButtonWidget` is pressed by Enter, Space and keypad Enter, but
   `MovementAllowedScreen` also forwards movement keys, and Space is the default jump key. Each
@@ -779,7 +785,8 @@ Let registered widgets receive ordinary input through the screen. Intercept only
   activation key that is bound to movement (Space) only moves the player, while Enter and keypad
   Enter still press the button. Inactive or hidden buttons claim no keys, and other movement keys
   keep moving the player while a button is focused.
-- Screen shortcuts should normally be disabled while the focused listener is an `EditBox`.
+- Screen shortcuts should normally be disabled while the focused listener is an `EditBox` or
+  a `ComboBoxWidget`, whose editable field is owned by the composite.
   Shortcuts that run before `super.keyPressed`, such as the manager's `C` binding and the list's
   T teleport, must leave Enter, Space and keypad Enter to the focused widget.
 - Call `acceptMovementKeys(false)` while text entry or another control must own movement-key input.

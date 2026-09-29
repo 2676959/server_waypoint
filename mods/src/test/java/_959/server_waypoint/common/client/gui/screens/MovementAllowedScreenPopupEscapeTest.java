@@ -3,8 +3,11 @@ package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.widgets.AbstractDropdownMenuWidget;
+import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.Test;
 
@@ -13,6 +16,52 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MovementAllowedScreenPopupEscapeTest {
+    @Test
+    void escapeUnfocusesAnEditBoxBeforeClosingTheScreen() {
+        EditBox input = allocate(EditBox.class);
+        input.setCanLoseFocus(true);
+        assertEscapeLeavesTextEntry(input);
+    }
+
+    @Test
+    void escapeUnfocusesAComboBoxWithoutAnOpenPopupBeforeClosingTheScreen() throws ReflectiveOperationException {
+        ComboBoxWidget comboBox = allocate(ComboBoxWidget.class);
+        var inputField = ComboBoxWidget.class.getDeclaredField("input");
+        inputField.setAccessible(true);
+        EditBox input = (EditBox) allocate(inputField.getType());
+        input.setCanLoseFocus(true);
+        inputField.set(comboBox, input);
+        assertEscapeLeavesTextEntry(comboBox);
+        assertFalse(input.isFocused());
+    }
+
+    private static void assertEscapeLeavesTextEntry(GuiEventListener input) {
+        TestScreen screen = TestScreen.create();
+        screen.setFocused(input);
+        assertTrue(input.isFocused());
+
+        assertTrue(screen.keyPressed(InputConstants.KEY_ESCAPE, 0, 0));
+        assertNull(screen.getFocused());
+        assertFalse(input.isFocused());
+        assertFalse(screen.closed);
+
+        assertTrue(screen.keyPressed(InputConstants.KEY_ESCAPE, 0, 0));
+        assertTrue(screen.closed);
+    }
+
+    /** Skips constructors requiring the Minecraft client; the test only exercises focus and Escape. */
+    private static <T> T allocate(Class<T> type) {
+        try {
+            Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+            var unsafeField = unsafeClass.getDeclaredField("theUnsafe");
+            unsafeField.setAccessible(true);
+            return type.cast(unsafeClass.getMethod("allocateInstance", Class.class)
+                    .invoke(unsafeField.get(null), type));
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError("Failed to create an input test double", e);
+        }
+    }
+
     @Test
     void escapeClosesTheFocusedPopupBeforeTheScreen() {
         TestDropdown dropdown = new TestDropdown();
