@@ -205,7 +205,10 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
   Screens set only `active`.
 - A partly visible widget is still drawn, clipped by the scissor. The list marks it visible just
   for the draw call and passes a mouse position outside the screen, so it shows no hover state or
-  tooltip.
+  tooltip. A composite control is drawn once, whole: while any widget it visits is hidden, the list
+  marks those widgets visible for the draw and passes the outside position to the whole control.
+  Its fully visible widgets then show no hover state or tooltip either until the control is
+  entirely in view, but they still take clicks.
 - Clicks on empty list space do nothing and make no sound. The list handles only scrollbar
   dragging.
 - **Mouse wheel:** screens offer the wheel to the list before `super.mouseScrolled`. While the list
@@ -240,8 +243,6 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
 
 - Row controls must not open popups, because the scissor would clip them.
 - Entries can't be inserted or removed one at a time. Call `setEntries` again.
-- A composite control draws its own widgets, and a hidden widget draws nothing, so its partly
-  visible widgets disappear instead of being drawn clipped.
 
 ### Building blocks
 
@@ -649,7 +650,9 @@ In the mods test source set:
 - `MovementAllowedScreenPopupEscapeTest`: Escape leaves a focused `IntegerSlider`'s number field
   before closing the screen, and closes the screen at once when the slider's track has focus.
 - `SettingsListWidgetTest`: a row owns every widget of a composite control, and is a Tab stop while
-  one of them is active.
+  one of them is active. A composite control with a hidden widget is drawn once, with all its
+  widgets visible and the mouse outside the screen, and the widget is hidden again afterwards; with
+  none hidden, the control gets the mouse position.
 - `SettingsListWidgetTabTest`: Tab wraps around from Done to the first row and Shift-Tab reaches the
   last row while they're out of view, Tab reaches a row a click left out of view and skips rows
   whose widgets are inactive, and leaving the list doesn't scroll it.

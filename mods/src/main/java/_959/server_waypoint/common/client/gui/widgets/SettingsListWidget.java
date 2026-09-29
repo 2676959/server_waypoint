@@ -331,16 +331,19 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
 
     /**
      * Draws one part of an entry. A row widget that isn't fully inside the viewport is invisible to
-     * input; it's drawn anyway, clipped by the scissor, with the mouse moved off-screen.
+     * input; it's drawn anyway, clipped by the scissor, with the mouse moved off-screen. The hidden
+     * widgets a part visits, such as some of a composite control's, are made visible for one draw of
+     * the whole part, so its other widgets get the off-screen mouse too and show no hover state.
      */
-    private void renderPart(GuiGraphicsExtractor context, Renderable part, int mouseX, int mouseY, float deltaTicks) {
-        if (part instanceof AbstractWidget widget && !widget.visible) {
-            widget.visible = true;
-            widget.
+    static void renderPart(GuiGraphicsExtractor context, Renderable part, int mouseX, int mouseY, float deltaTicks) {
+        List<AbstractWidget> hidden = part instanceof LayoutElement element ? HiddenWidgets.visitedBy(element) : null;
+        if (hidden != null) {
+            hidden.forEach(widget -> widget.visible = true);
+            part.
             //$ render_method_swap
             extractRenderState
                     (context, NO_MOUSE, NO_MOUSE, deltaTicks);
-            widget.visible = false;
+            hidden.forEach(widget -> widget.visible = false);
             return;
         }
         part.
@@ -451,7 +454,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             if (this.titleText == null) {
                 return;
             }
-            list.renderPart(context, this.titleText, mouseX, mouseY, deltaTicks);
+            renderPart(context, this.titleText, mouseX, mouseY, deltaTicks);
             int lineStart = this.x + list.font.width(this.title) + HEADER_LINE_GAP;
             int lineEnd = this.x + this.width;
             if (this.titleText.getHeight() <= list.font.lineHeight && lineEnd - lineStart >= MIN_HEADER_LINE) {
@@ -609,13 +612,13 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             if (this.labelText == null) {
                 return;
             }
-            list.renderPart(context, this.labelText, mouseX, mouseY, deltaTicks);
+            renderPart(context, this.labelText, mouseX, mouseY, deltaTicks);
             if (this.suffixText != null) {
-                list.renderPart(context, this.suffixText, mouseX, mouseY, deltaTicks);
+                renderPart(context, this.suffixText, mouseX, mouseY, deltaTicks);
             }
-            list.renderPart(context, this.controlRenderer, mouseX, mouseY, deltaTicks);
+            renderPart(context, this.controlRenderer, mouseX, mouseY, deltaTicks);
             if (this.action != null) {
-                list.renderPart(context, this.action, mouseX, mouseY, deltaTicks);
+                renderPart(context, this.action, mouseX, mouseY, deltaTicks);
             }
         }
 
@@ -630,6 +633,31 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             this.control.visitWidgets(consumer);
             if (this.action != null) {
                 this.action.visitWidgets(consumer);
+            }
+        }
+    }
+
+    /**
+     * Collects the hidden widgets an element visits. Every visible part is drawn each frame, and its
+     * widgets are usually all visible, so the list is created only with the first hidden widget.
+     */
+    private static final class HiddenWidgets implements Consumer<AbstractWidget> {
+        private @Nullable List<AbstractWidget> widgets;
+
+        /** The hidden widgets {@code element} visits, or null when there are none. */
+        static @Nullable List<AbstractWidget> visitedBy(LayoutElement element) {
+            HiddenWidgets hidden = new HiddenWidgets();
+            element.visitWidgets(hidden);
+            return hidden.widgets;
+        }
+
+        @Override
+        public void accept(AbstractWidget widget) {
+            if (!widget.visible) {
+                if (this.widgets == null) {
+                    this.widgets = new ArrayList<>();
+                }
+                this.widgets.add(widget);
             }
         }
     }

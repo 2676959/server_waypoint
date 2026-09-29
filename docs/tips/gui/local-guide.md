@@ -706,9 +706,13 @@ control's `visitWidgets` reports, and it can take focus while any of them is act
   its rows. The list renders all of them once, inside its scissor. Don't render row widgets again.
 - **Visibility:** the list owns `visible` for its row widgets. A widget is visible only while it's
   entirely inside the rows' area, so clipped parts can't be clicked or focused. Partly visible
-  widgets are still drawn, clipped, with no hover state. Screens set only `active`. A control that
-  handles input itself, like `IntegerSlider`, must check `isActive()`, which includes `visible`:
-  before 1.21.5, vanilla offers every click to every child, hidden or not.
+  widgets are still drawn, clipped, with no hover state, including those of a composite control:
+  while any widget its `visitWidgets` reports is hidden, the list makes those widgets visible for
+  one draw of the whole control with the mouse off-screen. Its fully visible widgets then lose
+  their hover state and tooltips too, until the control scrolls fully into view; clicks still reach
+  them. Screens set only `active`. A control that handles input itself, like `IntegerSlider`, must
+  check `isActive()`, which includes `visible`: before 1.21.5, vanilla offers every click to every
+  child, hidden or not.
 - **Input:** offer the mouse wheel to the list before `super.mouseScrolled`, so it scrolls while the
   list overflows and reaches a slider under the cursor only when it doesn't. The list isn't a Tab
   stop. Vanilla Tab skips invisible and inactive widgets, so before the screen handles Tab, call
@@ -723,9 +727,7 @@ control's `visitWidgets` reports, and it can take focus while any of them is act
 - **Tooltips:** the hovered row gets `ROW_HOVER_BACKGROUND`. After the pointer rests on a row for
   500 ms, the list schedules the row's tooltip at the cursor, except over the row's action, which
   keeps its own vanilla tooltip.
-- **Limitations:** row controls can't open popups, because the scissor would clip them. A composite
-  control draws its widgets itself, and a hidden widget draws nothing, so its partly visible widgets
-  disappear instead of being drawn clipped.
+- **Limitations:** row controls can't open popups, because the scissor would clip them.
 
 ### Confirmation dialogs
 
@@ -1146,6 +1148,10 @@ Good test targets include:
   when it takes focus, so a unit test can't focus a real text field. `MovementAllowedScreenPopupEscapeTest`
   stands in for a combo box with a `ComboBoxWidget` subclass that skips the constructor and reports
   no suggestions open, which is why `ComboBoxWidget` isn't `final`.
+- Drawing decisions that don't need a real graphics context. `SettingsListWidget.renderPart` is
+  package-private and static, so `SettingsListWidgetTest` calls it with a null context and a
+  `WidgetStack` double whose render method records its widgets' `visible` flags and the mouse
+  position instead of drawing.
 - Pure label or presentation calculations.
 - Theme completeness, runtime updates, JSON round trips, invalid input, and file persistence.
 - Theme-editor preview, reset, save, cancel, and idempotent rollback transitions.
