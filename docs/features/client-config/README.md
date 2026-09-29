@@ -5,5 +5,4 @@ reset to defaults, map-mod sync, and opening it from the loaders' mod lists.
 
 - [Screen design](specs/2026-09-28-client-config-screen-design.md)
 - [Implementation plan](plans/2026-09-28-client-config-screen.md)
-
-Validation records don't exist yet; `validation/` holds a `.gitkeep` until they do.
+- [Validation results](validation/2026-09-28-results.md)
