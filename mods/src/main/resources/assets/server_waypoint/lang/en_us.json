@@ -90,8 +90,8 @@
   "key.category.server_waypoint.mod_name": "Server Waypoint",
   "server_waypoint.waypoint_manager_gui.keybind": "Open waypoint manager screen",
   "server_waypoint.config.confirm_sync": "Sync",
-  "server_waypoint.config.true": "True",
-  "server_waypoint.config.false": "False",
+  "server_waypoint.config.on": "On",
+  "server_waypoint.config.off": "Off",
 
   "server_waypoint.theme.screen.title": "Color Theme",
   "server_waypoint.theme.variables": "Theme color variables",

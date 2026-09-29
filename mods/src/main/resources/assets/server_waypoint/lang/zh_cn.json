@@ -90,8 +90,8 @@
   "key.category.server_waypoint.mod_name": "服务器路径点",
   "server_waypoint.waypoint_manager_gui.keybind": "打开路径点管理器图形界面",
   "server_waypoint.config.confirm_sync": "同步",
-  "server_waypoint.config.true": "是",
-  "server_waypoint.config.false": "否",
+  "server_waypoint.config.on": "开",
+  "server_waypoint.config.off": "关",
 
   "server_waypoint.theme.screen.title": "颜色主题",
   "server_waypoint.theme.variables": "主题颜色变量",
