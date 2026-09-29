@@ -169,7 +169,9 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
 - **Row:** four columns: label, control, unit and action.
   - The control is any `LayoutElement & Renderable`: usually a registered `AbstractWidget`, or a
     non-interactive element such as the "Not installed" `ScalableText`. Padded elements are placed
-    by their visual bounds.
+    by their visual bounds. A composite control, such as a `WidgetStack` of buttons, counts every
+    widget its `visitWidgets` reports as the row's: `reveal` finds the row from any of them, and the
+    row is a Tab stop while any of them is active.
   - The unit column is as wide as the widest unit in the list, and the action column as wide as
     the widest action. A row without a unit or action keeps the empty column, so every control's
     right edge lines up. A column of width zero also drops its gap.
@@ -230,6 +232,8 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
 
 - Row controls must not open popups, because the scissor would clip them.
 - Entries can't be inserted or removed one at a time. Call `setEntries` again.
+- A composite control draws its own widgets, and a hidden widget draws nothing, so its partly
+  visible widgets disappear instead of being drawn clipped.
 
 ### Building blocks
 

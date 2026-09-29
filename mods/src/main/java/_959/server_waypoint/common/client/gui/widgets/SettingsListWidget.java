@@ -9,6 +9,7 @@ import _959.server_waypoint.common.client.gui.layout.SettingsListLayout;
 import _959.server_waypoint.common.client.gui.layout.WidgetPack;
 import _959.server_waypoint.common.client.gui.render.PaddingBackground;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -501,13 +502,19 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         }
 
         boolean owns(GuiEventListener widget) {
-            return widget == this.control || widget == this.action;
+            return this.widgets().contains(widget);
         }
 
-        /** Whether Tab can stop in this row now: vanilla skips inactive widgets. */
+        /** Whether Tab can stop in this row now: it has an active widget, and vanilla skips inactive ones. */
         boolean isInteractive() {
-            return this.control instanceof AbstractWidget widget && widget.active
-                    || this.action != null && this.action.active;
+            return this.widgets().stream().anyMatch(widget -> widget.active);
+        }
+
+        /** The control's widgets, several for a composite control, then the action. */
+        private List<AbstractWidget> widgets() {
+            List<AbstractWidget> widgets = new ArrayList<>();
+            this.visitWidgets(widgets::add);
+            return widgets;
         }
 
         boolean isOverAction(int mouseX, int mouseY) {

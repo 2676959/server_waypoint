@@ -674,7 +674,9 @@ entries (a title followed by a line) and `SettingsListWidget.Row` entries: a lab
 optional muted unit (`suffix`), an optional last-column widget (`action`, such as a reset button)
 and an optional `tooltip` supplier. Entries have their own heights, so long labels wrap onto more
 lines instead of being clipped. The unit and action columns are as wide as their widest entry, so
-every control's right edge lines up.
+every control's right edge lines up. A control can be one widget, a non-interactive element such as
+a `ScalableText`, or a composite such as a `WidgetStack` of buttons: the row owns every widget the
+control's `visitWidgets` reports, and it can take focus while any of them is active.
 
 - **Layout:** `setEntries` copies the entries and lays them out. Call `relayout()` after a label,
   unit or control size changes. `getPreferredWidth()` is the width at which nothing wraps, including
@@ -698,7 +700,9 @@ every control's right edge lines up.
 - **Tooltips:** the hovered row gets `ROW_HOVER_BACKGROUND`. After the pointer rests on a row for
   500 ms, the list schedules the row's tooltip at the cursor, except over the row's action, which
   keeps its own vanilla tooltip.
-- **Limitations:** row controls can't open popups, because the scissor would clip them.
+- **Limitations:** row controls can't open popups, because the scissor would clip them. A composite
+  control draws its widgets itself, and a hidden widget draws nothing, so its partly visible widgets
+  disappear instead of being drawn clipped.
 
 ### Confirmation dialogs
 
