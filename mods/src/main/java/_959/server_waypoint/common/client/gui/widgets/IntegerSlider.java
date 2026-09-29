@@ -66,6 +66,14 @@ public class IntegerSlider extends ShiftableClickableWidget {
         else this.focused.setFocused(false);
     }
 
+    /**
+     * Whether typing goes to the number field: the slider has focus, and its field rather than its
+     * track was selected last.
+     */
+    public boolean isEditingNumber() {
+        return this.integerField.isFocused();
+    }
+
     @Override
     public void setX(int x) {
         super.setX(x);
