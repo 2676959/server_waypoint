@@ -598,9 +598,14 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         }
     }
 
-    /** Moves focus away from the widget a click just focused. */
+    /**
+     * Moves focus away from the widget a click just focused, and ends the click's drag: vanilla sends
+     * a drag to the focused widget, so a slider that takes focus from its reset button would jump to
+     * the pointer.
+     */
     static void handOverFocus(ContainerEventHandler screen, GuiEventListener target) {
         screen.setFocused(target);
+        screen.setDragging(false);
     }
 
     private record SettingControl(ClientConfigSettings.Setting setting, AbstractWidget widget, IconButton resetButton) {
