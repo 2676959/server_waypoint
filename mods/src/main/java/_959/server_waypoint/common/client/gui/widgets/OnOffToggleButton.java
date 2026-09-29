@@ -7,15 +7,16 @@ import net.minecraft.network.chat.Component;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DANGER_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SUCCESS_BACKGROUND;
 
-public class TrueFalseToggleButton extends ToggleButton {
-    public TrueFalseToggleButton(int x, int y, ToggleButtonCallback callback) {
+/** A 50×11 toggle that reads On or Off. */
+public class OnOffToggleButton extends ToggleButton {
+    public OnOffToggleButton(int x, int y, ToggleButtonCallback callback) {
         super(
                 x,
                 y,
                 50,
                 11,
-                Component.translatable("server_waypoint.config.false"),
-                Component.translatable("server_waypoint.config.true"),
+                Component.translatable("server_waypoint.config.off"),
+                Component.translatable("server_waypoint.config.on"),
                 DANGER_BACKGROUND,
                 SUCCESS_BACKGROUND,
                 callback

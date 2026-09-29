@@ -20,7 +20,7 @@ import _959.server_waypoint.common.client.gui.widgets.ToggleButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
 import _959.server_waypoint.common.client.gui.widgets.TreeViewWidget;
-import _959.server_waypoint.common.client.gui.widgets.TrueFalseToggleButton;
+import _959.server_waypoint.common.client.gui.widgets.OnOffToggleButton;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -231,7 +231,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
             ignored -> {
             }
     );
-    private final TrueFalseToggleButton galleryBooleanToggle = new TrueFalseToggleButton(
+    private final OnOffToggleButton galleryBooleanToggle = new OnOffToggleButton(
             0,
             0,
             ignored -> {

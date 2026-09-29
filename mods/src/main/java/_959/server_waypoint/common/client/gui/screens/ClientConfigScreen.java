@@ -36,12 +36,12 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     private static final int SCREEN_MARGIN = 10;
 
     private final Screen parentScreen;
-    private final ToggleButton renderToggle = new TrueFalseToggleButton(0, 0, WaypointClientMod.getClientConfig()::setEnableWaypointRender);
+    private final ToggleButton renderToggle = new OnOffToggleButton(0, 0, WaypointClientMod.getClientConfig()::setEnableWaypointRender);
     private final IntegerSlider scaleSlider = new IntegerSlider(0, 0, 0, 500, WaypointClientMod.getClientConfig().getWaypointScalingFactor(), WaypointClientMod.getClientConfig()::setWaypointScalingFactor, font);
     private final IntegerSlider vertOffsetSlider = new IntegerSlider(0, 0, -100, 100, WaypointClientMod.getClientConfig().getWaypointVerticalOffset(), WaypointClientMod.getClientConfig()::setWaypointVerticalOffset, font);
     private final IntegerSlider alphaSlider = new IntegerSlider(0, 0, 0, 255, WaypointClientMod.getClientConfig().getWaypointBackgroundAlpha(), WaypointClientMod.getClientConfig()::setWaypointBackgroundAlpha, font);
     private final IntegerSlider renderDistanceSlider = new IntegerSlider(0, 0, 0, 1024, WaypointClientMod.getClientConfig().getViewDistance(), WaypointClientMod.getClientConfig()::setViewDistance, font);
-    private final ToggleButton xaerosAutoSyncToggle = new TrueFalseToggleButton(0, 0, WaypointClientMod.getClientConfig()::setAutoSyncToXaerosMinimap);
+    private final ToggleButton xaerosAutoSyncToggle = new OnOffToggleButton(0, 0, WaypointClientMod.getClientConfig()::setAutoSyncToXaerosMinimap);
     private final TranslucentButton syncToXaerosButton = new TranslucentButton(0, 0, 50, 11, Component.translatable("server_waypoint.config.confirm_sync"), this::openXaerosSyncConfirmationDialog);
     private final TranslucentButton themeButton = new TranslucentButton(
             0,
