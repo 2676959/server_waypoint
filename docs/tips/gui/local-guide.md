@@ -487,6 +487,7 @@ Those cases do not justify duplicating standalone message rendering elsewhere.
 | Hex color input | `ColorHexCodeField` |
 | Color selection | `ColorSquareButton`, `SwatchWidget`, `RGBColorPicker`, or `HSVColorPicker` |
 | Scrollable hierarchical rows | Extend `TreeViewWidget<T>` |
+| Scrollable settings rows with section headers | `SettingsListWidget` |
 | Selectable item icon strip | `IconListWidget<T>`, `DimensionListWidget`, `ServerListWidget` |
 | Directional popup with custom items | Extend `AbstractDropdownMenuWidget` and `AbstractMenuItem` |
 | Confirmation overlay | `ConfirmationDialog` |
@@ -665,6 +666,37 @@ snapshot and draws up to six wrapped description lines below the hovered HUD lab
 and VoxelMap must continue to receive the plain `name` because they cannot render formatted text.
 
 Composite widgets must forward all relevant behavior to their children: position and offsets, dimensions where supported, rendering, focus, input, and `visitWidgets`. `DialogWidget`, `IntegerSlider`, and `SwatchWidget` are useful references.
+
+### Settings lists
+
+Use `SettingsListWidget` for a scrollable panel of settings. It holds `SettingsListWidget.Header`
+entries (a title followed by a line) and `SettingsListWidget.Row` entries: a label, a control, an
+optional muted unit (`suffix`), an optional last-column widget (`action`, such as a reset button)
+and an optional `tooltip` supplier. Entries have their own heights, so long labels wrap onto more
+lines instead of being clipped. The unit and action columns are as wide as their widest entry, so
+every control's right edge lines up.
+
+- **Layout:** `setEntries` copies the entries and lays them out. Call `relayout()` after a label,
+  unit or control size changes. `getPreferredWidth()` is the width at which nothing wraps, including
+  the always-reserved scrollbar column; `getContentHeight()` is the total entry height. The widget's
+  bounds are the rows' area; its `Padding` adds `PANEL_PADDING` on each side for the themed panel,
+  so size it with `setVisualWidth`/`setVisualHeight` and position it `PANEL_PADDING` inside the
+  panel. The pure geometry lives in `SettingsListLayout`.
+- **Registration:** call `list.visitWidgets(this::addRenderableWidget)`. It visits every row's
+  control and action, then the list itself; that order keeps the list from taking clicks meant for
+  its rows. The list renders all of them once, inside its scissor. Don't render row widgets again.
+- **Visibility:** the list owns `visible` for its row widgets. A widget is visible only while it's
+  entirely inside the rows' area, so clipped parts can't be clicked or focused. Partly visible
+  widgets are still drawn, clipped, with no hover state. Screens set only `active`.
+- **Input:** offer the mouse wheel to the list before `super.mouseScrolled`, so it scrolls while the
+  list overflows and reaches a slider under the cursor only when it doesn't. The list isn't a Tab
+  stop. After a key press moves focus to a row widget, call `reveal(focused)`: vanilla Tab skips
+  invisible widgets, and `reveal` scrolls the row and its interactive neighbors into view. If
+  scrolling hides the focused widget, clear focus.
+- **Tooltips:** the hovered row gets `ROW_HOVER_BACKGROUND`. After the pointer rests on a row for
+  500 ms, the list schedules the row's tooltip at the cursor, except over the row's action, which
+  keeps its own vanilla tooltip.
+- **Limitations:** row controls can't open popups, because the scissor would clip them.
 
 ### New interactive widget checklist
 
