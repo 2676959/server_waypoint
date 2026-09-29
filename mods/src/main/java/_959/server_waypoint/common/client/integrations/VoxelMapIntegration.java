@@ -24,6 +24,22 @@ public final class VoxelMapIntegration implements MapModIntegration {
     }
 
     @Override
+    public boolean isInstalled() {
+        return ClientConfig.isVoxelMapLoaded;
+    }
+
+    @Override
+    public boolean isReady() {
+        // Auto sync writes to VoxelMap as soon as waypoints arrive, so being in a world is enough.
+        return true;
+    }
+
+    @Override
+    public void syncAll(WaypointClientMod waypointClientMod) {
+        VoxelMapWaypointHelper.replaceAll(waypointClientMod);
+    }
+
+    @Override
     public void onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod waypointClientMod) {
         switch (event.type()) {
             case ALL_SYNCED, WORLD_REPLACED -> VoxelMapWaypointHelper.replaceAll(waypointClientMod);
