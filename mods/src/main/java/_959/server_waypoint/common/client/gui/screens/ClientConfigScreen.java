@@ -37,6 +37,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.Screen;
 //? if >= 1.21.9 {
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 //?}
 import net.minecraft.network.chat.CommonComponents;
@@ -272,6 +273,9 @@ public class ClientConfigScreen extends MovementAllowedScreen {
             this.pendingFocus = null;
             return true;
         }
+        if (keyCode == InputConstants.KEY_TAB) {
+            this.settingsList.revealTabTarget(this, !isShiftDown(keyCode, scanCode, modifiers));
+        }
         GuiEventListener focusedBefore = this.getFocused();
         boolean handled = super.keyPressed(keyCode, scanCode, modifiers);
         GuiEventListener focused = this.getFocused();
@@ -280,6 +284,15 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         }
         this.pendingFocus = null;
         return handled;
+    }
+
+    /** Whether Shift is held, which turns Tab around, read the way vanilla reads it for Tab. */
+    private static boolean isShiftDown(int keyCode, int scanCode, int modifiers) {
+        //? if >= 1.21.9 {
+        return new KeyEvent(keyCode, scanCode, modifiers).hasShiftDown();
+        //?} else {
+        /*return Screen.hasShiftDown();
+        *///?}
     }
 
     //? if <= 1.20.1 {

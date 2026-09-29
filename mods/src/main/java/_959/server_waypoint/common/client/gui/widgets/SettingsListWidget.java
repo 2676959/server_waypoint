@@ -11,6 +11,7 @@ import _959.server_waypoint.common.client.gui.layout.WidgetPack;
 import _959.server_waypoint.common.client.gui.render.PaddingBackground;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -22,6 +23,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.layouts.SpacerElement;
@@ -138,6 +140,34 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         int nextBottom = next < 0 ? this.contentHeight : this.entryBottom(next);
         this.setScrollY(SettingsListLayout.revealScroll(this.getScrollY(), this.height, this.contentHeight,
                 this.entryTops[index], this.entryBottom(index), previousTop, nextBottom));
+    }
+
+    /**
+     * Before {@code screen} handles Tab, or Shift-Tab when {@code forward} is false: when the next
+     * stop in its Tab order, wrapping around, is one of this list's hidden row widgets, scrolls it
+     * into view. Vanilla skips hidden widgets, so Tab would otherwise jump past the rows out of view.
+     */
+    public void revealTabTarget(ContainerEventHandler screen, boolean forward) {
+        List<GuiEventListener> order = new ArrayList<>(screen.children());
+        // Vanilla's Tab order: the children sorted by tab order group, keeping their order in a group.
+        order.sort(Comparator.comparingInt(GuiEventListener::getTabOrderGroup));
+        int size = order.size();
+        int focused = order.indexOf(screen.getFocused());
+        int start = focused >= 0 ? focused : forward ? -1 : size;
+        FocusNavigationEvent.TabNavigation tab = new FocusNavigationEvent.TabNavigation(forward);
+        for (int step = 1; step <= size; step++) {
+            GuiEventListener candidate = order.get(Math.floorMod(start + (forward ? step : -step), size));
+            if (candidate instanceof AbstractWidget widget && this.rowIndexOf(widget) >= 0) {
+                if (widget.active) {
+                    if (!widget.visible) {
+                        this.reveal(widget);
+                    }
+                    return;
+                }
+            } else if (candidate.nextFocusPath(tab) != null) {
+                return;
+            }
+        }
     }
 
     /** Visits every row's control and action in entry order, then the list itself. */

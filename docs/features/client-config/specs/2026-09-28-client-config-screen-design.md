@@ -143,6 +143,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
     public int getPreferredWidth();                 // widest entry without wrapping, plus scrollbar space
     public int getContentHeight();                  // total entry height, for sizing the panel
     public void reveal(GuiEventListener widget);    // scroll a row widget into view (keyboard focus)
+    public void revealTabTarget(ContainerEventHandler screen, boolean forward); // before Tab: show its next stop
     public void visitWidgets(Consumer<AbstractWidget> consumer); // row widgets first, then the list
 
     public abstract static sealed class Entry permits Header, Row { }
@@ -211,11 +212,18 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
   overflows, the wheel scrolls it by 10 pixels per notch. When it doesn't overflow, the wheel
   reaches the slider under the cursor.
 - **Keyboard:** the list itself isn't a Tab stop; `nextFocusPath` returns null. Vanilla's Tab skips
-  invisible widgets, so after a key press moves focus to a row widget, the screen calls `reveal`.
-  It scrolls by the smallest amount that fully shows that row. When they fit, it also shows the
-  nearest rows above and below that have an active widget, extended over any header between them.
-  Tab and Shift-Tab then always reach the neighboring rows, even past a row whose widgets are
-  disabled, such as a blocked Sync button. Mouse clicks never scroll the list.
+  invisible widgets, so the screen helps it before and after each key press:
+  - Before vanilla handles Tab or Shift-Tab, the screen calls `revealTabTarget`. When the next stop
+    in the screen's Tab order, wrapping around, is a hidden row widget, it scrolls that row into
+    view. Tab from Done wraps around to the first row, Shift-Tab from the footer reaches the last
+    row, and Tab reaches a row that a click or the wheel left out of view, even past rows whose
+    widgets are disabled, such as a blocked Sync button. With nothing focused, Tab starts at the
+    first row, as vanilla starts from the first stop.
+  - After a key press moves focus to a row widget, the screen calls `reveal`. It scrolls by the
+    smallest amount that fully shows that row. When they fit, it also shows the nearest rows above
+    and below that have an active widget, extended over any header between them.
+
+  Clicking a row widget never scrolls the list.
 
 ### Hover and tooltips
 
@@ -406,7 +414,9 @@ component. This function, the `MapModRowState` mapping and both enums live in a 
   want and record it, and the screen applies it again after `super.mouseClicked`, like the theme
   editor's `normalizeModalFocus`. A key press doesn't move focus after the callback, so the focus it
   set stands.
-- After a key press moves focus to a row widget, the screen calls `list.reveal(...)`.
+- Before vanilla handles Tab, the screen calls `list.revealTabTarget(...)`, so Tab and Shift-Tab
+  reach every row and wrap around from Done to the first row. After a key press moves focus to a
+  row widget, the screen calls `list.reveal(...)`.
 - If the mouse wheel scrolls the focused row widget out of view, the screen clears focus. That
   commits a half-typed number.
 - A relayout or a focus change made by the screen can leave the focused row widget hidden too: a

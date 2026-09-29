@@ -704,9 +704,12 @@ control's `visitWidgets` reports, and it can take focus while any of them is act
   before 1.21.5, vanilla offers every click to every child, hidden or not.
 - **Input:** offer the mouse wheel to the list before `super.mouseScrolled`, so it scrolls while the
   list overflows and reaches a slider under the cursor only when it doesn't. The list isn't a Tab
-  stop. After a key press moves focus to a row widget, call `reveal(focused)`: vanilla Tab skips
-  invisible and inactive widgets, and `reveal` scrolls the row and the nearest rows with an active
-  widget into view. If the wheel hides the focused widget, clear focus. A relayout or a focus change
+  stop. Vanilla Tab skips invisible and inactive widgets, so before the screen handles Tab, call
+  `revealTabTarget(screen, forward)`, with `forward` false for Shift-Tab: when the next stop in the
+  screen's Tab order, wrapping around, is a hidden row widget, it scrolls that row into view. Tab
+  then reaches every row, and wraps from the last stop to the first row even when the list is
+  scrolled. After a key press moves focus to a row widget, call `reveal(focused)`, which scrolls the
+  row and the nearest rows with an active widget into view. If the wheel hides the focused widget, clear focus. A relayout or a focus change
   made in code can hide it too, as when a longer status message shrinks the list; then reveal it
   instead, and clear focus only if its row can't be shown. `ClientConfigScreen.keepFocusVisible`
   does this after every relayout and every focus request.
