@@ -2,269 +2,283 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.ModInfo;
+import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.client.gui.api.ButtonClickCallback;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
-import _959.server_waypoint.common.client.gui.layout.Padding;
+import _959.server_waypoint.common.client.gui.layout.SettingsListLayout;
 import _959.server_waypoint.common.client.gui.layout.WidgetPack;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
+import _959.server_waypoint.common.client.gui.render.WidgetTextures;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
-import _959.server_waypoint.common.client.gui.widgets.*;
-import _959.server_waypoint.common.client.util.MinecraftClientHelper;
+import _959.server_waypoint.common.client.gui.widgets.ConfirmationDialog;
+import _959.server_waypoint.common.client.gui.widgets.IconButton;
+import _959.server_waypoint.common.client.gui.widgets.IntegerSlider;
+import _959.server_waypoint.common.client.gui.widgets.OnOffToggleButton;
+import _959.server_waypoint.common.client.gui.widgets.ScalableText;
+import _959.server_waypoint.common.client.gui.widgets.SettingsListWidget;
+import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
+import _959.server_waypoint.common.client.integrations.MapModIntegration;
 import _959.server_waypoint.common.client.integrations.MapModIntegrations;
+import _959.server_waypoint.common.client.util.MinecraftClientHelper;
+import _959.server_waypoint.common.server.WaypointServerMod;
+import _959.server_waypoint.core.network.upload.UploadTarget;
+import com.mojang.blaze3d.platform.InputConstants;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Optional;
+import java.util.Set;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.layouts.LayoutElement;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.Screen;
+//? if >= 1.21.9 {
+import net.minecraft.client.input.MouseButtonEvent;
+//?}
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import static _959.server_waypoint.common.client.ClientConfig.isXaerosMinimapLoaded;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pop;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.push;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DANGER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SUCCESS;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_MUTED;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 
+/**
+ * The client settings: waypoint rendering, map-mod sync and appearance in a
+ * {@link SettingsListWidget}, with per-row and global reset and confirmation dialogs.
+ */
 public class ClientConfigScreen extends MovementAllowedScreen {
-    private static final int CONTENT_GAP = 10;
     private static final int SCREEN_MARGIN = 10;
+    private static final int SECTION_SPACING = 6;
+    private static final float TITLE_SCALE = 1.2F;
+    private static final int FOOTER_BUTTON_GAP = 6;
+    private static final int STATUS_GAP = 8;
+    private static final int MIN_STATUS_WIDTH = 40;
+    private static final int MIN_BUTTON_WIDTH = 50;
+    private static final int BUTTON_TEXT_PADDING = 10;
+    private static final int BUTTON_HEIGHT = 11;
+    private static final int RESET_BUTTON_SIZE = 13;
+    private static final int SLIDER_TRACK_WIDTH = 100;
+    private static final int SLIDER_FIELD_WIDTH = 30;
+    private static final int DIALOG_TEXT_WIDTH = 220;
+    private static final int DIALOG_LINE_GAP = 5;
+    private static final int NO_MOUSE = -10_000;
 
     private final Screen parentScreen;
-    private final ToggleButton renderToggle = new OnOffToggleButton(0, 0, WaypointClientMod.getClientConfig()::setEnableWaypointRender);
-    private final IntegerSlider scaleSlider = new IntegerSlider(0, 0, 0, 500, WaypointClientMod.getClientConfig().getWaypointScalingFactor(), WaypointClientMod.getClientConfig()::setWaypointScalingFactor, font);
-    private final IntegerSlider vertOffsetSlider = new IntegerSlider(0, 0, -100, 100, WaypointClientMod.getClientConfig().getWaypointVerticalOffset(), WaypointClientMod.getClientConfig()::setWaypointVerticalOffset, font);
-    private final IntegerSlider alphaSlider = new IntegerSlider(0, 0, 0, 255, WaypointClientMod.getClientConfig().getWaypointBackgroundAlpha(), WaypointClientMod.getClientConfig()::setWaypointBackgroundAlpha, font);
-    private final IntegerSlider renderDistanceSlider = new IntegerSlider(0, 0, 0, 1024, WaypointClientMod.getClientConfig().getViewDistance(), WaypointClientMod.getClientConfig()::setViewDistance, font);
-    private final ToggleButton xaerosAutoSyncToggle = new OnOffToggleButton(0, 0, WaypointClientMod.getClientConfig()::setAutoSyncToXaerosMinimap);
-    private final TranslucentButton syncToXaerosButton = new TranslucentButton(0, 0, 50, 11, Component.translatable("server_waypoint.config.confirm_sync"), this::openXaerosSyncConfirmationDialog);
-    private final TranslucentButton themeButton = new TranslucentButton(
-            0,
-            0,
-            70,
-            11,
-            Component.translatable("server_waypoint.config.theme.open"),
-            this::openThemeConfigScreen
-    );
+    private final ClientConfig config = WaypointClientMod.getClientConfig();
+    private final List<SettingControl> settingControls = new ArrayList<>();
+    private final List<MapModControls> mapModControls = new ArrayList<>();
+    private final WidgetPack footer = new WidgetPack(Orientation.HORIZONTAL);
     private final ScalableText titleText;
-    private final ConfigTreeView configTree;
-    private final ConfirmationDialog xaerosSyncConfirmationDialog;
+    private final SettingsListWidget settingsList;
+    private final TranslucentButton themeButton;
+    private final TranslucentButton resetAllButton;
+    private final TranslucentButton doneButton;
+    private final ScalableText statusText;
+    private final ConfirmationDialog resetAllDialog;
+    private final List<ClientConfigSettings.Setting> shownSettings;
+    private @Nullable ConfirmationDialog openDialog;
+    private @Nullable AbstractWidget dialogOpener;
+    private @Nullable GuiEventListener pendingFocus;
+    // True while the constructor builds the controls and while they're refreshed from the config,
+    // so their change callbacks don't write the values straight back.
+    private boolean updatingControls = true;
+    private int contentWidth;
+    private int contentHeight;
 
     public ClientConfigScreen(Screen parentScreen) {
         super(Component.translatable("server_waypoint.config.screen.title", ModInfo.MOD_VERSION));
         this.parentScreen = parentScreen;
-        this.titleText = new ScalableText(
-                0, 0, this.title, 1.2F, WidgetThemeVariable.TEXT_PRIMARY, font);
-        this.titleText.setXOffset(5);
-        ConfigRow row1 = this.createConfigRow(
-                Component.translatable("server_waypoint.config.enable_waypoint_render"),
-                WidgetThemeVariable.TEXT_PRIMARY,
-                this.renderToggle
+        this.titleText = new ScalableText(0, 0, this.title, TITLE_SCALE, TEXT_PRIMARY, this.font);
+        this.settingsList = new SettingsListWidget(this.font);
+        this.themeButton = this.textButton(Component.translatable("server_waypoint.config.theme.open"),
+                this::openThemeConfigScreen);
+        this.resetAllButton = this.textButton(Component.translatable("server_waypoint.config.reset_all"),
+                this::openResetAllDialog);
+        this.doneButton = this.textButton(CommonComponents.GUI_DONE, this::onClose);
+        this.statusText = new ScalableText(0, 0, Component.empty(), 1.0F, SUCCESS, MIN_STATUS_WIDTH, this.font);
+        this.resetAllDialog = new ConfirmationDialog(
+                0,
+                0,
+                Component.translatable("server_waypoint.config.reset_all.title"),
+                this.dialogText(List.of(new DialogLine(
+                        Component.translatable("server_waypoint.config.reset_all.body"), TEXT_PRIMARY))),
+                Component.translatable("server_waypoint.config.reset_all.confirm"),
+                this::confirmResetAll,
+                this::closeDialog,
+                this.font
         );
 
-        ConfigRow row2 = this.createConfigRow(
-                Component.translatable("server_waypoint.config.waypoint_scale_factor"),
-                WidgetThemeVariable.TEXT_PRIMARY,
-                this.scaleSlider
-        );
-
-        ConfigRow row3 = this.createConfigRow(
-                Component.translatable("server_waypoint.config.waypoint_vertical_offset"),
-                WidgetThemeVariable.TEXT_PRIMARY,
-                this.vertOffsetSlider
-        );
-
-        ConfigRow row4 = this.createConfigRow(
-                Component.translatable("server_waypoint.config.waypoint_bg_alpha"),
-                WidgetThemeVariable.TEXT_PRIMARY,
-                this.alphaSlider
-        );
-
-        ConfigRow row5 = this.createConfigRow(
-                Component.translatable("server_waypoint.config.local_waypoint_view_distance"),
-                WidgetThemeVariable.TEXT_PRIMARY,
-                this.renderDistanceSlider
-        );
-
-        WidgetThemeVariable xaerosSyncFontColor = isXaerosMinimapLoaded
-                ? WidgetThemeVariable.TEXT_PRIMARY
-                : WidgetThemeVariable.TEXT_DISABLED;
-        ConfigRow row6 = this.createConfigRow(
-                Component.translatable("server_waypoint.config.auto_sync_to_xaeros"),
-                xaerosSyncFontColor,
-                this.xaerosAutoSyncToggle
-        );
-
-        MutableComponent xaerosSyncDialogTitle = Component.translatable("server_waypoint.config.sync_to_xaeros");
-        ConfigRow row7 = this.createConfigRow(
-                xaerosSyncDialogTitle,
-                xaerosSyncFontColor,
-                this.syncToXaerosButton
-        );
-
-        ConfigRow row8 = this.createConfigRow(
-                Component.translatable("server_waypoint.config.theme"),
-                WidgetThemeVariable.TEXT_PRIMARY,
-                this.themeButton
-        );
-
-        if (!isXaerosMinimapLoaded) {
-            this.xaerosAutoSyncToggle.active = false;
-            this.syncToXaerosButton.active = false;
+        Set<UploadTarget> installedMapMods = EnumSet.noneOf(UploadTarget.class);
+        List<SettingsListWidget.Entry> entries = new ArrayList<>();
+        entries.add(new SettingsListWidget.Header(Component.translatable("server_waypoint.config.section.rendering")));
+        for (ClientConfigSettings.Setting setting : ClientConfigSettings.RENDERING) {
+            entries.add(this.createSettingRow(setting));
         }
-
-        renderToggle.setState(WaypointClientMod.getClientConfig().isEnableWaypointRender());
-        xaerosAutoSyncToggle.setState(WaypointClientMod.getClientConfig().isAutoSyncToXaerosMinimap());
-
-        List<ConfigRow> configRows = List.of(row1, row2, row3, row4, row5, row6, row7, row8);
-        int configRowWidth = configRows.stream().mapToInt(ConfigRow::getMinimumWidth).max().orElse(0);
-        configRows.forEach(row -> row.setWidth(configRowWidth));
-        this.configTree = new ConfigTreeView(configRows);
-        this.configTree.updateRoots(configRows);
-        renderDistanceSlider.setYOffset(-2);
-
-        WidgetStack xaerosSyncWarningContent = new WidgetStack(0, 0, 5, true, false);
-        int warnMaxWidth = Math.round(font.width(xaerosSyncDialogTitle) * 1.2F);
-        xaerosSyncWarningContent.addChild(new ScalableText(0, 0,
-                Component.translatable("server_waypoint.config.sync_to_xaeros.warn.1"),
-                1F, WidgetThemeVariable.TEXT_PRIMARY, warnMaxWidth, font), 0);
-        xaerosSyncWarningContent.addChild(new ScalableText(0, 0,
-                Component.translatable("server_waypoint.config.sync_to_xaeros.warn.2"),
-                1F, WidgetThemeVariable.SUCCESS, warnMaxWidth, font));
-        xaerosSyncWarningContent.addChild(new ScalableText(0, 0,
-                Component.translatable("server_waypoint.config.sync_to_xaeros.warn.3"),
-                1F, WidgetThemeVariable.TEXT_PRIMARY, warnMaxWidth, font));
-        xaerosSyncWarningContent.addChild(new ScalableText(0, 0,
-                Component.translatable("server_waypoint.config.sync_to_xaeros.warn.4"),
-                1F, WidgetThemeVariable.DANGER, warnMaxWidth, font));
-        xaerosSyncWarningContent.addChild(new ScalableText(0, 0,
-                Component.translatable("server_waypoint.config.sync_to_xaeros.warn.5"),
-                1F, WidgetThemeVariable.TEXT_PRIMARY, warnMaxWidth, font));
-        this.xaerosSyncConfirmationDialog = new ConfirmationDialog(0, 0, xaerosSyncDialogTitle, xaerosSyncWarningContent, this::runXaerosSync, this::closeXaerosSyncConfirmationDialog, font);
-        this.xaerosSyncConfirmationDialog.visible = false;
-    }
-
-    private ConfigRow createConfigRow(
-            Component label,
-            WidgetThemeVariable labelColor,
-            AbstractWidget control
-    ) {
-        return new ConfigRow(new ScalableText(0, 0, label, labelColor, this.font), control);
-    }
-
-    private void runXaerosSync() {
-        if (isXaerosMinimapLoaded) {
-            MapModIntegrations.syncNow(_959.server_waypoint.core.network.upload.UploadTarget.XAERO, WaypointClientMod.getInstance());
+        entries.add(new SettingsListWidget.Header(Component.translatable("server_waypoint.config.section.map_mods")));
+        for (UploadTarget target : ClientConfigSettings.MAP_MODS) {
+            if (this.addMapModRows(entries, target)) {
+                installedMapMods.add(target);
+            }
         }
-        this.closeXaerosSyncConfirmationDialog();
-    }
+        entries.add(new SettingsListWidget.Header(Component.translatable("server_waypoint.config.section.appearance")));
+        entries.add(new SettingsListWidget.Row(Component.translatable("server_waypoint.config.theme"), this.themeButton)
+                .tooltip(() -> Component.translatable("server_waypoint.config.theme.tooltip")));
+        this.settingsList.setEntries(entries);
+        this.shownSettings = ClientConfigSettings.forScreen(installedMapMods);
 
-    private void openThemeConfigScreen() {
-        MinecraftClientHelper.setScreen(this.minecraft, new WidgetThemeConfigScreen(this));
-    }
-
-    private void openXaerosSyncConfirmationDialog() {
-        this.xaerosSyncConfirmationDialog.visible = true;
-        this.xaerosSyncConfirmationDialog.visitWidgets(button -> button.active = true);
-        this.setFocused(this.xaerosSyncConfirmationDialog);
-        this.configTree.active = false;
-        this.renderToggle.active = false;
-        this.scaleSlider.active = false;
-        this.vertOffsetSlider.active = false;
-        this.alphaSlider.active = false;
-        this.renderDistanceSlider.active = false;
-        this.xaerosAutoSyncToggle.active = false;
-        this.syncToXaerosButton.active = false;
-        this.themeButton.active = false;
-    }
-
-    private void closeXaerosSyncConfirmationDialog() {
-        this.xaerosSyncConfirmationDialog.visible = false;
-        this.xaerosSyncConfirmationDialog.visitWidgets(button -> button.active = false);
-        this.setFocused(this.renderToggle);
-        this.configTree.active = true;
-        this.renderToggle.active = true;
-        this.scaleSlider.active = true;
-        this.vertOffsetSlider.active = true;
-        this.alphaSlider.active = true;
-        this.renderDistanceSlider.active = true;
-        this.xaerosAutoSyncToggle.active = true;
-        this.syncToXaerosButton.active = true;
-        this.themeButton.active = true;
+        this.footer.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        this.footer.addChild(this.statusText, Direction.FORWARD);
+        this.footer.addChild(this.doneButton, Direction.REVERSE);
+        this.footer.addChild(SpacerElement.width(FOOTER_BUTTON_GAP), Direction.REVERSE);
+        this.footer.addChild(this.resetAllButton, Direction.REVERSE);
+        this.updatingControls = false;
     }
 
     @Override
-    public void init() {
+    protected void init() {
         super.init();
-        this.addRenderableWidget(renderToggle);
-        this.addRenderableWidget(scaleSlider);
-        this.addRenderableWidget(vertOffsetSlider);
-        this.addRenderableWidget(alphaSlider);
-        this.addRenderableWidget(renderDistanceSlider);
-        this.addRenderableWidget(xaerosAutoSyncToggle);
-        this.addRenderableWidget(syncToXaerosButton);
-        this.addRenderableWidget(this.themeButton);
-        this.addRenderableWidget(this.configTree);
-        this.xaerosSyncConfirmationDialog.visitWidgets(this::addRenderableWidget);
-        this.positionContent();
-    }
-
-    @Override
-    protected void renderScreenContents
-            (GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-        this.positionContent();
-        this.titleText.
-        //$ render_method_swap
-        extractRenderState
-                (context, mouseX, mouseY, delta);
-        this.configTree.
-        //$ render_method_swap
-        extractRenderState
-                (context, mouseX, mouseY, delta);
-        int centeredX = centered(this.width, this.xaerosSyncConfirmationDialog.getWidth());
-        int centeredY = centered(this.height, this.xaerosSyncConfirmationDialog.getHeight());
-        this.xaerosSyncConfirmationDialog.setPosition(centeredX, centeredY);
-        nextLayer(context);
-        this.xaerosSyncConfirmationDialog.
-        //$ render_method_swap
-        extractRenderState
-                (context, mouseX, mouseY, delta);
-        previousLayer(context);
+        // Row widgets first and the list last, so the list can't take clicks meant for its rows.
+        this.settingsList.visitWidgets(this::addRenderableWidget);
+        this.addRenderableWidget(this.resetAllButton);
+        this.addRenderableWidget(this.doneButton);
+        for (ConfirmationDialog dialog : this.dialogs()) {
+            dialog.visitWidgets(this::addRenderableWidget);
+        }
+        this.layoutContent();
+        this.refreshControlStates();
+        if (this.openDialog != null) {
+            this.setFocused(this.openDialog.getCancelButton());
+        }
     }
 
     @Override
     int getContentWidth() {
-        return Math.max(this.titleText.getWidth() + 5, this.configTree.getWidth());
+        return this.contentWidth;
     }
 
     @Override
     int getContentHeight() {
-        return this.titleText.getHeight() + CONTENT_GAP + this.getConfigTreeHeight();
+        return this.contentHeight;
     }
 
-    private int getConfigTreeHeight() {
-        int availableHeight = this.height - SCREEN_MARGIN * 2 - this.titleText.getHeight() - CONTENT_GAP;
-        return Math.min(this.configTree.getContentHeight(), Math.max(40, availableHeight));
-    }
+    /** Sizes and positions the title, the panel, the footer and the dialogs for the window. */
+    private void layoutContent() {
+        int panelWidth = Math.min(
+                this.settingsList.getPreferredWidth() + SettingsListWidget.PANEL_PADDING * 2,
+                Math.max(0, this.width - SCREEN_MARGIN * 2)
+        );
+        this.settingsList.setVisualWidth(panelWidth);
+        this.titleText.setWidth(panelWidth);
+        int buttonsWidth = this.resetAllButton.getVisualWidth() + FOOTER_BUTTON_GAP + this.doneButton.getVisualWidth();
+        this.statusText.setMaxWidth(Math.max(MIN_STATUS_WIDTH, panelWidth - buttonsWidth - STATUS_GAP));
+        int buttonHeight = Math.max(this.resetAllButton.getVisualHeight(), this.doneButton.getVisualHeight());
+        int footerHeight = Math.max(buttonHeight, this.statusText.getHeight());
+        int titleHeight = this.titleText.getHeight();
+        int minimumPanelHeight = SettingsListWidget.PANEL_PADDING * 2 + SettingsListLayout.MIN_ROW_HEIGHT;
+        int availablePanelHeight = this.height - SCREEN_MARGIN * 2 - titleHeight - footerHeight - SECTION_SPACING * 2;
+        int panelHeight = Math.min(
+                this.settingsList.getContentHeight() + SettingsListWidget.PANEL_PADDING * 2,
+                Math.max(minimumPanelHeight, availablePanelHeight)
+        );
+        this.settingsList.setVisualHeight(panelHeight);
+        this.contentWidth = panelWidth;
+        this.contentHeight = titleHeight + SECTION_SPACING + panelHeight + SECTION_SPACING + footerHeight;
 
-    private void positionContent() {
         int x = this.getCenteredX();
         int y = this.getCenteredY();
         this.titleText.setPosition(x, y);
-        this.configTree.setHeight(this.getConfigTreeHeight());
-        this.configTree.setPosition(x, y + this.titleText.getHeight() + CONTENT_GAP);
-        this.configTree.positionRows();
+        int panelY = y + titleHeight + SECTION_SPACING;
+        this.settingsList.setPosition(x + SettingsListWidget.PANEL_PADDING, panelY + SettingsListWidget.PANEL_PADDING);
+        this.footer.setDimensions(panelWidth, footerHeight);
+        this.footer.setPosition(x, panelY + panelHeight + SECTION_SPACING);
+        for (ConfirmationDialog dialog : this.dialogs()) {
+            dialog.setPosition(centered(this.width, dialog.getWidth()), centered(this.height, dialog.getHeight()));
+        }
+    }
+
+    @Override
+    protected void renderScreenContents(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        // Under an open dialog, nothing reacts to the mouse or shows a tooltip.
+        int contentMouseX = this.openDialog != null ? NO_MOUSE : mouseX;
+        int contentMouseY = this.openDialog != null ? NO_MOUSE : mouseY;
+        this.titleText.
+        //$ render_method_swap
+        extractRenderState
+                (context, contentMouseX, contentMouseY, deltaTicks);
+        this.settingsList.
+        //$ render_method_swap
+        extractRenderState
+                (context, contentMouseX, contentMouseY, deltaTicks);
+        this.statusText.
+        //$ render_method_swap
+        extractRenderState
+                (context, contentMouseX, contentMouseY, deltaTicks);
+        this.resetAllButton.
+        //$ render_method_swap
+        extractRenderState
+                (context, contentMouseX, contentMouseY, deltaTicks);
+        this.doneButton.
+        //$ render_method_swap
+        extractRenderState
+                (context, contentMouseX, contentMouseY, deltaTicks);
+        if (this.openDialog != null) {
+            nextLayer(context);
+            this.openDialog.
+            //$ render_method_swap
+            extractRenderState
+                    (context, mouseX, mouseY, deltaTicks);
+            previousLayer(context);
+        }
+    }
+
+    //? if >= 1.21.9 {
+    @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        boolean handled = super.mouseClicked(event, doubleClick);
+        this.applyPendingFocus();
+        return handled;
+    }
+    //?} else {
+    /*@Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        boolean handled = super.mouseClicked(mouseX, mouseY, button);
+        this.applyPendingFocus();
+        return handled;
+    }
+    *///?}
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        // Only the dialog's buttons can take focus while it's open, so there's no popup or text
+        // entry for dismissFocusedInput() to handle first.
+        if (keyCode == InputConstants.KEY_ESCAPE && this.openDialog != null) {
+            this.closeDialog();
+            this.pendingFocus = null;
+            return true;
+        }
+        GuiEventListener focusedBefore = this.getFocused();
+        boolean handled = super.keyPressed(keyCode, scanCode, modifiers);
+        GuiEventListener focused = this.getFocused();
+        if (focused != null && focused != focusedBefore) {
+            this.settingsList.reveal(focused);
+        }
+        this.pendingFocus = null;
+        return handled;
     }
 
     //? if <= 1.20.1 {
     /*@Override
     public boolean mouseScrolled(double mouseX, double mouseY, double verticalAmount) {
-        if (this.scrollConfigTree(mouseX, mouseY, 0, verticalAmount)) {
+        if (this.scrollSettingsList(mouseX, mouseY, 0, verticalAmount)) {
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, verticalAmount);
@@ -272,224 +286,333 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     *///?} else {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        if (this.scrollConfigTree(mouseX, mouseY, horizontalAmount, verticalAmount)) {
+        if (this.scrollSettingsList(mouseX, mouseY, horizontalAmount, verticalAmount)) {
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
     //?}
 
-    private boolean scrollConfigTree(
-            double mouseX,
-            double mouseY,
-            double horizontalAmount,
-            double verticalAmount
-    ) {
-        if (!this.configTree.isMouseOver(mouseX, mouseY)
-                || !this.configTree.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) {
+    /** Gives the wheel to the list first, so it scrolls instead of changing a slider under the cursor. */
+    private boolean scrollSettingsList(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (!this.settingsList.isMouseOver(mouseX, mouseY)
+                || !this.settingsList.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) {
             return false;
         }
         if (this.getFocused() instanceof AbstractWidget widget && !widget.visible) {
-            this.setFocused(this.configTree);
+            this.setFocused(null);
         }
         return true;
     }
 
     @Override
-    public void onClose() {
-        WaypointClientMod.getInstance().saveConfig();
-        MinecraftClientHelper.setScreen(this.minecraft, parentScreen);
+    public void tick() {
+        super.tick();
+        this.refreshControlStates();
     }
 
-    private static final class ConfigTreeView extends TreeViewWidget<ConfigRow> {
-        private static final int ROW_GAP = 10;
+    /** Every exit reaches this, including a disconnect, so the config is always saved. */
+    @Override
+    public void removed() {
+        WaypointClientMod.getInstance().saveConfig();
+        super.removed();
+    }
 
-        private ConfigTreeView(List<ConfigRow> rows) {
-            super(
-                    0,
-                    0,
-                    getContentWidth(rows),
-                    1,
-                    getRowHeight(rows),
-                    Component.empty(),
-                    0,
-                    0,
-                    0,
-                    0,
-                    0x00000000,
-                    0x00000000,
-                    false
-            );
-            this.setWidth(this.getWidth() + this.SCROLLBAR_WIDTH);
+    @Override
+    public void onClose() {
+        MinecraftClientHelper.setScreen(this.minecraft, this.parentScreen);
+    }
+
+    private SettingsListWidget.Row createSettingRow(ClientConfigSettings.Setting setting) {
+        AbstractWidget widget;
+        Component unit = null;
+        if (setting instanceof ClientConfigSettings.IntSetting intSetting) {
+            widget = new IntegerSlider(0, 0, SLIDER_TRACK_WIDTH, SLIDER_FIELD_WIDTH, intSetting.min(), intSetting.max(),
+                    intSetting.get(this.config), value -> this.onIntChanged(intSetting, value), this.font);
+            unit = intSetting.format().unit();
+        } else {
+            ClientConfigSettings.BooleanSetting booleanSetting = (ClientConfigSettings.BooleanSetting) setting;
+            OnOffToggleButton toggle = new OnOffToggleButton(0, 0, value -> this.onBooleanChanged(booleanSetting, value));
+            toggle.setState(booleanSetting.get(this.config));
+            widget = toggle;
         }
-
-        private static int getContentWidth(List<ConfigRow> rows) {
-            return rows.stream().mapToInt(ConfigRow::getWidth).max().orElse(0);
+        Component resetLabel = Component.translatable("server_waypoint.config.reset", setting.defaultText());
+        IconButton resetButton = new IconButton(0, 0, RESET_BUTTON_SIZE, RESET_BUTTON_SIZE, resetLabel,
+                WidgetTextures.RESET_ICON, () -> this.resetSetting(setting, widget));
+        resetButton.setTooltip(Tooltip.create(resetLabel));
+        this.settingControls.add(new SettingControl(setting, widget, resetButton));
+        SettingsListWidget.Row row = new SettingsListWidget.Row(setting.text().label(), widget)
+                .action(resetButton)
+                .tooltip(() -> Component.empty()
+                        .append(setting.text().description())
+                        .append("\n")
+                        .append(Component.translatable("server_waypoint.config.default", setting.defaultText())));
+        if (unit != null) {
+            row.suffix(unit);
         }
+        return row;
+    }
 
-        private static int getRowHeight(List<ConfigRow> rows) {
-            return rows.stream().mapToInt(ConfigRow::getHeight).max().orElse(0) + ROW_GAP;
-        }
-
-        @Override
-        protected @NotNull List<ConfigRow> getChildren(ConfigRow value) {
-            return List.of();
-        }
-
-        @Override
-        protected boolean isExpanded(ConfigRow value) {
+    /** Adds the rows of one map mod and reports whether it's installed. */
+    private boolean addMapModRows(List<SettingsListWidget.Entry> entries, UploadTarget target) {
+        Optional<MapModIntegration> integration = MapModIntegrations.find(target);
+        boolean installed = integration.map(MapModIntegration::isInstalled).orElse(false);
+        Component name = Component.translatable(ClientConfigSettings.mapModNameKey(target));
+        ClientConfigSync.MapModRowState state = ClientConfigSync.resolveMapModRowState(integration.isPresent(), installed);
+        if (state == ClientConfigSync.MapModRowState.HIDDEN) {
             return false;
         }
-
-        @Override
-        protected void setExpanded(ConfigRow value, boolean expanded) {
+        if (state == ClientConfigSync.MapModRowState.NOT_INSTALLED) {
+            ScalableText notInstalled = new ScalableText(0, 0,
+                    Component.translatable("server_waypoint.config.map_mod.not_installed"), TEXT_MUTED, this.font);
+            entries.add(new SettingsListWidget.Row(name, notInstalled)
+                    .labelColor(TEXT_MUTED)
+                    .tooltip(() -> Component.translatable("server_waypoint.config.map_mod.not_installed.tooltip", name)));
+            return false;
         }
+        entries.add(this.createSettingRow(ClientConfigSettings.autoSync(target)));
+        MapModControls controls = this.createMapModControls(target, name, integration.orElseThrow());
+        entries.add(new SettingsListWidget.Row(
+                Component.translatable("server_waypoint.config.map_mod.sync_now", name), controls.syncButton())
+                .tooltip(() -> this.syncTooltip(controls)));
+        return true;
+    }
 
-        @Override
-        protected void renderEmpty(
-                GuiGraphicsExtractor context,
-                int mouseX,
-                int mouseY,
-                float deltaTicks
-        ) {
-        }
+    private MapModControls createMapModControls(UploadTarget target, Component name, MapModIntegration integration) {
+        ConfirmationDialog dialog = new ConfirmationDialog(
+                0,
+                0,
+                Component.translatable("server_waypoint.config.sync.title", name),
+                this.dialogText(List.of(
+                        new DialogLine(Component.translatable("server_waypoint.config.sync.body", name), TEXT_PRIMARY),
+                        new DialogLine(Component.translatable("server_waypoint.config.sync.stays"), SUCCESS),
+                        new DialogLine(Component.translatable("server_waypoint.config.sync.stays.detail"), TEXT_PRIMARY),
+                        new DialogLine(Component.translatable("server_waypoint.config.sync.lost"), DANGER),
+                        new DialogLine(Component.translatable("server_waypoint.config.sync.lost.detail"), TEXT_PRIMARY)
+                )),
+                Component.translatable("server_waypoint.config.confirm_sync"),
+                () -> this.confirmSync(target),
+                this::closeDialog,
+                this.font
+        );
+        TranslucentButton syncButton = this.textButton(
+                Component.translatable("server_waypoint.config.map_mod.sync_button"), () -> this.openSyncDialog(target));
+        MapModControls controls = new MapModControls(target, name, integration, syncButton, dialog);
+        this.mapModControls.add(controls);
+        return controls;
+    }
 
-        @Override
-        protected void renderEntry(
-                GuiGraphicsExtractor context,
-                TreeEntry<ConfigRow> entry,
-                boolean hovered,
-                int rowY,
-                int contentWidth,
-                int mouseX,
-                int mouseY,
-                float deltaTicks
-        ) {
-            ConfigRow row = entry.value();
-            this.positionRow(entry);
-            row.visitWidgets(widget -> widget.visible = true);
-            push(context);
-            translate(context, -this.getX(), -this.getY() + (float)this.getScrollY());
-            row.
-            //$ render_method_swap
-            extractRenderState
-                    (context, mouseX, mouseY, deltaTicks);
-            pop(context);
-            this.positionRow(entry);
-        }
-
-        @Override
-        protected void onScrollChanged(double scrollY) {
-            this.positionRows();
-        }
-
-        private void positionRows() {
-            for (int i = 0; i < this.visibleEntryCount(); i++) {
-                this.positionRow(this.getVisibleEntry(i));
+    private WidgetStack dialogText(List<DialogLine> lines) {
+        WidgetStack stack = new WidgetStack(0, 0, DIALOG_LINE_GAP, true, false);
+        for (int i = 0; i < lines.size(); i++) {
+            DialogLine line = lines.get(i);
+            ScalableText text = new ScalableText(0, 0, line.text(), 1.0F, line.color(), DIALOG_TEXT_WIDTH, this.font);
+            if (i == 0) {
+                stack.addChild(text, 0);
+            } else {
+                stack.addChild(text);
             }
         }
+        return stack;
+    }
 
-        private void positionRow(TreeEntry<ConfigRow> entry) {
-            int rowY = this.getY() + entry.row() * this.getRowHeight() - (int)this.getScrollY();
-            ConfigRow row = entry.value();
-            row.setPosition(this.getX(), rowY);
-            boolean fullyVisible = rowY >= this.getY()
-                    && rowY + this.getRowHeight() <= this.getY() + this.getHeight();
-            row.visitWidgets(widget -> widget.visible = fullyVisible);
+    private TranslucentButton textButton(Component label, ButtonClickCallback callback) {
+        int width = Math.max(MIN_BUTTON_WIDTH, this.font.width(label) + BUTTON_TEXT_PADDING);
+        return new TranslucentButton(0, 0, width, BUTTON_HEIGHT, label, callback);
+    }
+
+    private void onIntChanged(ClientConfigSettings.IntSetting setting, int value) {
+        if (this.updatingControls) {
+            return;
         }
+        setting.set(this.config, value);
+        this.refreshControlStates();
+    }
 
-        @Override
-        protected void updateWidgetNarration(NarrationElementOutput output) {
+    private void onBooleanChanged(ClientConfigSettings.BooleanSetting setting, boolean value) {
+        if (this.updatingControls) {
+            return;
+        }
+        setting.set(this.config, value);
+        this.refreshControlStates();
+    }
+
+    private void resetSetting(ClientConfigSettings.Setting setting, AbstractWidget widget) {
+        setting.reset(this.config);
+        this.syncControlsFromConfig();
+        this.refreshControlStates();
+        this.requestFocus(widget);
+    }
+
+    // A method reference rather than a lambda: javac rejects a lambda in the constructor that reads
+    // final fields the constructor hasn't assigned yet.
+    private void openResetAllDialog() {
+        this.openDialog(this.resetAllDialog, this.resetAllButton);
+    }
+
+    private void confirmResetAll() {
+        ClientConfigSettings.resetAll(this.config, this.shownSettings);
+        this.syncControlsFromConfig();
+        this.showStatus(Component.translatable("server_waypoint.config.reset_all.done"), SUCCESS);
+        this.closeDialog();
+    }
+
+    private void openSyncDialog(UploadTarget target) {
+        MapModControls controls = this.mapModControls(target);
+        this.openDialog(controls.dialog(), controls.syncButton());
+    }
+
+    /** Checks the blocker again, because the connection may have changed while the dialog was open. */
+    private void confirmSync(UploadTarget target) {
+        MapModControls controls = this.mapModControls(target);
+        ClientConfigSync.SyncBlocker blocker = this.syncBlocker(controls);
+        if (blocker != null) {
+            this.showStatus(this.blockerMessage(blocker, controls.name()), DANGER);
+        } else {
+            try {
+                controls.integration().syncAll(WaypointClientMod.getInstance());
+                this.showStatus(Component.translatable("server_waypoint.config.sync.done", controls.name()), SUCCESS);
+            } catch (RuntimeException exception) {
+                WaypointClientMod.LOGGER.error("Failed to sync waypoints to {}", controls.target(), exception);
+                this.showStatus(Component.translatable("server_waypoint.config.sync.failed", controls.name()), DANGER);
+            }
+        }
+        this.closeDialog();
+    }
+
+    private void openThemeConfigScreen() {
+        MinecraftClientHelper.setScreen(this.minecraft, new WidgetThemeConfigScreen(this));
+    }
+
+    /** Sets every control's {@code active} flag from the dialog, the values and sync availability. */
+    private void refreshControlStates() {
+        boolean modal = this.openDialog != null;
+        this.settingsList.active = !modal;
+        for (SettingControl control : this.settingControls) {
+            control.widget().active = !modal;
+            control.resetButton().active = !modal && !control.setting().isDefault(this.config);
+        }
+        for (MapModControls controls : this.mapModControls) {
+            controls.syncButton().active = !modal && this.syncBlocker(controls) == null;
+        }
+        this.themeButton.active = !modal;
+        this.resetAllButton.active = !modal && !ClientConfigSettings.allDefault(this.config, this.shownSettings);
+        this.doneButton.active = !modal;
+        for (ConfirmationDialog dialog : this.dialogs()) {
+            boolean open = dialog == this.openDialog;
+            dialog.visible = open;
+            dialog.visitWidgets(button -> button.active = open);
         }
     }
 
-    private static final class ConfigRow implements LayoutElement, Renderable {
-        private static final int CONTROL_GAP = 8;
-
-        private final WidgetPack layout;
-        private final ScalableText label;
-        private final AbstractWidget control;
-        private final int minimumWidth;
-
-        private ConfigRow(ScalableText label, AbstractWidget control) {
-            this.label = label;
-            this.control = control;
-            this.minimumWidth = getVisualWidth(label) + CONTROL_GAP + getVisualWidth(control);
-            int height = Math.max(getVisualHeight(label), getVisualHeight(control));
-            this.layout = new WidgetPack(0, 0, this.minimumWidth, height, Orientation.HORIZONTAL);
-            this.layout.addChild(label, Direction.FORWARD);
-            this.layout.addChild(control, Direction.REVERSE);
+    private void syncControlsFromConfig() {
+        this.updatingControls = true;
+        try {
+            for (SettingControl control : this.settingControls) {
+                control.readFrom(this.config);
+            }
+        } finally {
+            this.updatingControls = false;
         }
+    }
 
-        private int getMinimumWidth() {
-            return this.minimumWidth;
-        }
+    private @Nullable ClientConfigSync.SyncBlocker syncBlocker(MapModControls controls) {
+        boolean inWorld = this.minecraft != null && this.minecraft.level != null;
+        return ClientConfigSync.resolveSyncBlocker(
+                inWorld,
+                WaypointManagerScreen.resolveViewState(WaypointServerMod.runsWithClient(), WaypointClientMod.getNetworkState()),
+                controls.integration().isReady()
+        );
+    }
 
-        private void setWidth(int width) {
-            this.layout.setWidth(Math.max(this.minimumWidth, width));
-        }
+    private Component blockerMessage(ClientConfigSync.SyncBlocker blocker, Component name) {
+        return blocker.namesMapMod()
+                ? Component.translatable(blocker.messageKey(), name)
+                : Component.translatable(blocker.messageKey());
+    }
 
-        @Override
-        public void setX(int x) {
-            this.layout.setX(x);
+    private Component syncTooltip(MapModControls controls) {
+        MutableComponent tooltip = Component.translatable("server_waypoint.config.sync.body", controls.name());
+        ClientConfigSync.SyncBlocker blocker = this.syncBlocker(controls);
+        if (blocker != null) {
+            tooltip.append("\n").append(this.blockerMessage(blocker, controls.name()));
         }
+        return tooltip;
+    }
 
-        @Override
-        public void setY(int y) {
-            this.layout.setY(y);
-        }
+    private void showStatus(Component message, WidgetThemeVariable color) {
+        this.statusText.setColor(color);
+        this.statusText.setText(message);
+        // A wrapped status can change the footer's height, so the layout runs again.
+        this.layoutContent();
+    }
 
-        @Override
-        public int getX() {
-            return this.layout.getX();
-        }
+    private void openDialog(ConfirmationDialog dialog, AbstractWidget opener) {
+        this.openDialog = dialog;
+        this.dialogOpener = opener;
+        this.refreshControlStates();
+        this.requestFocus(dialog.getCancelButton());
+    }
 
-        @Override
-        public int getY() {
-            return this.layout.getY();
-        }
+    private void closeDialog() {
+        this.openDialog = null;
+        this.refreshControlStates();
+        AbstractWidget opener = this.dialogOpener;
+        this.dialogOpener = null;
+        this.requestFocus(opener != null && opener.active ? opener : this.doneButton);
+    }
 
-        @Override
-        public int getWidth() {
-            return this.layout.getWidth();
+    private List<ConfirmationDialog> dialogs() {
+        List<ConfirmationDialog> dialogs = new ArrayList<>();
+        dialogs.add(this.resetAllDialog);
+        for (MapModControls controls : this.mapModControls) {
+            dialogs.add(controls.dialog());
         }
+        return dialogs;
+    }
 
-        @Override
-        public int getHeight() {
-            return this.layout.getHeight();
+    private MapModControls mapModControls(UploadTarget target) {
+        for (MapModControls controls : this.mapModControls) {
+            if (controls.target() == target) {
+                return controls;
+            }
         }
+        throw new IllegalStateException("No controls for map mod " + target);
+    }
 
-        @Override
-        public void setPosition(int x, int y) {
-            this.layout.setPosition(x, y);
-        }
+    /**
+     * Focuses {@code target} now, and again after the current click: vanilla focuses the clicked
+     * widget after its callback runs, which would undo the change. Enter and Space don't move focus
+     * after a button's callback, so {@link #keyPressed} only drops the pending request.
+     */
+    private void requestFocus(GuiEventListener target) {
+        this.setFocused(target);
+        this.pendingFocus = target;
+    }
 
-        @Override
-        public void visitWidgets(Consumer<AbstractWidget> consumer) {
-            this.layout.visitWidgets(consumer);
+    private void applyPendingFocus() {
+        if (this.pendingFocus != null) {
+            this.setFocused(this.pendingFocus);
+            this.pendingFocus = null;
         }
+    }
 
-        @Override
-        public void
-        //$ render_method_swap
-        extractRenderState
-                (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-            this.label.
-            //$ render_method_swap
-            extractRenderState
-                    (context, mouseX, mouseY, deltaTicks);
-            this.control.
-            //$ render_method_swap
-            extractRenderState
-                    (context, mouseX, mouseY, deltaTicks);
+    private record SettingControl(ClientConfigSettings.Setting setting, AbstractWidget widget, IconButton resetButton) {
+        void readFrom(ClientConfig config) {
+            if (this.setting instanceof ClientConfigSettings.IntSetting intSetting
+                    && this.widget instanceof IntegerSlider slider) {
+                slider.setValue(intSetting.get(config));
+            } else if (this.setting instanceof ClientConfigSettings.BooleanSetting booleanSetting
+                    && this.widget instanceof OnOffToggleButton toggle) {
+                toggle.setState(booleanSetting.get(config));
+            }
         }
+    }
 
-        private static int getVisualWidth(LayoutElement element) {
-            return element instanceof Padding padding ? padding.getVisualWidth() : element.getWidth();
-        }
+    private record MapModControls(UploadTarget target, Component name, MapModIntegration integration,
+                                  TranslucentButton syncButton, ConfirmationDialog dialog) {
+    }
 
-        private static int getVisualHeight(LayoutElement element) {
-            return element instanceof Padding padding ? padding.getVisualHeight() : element.getHeight();
-        }
+    private record DialogLine(Component text, WidgetThemeVariable color) {
     }
 }
