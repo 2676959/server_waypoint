@@ -322,6 +322,10 @@ Use `DrawContextHelper` for drawing operations whose Minecraft API changes acros
 To draw widgets with no hover state or tooltip, as under a dialog or for a clipped settings row,
 pass `DrawContextHelper.NO_MOUSE` as both mouse coordinates.
 
+`DrawContextHelper.texture` has an overload with a trailing ARGB color that multiplies every pixel
+of the texture, as `IconButton` does to tint an inactive icon. It uses the colored blit on 1.21.2
+and later, and a shader color around the blit before that.
+
 Use the other render classes as follows:
 
 - `WidgetThemeVariable`, `WidgetTheme`, `WidgetThemes`, and `WidgetThemeManager` define and expose the runtime color theme.
@@ -504,6 +508,9 @@ translations still fit. Dialog and footer buttons use it.
 
 `IconButton` keeps its full configured hitbox while drawing its texture with a 2-pixel inner inset.
 Screen-local icon controls should use the same inset so adjacent icon actions remain visually consistent.
+An inactive `IconButton` multiplies its icon by the theme's `TEXT_DISABLED`, the color a disabled
+button's label takes, so an unavailable action, such as resetting a setting that's already at its
+default, doesn't look pressable. Draw icons in a light gray or white so the tint shows.
 
 The main base classes have distinct roles:
 

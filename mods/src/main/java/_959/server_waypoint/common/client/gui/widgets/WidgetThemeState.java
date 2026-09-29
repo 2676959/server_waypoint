@@ -33,6 +33,11 @@ final class WidgetThemeState {
         return getColor(active ? TEXT_ON_ACCENT : TEXT_DISABLED);
     }
 
+    /** What an icon's pixels are multiplied by: white keeps an active icon's colors. */
+    static int iconTint(boolean active) {
+        return active ? 0xFFFFFFFF : getColor(TEXT_DISABLED);
+    }
+
     static int disabledOverlay() {
         return (getColor(CONTROL_DISABLED_BACKGROUND) & 0x00FFFFFF) | 0x80000000;
     }

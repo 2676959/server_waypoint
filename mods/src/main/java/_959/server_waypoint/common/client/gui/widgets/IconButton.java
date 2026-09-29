@@ -58,6 +58,7 @@ public class IconButton extends ShiftableButtonWidget implements Expandable {
         int iconWidth = Math.max(0, width - ICON_PADDING * 2);
         int iconHeight = Math.max(0, height - ICON_PADDING * 2);
         if (iconWidth > 0 && iconHeight > 0) {
+            // An inactive icon takes the disabled text color, so it reads as unavailable.
             texture(
                     context,
                     icon,
@@ -68,7 +69,8 @@ public class IconButton extends ShiftableButtonWidget implements Expandable {
                     iconWidth,
                     iconHeight,
                     iconWidth,
-                    iconHeight
+                    iconHeight,
+                    WidgetThemeState.iconTint(this.active)
             );
         }
     }

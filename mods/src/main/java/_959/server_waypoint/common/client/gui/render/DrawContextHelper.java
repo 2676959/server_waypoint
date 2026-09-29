@@ -20,6 +20,8 @@ import net.minecraft.client.renderer.RenderPipelines;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 //?}
+//? if <= 1.21
+/*import com.mojang.blaze3d.systems.RenderSystem;*/
 //? if < 26.2
 import net.minecraft.client.renderer.MultiBufferSource;
 //? if < 1.21.6
@@ -48,6 +50,29 @@ public final class DrawContextHelper {
         /*context.blit(RenderType::guiTextured, texture, x, y, u, v, width, height, textureWidth, textureHeight);
         *///?} else {
         /*context.blit(texture, x, y, u, v, width, height, textureWidth, textureHeight);
+        *///?}
+    }
+
+    /** Draws {@code texture} with every pixel multiplied by the ARGB {@code color}, such as a theme color. */
+    public static void texture(GuiGraphicsExtractor context,
+    //$ resource_location_type_swap
+    Identifier
+    texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color) {
+        //? if >= 1.21.6 {
+        context.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, textureWidth, textureHeight, color);
+        //?} elif > 1.21 {
+        /*context.blit(RenderType::guiTextured, texture, x, y, u, v, width, height, textureWidth, textureHeight, color);
+        *///?} else {
+        /*context.flush();
+        float[] previous = RenderSystem.getShaderColor().clone();
+        RenderSystem.setShaderColor(((color >> 16) & 0xFF) / 255.0F, ((color >> 8) & 0xFF) / 255.0F,
+                (color & 0xFF) / 255.0F, ((color >>> 24) & 0xFF) / 255.0F);
+        try {
+            context.blit(texture, x, y, u, v, width, height, textureWidth, textureHeight);
+            context.flush();
+        } finally {
+            RenderSystem.setShaderColor(previous[0], previous[1], previous[2], previous[3]);
+        }
         *///?}
     }
 

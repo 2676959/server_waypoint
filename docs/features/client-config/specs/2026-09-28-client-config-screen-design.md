@@ -297,7 +297,10 @@ Label keys are relative to `server_waypoint.`.
 
 - **Row reset icon:** a 13×13 `IconButton` with a new 9×9 texture, `textures/gui/reset.png`,
   exposed as `WidgetTextures.RESET_ICON`.
-  - It's active only when the setting differs from its default and no dialog is open.
+  - It's active only when the setting differs from its default and no dialog is open. An inactive
+    one tints its icon with `TEXT_DISABLED`, so the column shows at a glance which settings differ
+    from their defaults. The tint was chosen over a dimming overlay and over hiding the icon after
+    comparing all three built-in themes over dark, sky and white worlds.
   - Clicking it resets the setting and moves focus to the row's control.
   - Its vanilla tooltip reads "Reset to default: 100%", with the setting's formatted default.
 - **"Reset to defaults…":** active when any shown setting differs from its default and no dialog is
