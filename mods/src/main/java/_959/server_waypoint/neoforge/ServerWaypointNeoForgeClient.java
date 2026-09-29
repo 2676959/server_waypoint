@@ -4,6 +4,7 @@
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.command.ClientWaypointCommand;
+import _959.server_waypoint.common.client.gui.screens.ClientConfigScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.handlers.S2CPayloadHandler;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
@@ -11,8 +12,15 @@ import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.gui.screens.Screen;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
+import net.neoforged.fml.ModLoadingContext;
+//? if >= 1.20.5 {
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+//?} else {
+/^import net.neoforged.neoforge.client.ConfigScreenHandler;
+^///?}
 //? if >= 1.20.5 {
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 //?} else {
@@ -47,6 +55,27 @@ public class ServerWaypointNeoForgeClient {
 //? if <= 1.20.4 {
         /^NeoForge.EVENT_BUS.addListener(ServerWaypointNeoForgeClient::onRenderGui);
 ^///?}
+        registerConfigScreen();
+    }
+
+    /^* The Mods screen's config button opens the client settings. ^/
+    private static void registerConfigScreen() {
+//? if >= 1.21 {
+        ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class,
+                () -> (container, parent) -> createConfigScreen(parent));
+//?} elif >= 1.20.5 {
+        /^ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class,
+                () -> (minecraft, parent) -> createConfigScreen(parent));
+^///?} else {
+        /^ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
+                () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> createConfigScreen(parent)));
+^///?}
+    }
+
+    /^* NeoForge creates the client mod on the first client tick; make sure it exists before the screen. ^/
+    private static Screen createConfigScreen(Screen parent) {
+        ensureClientStarted();
+        return new ClientConfigScreen(parent);
     }
 
     private static void registerKeyBindings(RegisterKeyMappingsEvent event) {
