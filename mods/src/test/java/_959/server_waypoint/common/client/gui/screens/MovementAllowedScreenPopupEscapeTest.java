@@ -38,38 +38,25 @@ class MovementAllowedScreenPopupEscapeTest {
     }
 
     @Test
-    void escapeLeavesAnIntegerSliderNumberFieldBeforeClosingTheScreen() throws ReflectiveOperationException {
+    void escapeLeavesAnIntegerSliderNumberFieldBeforeClosingTheScreen() {
         FocusOnlyField field = allocate(FocusOnlyField.class);
-        IntegerSlider slider = integerSlider(field, field);
+        IntegerSlider slider = new TestIntegerSlider(field);
         assertEscapeLeavesTextEntry(slider);
         assertFalse(field.isFocused());
     }
 
     @Test
-    void escapeClosesTheScreenWhenAnIntegerSliderTrackHasFocus() throws ReflectiveOperationException {
-        FocusOnlyListener track = new FocusOnlyListener();
-        IntegerSlider slider = integerSlider(allocate(FocusOnlyField.class), track);
+    void escapeClosesTheScreenWhenAnIntegerSliderTrackHasFocus() {
+        IntegerSlider slider = new TestIntegerSlider(allocate(FocusOnlyField.class));
         TestScreen screen = TestScreen.create();
         screen.setFocused(slider);
+        // What a click on the track does.
+        FocusOnlyListener track = new FocusOnlyListener();
+        slider.updateFocused(track);
         assertTrue(track.isFocused());
 
         assertTrue(screen.keyPressed(InputConstants.KEY_ESCAPE, 0, 0));
         assertTrue(screen.closed);
-    }
-
-    /** An {@code IntegerSlider} whose number field and selected part are test doubles. */
-    private static IntegerSlider integerSlider(IntegerField field, GuiEventListener selectedPart)
-            throws ReflectiveOperationException {
-        IntegerSlider slider = allocate(IntegerSlider.class);
-        setField(slider, "integerField", field);
-        setField(slider, "focused", selectedPart);
-        return slider;
-    }
-
-    private static void setField(Object target, String name, Object value) throws ReflectiveOperationException {
-        var field = target.getClass().getDeclaredField(name);
-        field.setAccessible(true);
-        field.set(target, value);
     }
 
     private static void assertEscapeLeavesTextEntry(GuiEventListener input) {
@@ -192,6 +179,14 @@ class MovementAllowedScreenPopupEscapeTest {
 
         @Override
         protected void renderMenuItem(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        }
+    }
+
+    /** A slider around a number-field double, through {@code IntegerSlider}'s protected constructor. */
+    private static final class TestIntegerSlider extends IntegerSlider {
+        private TestIntegerSlider(IntegerField field) {
+            super(0, 0, 100, field, value -> {
+            });
         }
     }
 

@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class IntegerSliderTest {
     @Test
-    void aVisibleSliderPassesInputToItsNumberField() throws ReflectiveOperationException {
+    void aVisibleSliderPassesInputToItsNumberField() {
         InputRecordingField field = allocate(InputRecordingField.class);
         IntegerSlider slider = slider(field, true);
 
@@ -25,7 +25,7 @@ class IntegerSliderTest {
     }
 
     @Test
-    void aHiddenSliderIgnoresClicksKeysAndTyping() throws ReflectiveOperationException {
+    void aHiddenSliderIgnoresClicksKeysAndTyping() {
         InputRecordingField field = allocate(InputRecordingField.class);
         IntegerSlider slider = slider(field, false);
 
@@ -35,23 +35,16 @@ class IntegerSliderTest {
         assertEquals(0, field.inputs);
     }
 
-    /** An active slider whose number field is {@code field}, which is also its selected part. */
-    private static IntegerSlider slider(InputRecordingField field, boolean visible) throws ReflectiveOperationException {
-        IntegerSlider slider = allocate(IntegerSlider.class);
-        setField(slider, "integerField", field);
-        setField(slider, "focused", field);
+    /** An active slider whose number field is {@code field}, which a new slider selects. */
+    private static IntegerSlider slider(InputRecordingField field, boolean visible) {
+        IntegerSlider slider = new IntegerSlider(0, 0, 100, field, value -> {
+        });
         slider.active = true;
         slider.visible = visible;
         return slider;
     }
 
-    private static void setField(Object target, String name, Object value) throws ReflectiveOperationException {
-        var field = target.getClass().getDeclaredField(name);
-        field.setAccessible(true);
-        field.set(target, value);
-    }
-
-    /** Skips constructors that need the Minecraft client; the tests only route input. */
+    /** Skips the number field's constructor, which needs the Minecraft client; the tests only route input. */
     private static <T> T allocate(Class<T> type) {
         try {
             Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");

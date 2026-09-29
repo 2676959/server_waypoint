@@ -1121,6 +1121,10 @@ Good test targets include:
   `MovementAllowedScreenButtonKeyTest` shows a screen double that overrides
   `isKeyboardNavigating()` and `testMovementKeysDown(int)` instead of reading the game's input
   state and key mappings.
+- Composite widgets built around a test double. `IntegerSlider`'s protected constructor takes the
+  `IntegerField` to use, so `IntegerSliderTest` and `MovementAllowedScreenPopupEscapeTest` pass a
+  number-field double instead of setting private fields by name through reflection, which a rename
+  would break only at run time.
 - Pure label or presentation calculations.
 - Theme completeness, runtime updates, JSON round trips, invalid input, and file persistence.
 - Theme-editor preview, reset, save, cancel, and idempotent rollback transitions.
