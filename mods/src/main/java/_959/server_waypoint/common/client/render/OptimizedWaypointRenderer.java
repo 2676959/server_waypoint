@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.render;
 
+import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.client.gui.render.WaypointIconRenderer;
 import _959.server_waypoint.common.util.MathHelper;
@@ -529,7 +530,7 @@ public final class OptimizedWaypointRenderer {
         //? if < 1.21.9
         /*loading |= screen instanceof ReceivingLevelScreen;*/
         if (!WaypointRenderVisibility.isVisible(!DISABLED, mc.level != null && mc.player != null,
-                loading, hideGui)) {
+                loading, hideGui, WaypointClientMod.getClientConfig().isRenderWaypointsUnderF1())) {
             HOVERED_ID = -1;
             IS_HOVERED = false;
             return;

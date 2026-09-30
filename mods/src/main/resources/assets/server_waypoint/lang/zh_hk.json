@@ -39,6 +39,8 @@
   "server_waypoint.manager.loading": "正在同步路徑點…",
   "server_waypoint.config.screen.title": "伺服器路徑點（%1$s）客戶端設定",
   "server_waypoint.config.enable_waypoint_render": "喺世界中顯示路徑點",
+  "server_waypoint.config.render_waypoints_under_f1": "在 F1 模式下顯示路徑點",
+  "server_waypoint.config.render_waypoints_under_f1.tooltip": "按 F1 隱藏介面時仍顯示世界中的路徑點。載入畫面中一律隱藏路徑點。",
   "server_waypoint.config.waypoint_scale_factor": "縮放",
   "server_waypoint.config.waypoint_vertical_offset": "垂直偏移",
   "server_waypoint.config.local_waypoint_view_distance": "區域路徑點範圍",

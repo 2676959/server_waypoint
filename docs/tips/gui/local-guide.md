@@ -692,6 +692,11 @@ Composite widgets must forward all relevant behavior to their children: position
 
 ### Settings lists
 
+`ClientConfigSettings.RENDERING` declares the client screen's waypoint rendering rows. Its
+`RENDER_UNDER_F1` boolean defaults to off and uses the existing toggle and reset controls.
+The world renderer reads `ClientConfig.isRenderWaypointsUnderF1()` each frame, so both a toggle
+and a reset apply immediately; the option never bypasses loading-screen suppression.
+
 Use `SettingsListWidget` for a scrollable panel of settings. It holds `SettingsListWidget.Header`
 entries (a title followed by a line) and `SettingsListWidget.Row` entries: a label, a control, an
 optional muted unit (`suffix`), an optional last-column widget (`action`, such as a reset button)

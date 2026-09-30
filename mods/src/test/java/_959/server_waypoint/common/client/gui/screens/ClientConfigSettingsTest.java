@@ -32,6 +32,22 @@ class ClientConfigSettingsTest {
     }
 
     @Test
+    void f1RenderingIsExposedAndResetsToHidden() {
+        ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
+        ClientConfigSettings.BooleanSetting setting = ClientConfigSettings.RENDER_UNDER_F1;
+        assertTrue(ClientConfigSettings.RENDERING.contains(setting));
+        setting.set(config, true);
+        assertTrue(config.isRenderWaypointsUnderF1());
+        assertFalse(ClientConfigSettings.allDefault(config, ClientConfigSettings.RENDERING));
+
+        setting.reset(config);
+
+        assertFalse(config.isRenderWaypointsUnderF1());
+        assertTrue(ClientConfigSettings.allDefault(config, ClientConfigSettings.RENDERING));
+        assertTranslation(setting.defaultText(), "server_waypoint.config.off");
+    }
+
+    @Test
     void everyIntegerDefaultIsInsideItsRange() {
         for (ClientConfigSettings.Setting setting : ClientConfigSettings.RENDERING) {
             if (setting instanceof ClientConfigSettings.IntSetting intSetting) {

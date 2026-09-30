@@ -72,6 +72,8 @@
   "server_waypoint.manager.loading": "正在同步路径点…",
   "server_waypoint.config.screen.title": "服务器路径点（%1$s）客户端设置",
   "server_waypoint.config.enable_waypoint_render": "在世界中显示路径点",
+  "server_waypoint.config.render_waypoints_under_f1": "在 F1 模式下渲染路径点",
+  "server_waypoint.config.render_waypoints_under_f1.tooltip": "按 F1 隐藏界面时仍显示世界中的路径点。加载画面中始终隐藏路径点。",
   "server_waypoint.config.waypoint_scale_factor": "缩放",
   "server_waypoint.config.waypoint_vertical_offset": "垂直偏移",
   "server_waypoint.config.local_waypoint_view_distance": "局部路径点范围",

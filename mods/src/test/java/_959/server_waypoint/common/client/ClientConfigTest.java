@@ -15,6 +15,19 @@ class ClientConfigTest {
             .create();
 
     @Test
+    void f1RenderingDefaultsOffAndPersistsAnExplicitOptIn() {
+        ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
+        assertFalse(config.isRenderWaypointsUnderF1());
+
+        config.setRenderWaypointsUnderF1(true);
+        ClientConfig restored = GSON.fromJson(GSON.toJson(config), ClientConfig.class);
+        assertTrue(restored.isRenderWaypointsUnderF1());
+
+        restored.setRenderWaypointsUnderF1(false);
+        assertFalse(GSON.fromJson(GSON.toJson(restored), ClientConfig.class).isRenderWaypointsUnderF1());
+    }
+
+    @Test
     void missingWaypointManagerStateUsesExistingDefaults() {
         ClientConfig config = GSON.fromJson("{}", ClientConfig.class);
 

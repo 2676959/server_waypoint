@@ -6,6 +6,7 @@ import com.google.gson.annotations.Expose;
 
 public class ClientConfig {
     public static final boolean DEFAULT_ENABLE_WAYPOINT_RENDER = true;
+    public static final boolean DEFAULT_RENDER_WAYPOINTS_UNDER_F1 = false;
     public static final int DEFAULT_WAYPOINT_SCALING_FACTOR = 100;
     public static final int DEFAULT_WAYPOINT_VERTICAL_OFFSET = 0;
     public static final int DEFAULT_WAYPOINT_BACKGROUND_ALPHA = 128;
@@ -14,6 +15,7 @@ public class ClientConfig {
     public static final boolean DEFAULT_AUTO_SYNC_TO_VOXELMAP = true;
 
     @Expose private boolean enableWaypointRender = DEFAULT_ENABLE_WAYPOINT_RENDER;
+    @Expose private boolean renderWaypointsUnderF1 = DEFAULT_RENDER_WAYPOINTS_UNDER_F1;
     @Expose private int waypointScalingFactor = DEFAULT_WAYPOINT_SCALING_FACTOR; // in percent
     @Expose private int waypointVerticalOffset = DEFAULT_WAYPOINT_VERTICAL_OFFSET; // [-100, 100] in percent
     @Expose private int waypointBackgroundAlpha = DEFAULT_WAYPOINT_BACKGROUND_ALPHA; // [0, 255]
@@ -36,6 +38,14 @@ public class ClientConfig {
     public void setEnableWaypointRender(boolean enableWaypointRender) {
         this.enableWaypointRender = enableWaypointRender;
         OptimizedWaypointRenderer.enableRendering(enableWaypointRender);
+    }
+
+    public boolean isRenderWaypointsUnderF1() {
+        return renderWaypointsUnderF1;
+    }
+
+    public void setRenderWaypointsUnderF1(boolean renderWaypointsUnderF1) {
+        this.renderWaypointsUnderF1 = renderWaypointsUnderF1;
     }
 
     public boolean isAutoSyncToXaerosMinimap() {

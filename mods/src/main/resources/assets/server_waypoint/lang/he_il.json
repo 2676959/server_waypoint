@@ -39,6 +39,8 @@
   "server_waypoint.manager.loading": "מסנכרן נקודות ציון…",
   "server_waypoint.config.screen.title": "הגדרות הלקוח של Server Waypoint %1$s",
   "server_waypoint.config.enable_waypoint_render": "הצגת נקודות ציון בעולם",
+  "server_waypoint.config.render_waypoints_under_f1": "הצגת נקודות ציון במצב F1",
+  "server_waypoint.config.render_waypoints_under_f1.tooltip": "הצגת נקודות ציון בעולם כאשר F1 מסתיר את הממשק. נקודות הציון יישארו מוסתרות במסכי טעינה.",
   "server_waypoint.config.waypoint_scale_factor": "קנה מידה",
   "server_waypoint.config.waypoint_vertical_offset": "היסט אנכי",
   "server_waypoint.config.local_waypoint_view_distance": "טווח נקודות ציון מקומיות",

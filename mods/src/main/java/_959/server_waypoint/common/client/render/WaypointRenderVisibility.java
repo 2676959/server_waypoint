@@ -5,7 +5,8 @@ final class WaypointRenderVisibility {
     private WaypointRenderVisibility() {
     }
 
-    static boolean isVisible(boolean enabled, boolean worldPresent, boolean loading, boolean hideGui) {
-        return enabled && worldPresent && !loading && !hideGui;
+    static boolean isVisible(boolean enabled, boolean worldPresent, boolean loading, boolean hideGui,
+                             boolean renderUnderF1) {
+        return enabled && worldPresent && !loading && (!hideGui || renderUnderF1);
     }
 }

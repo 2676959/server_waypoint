@@ -34,6 +34,12 @@ final class ClientConfigSettings {
             ClientConfig::getWaypointScalingFactor,
             ClientConfig::setWaypointScalingFactor
     );
+    static final BooleanSetting RENDER_UNDER_F1 = new BooleanSetting(
+            SettingText.of("render_waypoints_under_f1"),
+            ClientConfig.DEFAULT_RENDER_WAYPOINTS_UNDER_F1,
+            ClientConfig::isRenderWaypointsUnderF1,
+            ClientConfig::setRenderWaypointsUnderF1
+    );
     static final IntSetting VERTICAL_OFFSET = new IntSetting(
             SettingText.of("waypoint_vertical_offset"),
             -100,
@@ -63,7 +69,7 @@ final class ClientConfigSettings {
     );
     /** The Waypoint rendering section, in screen order. */
     static final List<Setting> RENDERING = List.of(
-            SHOW_WAYPOINTS, SCALE, VERTICAL_OFFSET, BACKGROUND_OPACITY, LOCAL_WAYPOINT_RANGE);
+            SHOW_WAYPOINTS, RENDER_UNDER_F1, SCALE, VERTICAL_OFFSET, BACKGROUND_OPACITY, LOCAL_WAYPOINT_RANGE);
     /** The map mods the Map mods section lists, in screen order. */
     static final List<UploadTarget> MAP_MODS = List.of(UploadTarget.XAERO, UploadTarget.VOXELMAP);
 
