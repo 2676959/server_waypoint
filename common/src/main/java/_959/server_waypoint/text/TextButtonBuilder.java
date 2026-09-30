@@ -63,8 +63,8 @@ public class TextButtonBuilder {
         return buildButton(
                 text(symbol),
                 color,
-                TextDecoration.State.TRUE,
-                TextDecoration.State.NOT_SET,
+                TextDecoration.State.FALSE,
+                TextDecoration.State.FALSE,
                 ClickEvent.suggestCommand(command),
                 hoverText
         );
@@ -79,8 +79,8 @@ public class TextButtonBuilder {
         return buildButton(
                 text(label),
                 color,
-                TextDecoration.State.TRUE,
-                TextDecoration.State.NOT_SET,
+                TextDecoration.State.FALSE,
+                TextDecoration.State.FALSE,
                 ClickEvent.runCommand(command),
                 hoverText
         );
@@ -99,8 +99,8 @@ public class TextButtonBuilder {
         return buildButton(
                 text(symbol),
                 NamedTextColor.DARK_GRAY,
-                TextDecoration.State.NOT_SET,
-                TextDecoration.State.NOT_SET,
+                TextDecoration.State.FALSE,
+                TextDecoration.State.FALSE,
                 null,
                 null
         );
@@ -110,7 +110,7 @@ public class TextButtonBuilder {
         return buildButton(
                 text(SHOW_MORE_SYMBOL),
                 NamedTextColor.AQUA,
-                TextDecoration.State.TRUE,
+                TextDecoration.State.FALSE,
                 TextDecoration.State.FALSE,
                 ClickEvent.runCommand(command),
                 translatable("button.details")
@@ -352,8 +352,8 @@ public class TextButtonBuilder {
         return buildButton(
                 text(symbol),
                 NamedTextColor.AQUA,
-                TextDecoration.State.NOT_SET,
-                TextDecoration.State.NOT_SET,
+                TextDecoration.State.FALSE,
+                TextDecoration.State.FALSE,
                 safeClick(command, false),
                 translatable(hoverTranslationKey)
         );

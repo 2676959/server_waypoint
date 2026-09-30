@@ -727,7 +727,7 @@ final class WaypointCommandHelp {
 
     private static Component detailButton(String helpCommand) {
         return text("[?]", NamedTextColor.YELLOW)
-                .decorate(TextDecoration.BOLD)
+                .decoration(TextDecoration.BOLD, false)
                 .clickEvent(ClickEvent.runCommand(helpCommand))
                 .hoverEvent(HoverEvent.showText(translatable("waypoint.help.click_for_details")));
     }
@@ -736,7 +736,7 @@ final class WaypointCommandHelp {
         return newline()
                 .append(newline())
                 .append(text("[←]", NamedTextColor.YELLOW)
-                        .decorate(TextDecoration.BOLD)
+                        .decoration(TextDecoration.BOLD, false)
                         .clickEvent(ClickEvent.runCommand(MAIN_HELP_COMMAND))
                         .hoverEvent(HoverEvent.showText(translatable("waypoint.help.back.hover"))))
                 .appendSpace()

@@ -191,7 +191,7 @@ final class RemoteWaypointCommand<S> {
                 }
                 if (row.list() != null && !row.list().equals(lastList)) {
                     output = output.appendNewline().append(text("    ")).append(detailsButton(row, false)).appendSpace().append(scopeLink(
-                            label(row.listLabel(), row.list()).color(NamedTextColor.WHITE).decorate(TextDecoration.BOLD),
+                            label(row.listLabel(), row.list()).color(NamedTextColor.WHITE),
                             row.server().value(), row.dimension(), row.list(), options,
                             translatable("button.list.waypoint_list", label(row.listLabel(), row.list()))));
                     lastList = row.list();
@@ -334,7 +334,8 @@ final class RemoteWaypointCommand<S> {
                     .netherToOverWorld(waypoint.position()).toShortString(), NamedTextColor.GREEN));
         }
         Component initials = text("[" + waypoint.initials() + "]", TextColor.color(waypoint.rgb()))
-                .decorate(TextDecoration.BOLD);
+                .decoration(TextDecoration.BOLD, false)
+                .decoration(TextDecoration.ITALIC, false);
         String command = remoteTargetCommand("tp", row, true);
         if (canTeleport && row.state() == RemoteCatalogState.AVAILABLE && command.length() <= 256) {
             initials = initials.clickEvent(ClickEvent.runCommand(command))

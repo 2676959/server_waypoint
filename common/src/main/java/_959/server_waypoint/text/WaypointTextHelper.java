@@ -44,12 +44,14 @@ public class WaypointTextHelper {
         Style initialsStyle;
         if (command == null) {
             initialsStyle = Style.style()
-                    .decoration(TextDecoration.BOLD, true)
+                    .decoration(TextDecoration.BOLD, false)
+                    .decoration(TextDecoration.ITALIC, false)
                     .color(TextColor.color(waypoint.rgb()))
                     .build();
         } else {
             initialsStyle = Style.style()
-                    .decoration(TextDecoration.BOLD, true)
+                    .decoration(TextDecoration.BOLD, false)
+                    .decoration(TextDecoration.ITALIC, false)
                     .color(TextColor.color(waypoint.rgb()))
                     .clickEvent(ClickEvent.runCommand(command))
                     .hoverEvent(HoverEvent.showText(commandInfo))
@@ -93,7 +95,7 @@ public class WaypointTextHelper {
             default -> NamedTextColor.YELLOW;
         };
     }
-    
+
     public static Component getDimensionListText(WaypointFileManager fileManager, boolean isPart, boolean withEdit, boolean withRemove, boolean withTp) {
         String dimensionName = fileManager.getDimensionName();
         Component dimensionListText = isPart ?
@@ -105,7 +107,7 @@ public class WaypointTextHelper {
         }
         return dimensionListText;
     }
-    
+
     public static Component getWaypointListText(WaypointList waypointList, String dimensionName, int indentLevel, boolean isPart, boolean withEdit, boolean withRemove, boolean withTp) {
         return getWaypointListText(
                 waypointList,
@@ -157,6 +159,8 @@ public class WaypointTextHelper {
         Component listTitle = parse(waypointList.displayName()).colorIfAbsent(NamedTextColor.WHITE);
         if (listCommand != null) {
             listTitle = listTitle
+                    .decoration(TextDecoration.BOLD, false)
+                    .decoration(TextDecoration.ITALIC, false)
                     .clickEvent(ClickEvent.runCommand(listCommand))
                     .hoverEvent(HoverEvent.showText(translatable(
                             "button.list.waypoint_list",
@@ -172,7 +176,6 @@ public class WaypointTextHelper {
             listHeader = listHeader.appendSpace().append(text("⬅")).appendSpace()
                     .append(dimensionNameWithColor(dimensionName));
         }
-        listHeader = listHeader.decoration(TextDecoration.BOLD, true);
 
         Component listText = text("");
         if (!isPart) {
