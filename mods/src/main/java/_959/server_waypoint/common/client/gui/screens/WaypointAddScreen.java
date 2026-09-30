@@ -1,44 +1,38 @@
-//~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
-import _959.server_waypoint.common.client.gui.layout.WidgetStack;
-import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
-import _959.server_waypoint.common.client.gui.widgets.ScalableText;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
-import _959.server_waypoint.util.WaypointInitials;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
-//? if >=1.21.9 {
-import net.minecraft.client.input.MouseButtonEvent;
-//?}
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 
+import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.common.client.util.ClientDimensionCatalog.getAvailableDimensionNames;
 import static _959.server_waypoint.common.client.util.ClientDimensionCatalog.mergeDimensionNames;
-import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
-import static _959.server_waypoint.util.StringCommandBuilder.addCmd;
 import static _959.server_waypoint.text.FormattedTextHelper.MAX_NAME_LENGTH;
-import static _959.server_waypoint.text.FormattedTextHelper.plainText;
+import static _959.server_waypoint.text.FormattedTextHelper.parseKeywords;
+import static _959.server_waypoint.util.StringCommandBuilder.addCmd;
 
+/**
+ * Adds a waypoint with {@code /wp add}. There is no reply to that command, so after sending it the
+ * form locks and waits for the waypoint to show up in the synced data, then closes.
+ */
 public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
-    private TranslucentTextField listNameField;
-    private ComboBoxWidget dimensionField;
-    private TranslucentButton addButton;
+    private final ComboBoxWidget dimensionField;
+    private final TranslucentTextField listNameField;
+    private final TranslucentButton addButton;
+    private final PendingAdd pendingAdd = new PendingAdd();
 
     public WaypointAddScreen(Screen previousScreen, String dimensionName, String listName) {
         this(previousScreen, dimensionName, listName, null);
@@ -46,14 +40,20 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
 
     public WaypointAddScreen(Screen previousScreen, String dimensionName, String listName, WaypointPos defaultPos) {
         super(previousScreen, Component.translatable("waypoint.add.screen.title"), dimensionName, listName, null);
-        this.listNameField.setValue(listName);
+        List<String> dimensions = mergeDimensionNames(
+                WaypointClientMod.getAllAvailableDimensionNames(),
+                List.of(dimensionName)
+        );
+        this.dimensionField = new ComboBoxWidget(0, 0, 155, Component.translatable("waypoint.form.dimension"), this.font,
+                dimensions, dimensionName, value -> this.onFormEdited());
+        this.dimensionField.setRenderPopupSeparately(true);
+        this.listNameField = new TranslucentTextField(0, 0, 90, Component.translatable("waypoint.form.list"), this.font);
         this.listNameField.setMaxLength(MAX_NAME_LENGTH);
+        this.listNameField.setValue(listName);
+        this.listNameField.setResponder(value -> this.onFormEdited());
+        this.addButton = TranslucentButton.fitted(Component.translatable("waypoint.add.button"), this::submitForm);
         this.configureSuggestions();
-        this.buttonRow.setXOffset(CONTENT_WIDTH);
-        if (defaultPos == null) {
-            defaultPos = getCurrentDefaultPos();
-        }
-        this.setDefaultPos(defaultPos);
+        this.setDefaultPos(defaultPos == null ? this.getCurrentDefaultPos() : defaultPos);
         this.refreshDimensionChoices();
     }
 
@@ -83,125 +83,114 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         this.zEditBox.setValue(Integer.toString(z));
     }
 
-    @Override
-    protected @NotNull WidgetStack createTitleRow() {
-        MutableComponent dimensionLabelText = Component.translatable("waypoint.dimension.info", "");
-        MutableComponent listNameLabelText = Component.translatable("waypoint.list_name.info", "");
-        // title row
-        WidgetStack titleRow = new WidgetStack(0, 0, 10, true, false);
-        ScalableText titleLabel = new ScalableText(
-                0, 0, this.getTitle(), WidgetThemeVariable.TEXT_PRIMARY, font);
-        WidgetStack dimensionRow = new WidgetStack(0, 0, 0);
-        ScalableText dimensionLabel = new ScalableText(
-                0, 0, dimensionLabelText, WidgetThemeVariable.TEXT_PRIMARY, font);
-        List<String> dimensions = mergeDimensionNames(
-                WaypointClientMod.getAllAvailableDimensionNames(),
-                List.of(this.dimensionName)
-        );
-        dimensionField = new ComboBoxWidget(0, 0, 155, dimensionLabelText, font,
-                dimensions, this.dimensionName, value -> {});
-        dimensionField.setRenderPopupSeparately(true);
-        dimensionRow.addChild(dimensionLabel, 0);
-        dimensionRow.addChild(dimensionField);
-        WidgetStack listNameRow = new WidgetStack(0, 0, 0);
-        ScalableText listNameLabel = new ScalableText(
-                0, 0, listNameLabelText, WidgetThemeVariable.TEXT_PRIMARY, font);
-        listNameField = new TranslucentTextField(0, 0, 90, listNameLabelText, font);
-        listNameRow.addChild(listNameLabel, 0);
-        listNameRow.addChild(listNameField);
-
-        titleRow.addChild(titleLabel, 0);
-        titleRow.addChild(dimensionRow);
-        titleRow.addChild(listNameRow);
-
-        return titleRow;
-    }
-
     private void refreshDimensionChoices() {
         getAvailableDimensionNames().thenAccept(dimensions -> this.dimensionField.setValues(
                 mergeDimensionNames(dimensions, List.of(this.dimensionName))
         ));
     }
 
-    @Override
-    protected @NotNull WidgetStack createButtonRow() {
-        // buttons row
-        WidgetStack buttonRow = new WidgetStack(0, 0, 10, false);
-        this.addButton = new TranslucentButton(0, 0, 50, 11, Component.translatable("waypoint.add.button"), this::sendAddCommand);
-
-        buttonRow.addChild(this.cancelButton, 2);
-        buttonRow.addChild(this.addButton);
-        return buttonRow;
-    }
-
-    @Override
-    protected @Unmodifiable List<AbstractWidget> getTitleRowClickableWidgets() {
-        return List.of(dimensionField, listNameField);
-    }
-
-    @Override
-    protected @Unmodifiable List<AbstractWidget> getButtonRowClickableWidgets() {
-        return List.of(addButton, cancelButton);
-    }
-
-    //? if >=1.21.9 {
-    @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClicked) {
-        if (this.clickDimensionMenu(event.x(), event.y(), event.button())) {
-            return true;
-        }
-        return super.mouseClicked(event, doubleClicked);
-    }
-    //?} else {
-    /*@Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (this.clickDimensionMenu(mouseX, mouseY, button)) {
-            return true;
-        }
-        return super.mouseClicked(mouseX, mouseY, button);
-    }
-    *///?}
-
-    @Override
-    protected void renderTitleRowOverlays(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-        this.dimensionField.renderPopup(context, mouseX, mouseY, delta);
-    }
-
-    private boolean clickDimensionMenu(double mouseX, double mouseY, int button) {
-        if (this.dimensionField.isMouseOver(mouseX, mouseY)
-                && this.dimensionField.mouseClicked(mouseX, mouseY, button)) {
-            this.setFocused(this.dimensionField);
-            return true;
-        }
-        this.dimensionField.closeMenuIfOutside(mouseX, mouseY);
-        return false;
-    }
-
-    private void sendAddCommand() {
-        WaypointPos resolvedPos = this.resolveCoordinateFields();
-        sendCommand(addCmd(this.dimensionField.getValue(), this.listNameField.getValue(),
-                new SimpleWaypoint(
-                        this.nameEditBox.getValue(),
-                        this.nameEditBox.getValue(),
-                        this.initialsEditBox.getValue(),
-                        resolvedPos,
-                        this.colorPickerButton.getColor() & 0xFFFFFF,
-                        this.yawEditBox.getIntValue(),
-                        this.globalToggle.getState(),
-                        List.of(),
-                        "",
-                        this.iconPicker.getSelectedIcon()
-                ), false));
-    }
-
     private void configureSuggestions() {
         this.listNameField.setSuggestionsProvider(() -> WaypointClientMod.getAllWaypointListNames(this.dimensionField.getValue()));
         this.nameEditBox.setSuggestionsProvider(() -> WaypointClientMod.getAllWaypointNames(this.dimensionField.getValue(), this.listNameField.getValue()));
-        this.initialsEditBox.setSuggestionsProvider(this::getWaypointInitialsSuggestions);
     }
 
-    private List<String> getWaypointInitialsSuggestions() {
-        return WaypointInitials.getInitialsCandidatesFromName(plainText(this.nameEditBox.getValue()));
+    @Override
+    protected List<LeadingRow> leadingRows() {
+        return List.of(
+                new LeadingRow(FormField.DIMENSION, this.dimensionField, this.dimensionField::setWidth),
+                new LeadingRow(FormField.LIST, this.listNameField, this.listNameField::setWidth)
+        );
     }
 
+    @Override
+    protected @Nullable Component subtitle() {
+        return null;
+    }
+
+    @Override
+    protected boolean hasDisplayNameRow() {
+        return false;
+    }
+
+    @Override
+    protected List<TranslucentButton> footerButtons() {
+        return List.of(this.cancelButton, this.addButton);
+    }
+
+    @Override
+    protected TranslucentButton primaryButton() {
+        return this.addButton;
+    }
+
+    /** The first empty field the player must fill: the list when it's empty, otherwise the name. */
+    @Override
+    protected @Nullable GuiEventListener initialFocus() {
+        return this.listNameField.getValue().isEmpty() ? this.listNameField : this.nameEditBox;
+    }
+
+    @Override
+    protected WaypointFormCheck.Input checkInput() {
+        return new WaypointFormCheck.Input(
+                true,
+                this.dimensionField.getValue(),
+                this.listNameField.getValue(),
+                this.nameEditBox.getValue(),
+                "",
+                this.keywordsEditBox.getValue(),
+                this.descriptionEditBox.getValue(),
+                null
+        );
+    }
+
+    @Override
+    protected void submit() {
+        String dimension = this.dimensionField.getValue();
+        String list = this.listNameField.getValue();
+        String name = this.nameEditBox.getValue();
+        if (!sendCommand(addCmd(dimension, list, this.toWaypoint(), false))) {
+            this.showResult(Component.translatable("waypoint.form.status.send_failed"), WaypointFormCheck.Field.NONE);
+            return;
+        }
+        this.pendingAdd.begin(dimension, list, name, System.nanoTime());
+    }
+
+    private SimpleWaypoint toWaypoint() {
+        return new SimpleWaypoint(
+                this.nameEditBox.getValue(),
+                this.nameEditBox.getValue(),
+                this.initialsEditBox.getValue(),
+                this.resolveCoordinateFields(),
+                this.colorPickerButton.getColor() & 0xFFFFFF,
+                this.yawEditBox.getIntValue(),
+                this.globalToggle.getState(),
+                parseKeywords(this.keywordsEditBox.getValue()),
+                this.descriptionEditBox.getValue(),
+                this.iconPicker.getSelectedIcon()
+        );
+    }
+
+    @Override
+    protected @Nullable Component pendingMessage() {
+        return this.pendingAdd.pending() ? Component.translatable("waypoint.form.status.adding") : null;
+    }
+
+    @Override
+    protected void refreshButtons(boolean modal, boolean locked, boolean canSubmit, boolean changed) {
+        this.cancelButton.active = !modal;
+        this.addButton.active = canSubmit;
+    }
+
+    /** Closes once the waypoint shows up in the synced data, and unlocks with a message after 5 seconds. */
+    @Override
+    protected void onTick() {
+        if (!this.pendingAdd.pending()) {
+            return;
+        }
+        if (hasWaypoint(this.pendingAdd.dimension(), this.pendingAdd.list(), this.pendingAdd.name())) {
+            this.pendingAdd.clear();
+            this.onClose();
+        } else if (this.pendingAdd.expire(System.nanoTime())) {
+            this.showResult(Component.translatable("waypoint.form.status.add_timeout"), WaypointFormCheck.Field.NONE);
+        }
+    }
 }

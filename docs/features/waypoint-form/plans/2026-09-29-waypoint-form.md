@@ -3511,7 +3511,7 @@ The three screens are rewritten together, because the base's abstract methods ch
 - Consumes: everything from Tasks 1–10. From existing code: `ScalableText`, `WidgetPack`, `SeparatorWidget`, `VisualPositioning` (public getters), `MovementAllowedScreen` (`pickInitialFocus`, `centered`, `acceptMovementKeys`), `TranslucentButton.fitted`, `ComboBoxWidget.layoutPopup`, `WaypointClientMod`.
 - Produces: the constructors `WaypointAddScreen(Screen, String, String[, WaypointPos])` and `WaypointEditScreen(Screen, String, String, [String,] SimpleWaypoint)`, unchanged, so the manager, the list widget and the Xaero's World Map mixins compile untouched; `WaypointEditScreen.handleResult(WaypointEditResultMessage)`, unchanged, for `WaypointClientMod`; and the base's `static Component cutToWidth(Font, Component, int)`.
 
-- [ ] **Step 1: Write the failing test** (this pins Review Focus item 2)
+- [x] **Step 1: Write the failing test** (this pins Review Focus item 2)
 
 `TestFont` makes every character 6 pixels wide but doesn't implement `substrByWidth`, so add it:
 
@@ -3581,7 +3581,7 @@ class WaypointFormTextTest {
 }
 ```
 
-- [ ] **Step 2: Run it and see it fail**
+- [x] **Step 2: Run it and see it fail**
 
 ```bash
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabric:test --tests '_959.server_waypoint.common.client.gui.screens.WaypointFormTextTest' -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
@@ -3589,7 +3589,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabri
 
 Expected: FAIL to compile, `cannot find symbol: method cutToWidth`.
 
-- [ ] **Step 3: Replace `AbstractWaypointPropertiesScreen.java`**
+- [x] **Step 3: Replace `AbstractWaypointPropertiesScreen.java`**
 
 Replace the whole file with this. It keeps the old file's coordinate parsing, suggestions and looked-at-block code, and its Stonecutter branches for mouse events and reach.
 
@@ -4862,7 +4862,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
 }
 ```
 
-- [ ] **Step 4: Replace `WaypointAddScreen.java`**
+- [x] **Step 4: Replace `WaypointAddScreen.java`**
 
 `mods/src/main/java/_959/server_waypoint/common/client/gui/screens/WaypointAddScreen.java`:
 
@@ -5065,7 +5065,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
 }
 ```
 
-- [ ] **Step 5: Replace `WaypointEditScreen.java`**
+- [x] **Step 5: Replace `WaypointEditScreen.java`**
 
 `mods/src/main/java/_959/server_waypoint/common/client/gui/screens/WaypointEditScreen.java`:
 
@@ -5318,7 +5318,7 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
 }
 ```
 
-- [ ] **Step 6: Compile the active target and run the whole mods suite**
+- [x] **Step 6: Compile the active target and run the whole mods suite**
 
 ```bash
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabric:test -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
@@ -5326,7 +5326,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabri
 
 Expected: BUILD SUCCESSFUL with no test failures. If a call site outside these files broke, it is a call to something the rewrite removed (`showDisplayNameField`, `getTitleRowClickableWidgets`, `getButtonRowClickableWidgets`, `renderTitleRowOverlays`, `onSwatchClosed`, `resetProperties` as public); fix that call site, don't restore the method.
 
-- [ ] **Step 7: Compile the oldest target now, not at the end**
+- [x] **Step 7: Compile the oldest target now, not at the end**
 
 Version drift in the new drawing, focus and mouse code shows here first.
 
@@ -5336,7 +5336,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:1.20.1-fabri
 
 Expected: BUILD SUCCESSFUL. If it fails on an API, use the `reference-minecraft-source-code` skill to check it against `minecraft_source_code/1.20.1` and fix it behind a small Stonecutter predicate, keeping the active branch as it is.
 
-- [ ] **Step 8: Check the markers**
+- [x] **Step 8: Check the markers**
 
 ```bash
 python3 SCRATCH/check_stonecutter.py mods/src/main/java/_959/server_waypoint/common/client/gui/screens/AbstractWaypointPropertiesScreen.java mods/src/main/java/_959/server_waypoint/common/client/gui/screens/WaypointAddScreen.java mods/src/main/java/_959/server_waypoint/common/client/gui/screens/WaypointEditScreen.java
@@ -5344,7 +5344,7 @@ python3 SCRATCH/check_stonecutter.py mods/src/main/java/_959/server_waypoint/com
 
 Expected: `balanced: 3 file(s)`.
 
-- [ ] **Step 9: Update the GUI guide**
+- [x] **Step 9: Update the GUI guide**
 
 Four edits: the dropdown popups paragraph, the "Choosing a base screen" bullet, the add and edit screens bullet, and the testing list.
 
@@ -5408,7 +5408,7 @@ with:
   form uses exists in all six locales with the arguments of English.
 ```
 
-- [ ] **Step 10: Checkpoint.**
+- [x] **Step 10: Checkpoint.**
 
 ---
 

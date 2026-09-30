@@ -54,6 +54,14 @@ public final class TestFont extends Font {
         return reverse ? text.substring(text.length() - fitting) : text.substring(0, fitting);
     }
 
+    /** The whole characters that fit, from the start, without their styles. */
+    @Override
+    public FormattedText substrByWidth(FormattedText text, int maxWidth) {
+        String characters = text.getString();
+        int fitting = Math.min(characters.length(), Math.max(0, maxWidth) / CHARACTER_WIDTH);
+        return FormattedText.of(characters.substring(0, fitting));
+    }
+
     @Override
     public List<FormattedCharSequence> split(FormattedText text, int maxWidth) {
         return List.of(FormattedCharSequence.forward(text.getString(), Style.EMPTY));
