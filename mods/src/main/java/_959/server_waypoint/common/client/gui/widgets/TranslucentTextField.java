@@ -7,15 +7,24 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DANGER;
 
 /** Suggestion-capable text input with the standard translucent surface. */
 public class TranslucentTextField extends SuggestingTextInput {
+    private boolean invalid;
+
     public TranslucentTextField(int x, int y, int width, Component text, Font textRenderer) {
         super(x, y, width, text, textRenderer);
     }
 
     public TranslucentTextField(int x, int y, int width, Component text, Font textRenderer, AnchorMode anchorMode) {
         super(x, y, width, text, textRenderer, anchorMode);
+    }
+
+    /** Draws the outline in the danger color instead of the border color, for a value the form rejects. */
+    public void setInvalid(boolean invalid) {
+        this.invalid = invalid;
     }
 
     @Override
@@ -30,7 +39,7 @@ public class TranslucentTextField extends SuggestingTextInput {
         this.updateThemeTextColors();
         this.isHovered = mouseX >= x && mouseY >= y && mouseX <= right && mouseY <= bottom;
         context.fill(x + 1, y + 1, right, bottom, WidgetThemeState.controlBackground(this.active, isHovered()));
-        int bdColor = WidgetThemeState.border(this.active, isFocused(), isHovered());
+        int bdColor = this.invalid ? getColor(DANGER) : WidgetThemeState.border(this.active, isFocused(), isHovered());
         renderOutline(context, x, y, this.width, this.backgroundHeight, bdColor);
         this.renderTextField(context, mouseX, mouseY, deltaTicks);
     }

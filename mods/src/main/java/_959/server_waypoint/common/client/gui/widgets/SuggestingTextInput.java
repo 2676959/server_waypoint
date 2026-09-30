@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.Font;
@@ -39,6 +40,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 //?}
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 
 /** Surface-free editable input with shared completion, popup, and layout behavior. */
 public class SuggestingTextInput extends EditBox implements Shiftable, Expandable, Padding, PopupOwner {
@@ -68,6 +70,9 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     private String inlineSuggestion;
     private boolean suggestionsEnabled = true;
     private boolean suggestionsDismissed;
+    private @Nullable Supplier<Component> placeholder;
+    private @Nullable Component shownPlaceholder;
+    private int shownPlaceholderColor;
 
     public SuggestingTextInput(int x, int y, int width, Component text, Font textRenderer) {
         this(x, y, width, text, textRenderer, AnchorMode.CONTENT);
@@ -157,6 +162,17 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
 
     protected int getSuggestionsY(int suggestionHeight) {
         return this.getShiftedY() - 2 + this.backgroundHeight;
+    }
+
+    /**
+     * Shows themed text while the field is empty and unfocused, in {@code TEXT_PLACEHOLDER}, or
+     * {@code TEXT_DISABLED} while inactive. It goes through vanilla's hint, which gives text without a
+     * color of its own a fixed gray. The supplier is read every frame, so the text can follow another field.
+     */
+    public void setPlaceholder(Supplier<Component> placeholder) {
+        this.placeholder = Objects.requireNonNull(placeholder, "placeholder");
+        this.shownPlaceholder = null;
+        this.updatePlaceholder();
     }
 
     public void setSuggestionsProvider(Supplier<List<String>> suggestionsProvider) {
@@ -249,6 +265,26 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
 
     public boolean mouseClickedSuggestion(double mouseX, double mouseY) {
         return this.handleSuggestionMouseClicked(mouseX, mouseY);
+    }
+
+    /**
+     * Takes the highlighted suggestion, as clicking it does, for a screen that gives Enter this meaning
+     * while a list is open; false when no list is showing.
+     */
+    public boolean acceptHighlightedSuggestion() {
+        if (!this.isSuggestionListVisible()) {
+            return false;
+        }
+        this.useSuggestion(this.getValue());
+        this.tabCycles = false;
+        this.suggestionsDismissed = false;
+        this.updateSuggestions();
+        return true;
+    }
+
+    /** Whether the suggestion list is showing: the field is focused and has suggestions. */
+    public boolean isSuggestionListOpen() {
+        return this.isSuggestionListVisible();
     }
 
     @Override
@@ -627,6 +663,21 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     protected void updateThemeTextColors() {
         this.setTextColor(WidgetThemeState.text(this.active));
         this.setTextColorUneditable(getColor(TEXT_DISABLED));
+        this.updatePlaceholder();
+    }
+
+    private void updatePlaceholder() {
+        if (this.placeholder == null) {
+            return;
+        }
+        Component text = this.placeholder.get();
+        int color = getColor(this.active ? TEXT_PLACEHOLDER : TEXT_DISABLED) & 0x00FFFFFF;
+        if (color == this.shownPlaceholderColor && text.equals(this.shownPlaceholder)) {
+            return;
+        }
+        this.shownPlaceholder = text;
+        this.shownPlaceholderColor = color;
+        this.setHint(text.copy().withStyle(style -> style.withColor(color)));
     }
 
     private int getTextAnchorX() {

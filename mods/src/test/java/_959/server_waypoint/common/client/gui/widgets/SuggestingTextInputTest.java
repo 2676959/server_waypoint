@@ -163,6 +163,42 @@ class SuggestingTextInputTest {
         assertEquals("s2", suggestionAtRow(field, 0));
     }
 
+    @Test
+    void acceptingTakesTheHighlightedSuggestionAndClosesTheList() {
+        TranslucentTextField field = fieldSuggesting("alpha", "beta");
+        // Down highlights the second suggestion.
+        assertTrue(field.keyPressed(InputConstants.KEY_DOWN, 0, 0));
+
+        assertTrue(field.acceptHighlightedSuggestion());
+
+        assertEquals("beta", field.getValue());
+        assertFalse(field.isSuggestionListOpen());
+    }
+
+    @Test
+    void acceptingTakesTheFirstSuggestionWhenNoneWasMoved() {
+        TranslucentTextField field = fieldSuggesting("alpha", "beta");
+
+        assertTrue(field.acceptHighlightedSuggestion());
+
+        assertEquals("alpha", field.getValue());
+    }
+
+    @Test
+    void acceptingDoesNothingWhileNoListIsShowing() {
+        TranslucentTextField field = fieldSuggesting();
+
+        assertFalse(field.acceptHighlightedSuggestion());
+
+        assertEquals("", field.getValue());
+    }
+
+    @Test
+    void theListIsOpenOnlyWhileThereAreSuggestions() {
+        assertTrue(fieldSuggesting("alpha").isSuggestionListOpen());
+        assertFalse(fieldSuggesting().isSuggestionListOpen());
+    }
+
     /**
      * A field showing these suggestions. From 26.1 a real text field asks the game client to start
      * text input when it takes focus, so the field only reports being focused.

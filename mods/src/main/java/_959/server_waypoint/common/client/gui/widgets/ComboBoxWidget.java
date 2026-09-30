@@ -90,8 +90,18 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget {
         this.input.setSuggestionsProvider(provider);
     }
 
+    /** Shows themed text while the field is empty and unfocused; see {@link SuggestingTextInput#setPlaceholder}. */
+    public void setPlaceholder(Supplier<Component> placeholder) {
+        this.input.setPlaceholder(placeholder);
+    }
+
     public boolean closeSuggestionsIfOpen() {
         return this.input.closeSuggestionsIfOpen();
+    }
+
+    /** Whether the suggestion list of the text input is showing; the choice list is {@link #isExpanded()}. */
+    public boolean isSuggestionListOpen() {
+        return this.input.isSuggestionListOpen();
     }
 
     @Override

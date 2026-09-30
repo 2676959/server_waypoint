@@ -295,6 +295,19 @@ Escape closes the suggestion list and the input yields focus. A dismissal throug
 accept suggestion clicks. `AbstractDropdownMenuWidget.renderPopup(...)` may be overridden to provide
 another popup when the full menu is closed; preserve its separate-rendering contract.
 
+`setPlaceholder(Supplier<Component>)` shows themed text while the field is empty and unfocused, in
+`TEXT_PLACEHOLDER` (`TEXT_DISABLED` while inactive). It goes through vanilla's `EditBox` hint, which
+gives text without a color of its own a fixed gray, so the input styles the text with the theme's
+color each frame. The supplier is read every frame too, so the text can follow another field, as the
+waypoint form's Display name follows Name. `ComboBoxWidget.setPlaceholder` passes it to its input,
+and `ColorHexCodeField` uses it for `RRGGBB`. `TranslucentTextField.setInvalid(true)` draws the
+outline in `DANGER` instead of the border color until it is cleared, for a value a form rejects.
+`isSuggestionListOpen()`, also on `ComboBoxWidget` for its input's list, reports whether a list is
+showing. `acceptHighlightedSuggestion()` takes the highlighted suggestion the way clicking it does
+and reports whether a list was showing. Text fields don't handle Enter themselves; a screen that
+gives Enter this meaning while a list is open, as the waypoint form does, calls it before using
+Enter for anything else.
+
 An exact matching choice is omitted from the popup. Resizing also resizes the field and choice rows.
 Combobox popup rows draw side and bottom borders; the preceding control or row supplies the
 shared top edge, keeping separators one pixel thick without overlapping row hit areas.
