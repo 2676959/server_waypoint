@@ -139,7 +139,7 @@ if __name__ == '__main__':
 **Interfaces:**
 - Produces: `public static List<String> FormattedTextHelper.parseKeywords(String rawKeywords)`, an unmodifiable list; empty for null, empty or blank input.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `common/src/test/java/_959/server_waypoint/text/FormattedTextHelperTest.java`, replace:
 
@@ -208,7 +208,7 @@ with:
 }
 ```
 
-- [ ] **Step 2: Run them and see them fail**
+- [x] **Step 2: Run them and see them fail**
 
 ```bash
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :common:test --tests '_959.server_waypoint.text.FormattedTextHelperTest' -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
@@ -216,7 +216,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :common:test --tes
 
 Expected: FAIL to compile, `cannot find symbol: method parseKeywords(String)`.
 
-- [ ] **Step 3: Add the method**
+- [x] **Step 3: Add the method**
 
 In `common/src/main/java/_959/server_waypoint/text/FormattedTextHelper.java`, replace:
 
@@ -261,7 +261,7 @@ with:
     private static boolean looksLikeJson(String rawText) {
 ```
 
-- [ ] **Step 4: Make `CoreWaypointCommand` use it**
+- [x] **Step 4: Make `CoreWaypointCommand` use it**
 
 `CoreWaypointCommand` already has `import static _959.server_waypoint.text.FormattedTextHelper.*;`, so its three `parseKeywords(...)` calls resolve to the shared method once the private one is gone.
 
@@ -304,7 +304,7 @@ with:
 import java.util.List;
 ```
 
-- [ ] **Step 5: Run the common tests**
+- [x] **Step 5: Run the common tests**
 
 ```bash
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :common:test -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
@@ -312,7 +312,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :common:test -Porg
 
 Expected: PASS, including `FormattedTextHelperTest` and the command tests.
 
-- [ ] **Step 6: Checkpoint** (see Environment and conventions).
+- [x] **Step 6: Checkpoint** (see Environment and conventions).
 
 ---
 
@@ -327,7 +327,7 @@ The initials follow the name while they still equal what `WaypointInitials.getDe
 **Interfaces:**
 - Produces: `static String WaypointFormInitials.defaultFor(String name)` (the default initials of a name that may hold formatted text) and `static String afterNameChange(String previousName, String newName, String initials)` (what the initials become after the name changed).
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `mods/src/test/java/_959/server_waypoint/common/client/gui/screens/WaypointFormInitialsTest.java`:
 
@@ -392,7 +392,7 @@ class WaypointFormInitialsTest {
 }
 ```
 
-- [ ] **Step 2: Run it and see it fail**
+- [x] **Step 2: Run it and see it fail**
 
 ```bash
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabric:test --tests '_959.server_waypoint.common.client.gui.screens.WaypointFormInitialsTest' -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
@@ -400,7 +400,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabri
 
 Expected: FAIL to compile, `cannot find symbol: class WaypointFormInitials`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `mods/src/main/java/_959/server_waypoint/common/client/gui/screens/WaypointFormInitials.java`:
 
@@ -431,11 +431,11 @@ final class WaypointFormInitials {
 }
 ```
 
-- [ ] **Step 4: Run the test**
+- [x] **Step 4: Run the test**
 
 Same command as Step 2. Expected: PASS, 7 tests.
 
-- [ ] **Step 5: Checkpoint.**
+- [x] **Step 5: Checkpoint.**
 
 ---
 
@@ -450,7 +450,7 @@ Same command as Step 2. Expected: PASS, 7 tests.
 **Interfaces:**
 - Produces: `PendingAdd` with `TIMEOUT_NANOS` (5 s), `boolean pending()`, `String dimension()`, `String list()`, `String name()` (only while pending), `void begin(String dimension, String list, String name, long nowNanos)` (throws if one is pending), `boolean expire(long nowNanos)` (true only for the call that ends the wait) and `void clear()`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `mods/src/test/java/_959/server_waypoint/common/client/gui/screens/PendingAddTest.java`:
 
@@ -550,7 +550,7 @@ class PendingAddTest {
 }
 ```
 
-- [ ] **Step 2: Run it and see it fail**
+- [x] **Step 2: Run it and see it fail**
 
 ```bash
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabric:test --tests '_959.server_waypoint.common.client.gui.screens.PendingAddTest' -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
@@ -558,7 +558,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabri
 
 Expected: FAIL to compile, `cannot find symbol: class PendingAdd`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `mods/src/main/java/_959/server_waypoint/common/client/gui/screens/PendingAdd.java`:
 
@@ -635,11 +635,11 @@ final class PendingAdd {
 }
 ```
 
-- [ ] **Step 4: Run the test**
+- [x] **Step 4: Run the test**
 
 Same command as Step 2. Expected: PASS, 8 tests.
 
-- [ ] **Step 5: Checkpoint.**
+- [x] **Step 5: Checkpoint.**
 
 ---
 
@@ -655,7 +655,7 @@ The patch holds only the fields that differ from the saved waypoint. The Display
 - Produces: `WaypointFormPatch.Saved` (record of the saved values; `Saved.of(SimpleWaypoint)`; `titleName()`), `WaypointFormPatch.Values` (record of the form's values), `static WaypointPatch build(Saved, Values)`, `static PatchField<String> displayName(@Nullable String savedOverride, String field)` and `static boolean changesAnything(WaypointPatch)`.
 - Consumes: `WaypointPatch` and `PatchField` from `common`.
 
-- [ ] **Step 1: Write the failing test** (this pins Review Focus item 1)
+- [x] **Step 1: Write the failing test** (this pins Review Focus item 1)
 
 `mods/src/test/java/_959/server_waypoint/common/client/gui/screens/WaypointFormPatchTest.java`:
 
@@ -844,7 +844,7 @@ class WaypointFormPatchTest {
 }
 ```
 
-- [ ] **Step 2: Run it and see it fail**
+- [x] **Step 2: Run it and see it fail**
 
 ```bash
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabric:test --tests '_959.server_waypoint.common.client.gui.screens.WaypointFormPatchTest' -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
@@ -852,7 +852,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabri
 
 Expected: FAIL to compile, `cannot find symbol: class WaypointFormPatch`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `mods/src/main/java/_959/server_waypoint/common/client/gui/screens/WaypointFormPatch.java`:
 
@@ -984,11 +984,11 @@ final class WaypointFormPatch {
 }
 ```
 
-- [ ] **Step 4: Run the test**
+- [x] **Step 4: Run the test**
 
 Same command as Step 2. Expected: PASS, 17 tests.
 
-- [ ] **Step 5: Checkpoint.**
+- [x] **Step 5: Checkpoint.**
 
 ---
 
@@ -1004,7 +1004,7 @@ The form runs these checks in this order on every edit and every tick and shows 
 - Consumes: `FormattedTextHelper.parseKeywords`, `isValidInput`, `hasDuplicateKeywords`, `MAX_KEYWORDS`, `MAX_KEYWORD_LENGTH` (Task 1 and existing).
 - Produces: `WaypointFormCheck` with `MAX_KEYWORDS_TEXT_LENGTH` (2110), enums `Kind {HINT, ERROR, NOTE}`, `Field {NONE, NAME, DISPLAY_NAME, KEYWORDS, DESCRIPTION}` and `Message` (each with `translationKey()`), record `Input(boolean add, String dimension, String list, String name, String displayName, String keywords, String description, @Nullable String savedName)`, interface `Lookup` (`listExists`, `hasWaypoint`, `listDisplayName`), record `Problem(Message message, Kind kind, Field field, List<String> arguments)` with `blocks()`, and `static @Nullable Problem firstProblem(Input, Lookup)`.
 
-- [ ] **Step 1: Write the failing test** (this pins Review Focus items 3 and 4)
+- [x] **Step 1: Write the failing test** (this pins Review Focus items 3 and 4)
 
 `mods/src/test/java/_959/server_waypoint/common/client/gui/screens/WaypointFormCheckTest.java`:
 
@@ -1261,7 +1261,7 @@ class WaypointFormCheckTest {
 }
 ```
 
-- [ ] **Step 2: Run it and see it fail**
+- [x] **Step 2: Run it and see it fail**
 
 ```bash
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabric:test --tests '_959.server_waypoint.common.client.gui.screens.WaypointFormCheckTest' -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
@@ -1269,7 +1269,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabri
 
 Expected: FAIL to compile, `cannot find symbol: class WaypointFormCheck`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `mods/src/main/java/_959/server_waypoint/common/client/gui/screens/WaypointFormCheck.java`:
 
@@ -1437,11 +1437,11 @@ final class WaypointFormCheck {
 }
 ```
 
-- [ ] **Step 4: Run the test**
+- [x] **Step 4: Run the test**
 
 Same command as Step 2. Expected: PASS, 20 tests.
 
-- [ ] **Step 5: Checkpoint.**
+- [x] **Step 5: Checkpoint.**
 
 ---
 
@@ -1457,7 +1457,7 @@ Same command as Step 2. Expected: PASS, 20 tests.
 - Consumes: `ClientConfigScreen.statusAboveButtons(int panelWidth, int buttonsWidth)` (existing, package-private).
 - Produces: constants (`SCREEN_MARGIN`, `SECTION_GAP`, `TITLE_SUBTITLE_GAP`, `PANEL_INSET`, `MAX_CONTROL_WIDTH`, `LABEL_PADDING`, `MAX_ROW_GAP`, `MIN_ROW_GAP`, `DIVIDER_HEIGHT`, `FIELD_GAP`, `INLINE_GAP`, `AXIS_GAP`, `CONTROL_GAP`, `MIN_COORDINATE_WIDTH`, `MAX_COORDINATE_WIDTH`, `SMALL_FIELD_WIDTH`, `TOGGLE_WIDTH`, `FOOTER_BUTTON_GAP`, `STATUS_GAP`, `STATUS_LINE_GAP`); records `Columns(panelWidth, labelWidth, controlWidth)` with `labelTextWidth()`, `Item(height, isDivider)` with `Item.row(int)` and `Item.divider()`, and `Arrangement(rowGap, groupTop, groupHeight, panelX, panelY, panelWidth, panelHeight, labelX, controlX, itemTops, statusAbove, statusY, buttonsY, buttonsHeight)`; and static methods `columns`, `minimumControlWidth`, `coordinateFieldWidth`, `stretchedWidth`, `iconDropdownWidth`, `buttonsWidth`, `statusWidth`, `arrange`, `rowGap` and `contentHeight`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `mods/src/test/java/_959/server_waypoint/common/client/gui/screens/WaypointFormLayoutTest.java`:
 
@@ -1734,7 +1734,7 @@ class WaypointFormLayoutTest {
 }
 ```
 
-- [ ] **Step 2: Run it and see it fail**
+- [x] **Step 2: Run it and see it fail**
 
 ```bash
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabric:test --tests '_959.server_waypoint.common.client.gui.screens.WaypointFormLayoutTest' -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
@@ -1742,7 +1742,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabri
 
 Expected: FAIL to compile, `cannot find symbol: class WaypointFormLayout`.
 
-- [ ] **Step 3: Write the implementation**
+- [x] **Step 3: Write the implementation**
 
 `mods/src/main/java/_959/server_waypoint/common/client/gui/screens/WaypointFormLayout.java`:
 
@@ -1986,11 +1986,11 @@ final class WaypointFormLayout {
 }
 ```
 
-- [ ] **Step 4: Run the test**
+- [x] **Step 4: Run the test**
 
 Same command as Step 2. Expected: PASS, 24 tests. The spec's numbers appear in them: a group of 217 (Add) and 202 (Edit) pixels at 320×240, a gap of 9 that drops to 8 and 7 as the status wraps, and never below 5.
 
-- [ ] **Step 5: Checkpoint.**
+- [x] **Step 5: Checkpoint.**
 
 ---
 ### Task 7: Translations in six locales
@@ -2007,7 +2007,7 @@ The files are edited line by line, not through a JSON library, because `en_us` a
 - Consumes: `WaypointFormCheck.Message.translationKey()` (Task 5) and `EditResultStatus` from `common`.
 - Produces: every translation key the screens in Task 11 use.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 The test checks that every key the screens use exists in all six locales with the same arguments as `en_us`, that every check message and every edit-result status has a translation, that the retired keys are gone, and that labels have no trailing colon.
 
@@ -2213,7 +2213,7 @@ class WaypointFormTranslationTest {
 }
 ```
 
-- [ ] **Step 2: Run it and see it fail**
+- [x] **Step 2: Run it and see it fail**
 
 ```bash
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabric:test --tests '_959.server_waypoint.common.client.gui.screens.WaypointFormTranslationTest' -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
@@ -2221,7 +2221,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabri
 
 Expected: FAIL, 6 of 6 tests, on missing keys such as `en_us: waypoint.form.dimension`.
 
-- [ ] **Step 3: Save the script that applies the strings**
+- [x] **Step 3: Save the script that applies the strings**
 
 Save this as `apply_translations.py` in your scratchpad directory. It reads the language directory from its first argument, retires the old keys, replaces the text of the kept keys, renames `waypoint.update.button` to `waypoint.save.button` in place, adds the new keys after the swatch hover texts and adds the edit errors the four minor locales lack. It refuses to write a file with a duplicate key or invalid JSON.
 
@@ -2607,7 +2607,7 @@ if __name__ == '__main__':
     print('updated', ', '.join(LOCALES))
 ```
 
-- [ ] **Step 4: Apply it**
+- [x] **Step 4: Apply it**
 
 ```bash
 python3 SCRATCH/apply_translations.py mods/src/main/resources/assets/server_waypoint/lang
@@ -2615,7 +2615,7 @@ python3 SCRATCH/apply_translations.py mods/src/main/resources/assets/server_wayp
 
 Expected: `updated en_us, es_es, he_il, zh_cn, zh_hk, zh_tw`. Key counts go from 215/116/116/215/116/116 to 245/163/163/245/163/163.
 
-- [ ] **Step 5: Run the test**
+- [x] **Step 5: Run the test**
 
 Same command as Step 2. Expected: PASS, 6 tests. Also run `ClientConfigTranslationTest`, `RemoteGuiTranslationTest` and `WidgetThemeTranslationTest` to confirm the untouched keys are intact:
 
@@ -2623,7 +2623,7 @@ Same command as Step 2. Expected: PASS, 6 tests. Also run `ClientConfigTranslati
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabric:test --tests '*TranslationTest' -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
 ```
 
-- [ ] **Step 6: Look at the diff**
+- [x] **Step 6: Look at the diff**
 
 ```bash
 /usr/bin/git diff --stat -- mods/src/main/resources
@@ -2631,7 +2631,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabri
 
 Expected: only the six language files. In `en_us` and `zh_cn` the blank lines between groups are still there.
 
-- [ ] **Step 7: Checkpoint.**
+- [x] **Step 7: Checkpoint.**
 
 ---
 
@@ -2647,7 +2647,7 @@ The form shows a field's tooltip at the pointer, as the settings rows do. `Setti
 **Interfaces:**
 - Produces: `public static void DrawContextHelper.scheduleTooltipAtPointer(GuiGraphicsExtractor context, List<FormattedCharSequence> lines, int mouseX, int mouseY)`.
 
-- [ ] **Step 1: Add the helper**
+- [x] **Step 1: Add the helper**
 
 In `mods/src/main/java/_959/server_waypoint/common/client/gui/render/DrawContextHelper.java`, replace:
 
@@ -2700,7 +2700,7 @@ with:
     }
 ```
 
-- [ ] **Step 2: Switch the settings list to it**
+- [x] **Step 2: Switch the settings list to it**
 
 In `mods/src/main/java/_959/server_waypoint/common/client/gui/widgets/SettingsListWidget.java`, replace:
 
@@ -2736,7 +2736,7 @@ with:
         scheduleTooltipAtPointer(context, lines, mouseX, mouseY);
 ```
 
-- [ ] **Step 3: Update the GUI guide**
+- [x] **Step 3: Update the GUI guide**
 
 In the "Tooltip position for scrollable widgets" section of `docs/tips/gui/local-guide.md`:
 
@@ -2772,7 +2772,7 @@ with:
   two version branches inline and show render ownership.
 ```
 
-- [ ] **Step 4: Compile and run the settings list tests**
+- [x] **Step 4: Compile and run the settings list tests**
 
 ```bash
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabric:test --tests '_959.server_waypoint.common.client.gui.widgets.SettingsListWidget*' -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
@@ -2780,7 +2780,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabri
 
 Expected: PASS.
 
-- [ ] **Step 5: Compile the oldest target**
+- [x] **Step 5: Compile the oldest target**
 
 The `< 1.21.6` branch of the new helper is inactive in the active target, so only another target compiles it.
 
@@ -2790,7 +2790,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:1.20.1-fabri
 
 Expected: BUILD SUCCESSFUL.
 
-- [ ] **Step 6: Check the markers**
+- [x] **Step 6: Check the markers**
 
 ```bash
 python3 SCRATCH/check_stonecutter.py mods/src/main/java/_959/server_waypoint/common/client/gui/render/DrawContextHelper.java mods/src/main/java/_959/server_waypoint/common/client/gui/widgets/SettingsListWidget.java
@@ -2798,7 +2798,7 @@ python3 SCRATCH/check_stonecutter.py mods/src/main/java/_959/server_waypoint/com
 
 Expected: `balanced: 2 file(s)`.
 
-- [ ] **Step 7: Checkpoint.**
+- [x] **Step 7: Checkpoint.**
 
 ---
 
@@ -2817,7 +2817,7 @@ The form needs a placeholder that follows the theme (Display name shows the Name
 **Interfaces:**
 - Produces: `SuggestingTextInput.setPlaceholder(Supplier<Component>)`, `boolean acceptHighlightedSuggestion()`, `boolean isSuggestionListOpen()`; `ComboBoxWidget.setPlaceholder(Supplier<Component>)`, `boolean isSuggestionListOpen()`; `TranslucentTextField.setInvalid(boolean)`.
 
-- [ ] **Step 1: Write the failing tests** (this pins Review Focus item 5)
+- [x] **Step 1: Write the failing tests** (this pins Review Focus item 5)
 
 `SuggestingTextInputTest` builds a real field with `TestFont` that reports being focused. Add these tests before its `fieldSuggesting` helper:
 
@@ -2871,7 +2871,7 @@ with:
      * A field showing these suggestions. From 26.1 a real text field asks the game client to start
 ```
 
-- [ ] **Step 2: Run them and see them fail**
+- [x] **Step 2: Run them and see them fail**
 
 ```bash
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabric:test --tests '_959.server_waypoint.common.client.gui.widgets.SuggestingTextInputTest' -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
@@ -2879,7 +2879,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabri
 
 Expected: FAIL to compile, `cannot find symbol: method acceptHighlightedSuggestion()`.
 
-- [ ] **Step 3: Add the placeholder, `acceptHighlightedSuggestion` and `isSuggestionListOpen` to `SuggestingTextInput`**
+- [x] **Step 3: Add the placeholder, `acceptHighlightedSuggestion` and `isSuggestionListOpen` to `SuggestingTextInput`**
 
 The placeholder goes through `EditBox.setHint`, which vanilla shows while the field is empty and unfocused. From 26.1 vanilla wraps a hint that has no style of its own in a fixed gray, so the input gives the text the theme's color, and re-applies it only when the text or the color changes.
 
@@ -3026,7 +3026,7 @@ with:
     }
 ```
 
-- [ ] **Step 4: Add the danger outline to `TranslucentTextField`**
+- [x] **Step 4: Add the danger outline to `TranslucentTextField`**
 
 In `mods/src/main/java/_959/server_waypoint/common/client/gui/widgets/TranslucentTextField.java`, replace:
 
@@ -3095,7 +3095,7 @@ with:
         renderOutline(context, x, y, this.width, this.backgroundHeight, bdColor);
 ```
 
-- [ ] **Step 5: Pass the placeholder and the list state through `ComboBoxWidget`**
+- [x] **Step 5: Pass the placeholder and the list state through `ComboBoxWidget`**
 
 In `mods/src/main/java/_959/server_waypoint/common/client/gui/widgets/ComboBoxWidget.java`, replace:
 
@@ -3123,7 +3123,7 @@ with:
     }
 ```
 
-- [ ] **Step 6: Move `ColorHexCodeField`'s hint onto the placeholder**
+- [x] **Step 6: Move `ColorHexCodeField`'s hint onto the placeholder**
 
 In `mods/src/main/java/_959/server_waypoint/common/client/gui/widgets/ColorHexCodeField.java`, replace:
 
@@ -3225,7 +3225,7 @@ with:
     public int getColor() {
 ```
 
-- [ ] **Step 7: Update the GUI guide**
+- [x] **Step 7: Update the GUI guide**
 
 In the `SuggestingTextInput` paragraph, after the sentence that ends "preserve its separate-rendering contract.":
 
@@ -3254,7 +3254,7 @@ gives Enter this meaning while a list is open, as the waypoint form does, calls 
 Enter for anything else.
 ```
 
-- [ ] **Step 8: Run the widget tests**
+- [x] **Step 8: Run the widget tests**
 
 ```bash
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabric:test --tests '_959.server_waypoint.common.client.gui.widgets.*' -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
@@ -3262,7 +3262,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabri
 
 Expected: PASS. `SuggestingTextInputTest` now has 18 tests.
 
-- [ ] **Step 9: Check the markers**
+- [x] **Step 9: Check the markers**
 
 ```bash
 python3 SCRATCH/check_stonecutter.py mods/src/main/java/_959/server_waypoint/common/client/gui/widgets/SuggestingTextInput.java mods/src/main/java/_959/server_waypoint/common/client/gui/widgets/TranslucentTextField.java mods/src/main/java/_959/server_waypoint/common/client/gui/widgets/ColorHexCodeField.java mods/src/main/java/_959/server_waypoint/common/client/gui/widgets/ComboBoxWidget.java
@@ -3270,7 +3270,7 @@ python3 SCRATCH/check_stonecutter.py mods/src/main/java/_959/server_waypoint/com
 
 Expected: `balanced: 4 file(s)`.
 
-- [ ] **Step 10: Checkpoint.**
+- [x] **Step 10: Checkpoint.**
 
 ---
 
@@ -3288,7 +3288,7 @@ The icon row's Clear text button becomes a 13×13 `IconButton` with a new 9×9 t
 - Consumes: `ComboBoxWidget.setPlaceholder` (Task 9), `IconButton`.
 - Produces: `WidgetTextures.CLEAR_ICON`; `WaypointIconPicker.clearButton()` now returns `IconButton`, and its `active` follows whether an icon is selected.
 
-- [ ] **Step 1: Generate the texture**
+- [x] **Step 1: Generate the texture**
 
 Run this from the repository root. It writes a 9×9 RGBA PNG with a one-pixel ✕ in `#D9D9D9`, the color `reset.png` uses.
 
@@ -3318,7 +3318,7 @@ open('mods/src/main/resources/assets/server_waypoint/textures/gui/clear.png', 'w
 EOF
 ```
 
-- [ ] **Step 2: Check it**
+- [x] **Step 2: Check it**
 
 ```bash
 file mods/src/main/resources/assets/server_waypoint/textures/gui/clear.png
@@ -3326,7 +3326,7 @@ file mods/src/main/resources/assets/server_waypoint/textures/gui/clear.png
 
 Expected: `PNG image data, 9 x 9, 8-bit/color RGBA, non-interlaced`.
 
-- [ ] **Step 3: Register the texture**
+- [x] **Step 3: Register the texture**
 
 In `mods/src/main/java/_959/server_waypoint/common/client/gui/render/WidgetTextures.java`, replace:
 
@@ -3345,7 +3345,7 @@ with:
     CLEAR_ICON = modId("textures/gui/clear.png");
 ```
 
-- [ ] **Step 4: Change the icon picker**
+- [x] **Step 4: Change the icon picker**
 
 In `mods/src/main/java/_959/server_waypoint/common/client/gui/widgets/WaypointIconPicker.java`, replace:
 
@@ -3445,7 +3445,7 @@ with:
     public IconButton clearButton() {
 ```
 
-- [ ] **Step 5: Update the GUI guide**
+- [x] **Step 5: Update the GUI guide**
 
 In "Waypoint icon picker and renderer":
 
@@ -3473,7 +3473,7 @@ with:
 In the waypoint form, the icon row is the 11-pixel preview, 4 pixels, the stretched dropdown, 4 pixels and the remove button, starting at the control column.
 ```
 
-- [ ] **Step 6: Compile and run the tests**
+- [x] **Step 6: Compile and run the tests**
 
 The current screens still compile: they treat `clearButton()` as a widget, and an `IconButton` is one.
 
@@ -3483,7 +3483,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.1.2-fabri
 
 Expected: PASS.
 
-- [ ] **Step 7: Checkpoint.**
+- [x] **Step 7: Checkpoint.**
 
 ---
 ### Task 11: The form screens
