@@ -40,6 +40,7 @@ Optional:
 - Press `Right Shift` (default keybind) or use `/wp_gui` to open the waypoint manager screen in game.
 - In the waypoint manager screen, hover over a waypoint and press `T` to teleport (requires `/wp tp` command permission). 
 - In the waypoint manager screen, press `C` to open the client settings. The config button in Mod Menu (Fabric) or the Mods screen (NeoForge and Forge) opens them too.
+- The add and edit waypoint screens also set keywords and a description.
 
 ## Commands
 - `/wp add` adds a new waypoint. Identifiers must be unique within their list.

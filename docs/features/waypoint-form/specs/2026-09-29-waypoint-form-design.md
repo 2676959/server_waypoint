@@ -1,6 +1,6 @@
 # Waypoint Form Design
 
-Status: design agreed on 2026-09-29. Not implemented yet.
+Status: design agreed on 2026-09-29. Implemented; see the [validation record](../validation/2026-09-29-waypoint-form-validation.md).
 
 ## Intent
 

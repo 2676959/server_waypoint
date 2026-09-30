@@ -5421,7 +5421,7 @@ with:
 - Create: `docs/features/waypoint-form/validation/2026-09-29-waypoint-form-validation.md`
 - Delete: `docs/features/waypoint-form/validation/.gitkeep` (the folder now has a document; `plans/.gitkeep` went when the plan was written)
 
-- [ ] **Step 1: Add the usage bullet to both READMEs**
+- [x] **Step 1: Add the usage bullet to both READMEs**
 
 In `README.md`, replace:
 
@@ -5449,7 +5449,7 @@ with:
 - 添加和编辑路径点界面也可以设置关键词和描述。
 ```
 
-- [ ] **Step 2: Index the validation record, and update the spec's status**
+- [x] **Step 2: Index the validation record, and update the spec's status**
 
 In `docs/features/waypoint-form/README.md`, replace:
 
@@ -5476,7 +5476,7 @@ with:
 Status: design agreed on 2026-09-29. Implemented; see the [validation record](../validation/2026-09-29-waypoint-form-validation.md).
 ```
 
-- [ ] **Step 3: Create the validation record**
+- [x] **Step 3: Create the validation record**
 
 Create `docs/features/waypoint-form/validation/2026-09-29-waypoint-form-validation.md`. Task 13 records the results; the in-game pass is manual.
 
@@ -5552,13 +5552,13 @@ A manual pass on 26.1.2 Fabric. Compiling can't prove these. Tick a box only aft
 Record anything that differed from the plan here.
 ```
 
-- [ ] **Step 4: Remove the placeholders**
+- [x] **Step 4: Remove the placeholders**
 
 ```bash
 rm docs/features/waypoint-form/validation/.gitkeep
 ```
 
-- [ ] **Step 5: Checkpoint.**
+- [x] **Step 5: Checkpoint.**
 
 ---
 
