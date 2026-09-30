@@ -146,7 +146,7 @@
   "waypoint.help.argument.keywords": "Optional comma-separated plain-text search terms; quote the group when it contains spaces",
   "waypoint.help.argument.description": "Optional plain text or Minecraft JSON text shown to players; requires the keywords argument first (use an empty string for none)",
   "waypoint.help.argument.icon": "Optional namespaced item ID such as minecraft:diamond, or a VoxelMap image such as voxelmap:star; quotes are optional",
-  "waypoint.icon.invalid": "Invalid waypoint icon ID: %1$s",
+  "waypoint.icon.invalid": "Invalid waypoint icon ID: {0}",
   "waypoint.icon.label": "Icon",
   "waypoint.help.add.example.list": "Create the Home Bases list in the Overworld",
   "waypoint.help.add.example.quick": "Quickly add Main Home at your current position",

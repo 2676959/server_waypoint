@@ -146,7 +146,7 @@
   "waypoint.help.argument.keywords": "可选的逗号分隔纯文本搜索词；包含空格时需为整组加引号",
   "waypoint.help.argument.description": "向玩家显示的可选纯文本或 Minecraft JSON 文本；必须先提供关键词参数（无关键词时使用空字符串）",
   "waypoint.help.argument.icon": "可选的命名空间物品 ID，如 minecraft:diamond；或 VoxelMap 图像 ID，如 voxelmap:star；引号可省略",
-  "waypoint.icon.invalid": "无效的路径点图标 ID：%1$s",
+  "waypoint.icon.invalid": "无效的路径点图标 ID：{0}",
   "waypoint.icon.label": "图标",
   "waypoint.help.add.example.list": "在主世界创建 Home Bases 列表",
   "waypoint.help.add.example.quick": "在当前位置快速添加 Main Home",
