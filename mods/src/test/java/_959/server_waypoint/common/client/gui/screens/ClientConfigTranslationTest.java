@@ -24,6 +24,8 @@ class ClientConfigTranslationTest {
             "server_waypoint.config.screen.title",
             "server_waypoint.config.on",
             "server_waypoint.config.off",
+            "server_waypoint.config.render_waypoints_under_f1",
+            "server_waypoint.config.render_waypoints_under_f1.tooltip",
             "server_waypoint.config.enable_waypoint_render",
             "server_waypoint.config.enable_waypoint_render.tooltip",
             "server_waypoint.config.waypoint_scale_factor",

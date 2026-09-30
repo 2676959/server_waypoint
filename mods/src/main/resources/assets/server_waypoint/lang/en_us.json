@@ -105,6 +105,8 @@
   "server_waypoint.manager.loading": "Synchronizing waypoints…",
   "server_waypoint.config.screen.title": "Server Waypoint %1$s client settings",
   "server_waypoint.config.enable_waypoint_render": "Show in-world waypoints",
+  "server_waypoint.config.render_waypoints_under_f1": "Render waypoints under F1",
+  "server_waypoint.config.render_waypoints_under_f1.tooltip": "Show in-world waypoints while F1 hides the HUD. Waypoints remain hidden during loading screens.",
   "server_waypoint.config.waypoint_scale_factor": "Scale",
   "server_waypoint.config.waypoint_vertical_offset": "Vertical offset",
   "server_waypoint.config.local_waypoint_view_distance": "Local waypoint range",

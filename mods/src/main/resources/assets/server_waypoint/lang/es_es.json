@@ -86,6 +86,8 @@
   "server_waypoint.manager.loading": "Sincronizando puntos de ruta…",
   "server_waypoint.config.screen.title": "Ajustes del cliente de Server Waypoint %1$s",
   "server_waypoint.config.enable_waypoint_render": "Mostrar puntos de ruta en el mundo",
+  "server_waypoint.config.render_waypoints_under_f1": "Mostrar puntos de ruta con F1",
+  "server_waypoint.config.render_waypoints_under_f1.tooltip": "Muestra los puntos de ruta en el mundo mientras F1 oculta la interfaz. Permanecen ocultos durante las pantallas de carga.",
   "server_waypoint.config.waypoint_scale_factor": "Escala",
   "server_waypoint.config.waypoint_vertical_offset": "Desplazamiento vertical",
   "server_waypoint.config.local_waypoint_view_distance": "Alcance de los puntos de ruta locales",
