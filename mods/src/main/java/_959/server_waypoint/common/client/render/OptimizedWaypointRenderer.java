@@ -23,6 +23,10 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.LevelLoadingScreen;
+import net.minecraft.client.gui.screens.Screen;
+//? if < 1.21.9
+/*import net.minecraft.client.gui.screens.ReceivingLevelScreen;*/
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 
@@ -511,7 +515,25 @@ public final class OptimizedWaypointRenderer {
             freeCommand(cmd);
         }
 
-        if (DISABLED) return;
+        // Our HUD hook runs before vanilla suppresses its own loading-screen and F1 content.
+        //? if >= 26.2 {
+        /*Screen screen = mc.gui.screen();
+        boolean loading = mc.gui.overlay() != null;
+        boolean hideGui = mc.gui.hud.isHidden();
+        *///?} else {
+        Screen screen = mc.screen;
+        boolean loading = mc.getOverlay() != null;
+        boolean hideGui = mc.options.hideGui;
+        //?}
+        loading |= screen instanceof LevelLoadingScreen;
+        //? if < 1.21.9
+        /*loading |= screen instanceof ReceivingLevelScreen;*/
+        if (!WaypointRenderVisibility.isVisible(!DISABLED, mc.level != null && mc.player != null,
+                loading, hideGui)) {
+            HOVERED_ID = -1;
+            IS_HOVERED = false;
+            return;
+        }
 
         // B. Render projected world waypoints as GUI elements.
         int scaledWidth = window.getGuiScaledWidth();
