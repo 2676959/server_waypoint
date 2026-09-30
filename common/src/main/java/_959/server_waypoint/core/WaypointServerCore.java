@@ -4,6 +4,8 @@ import _959.server_waypoint.config.Config;
 import _959.server_waypoint.crossserver.catalog.RemoteCatalogStore;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
+import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
+import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.translation.AdventureTranslator;
 import _959.server_waypoint.translation.LanguageFilesManager;
 import com.google.gson.Gson;
@@ -50,6 +52,24 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
     }
     public RemoteCatalogStore remoteCatalogStore() { return remoteCatalogStore; }
     public Path configDirectory() { return configDir; }
+
+    /** Validates a newly selected icon against this server, without requiring client resources. */
+    public final boolean isWaypointIconValid(@Nullable NamespacedId icon) {
+        if (icon == null) {
+            return true;
+        }
+        if (icon.toString().length() > WaypointIconPolicy.MAX_LENGTH) {
+            return false;
+        }
+        return icon.namespace().equals("voxelmap")
+                ? WaypointIconPolicy.isKnownVoxelMapIcon(icon)
+                : this.isRegisteredIconItem(icon);
+    }
+
+    /** Platforms accept only registered, non-air items. No registry means no accepted item IDs. */
+    protected boolean isRegisteredIconItem(NamespacedId icon) {
+        return false;
+    }
 
     /**
      * constructor for a dedicated server </br>

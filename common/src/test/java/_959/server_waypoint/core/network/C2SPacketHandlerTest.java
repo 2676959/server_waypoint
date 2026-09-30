@@ -7,6 +7,9 @@ import _959.server_waypoint.core.edit.EditTarget;
 import _959.server_waypoint.core.edit.EditResultStatus;
 import _959.server_waypoint.core.edit.WaypointEditResult;
 import _959.server_waypoint.core.edit.WaypointPatch;
+import _959.server_waypoint.core.edit.PatchField;
+import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.core.network.message.WaypointEditRequestMessage;
 import _959.server_waypoint.core.network.message.WaypointEditResultMessage;
 import _959.server_waypoint.core.network.message.WaypointModificationMessage;
@@ -89,6 +92,30 @@ class C2SPacketHandlerTest {
 
         assertEquals(EditResultStatus.PERMISSION_DENIED, sender.lastResult().status());
         assertNull(server.getWaypointFileManager("minecraft:overworld"));
+    }
+
+    @Test
+    void editPacketsRejectUnknownIconsWithoutMutatingOrBroadcasting() {
+        TestSender sender = new TestSender();
+        WaypointServerCore server = new WaypointServerCore(this.tempDir) { };
+        server.putWaypointList("minecraft:overworld", new WaypointList("list", 1, List.of(
+                new SimpleWaypoint("waypoint", "W", new WaypointPos(0, 64, 0), 0, 0, true, List.of(), ""))));
+        var handler = new C2SPacketHandler<>(sender, server, new TestPermissionManager(true),
+                navigationService(), uploadCoordinator(server));
+        for (String icon : List.of("minecraft:missing_item", "minecraft:air", "mod:missing_item", "voxelmap:missing_icon")) {
+            var patch = new WaypointPatch(PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                    PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                    PatchField.unchanged(), PatchField.unchanged(), PatchField.set(NamespacedId.parse(icon)));
+            var request = new WaypointEditRequestMessage(17L, "minecraft:overworld", "list", "waypoint", 1, patch);
+            for (MessageChunkBuffer frame : frames(request)) {
+                handler.onMessageChunk("player", frame);
+            }
+            assertEquals(EditResultStatus.INVALID_VALUE, sender.lastResult().status());
+            var list = server.getWaypointFileManager("minecraft:overworld").getWaypointListByName("list");
+            assertEquals(1, list.getSyncNum());
+            assertNull(list.getWaypointByName("waypoint").icon());
+            assertTrue(sender.packets.stream().noneMatch(WaypointModificationMessage.class::isInstance));
+        }
     }
 
     @Test

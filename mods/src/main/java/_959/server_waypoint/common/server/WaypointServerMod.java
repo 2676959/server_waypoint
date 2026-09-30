@@ -9,6 +9,10 @@ import _959.server_waypoint.common.network.ModChatMessageHandler;
 import _959.server_waypoint.common.server.navigation.ModNavigationRuntime;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
+import _959.server_waypoint.common.util.ResourceLocationHelper;
+import _959.server_waypoint.util.NamespacedId;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Items;
 import _959.server_waypoint.core.edit.EditResultStatus;
 import _959.server_waypoint.core.edit.EditTarget;
 import _959.server_waypoint.core.edit.WaypointEditResult;
@@ -40,6 +44,12 @@ import static _959.server_waypoint.core.WaypointFilesManagerCore.*;
 import static _959.server_waypoint.util.WaypointFilesDirectoryHelper.asIntegratedServer;
 
 public class WaypointServerMod extends WaypointServerCore {
+    @Override
+    protected boolean isRegisteredIconItem(NamespacedId icon) {
+        return BuiltInRegistries.ITEM.getOptional(ResourceLocationHelper.mcId(icon.namespace(), icon.path()))
+                .filter(item -> item != Items.AIR).isPresent();
+    }
+
     // the default value is true because this is used by WaypointClient to identify the server
     private static volatile boolean runsWithClient = false;
     private static volatile WaypointServerMod INSTANCE;

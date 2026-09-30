@@ -87,6 +87,10 @@ class CoreWaypointCommandListTest {
     void setUp() {
         this.originalConfig = WaypointServerCore.CONFIG;
         this.server = new WaypointServerCore(this.tempDir) {
+            @Override
+            protected boolean isRegisteredIconItem(NamespacedId icon) {
+                return List.of("minecraft:diamond", "mod:blue_gem").contains(icon.toString());
+            }
         };
         this.server.putWaypointList(
                 "overworld",
@@ -474,6 +478,21 @@ class CoreWaypointCommandListTest {
         assertEquals("minecraft:diamond", bases.getWaypointByName("local-icon").icon().toString());
         assertEquals("voxelmap:star", bases.getWaypointByName("remote-icon").icon().toString());
         assertNull(bases.getWaypointByName("invalid-icon"));
+    }
+
+    @Test
+    void unknownIconsAreRejectedWithoutCreatingOrEditingWaypoints() throws CommandSyntaxException {
+        WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
+        int revision = bases.getSyncNum();
+        for (String icon : List.of("minecraft:missing_item", "minecraft:air", "mod:missing_item", "voxelmap:missing_icon")) {
+            this.dispatcher.execute("wp add position bases invalid I FFAA00 0 true icon " + icon, this.source);
+            assertNull(bases.getWaypointByName("invalid"));
+            this.dispatcher.execute("wp edit waypoint overworld bases \"base 1\" set icon " + icon, this.source);
+            assertNull(bases.getWaypointByName("base 1").icon());
+            assertEquals(revision, bases.getSyncNum());
+            assertTrue(translationKeys(this.sender.errors.get(this.sender.errors.size() - 1))
+                    .contains("waypoint.icon.invalid"));
+        }
     }
 
     @Test
