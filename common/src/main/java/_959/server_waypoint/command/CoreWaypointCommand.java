@@ -73,7 +73,6 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -1082,20 +1081,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 translatable("argument.text.too_long", text(argument), text(maximum))
         );
         return false;
-    }
-
-    private static List<String> parseKeywords(String rawKeywords) {
-        if (rawKeywords == null || rawKeywords.trim().isEmpty()) {
-            return List.of();
-        }
-        List<String> keywords = new ArrayList<>();
-        for (String keyword : rawKeywords.split(",", -1)) {
-            String trimmed = keyword.trim();
-            if (!trimmed.isEmpty()) {
-                keywords.add(trimmed);
-            }
-        }
-        return List.copyOf(keywords);
     }
 
     private static WaypointPatch patchWithString(
