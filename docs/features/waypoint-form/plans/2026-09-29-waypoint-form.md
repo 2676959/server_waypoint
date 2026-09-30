@@ -5567,7 +5567,7 @@ rm docs/features/waypoint-form/validation/.gitkeep
 **Files:**
 - Modify: `docs/features/waypoint-form/validation/2026-09-29-waypoint-form-validation.md` (record the results)
 
-- [ ] **Step 1: Run every unit test in the two projects**
+- [x] **Step 1: Run every unit test in the two projects**
 
 ```bash
 export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :common:test :mods:26.1.2-fabric:test -Porg.gradle.java.installations.paths=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
@@ -5575,7 +5575,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :common:test :mods
 
 Expected: BUILD SUCCESSFUL. Before this change `:mods:26.1.2-fabric:test` ran 410 tests; with the new ones it should report about 96 more.
 
-- [ ] **Step 2: Check the disk, then compile the other targets the spec lists**
+- [x] **Step 2: Check the disk, then compile the other targets the spec lists**
 
 ```bash
 df -h /System/Volumes/Data /Volumes/ssd
@@ -5605,7 +5605,7 @@ export GRADLE_USER_HOME=/Volumes/ssd/gradle_home && ./gradlew :mods:26.3-neoforg
 
 Expected: BUILD SUCCESSFUL each. `1.21.6-fabric` is the first version that uses `setTooltipForNextFrame`, so it checks the helper's other branch. Say exactly which targets ran; do not claim the ones that didn't.
 
-- [ ] **Step 3: Whitespace and markers**
+- [x] **Step 3: Whitespace and markers**
 
 ```bash
 /usr/bin/git diff --check
@@ -5617,15 +5617,15 @@ python3 SCRATCH/check_stonecutter.py $(/usr/bin/git ls-files -m -o --exclude-sta
 
 Expected: no output from the first; `balanced: N file(s)` from the second.
 
-- [ ] **Step 4: Record the automated results**
+- [x] **Step 4: Record the automated results**
 
 Record the commands you ran, the date and the results in the "Automated checks" table of the validation record, and list the targets that ran.
 
-- [ ] **Step 5: Hand over the in-game pass**
+- [x] **Step 5: Hand over the in-game pass**
 
 The in-game checklist in the validation record needs a person or the `test-minecraft-mods-headlessmc` skill: compiling can't prove layout, focus, tooltips or the Add flow. Tell the user which items are still unchecked. Do not mark them done.
 
-- [ ] **Step 6: Checkpoint.**
+- [x] **Step 6: Checkpoint.**
 
 ---
 
