@@ -1156,7 +1156,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     private @Nullable NamespacedId validateIcon(S source, I value) {
         try {
-            return WaypointIconPolicy.validate(toIconId(value));
+            NamespacedId icon = WaypointIconPolicy.validate(toIconId(value));
+            if (!this.waypointServer.isWaypointIconValid(icon)) {
+                throw new IllegalArgumentException("Unknown waypoint icon");
+            }
+            return icon;
         } catch (IllegalArgumentException invalid) {
             this.sender.sendError(source, translatable("waypoint.icon.invalid", text(value.toString())));
             return null;

@@ -185,6 +185,11 @@ public class C2SPacketHandler<S, K, P> {
             this.sendEditResult(player, request, EditResultStatus.PERMISSION_DENIED, null, 0);
             return;
         }
+        if (request.patch().icon().isSet()
+                && !this.waypointServer.isWaypointIconValid(request.patch().icon().requiredValue())) {
+            this.sendEditResult(player, request, EditResultStatus.INVALID_VALUE, null, 0);
+            return;
+        }
         try {
             this.waypointServer.updateWaypoint(
                     EditTarget.waypoint(
