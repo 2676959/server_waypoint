@@ -126,6 +126,11 @@ public final class WidgetTextures {
     Identifier
     RESET_ICON = modId("textures/gui/reset.png");
 
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    CLEAR_ICON = modId("textures/gui/clear.png");
+
     private WidgetTextures() {
     }
 }

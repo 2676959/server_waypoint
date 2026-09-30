@@ -1,9 +1,11 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.render.WaypointIconRenderer;
+import _959.server_waypoint.common.client.gui.render.WidgetTextures;
 import _959.server_waypoint.common.client.integrations.VoxelMapIconIds;
 import _959.server_waypoint.util.NamespacedId;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
@@ -18,8 +20,10 @@ import java.util.function.Consumer;
 
 /** Searchable icon selection backed by the current client's item registry. */
 public final class WaypointIconPicker {
+    private static final int CLEAR_BUTTON_SIZE = 13;
+
     private final ComboBoxWidget menu;
-    private final TranslucentButton clearButton;
+    private final IconButton clearButton;
     private final List<NamespacedId> catalog;
     private final Consumer<@Nullable NamespacedId> callback;
     private @Nullable NamespacedId selectedIcon;
@@ -39,8 +43,12 @@ public final class WaypointIconPicker {
         this.menu.setSuggestionsProvider(() -> filter(this.catalog, this.menu.getValue()).stream()
                 .limit(64).map(NamespacedId::toString).toList());
         this.menu.setRenderPopupSeparately(true);
-        this.clearButton = new TranslucentButton(0, 0, 42, 11,
-                Component.translatable("waypoint.icon.clear"), () -> select(null, true));
+        this.menu.setPlaceholder(() -> Component.translatable("waypoint.form.no_icon"));
+        Component clearLabel = Component.translatable("waypoint.icon.clear");
+        this.clearButton = new IconButton(0, 0, CLEAR_BUTTON_SIZE, CLEAR_BUTTON_SIZE, clearLabel,
+                WidgetTextures.CLEAR_ICON, () -> select(null, true));
+        this.clearButton.setTooltip(Tooltip.create(clearLabel));
+        this.clearButton.active = false;
     }
 
     private void onTextChanged(String value) {
@@ -56,6 +64,8 @@ public final class WaypointIconPicker {
 
     private void select(@Nullable NamespacedId id, boolean notify) {
         this.selectedIcon = id;
+        // There is nothing to remove while no icon is selected.
+        this.clearButton.active = id != null;
         this.menu.setValue(id == null ? "" : id.toString());
         if (notify) this.callback.accept(id);
     }
@@ -76,7 +86,7 @@ public final class WaypointIconPicker {
         return this.menu;
     }
 
-    public TranslucentButton clearButton() {
+    public IconButton clearButton() {
         return this.clearButton;
     }
 
