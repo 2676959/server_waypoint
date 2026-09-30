@@ -4,6 +4,7 @@
 package _959.server_waypoint.common.client.gui.render;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -183,6 +184,22 @@ public final class DrawContextHelper {
     public static void previousItemOverlayLayer(GuiGraphicsExtractor context) {
         //? if < 1.21.6 {
         /*context.pose().translate(0.0F, 0.0F, -200.0F);
+        *///?}
+    }
+
+    /**
+     * Schedules a tooltip at the pointer for the current frame, rather than at a widget's bounds. It is
+     * {@code setTooltipForNextFrame} from 1.21.6 and the screen's {@code setTooltipForNextRenderPass}
+     * before.
+     */
+    public static void scheduleTooltipAtPointer(GuiGraphicsExtractor context, List<FormattedCharSequence> lines, int mouseX, int mouseY) {
+        //? if >= 1.21.6 {
+        context.setTooltipForNextFrame(lines, mouseX, mouseY);
+        //?} else {
+        /*net.minecraft.client.gui.screens.Screen screen = net.minecraft.client.Minecraft.getInstance().screen;
+        if (screen != null) {
+            screen.setTooltipForNextRenderPass(lines);
+        }
         *///?}
     }
 

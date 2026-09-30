@@ -1113,12 +1113,14 @@ otherwise the tooltip can appear far from the item, especially after scrolling o
 
 - Calculate the hovered item using the widget's current viewport and scroll position. Schedule
   nothing when the pointer is outside an item, the widget is inactive, or the item is clipped.
-- Pass the screen-space `mouseX` and `mouseY` to `GuiGraphicsExtractor.setTooltipForNextFrame(...)`
-  on Minecraft 1.21.6 and newer. Do not pass coordinates after a render translation or the item's
-  local position. On older versions, use the screen's `setTooltipForNextRenderPass(...)`.
+- Pass the screen-space `mouseX` and `mouseY` to `DrawContextHelper.scheduleTooltipAtPointer(...)`,
+  which calls `GuiGraphicsExtractor.setTooltipForNextFrame(...)` on Minecraft 1.21.6 and newer and the
+  screen's `setTooltipForNextRenderPass(...)` before. Do not pass coordinates after a render
+  translation or the item's local position.
 - Schedule the tooltip during the hovered content's owning render pass, and clear any prior
-  whole-widget tooltip when moving to per-item scheduling. See `IconListWidget` and
-  `RemoteWaypointPanel.BrowserTree` for the two version branches and render ownership.
+  whole-widget tooltip when moving to per-item scheduling. `SettingsListWidget` and the waypoint form
+  schedule through the helper; `IconListWidget` and `RemoteWaypointPanel.BrowserTree` still carry the
+  two version branches inline and show render ownership.
 - Check the result in game with the first and last visible items, a scrolled list, a resized screen,
   and items near screen edges. Compilation cannot confirm tooltip placement.
 

@@ -33,6 +33,7 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.NO_MOUSE;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scheduleTooltipAtPointer;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.PANEL_BACKGROUND;
@@ -319,14 +320,9 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         if (text == null) {
             return;
         }
-        Minecraft client = Minecraft.getInstance();
-        var lines = Tooltip.create(text).toCharSequence(client);
+        var lines = Tooltip.create(text).toCharSequence(Minecraft.getInstance());
         // Anchor the row's tooltip to the cursor, not the whole scrollable list.
-        //? if >=1.21.6 {
-        context.setTooltipForNextFrame(lines, mouseX, mouseY);
-        //?} else {
-        /*if (client.screen != null) client.screen.setTooltipForNextRenderPass(lines);
-        *///?}
+        scheduleTooltipAtPointer(context, lines, mouseX, mouseY);
     }
 
     /**
