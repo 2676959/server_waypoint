@@ -15,6 +15,11 @@ public final class Errors {
     private Errors() {
     }
 
+    /** ✘ Only players can do that. */
+    public static Component playerOnly() {
+        return Chat.error(translatable("wp.error.player_only"));
+    }
+
     /** ✘ No dimension called x. Dimensions */
     public static Component noDimension(DimensionStyle dims, String dimension) {
         return Chat.error(translatable("wp.error.no_dimension", text(dimension)),

@@ -509,6 +509,12 @@ public class StringCommandBuilder {
         return character != '\u00A7' && character >= 32 && character != 127;
     }
 
+    /** /wp edit waypoint <dimension> <list> <waypoint> followed by the rest of the command. */
+    public static String editWaypointCmd(String dimensionName, String listIdentifier, String waypointIdentifier, String tail) {
+        return WAYPOINT_COMMAND_WITH_SLASH + " edit waypoint " + dimensionName + ' '
+                + escapeArgument(listIdentifier) + ' ' + escapeArgument(waypointIdentifier) + ' ' + tail;
+    }
+
     public static String editWaypointClearCmd(
             String dimensionName,
             String listIdentifier,

@@ -182,6 +182,30 @@ class CommandFeedbackTest {
     }
 
     @Test
+    void colourAndFacingWithoutAValueOpenTheirPickersAndRandomPicksAColour() {
+        this.harness.addList("minecraft:overworld", "Farms", CommandHarness.waypoint("Iron Farm", "IF", 0xAAAAAA, 300, 80, 150));
+        CommandHarness.Source player = CommandHarness.player();
+        String waypoint = "wp edit waypoint minecraft:overworld Farms \"Iron Farm\" ";
+
+        assertEquals("Color · [IF] Iron Farm   now ■ #AAAAAA", lines(this.harness.run(player, waypoint + "set color")).get(0));
+        assertEquals("Facing · [IF] Iron Farm   now 0° (south)", lines(this.harness.run(player, waypoint + "set yaw")).get(0));
+        this.harness.run(player, waypoint + "set color random");
+        this.harness.run(player, waypoint + "set yaw -90");
+        assertEquals(-90, this.harness.server.getWaypointFileManager("minecraft:overworld")
+                .getWaypointListByName("Farms").getWaypointByName("Iron Farm").yaw());
+    }
+
+    @Test
+    void addWithoutArgumentsOpensTheAddPickerForPlayersOnly() {
+        this.harness.addList("minecraft:overworld", "Farms");
+
+        assertEquals(List.of("Add a waypoint at 100, 64, -20", "Into  Farms", "New list · Back"),
+                lines(this.harness.run(CommandHarness.player(), "wp add")));
+        assertEquals("✘ Only players can do that.", lines(this.harness.run(CommandHarness.console(), "wp add")).get(0));
+        this.harness.run(CommandHarness.player(), "wp add page 1");
+    }
+
+    @Test
     void playersMessagesEndWithOneNewline() {
         assertEquals("Farms\n", render(PlatformMessageSender.forPlayer(text("Farms"))));
     }

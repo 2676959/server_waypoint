@@ -50,6 +50,7 @@ import _959.server_waypoint.text.chat.Viewer;
 import _959.server_waypoint.text.feedback.DimensionScreens;
 import _959.server_waypoint.text.feedback.Errors;
 import _959.server_waypoint.text.feedback.ListScreen;
+import _959.server_waypoint.text.feedback.PickerScreens;
 import _959.server_waypoint.text.feedback.HelpScreen;
 import _959.server_waypoint.text.feedback.HelpTopics;
 import _959.server_waypoint.text.feedback.MenuScreen;
@@ -525,11 +526,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                             return Command.SINGLE_SUCCESS;
                         })));
         set.then(LiteralArgumentBuilder.<S>literal("color")
+                .executes(context -> executePicker(context, true))
                 .then(RequiredArgumentBuilder.<S, String>argument(COLOR_ARG, string())
                         .suggests(this.HEX_COLOR_CODE_SUGGESTION)
                         .executes(context -> {
                             String input = getString(context, COLOR_ARG);
-                            int color = colorNameOrHexCodeToRgb(input, false);
+                            int color = RANDOM_COLOR.equals(input) ? randomColor() : colorNameOrHexCodeToRgb(input, false);
                             if (color < 0) {
                                 this.sendHexColorCodeError(context.getSource(), input);
                             } else {
@@ -544,6 +546,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                             return Command.SINGLE_SUCCESS;
                         })));
         set.then(LiteralArgumentBuilder.<S>literal("yaw")
+                .executes(context -> executePicker(context, false))
                 .then(RequiredArgumentBuilder.<S, Integer>argument(YAW_ARG, integer()).executes(context -> {
                     this.executeWaypointPatch(
                             context.getSource(),
@@ -588,6 +591,34 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         dimension.then(list);
         target.then(dimension);
         return target;
+    }
+
+    /** set color or set yaw without a value: the colour or facing picker. */
+    private int executePicker(CommandContext<S> context, boolean color) {
+        S source = context.getSource();
+        runWithSelectorTarget(source, getArgument(context, DIMENSION_ARG), getString(context, LIST_NAME_ARG),
+                getString(context, WAYPOINT_NAME_ARG), (fileManager, list, waypoint) -> {
+                    Viewer viewer = viewer(source);
+                    DimensionStyle dims = dimensions(source, viewer);
+                    this.sender.sendMessage(source, color
+                            ? PickerScreens.color(dims, fileManager.getDimensionName(), list, waypoint)
+                            : PickerScreens.facing(dims, fileManager.getDimensionName(), list, waypoint));
+                });
+        return Command.SINGLE_SUCCESS;
+    }
+
+    /** /wp add without arguments: the lists of the player's dimension to add a waypoint where they stand. */
+    private int executeAddPicker(S source, int page) {
+        if (getPlayer(source) == null) {
+            this.sender.sendError(source, Errors.playerOnly());
+            return 0;
+        }
+        Viewer viewer = viewer(source);
+        String dimension = toDimensionName(getSourceDimension(source));
+        WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(dimension);
+        this.sender.sendMessage(source, PickerScreens.add(dimensions(source, viewer), dimension,
+                fileManager == null ? List.of() : fileManager.getWaypointLists(), page, CONFIG.defaultPageLimit()));
+        return Command.SINGLE_SUCCESS;
     }
 
     private int executeVisibilityPatch(CommandContext<S> context, boolean global) {
@@ -652,6 +683,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 .then((ArgumentBuilder<Object, ?>) helpCommandNode())
                 .then(literal(ADD_COMMAND)
                         .requires(source -> hasAddPermission((S) source))
+                        .executes(context -> executeAddPicker((S) context.getSource(), 1))
+                        .then(literal(PAGE_COMMAND)
+                                .then(argument(PAGE_NUMBER_ARG, integer(1))
+                                        .executes(context -> executeAddPicker((S) context.getSource(),
+                                                getInteger(context, PAGE_NUMBER_ARG)))))
                         .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
                                 .then(argument(LIST_NAME_ARG, string())
                                         .suggests((SuggestionProvider<Object>) WAYPOINT_LIST_SUGGESTION)
