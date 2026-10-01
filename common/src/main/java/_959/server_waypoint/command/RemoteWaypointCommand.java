@@ -121,7 +121,8 @@ final class RemoteWaypointCommand<S> {
         return 0;
     }
     private void configure(ArgumentBuilder<S, ?> node, int depth) {
-        new ListCommandOptions<S>((mode, reversed, grouped) -> context -> execute(context, depth, mode, reversed, grouped), null).configure(node);
+        new ListCommandOptions<S>((mode, reversed, view) -> context -> execute(context, depth, mode, reversed,
+                view != _959.server_waypoint.text.chat.ListView.FLAT), null).configure(node);
     }
     private CompletableFuture<Suggestions> suggest(CommandContext<S> context, SuggestionsBuilder builder, int depth) {
         return suggest(context, builder, depth, false);

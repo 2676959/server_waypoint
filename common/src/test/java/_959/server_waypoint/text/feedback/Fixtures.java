@@ -1,11 +1,13 @@
 package _959.server_waypoint.text.feedback;
 
+import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.text.chat.DimensionStyle;
 import _959.server_waypoint.text.chat.Viewer;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +43,12 @@ final class Fixtures {
 
     static DimensionStyle dims(Viewer viewer) {
         return DimensionStyle.local(viewer, LOADED);
+    }
+
+    /** A server core with its waypoint files in this directory; the class is abstract only for the platforms. */
+    static WaypointServerCore server(Path directory) {
+        return new WaypointServerCore(directory) {
+        };
     }
 
     static SimpleWaypoint waypoint(String name, String initials, int rgb, int x, int y, int z) {

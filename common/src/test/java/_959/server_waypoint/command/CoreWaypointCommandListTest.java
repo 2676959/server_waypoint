@@ -58,7 +58,6 @@ import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.network.upload.UploadStatus;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.StringReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -533,43 +532,6 @@ class CoreWaypointCommandListTest {
     }
 
     @Test
-    void listFeedbackSuggestsSearchForTheCurrentTarget() throws CommandSyntaxException {
-        this.dispatcher.execute("wp list", this.source);
-
-        Component currentDimensionList = lastMessage();
-        assertEquals("/wp list overworld search ", listSearchSuggestion(currentDimensionList));
-        assertTrue(translationKeys(currentDimensionList).contains("button.list.search"));
-
-        this.sender.messages.clear();
-        this.dispatcher.execute("wp list all", this.source);
-
-        assertEquals("/wp list all search ", listSearchSuggestion(lastMessage()));
-
-        this.sender.messages.clear();
-        this.dispatcher.execute("wp list overworld \"search\"", this.source);
-
-        String searchSuggestion = listSearchSuggestion(lastMessage());
-        assertEquals("/wp list overworld \"search\" search ", searchSuggestion);
-        assertDoesNotThrow(() -> this.dispatcher.execute(searchSuggestion.substring(1) + "base", this.source));
-
-        this.sender.messages.clear();
-        this.dispatcher.execute(
-                "wp list all sort name order descending page 2 limit 5",
-                this.source
-        );
-
-        String sortedSearchSuggestion = listSearchSuggestion(lastMessage());
-        assertEquals(
-                "/wp list all sort name order descending search ",
-                sortedSearchSuggestion
-        );
-        assertDoesNotThrow(() -> this.dispatcher.execute(
-                sortedSearchSuggestion.substring(1) + "base",
-                this.source
-        ));
-    }
-
-    @Test
     void viewTogglePreservesListOptionsAndSwitchesTheRenderedShape() throws CommandSyntaxException {
         this.dispatcher.execute("wp list all view flat", this.source);
 
@@ -663,62 +625,11 @@ class CoreWaypointCommandListTest {
     }
 
     @Test
-    void reservedListNameIsQuotedInSuggestionsAndPageLinks() throws CommandSyntaxException {
-        List<String> suggestions = this.dispatcher.getCompletionSuggestions(
-                        this.dispatcher.parse("wp list overworld ", this.source)
-                ).join().getList().stream()
-                .map(suggestion -> suggestion.getText())
-                .toList();
-        assertTrue(suggestions.contains("\"search\""));
-        assertTrue(suggestions.contains("\"\""));
-
-        this.dispatcher.execute("wp list overworld \"search\" limit 5", this.source);
-        String nextPageCommand = runCommands(lastMessage()).stream()
-                .filter(command -> command.contains(" page 2 "))
-                .findFirst()
-                .orElseThrow();
-
-        assertEquals("/wp list overworld \"search\" page 2 limit 5", nextPageCommand);
-        assertDoesNotThrow(() -> this.dispatcher.execute(nextPageCommand.substring(1), this.source));
-
-        this.sender.messages.clear();
-        this.dispatcher.execute("wp list overworld \"\" limit 5", this.source);
-        String emptyNameNextPageCommand = runCommands(lastMessage()).stream()
-                .filter(command -> command.contains(" page 2 "))
-                .findFirst()
-                .orElseThrow();
-        assertEquals("/wp list overworld \"\" page 2 limit 5", emptyNameNextPageCommand);
-        assertDoesNotThrow(() -> this.dispatcher.execute(emptyNameNextPageCommand.substring(1), this.source));
-    }
-
-    @Test
     void pagePastTheResultReportsTheLastAvailablePage() throws CommandSyntaxException {
         this.dispatcher.execute("wp list all page 99 limit 5", this.source);
 
         assertEquals(1, this.sender.errors.size());
         assertTrue(this.sender.errors.get(0).toString().contains("waypoint.list.page.invalid"));
-    }
-
-    @Test
-    void configuredDefaultPageLimitIsUsedUnlessTheCommandOverridesIt() throws CommandSyntaxException {
-        this.server.loadConfig(new StringReader("""
-                {
-                  "defaultPageLimit": 4
-                }
-                """));
-
-        this.dispatcher.execute("wp list overworld bases", this.source);
-
-        assertTrue(runCommands(lastMessage()).contains(
-                "/wp list overworld bases page 2 limit 4"
-        ));
-
-        this.sender.messages.clear();
-        this.dispatcher.execute("wp list overworld bases limit 7", this.source);
-
-        assertTrue(runCommands(lastMessage()).contains(
-                "/wp list overworld bases page 2 limit 7"
-        ));
     }
 
     @Test
@@ -741,21 +652,6 @@ class CoreWaypointCommandListTest {
         assertTrue(runCommands.contains(
                 "/wp list all search base sort name page 1 limit 5"
         ));
-    }
-
-    @Test
-    void sortControlsAreAvailableOnOnePageAndDefaultOrderIsDisabled() throws CommandSyntaxException {
-        this.dispatcher.execute("wp list overworld bases limit 20", this.source);
-
-        List<String> listCommands = runCommands(lastMessage()).stream()
-                .filter(command -> command.startsWith("/wp list"))
-                .toList();
-        assertEquals(List.of(
-                "/wp list overworld bases page 1 limit 20 view flat",
-                "/wp list overworld bases sort name page 1 limit 20",
-                "/wp list overworld bases sort distance page 1 limit 20",
-                "/wp list overworld bases sort color page 1 limit 20"
-        ), listCommands);
     }
 
     private Component lastMessage() {

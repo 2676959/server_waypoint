@@ -43,8 +43,13 @@ import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.navigation.TextDisplayTransformation;
 import _959.server_waypoint.core.restore.WaypointRestoreRegistry;
 import _959.server_waypoint.text.TextButtonBuilder;
+import _959.server_waypoint.text.chat.ChatLines;
 import _959.server_waypoint.text.chat.DimensionStyle;
+import _959.server_waypoint.text.chat.ListQuery;
+import _959.server_waypoint.text.chat.ListView;
 import _959.server_waypoint.text.chat.Viewer;
+import _959.server_waypoint.text.feedback.Errors;
+import _959.server_waypoint.text.feedback.ListScreen;
 import _959.server_waypoint.text.feedback.HelpScreen;
 import _959.server_waypoint.text.feedback.HelpTopics;
 import _959.server_waypoint.text.feedback.MenuScreen;
@@ -393,6 +398,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     private LiteralArgumentBuilder<S> detailsCommandNode() {
         LiteralArgumentBuilder<S> root = literal(DETAILS_COMMAND);
+        root.executes(context -> executeTargetHint(context.getSource(), "wp.hint_line.details", HelpTopics.Topic.LIST));
         RequiredArgumentBuilder<S, D> listDimension = argument(
                 DIMENSION_ARG,
                 this.dimensionArgumentProvider.get()
@@ -434,6 +440,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private LiteralArgumentBuilder<S> editCommandNode() {
         LiteralArgumentBuilder<S> root = literal(EDIT_COMMAND);
         root.requires(this::hasEditPermission);
+        root.executes(context -> executeTargetHint(context.getSource(), "wp.hint_line.edit", HelpTopics.Topic.EDIT));
         root.then(this.listEditTargetNode());
         root.then(this.waypointEditTargetNode());
         return root;
@@ -666,6 +673,17 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                         .then(argument(POS_ARG, blockPosArgumentProvider.get())
                                                 .then(argument(WAYPOINT_NAME_ARG, string())
                                                         .suggests((SuggestionProvider<Object>) WAYPOINT_NAME_SUGGESTION)
+                                                        .executes(cxt -> {
+                                                            CommandContext<S> context = (CommandContext<S>) cxt;
+                                                            executeQuickAddWaypoint(
+                                                                    context.getSource(),
+                                                                    getArgument(context, DIMENSION_ARG),
+                                                                    getArgument(context, POS_ARG),
+                                                                    getString(context, LIST_NAME_ARG),
+                                                                    getString(context, WAYPOINT_NAME_ARG)
+                                                            );
+                                                            return Command.SINGLE_SUCCESS;
+                                                        })
                                                         .then(argument(INITIALS_ARG, string())
                                                                 .suggests((SuggestionProvider<Object>) NAME_INITIALS_SUGGESTION)
                                                                 .then(argument(COLOR_ARG, string())
@@ -764,6 +782,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 )
                 .then(literal(REMOVE_COMMAND)
                         .requires(source -> hasRemovePermission((S) source))
+                        .executes(context -> executeTargetHint((S) context.getSource(), "wp.hint_line.remove",
+                                HelpTopics.Topic.REMOVE))
                         .then((ArgumentBuilder<Object, ?>) dimensionNode()
                                 .then(listNameNode()
                                         .executes(
@@ -794,6 +814,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 )
                 .then(literal(TP_COMMAND)
                         .requires(source -> hasTpPermission((S) source))
+                        .executes(context -> executeTargetHint((S) context.getSource(), "wp.hint_line.tp",
+                                HelpTopics.Topic.TP))
                         .then((CommandNode<Object>)
                                 selectorArguments(
                                         context -> {
@@ -1554,7 +1576,23 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     }
 
     private void executeQuickAddWaypoint(S source, B blockPosArgument, String listName, String name) {
-        addWaypointDirectly(source, toDimensionName(getSourceDimension(source)), listName, name, WaypointInitials.getDefaultInitials(plainText(name)), toWaypointPos(source, blockPosArgument), Math.round(getSourceYaw(source)), randomColor(), true, List.of(), "", null);
+        executeQuickAddWaypoint(source, getSourceDimension(source), blockPosArgument, listName, name);
+    }
+
+    /** Adds with the defaults: initials from the name, a random colour and the source's facing. */
+    private void executeQuickAddWaypoint(S source, D dimensionArgument, B blockPosArgument, String listName, String name) {
+        String dimensionName = toDimensionName(dimensionArgument);
+        if (!isDimensionValid(source, dimensionArgument)) {
+            sendDimensionError(source, dimensionName);
+            return;
+        }
+        WaypointPos position = toWaypointPos(source, blockPosArgument);
+        if (position == null) {
+            sendPosArgumentError(source);
+            return;
+        }
+        addWaypointDirectly(source, dimensionName, listName, name, WaypointInitials.getDefaultInitials(plainText(name)),
+                position, Math.round(getSourceYaw(source)), randomColor(), true, List.of(), "", null);
     }
 
     private void executeRemoveList(S source, D dimensionArgument, String listName) {
@@ -2361,44 +2399,26 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     }
 
     private void configureListTarget(ArgumentBuilder<S, ?> targetNode, ListScope scope) {
-        new ListCommandOptions<S>((mode, reversed, grouped) -> listCommand(scope, mode, reversed, grouped),
+        new ListCommandOptions<S>((mode, reversed, view) -> listCommand(scope, mode, reversed, view),
                 scope == ListScope.DIMENSION ? this::reservedListCommand : null).configure(targetNode);
     }
 
     private Command<S> listCommand(
             ListScope scope,
             WaypointSorting.SortMode sortMode,
-            boolean reversed
-    ) {
-        return listCommand(scope, sortMode, reversed, true);
-    }
-
-    private Command<S> listCommand(
-            ListScope scope,
-            WaypointSorting.SortMode sortMode,
             boolean reversed,
-            boolean groupByLists
+            ListView view
     ) {
         return context -> {
-            WaypointSorting.SortMode resolvedSortMode = !groupByLists
-                    && sortMode == WaypointSorting.SortMode.DEFAULT
-                    ? WaypointSorting.SortMode.NAME
-                    : sortMode;
-            executeList(context, scope, resolvedSortMode, reversed, null, groupByLists);
+            executeList(context, scope, sortMode, reversed, view, null);
             return Command.SINGLE_SUCCESS;
         };
     }
 
     private Command<S> reservedListCommand(String listName) {
         return context -> {
-            executeList(
-                    context,
-                    ListScope.WAYPOINT_LIST,
-                    WaypointSorting.SortMode.DEFAULT,
-                    false,
-                    listName,
-                    true
-            );
+            executeList(context, ListScope.WAYPOINT_LIST, WaypointSorting.SortMode.DEFAULT, false,
+                    ListView.DEFAULT, listName);
             return Command.SINGLE_SUCCESS;
         };
     }
@@ -2415,36 +2435,85 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             ListScope scope,
             WaypointSorting.SortMode sortMode,
             boolean reversed,
-            String fixedListName,
-            boolean groupByLists
+            ListView view,
+            @Nullable String fixedListName
     ) {
         S source = context.getSource();
-        ListOptions options = new ListOptions(
-                getOptionalString(context, SEARCH_QUERY_ARG, ""),
-                sortMode,
-                reversed,
-                getOptionalInteger(context, PAGE_NUMBER_ARG, 1),
-                getOptionalInteger(context, PAGE_LIMIT_ARG, CONFIG.defaultPageLimit()),
-                groupByLists
-        );
+        ListQuery query = new ListQuery(getOptionalString(context, SEARCH_QUERY_ARG, ""), sortMode, reversed, view,
+                getOptionalInteger(context, PAGE_NUMBER_ARG, 1), optionalLimit(context));
         if (scope == ListScope.ALL_DIMENSIONS) {
-            WaypointQueryEngine.Query query = createListQuery(source, options);
+            ListOptions options = new ListOptions(query.search(), sortMode, query.descending(), query.page(),
+                    query.pageLimit(CONFIG.defaultPageLimit()), view != ListView.FLAT);
             sendListQueryResult(
                     source,
                     new ListTarget(true, null, null),
                     options,
-                    this.waypointQueryEngine.queryAll(query)
+                    this.waypointQueryEngine.queryAll(createListQuery(source, options))
             );
             return;
         }
-
         D dimensionArgument = scope == ListScope.CURRENT_DIMENSION
                 ? getSourceDimension(source)
                 : getArgument(context, DIMENSION_ARG);
         String listName = fixedListName != null
                 ? fixedListName
                 : scope == ListScope.WAYPOINT_LIST ? getString(context, LIST_NAME_ARG) : null;
-        executeListDimension(source, dimensionArgument, listName, options);
+        this.sender.sendMessage(source, listScreen(source, dimensionArgument, listName, query));
+    }
+
+    private @Nullable Integer optionalLimit(CommandContext<S> context) {
+        try {
+            return getInteger(context, PAGE_LIMIT_ARG);
+        } catch (IllegalArgumentException missing) {
+            return null;
+        }
+    }
+
+    /** A dimension's or a list's screen, or the error that explains why there is none. */
+    private Component listScreen(S source, D dimensionArgument, @Nullable String listName, ListQuery query) {
+        Viewer viewer = viewer(source);
+        DimensionStyle dims = dimensions(source, viewer);
+        String dimension = toDimensionName(dimensionArgument);
+        if (!isDimensionValid(source, dimensionArgument)) {
+            return Errors.noDimension(dims, dimension);
+        }
+        int pageLimit = query.pageLimit(CONFIG.defaultPageLimit());
+        WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(dimension);
+        WaypointQueryEngine.Query engineQuery = engineQuery(source, query);
+        if (listName == null) {
+            List<WaypointList> lists = fileManager == null ? List.of() : fileManager.getWaypointLists();
+            ListScreen.Totals totals = new ListScreen.Totals(lists.size(),
+                    lists.stream().mapToInt(WaypointList::size).sum());
+            return ListScreen.dimension(dims, dimension, totals,
+                    this.waypointQueryEngine.queryDimension(dimension, engineQuery), query, pageLimit);
+        }
+        WaypointList list = fileManager == null ? null : fileManager.getWaypointListByName(listName);
+        if (list == null) {
+            return Errors.noList(dims, dimension, listName);
+        }
+        return ListScreen.list(dims, dimension, list,
+                this.waypointQueryEngine.queryList(dimension, listName, engineQuery), query, pageLimit);
+    }
+
+    /** The search and sort of a list query, measured from the source's position. */
+    private WaypointQueryEngine.Query engineQuery(S source, ListQuery query) {
+        return new WaypointQueryEngine.Query(query.search(), query.sort(), getSourcePosition(source),
+                toDimensionName(getSourceDimension(source)), query.descending());
+    }
+
+    /** /wp tp, remove, edit and details without a target: this dimension's list and what to click in it. */
+    private int executeTargetHint(S source, String hintKey, HelpTopics.Topic plainTopic) {
+        Viewer viewer = viewer(source);
+        if (viewer.plainText()) {
+            this.sender.sendMessage(source, HelpScreen.topic(viewer, plainTopic,
+                    isNavigationMethodSupported(NavigationMethod.TEXT_DISPLAY)));
+            return Command.SINGLE_SUCCESS;
+        }
+        this.sender.sendMessage(source, new ChatLines()
+                .add(translatable(hintKey, NamedTextColor.GRAY))
+                .add(listScreen(source, getSourceDimension(source), null, ListQuery.DEFAULT))
+                .build());
+        return Command.SINGLE_SUCCESS;
     }
 
     private String getOptionalString(CommandContext<S> context, String name, String defaultValue) {
@@ -2471,31 +2540,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 toDimensionName(getSourceDimension(source)),
                 options.reversed()
         );
-    }
-
-    private void executeListDimension(
-            S source,
-            D dimensionArgument,
-            String listName,
-            ListOptions options
-    ) {
-        runWithSelectorTarget(source, dimensionArgument, fileManager -> {
-            String dimensionName = fileManager.getDimensionName();
-            if (listName != null && fileManager.getWaypointListByName(listName) == null) {
-                this.sender.sendError(source, translatable("waypoint.nonexist.list", parse(listName)));
-                return;
-            }
-            WaypointQueryEngine.Query query = createListQuery(source, options);
-            WaypointQueryEngine.QueryResult result = listName == null
-                    ? this.waypointQueryEngine.queryDimension(dimensionName, query)
-                    : this.waypointQueryEngine.queryList(dimensionName, listName, query);
-            sendListQueryResult(
-                    source,
-                    new ListTarget(false, dimensionName, listName),
-                    options,
-                    result
-            );
-        });
     }
 
     private void sendListQueryResult(

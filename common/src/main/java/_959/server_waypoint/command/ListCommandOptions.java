@@ -1,8 +1,10 @@
 package _959.server_waypoint.command;
 
 import _959.server_waypoint.core.waypoint.WaypointSorting;
+import _959.server_waypoint.text.chat.ListView;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.*;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
 import static _959.server_waypoint.command.CoreWaypointCommand.*;
@@ -11,36 +13,32 @@ import static com.mojang.brigadier.arguments.StringArgumentType.string;
 import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
 import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
 
-/** Shared local/remote list grammar; only execution and exact-identity routing differ. */
+/**
+ * Shared local/remote list grammar; only execution and exact-identity routing differ. Options come
+ * in the order search, sort, order, page, limit, view, with search also allowed last and page also
+ * allowed after limit and view, which is where the commands the screens build put it.
+ */
 final class ListCommandOptions<S> {
     @FunctionalInterface interface Factory<S> {
-        Command<S> create(WaypointSorting.SortMode mode, boolean reversed, boolean grouped);
+        Command<S> create(WaypointSorting.SortMode mode, boolean reversed, ListView view);
     }
+    private static final List<ListView> VIEWS = List.of(ListView.LISTS, ListView.TREE, ListView.FLAT);
     private final Factory<S> factory;
     private final Function<String, Command<S>> reserved;
     ListCommandOptions(Factory<S> factory, Function<String, Command<S>> reserved) {
         this.factory = factory; this.reserved = reserved;
     }
-    private Command<S> command(WaypointSorting.SortMode mode, boolean reversed) { return command(mode, reversed, true); }
-    private Command<S> command(WaypointSorting.SortMode mode, boolean reversed, boolean grouped) {
-        return factory.create(mode, reversed, grouped);
+    private Command<S> command(WaypointSorting.SortMode mode, boolean reversed) { return command(mode, reversed, ListView.DEFAULT); }
+    private Command<S> command(WaypointSorting.SortMode mode, boolean reversed, ListView view) {
+        return factory.create(mode, reversed, view);
     }
     void configure(ArgumentBuilder<S, ?> targetNode) {
         targetNode.executes(command(WaypointSorting.SortMode.DEFAULT, false));
         LiteralArgumentBuilder<S> searchNode = listSearchNode();
         LiteralArgumentBuilder<S> sortNode = listSortNode();
-        LiteralArgumentBuilder<S> pageNode = listPageNode(
-                WaypointSorting.SortMode.DEFAULT,
-                false
-        );
-        LiteralArgumentBuilder<S> limitNode = listLimitNode(
-                WaypointSorting.SortMode.DEFAULT,
-                false
-        );
-        LiteralArgumentBuilder<S> viewNode = listViewNode(
-                WaypointSorting.SortMode.DEFAULT,
-                false
-        );
+        LiteralArgumentBuilder<S> pageNode = listPageNode(WaypointSorting.SortMode.DEFAULT, false);
+        LiteralArgumentBuilder<S> limitNode = listLimitNode(WaypointSorting.SortMode.DEFAULT, false);
+        LiteralArgumentBuilder<S> viewNode = listViewNode(WaypointSorting.SortMode.DEFAULT, false);
         if (reserved != null) {
             searchNode.executes(reserved.apply(SEARCH_COMMAND));
             sortNode.executes(reserved.apply(SORT_COMMAND));
@@ -68,37 +66,40 @@ final class ListCommandOptions<S> {
 
     private LiteralArgumentBuilder<S> trailingListSearchNode(
             WaypointSorting.SortMode sortMode,
-            boolean reversed
-    ) {
-        return trailingListSearchNode(sortMode, reversed, true);
-    }
-
-    private LiteralArgumentBuilder<S> trailingListSearchNode(
-            WaypointSorting.SortMode sortMode,
             boolean reversed,
-            boolean groupByLists
+            ListView view
     ) {
         RequiredArgumentBuilder<S, String> queryNode = argument(SEARCH_QUERY_ARG, string());
-        queryNode.executes(command(sortMode, reversed, groupByLists));
+        queryNode.executes(command(sortMode, reversed, view));
         LiteralArgumentBuilder<S> searchNode = literal(SEARCH_COMMAND);
         return searchNode.then(queryNode);
+    }
+
+    /** "page <n>" as the last option, after limit or view. */
+    private LiteralArgumentBuilder<S> trailingPageNode(
+            WaypointSorting.SortMode sortMode,
+            boolean reversed,
+            ListView view
+    ) {
+        RequiredArgumentBuilder<S, Integer> pageNode = argument(PAGE_NUMBER_ARG, integer(1));
+        pageNode.executes(command(sortMode, reversed, view));
+        pageNode.then(trailingListSearchNode(sortMode, reversed, view));
+        LiteralArgumentBuilder<S> pageLiteral = literal(PAGE_COMMAND);
+        return pageLiteral.then(pageNode);
     }
 
     private LiteralArgumentBuilder<S> listViewNode(
             WaypointSorting.SortMode sortMode,
             boolean reversed
     ) {
-        LiteralArgumentBuilder<S> treeNode = literal(TREE_VIEW);
-        treeNode.executes(command(sortMode, reversed, true));
-        treeNode.then(trailingListSearchNode(sortMode, reversed, true));
-
-        LiteralArgumentBuilder<S> flatNode = literal(FLAT_VIEW);
-        flatNode.executes(command(sortMode, reversed, false));
-        flatNode.then(trailingListSearchNode(sortMode, reversed, false));
-
         LiteralArgumentBuilder<S> viewNode = literal(VIEW_COMMAND);
-        viewNode.then(treeNode);
-        viewNode.then(flatNode);
+        for (ListView view : VIEWS) {
+            LiteralArgumentBuilder<S> valueNode = literal(view.id());
+            valueNode.executes(command(sortMode, reversed, view));
+            valueNode.then(trailingListSearchNode(sortMode, reversed, view));
+            valueNode.then(trailingPageNode(sortMode, reversed, view));
+            viewNode.then(valueNode);
+        }
         return viewNode;
     }
 
@@ -110,7 +111,7 @@ final class ListCommandOptions<S> {
             if (sortMode != WaypointSorting.SortMode.DEFAULT) {
                 modeNode.then(listOrderNode(sortMode));
             }
-            modeNode.then(trailingListSearchNode(sortMode, false));
+            modeNode.then(trailingListSearchNode(sortMode, false, ListView.DEFAULT));
             modeNode.then(listPageNode(sortMode, false));
             modeNode.then(listLimitNode(sortMode, false));
             modeNode.then(listViewNode(sortMode, false));
@@ -123,22 +124,15 @@ final class ListCommandOptions<S> {
             WaypointSorting.SortMode sortMode
     ) {
         LiteralArgumentBuilder<S> orderNode = literal(ORDER_COMMAND);
-
-        LiteralArgumentBuilder<S> ascendingNode = literal("ascending");
-        ascendingNode.executes(command(sortMode, false));
-        ascendingNode.then(trailingListSearchNode(sortMode, false));
-        ascendingNode.then(listPageNode(sortMode, false));
-        ascendingNode.then(listLimitNode(sortMode, false));
-        ascendingNode.then(listViewNode(sortMode, false));
-        orderNode.then(ascendingNode);
-
-        LiteralArgumentBuilder<S> descendingNode = literal("descending");
-        descendingNode.executes(command(sortMode, true));
-        descendingNode.then(trailingListSearchNode(sortMode, true));
-        descendingNode.then(listPageNode(sortMode, true));
-        descendingNode.then(listLimitNode(sortMode, true));
-        descendingNode.then(listViewNode(sortMode, true));
-        orderNode.then(descendingNode);
+        for (boolean descending : new boolean[]{false, true}) {
+            LiteralArgumentBuilder<S> directionNode = literal(descending ? "descending" : "ascending");
+            directionNode.executes(command(sortMode, descending));
+            directionNode.then(trailingListSearchNode(sortMode, descending, ListView.DEFAULT));
+            directionNode.then(listPageNode(sortMode, descending));
+            directionNode.then(listLimitNode(sortMode, descending));
+            directionNode.then(listViewNode(sortMode, descending));
+            orderNode.then(directionNode);
+        }
         return orderNode;
     }
 
@@ -148,7 +142,7 @@ final class ListCommandOptions<S> {
     ) {
         RequiredArgumentBuilder<S, Integer> pageNode = argument(PAGE_NUMBER_ARG, integer(1));
         pageNode.executes(command(sortMode, reversed));
-        pageNode.then(trailingListSearchNode(sortMode, reversed));
+        pageNode.then(trailingListSearchNode(sortMode, reversed, ListView.DEFAULT));
         pageNode.then(listLimitNode(sortMode, reversed));
         pageNode.then(listViewNode(sortMode, reversed));
         LiteralArgumentBuilder<S> pageLiteral = literal(PAGE_COMMAND);
@@ -161,10 +155,10 @@ final class ListCommandOptions<S> {
     ) {
         RequiredArgumentBuilder<S, Integer> limitNode = argument(PAGE_LIMIT_ARG, integer(1, MAX_PAGE_LIMIT));
         limitNode.executes(command(sortMode, reversed));
-        limitNode.then(trailingListSearchNode(sortMode, reversed));
+        limitNode.then(trailingListSearchNode(sortMode, reversed, ListView.DEFAULT));
         limitNode.then(listViewNode(sortMode, reversed));
+        limitNode.then(trailingPageNode(sortMode, reversed, ListView.DEFAULT));
         LiteralArgumentBuilder<S> limitLiteral = literal(LIMIT_COMMAND);
         return limitLiteral.then(limitNode);
     }
-
 }
