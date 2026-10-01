@@ -53,6 +53,8 @@ import _959.server_waypoint.text.chat.Chat;
 import _959.server_waypoint.text.feedback.Broadcasts;
 import _959.server_waypoint.text.feedback.DetailsScreen;
 import _959.server_waypoint.text.feedback.NavigationScreens;
+import _959.server_waypoint.text.feedback.UploadScreens;
+import _959.server_waypoint.text.feedback.WaypointRefs;
 import _959.server_waypoint.text.feedback.Results;
 import _959.server_waypoint.text.feedback.ListScreen;
 import _959.server_waypoint.text.feedback.PickerScreens;
@@ -940,6 +942,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private LiteralArgumentBuilder<S> uploadCommandNode() {
         LiteralArgumentBuilder<S> upload = literal(UPLOAD_COMMAND);
         upload.requires(this::hasUploadPermission);
+        upload.executes(context -> executeUploadPanel(context.getSource()));
         RequiredArgumentBuilder<S, String> source = sourceNode();
         source.executes(context -> executeUploadAndReturn(
                 context.getSource(), getString(context, UPLOAD_SOURCE_ARG),
@@ -991,6 +994,21 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 source, uploadSource, conflictPolicy, deleteMissing,
                 scope, dimensionArgument, listName, waypointName
         );
+        return Command.SINGLE_SUCCESS;
+    }
+
+    /** /wp upload: the map mods and their modes, for a player whose client has the mod. */
+    private int executeUploadPanel(S source) {
+        if (getPlayer(source) == null) {
+            this.sender.sendError(source, Errors.playerOnly());
+            return 0;
+        }
+        Viewer viewer = viewer(source);
+        if (!viewer.hasMod()) {
+            this.sender.sendError(source, Errors.of("wp.error.upload.no_mod"));
+            return 0;
+        }
+        this.sender.sendMessage(source, UploadScreens.panel(viewer));
         return Command.SINGLE_SUCCESS;
     }
 
@@ -1905,87 +1923,65 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private void executeDownload(S source) {
         WaypointData waypointData = this.waypointServer.toWorldWaypointData();
         if (waypointData == null) {
-            this.sender.sendMessage(source, translatable("waypoint.no.waypoints"));
+            this.sender.sendError(source, Errors.of("wp.error.download.nothing"));
             return;
         }
-        this.sendDownload(
-                source,
-                waypointData,
-                translatable("waypoint.download.all")
-        );
+        this.sendDownload(source, waypointData, waypointCount(waypointData));
     }
 
     private void executeDownload(S source, D dimensionArgument) {
         runWithSelectorTarget(source, dimensionArgument, (fileManager) -> {
             String dimensionName = fileManager.getDimensionName();
             if (fileManager.hasNoWaypoints()) {
-                this.sender.sendError(source, translatable("waypoint.empty.dimension", dimensionNameWithColor(dimensionName)));
+                this.sender.sendError(source, Errors.of("wp.error.download.empty", dimensions(source).name(dimensionName)));
                 return;
             }
-            this.sendDownload(
-                    source,
-                    WaypointData.dimension(fileManager.toDimensionWaypointData()),
-                    translatable(
-                            "waypoint.download.dimension",
-                            dimensionNameWithColor(dimensionName)
-                    )
-            );
+            WaypointData waypointData = WaypointData.dimension(fileManager.toDimensionWaypointData());
+            this.sendDownload(source, waypointData, waypointCount(waypointData));
         });
     }
 
     private void executeDownload(S source, D dimensionArgument, String listName) {
         runWithSelectorTarget(source, dimensionArgument, listName,
-                (fileManager, waypointList) -> {
-                    this.sendDownload(
-                            source,
-                            WaypointData.waypointList(
-                                    fileManager.getDimensionName(),
-                                    waypointList
-                            ),
-                            translatable(
-                                    "waypoint.download.list",
-                                    parse(waypointList.displayName())
-                            )
-                    );
-                }, (fileManager, waypointList) ->
-                        this.sender.sendError(source, translatable("waypoint.empty.list", parse(waypointList.displayName())))
-        );
+                (fileManager, waypointList) -> this.sendDownload(source,
+                        WaypointData.waypointList(fileManager.getDimensionName(), waypointList), waypointList.size()),
+                (fileManager, waypointList) -> this.sender.sendError(source, Errors.of("wp.error.download.empty",
+                        WaypointRefs.label(waypointList.displayName(), waypointList.name()))));
     }
 
     private void executeDownload(S source, D dimensionArgument, String listName, String name) {
-        runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) -> {
-            String dimensionName = fileManager.getDimensionName();
-            this.sendDownload(
-                    source,
-                    new WaypointModificationMessage(
-                            dimensionName,
-                            listName,
-                            waypointList.displayName(),
-                            name,
-                            waypoint,
-                            WaypointModificationType.ADD,
-                            waypointList.getSyncNum()
-                    ),
-                    translatable(
-                            "waypoint.download.waypoint",
-                            waypointTextWithTp(waypoint, dimensionName, listName)
-                    )
-            );
-        });
+        runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) ->
+                this.sendDownload(source, new WaypointModificationMessage(
+                        fileManager.getDimensionName(),
+                        listName,
+                        waypointList.displayName(),
+                        name,
+                        waypoint,
+                        WaypointModificationType.ADD,
+                        waypointList.getSyncNum()
+                ), 1));
     }
 
-    private void sendDownload(S source, ChunkedMessage message, Component successMessage) {
+    private static int waypointCount(WaypointData waypointData) {
+        return waypointData.dimensions().stream()
+                .flatMap(dimension -> dimension.waypointLists().stream())
+                .mapToInt(WaypointList::size)
+                .sum();
+    }
+
+    /** ✔ Sent 12 waypoints to your map mod, once the client has received every chunk. */
+    private void sendDownload(S source, ChunkedMessage message, int waypoints) {
         _959.server_waypoint.core.network.ChunkedMessageDelivery delivery =
                 this.sender.sendChunkedMessage(source, message);
         if (!delivery.queued()) {
-            this.sender.sendError(source, translatable("waypoint.network.delivery_failed"));
+            this.sender.sendError(source, Errors.of("wp.error.delivery"));
             return;
         }
         delivery.completion().whenComplete((result, exception) -> {
             if (exception == null && result != null && result.delivered()) {
-                this.sender.sendMessage(source, successMessage);
+                this.sender.sendMessage(source, Results.sent(waypoints));
             } else {
-                this.sender.sendError(source, translatable("waypoint.network.delivery_failed"));
+                this.sender.sendError(source, Errors.of("wp.error.delivery"));
             }
         });
     }
@@ -2038,19 +2034,16 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         try {
             target = UploadTarget.valueOf(uploadSource.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
-            this.sender.sendError(
-                    source,
-                    translatable("waypoint.upload.source.invalid", text(uploadSource))
-            );
+            this.sender.sendError(source, Errors.of("wp.error.upload.source", text(uploadSource)));
             return;
         }
         P player = getPlayer(source);
         if (player == null) {
-            this.sender.sendError(source, translatable("waypoint.upload.player-only"));
+            this.sender.sendError(source, Errors.playerOnly());
             return;
         }
         if (!usesLocalUpload(source, player) && !this.sender.canSendChunkedMessage(player)) {
-            this.sender.sendError(source, translatable("waypoint.upload.client.incompatible"));
+            this.sender.sendError(source, Errors.of("wp.error.upload.no_mod"));
             return;
         }
 
@@ -2066,7 +2059,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             dimensions = List.of(dimensionName);
         }
         if (dimensions.isEmpty()) {
-            this.sender.sendError(source, translatable("waypoint.upload.request.invalid"));
+            this.sender.sendError(source, Errors.of("wp.error.upload.request"));
             return;
         }
 
@@ -2074,7 +2067,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 player, target, scope, conflictPolicy, deleteMissing, dimensions, listName, waypointName
         );
         if (beginResult.status() == UploadCoordinator.BeginStatus.BUSY) {
-            this.sender.sendError(source, translatable("waypoint.upload.busy"));
+            this.sender.sendError(source, Errors.of("wp.error.upload.busy"));
             return;
         }
         if (beginResult.status() == UploadCoordinator.BeginStatus.COOLDOWN) {
@@ -2082,10 +2075,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     1L,
                     (beginResult.cooldownRemaining().toMillis() + 999L) / 1_000L
             );
-            this.sender.sendError(source, translatable(
-                    "waypoint.upload.cooldown",
-                    text(remainingSeconds)
-            ));
+            this.sender.sendError(source, Errors.of("wp.error.upload.cooldown", text(remainingSeconds)));
             return;
         }
         UploadRequestBuffer request = Objects.requireNonNull(beginResult.request());
@@ -2099,15 +2089,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     request.requestId(),
                     "upload request delivery failed"
             )) {
-                this.sender.sendPlayerMessage(
-                        player,
-                        translatable("waypoint.upload.request.delivery_failed")
-                );
+                this.sender.sendPlayerMessage(player, Errors.of("wp.error.upload.delivery"));
             }
         });
-        this.sender.sendMessage(source, translatable(deleteMissing
-                ? "waypoint.upload.requested.force-delete"
-                : "waypoint.upload.requested"));
+        this.sender.sendMessage(source, UploadScreens.requested(deleteMissing));
     }
 
     private LiteralArgumentBuilder<S> navigationCommandNode() {

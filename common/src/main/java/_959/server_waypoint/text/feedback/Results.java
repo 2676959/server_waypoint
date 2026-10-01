@@ -114,6 +114,11 @@ public final class Results {
                 .build();
     }
 
+    /** ✔ Sent 12 waypoints to your map mod */
+    public static Component sent(int waypoints) {
+        return Chat.ok(translatable("wp.download.sent", Chat.count("wp.count.waypoint", waypoints)));
+    }
+
     public static Component keyGenerated(String publicKey) {
         return Chat.ok(translatable("wp.result.key_generated", text(publicKey)));
     }

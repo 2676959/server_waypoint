@@ -296,6 +296,17 @@ class CommandFeedbackTest {
     }
 
     @Test
+    void uploadWithoutArgumentsOpensTheUploadPanelForPlayersWithTheMod() {
+        assertEquals("Upload from your map mod", lines(this.harness.run(CommandHarness.player(), "wp upload")).get(0));
+        assertEquals("Xaero's Minimap  Merge · Prefer mine",
+                lines(this.harness.run(CommandHarness.player().withPermissions("upload"), "wp upload")).get(1));
+        assertEquals("✘ Only players can do that.", render(this.harness.run(CommandHarness.console(), "wp upload")));
+        this.harness.sender.handshake = false;
+        assertEquals("✘ Uploading needs Server Waypoint on your client.",
+                render(this.harness.run(CommandHarness.player(), "wp upload")));
+    }
+
+    @Test
     void playersMessagesEndWithOneNewline() {
         assertEquals("Farms\n", render(PlatformMessageSender.forPlayer(text("Farms"))));
     }

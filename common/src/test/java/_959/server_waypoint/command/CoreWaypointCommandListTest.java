@@ -156,7 +156,7 @@ class CoreWaypointCommandListTest {
 
         assertTrue(this.sender.messages.isEmpty());
         completion.complete(ChunkedMessageSendResult.DELIVERED);
-        assertTrue(translationKeys(lastMessage()).contains("waypoint.download.all"));
+        assertTrue(translationKeys(lastMessage()).contains("wp.download.sent"));
     }
 
     @Test
@@ -169,7 +169,7 @@ class CoreWaypointCommandListTest {
 
         assertTrue(translationKeys(
                 this.sender.errors.get(this.sender.errors.size() - 1)
-        ).contains("waypoint.network.delivery_failed"));
+        ).contains("wp.error.delivery"));
     }
 
     @Test
@@ -461,13 +461,13 @@ class CoreWaypointCommandListTest {
 
         remoteDispatcher.execute("wp upload xaero overworld", this.source);
 
-        assertTrue(translationKeys(this.sender.errors.get(0)).contains("waypoint.upload.client.incompatible"));
+        assertTrue(translationKeys(this.sender.errors.get(0)).contains("wp.error.upload.no_mod"));
         assertNull(command.collectedTarget);
         assertEquals(0, this.sender.sentPackets);
     }
 
     @Test
-    void uploadRequiresSourceAndSuggestsSupportedTargets() throws CommandSyntaxException {
+    void uploadSuggestsSupportedTargetsAndRejectsOthers() throws CommandSyntaxException {
         List<String> suggestions = this.dispatcher.getCompletionSuggestions(
                         this.dispatcher.parse("wp upload ", this.source)
                 ).join().getList().stream()
@@ -476,14 +476,10 @@ class CoreWaypointCommandListTest {
 
         assertEquals(2, suggestions.size());
         assertTrue(suggestions.containsAll(List.of("xaero", "voxelmap")));
-        assertThrows(
-                CommandSyntaxException.class,
-                () -> this.dispatcher.execute("wp upload", this.source)
-        );
 
         this.dispatcher.execute("wp upload unsupported", this.source);
         assertTrue(translationKeys(this.sender.errors.get(0))
-                .contains("waypoint.upload.source.invalid"));
+                .contains("wp.error.upload.source"));
     }
 
     @Test

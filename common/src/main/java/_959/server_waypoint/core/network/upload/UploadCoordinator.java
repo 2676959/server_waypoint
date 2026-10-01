@@ -14,7 +14,9 @@ import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
 import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationTarget;
-import _959.server_waypoint.text.TextButtonBuilder;
+import _959.server_waypoint.text.feedback.Errors;
+import _959.server_waypoint.text.feedback.UploadScreens;
+import _959.server_waypoint.util.StringCommandBuilder;
 import net.kyori.adventure.text.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -35,9 +37,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
-import static net.kyori.adventure.text.Component.text;
-import static net.kyori.adventure.text.Component.translatable;
 
 /**
  * Correlates a player-issued upload command with the C2S response and merges the
@@ -243,34 +242,34 @@ public final class UploadCoordinator<P> {
         if (pending == null
                 || !this.matchesPlayer(pending, player)
                 || !pending.request.requestId().equals(upload.requestId())) {
-            this.playerMessageSender.send(player, translatable("waypoint.upload.request.invalid"));
+            this.playerMessageSender.send(player, Errors.of("wp.error.upload.request"));
             return;
         }
         if (pending.expired(this.clock.instant())) {
             this.finishPending(pending, false);
-            this.playerMessageSender.send(player, translatable("waypoint.upload.request.expired"));
+            this.playerMessageSender.send(player, Errors.of("wp.error.upload.expired"));
             return;
         }
         if (!pending.phase.compareAndSet(RequestPhase.RECEIVING, RequestPhase.APPLYING)) {
-            this.playerMessageSender.send(player, translatable("waypoint.upload.request.invalid"));
+            this.playerMessageSender.send(player, Errors.of("wp.error.upload.request"));
             return;
         }
         try {
             if (!this.permissionChecker.test(player)) {
-                this.playerMessageSender.send(player, translatable("waypoint.upload.permission.revoked"));
+                this.playerMessageSender.send(player, Errors.of("wp.error.upload.permission"));
                 return;
             }
             if (pending.deleteMissing && !this.deletePermissionChecker.test(player)) {
-                this.playerMessageSender.send(player, translatable("waypoint.upload.delete.permission.revoked"));
+                this.playerMessageSender.send(player, Errors.of("wp.error.upload.delete_permission"));
                 return;
             }
             if (upload.status() != UploadStatus.SUCCESS) {
                 this.playerMessageSender.send(player, switch (upload.status()) {
-                    case XAERO_NOT_INSTALLED -> translatable("waypoint.upload.xaero.missing");
-                    case XAERO_NOT_READY -> translatable("waypoint.upload.xaero.not-ready");
-                    case VOXELMAP_NOT_INSTALLED -> translatable("waypoint.upload.voxelmap.missing");
-                    case VOXELMAP_NOT_READY -> translatable("waypoint.upload.voxelmap.not-ready");
-                    case FAILED -> translatable("waypoint.upload.client.failed");
+                    case XAERO_NOT_INSTALLED -> Errors.of("wp.error.upload.xaero.missing");
+                    case XAERO_NOT_READY -> Errors.of("wp.error.upload.xaero.not_ready");
+                    case VOXELMAP_NOT_INSTALLED -> Errors.of("wp.error.upload.voxelmap.missing");
+                    case VOXELMAP_NOT_READY -> Errors.of("wp.error.upload.voxelmap.not_ready");
+                    case FAILED -> Errors.of("wp.error.upload.export");
                     case SUCCESS -> throw new IllegalStateException("Handled above");
                 });
                 return;
@@ -279,7 +278,7 @@ public final class UploadCoordinator<P> {
             try {
                 appendUpload(pending, waypointData.dimensions());
             } catch (IllegalArgumentException exception) {
-                this.playerMessageSender.send(player, translatable("waypoint.upload.request.invalid"));
+                this.playerMessageSender.send(player, Errors.of("wp.error.upload.request"));
                 return;
             }
 
@@ -293,10 +292,10 @@ public final class UploadCoordinator<P> {
                         ChunkedMessageManager.MAX_MESSAGE_BYTES,
                         exception
                 );
-                failure = translatable("waypoint.network.encoding_failed");
+                failure = Errors.of("wp.error.encoding");
             } catch (RuntimeException exception) {
                 WaypointServerCore.LOGGER.warn("Failed to apply waypoint upload", exception);
-                failure = translatable("waypoint.upload.client.failed");
+                failure = Errors.of("wp.error.upload.apply");
             }
             // Dimensions commit independently. Publish the validated committed results even
             // if a later dimension failed, without consuming one transfer slot per dimension.
@@ -312,28 +311,14 @@ public final class UploadCoordinator<P> {
                     return;
                 }
             }
-            this.playerMessageSender.send(player, translatable(
-                    failure == null ? "waypoint.upload.complete" : "waypoint.upload.partial",
-                    text(summary.added), text(summary.replaced), text(summary.deleted),
-                    text(summary.unchanged), text(summary.conflicts), text(summary.skipped)
-            ));
-            this.playerMessageSender.send(player, translatable("waypoint.upload.legend"));
-            if (summary.conflicts > 0 && pending.conflictPolicy == UploadConflictPolicy.SERVER) {
-                this.playerMessageSender.send(player, translatable(
-                        "waypoint.upload.conflicts.server-kept",
-                        text(summary.conflicts),
-                        TextButtonBuilder.uploadPreferLocalButton(pending.scope, pending.request)
-                ));
-            }
-            if (summary.staleDimensions > 0) {
-                this.playerMessageSender.send(player, translatable(
-                        "waypoint.upload.request.stale",
-                        text(summary.staleDimensions)
-                ));
-            }
-            if (summary.saveFailed) {
-                this.playerMessageSender.send(player, translatable("waypoint.upload.save.failed"));
-            }
+            this.playerMessageSender.send(player, UploadScreens.result(new UploadScreens.Outcome(
+                    pending.request.target(), summary.added, summary.replaced, summary.deleted, summary.unchanged,
+                    summary.conflicts, summary.skipped, summary.staleDimensions, summary.saveFailed, failure != null,
+                    pending.conflictPolicy == UploadConflictPolicy.SERVER
+                            ? StringCommandBuilder.uploadCmd(pending.scope, pending.request, UploadConflictPolicy.LOCAL, false)
+                            : null,
+                    StringCommandBuilder.uploadCmd(pending.scope, pending.request, pending.conflictPolicy,
+                            pending.deleteMissing))));
         } finally {
             this.finishPending(pending, true);
         }
