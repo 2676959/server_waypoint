@@ -206,6 +206,38 @@ class CommandFeedbackTest {
     }
 
     @Test
+    void detailsAndEditsShowTheDetailsPanelWithTheResultOnTop() {
+        this.harness.addList("minecraft:overworld", "Farms", CommandHarness.waypoint("Iron Farm", "IF", 0xAAAAAA, 300, 80, 150));
+        CommandHarness.Source player = CommandHarness.player();
+        String edit = "wp edit waypoint minecraft:overworld Farms \"Iron Farm\" ";
+
+        assertEquals("Overworld › Farms › [IF] Iron Farm",
+                lines(this.harness.run(player, "wp details waypoint minecraft:overworld Farms \"Iron Farm\"")).get(0));
+        List<String> edited = lines(this.harness.run(player, edit + "set yaw 90"));
+        assertEquals("✔ Updated the facing", edited.get(0));
+        assertEquals("[✎] Yaw: 90° (west)", edited.get(8));
+        assertEquals("✔ Updated the visibility", lines(this.harness.run(player, edit + "set visibility local")).get(0));
+        assertEquals("✔ Updated the position", lines(this.harness.run(player, edit + "set position ~ ~ ~")).get(0));
+        assertEquals("Overworld › Farms  1 waypoint",
+                lines(this.harness.run(player, "wp details list minecraft:overworld Farms")).get(0));
+        this.harness.run(player, "wp edit list minecraft:overworld Farms set display-name \"Farm Row\"");
+        assertEquals("✔ Cleared the display name",
+                lines(this.harness.run(player, "wp edit list minecraft:overworld Farms clear display-name")).get(0));
+    }
+
+    @Test
+    void theConsoleReadsDetailsWithoutButtons() {
+        this.harness.addList("minecraft:overworld", "Farms", CommandHarness.waypoint("Iron Farm", "IF", 0xAAAAAA, 300, 80, 150));
+
+        List<String> details = lines(this.harness.run(CommandHarness.console(),
+                "wp details waypoint minecraft:overworld Farms \"Iron Farm\""));
+
+        assertEquals("Overworld (minecraft:overworld) › Farms › [IF] Iron Farm", details.get(0));
+        assertEquals("Position: 300, 80, 150", details.get(5));
+        assertEquals(11, details.size());
+    }
+
+    @Test
     void playersMessagesEndWithOneNewline() {
         assertEquals("Farms\n", render(PlatformMessageSender.forPlayer(text("Farms"))));
     }

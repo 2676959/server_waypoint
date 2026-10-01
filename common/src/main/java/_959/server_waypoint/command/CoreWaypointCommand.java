@@ -49,6 +49,7 @@ import _959.server_waypoint.text.chat.ListView;
 import _959.server_waypoint.text.chat.Viewer;
 import _959.server_waypoint.text.feedback.DimensionScreens;
 import _959.server_waypoint.text.feedback.Errors;
+import _959.server_waypoint.text.feedback.DetailsScreen;
 import _959.server_waypoint.text.feedback.ListScreen;
 import _959.server_waypoint.text.feedback.PickerScreens;
 import _959.server_waypoint.text.feedback.HelpScreen;
@@ -1269,16 +1270,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                 this.sender.getBroadcastPlayers(source),
                                 update
                         );
-                        this.sender.sendMessage(
-                                source,
-                                _959.server_waypoint.text.WaypointDetailsTextBuilder.listDetails(
-                                        dimensionName,
-                                        after,
-                                        hasAddPermission(source),
-                                        hasEditPermission(source),
-                                        hasRemovePermission(source)
-                                )
-                        );
+                        Viewer viewer = viewer(source);
+                        this.sender.sendMessage(source, DetailsScreen.list(dimensions(source, viewer), dimensionName,
+                                after, DetailsScreen.updated(patch)));
                     }
             );
         } catch (MessageEncodingException exception) {
@@ -1343,18 +1337,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                 this.sender.getBroadcastPlayers(source),
                                 update
                         );
-                        this.sender.sendMessage(
-                                source,
-                                _959.server_waypoint.text.WaypointDetailsTextBuilder.waypointDetails(
-                                        dimensionName,
-                                        list,
-                                        after,
-                                        hasEditPermission(source),
-                                        hasRemovePermission(source),
-                                        hasTpPermission(source),
-                                        hasNavigatePermission(source)
-                                )
-                        );
+                        Viewer viewer = viewer(source);
+                        this.sender.sendMessage(source, DetailsScreen.waypoint(dimensions(source, viewer), dimensionName,
+                                list, after, DetailsScreen.updated(patch)));
                     }
             );
         } catch (MessageEncodingException exception) {
@@ -1377,17 +1362,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     }
 
     private void executeListDetails(S source, D dimensionArgument, String listIdentifier) {
-        BiConsumer<WaypointFileManager, WaypointList> action = (fileManager, waypointList) ->
-                this.sender.sendMessage(
-                        source,
-                        _959.server_waypoint.text.WaypointDetailsTextBuilder.listDetails(
-                                fileManager.getDimensionName(),
-                                waypointList,
-                                hasAddPermission(source),
-                                hasEditPermission(source),
-                                hasRemovePermission(source)
-                        )
-                );
+        BiConsumer<WaypointFileManager, WaypointList> action = (fileManager, waypointList) -> {
+            Viewer viewer = viewer(source);
+            this.sender.sendMessage(source, DetailsScreen.list(dimensions(source, viewer), fileManager.getDimensionName(),
+                    waypointList, null));
+        };
         runWithSelectorTarget(source, dimensionArgument, listIdentifier, action, action);
     }
 
@@ -1397,24 +1376,12 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             String listIdentifier,
             String waypointIdentifier
     ) {
-        runWithSelectorTarget(
-                source,
-                dimensionArgument,
-                listIdentifier,
-                waypointIdentifier,
-                (fileManager, waypointList, waypoint) -> this.sender.sendMessage(
-                        source,
-                        _959.server_waypoint.text.WaypointDetailsTextBuilder.waypointDetails(
-                                fileManager.getDimensionName(),
-                                waypointList,
-                                waypoint,
-                                hasEditPermission(source),
-                                hasRemovePermission(source),
-                                hasTpPermission(source),
-                                hasNavigatePermission(source)
-                        )
-                )
-        );
+        runWithSelectorTarget(source, dimensionArgument, listIdentifier, waypointIdentifier,
+                (fileManager, waypointList, waypoint) -> {
+                    Viewer viewer = viewer(source);
+                    this.sender.sendMessage(source, DetailsScreen.waypoint(dimensions(source, viewer),
+                            fileManager.getDimensionName(), waypointList, waypoint, null));
+                });
     }
 
     private void sendEditError(S source, EditResultStatus status, String identifier) {
@@ -1456,18 +1423,9 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                             WaypointModificationType.ADD,
                                             result.syncNum()
                                     ));
-                                    this.sender.sendMessage(
-                                            source,
-                                            _959.server_waypoint.text.WaypointDetailsTextBuilder.waypointDetails(
-                                                    entry.dimensionName(),
-                                                    list,
-                                                    waypoint,
-                                                    hasEditPermission(source),
-                                                    hasRemovePermission(source),
-                                                    hasTpPermission(source),
-                                                    hasNavigatePermission(source)
-                                            )
-                                    );
+                                    Viewer viewer = viewer(source);
+                                    this.sender.sendMessage(source, DetailsScreen.waypoint(dimensions(source, viewer),
+                                            entry.dimensionName(), list, waypoint, null));
                                 }
                                 case DIMENSION_NOT_FOUND, LIST_NOT_FOUND -> this.sender.sendError(
                                         source,

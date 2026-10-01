@@ -541,6 +541,20 @@ public class StringCommandBuilder {
         return WAYPOINT_COMMAND_WITH_SLASH + " restore " + escapeArgument(token);
     }
 
+    /** /wp download <dimension> [<list> [<waypoint>]] */
+    public static String downloadCmd(String dimensionName, @Nullable String listName, @Nullable String waypointName) {
+        StringBuilder command = new StringBuilder(WAYPOINT_COMMAND_WITH_SLASH)
+                .append(' ').append(DOWNLOAD_COMMAND)
+                .append(' ').append(dimensionName);
+        if (listName != null) {
+            command.append(' ').append(escapeArgument(listName));
+            if (waypointName != null) {
+                command.append(' ').append(escapeArgument(waypointName));
+            }
+        }
+        return command.toString();
+    }
+
     private static boolean isListOptionLiteral(String listName) {
         return SEARCH_COMMAND.equals(listName)
                 || SORT_COMMAND.equals(listName)
