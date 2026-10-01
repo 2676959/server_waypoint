@@ -105,5 +105,19 @@
   "wp.hint.type_search": "Escribe lo que buscas y pulsa Intro",
   "wp.hint.confirm": "Pulsa Intro para confirmar",
   "wp.hint.fill": "Haz clic para escribirlo",
-  "wp.hint.run": "Haz clic para ejecutarlo"
+  "wp.hint.run": "Haz clic para ejecutarlo",
+
+  "wp.dimension.overworld": "Mundo principal",
+  "wp.dimension.nether": "Nether",
+  "wp.dimension.end": "End",
+  "wp.dimension.here": "Estás aquí",
+  "wp.dimension.not_loaded": "Sin cargar",
+  "wp.dimension.no_lists": "Aún no hay listas",
+  "wp.dimension.type.overworld": "Tipo mundo principal",
+  "wp.dimension.type.nether": "Tipo Nether",
+  "wp.dimension.type.end": "Tipo End",
+  "wp.dimension.type.modded": "Tipo de mod {0}",
+  "wp.coordinates.nether": "Nether {0}",
+  "wp.coordinates.overworld": "Mundo principal {0}",
+  "wp.in": "{0} en {1}"
 }

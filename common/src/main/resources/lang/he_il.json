@@ -105,5 +105,19 @@
   "wp.hint.type_search": "הקלידו מה לחפש ולחצו Enter",
   "wp.hint.confirm": "לחצו Enter לאישור",
   "wp.hint.fill": "לחצו למילוי",
-  "wp.hint.run": "לחצו להרצה"
+  "wp.hint.run": "לחצו להרצה",
+
+  "wp.dimension.overworld": "העולם העליון",
+  "wp.dimension.nether": "הנתר",
+  "wp.dimension.end": "הקצה",
+  "wp.dimension.here": "אתם כאן",
+  "wp.dimension.not_loaded": "לא נטען",
+  "wp.dimension.no_lists": "אין רשימות עדיין",
+  "wp.dimension.type.overworld": "סוג העולם העליון",
+  "wp.dimension.type.nether": "סוג הנתר",
+  "wp.dimension.type.end": "סוג הקצה",
+  "wp.dimension.type.modded": "סוג ממוד {0}",
+  "wp.coordinates.nether": "הנתר {0}",
+  "wp.coordinates.overworld": "העולם העליון {0}",
+  "wp.in": "{0} ב-{1}"
 }

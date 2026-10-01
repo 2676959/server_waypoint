@@ -341,5 +341,19 @@
   "wp.hint.type_search": "输入要查找的内容，然后按回车",
   "wp.hint.confirm": "按回车确认",
   "wp.hint.fill": "点击填入命令",
-  "wp.hint.run": "点击运行"
+  "wp.hint.run": "点击运行",
+
+  "wp.dimension.overworld": "主世界",
+  "wp.dimension.nether": "下界",
+  "wp.dimension.end": "末地",
+  "wp.dimension.here": "你在这里",
+  "wp.dimension.not_loaded": "未加载",
+  "wp.dimension.no_lists": "还没有列表",
+  "wp.dimension.type.overworld": "主世界类型",
+  "wp.dimension.type.nether": "下界类型",
+  "wp.dimension.type.end": "末地类型",
+  "wp.dimension.type.modded": "模组类型 {0}",
+  "wp.coordinates.nether": "下界 {0}",
+  "wp.coordinates.overworld": "主世界 {0}",
+  "wp.in": "{1}中的{0}"
 }

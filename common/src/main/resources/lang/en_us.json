@@ -341,5 +341,19 @@
   "wp.hint.type_search": "Type what to look for, then press Enter",
   "wp.hint.confirm": "Press Enter to confirm",
   "wp.hint.fill": "Click to fill it in",
-  "wp.hint.run": "Click to run it"
+  "wp.hint.run": "Click to run it",
+
+  "wp.dimension.overworld": "Overworld",
+  "wp.dimension.nether": "Nether",
+  "wp.dimension.end": "End",
+  "wp.dimension.here": "You are here",
+  "wp.dimension.not_loaded": "Not loaded",
+  "wp.dimension.no_lists": "No lists yet",
+  "wp.dimension.type.overworld": "Overworld type",
+  "wp.dimension.type.nether": "Nether type",
+  "wp.dimension.type.end": "End type",
+  "wp.dimension.type.modded": "Modded type {0}",
+  "wp.coordinates.nether": "Nether {0}",
+  "wp.coordinates.overworld": "Overworld {0}",
+  "wp.in": "{0} in {1}"
 }

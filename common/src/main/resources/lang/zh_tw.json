@@ -105,5 +105,19 @@
   "wp.hint.type_search": "輸入要搜尋的內容，然後按 Enter",
   "wp.hint.confirm": "按 Enter 確認",
   "wp.hint.fill": "點擊填入指令",
-  "wp.hint.run": "點擊執行"
+  "wp.hint.run": "點擊執行",
+
+  "wp.dimension.overworld": "主世界",
+  "wp.dimension.nether": "地獄",
+  "wp.dimension.end": "終界",
+  "wp.dimension.here": "你在這裡",
+  "wp.dimension.not_loaded": "未載入",
+  "wp.dimension.no_lists": "還沒有列表",
+  "wp.dimension.type.overworld": "主世界類型",
+  "wp.dimension.type.nether": "地獄類型",
+  "wp.dimension.type.end": "終界類型",
+  "wp.dimension.type.modded": "模組類型 {0}",
+  "wp.coordinates.nether": "地獄 {0}",
+  "wp.coordinates.overworld": "主世界 {0}",
+  "wp.in": "{1}中的{0}"
 }
