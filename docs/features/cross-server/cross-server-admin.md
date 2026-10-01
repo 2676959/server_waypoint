@@ -36,7 +36,7 @@ See the [release verification record](validation/cross-server-release-readiness.
    on Velocity. These are canonical Base64 X25519 SPKI keys, not certificates. Never copy a backend's
    `credentials/static.key` to another component. Each component must have its own private key.
 5. Restart Velocity, then both backends. Join through Velocity with a test player and run
-   `/wp remote servers`. Each healthy exported backend should become available. Run
+   `/wp remote`. Each healthy exported backend should show a green dot. Run
    `/wp remote list survival`, then teleport to a real exported target, for example
    `/wp remote tp creative "minecraft:overworld" "Public list" "Home"`.
 6. Verify arrival coordinates and success feedback on the destination. A server switch alone does

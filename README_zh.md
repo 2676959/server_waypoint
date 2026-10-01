@@ -43,28 +43,32 @@
 - 添加和编辑路径点界面也可以设置关键词和描述。
 
 ## 命令
-- `/wp add` 添加新路径点。同一列表中的标识符不能重复。
+运行 `/wp` 打开菜单：大多数功能点一下即可使用，每个界面都会以链接给出下一步操作。控制台、RCON 和命令方块会收到相同信息的纯文本版本，其中写明标识符和坐标。
+- `/wp add` 打开当前维度的列表选择，在你所在的位置添加路径点。同一列表中的标识符不能重复。
   - `/wp add <维度> <列表标识符>` 添加一个路径点列表。
-- `/wp download` 下载路径点并添加到 Xaero 小地图（需客户端安装本模组才生效）。
-- `/wp details list <维度> <列表标识符>` 和 `/wp details waypoint <维度> <列表标识符> <路径点标识符>` 显示全部属性及可用操作。
-- `/wp edit list ...` 和 `/wp edit waypoint ...` 每次设置一个属性，或清除一个可选属性。完整命令格式请运行 `/wp help edit`。
+  - `/wp add <维度> <列表标识符> <x y z> <名称>` 添加一个路径点，缩写自动生成，颜色随机。完整格式还可依次填写缩写、颜色、偏航角、可见范围、关键词、描述和 `icon <namespace:path>`。
+- `/wp download [<维度> [<列表标识符> [<路径点标识符>]]]` 将路径点发送到你的地图模组（需客户端安装本模组）。
+- `/wp details list <维度> <列表标识符>` 和 `/wp details waypoint <维度> <列表标识符> <路径点标识符>` 显示全部属性，并提供编辑按钮。
+- `/wp edit list ...` 和 `/wp edit waypoint ...` 每次设置一个属性，或清除一个可选属性。不填值时，`set color` 打开颜色选择，`set yaw` 打开朝向选择；`set color random` 随机选择颜色。完整命令格式请运行 `/wp help edit`。
   - `/wp edit waypoint <维度> <列表> <路径点> set icon minecraft:diamond` 选用物品图标；使用 `clear icon` 恢复首字母标记。`voxelmap:star` 等 `voxelmap:` ID 可选用 VoxelMap 内置图片。`/wp add` 也接受在可选关键词和描述之后添加 `icon <namespace:path>`。图标 ID 不加引号；图标参数会补全服务器物品 ID 和 VoxelMap 内置图片 ID；`/wp details waypoint` 的图标行提供编辑和清除按钮。
-- `/wp upload <xaero|voxelmap>` 从执行玩家客户端上所选的地图模组导入路径点。冲突、强制覆盖和删除行为详见[从客户端地图模组上传](#从客户端地图模组上传)。
-- `/wp list` 列出当前维度中的路径点。可使用 `all`、维度，或维度加列表名称来更改范围。结果按照服务端配置的每页数量分页（默认 10 个），并提供可点击的排序和翻页按钮。
-  - 添加 `search <查询内容>` 可按路径点名称筛选。
-  - 添加 `sort <default|name|distance|color>`；使用非默认排序时，还可选用 `order <ascending|descending>` 对结果排序。
-  - 添加 `page <页码>` 和/或 `limit <1-100>` 可选择页码或更改每页数量。选项顺序为 `search`、`sort`、`order`、`page`、`limit`；包含空格的值，以及与选项名称相同的列表名称，需要加引号。
-- `/wp remote servers [page <页码> [limit <1-100>]]` 显示缓存中的远程服务器标识及可用状态。
-- `/wp remote list [<服务器> [<维度> [<列表>]]]` 浏览缓存中的远程路径点。其 `search`、`sort`/`order`、`page`、`limit` 和 `view tree|flat` 选项格式与 `/wp list` 相同。标识符必须精确匹配；包含空格或与选项名称相同的名称需要加引号。跨服务器距离不可用，因此按距离排序时会显示提示。
-  - 结果仅供浏览，通过普通服务端聊天显示。过期数据会有标记；目录不可用与成功发布的空目录会分别显示。运行 `/wp help remote` 查看帮助。
+- `/wp help [<主题>]` 说明各个命令，提供可点击的用法和示例。
+- `/wp list` 显示当前维度：能在一页内显示时，列出各列表及其前几个路径点，否则每个列表占一行。可使用 `all`、维度，或维度加列表标识符更改范围。
+  - 选项顺序为 `search <查询内容>`、`sort <default|name|distance|color>`（非默认排序可加 `order <ascending|descending>`）、`limit <1-100>`、`view <lists|tree|flat>`、`page <页码>`。包含空格的值，以及与选项名称相同的列表名称，需要加引号。
+  - 每页只显示完整的列表：树状视图和每列表一行的视图每页最多显示每页数量加 5 行；平铺视图和单个列表每页显示每页数量的行数。
+  - `/wp list dimensions [page <页码>]` 列出所有维度及其路径点数量。
+- `/wp navigate` 显示导航面板。`/wp navigate <维度> <列表> <路径点> [<方式>|default|all]` 开始导航，`/wp navigate use|disable <方式>` 开启或关闭某种方式，`/wp navigate disable` 停止导航，`/wp navigate config text_display` 调整悬浮文字。
+- `/wp remote` 显示远程服务器及其状态；`/wp remote page <页码>` 翻页。
+- `/wp remote list [<服务器> [<维度> [<列表>]]]` 浏览缓存中的远程路径点，选项与 `/wp list` 相同。标识符必须精确匹配；包含空格或与选项名称相同的名称需要加引号。跨服务器距离不可用，因此按距离排序时会显示提示。
+  - 结果仅供浏览，通过普通服务端聊天显示。彩色圆点表示每个服务器的状态：可用、已过期、无法连接或无权访问。`/wp remote details <服务器> <维度> <列表> <路径点>` 显示单个路径点。运行 `/wp help remote` 查看帮助。
   - 启用跨服务器配置后开始同步目录。参见[Velocity 运行时配置](docs/features/cross-server/specs/cross-server-velocity-runtime.md)和[远程目录查询](docs/features/cross-server/specs/cross-server-catalog-queries.md)。
-- `/wp remote tp <服务器> <维度> <列表> <路径点>` 使用缓存中的精确标识符请求跨服务器传送（含空格的名称须加引号）。过期或不存在的目标会在准备阶段前被拒绝；目的地准备完成且重新检查权限通过前，玩家仍留在来源服务器。参见[远程传送发起流程](docs/features/cross-server/specs/cross-server-source-teleport.md)。
+- `/wp remote tp <服务器> <维度> <列表> <路径点>` 使用缓存中的精确标识符请求跨服务器传送（含空格的名称须加引号）。过期或不存在的目标会在准备阶段前被拒绝；目的地准备完成且重新检查权限通过前，玩家仍留在来源服务器，到达后由目的地服务器确认。参见[远程传送发起流程](docs/features/cross-server/specs/cross-server-source-teleport.md)。
   - Velocity 与专用后端的运行时集成已实现，默认禁用。命令补全仅使用本地缓存。维度标识符也须加引号，例如 `"minecraft:overworld"`。参见[配置与验证](docs/features/cross-server/specs/cross-server-velocity-runtime.md)。
 - `/wp reload` 重载 `config.json` 和 `<config-path>/server_waypoint/lang/` 目录下的翻译文件。`sendXaerosWorldId` 特性需要重启服务器才能生效。
-- `/wp remove` 按标识符删除路径点，并返回临时且仅可使用一次的恢复操作。
+- `/wp remove` 按标识符删除路径点，并给出临时且仅可使用一次的恢复链接。
   - `/wp remove <维度> <列表标识符>` 删除一个空的路径点列表。
 - `/wp restore <令牌>` 在临时令牌有效期间恢复最近删除的路径点。
 - `/wp tp` 将执行该命令的玩家传送至指定路径点。
+- `/wp upload` 在客户端安装了本模组时显示上传面板。`/wp upload <xaero|voxelmap>` 从执行玩家客户端上所选的地图模组导入路径点。冲突、强制覆盖和删除行为详见[从客户端地图模组上传](#从客户端地图模组上传)。
 
 ## 跨服务器传送配置
 
@@ -208,7 +212,7 @@ Velocity 和每台后端必须安装相匹配的 Server Waypoint 版本。Veloci
 
 ### 检查是否成功
 
-通过 Velocity 加入服务器，运行 `/wp remote servers` 和 `/wp remote list survival`。找一个已分享的路径点，执行类似 `/wp remote tp creative "minecraft:overworld" "Public list" "Home"` 的命令。检查玩家到达后的坐标和反馈，再从 `creative` 测试返回 `survival`。仅切换到另一台服务器不代表已到达路径点。
+通过 Velocity 加入服务器，运行 `/wp remote` 和 `/wp remote list survival`。找一个已分享的路径点，执行类似 `/wp remote tp creative "minecraft:overworld" "Public list" "Home"` 的命令。检查玩家到达后的坐标和反馈，再从 `creative` 测试返回 `survival`。仅切换到另一台服务器不代表已到达路径点。
 
 远程浏览默认对所有玩家开放。远程传送默认需要等级 2 的来源服务器权限，并在目的地再次检查本地传送权限。具体权限、公钥更换和故障排查参见[管理员指南](docs/features/cross-server/cross-server-admin.md)。
 
@@ -315,7 +319,7 @@ Paper、Purpur：
 部分对 `config.json` 的更改将在服务器重启后生效。
 
 - ### 默认每页数量 Default Page Limit
-  设置 `/wp list` 命令未指定 `limit` 时每页显示的路径点数量。有效范围为 `1-100`，默认值为 `10`。使用 `/wp reload` 后此设置即可生效。
+  设置 `/wp list` 和 `/wp remote list` 未指定 `limit` 时的每页数量 `L`：平铺视图和单个列表每页显示 `L` 行，树状视图、每列表一行的视图以及维度列表和服务器列表每页最多 `L + 5` 行。有效范围为 `1-100`，默认值为 `10`。使用 `/wp reload` 后此设置即可生效。
 
   ```json5
   {
@@ -361,7 +365,7 @@ Paper、Purpur：
       "upload": 2,
       // /wp upload xaero force local delete
       "uploadDelete": 4,
-      // /wp remote servers 和 /wp remote list
+      // /wp remote 和 /wp remote list
       "remoteList": 0,
       // /wp remote tp 的来源服务器授权
       "remoteTp": 2

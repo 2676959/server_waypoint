@@ -43,28 +43,32 @@ Optional:
 - The add and edit waypoint screens also set keywords and a description.
 
 ## Commands
-- `/wp add` adds a new waypoint. Identifiers must be unique within their list.
+Run `/wp` for a menu: most features are a click away, and every screen offers its next steps as links. The console, RCON and command blocks get the same information as plain text, with identifiers and coordinates written out.
+- `/wp add` opens a picker of the current dimension's lists to add a waypoint where you stand. Identifiers must be unique within their list.
   - `/wp add <dimension> <list-identifier>` adds a waypoint list.
-- `/wp download` download waypoints and add to Xaero's Minimap (will not work without client installation).
-- `/wp details list <dimension> <list-identifier>` and `/wp details waypoint <dimension> <list-identifier> <waypoint-identifier>` show every property and its available actions.
-- `/wp edit list ...` and `/wp edit waypoint ...` set one property at a time or clear an optional property. Run `/wp help edit` for the complete grammar.
+  - `/wp add <dimension> <list-identifier> <x y z> <name>` adds a waypoint with generated initials and a random colour. The full form continues with initials, colour, yaw, visibility, keywords, description and `icon <namespace:path>`.
+- `/wp download [<dimension> [<list-identifier> [<waypoint-identifier>]]]` sends waypoints to your map mod (needs the mod on your client).
+- `/wp details list <dimension> <list-identifier>` and `/wp details waypoint <dimension> <list-identifier> <waypoint-identifier>` show every property with buttons to edit it.
+- `/wp edit list ...` and `/wp edit waypoint ...` set one property at a time or clear an optional property. Without a value, `set color` opens a colour picker and `set yaw` a facing picker; `set color random` picks a colour. Run `/wp help edit` for the complete grammar.
   - `/wp edit waypoint <dimension> <list> <waypoint> set icon minecraft:diamond` selects an item icon. Use `clear icon` to restore the initials marker. A `voxelmap:` ID such as `voxelmap:star` selects a built-in VoxelMap image. The full add command accepts `icon <namespace:path>` after visibility or its optional keywords and description. Enter icon IDs without quotes; tab completion suggests server item IDs and built-in VoxelMap IDs. `/wp details waypoint` includes an icon row with edit and clear controls.
-- `/wp upload <xaero|voxelmap>` imports waypoints from the selected map mod on the executing player’s client. See [Uploading from client map mods](#uploading-from-client-map-mods) for conflict, force, and delete behavior.
-- `/wp list` lists waypoints in the current dimension. Use `all`, a dimension, or a dimension plus list name to change the scope. Results are split using the server's configured page limit (10 by default), with clickable sorting and page controls.
-  - Add `search <query>` to filter by waypoint name.
-  - Add `sort <default|name|distance|color>` and, for non-default sorts, optionally `order <ascending|descending>` to sort the result.
-  - Add `page <number>` and/or `limit <1-100>` to choose a page or change its size. Options follow the order `search`, `sort`, `order`, `page`, `limit`; quote multi-word values and list names that match an option word.
-- `/wp remote servers [page <number> [limit <1-100>]]` shows cached remote server identities and availability.
-- `/wp remote list [<server> [<dimension> [<list>]]]` browses cached remote waypoints. It uses the same search, sort/order, page, limit, and `view tree|flat` option syntax as `/wp list`. Quote exact identities, including names matching option words. Distance sorting reports that cross-server distances are unavailable.
-  - Results are read-only and work through ordinary server chat. Stale data is labeled; unavailable catalogs are distinct from successfully published empty catalogs. Run `/wp help remote` for help.
+- `/wp help [<topic>]` explains each command with usages you can click and examples.
+- `/wp list` shows the current dimension: its lists with their first waypoints when they fit on one page, otherwise one line per list. Use `all`, a dimension, or a dimension plus list identifier to change the scope.
+  - Options follow the order `search <query>`, `sort <default|name|distance|color>` (with `order <ascending|descending>` for the other sorts), `limit <1-100>`, `view <lists|tree|flat>`, `page <number>`. Quote multi-word values and list names that match an option word.
+  - Pages hold whole lists: the tree view and the one-line-per-list view hold the page limit plus five lines; flat views and single lists hold the page limit in rows.
+  - `/wp list dimensions [page <number>]` lists every dimension with its waypoint count.
+- `/wp navigate` shows the navigation panel. `/wp navigate <dimension> <list> <waypoint> [<method>|default|all]` starts navigating, `/wp navigate use|disable <method>` turns one method on or off, `/wp navigate disable` stops, and `/wp navigate config text_display` adjusts the floating text.
+- `/wp remote` shows the remote servers and their state; `/wp remote page <number>` pages it.
+- `/wp remote list [<server> [<dimension> [<list>]]]` browses cached remote waypoints with the same options as `/wp list`. Quote exact identities, including names matching option words. Distance sorting reports that cross-server distances are unavailable.
+  - Results are read-only and work through ordinary server chat. A coloured dot shows each server's state: available, stale, unreachable or no access. `/wp remote details <server> <dimension> <list> <waypoint>` shows one waypoint. Run `/wp help remote` for help.
   - Catalog synchronization starts when cross-server configuration is enabled. See [Velocity runtime setup](docs/features/cross-server/specs/cross-server-velocity-runtime.md) and [remote catalog queries](docs/features/cross-server/specs/cross-server-catalog-queries.md).
-- `/wp remote tp <server> <dimension> <list> <waypoint>` requests a teleport using exact cached identities (quote names with spaces). Stale or missing targets fail before preparation; the player stays on the source until destination preparation and fresh permission checks succeed. See [remote teleport initiation](docs/features/cross-server/specs/cross-server-source-teleport.md).
+- `/wp remote tp <server> <dimension> <list> <waypoint>` requests a teleport using exact cached identities (quote names with spaces). Stale or missing targets fail before preparation; the player stays on the source until destination preparation and fresh permission checks succeed, and the destination confirms the arrival. See [remote teleport initiation](docs/features/cross-server/specs/cross-server-source-teleport.md).
   - Velocity and dedicated backend runtime integration is implemented and disabled by default. Suggestions use only the local cache. Quote dimension identities such as `"minecraft:overworld"`. See [configuration and validation](docs/features/cross-server/specs/cross-server-velocity-runtime.md).
 - `/wp reload` reload `config.json` and translation files in `/config/server_waypoint/lang`, feature `sendXaerosWorldId` requires restarting to take effect.
-- `/wp remove` removes a waypoint by identifier and returns a temporary, single-use restore action.
+- `/wp remove` removes a waypoint by identifier and answers with a temporary, single-use Restore link.
   - `/wp remove <dimension> <list-identifier>` removes an empty waypoint list.
 - `/wp restore <token>` restores a recently removed waypoint while its temporary token remains valid.
 - `/wp tp` teleport the executor player to a waypoint
+- `/wp upload` shows the upload panel when your client has the mod. `/wp upload <xaero|voxelmap>` imports waypoints from the selected map mod on the executing player’s client. See [Uploading from client map mods](#uploading-from-client-map-mods) for conflict, force, and delete behavior.
 
 ## Cross-server teleport setup
 
@@ -110,7 +114,7 @@ This setup is for servers on the **same host**. It has no encryption or cryptogr
 
    Use the same file on `creative`, changing `serverId` to `creative`. `PUBLIC` shares each backend's waypoint lists with the coordinator and authorized readers on participating servers.
 4. Remove `credentialsDirectory`, `coordinatorPublicKey`, and `requiredSuite` from plaintext configurations, and remove `publicKey` from Velocity's backend entries. Use a literal loopback IP at both ends: `localhost`, wildcard addresses, and non-loopback addresses are rejected. Restart Velocity and both backends after editing the files. Configure normal Velocity player forwarding so player UUIDs agree across servers.
-5. Join through Velocity and run `/wp remote servers`, then `/wp remote list survival`. Teleport to an existing exported waypoint, for example `/wp remote tp creative "minecraft:overworld" "Public list" "Home"`. Check the destination coordinates and feedback, then test the other direction. A server switch alone does not confirm waypoint arrival.
+5. Join through Velocity and run `/wp remote`, then `/wp remote list survival`. Teleport to an existing exported waypoint, for example `/wp remote tp creative "minecraft:overworld" "Public list" "Home"`. Check the destination coordinates and feedback, then test the other direction. A server switch alone does not confirm waypoint arrival.
 
 ### Encryption: NOISE_KK
 
@@ -165,7 +169,7 @@ Use `NOISE_KK` when backends run on different hosts or when you want authenticat
    ```
 
    Replace the placeholders with the full Base64 public keys. Keep each component's `credentials/static.key` private; never copy it to another component. No pairing command is needed.
-6. Restart Velocity, then both backends. Configure authenticated Velocity player forwarding so player UUIDs agree across servers. Run `/wp remote servers` and `/wp remote list survival`, then test `/wp remote tp creative "minecraft:overworld" "Public list" "Home"` with an existing exported waypoint. Verify destination coordinates and feedback in both directions.
+6. Restart Velocity, then both backends. Configure authenticated Velocity player forwarding so player UUIDs agree across servers. Run `/wp remote` and `/wp remote list survival`, then test `/wp remote tp creative "minecraft:overworld" "Public list" "Home"` with an existing exported waypoint. Verify destination coordinates and feedback in both directions.
 
 Remote browsing uses `server_waypoint.command.remote.list` (default level 0). Remote teleport requires both `server_waypoint.command.tp` and `server_waypoint.command.remote.tp` at the source (default level 2), plus local teleport permission at the destination. See the [administrator guide](docs/features/cross-server/cross-server-admin.md) for permissions, key rotation, and troubleshooting.
 
@@ -272,7 +276,7 @@ Paper, Purpur:
 Some changes made in `config.json` may take effects after server restarts.
 
 - ### Default Page Limit
-  Sets the number of waypoints shown on each `/wp list` page when the command does not include `limit`. Values are constrained to `1-100`, and the default is `10`. This setting takes effect after `/wp reload`.
+  Sets the page limit `L` that `/wp list` and `/wp remote list` use when the command does not include `limit`: flat views and single lists show `L` rows, while the tree view, the one-line-per-list view and the dimension and server lists hold `L + 5` lines. Values are constrained to `1-100`, and the default is `10`. This setting takes effect after `/wp reload`.
 
   ```json5
   {
@@ -325,7 +329,7 @@ Some changes made in `config.json` may take effects after server restarts.
       "upload": 2,
       // /wp upload xaero force local delete
       "uploadDelete": 4,
-      // /wp remote servers and /wp remote list
+      // /wp remote and /wp remote list
       "remoteList": 0,
       // /wp remote tp source authorization
       "remoteTp": 2

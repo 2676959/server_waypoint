@@ -1,6 +1,8 @@
 # /wp Command Feedback Design
 
-Status: design agreed on 2026-10-01. Not implemented yet.
+Status: design agreed on 2026-10-01 and implemented; see the
+[implementation plan](../plans/2026-10-01-command-feedback.md) and the
+[validation record](../validation/2026-10-01-command-feedback-validation.md).
 
 ## Intent
 

@@ -1,5 +1,10 @@
 # Remote catalog queries and suggestions (step 11)
 
+> Updated on 2026-10-01 for the [command feedback redesign](../../command-feedback/specs/2026-10-01-command-feedback-design.md):
+> `/wp remote` is the server picker, `/wp remote servers` and list details are removed, and remote
+> lists use the local views and line budgets. The verification record below describes Step 11 as
+> it shipped.
+
 Step 11 registers `/wp remote servers`, `/wp remote list` and `/wp help remote` through
 `CoreWaypointCommand`, shared by the mod and Paper command adapters. Feedback uses ordinary
 Adventure server chat; it requires neither client installation nor a custom network payload.
@@ -19,19 +24,19 @@ attachment on each invocation. The initial attachment is an empty bounded store.
 clears the underlying index. A replacement backend agent must have its new store attached by the
 platform owner. Nothing inserts remote data into `WaypointFilesManagerCore` or local waypoint files.
 
-`RemoteCatalogQuery` consumes one immutable capture per query and produces immutable presentation
-rows. Each row preserves exact server/dimension/list/waypoint identity separately from display
-labels. Name/keyword filtering calls the existing `WaypointQueryEngine` matching logic, including
-fuzzy matching. Sorting reuses `WaypointSorting` name comparison and `ColorUtils` color ordering.
-There is no conversion to mutable local waypoints and no destination-world lookup.
+`RemoteCatalogQuery` captures one immutable cache snapshot per command as servers holding lists in
+the shape the local screens use; unreachable and no-access servers keep no lists. The capture is a
+fresh copy: nothing adds it to `WaypointFilesManagerCore` or writes it to local waypoint files.
+Name/keyword filtering and sorting run through the local `WaypointQueryEngine.queryLists`, including
+fuzzy matching. There is no destination-world lookup.
 
 ## Command grammar
 
 ```text
-/wp remote
+/wp remote [page <number>]
 /wp help remote
-/wp remote servers [page <number> [limit <1-100>]]
 /wp remote list [<server> [<dimension> [<list>]]] [list options]
+/wp remote details <server> <dimension> <list> <waypoint>
 ```
 
 Omitted scopes select all cached entries within the supplied hierarchy. A dimension requires a
@@ -45,34 +50,37 @@ local grammar, including its reserved-list handling. Remote options are:
 ```text
 search <query>
 sort <default|name|distance|color> [order <ascending|descending>]
-page <number>
 limit <1-100>
-view <tree|flat>
+view <lists|tree|flat>
+page <number>
 ```
 
-The canonical order is search, sort/order, page, limit, view; the existing trailing-search forms
-are also shared. Default sorting has no order modifier. `sort distance` is parsed but returns a
-localized error: coordinates from another server are never compared with the executor's position,
-even if dimension names match. Name/color sorting works for grouped trees and flat rows; flat
-default sorting uses name order. Default grouped order is deterministic by exact identities because
-wire catalogs do not preserve a local file's insertion order.
+The canonical order is search, sort/order, limit, view, page; the earlier order (page before limit
+and view) and a trailing search are still accepted. Default sorting has no order modifier.
+`sort distance` is parsed but returns a localized error: coordinates from another server are never
+compared with the executor's position, even if dimension names match. Name and color sorting work
+in every view. Default sorting follows exact identities, because wire catalogs do not preserve a
+local file's insertion order.
 
-Pagination defaults to the configured local page limit. Every waypoint or empty/unavailable scope
-row occupies one result slot. A page contains only its own hierarchy headings; headings do not
-consume additional slots. Out-of-range pages return the existing localized page error. Generated
-page links retain the exact scope, filter, sort/order, page size and view. They share the existing
-list-option formatter and quote option-like identities at every remote scope level.
+Pagination uses the local line budgets with the configured page limit `L`: the server picker, all
+servers, a server's dimensions and lists, the tree view and the one-line-per-list view hold `L + 5`
+lines; flat views, lists and search results hold `L` rows. A heading continued from the previous
+page repeats with "(continued)". Out-of-range pages return the local page error. Generated links
+keep the exact scope, filter, sort/order, page size and view in the canonical order, and quote
+option-like identities at every scope level.
 
 For example:
 
 ```text
-/wp remote list "survival" "minecraft:overworld" "search" search village sort name page 1 limit 10 view flat
+/wp remote list survival "minecraft:overworld" "search" search village sort name limit 10 view flat page 2
 ```
 
 ## Availability, suggestions and feedback
 
-Every displayed server is labeled AVAILABLE, STALE, UNAVAILABLE or UNAUTHORIZED. Stale snapshots
-remain advisory and visibly marked. Unavailable/unauthorized scopes do not render retained
+A coloured dot shows every server's state: green available, yellow stale, red unreachable, dark gray
+no access. Its tooltip names the state, and plain-text viewers read the state as a word. Stale
+snapshots remain advisory, and their teleport links stay off until they refresh.
+Unavailable/unauthorized scopes do not render retained
 coordinates. Successfully published empty scopes have their own message. Missing server,
 dimension and list identities produce separate errors; a filter with no matches is distinct from
 an empty publication or absent cache. Browsing does not authorize teleportation.
