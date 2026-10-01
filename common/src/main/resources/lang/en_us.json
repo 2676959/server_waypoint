@@ -403,5 +403,11 @@
   "wp.search.clear": "Clear",
   "wp.search.clear_search": "Clear search",
   "wp.search.clear.tooltip": "Show everything again",
-  "wp.search.none": "Nothing matches \"{0}\"."
+  "wp.search.none": "Nothing matches \"{0}\".",
+
+  "wp.teleport.to": "Teleport to {0}",
+  "wp.distance.away": "{0} away",
+  "wp.distance.metres": "{0} m",
+  "wp.distance.kilometres": "{0} km",
+  "wp.where.in": "In {0}"
 }

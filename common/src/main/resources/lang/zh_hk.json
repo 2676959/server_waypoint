@@ -167,5 +167,11 @@
   "wp.search.clear": "清除",
   "wp.search.clear_search": "清除搜尋",
   "wp.search.clear.tooltip": "重新顯示全部",
-  "wp.search.none": "沒有與「{0}」相符的內容。"
+  "wp.search.none": "沒有與「{0}」相符的內容。",
+
+  "wp.teleport.to": "傳送到{0}",
+  "wp.distance.away": "距離 {0}",
+  "wp.distance.metres": "{0} 米",
+  "wp.distance.kilometres": "{0} 公里",
+  "wp.where.in": "位於{0}"
 }

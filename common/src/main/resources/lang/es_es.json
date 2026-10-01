@@ -167,5 +167,11 @@
   "wp.search.clear": "Borrar",
   "wp.search.clear_search": "Borrar búsqueda",
   "wp.search.clear.tooltip": "Mostrar todo de nuevo",
-  "wp.search.none": "Nada coincide con «{0}»."
+  "wp.search.none": "Nada coincide con «{0}».",
+
+  "wp.teleport.to": "Teletransportarse a {0}",
+  "wp.distance.away": "A {0}",
+  "wp.distance.metres": "{0} m",
+  "wp.distance.kilometres": "{0} km",
+  "wp.where.in": "En {0}"
 }

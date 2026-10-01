@@ -403,5 +403,11 @@
   "wp.search.clear": "清除",
   "wp.search.clear_search": "清除搜索",
   "wp.search.clear.tooltip": "重新显示全部",
-  "wp.search.none": "没有与“{0}”匹配的内容。"
+  "wp.search.none": "没有与“{0}”匹配的内容。",
+
+  "wp.teleport.to": "传送到{0}",
+  "wp.distance.away": "距离 {0}",
+  "wp.distance.metres": "{0} 米",
+  "wp.distance.kilometres": "{0} 公里",
+  "wp.where.in": "位于{0}"
 }

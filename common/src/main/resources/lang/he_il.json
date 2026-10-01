@@ -167,5 +167,11 @@
   "wp.search.clear": "ניקוי",
   "wp.search.clear_search": "ניקוי החיפוש",
   "wp.search.clear.tooltip": "הצגת הכול מחדש",
-  "wp.search.none": "אין התאמות ל-\"{0}\"."
+  "wp.search.none": "אין התאמות ל-\"{0}\".",
+
+  "wp.teleport.to": "שיגור אל {0}",
+  "wp.distance.away": "במרחק {0}",
+  "wp.distance.metres": "{0} מ׳",
+  "wp.distance.kilometres": "{0} ק״מ",
+  "wp.where.in": "ב-{0}"
 }
