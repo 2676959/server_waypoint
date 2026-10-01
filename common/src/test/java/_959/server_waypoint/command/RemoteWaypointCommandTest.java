@@ -54,7 +54,8 @@ class RemoteWaypointCommandTest {
 
     @BeforeEach void setup() throws Exception {
         var commands = new RemoteWaypointCommand<String>(() -> { assertTrue(allowed || tpAllowed, "Denied readers must not access the catalog"); return new RemoteCatalogStore(index); }, (source, text) -> messages.add(text),
-                (source, text) -> errors.add(text), () -> 5, source -> allowed, source -> tpAllowed, handoffs);
+                (source, text) -> errors.add(text), () -> 5, source -> allowed, source -> tpAllowed, handoffs,
+                source -> Component.text("Remote help"));
         dispatcher.register(LiteralArgumentBuilder.<String>literal("wp").then(commands.build()));
         Map<String, RemoteWaypointSnapshot> waypoints = new HashMap<>();
         for (int i = 0; i < 12; i++) waypoints.put("base " + i, waypoint("Display " + i, i));
@@ -301,10 +302,7 @@ class RemoteWaypointCommandTest {
         assertTrue(components(last()).stream().filter(c -> c.clickEvent() != null).allMatch(c -> c.children().isEmpty()));
         for (String command : clicks(last())) assertEquals(1, dispatcher.execute(command.substring(1), "console"));
         dispatcher.execute("wp remote", "console");
-        assertTrue(keys(last()).contains("waypoint.help.remote.summary"));
-        assertFalse(text(last()).contains("/wp remote tp"));
-        assertTrue(clicks(last()).containsAll(List.of("/wp remote servers", "/wp remote list",
-                "/wp remote details ", "/wp help remote")));
+        assertEquals("Remote help", text(last()));
         assertNotNull(dispatcher.getRoot().getChild("wp").getChild("remote").getChild("tp"));
     }
     @Test void permissionDenialAndRevocationBlockCommandsAndCachedSuggestions() throws Exception {
@@ -344,9 +342,7 @@ class RemoteWaypointCommandTest {
         var parsed = dispatcher.parse(tpTarget(), "player");
         var suggestionParse = dispatcher.parse("wp remote tp ", "player");
         dispatcher.execute("wp remote", "player");
-        assertTrue(text(last()).contains("/wp remote tp")); assertFalse(text(last()).contains("/wp remote list"));
-        assertTrue(clicks(last()).contains("/wp remote tp "));
-        assertFalse(clicks(last()).contains("/wp remote servers"));
+        assertEquals("Remote help", text(last()));
         tpAllowed = false;
         assertEquals(0, dispatcher.execute(parsed)); assertNull(preparation);
         assertTrue(keys(errors.get(0)).contains("waypoint.remote.tp.unauthorized"));

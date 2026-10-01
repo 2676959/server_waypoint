@@ -1,0 +1,147 @@
+package _959.server_waypoint.text.feedback;
+
+import _959.server_waypoint.text.chat.Chat;
+import _959.server_waypoint.text.chat.ChatFont;
+import _959.server_waypoint.text.chat.ChatLines;
+import _959.server_waypoint.text.chat.Click;
+import _959.server_waypoint.text.chat.Tooltip;
+import _959.server_waypoint.text.chat.Viewer;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.Component.translatable;
+import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
+import static net.kyori.adventure.text.format.NamedTextColor.GOLD;
+import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
+import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
+
+/** The help index and topics (spec 12). */
+public final class HelpScreen {
+    private static final int TOPICS_ON_FIRST_LINE = 5;
+
+    private HelpScreen() {
+    }
+
+    public static Component index(Viewer viewer) {
+        ChatLines lines = new ChatLines().add(translatable("wp.help.title", GOLD));
+        List<HelpTopics.Topic> topics = HelpTopics.readable(viewer);
+        if (viewer.plainText()) {
+            lines.add(translatable("wp.help.plain_hint", GRAY));
+            lines.line(translatable("wp.help.commands", GRAY), text("  "),
+                    Chat.join(topics.stream().map(topic -> (Component) text(topic.id())).toList()));
+            return lines.build();
+        }
+        lines.add(translatable("wp.help.menu_hint", GRAY, Chat.link(viewer, translatable("wp.help.open_menu"), AQUA,
+                Click.run("/wp"), Tooltip.of("wp.help.open_menu.tooltip"))));
+        List<Component> links = topics.stream().map(topic -> Chat.link(viewer, topic.label(), AQUA,
+                Click.run("/wp help " + topic.id()),
+                Tooltip.of("wp.help.topic.tooltip", topic.label()).line("wp.help.topic.detail"))).toList();
+        int split = Math.min(TOPICS_ON_FIRST_LINE, links.size());
+        lines.line(translatable("wp.help.commands", GRAY), text("  "), Chat.join(links.subList(0, split)));
+        if (split < links.size()) {
+            lines.line(text("  "), Chat.join(links.subList(split, links.size())));
+        }
+        return lines.build();
+    }
+
+    public static Component topic(Viewer viewer, HelpTopics.Topic topic, boolean textDisplay) {
+        HelpTopics.Content content = HelpTopics.content(topic, textDisplay);
+        ChatLines lines = new ChatLines();
+        Component title = Chat.colored(topic.label(), GOLD);
+        lines.add(viewer.plainText() ? title : Chat.concat(title, text("  "), translatable("wp.help.topic.hint", GRAY)));
+        for (HelpTopics.Usage usage : content.usages()) {
+            if (viewer.plainText()) {
+                lines.add(text(usage.syntax()));
+                for (Component line : usage.tooltip().textLines()) {
+                    lines.line(text("  "), line);
+                }
+                continue;
+            }
+            Click click = Click.suggest(usage.suggestion());
+            Tooltip tooltip = usage.tooltip().hint("wp.hint.fill");
+            int[] depth = {0};
+            for (String line : wrap(usage.syntax(), "", "    ")) {
+                lines.add(Chat.link(viewer, colorize(line, depth), AQUA, click, tooltip));
+            }
+        }
+        lines.add(translatable("wp.help.examples", GRAY));
+        for (HelpTopics.Example example : content.examples()) {
+            if (viewer.plainText()) {
+                lines.add(text("  " + example.command()));
+                lines.line(text("    "), translatable(example.descriptionKey()));
+                continue;
+            }
+            Tooltip tooltip = Tooltip.of(translatable(example.descriptionKey())).hint("wp.hint.fill");
+            for (String line : wrap(example.command(), "  ", "      ")) {
+                lines.add(Chat.link(viewer, text(line), AQUA, Click.suggest(example.command()), tooltip));
+            }
+        }
+        if (!viewer.plainText()) {
+            lines.add(Chat.join(
+                    Chat.link(viewer, translatable("wp.help.index"), GRAY, Click.run("/wp help"), Tooltip.of("wp.help.index.tooltip")),
+                    Chat.link(viewer, translatable("wp.help.menu"), GRAY, Click.run("/wp"), Tooltip.of("wp.help.open_menu.tooltip"))));
+        }
+        return lines.build();
+    }
+
+    /** Breaks text at spaces so no line passes the chat width; later lines start with the continuation indent. */
+    public static List<String> wrap(String text, String indent, String continuation) {
+        List<String> lines = new ArrayList<>();
+        String line = indent;
+        boolean empty = true;
+        for (String word : text.split(" ")) {
+            String candidate = empty ? line + word : line + " " + word;
+            if (!empty && ChatFont.width(candidate) > ChatFont.CHAT_WIDTH) {
+                lines.add(line);
+                line = continuation + word;
+            } else {
+                line = candidate;
+            }
+            empty = false;
+        }
+        lines.add(line);
+        return lines;
+    }
+
+    /** Commands aqua, <arguments> yellow, [optional parts] gray; depth carries brackets across lines. */
+    private static Component colorize(String line, int[] depth) {
+        List<Component> pieces = new ArrayList<>();
+        StringBuilder run = new StringBuilder();
+        TextColor runColor = null;
+        boolean argument = false;
+        for (char character : line.toCharArray()) {
+            if (character == '<') {
+                argument = true;
+            }
+            TextColor color;
+            if (argument) {
+                color = YELLOW;
+            } else if (character == '[') {
+                depth[0]++;
+                color = GRAY;
+            } else if (character == ']') {
+                color = GRAY;
+                depth[0]--;
+            } else {
+                color = depth[0] > 0 ? GRAY : AQUA;
+            }
+            if (character == '>') {
+                argument = false;
+            }
+            if (runColor != null && !runColor.equals(color)) {
+                pieces.add(text(run.toString(), runColor));
+                run.setLength(0);
+            }
+            runColor = color;
+            run.append(character);
+        }
+        if (runColor != null) {
+            pieces.add(text(run.toString(), runColor));
+        }
+        return Chat.concat(pieces);
+    }
+}

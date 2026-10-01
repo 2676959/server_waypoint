@@ -45,6 +45,10 @@ import _959.server_waypoint.core.restore.WaypointRestoreRegistry;
 import _959.server_waypoint.text.TextButtonBuilder;
 import _959.server_waypoint.text.chat.DimensionStyle;
 import _959.server_waypoint.text.chat.Viewer;
+import _959.server_waypoint.text.feedback.HelpScreen;
+import _959.server_waypoint.text.feedback.HelpTopics;
+import _959.server_waypoint.text.feedback.MenuScreen;
+import _959.server_waypoint.text.feedback.PlacedWaypoint;
 import _959.server_waypoint.util.StringCommandBuilder.ListOptions;
 import _959.server_waypoint.util.StringCommandBuilder.ListTarget;
 import _959.server_waypoint.util.TriConsumer;
@@ -214,7 +218,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         this.remoteCommand = new RemoteWaypointCommand<>(waypointServer::remoteCatalogStore, sender::sendMessage,
                 sender::sendError, () -> CONFIG.defaultPageLimit(),
                 remotePermissions::canList, remotePermissions::canRequestTeleport,
-                (source, selection, feedback) -> remoteTeleport.initiate(source, selection, feedback));
+                (source, selection, feedback) -> remoteTeleport.initiate(source, selection, feedback),
+                source -> HelpScreen.topic(this.viewer(source), HelpTopics.Topic.REMOTE, false));
         this.permissionManager = permissionManager;
         this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
         this.restoreRegistry = new WaypointRestoreRegistry<>();
@@ -640,44 +645,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     public @NotNull LiteralCommandNode<S> build() {
         return (LiteralCommandNode<S>) literal(WAYPOINT_COMMAND)
                 .executes(context -> {
-                    executeMenu((S) context.getSource(), false);
+                    executeMenu((S) context.getSource());
                     return Command.SINGLE_SUCCESS;
                 })
-                .then(literal(HELP_COMMAND)
-                        .executes(context -> {
-                            executeHelp((S) context.getSource());
-                            return Command.SINGLE_SUCCESS;
-                        })
-                        .then(literal(ADD_COMMAND)
-                                .requires(source -> hasAddPermission((S) source))
-                                .executes(context -> {
-                                    executeAddHelp((S) context.getSource());
-                                    return Command.SINGLE_SUCCESS;
-                                })
-                        )
-                        .then(literal(EDIT_COMMAND)
-                                .requires(source -> hasEditPermission((S) source))
-                                .executes(context -> {
-                                    executeEditHelp((S) context.getSource());
-                                    return Command.SINGLE_SUCCESS;
-                                })
-                        )
-                        .then(literal(LIST_COMMAND)
-                                .executes(context -> {
-                                    executeListHelp((S) context.getSource());
-                                    return Command.SINGLE_SUCCESS;
-                                })
-                        )
-                        .then(literal("remote").requires(source -> this.remoteCommand.canUse((S) source))
-                                .executes(context -> this.remoteCommand.help((S) context.getSource())))
-                        .then(literal(NAVIGATE_COMMAND)
-                                .requires(source -> hasNavigatePermission((S) source))
-                                .executes(context -> {
-                                    executeNavigateHelp((S) context.getSource());
-                                    return Command.SINGLE_SUCCESS;
-                                })
-                        )
-                )
+                .then((ArgumentBuilder<Object, ?>) helpCommandNode())
                 .then(literal(ADD_COMMAND)
                         .requires(source -> hasAddPermission((S) source))
                         .then(argument(DIMENSION_ARG, this.dimensionArgumentProvider.get())
@@ -965,44 +936,59 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         return Command.SINGLE_SUCCESS;
     }
 
-    private void executeHelp(S source) {
-        executeMenu(source, true);
+    /** The menu for players; the help index for plain-text viewers, since the menu is all links. */
+    private void executeMenu(S source) {
+        Viewer viewer = viewer(source);
+        if (viewer.plainText()) {
+            this.sender.sendMessage(source, HelpScreen.index(viewer));
+            return;
+        }
+        boolean remoteAvailable = viewer.can(Viewer.Permission.REMOTE_LIST)
+                && !this.waypointServer.remoteCatalogStore().snapshot().isEmpty();
+        this.sender.sendMessage(source, MenuScreen.menu(viewer, dimensions(source, viewer),
+                navigationTarget(source), remoteAvailable));
     }
 
-    private void executeMenu(S source, boolean detailed) {
-        this.sender.sendMessage(source, WaypointCommandHelp.menu(
-                hasAddPermission(source),
-                hasEditPermission(source),
-                hasRemovePermission(source),
-                hasNavigatePermission(source),
-                hasTpPermission(source),
-                hasReloadPermission(source),
-                hasUploadPermission(source),
-                remoteCommand.canUse(source),
-                remoteCommand.canList(source),
-                detailed
-        ));
+    private LiteralArgumentBuilder<S> helpCommandNode() {
+        LiteralArgumentBuilder<S> help = literal(HELP_COMMAND);
+        help.executes(context -> {
+            this.sender.sendMessage(context.getSource(), HelpScreen.index(viewer(context.getSource())));
+            return Command.SINGLE_SUCCESS;
+        });
+        for (HelpTopics.Topic topic : HelpTopics.Topic.values()) {
+            help.then(LiteralArgumentBuilder.<S>literal(topic.id())
+                    .requires(source -> topic.readableBy(viewer(source)))
+                    .executes(context -> {
+                        this.sender.sendMessage(context.getSource(), HelpScreen.topic(viewer(context.getSource()), topic,
+                                this.isNavigationMethodSupported(NavigationMethod.TEXT_DISPLAY)));
+                        return Command.SINGLE_SUCCESS;
+                    }));
+        }
+        return help;
     }
 
-    private void executeAddHelp(S source) {
-        this.sender.sendMessage(source, WaypointCommandHelp.addHelp());
+    /** The player's navigation target, if they may navigate and are navigating. */
+    private @Nullable PlacedWaypoint navigationTarget(S source) {
+        P player = getPlayer(source);
+        if (player == null || !hasNavigatePermission(source)) {
+            return null;
+        }
+        NavigationSession session = this.navigationService.status(player).session();
+        return session == null ? null : place(session.target());
     }
 
-    private void executeEditHelp(S source) {
-        this.sender.sendMessage(source, WaypointCommandHelp.editHelp());
-    }
-
-    private void executeListHelp(S source) {
-        this.sender.sendMessage(source, WaypointCommandHelp.listHelp());
-    }
-
-    private void executeNavigateHelp(S source) {
-        this.sender.sendMessage(
-                source,
-                WaypointCommandHelp.navigateHelp(
-                        this.isNavigationMethodSupported(NavigationMethod.TEXT_DISPLAY)
-                )
-        );
+    /** The live waypoint behind a navigation target, or a stand-in made from the target when it is gone. */
+    private PlacedWaypoint place(NavigationTarget target) {
+        WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(target.dimensionName());
+        WaypointList list = fileManager == null ? null : fileManager.getWaypointListByName(target.listName());
+        SimpleWaypoint waypoint = list == null ? null : list.getWaypointByName(target.waypointName());
+        if (list == null || waypoint == null) {
+            list = new WaypointList(target.listName(), target.listDisplayName(), 0, List.of());
+            waypoint = new SimpleWaypoint(target.waypointName(), target.waypointDisplayName(),
+                    WaypointInitials.getDefaultInitials(plainText(target.waypointDisplayName())), target.position(),
+                    target.rgb(), 0, true, List.of(), target.waypointDescription());
+        }
+        return new PlacedWaypoint(target.dimensionName(), list, waypoint);
     }
 
     private void runIfPlayerExists(S source, Consumer<P> playerAction) {

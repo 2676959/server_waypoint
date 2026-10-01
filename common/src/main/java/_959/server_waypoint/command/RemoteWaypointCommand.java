@@ -38,14 +38,17 @@ final class RemoteWaypointCommand<S> {
     private final IntSupplier defaultLimit;
     private final Predicate<S> canList, canTeleport;
     private final RemoteTeleportInitiator<S> teleport;
+    private final Function<S, Component> helpScreen;
     private final RemoteCatalogQuery query = new RemoteCatalogQuery();
 
     RemoteWaypointCommand(Supplier<RemoteCatalogStore> store, BiConsumer<S, Component> send,
                           BiConsumer<S, Component> error, IntSupplier defaultLimit, Predicate<S> canList,
-                          Predicate<S> canTeleport, RemoteTeleportInitiator<S> teleport) {
+                          Predicate<S> canTeleport, RemoteTeleportInitiator<S> teleport,
+                          Function<S, Component> helpScreen) {
         this.canList = Objects.requireNonNull(canList, "canList");
         this.canTeleport = Objects.requireNonNull(canTeleport, "canTeleport");
         this.teleport = Objects.requireNonNull(teleport, "teleport");
+        this.helpScreen = Objects.requireNonNull(helpScreen, "helpScreen");
         this.store = store; this.send = send; this.error = error; this.defaultLimit = defaultLimit;
     }
     LiteralArgumentBuilder<S> build() {
@@ -88,7 +91,7 @@ final class RemoteWaypointCommand<S> {
     boolean canUse(S source) { return canList.test(source) || canTeleport.test(source); }
     int help(S source) {
         if (!canUse(source)) return 0;
-        send.accept(source, WaypointCommandHelp.remoteMenu(canList.test(source), canTeleport.test(source)));
+        send.accept(source, helpScreen.apply(source));
         return Command.SINGLE_SUCCESS;
     }
     private int teleport(CommandContext<S> context) {

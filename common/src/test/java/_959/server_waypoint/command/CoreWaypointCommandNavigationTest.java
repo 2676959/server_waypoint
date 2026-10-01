@@ -240,109 +240,6 @@ class CoreWaypointCommandNavigationTest {
     }
 
     @Test
-    void navigateHelpDocumentsEverySyntaxMethodAndClickableExample() throws CommandSyntaxException {
-        this.dispatcher.execute("wp help navigate", this.source);
-
-        Component help = this.sender.messages.get(this.sender.messages.size() - 1);
-        String helpText = plainText(help);
-        assertTrue(helpText.contains("/wp navigate <dimension> <list> <waypoint>"));
-        assertTrue(helpText.contains(
-                "/wp navigate <dimension> <list> <waypoint> [default|all|<method>]"
-        ));
-        assertTrue(helpText.contains("/wp navigate use <method>"));
-        assertTrue(helpText.contains("/wp navigate disable [<method>]"));
-        assertTrue(helpText.contains("/wp navigate status"));
-        assertTrue(helpText.contains(
-                "/wp navigate config text_display transformation translation <x> <y> <z>"
-        ));
-        assertTrue(helpText.contains(
-                "/wp navigate config text_display transformation rotation <x> <y> <z>"
-        ));
-        assertTrue(helpText.contains(
-                "/wp navigate config text_display transformation scale <x> <y> <z>"
-        ));
-        assertTrue(helpText.contains(
-                "/wp navigate config text_display transformation reset"
-        ));
-        assertFalse(helpText.contains(" using "));
-        assertFalse(helpText.contains("/wp navigate methods"));
-
-        assertTrue(translationKeys(help).containsAll(List.of(
-                "waypoint.help.navigate.title",
-                "waypoint.help.navigate.summary",
-                "waypoint.help.section.usage",
-                "waypoint.help.navigate.usage.start",
-                "waypoint.help.navigate.usage.methods",
-                "waypoint.help.navigate.usage.use",
-                "waypoint.help.navigate.usage.disable",
-                "waypoint.help.navigate.usage.status",
-                "waypoint.help.navigate.usage.transformation.translation",
-                "waypoint.help.navigate.usage.transformation.rotation",
-                "waypoint.help.navigate.usage.transformation.scale",
-                "waypoint.help.navigate.usage.transformation.reset",
-                "waypoint.help.section.arguments",
-                "waypoint.help.navigate.argument.target_methods",
-                "waypoint.help.navigate.argument.method",
-                "waypoint.help.navigate.argument.transformation.vector",
-                "waypoint.help.navigate.section.methods",
-                "waypoint.help.navigate.method.compass",
-                "waypoint.help.navigate.method.map",
-                "waypoint.help.navigate.method.bossbar",
-                "waypoint.help.navigate.method.actionbar",
-                "waypoint.help.navigate.method.text_display",
-                "waypoint.help.navigate.section.inventory",
-                "waypoint.help.navigate.inventory",
-                "waypoint.help.section.examples",
-                "waypoint.help.navigate.example.default",
-                "waypoint.help.navigate.example.all",
-                "waypoint.help.navigate.example.method",
-                "waypoint.help.navigate.example.use",
-                "waypoint.help.navigate.example.transformation.translation",
-                "waypoint.help.navigate.example.transformation.rotation",
-                "waypoint.help.navigate.example.transformation.scale"
-        )));
-
-        List<String> suggestions = suggestedCommands(help);
-        assertTrue(suggestions.contains(
-                "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\""
-        ));
-        assertTrue(suggestions.contains(
-                "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\" all"
-        ));
-        assertTrue(suggestions.contains(
-                "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\" bossbar"
-        ));
-        assertTrue(suggestions.contains("/wp navigate use bossbar"));
-        assertTrue(suggestions.contains(
-                "/wp navigate config text_display transformation translation 0 0.1 0"
-        ));
-        assertTrue(suggestions.contains(
-                "/wp navigate config text_display transformation rotation 5 0 0"
-        ));
-        assertTrue(suggestions.contains(
-                "/wp navigate config text_display transformation scale 1.35 1.35 1.35"
-        ));
-        assertFalse(suggestions.contains("/wp navigate methods"));
-        assertEquals(List.of("/wp help"), runCommands(help));
-    }
-
-    @Test
-    void helpLinksNavigateTopicWithoutRegisteringMethodsSubcommand() throws CommandSyntaxException {
-        this.dispatcher.execute("wp help", this.source);
-
-        Component mainHelp = this.sender.messages.get(this.sender.messages.size() - 1);
-        assertTrue(translationKeys(mainHelp).contains("waypoint.help.navigate"));
-        assertTrue(suggestedCommands(mainHelp).contains("/wp navigate "));
-        assertTrue(runCommands(mainHelp).contains("/wp help navigate"));
-        assertFalse(plainText(mainHelp).contains("/wp navigate methods"));
-
-        var navigateNode = this.dispatcher.getRoot()
-                .getChild("wp")
-                .getChild("navigate");
-        assertNull(navigateNode.getChild("methods"));
-    }
-
-    @Test
     void retargetWithoutMethodSuffixPreservesCurrentMethods() throws CommandSyntaxException {
         this.dispatcher.execute(
                 "wp navigate overworld bases Home compass",
@@ -536,9 +433,7 @@ class CoreWaypointCommandNavigationTest {
         this.dispatcher.execute("wp help navigate", this.source);
         Component help = this.sender.messages.get(this.sender.messages.size() - 1);
         assertFalse(plainText(help).contains("text_display"));
-        assertFalse(translationKeys(help).contains(
-                "waypoint.help.navigate.usage.transformation.translation"
-        ));
+        assertFalse(translationKeys(help).contains("wp.help.navigate.text_display"));
     }
 
     @Test

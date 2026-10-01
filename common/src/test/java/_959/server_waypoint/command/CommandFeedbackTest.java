@@ -13,6 +13,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Path;
 import java.util.Set;
 
+import static _959.server_waypoint.text.chat.ChatAssert.lines;
 import static _959.server_waypoint.text.chat.ChatAssert.render;
 import static net.kyori.adventure.text.Component.text;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -58,6 +59,27 @@ class CommandFeedbackTest {
         assertTrue(this.harness.command.viewer(CommandHarness.player().readByConsole()).plainText());
         this.harness.sender.handshake = false;
         assertFalse(this.harness.command.viewer(CommandHarness.player()).hasMod());
+    }
+
+    @Test
+    void theMenuAnswersPlayersAndTheHelpIndexAnswersPlainText() {
+        assertEquals("Server Waypoint   Open GUI · Help · Reload",
+                lines(this.harness.run(CommandHarness.player(), "wp")).get(0));
+        assertEquals("Server Waypoint help", lines(this.harness.run(CommandHarness.console(), "wp")).get(0));
+        assertEquals("Server Waypoint help",
+                lines(this.harness.run(CommandHarness.player().readByConsole(), "wp")).get(0));
+    }
+
+    @Test
+    void helpTopicsFollowPermissions() {
+        CommandHarness.Source member = CommandHarness.player().withPermissions("navigate");
+
+        assertEquals("Commands  List · Navigate · Download", lines(this.harness.run(member, "wp help")).get(2));
+        this.harness.fails(member, "wp help add");
+        assertEquals("Teleport  hover a line for details, click to use it",
+                lines(this.harness.run(CommandHarness.player(), "wp help tp")).get(0));
+        assertEquals("Download  hover a line for details, click to use it",
+                lines(this.harness.run(member, "wp help download")).get(0));
     }
 
     @Test
