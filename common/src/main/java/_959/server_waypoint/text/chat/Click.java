@@ -7,22 +7,28 @@ import java.util.Objects;
 
 /**
  * What clicking a piece of chat does. The client refuses commands longer than 256 characters, so
- * such a click is dropped and its text stays plain.
+ * such a click is dropped and its text stays plain. Events come from the ClickEvent factories:
+ * Paper's newer Adventure no longer has the ClickEvent.Action constants this code compiles against.
  */
-public record Click(ClickEvent.Action action, String command) {
+public record Click(Kind kind, String command) {
     public static final int MAX_COMMAND_LENGTH = 256;
 
+    public enum Kind {
+        RUN,
+        SUGGEST
+    }
+
     public Click {
-        Objects.requireNonNull(action, "action");
+        Objects.requireNonNull(kind, "kind");
         Objects.requireNonNull(command, "command");
     }
 
     public static Click run(String command) {
-        return new Click(ClickEvent.Action.RUN_COMMAND, command);
+        return new Click(Kind.RUN, command);
     }
 
     public static Click suggest(String command) {
-        return new Click(ClickEvent.Action.SUGGEST_COMMAND, command);
+        return new Click(Kind.SUGGEST, command);
     }
 
     public boolean fits() {
@@ -30,6 +36,9 @@ public record Click(ClickEvent.Action action, String command) {
     }
 
     public @Nullable ClickEvent event() {
-        return this.fits() ? ClickEvent.clickEvent(this.action, this.command) : null;
+        if (!this.fits()) {
+            return null;
+        }
+        return this.kind == Kind.RUN ? ClickEvent.runCommand(this.command) : ClickEvent.suggestCommand(this.command);
     }
 }
