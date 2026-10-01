@@ -16,6 +16,7 @@ import _959.server_waypoint.core.waypoint.WaypointListDisplayModel;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
+import _959.server_waypoint.text.chat.DimensionStyle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,7 +54,6 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
-import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
 import static _959.server_waypoint.util.StringCommandBuilder.removeCmd;
 import static _959.server_waypoint.util.StringCommandBuilder.removeListCmd;
@@ -1092,7 +1092,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     private static int getDisplayDimensionColor(String dimensionName) {
         return ColorHelper.scaleRgb(
-                0xFF000000 | getDimensionColor(dimensionName).value(),
+                0xFF000000 | DimensionStyle.colorOf(dimensionName).value(),
                 0.8F
         );
     }

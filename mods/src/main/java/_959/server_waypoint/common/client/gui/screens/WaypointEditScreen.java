@@ -11,6 +11,7 @@ import _959.server_waypoint.core.network.message.WaypointEditResultMessage;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.text.chat.DimensionStyle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -23,7 +24,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
 import static _959.server_waypoint.text.FormattedTextHelper.parseKeywords;
-import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 
 /**
  * Edits a waypoint with one atomic request that carries only the fields that changed, and keeps the
@@ -96,7 +96,7 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     @Override
     protected @Nullable Component subtitle() {
         int dimensionColor = ColorHelper.scaleRgb(
-                0xFF000000 | getDimensionColor(this.dimensionName).value(),
+                0xFF000000 | DimensionStyle.colorOf(this.dimensionName).value(),
                 0.8F
         ) & 0xFFFFFF;
         return Component.translatable(

@@ -8,6 +8,7 @@ import _959.server_waypoint.common.client.util.ColorHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.crossserver.RemoteWaypointKey;
 import _959.server_waypoint.crossserver.catalog.CatalogReceiver;
+import _959.server_waypoint.text.chat.DimensionStyle;
 import _959.server_waypoint.util.NamespacedId;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,7 +37,6 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
 import static _959.server_waypoint.util.ColorUtils.rgbToHexCode;
-import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 
 public final class WaypointDetailsWidget extends ShiftableScrollableWidget implements Expandable {
     private static final int CONTENT_PADDING = 4;
@@ -357,7 +357,7 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
 
     private static int getDisplayDimensionColor(String dimensionName) {
         return ColorHelper.scaleRgb(
-                0xFF000000 | getDimensionColor(dimensionName).value(),
+                0xFF000000 | DimensionStyle.colorOf(dimensionName).value(),
                 0.8F
         );
     }

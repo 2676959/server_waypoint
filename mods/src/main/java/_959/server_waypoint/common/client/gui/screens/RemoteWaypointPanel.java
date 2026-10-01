@@ -19,10 +19,10 @@ import _959.server_waypoint.common.client.gui.render.WidgetTextures;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.*;
 import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
-import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
+import _959.server_waypoint.text.chat.DimensionStyle;
 import java.util.function.Consumer;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
@@ -370,6 +370,6 @@ final class RemoteWaypointPanel {
     }
 
     private static int displayDimensionColor(String dimensionName) {
-        return ColorHelper.scaleRgb(0xFF000000 | getDimensionColor(dimensionName).value(), 0.8F);
+        return ColorHelper.scaleRgb(0xFF000000 | DimensionStyle.colorOf(dimensionName).value(), 0.8F);
     }
 }
