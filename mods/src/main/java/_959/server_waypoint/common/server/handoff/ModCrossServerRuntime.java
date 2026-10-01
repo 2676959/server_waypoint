@@ -13,7 +13,6 @@ import net.minecraft.server.level.ServerPlayer;
 import java.nio.file.Path;
 import java.util.UUID;
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
-import static net.kyori.adventure.text.Component.translatable;
 
 /** Dedicated-server lifecycle shared by all mod loaders. No integrated-server or client control route. */
 public final class ModCrossServerRuntime {
@@ -57,8 +56,8 @@ public final class ModCrossServerRuntime {
         if (runtime == null) return;
         runtime.arrive(player.getUUID(), player).whenComplete((result, failure) -> {
             if (failure != null || result.result() == Result.NOT_FOUND || result.result() == Result.UNAVAILABLE) return;
-            destination.execute(player, () -> ModMessageSender.getInstance().sendPlayerMessage(player, translatable(result.result() == Result.SUCCESS
-                    ? "waypoint.remote.tp.arrived" : "waypoint.remote.tp." + result.result().name().toLowerCase(java.util.Locale.ROOT))), () -> { });
+            destination.execute(player, () -> ModMessageSender.getInstance().sendPlayerMessage(player,
+                    runtime.arrivalMessage(result)), () -> { });
         });
     }
 }

@@ -5,6 +5,7 @@ import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.crossserver.RemoteCatalogState;
 import _959.server_waypoint.crossserver.RemoteServerId;
 import _959.server_waypoint.crossserver.catalog.RemoteCatalogQuery.Server;
+import _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result;
 import _959.server_waypoint.text.chat.ListQuery;
 import _959.server_waypoint.text.chat.ListView;
 import net.kyori.adventure.text.Component;
@@ -290,6 +291,40 @@ class RemoteScreensTest {
         assertEquals("✘ No waypoint called Gate in Farms. Open Farms",
                 render(RemoteScreens.noWaypoint(Fixtures.player(), SURVIVAL, OVERWORLD, Fixtures.farms(), "Gate")));
         assertEquals("✘ Remote waypoints can't be sorted by distance.", render(RemoteScreens.distanceUnavailable()));
+    }
+
+    @Test
+    void switchingNamesTheServerAndTheWaypoint() {
+        SimpleWaypoint iron = Fixtures.farms().getWaypointByName("Iron Farm");
+
+        assertEquals("Switching you to Survival for [IF] Iron Farm…",
+                render(RemoteScreens.switching(Fixtures.player(), SURVIVAL, OVERWORLD, Fixtures.farms(), iron)));
+    }
+
+    @Test
+    void failedSwitchesOfferTryAgainOrTheListWhenTheWaypointIsGone() {
+        Component unreachable = RemoteScreens.teleportFailed(Fixtures.player(), SURVIVAL, "survival", OVERWORLD, "Farms",
+                "Iron Farm", Result.UNAVAILABLE);
+        Component gone = RemoteScreens.teleportFailed(Fixtures.player(), SURVIVAL, "survival", OVERWORLD, "Farms",
+                "Iron Farm", Result.NOT_FOUND);
+
+        assertEquals("✘ Survival can't be reached right now. Try again", render(unreachable));
+        assertEquals("/wp remote tp survival " + OW + " Farms \"Iron Farm\"", clickOf(unreachable, "Try again"));
+        assertEquals("✘ That waypoint is no longer on Survival. Open Farms", render(gone));
+        assertEquals("/wp remote list survival " + OW + " Farms", clickOf(gone, "Open Farms"));
+        assertEquals("✘ You don't have permission to switch to survival.", render(RemoteScreens.teleportFailed(
+                Fixtures.player(), null, "survival", OVERWORLD, "Farms", "Iron Farm", Result.UNAUTHORIZED)));
+    }
+
+    @Test
+    void theDestinationSaysWhereThePlayerArrived() {
+        SimpleWaypoint iron = Fixtures.farms().getWaypointByName("Iron Farm");
+
+        assertEquals("✔ Arrived at [IF] Iron Farm on survival",
+                render(RemoteScreens.arrival(Result.SUCCESS, "survival", "Iron Farm", iron)));
+        assertEquals("✔ Arrived at Iron Farm on survival",
+                render(RemoteScreens.arrival(Result.SUCCESS, "survival", "Iron Farm", null)));
+        assertEquals("✘ The switch to survival timed out.", render(RemoteScreens.arrival(Result.EXPIRED, "survival", null, null)));
     }
 
     @Test

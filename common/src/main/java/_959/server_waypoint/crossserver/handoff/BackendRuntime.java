@@ -1,6 +1,11 @@
 package _959.server_waypoint.crossserver.handoff;
 
+import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
+import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.text.feedback.RemoteScreens;
+import net.kyori.adventure.text.Component;
 import _959.server_waypoint.crossserver.*;
 import _959.server_waypoint.crossserver.catalog.*;
 import _959.server_waypoint.crossserver.pairing.*;
@@ -23,6 +28,7 @@ public final class BackendRuntime<S, P> extends AsyncTransportLifecycle implemen
     private volatile BackendAgent agent;
     private volatile BackendHandoffSession<S, P> session;
     private volatile String startupFailureDetails;
+    private volatile RemoteServerId localId;
     public BackendRuntime(Path directory, WaypointServerCore manager, SourceHandoffService.Platform<S> sourcePlatform,
                           DestinationPlatform<P> destinationPlatform) {
         super("server-waypoint-backend-startup");
@@ -41,6 +47,7 @@ public final class BackendRuntime<S, P> extends AsyncTransportLifecycle implemen
         catch (IllegalArgumentException failure) {
             throw new IllegalArgumentException("Invalid serverId in cross-server.json; use 1-64 lowercase letters, digits, underscores, or hyphens, starting with a letter or digit", failure);
         }
+        localId = id;
         if (!RuntimeConfiguration.text(config, "catalogExport", "PUBLIC").equals("PUBLIC")) {
             throw new IllegalArgumentException("Invalid catalogExport in cross-server.json; set it to PUBLIC");
         }
@@ -93,8 +100,21 @@ public final class BackendRuntime<S, P> extends AsyncTransportLifecycle implemen
     }
     public CompletionStage<DestinationHandoffService.ArrivalResult> arrive(UUID playerId, P player) {
         var current = session;
-        if (stopping || current == null) return CompletableFuture.completedFuture(new DestinationHandoffService.ArrivalResult(Result.UNAVAILABLE, false));
+        if (stopping || current == null) return CompletableFuture.completedFuture(new DestinationHandoffService.ArrivalResult(Result.UNAVAILABLE, false, null));
         return current.destination().arrive(playerId, player);
+    }
+    /** What the arriving player reads (spec 14.4): the waypoint is this server's own copy, when it still exists. */
+    public Component arrivalMessage(DestinationHandoffService.ArrivalResult result) {
+        RemoteServerId id = localId;
+        RemoteWaypointKey target = result.target();
+        SimpleWaypoint waypoint = null;
+        if (target != null) {
+            WaypointFileManager fileManager = manager.getWaypointFileManager(target.dimensionName());
+            WaypointList list = fileManager == null ? null : fileManager.getWaypointListByName(target.listName());
+            waypoint = list == null ? null : list.getWaypointByName(target.waypointName());
+        }
+        return RemoteScreens.arrival(result.result(), id == null ? "" : id.value(),
+                target == null ? null : target.waypointName(), waypoint);
     }
     @Override protected void stopResources() throws Exception {
         var current = session;

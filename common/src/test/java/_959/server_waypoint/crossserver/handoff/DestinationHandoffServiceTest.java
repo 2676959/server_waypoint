@@ -151,7 +151,7 @@ class DestinationHandoffServiceTest {
         assertEquals(130, platform.teleports.get(0).yaw()); assertFalse(arrival.isDone());
         assertEquals(REPLAY, arrive().join().result());
         platform.teleported.complete(true);
-        assertEquals(new DestinationHandoffService.ArrivalResult(SUCCESS, true), arrival.join());
+        assertEquals(new DestinationHandoffService.ArrivalResult(SUCCESS, true, binding.target()), arrival.join());
         assertEquals(new CompleteHandoff(binding.handoffId(), playerId, DESTINATION, SUCCESS), link.sent.get(0));
         assertEquals(NOT_FOUND, arrive().join().result());
         assertEquals(1, link.claims); assertEquals(1, platform.teleports.size());
@@ -235,7 +235,7 @@ class DestinationHandoffServiceTest {
     @Test void reportQueueFailureDoesNotRepeatSuccessfulTeleport() {
         HandoffBinding binding = prepare(); var arrival = arrive(); platform.run(); grant(binding); platform.run();
         link.queue = false; platform.teleported.complete(true);
-        assertEquals(new DestinationHandoffService.ArrivalResult(SUCCESS, false), arrival.join());
+        assertEquals(new DestinationHandoffService.ArrivalResult(SUCCESS, false, binding.target()), arrival.join());
         assertEquals(NOT_FOUND, arrive().join().result()); assertEquals(1, platform.teleports.size());
     }
     @Test void preparationIsBoundedAndReplayProtectedWithoutReadingPlayers() {

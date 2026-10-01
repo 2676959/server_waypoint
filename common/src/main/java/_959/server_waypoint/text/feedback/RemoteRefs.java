@@ -116,6 +116,12 @@ public final class RemoteRefs {
         return hint == null ? tooltip : tooltip.hint(hint);
     }
 
+    /** [AB] Name without clicks, for a waypoint the player is switching to. */
+    public static Component plain(Viewer viewer, SimpleWaypoint waypoint) {
+        return Chat.concat(Chat.colored(text("[" + waypoint.initials() + "]"), TextColor.color(waypoint.rgb())), text(" "),
+                Chat.colored(label(viewer, waypoint.displayName(), waypoint.name()), WHITE));
+    }
+
     /** [AB] Name: the initials teleport and the white name opens the read-only details. */
     public static Component reference(DimensionStyle dims, Server server, String dimension, WaypointList list,
                                       SimpleWaypoint waypoint) {

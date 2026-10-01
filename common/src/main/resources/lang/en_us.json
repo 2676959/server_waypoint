@@ -748,5 +748,24 @@
   "wp.error.remote.no_server": "No server called {0}.",
   "wp.error.remote.no_dimension": "{0} has no dimension {1}.",
   "wp.error.remote.no_list": "{0} has no list {1} in {2}.",
-  "wp.error.remote.distance": "Remote waypoints can''t be sorted by distance."
+  "wp.error.remote.distance": "Remote waypoints can''t be sorted by distance.",
+
+  "wp.remote.switching": "Switching you to {0} for {1}",
+  "wp.remote.arrived": "Arrived at {0} on {1}",
+  "wp.remote.try_again": "Try again",
+  "wp.remote.try_again.tooltip": "Ask for the switch again",
+  "wp.remote.tp.unavailable": "{0} can''t be reached right now.",
+  "wp.remote.tp.unauthorized": "You don''t have permission to switch to {0}.",
+  "wp.remote.tp.not_found": "That waypoint is no longer on {0}.",
+  "wp.remote.tp.stale_catalog": "{0} is out of date; wait for it to refresh.",
+  "wp.remote.tp.busy": "Another switch is already under way.",
+  "wp.remote.tp.expired": "The switch to {0} timed out.",
+  "wp.remote.tp.replay": "That switch request was already used.",
+  "wp.remote.tp.wrong_source": "You''re no longer on the server that asked for the switch.",
+  "wp.remote.tp.wrong_destination": "{0} can''t take this switch.",
+  "wp.remote.tp.transfer_failed": "The switch to {0} failed.",
+  "wp.remote.tp.cancelled": "The switch to {0} was cancelled.",
+  "wp.remote.tp.unsupported": "This server can''t switch players to other servers.",
+  "wp.remote.tp.invalid_request": "{0} sent a mismatched reply.",
+  "wp.remote.tp.internal_error": "The switch to {0} hit an internal error."
 }

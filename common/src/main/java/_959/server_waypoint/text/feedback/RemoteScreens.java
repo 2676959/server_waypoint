@@ -7,6 +7,7 @@ import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
 import _959.server_waypoint.core.waypoint.WaypointSorting.SortMode;
 import _959.server_waypoint.crossserver.RemoteCatalogState;
 import _959.server_waypoint.crossserver.catalog.RemoteCatalogQuery.Server;
+import _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result;
 import _959.server_waypoint.text.chat.Chat;
 import _959.server_waypoint.text.chat.ChatLines;
 import _959.server_waypoint.text.chat.Click;
@@ -27,9 +28,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
+import static _959.server_waypoint.util.StringCommandBuilder.escapeListName;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
 import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
@@ -42,6 +46,8 @@ import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 /** Remote browsing (spec 14): the server picker, all servers, a server, a dimension, a list and details. */
 public final class RemoteScreens {
     private static final List<SortMode> SORTS = List.of(SortMode.DEFAULT, SortMode.NAME, SortMode.COLOR);
+    /** Whoever arrives at this server is a player reading chat. */
+    private static final Viewer ARRIVING = new Viewer(Set.of(), true, false, null, null, 0F);
 
     /** Servers with waypoints first, then the rest, each group A–Z by name. */
     static final Comparator<Server> ORDER = Comparator
@@ -353,6 +359,52 @@ public final class RemoteScreens {
 
     public static Component distanceUnavailable() {
         return Errors.of("wp.error.remote.distance");
+    }
+
+    /** Switching you to Survival for [IF] Iron Farm… */
+    public static Component switching(Viewer viewer, Server server, String dimension, WaypointList list,
+                                      SimpleWaypoint waypoint) {
+        return Chat.colored(Chat.concat(translatable("wp.remote.switching",
+                        Chat.colored(RemoteRefs.serverName(viewer, server), WHITE), RemoteRefs.plain(viewer, waypoint)),
+                text(Chat.ELLIPSIS)), GRAY);
+    }
+
+    /**
+     * ✘ Why a switch failed, with Try again where retrying can help, or Open <list> when the
+     * waypoint is gone. The server is named by its display name when it is cached, else by its ID.
+     */
+    public static Component teleportFailed(Viewer viewer, @Nullable Server server, String serverId, String dimension,
+                                           String list, String waypoint, Result result) {
+        Component name = server == null ? text(RemoteRefs.truncate(serverId)) : RemoteRefs.serverName(viewer, server);
+        Component message = translatable("wp.remote.tp." + result.name().toLowerCase(Locale.ROOT), Chat.colored(name, WHITE));
+        WaypointList cached = server == null ? null : server.list(dimension, list);
+        Component listName = cached == null ? text(RemoteRefs.truncate(list)) : RemoteRefs.label(cached.displayName(), list);
+        Component recovery = switch (result) {
+            case NOT_FOUND -> Chat.control(viewer, translatable("wp.open", listName), AQUA,
+                    Click.run(ListTarget.remote(serverId, dimension, list).command(ListQuery.DEFAULT)),
+                    Tooltip.of("wp.remote.browse.tooltip"));
+            case UNAUTHORIZED, WRONG_SOURCE, WRONG_DESTINATION, UNSUPPORTED, SUCCESS -> null;
+            default -> Chat.control(viewer, translatable("wp.remote.try_again"), AQUA,
+                    Click.run("/wp remote tp " + escapeListName(serverId) + " " + escapeListName(dimension) + " "
+                            + escapeListName(list) + " " + escapeListName(waypoint)),
+                    Tooltip.of("wp.remote.try_again.tooltip"));
+        };
+        return Chat.error(message, recovery);
+    }
+
+    /**
+     * At the destination: ✔ Arrived at [IF] Iron Farm on survival, naming this server by its ID,
+     * or why the arrival failed. The waypoint is this server's own, when it still exists.
+     */
+    public static Component arrival(Result result, String server, @Nullable String waypointName,
+                                    @Nullable SimpleWaypoint waypoint) {
+        Component serverName = Chat.colored(text(RemoteRefs.truncate(server)), WHITE);
+        if (result != Result.SUCCESS) {
+            return Chat.error(translatable("wp.remote.tp." + result.name().toLowerCase(Locale.ROOT), serverName));
+        }
+        Component target = waypoint != null ? WaypointRefs.plain(ARRIVING, waypoint)
+                : Chat.colored(text(RemoteRefs.truncate(Objects.requireNonNullElse(waypointName, ""))), WHITE);
+        return Chat.ok(translatable("wp.remote.arrived", target, serverName));
     }
 
     private static WaypointQueryEngine.Query engineQuery(ListQuery query) {

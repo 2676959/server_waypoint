@@ -1,6 +1,7 @@
 package _959.server_waypoint.crossserver.handoff;
 
 import _959.server_waypoint.crossserver.RemoteServerId;
+import _959.server_waypoint.crossserver.RemoteWaypointKey;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage.*;
 import java.util.*;
@@ -24,7 +25,8 @@ public final class DestinationHandoffService<P> implements AutoCloseable {
             }
         }
     }
-    public record ArrivalResult(Result result, boolean notificationQueued) { }
+    /** How an arrival ended, and the waypoint it was for when the handoff was known. */
+    public record ArrivalResult(Result result, boolean notificationQueued, @org.jetbrains.annotations.Nullable RemoteWaypointKey target) { }
     public record Stats(int records, int active, long retainedBytes, boolean closed) { }
     private enum State { CHECKING, PREPARED, SCHEDULED, CLAIMING, READY, VERIFYING, TELEPORTING, TERMINAL }
     private final class Entry {
@@ -122,10 +124,12 @@ public final class DestinationHandoffService<P> implements AutoCloseable {
         requireId(authenticatedPlayerId); Objects.requireNonNull(player); maintain();
         Entry entry;
         synchronized (lock) {
-            if (closed) return CompletableFuture.completedFuture(new ArrivalResult(Result.UNAVAILABLE, false));
+            if (closed) return CompletableFuture.completedFuture(new ArrivalResult(Result.UNAVAILABLE, false, null));
             entry = players.get(authenticatedPlayerId);
-            if (entry == null) return CompletableFuture.completedFuture(new ArrivalResult(Result.NOT_FOUND, false));
-            if (entry.state != State.PREPARED) return CompletableFuture.completedFuture(new ArrivalResult(Result.REPLAY, false));
+            if (entry == null) return CompletableFuture.completedFuture(new ArrivalResult(Result.NOT_FOUND, false, null));
+            if (entry.state != State.PREPARED) {
+                return CompletableFuture.completedFuture(new ArrivalResult(Result.REPLAY, false, entry.binding.target()));
+            }
             entry.player = player; entry.state = State.SCHEDULED;
         }
         schedule(entry, () -> startClaim(entry));
@@ -283,7 +287,7 @@ public final class DestinationHandoffService<P> implements AutoCloseable {
         TeleportCoordinatorLog.BACKEND.info("arrival_finished server={} request={} player={} result={}",
                 TeleportCoordinatorLog.safe(localId.value()), entry.requestId, entry.binding.playerId(), result);
         if (!entry.preparation.isDone()) entry.preparation.complete(new HandoffRejected(result));
-        entry.arrival.complete(new ArrivalResult(result, queued));
+        entry.arrival.complete(new ArrivalResult(result, queued, entry.binding.target()));
     }
     private boolean expired(Entry entry) { return nanos.getAsLong() - entry.deadline >= 0; }
     private static boolean matches(HandoffBinding local, HandoffBinding claimed) {

@@ -14,7 +14,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import java.util.UUID;
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
-import static net.kyori.adventure.text.Component.translatable;
 
 /** Paper/Folia lifecycle and owner adapters; incoming client messages never reach the TCP services. */
 public final class PaperCrossServerRuntime implements Listener {
@@ -51,8 +50,7 @@ public final class PaperCrossServerRuntime implements Listener {
         Player player = event.getPlayer();
         runtime.arrive(player.getUniqueId(), player).whenComplete((result, failure) -> {
             if (failure != null || result.result() == Result.NOT_FOUND || result.result() == Result.UNAVAILABLE) return;
-            destination.execute(player, () -> sender.sendPlayerMessage(player, translatable(result.result() == Result.SUCCESS
-                    ? "waypoint.remote.tp.arrived" : "waypoint.remote.tp." + result.result().name().toLowerCase(java.util.Locale.ROOT))), () -> { });
+            destination.execute(player, () -> sender.sendPlayerMessage(player, runtime.arrivalMessage(result)), () -> { });
         });
     }
 }

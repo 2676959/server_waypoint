@@ -102,28 +102,38 @@ final class RemoteWaypointCommand<S> {
     }
     private int teleport(CommandContext<S> context) {
         S source = context.getSource();
-        if (!canTeleport.test(source)) return fail(source, Result.UNAUTHORIZED);
+        String id = getString(context, SERVER), dimension = getString(context, DIMENSION),
+                listName = getString(context, LIST), name = getString(context, WAYPOINT);
+        Viewer reader = viewer.apply(source);
+        if (!canTeleport.test(source)) return fail(source, reader, null, id, dimension, listName, name, Result.UNAUTHORIZED);
         var cached = store.get().snapshot();
-        var entry = cached.entrySet().stream().filter(value -> value.getKey().value().equals(getString(context, SERVER))).findFirst().orElse(null);
-        if (entry == null) return fail(source, Result.UNAVAILABLE);
+        var entry = cached.entrySet().stream().filter(value -> value.getKey().value().equals(id)).findFirst().orElse(null);
+        RemoteCatalogQuery.Server server = RemoteCatalogQuery.server(cached, id).orElse(null);
+        if (entry == null || server == null) return fail(source, reader, null, id, dimension, listName, name, Result.UNAVAILABLE);
         var view = entry.getValue();
-        if (view.state() == RemoteCatalogState.UNAUTHORIZED) return fail(source, Result.UNAUTHORIZED);
-        if (view.state() == RemoteCatalogState.STALE) return fail(source, Result.STALE_CATALOG);
-        if (view.state() != RemoteCatalogState.AVAILABLE || view.snapshot() == null) return fail(source, Result.UNAVAILABLE);
-        String dimension = getString(context, DIMENSION), listName = getString(context, LIST), waypoint = getString(context, WAYPOINT);
+        if (view.state() == RemoteCatalogState.UNAUTHORIZED) return fail(source, reader, server, id, dimension, listName, name, Result.UNAUTHORIZED);
+        if (view.state() == RemoteCatalogState.STALE) return fail(source, reader, server, id, dimension, listName, name, Result.STALE_CATALOG);
+        if (view.state() != RemoteCatalogState.AVAILABLE || view.snapshot() == null) {
+            return fail(source, reader, server, id, dimension, listName, name, Result.UNAVAILABLE);
+        }
         var list = view.snapshot().dimensions().getOrDefault(dimension, Map.of()).get(listName);
-        if (list == null || !list.waypoints().containsKey(waypoint)) return fail(source, Result.NOT_FOUND);
-        var selection = new RemoteTeleportInitiator.Selection(new RemoteWaypointKey(entry.getKey(), dimension, listName, waypoint),
+        WaypointList shown = server.list(dimension, listName);
+        SimpleWaypoint target = shown == null ? null : shown.getWaypointByName(name);
+        if (list == null || !list.waypoints().containsKey(name) || target == null) {
+            return fail(source, reader, server, id, dimension, listName, name, Result.NOT_FOUND);
+        }
+        var selection = new RemoteTeleportInitiator.Selection(new RemoteWaypointKey(entry.getKey(), dimension, listName, name),
                 view.snapshot().catalogRevision(), list.listRevision());
-        send.accept(source, translatable("waypoint.remote.tp.preparing"));
+        send.accept(source, RemoteScreens.switching(reader, server, dimension, shown, target));
         teleport.initiate(source, selection, result -> {
-            if (result == Result.SUCCESS) send.accept(source, translatable("waypoint.remote.tp.success"));
-            else fail(source, result);
+            if (result != Result.SUCCESS) fail(source, reader, server, id, dimension, listName, name, result);
         });
         return Command.SINGLE_SUCCESS;
     }
-    private int fail(S source, Result result) {
-        error.accept(source, translatable("waypoint.remote.tp." + result.name().toLowerCase(Locale.ROOT)));
+    /** ✘ why the switch failed; the destination's arrival line reports success. */
+    private int fail(S source, Viewer reader, @Nullable RemoteCatalogQuery.Server server, String id, String dimension,
+                     String list, String waypoint, Result result) {
+        error.accept(source, RemoteScreens.teleportFailed(reader, server, id, dimension, list, waypoint, result));
         return 0;
     }
     private void configure(ArgumentBuilder<S, ?> node, int depth) {

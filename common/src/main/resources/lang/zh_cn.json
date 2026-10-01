@@ -748,5 +748,24 @@
   "wp.error.remote.no_server": "没有名为 {0} 的服务器。",
   "wp.error.remote.no_dimension": "{0}没有维度 {1}。",
   "wp.error.remote.no_list": "{0}的{2}中没有列表 {1}。",
-  "wp.error.remote.distance": "远程路径点无法按距离排序。"
+  "wp.error.remote.distance": "远程路径点无法按距离排序。",
+
+  "wp.remote.switching": "正在把你切换到{0}，前往{1}",
+  "wp.remote.arrived": "已到达{1}的{0}",
+  "wp.remote.try_again": "重试",
+  "wp.remote.try_again.tooltip": "再次请求切换",
+  "wp.remote.tp.unavailable": "{0}现在无法连接。",
+  "wp.remote.tp.unauthorized": "你没有切换到{0}的权限。",
+  "wp.remote.tp.not_found": "那个路径点已不在{0}上。",
+  "wp.remote.tp.stale_catalog": "{0}的数据已过期，请等待刷新。",
+  "wp.remote.tp.busy": "已有另一个切换正在进行。",
+  "wp.remote.tp.expired": "切换到{0}超时了。",
+  "wp.remote.tp.replay": "这个切换请求已经用过了。",
+  "wp.remote.tp.wrong_source": "你已不在发起切换的服务器上。",
+  "wp.remote.tp.wrong_destination": "{0}无法接受这次切换。",
+  "wp.remote.tp.transfer_failed": "切换到{0}失败了。",
+  "wp.remote.tp.cancelled": "切换到{0}已取消。",
+  "wp.remote.tp.unsupported": "这个服务器无法把玩家切换到其他服务器。",
+  "wp.remote.tp.invalid_request": "{0}的回复与请求不符。",
+  "wp.remote.tp.internal_error": "切换到{0}时发生内部错误。"
 }

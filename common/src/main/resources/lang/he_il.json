@@ -603,5 +603,24 @@
   "wp.error.remote.no_server": "אין שרת בשם {0}.",
   "wp.error.remote.no_dimension": "ל-{0} אין ממד {1}.",
   "wp.error.remote.no_list": "ל-{0} אין רשימה {1} ב-{2}.",
-  "wp.error.remote.distance": "אי אפשר למיין נקודות מרוחקות לפי מרחק."
+  "wp.error.remote.distance": "אי אפשר למיין נקודות מרוחקות לפי מרחק.",
+
+  "wp.remote.switching": "מעבירים אתכם ל-{0} אל {1}",
+  "wp.remote.arrived": "הגעתם אל {0} ב-{1}",
+  "wp.remote.try_again": "ניסיון חוזר",
+  "wp.remote.try_again.tooltip": "בקשת המעבר שוב",
+  "wp.remote.tp.unavailable": "אי אפשר להתחבר ל-{0} כרגע.",
+  "wp.remote.tp.unauthorized": "אין לכם הרשאה לעבור ל-{0}.",
+  "wp.remote.tp.not_found": "הנקודה הזו כבר לא נמצאת ב-{0}.",
+  "wp.remote.tp.stale_catalog": "{0} לא עדכני; המתינו שיתעדכן.",
+  "wp.remote.tp.busy": "מעבר אחר כבר מתבצע.",
+  "wp.remote.tp.expired": "תם הזמן למעבר ל-{0}.",
+  "wp.remote.tp.replay": "בקשת המעבר הזו כבר נוצלה.",
+  "wp.remote.tp.wrong_source": "אתם כבר לא בשרת שביקש את המעבר.",
+  "wp.remote.tp.wrong_destination": "{0} לא יכול לקבל את המעבר הזה.",
+  "wp.remote.tp.transfer_failed": "המעבר ל-{0} נכשל.",
+  "wp.remote.tp.cancelled": "המעבר ל-{0} בוטל.",
+  "wp.remote.tp.unsupported": "השרת הזה לא יכול להעביר שחקנים לשרתים אחרים.",
+  "wp.remote.tp.invalid_request": "{0} שלח תשובה שלא תואמת לבקשה.",
+  "wp.remote.tp.internal_error": "במעבר ל-{0} אירעה שגיאה פנימית."
 }

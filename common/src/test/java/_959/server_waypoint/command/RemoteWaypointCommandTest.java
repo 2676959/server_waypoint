@@ -308,12 +308,14 @@ class RemoteWaypointCommandTest {
         assertEquals(playerId, preparation.playerId());
         prepareReply.complete(new ApplicationMessage.HandoffPrepared(new ApplicationMessage.HandoffBinding(UUID.randomUUID(), playerId,
                 preparation.source(), preparation.target(), preparation.action(), System.currentTimeMillis() + 15000)));
-        assertEquals(1, transfers); assertTrue(keys(last()).contains("waypoint.remote.tp.success"));
+        assertEquals(1, transfers);
+        assertEquals("Switching you to Server search for [B] Display 0…", ChatAssert.render(last()));
+        assertTrue(errors.isEmpty());
     }
     @Test void teleportPreparationRejectionReportsExactReasonWithoutTransfer() throws Exception {
         tpAllowed = true; dispatcher.execute(tpTarget(), "player");
         prepareReply.complete(new ApplicationMessage.HandoffRejected(ApplicationMessage.Result.UNSUPPORTED));
-        assertEquals(0, transfers); assertTrue(keys(errors.get(0)).contains("waypoint.remote.tp.unsupported"));
+        assertEquals(0, transfers); assertTrue(keys(errors.get(0)).contains("wp.remote.tp.unsupported"));
     }
     @Test void teleportPermissionsAreIndependentAndRecheckedAfterParsing() throws Exception {
         tpAllowed = true; allowed = false;
@@ -323,7 +325,7 @@ class RemoteWaypointCommandTest {
         assertEquals("Remote help", text(last()));
         tpAllowed = false;
         assertEquals(0, dispatcher.execute(parsed)); assertNull(preparation);
-        assertTrue(keys(errors.get(0)).contains("waypoint.remote.tp.unauthorized"));
+        assertTrue(keys(errors.get(0)).contains("wp.remote.tp.unauthorized"));
         assertTrue(dispatcher.getCompletionSuggestions(suggestionParse).join().getList().isEmpty());
     }
     @Test void teleportSuggestionsUseExactCachedWaypointNamesAndHideUnavailableData() throws Exception {
@@ -335,18 +337,18 @@ class RemoteWaypointCommandTest {
         index.disconnected(A, owner); time.set(11_000_000); index.maintain();
         assertTrue(suggestions(prefix).isEmpty());
         assertEquals(0, dispatcher.execute(tpTarget(), "player"));
-        assertTrue(keys(errors.get(0)).contains("waypoint.remote.tp.unavailable"));
+        assertTrue(keys(errors.get(0)).contains("wp.remote.tp.unavailable"));
     }
     @Test void missingAndStaleTargetsNeverPrepare() throws Exception {
         tpAllowed = true;
         assertEquals(0, dispatcher.execute(tpTarget().replace("base 0", "Display 0"), "player"));
-        assertTrue(keys(errors.get(0)).contains("waypoint.remote.tp.not_found"));
+        assertTrue(keys(errors.get(0)).contains("wp.remote.tp.not_found"));
         index.disconnected(A, owner);
         assertEquals(0, dispatcher.execute(tpTarget(), "player"));
-        assertTrue(keys(errors.get(1)).contains("waypoint.remote.tp.stale_catalog"));
+        assertTrue(keys(errors.get(1)).contains("wp.remote.tp.stale_catalog"));
         time.set(11_000_000); index.maintain();
         assertEquals(0, dispatcher.execute(tpTarget(), "player"));
-        assertTrue(keys(errors.get(2)).contains("waypoint.remote.tp.unavailable"));
+        assertTrue(keys(errors.get(2)).contains("wp.remote.tp.unavailable"));
         assertNull(preparation); assertEquals(0, transfers);
     }
     @Test void unauthorizedViewsNeverExposeRetainedCoordinates() {

@@ -603,5 +603,24 @@
   "wp.error.remote.no_server": "No hay ningún servidor llamado {0}.",
   "wp.error.remote.no_dimension": "{0} no tiene la dimensión {1}.",
   "wp.error.remote.no_list": "{0} no tiene la lista {1} en {2}.",
-  "wp.error.remote.distance": "Los puntos remotos no se pueden ordenar por distancia."
+  "wp.error.remote.distance": "Los puntos remotos no se pueden ordenar por distancia.",
+
+  "wp.remote.switching": "Te llevamos a {0} para ir a {1}",
+  "wp.remote.arrived": "Has llegado a {0} en {1}",
+  "wp.remote.try_again": "Reintentar",
+  "wp.remote.try_again.tooltip": "Volver a pedir el cambio",
+  "wp.remote.tp.unavailable": "No se puede conectar con {0} ahora mismo.",
+  "wp.remote.tp.unauthorized": "No tienes permiso para cambiar a {0}.",
+  "wp.remote.tp.not_found": "Ese punto ya no está en {0}.",
+  "wp.remote.tp.stale_catalog": "{0} está desactualizado; espera a que se actualice.",
+  "wp.remote.tp.busy": "Ya hay otro cambio en curso.",
+  "wp.remote.tp.expired": "El cambio a {0} ha caducado.",
+  "wp.remote.tp.replay": "Esa solicitud de cambio ya se usó.",
+  "wp.remote.tp.wrong_source": "Ya no estás en el servidor que pidió el cambio.",
+  "wp.remote.tp.wrong_destination": "{0} no puede aceptar este cambio.",
+  "wp.remote.tp.transfer_failed": "El cambio a {0} ha fallado.",
+  "wp.remote.tp.cancelled": "Se canceló el cambio a {0}.",
+  "wp.remote.tp.unsupported": "Este servidor no puede llevar jugadores a otros servidores.",
+  "wp.remote.tp.invalid_request": "{0} respondió algo que no coincide con la solicitud.",
+  "wp.remote.tp.internal_error": "El cambio a {0} tuvo un error interno."
 }
