@@ -238,6 +238,54 @@ class CommandFeedbackTest {
     }
 
     @Test
+    void addingAnswersWithItsActionsAndTellsOnlyTheOtherPlayers() {
+        this.harness.addList("minecraft:overworld", "Farms");
+        CommandHarness.Source alex = CommandHarness.player();
+        CommandHarness.Source sam = new CommandHarness.Source("Sam", "minecraft:the_nether", new WaypointPos(0, 64, 0), 0F,
+                true, false, Set.of());
+        this.harness.sender.online.addAll(List.of(alex, sam));
+
+        Component result = this.harness.run(alex, "wp add minecraft:overworld Farms 80 66 40 \"Pumpkin Patch\" PP FFAA00 0 true");
+
+        assertEquals("✔ Added [PP] Pumpkin Patch to Farms   Details · Navigate · Undo", render(result));
+        assertEquals(1, this.harness.sender.toPlayers.size());
+        assertEquals(sam, this.harness.sender.toPlayers.get(0).getKey());
+        Component broadcast = this.harness.sender.toPlayers.get(0).getValue();
+        assertEquals("Alex added [PP] Pumpkin Patch to Farms", render(broadcast));
+        assertTrue(runCommands(broadcast).stream().noneMatch(command -> command.startsWith("/wp tp")));
+    }
+
+    @Test
+    void removingOffersRestoreWhichPutsTheWaypointBack() {
+        this.harness.addList("minecraft:overworld", "Farms", CommandHarness.waypoint("Iron Farm", "IF", 0xAAAAAA, 300, 80, 150));
+        CommandHarness.Source player = CommandHarness.player();
+
+        Component removed = this.harness.run(player, "wp remove minecraft:overworld Farms \"Iron Farm\"");
+        String restore = runCommands(removed).stream().filter(command -> command.startsWith("/wp restore ")).findFirst().orElseThrow();
+
+        assertEquals("✔ Removed [IF] Iron Farm from Farms   Restore", render(removed));
+        assertEquals("✔ Restored [IF] Iron Farm to Farms", render(this.harness.run(player, restore.substring(1))));
+        assertTrue(render(this.harness.run(CommandHarness.console(), "wp remove minecraft:overworld Farms \"Iron Farm\""))
+                .startsWith("✔ Removed [IF] Iron Farm from Farms. Restore with /wp restore "));
+    }
+
+    @Test
+    void errorsAreOneRedLineWithARecoveryLink() {
+        this.harness.addList("minecraft:overworld", "Farms");
+        CommandHarness.Source player = CommandHarness.player();
+
+        assertEquals("✘ No list called Farm in Overworld. Browse lists",
+                render(this.harness.run(player, "wp details list minecraft:overworld Farm")));
+        assertEquals("✘ No waypoint called Gate in Farms. Open Farms",
+                render(this.harness.run(player, "wp tp minecraft:overworld Farms Gate")));
+        assertEquals("✘ Overworld already has a list called Farms. Open",
+                render(this.harness.run(player, "wp add minecraft:overworld Farms")));
+        assertEquals("✘ Nothing changed.",
+                render(this.harness.run(player, "wp edit list minecraft:overworld Farms set identifier Farms")));
+        assertEquals(4, this.harness.sender.errors.size());
+    }
+
+    @Test
     void playersMessagesEndWithOneNewline() {
         assertEquals("Farms\n", render(PlatformMessageSender.forPlayer(text("Farms"))));
     }

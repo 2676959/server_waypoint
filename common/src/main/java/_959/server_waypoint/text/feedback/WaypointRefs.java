@@ -54,6 +54,12 @@ public final class WaypointRefs {
                 name(dims, dimension, list, waypoint, nameColor, false));
     }
 
+    /** [AB] Name without clicks, for a waypoint that is gone or not on this server yet. */
+    public static Component plain(Viewer viewer, SimpleWaypoint waypoint) {
+        return Chat.concat(Chat.colored(text("[" + waypoint.initials() + "]"), TextColor.color(waypoint.rgb())), text(" "),
+                Chat.colored(label(viewer, waypoint.displayName(), waypoint.name()), NamedTextColor.WHITE));
+    }
+
     /** [AB] in the waypoint colour: a teleport link with permission, otherwise coloured text with the waypoint tooltip. */
     public static Component initials(DimensionStyle dims, String dimension, WaypointList list, SimpleWaypoint waypoint) {
         Viewer viewer = dims.viewer();

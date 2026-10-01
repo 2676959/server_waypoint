@@ -283,7 +283,7 @@ class CoreWaypointCommandListTest {
         WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
         assertNull(bases.getWaypointByName("duplicate"));
         assertEquals(1, this.sender.errors.size());
-        assertTrue(this.sender.errors.get(0).toString().contains("argument.keywords.duplicate"));
+        assertTrue(this.sender.errors.get(0).toString().contains("wp.error.keywords.duplicate"));
     }
 
     @Test
@@ -329,7 +329,7 @@ class CoreWaypointCommandListTest {
             assertNull(bases.getWaypointByName("base 1").icon());
             assertEquals(revision, bases.getSyncNum());
             assertTrue(translationKeys(this.sender.errors.get(this.sender.errors.size() - 1))
-                    .contains("waypoint.icon.invalid"));
+                    .contains("wp.error.icon"));
         }
     }
 
@@ -501,7 +501,7 @@ class CoreWaypointCommandListTest {
         );
 
         assertEquals(1, this.sender.errors.size());
-        assertTrue(this.sender.errors.get(0).toString().contains("argument.text.too_long"));
+        assertTrue(this.sender.errors.get(0).toString().contains("wp.error.too_long"));
         assertNull(this.server.getWaypointFileManager("overworld")
                 .getWaypointListByName("bases")
                 .getWaypointByName("marker"));

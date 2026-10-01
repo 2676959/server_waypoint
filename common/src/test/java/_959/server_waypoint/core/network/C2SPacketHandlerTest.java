@@ -196,7 +196,7 @@ class C2SPacketHandlerTest {
                 2
         );
 
-        sender.broadcastWaypointModification("source", modification);
+        sender.broadcastChunkedMessage(sender.getBroadcastPlayers("source"), modification);
 
         assertEquals(List.of("first", "second"), sender.attemptedRecipients);
         assertEquals(1, sender.prepareCalls);

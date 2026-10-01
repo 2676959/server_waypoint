@@ -12,7 +12,6 @@ import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.mixin.CommandSourceStackAccessor;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.Translator;
@@ -103,7 +102,7 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
 
     @Override
     public void sendError(CommandSourceStack source, Component component) {
-        source.sendSystemMessage(getTranslatedText(source, component.color(NamedTextColor.RED)));
+        this.sendMessage(source, component);
     }
 
     @Override
