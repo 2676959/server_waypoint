@@ -50,7 +50,9 @@ import org.jetbrains.annotations.Nullable;
 
 //? if >= 1.21.2
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
@@ -234,6 +236,22 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     @Override
     protected Message getMessageFromComponent(Component component) {
         return ModMessageSender.toVanillaText(component);
+    }
+
+    @Override
+    protected Map<String, String> getDimensionTypes(CommandSourceStack source) {
+        Map<String, String> types = new LinkedHashMap<>();
+        for (ServerLevel level : source.getServer().getAllLevels()) {
+            //? if >= 1.21.11 {
+            String dimension = level.dimension().identifier().toString();
+            String type = level.dimensionTypeRegistration().unwrapKey().map(key -> key.identifier().toString()).orElse("");
+            //?} else {
+            /*String dimension = level.dimension().location().toString();
+            String type = level.dimensionTypeRegistration().unwrapKey().map(key -> key.location().toString()).orElse("");
+            *///?}
+            types.put(dimension, type);
+        }
+        return types;
     }
 
     @Override

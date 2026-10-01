@@ -1329,6 +1329,11 @@ class CoreWaypointCommandListTest {
             return List.of("overworld");
         }
 
+        @Override
+        protected java.util.Map<String, String> getDimensionTypes(TestSource source) {
+            return java.util.Map.of("overworld", "minecraft:overworld");
+        }
+
         private static PermissionManager<TestSource, String, Object> permissionManager(
                 boolean allowPrivilegedCommands
         ) {
@@ -1452,6 +1457,11 @@ class CoreWaypointCommandListTest {
                 ChunkedMessage message
         ) {
             return this.chunkedDelivery;
+        }
+
+        @Override
+        public boolean isPlainTextReceiver(TestSource source) {
+            return false;
         }
 
         @Override

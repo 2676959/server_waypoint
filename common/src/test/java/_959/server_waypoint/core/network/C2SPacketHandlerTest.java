@@ -663,6 +663,11 @@ class C2SPacketHandlerTest {
         }
 
         @Override
+        public boolean isPlainTextReceiver(String source) {
+            return false;
+        }
+
+        @Override
         public void sendPacket(String source, SinglePacketMessage message) {
             this.packets.add(message);
         }

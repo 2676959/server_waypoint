@@ -193,6 +193,11 @@ class PlatformMessageSenderTransportTest {
         }
 
         @Override
+        public boolean isPlainTextReceiver(String source) {
+            return false;
+        }
+
+        @Override
         public Iterable<? extends String> getBroadcastPlayers(String source) {
             return List.of(source);
         }

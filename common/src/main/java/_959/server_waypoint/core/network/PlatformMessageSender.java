@@ -22,6 +22,21 @@ import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
 import static _959.server_waypoint.text.FormattedTextHelper.parse;
 
 public interface PlatformMessageSender<S, P> {
+    /**
+     * Every message to a player ends with one newline, which the game draws as a blank line before
+     * the next message. Platforms add it when they send; builders never end with a newline.
+     */
+    static Component forPlayer(Component message) {
+        return Component.empty().append(message).appendNewline();
+    }
+
+    /**
+     * Whether this source's output goes to a plain-text receiver such as the console, RCON or a
+     * command block. It follows the receiver, not the executing entity: /execute as a player from
+     * the console still prints plain text.
+     */
+    boolean isPlainTextReceiver(S source);
+
     void sendMessage(S source, Component component);
     void sendPlayerMessage(P player, Component component);
     void sendError(S source, Component component);

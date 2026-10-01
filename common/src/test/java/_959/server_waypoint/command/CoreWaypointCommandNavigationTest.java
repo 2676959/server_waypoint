@@ -810,6 +810,11 @@ class CoreWaypointCommandNavigationTest {
         protected List<String> getAvailableDimensionNames(TestSource source) {
             return List.of("overworld");
         }
+
+        @Override
+        protected java.util.Map<String, String> getDimensionTypes(TestSource source) {
+            return java.util.Map.of("overworld", "minecraft:overworld");
+        }
     }
 
     private static final class TestPermissionManager
@@ -1032,6 +1037,11 @@ class CoreWaypointCommandNavigationTest {
             return _959.server_waypoint.core.network.ChunkedMessageDelivery.rejected(
                     _959.server_waypoint.core.network.ChunkedMessageSendResult.UNSUPPORTED
             );
+        }
+
+        @Override
+        public boolean isPlainTextReceiver(TestSource source) {
+            return false;
         }
 
         @Override

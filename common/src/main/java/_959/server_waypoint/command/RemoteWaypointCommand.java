@@ -84,6 +84,7 @@ final class RemoteWaypointCommand<S> {
                 .then(tpServer.then(tpDimension.then(tpList.then(tpWaypoint)))));
     }
     boolean canList(S source) { return canList.test(source); }
+    boolean canTeleport(S source) { return canTeleport.test(source); }
     boolean canUse(S source) { return canList.test(source) || canTeleport.test(source); }
     int help(S source) {
         if (!canUse(source)) return 0;

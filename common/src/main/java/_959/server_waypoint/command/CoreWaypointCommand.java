@@ -43,6 +43,8 @@ import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.navigation.TextDisplayTransformation;
 import _959.server_waypoint.core.restore.WaypointRestoreRegistry;
 import _959.server_waypoint.text.TextButtonBuilder;
+import _959.server_waypoint.text.chat.DimensionStyle;
+import _959.server_waypoint.text.chat.Viewer;
 import _959.server_waypoint.util.StringCommandBuilder.ListOptions;
 import _959.server_waypoint.util.StringCommandBuilder.ListTarget;
 import _959.server_waypoint.util.TriConsumer;
@@ -73,8 +75,10 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -241,6 +245,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     protected abstract void teleportPlayer(S source, P player, D dimensionArgument, WaypointPos pos, int yaw);
     protected abstract Message getMessageFromComponent(Component component);
     protected abstract List<String> getAvailableDimensionNames(S source);
+    /** Each loaded dimension and its dimension type ID, such as minecraft:the_nether. */
+    protected abstract Map<String, String> getDimensionTypes(S source);
 
     private boolean hasAddPermission(S source) {
         return this.permissionManager.hasPermission(source, this.permissionKeys.add(), CONFIG.CommandPermission().add());
@@ -276,6 +282,30 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     private boolean hasUploadDeletePermission(S source) {
         return this.permissionManager.hasPermission(source, this.permissionKeys.uploadDelete(), CONFIG.CommandPermission().uploadDelete());
+    }
+
+    /** Whoever reads this source's feedback, built once per command source (spec 17). */
+    protected final Viewer viewer(S source) {
+        Set<Viewer.Permission> permissions = EnumSet.noneOf(Viewer.Permission.class);
+        if (hasAddPermission(source)) permissions.add(Viewer.Permission.ADD);
+        if (hasEditPermission(source)) permissions.add(Viewer.Permission.EDIT);
+        if (hasRemovePermission(source)) permissions.add(Viewer.Permission.REMOVE);
+        if (hasTpPermission(source)) permissions.add(Viewer.Permission.TP);
+        if (hasNavigatePermission(source)) permissions.add(Viewer.Permission.NAVIGATE);
+        if (hasReloadPermission(source)) permissions.add(Viewer.Permission.RELOAD);
+        if (hasUploadPermission(source)) permissions.add(Viewer.Permission.UPLOAD);
+        if (hasUploadDeletePermission(source)) permissions.add(Viewer.Permission.UPLOAD_DELETE);
+        if (this.remoteCommand.canList(source)) permissions.add(Viewer.Permission.REMOTE_LIST);
+        if (this.remoteCommand.canTeleport(source)) permissions.add(Viewer.Permission.REMOTE_TP);
+        P player = getPlayer(source);
+        boolean hasMod = player != null
+                && (this.sender.canSendChunkedMessage(player) || usesLocalUpload(source, player));
+        return new Viewer(permissions, hasMod, this.sender.isPlainTextReceiver(source),
+                toDimensionName(getSourceDimension(source)), getSourcePosition(source), getSourceYaw(source));
+    }
+
+    protected final DimensionStyle dimensions(S source, Viewer viewer) {
+        return DimensionStyle.local(viewer, getDimensionTypes(source));
     }
 
     @SuppressWarnings("unchecked")

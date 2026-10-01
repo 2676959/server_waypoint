@@ -37,8 +37,10 @@ import net.minecraft.server.permissions.PermissionLevel;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -167,6 +169,20 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     @Override
     protected Message getMessageFromComponent(Component component) {
         return MessageComponentSerializer.message().serialize(component);
+    }
+
+    @Override
+    protected Map<String, String> getDimensionTypes(CommandSourceStack source) {
+        Map<String, String> types = new LinkedHashMap<>();
+        for (World world : source.getSender().getServer().getWorlds()) {
+            types.put(world.getKey().asString(), switch (world.getEnvironment()) {
+                case NORMAL -> "minecraft:overworld";
+                case NETHER -> "minecraft:the_nether";
+                case THE_END -> "minecraft:the_end";
+                default -> "custom";
+            });
+        }
+        return types;
     }
 
     @Override
