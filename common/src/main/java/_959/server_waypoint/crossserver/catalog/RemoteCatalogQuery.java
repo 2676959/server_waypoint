@@ -1,89 +1,109 @@
 package _959.server_waypoint.crossserver.catalog;
 
-import _959.server_waypoint.crossserver.*;
-import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
-import _959.server_waypoint.core.waypoint.WaypointSorting;
-import _959.server_waypoint.util.ColorUtils;
-import _959.server_waypoint.util.StringCommandBuilder.ListOptions;
-import java.util.*;
+import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.crossserver.RemoteCatalogState;
+import _959.server_waypoint.crossserver.RemoteListSnapshot;
+import _959.server_waypoint.crossserver.RemoteServerId;
+import _959.server_waypoint.crossserver.RemoteWaypointSnapshot;
+import org.jetbrains.annotations.Nullable;
 
-/** Pure presentation adapter over one immutable local cache capture. Never resolves local game worlds. */
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.TreeMap;
+
+/**
+ * One capture of the local remote-catalog cache as servers holding lists in the shape local
+ * screens use (spec 14). Pure: it never resolves local game worlds. Catalog snapshots don't keep
+ * the published order, so lists and waypoints follow their identifiers.
+ */
 public final class RemoteCatalogQuery {
-    public record Scope(String server, String dimension, String list) {
-        public Scope {
-            if (server == null && dimension != null || dimension == null && list != null) throw new IllegalArgumentException("Nonhierarchical scope");
-        }
+    private RemoteCatalogQuery() {
     }
-    public record Row(RemoteServerId server, String serverLabel, RemoteCatalogState state, String dimension,
-                      String list, String listLabel, String waypointName, RemoteWaypointSnapshot waypoint) { }
-    public enum Problem { NONE, UNKNOWN_SERVER, UNKNOWN_DIMENSION, UNKNOWN_LIST, DISTANCE_UNAVAILABLE }
-    public record Result(List<Row> rows, int totalRows, int totalPages, Problem problem) {
-        public Result { rows = List.copyOf(rows); }
-    }
-    private static final Comparator<Row> BY_NAME = WaypointSorting.<Row>byName(row -> row.waypointName() == null ? "" : row.waypointName())
-            .thenComparing(row -> row.server().value()).thenComparing(row -> Objects.toString(row.dimension(), ""))
-            .thenComparing(row -> Objects.toString(row.list(), ""));
 
-    public Result query(Map<RemoteServerId, CatalogReceiver.View> catalogs, Scope scope, ListOptions options) {
-        if (options.pageNumber() < 1 || options.pageLimit() < 1 || options.pageLimit() > _959.server_waypoint.config.Config.MAX_PAGE_LIMIT) {
-            throw new IllegalArgumentException("Invalid remote page");
+    /** A server as a reader may see it. Unreachable and no-access servers never show their last copy. */
+    public record Server(RemoteServerId id, String displayName, RemoteCatalogState state,
+                         Map<String, List<WaypointList>> dimensions) {
+        public Server {
+            Objects.requireNonNull(id, "id");
+            Objects.requireNonNull(displayName, "displayName");
+            Objects.requireNonNull(state, "state");
+            Map<String, List<WaypointList>> copied = new TreeMap<>();
+            dimensions.forEach((dimension, lists) -> copied.put(dimension, List.copyOf(lists)));
+            dimensions = Collections.unmodifiableMap(copied);
         }
-        if (options.sortMode() == WaypointSorting.SortMode.DISTANCE) return failure(Problem.DISTANCE_UNAVAILABLE);
-        var selected = catalogs.entrySet().stream().filter(entry -> scope.server() == null || entry.getKey().value().equals(scope.server()))
-                .sorted(Map.Entry.comparingByKey(Comparator.comparing(RemoteServerId::value))).toList();
-        if (scope.server() != null && selected.isEmpty()) return failure(Problem.UNKNOWN_SERVER);
-        List<Row> rows = new ArrayList<>();
-        String filter = options.filterText() == null ? "" : options.filterText().trim();
-        for (var entry : selected) {
-            RemoteServerId id = entry.getKey(); CatalogReceiver.View view = entry.getValue();
-            if (view.snapshot() == null || view.state() == RemoteCatalogState.UNAUTHORIZED || view.state() == RemoteCatalogState.UNAVAILABLE) {
-                rows.add(new Row(id, view.displayName(), view.state(), null, null, null, null, null)); continue;
-            }
-            var dimensions = view.snapshot().dimensions();
-            if (scope.dimension() != null && !dimensions.containsKey(scope.dimension())) return failure(Problem.UNKNOWN_DIMENSION);
-            if (dimensions.isEmpty() && filter.isEmpty()) rows.add(new Row(id, view.displayName(), view.state(), null, null, null, null, null));
-            for (String dimension : new TreeSet<>(dimensions.keySet())) {
-                if (scope.dimension() != null && !scope.dimension().equals(dimension)) continue;
-                var lists = dimensions.get(dimension);
-                if (scope.list() != null && !lists.containsKey(scope.list())) return failure(Problem.UNKNOWN_LIST);
-                if (lists.isEmpty() && filter.isEmpty()) rows.add(new Row(id, view.displayName(), view.state(), dimension, null, null, null, null));
-                List<String> names = new ArrayList<>(new TreeSet<>(lists.keySet()));
-                if (options.sortMode() == WaypointSorting.SortMode.NAME) {
-                    names.sort(WaypointSorting.byName(value -> value));
-                    if (options.reversed()) Collections.reverse(names);
-                }
-                for (String name : names) {
-                    if (scope.list() != null && !scope.list().equals(name)) continue;
-                    RemoteListSnapshot list = lists.get(name);
-                    boolean matchedList = filter.isEmpty() || WaypointQueryEngine.matchesFilter(name, filter);
-                    List<Row> group = new ArrayList<>();
-                    for (String waypoint : new TreeSet<>(list.waypoints().keySet())) {
-                        RemoteWaypointSnapshot value = list.waypoints().get(waypoint);
-                        if (matchedList || WaypointQueryEngine.matchesFilter(waypoint, filter)
-                                || value.keywords().stream().anyMatch(keyword -> WaypointQueryEngine.matchesFilter(keyword, filter))) {
-                            group.add(new Row(id, view.displayName(), view.state(), dimension, name, list.displayName(), waypoint, value));
-                        }
-                    }
-                    if (group.isEmpty() && matchedList) group.add(new Row(id, view.displayName(), view.state(), dimension, name, list.displayName(), null, null));
-                    if (options.groupByLists()) sort(group, options);
-                    rows.addAll(group);
-                }
-            }
+
+        /** Available and stale servers show their catalog. */
+        public boolean readable() {
+            return this.state == RemoteCatalogState.AVAILABLE || this.state == RemoteCatalogState.STALE;
         }
-        if (!options.groupByLists()) sort(rows, options);
-        int totalPages = Math.max(1, (rows.size() + options.pageLimit() - 1) / options.pageLimit());
-        long start = (long) (options.pageNumber() - 1) * options.pageLimit();
-        List<Row> page = start >= rows.size() ? List.of() : rows.subList((int) start, (int) Math.min(rows.size(), start + options.pageLimit()));
-        return new Result(page, rows.size(), totalPages, Problem.NONE);
+
+        /** Only an available server takes teleports. */
+        public boolean available() {
+            return this.state == RemoteCatalogState.AVAILABLE;
+        }
+
+        public @Nullable List<WaypointList> lists(String dimension) {
+            return this.dimensions.get(dimension);
+        }
+
+        public @Nullable WaypointList list(String dimension, String list) {
+            List<WaypointList> lists = this.lists(dimension);
+            return lists == null ? null
+                    : lists.stream().filter(candidate -> candidate.name().equals(list)).findFirst().orElse(null);
+        }
+
+        public int listCount() {
+            return this.dimensions.values().stream().mapToInt(List::size).sum();
+        }
+
+        public int waypointCount() {
+            return this.dimensions.values().stream().flatMap(List::stream).mapToInt(WaypointList::size).sum();
+        }
     }
-    private static Result failure(Problem problem) { return new Result(List.of(), 0, 1, problem); }
-    private static void sort(List<Row> rows, ListOptions options) {
-        WaypointSorting.SortMode mode = options.sortMode();
-        if (!options.groupByLists() && mode == WaypointSorting.SortMode.DEFAULT) mode = WaypointSorting.SortMode.NAME;
-        if (mode == WaypointSorting.SortMode.NAME) rows.sort(BY_NAME);
-        else if (mode == WaypointSorting.SortMode.COLOR) {
-            ColorUtils.sortWaypointColors(rows, row -> row.waypoint() == null ? 0 : row.waypoint().rgb(), BY_NAME);
+
+    /** Every cached server, by identity. */
+    public static List<Server> servers(Map<RemoteServerId, CatalogReceiver.View> catalogs) {
+        return catalogs.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey(Comparator.comparing(RemoteServerId::value)))
+                .map(entry -> server(entry.getKey(), entry.getValue()))
+                .toList();
+    }
+
+    /** The cached server with exactly this identity. */
+    public static Optional<Server> server(Map<RemoteServerId, CatalogReceiver.View> catalogs, String id) {
+        return catalogs.entrySet().stream()
+                .filter(entry -> entry.getKey().value().equals(id))
+                .findFirst()
+                .map(entry -> server(entry.getKey(), entry.getValue()));
+    }
+
+    private static Server server(RemoteServerId id, CatalogReceiver.View view) {
+        Map<String, List<WaypointList>> dimensions = new TreeMap<>();
+        boolean readable = view.state() == RemoteCatalogState.AVAILABLE || view.state() == RemoteCatalogState.STALE;
+        if (readable && view.snapshot() != null) {
+            view.snapshot().dimensions().forEach((dimension, lists) -> dimensions.put(dimension, lists(lists)));
         }
-        if (mode != WaypointSorting.SortMode.DEFAULT && options.reversed()) Collections.reverse(rows);
+        return new Server(id, view.displayName(), view.state(), dimensions);
+    }
+
+    private static List<WaypointList> lists(Map<String, RemoteListSnapshot> lists) {
+        List<WaypointList> converted = new ArrayList<>();
+        new TreeMap<>(lists).forEach((name, list) -> {
+            List<SimpleWaypoint> waypoints = new ArrayList<>();
+            new TreeMap<>(list.waypoints()).forEach((waypoint, value) -> waypoints.add(waypoint(waypoint, value)));
+            converted.add(new WaypointList(name, list.displayName(), 0, waypoints));
+        });
+        return converted;
+    }
+
+    private static SimpleWaypoint waypoint(String name, RemoteWaypointSnapshot value) {
+        return new SimpleWaypoint(name, value.displayName(), value.initials(), value.position(), value.rgb(),
+                value.yaw(), value.global(), value.keywords(), value.description(), value.icon());
     }
 }

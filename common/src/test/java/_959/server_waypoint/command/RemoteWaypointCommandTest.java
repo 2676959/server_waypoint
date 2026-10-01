@@ -7,8 +7,9 @@ import _959.server_waypoint.crossserver.catalog.*;
 import _959.server_waypoint.crossserver.protocol.*;
 import _959.server_waypoint.crossserver.transport.*;
 import _959.server_waypoint.core.waypoint.*;
+import _959.server_waypoint.text.chat.ChatAssert;
+import _959.server_waypoint.text.chat.Viewer;
 import _959.server_waypoint.util.StringCommandBuilder;
-import _959.server_waypoint.util.StringCommandBuilder.ListOptions;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.kyori.adventure.text.*;
@@ -50,12 +51,11 @@ class RemoteWaypointCommandTest {
     private final Object owner = new Object();
     private final List<Component> messages = new ArrayList<>(), errors = new ArrayList<>();
     private final CommandDispatcher<String> dispatcher = new CommandDispatcher<>();
-    private final RemoteCatalogQuery queries = new RemoteCatalogQuery();
 
     @BeforeEach void setup() throws Exception {
         var commands = new RemoteWaypointCommand<String>(() -> { assertTrue(allowed || tpAllowed, "Denied readers must not access the catalog"); return new RemoteCatalogStore(index); }, (source, text) -> messages.add(text),
                 (source, text) -> errors.add(text), () -> 5, source -> allowed, source -> tpAllowed, handoffs,
-                source -> Component.text("Remote help"));
+                source -> Component.text("Remote help"), this::viewer);
         dispatcher.register(LiteralArgumentBuilder.<String>literal("wp").then(commands.build()));
         Map<String, RemoteWaypointSnapshot> waypoints = new HashMap<>();
         for (int i = 0; i < 12; i++) waypoints.put("base " + i, waypoint("Display " + i, i));
@@ -63,6 +63,13 @@ class RemoteWaypointCommandTest {
                 "", new RemoteListSnapshot("Empty identity", new RemoteRevision(1), Map.of()))));
         publish(B, Map.of(DIMENSION, Map.of("search", new RemoteListSnapshot("Other display", new RemoteRevision(1),
                 Map.of("base 0", waypoint("Other waypoint", 0))))));
+    }
+    /** "plain" reads plain text like the console; every other source reads chat. */
+    private Viewer viewer(String source) {
+        Set<Viewer.Permission> permissions = EnumSet.noneOf(Viewer.Permission.class);
+        if (allowed) permissions.add(Viewer.Permission.REMOTE_LIST);
+        if (tpAllowed) permissions.add(Viewer.Permission.REMOTE_TP);
+        return new Viewer(permissions, false, source.equals("plain"), null, null, 0F);
     }
     private static RemoteWaypointSnapshot waypoint(String display, int position) {
         return new RemoteWaypointSnapshot(display, "B", new WaypointPos(position, 64, 0), position % 2 == 0 ? 0xFF0000 : 0x00FF00,
@@ -81,9 +88,8 @@ class RemoteWaypointCommandTest {
     }
     private static String quote(String value) { return StringCommandBuilder.escapeListName(value); }
     private String target() { return "wp remote list " + quote(A.value()) + " " + quote(DIMENSION) + " \"search\""; }
-    private ListOptions options(String filter, WaypointSorting.SortMode mode, boolean reversed, boolean grouped) {
-        return new ListOptions(filter, mode, reversed, 1, 100, grouped);
-    }
+    private String tpTarget() { return target().replace("remote list", "remote tp") + " " + quote("base 0"); }
+    private String detailsTarget() { return target().replace("remote list", "remote details") + " " + quote("base 0"); }
     private Component last() { return messages.get(messages.size() - 1); }
     private List<String> suggestions(String input) {
         return dispatcher.getCompletionSuggestions(dispatcher.parse(input, "console")).join().getList().stream().map(value -> value.getText()).toList();
@@ -108,7 +114,7 @@ class RemoteWaypointCommandTest {
         assertTrue(suggestions("wp remote list \"se").contains("\"search\""));
         assertEquals(1, dispatcher.execute(target(), "console"));
         assertEquals(1, dispatcher.execute("wp remote list \"search\" " + quote(DIMENSION) + " \"\"", "console"));
-        assertTrue(keys(last()).contains("waypoint.remote.empty"));
+        assertTrue(ChatAssert.render(last()).endsWith("No waypoints yet."));
     }
     @Test void redirectedSuggestionsResolveArgumentsAtEveryRemoteDepth() {
         tpAllowed = true;
@@ -137,68 +143,47 @@ class RemoteWaypointCommandTest {
             }
         }
     }
-    @Test void combinedOptionsAndGeneratedPageLinksRetainExactScope() throws Exception {
-        assertEquals(1, dispatcher.execute(target() + " search village sort name order descending page 1 limit 2 view flat", "console"));
-        String next = clicks(last()).stream().filter(value -> value.contains("page 2")).findFirst().orElseThrow();
-        assertEquals("/" + target() + " search village sort name order descending page 2 limit 2 view flat", next);
+    @Test void generatedLinksKeepTheExactScopeInTheCanonicalOptionOrder() throws Exception {
+        assertEquals(1, dispatcher.execute(target() + " search village sort name order descending limit 2", "console"));
+        String next = clicks(last()).stream().filter(value -> value.endsWith(" page 2")).findFirst().orElseThrow();
+        assertEquals("/" + target() + " search village sort name order descending limit 2 page 2", next);
         assertEquals(1, dispatcher.execute(next.substring(1), "console"));
-        assertTrue(text(last()).contains("search")); assertFalse(text(last()).contains("Other waypoint"));
+        assertFalse(ChatAssert.render(last()).contains("Other waypoint"));
         assertTrue(clicks(last()).stream().allMatch(value -> value.startsWith("/wp remote list ") || value.startsWith("/wp remote details ")));
         for (String suffix : List.of("search village", "sort color order ascending search village", "page 1 limit 3 view tree search village",
-                "sort name page 1 limit 2 view flat", "limit 3 search village", "view flat search village")) {
+                "sort name page 1 limit 2 view flat", "limit 3 search village", "view flat search village", "view lists")) {
             assertEquals(1, dispatcher.execute(target() + " " + suffix, "console"));
         }
     }
-    @Test void listControlsPreserveScopeAndOptionsAndUseLocalStyles() throws Exception {
-        dispatcher.execute(target() + " search village sort color order descending page 2 limit 2", "console");
+    @Test void listControlsKeepTheScopeAndOfferNoDistanceSorting() throws Exception {
+        dispatcher.execute(target() + " search village sort color order descending limit 2 page 2", "console");
         Component output = last();
-        assertNoInheritedClick(output, null, "Display");
-        assertTrue(keys(output).containsAll(List.of("waypoint.list.view.flat", "waypoint.list.sort.label", "waypoint.list.page")));
-        assertFalse(keys(output).contains("waypoint.sort.distance"));
-        var events = components(output).stream().map(Component::clickEvent).filter(Objects::nonNull).toList();
-        String search = events.stream().filter(event -> event.action() == ClickEvent.Action.SUGGEST_COMMAND)
-                .map(ClickEvent::value).findFirst().orElseThrow();
-        assertEquals("/" + target() + " sort color order descending page 1 limit 2 search ", search);
+        assertTrue(ChatAssert.render(output).contains("Sort Default · Name · Color ↓"));
+        assertFalse(ChatAssert.render(output).contains("Distance"));
+        String search = ChatAssert.suggestions(output).stream().filter(value -> value.endsWith(" search ")).findFirst().orElseThrow();
+        assertEquals("/" + target() + " search ", search);
         assertEquals(1, dispatcher.execute(search.substring(1) + "village", "console"));
-        String flat = events.stream().map(ClickEvent::value).filter(value -> value.endsWith("view flat")).findFirst().orElseThrow();
-        assertEquals("/" + target() + " search village sort color order descending page 2 limit 2 view flat", flat);
-        for (ClickEvent event : events) {
-            if (event.action() == ClickEvent.Action.RUN_COMMAND) assertEquals(1, dispatcher.execute(event.value().substring(1), "console"));
+        for (String command : ChatAssert.runCommands(output)) {
+            assertEquals(1, dispatcher.execute(command.substring(1), "console"), command);
         }
-        dispatcher.execute(target() + " view flat", "console");
-        assertTrue(keys(last()).contains("waypoint.list.view.tree"));
-        assertTrue(clicks(last()).stream().anyMatch(value -> value.contains("sort name order descending")));
     }
-
-    @Test void remoteDimensionUsesLocalDimensionColorInListsAndDetails() throws Exception {
+    @Test void remoteDimensionsAreNamedAndColouredByTheirIds() throws Exception {
         publish(new RemoteServerId("colored"), Map.of("minecraft:the_nether", Map.of("list",
                 new RemoteListSnapshot("list", new RemoteRevision(1), Map.of("point", waypoint("point", 0))))));
-        for (String command : List.of("wp remote list colored", "wp remote list colored view flat",
+        for (String command : List.of("wp remote list colored", "wp remote list colored " + quote("minecraft:the_nether"),
                 "wp remote details colored " + quote("minecraft:the_nether") + " list point")) {
             assertEquals(1, dispatcher.execute(command, "console"));
-            assertTrue(components(last()).stream().anyMatch(component -> component instanceof TextComponent value
-                    && value.content().equals("minecraft:the_nether")
-                    && component.color() == NamedTextColor.RED), command);
+            assertEquals(NamedTextColor.RED, ChatAssert.colorOf(last(), "Nether"), command);
         }
-        assertTrue(components(last()).stream().noneMatch(component -> component instanceof TextComponent value
-                && value.content().equals("minecraft:the_nether") && component.clickEvent() != null));
     }
-
-    @Test void initialsTeleportOnlyWhenAvailableAndPermittedAndDoNotLeakToNames() throws Exception {
+    @Test void initialsTeleportOnlyWhenAvailableAndPermittedWhileNamesOpenDetails() throws Exception {
         tpAllowed = true;
         dispatcher.execute(target(), "player");
         Component output = last();
-        String teleportClick = clicks(output).stream().filter(value -> value.startsWith("/wp remote tp ")).findFirst().orElseThrow();
-        assertEquals("/" + tpTarget(), teleportClick);
-        assertTrue(text(output).contains("[B]"));
-        assertNoInheritedClick(output, null, "Display 0");
-        Component name = components(output).stream().filter(c -> c instanceof TextComponent t && t.content().equals("Display 0"))
-                .findFirst().orElseThrow();
-        // The hover lives on the neutral display-label wrapper, outside the teleport control.
-        assertTrue(components(output).stream().anyMatch(c -> c.hoverEvent() != null
-                && c.hoverEvent().value() instanceof Component hover && text(hover).contains("description")));
-        assertNull(name.clickEvent());
-        assertEquals(1, dispatcher.execute(teleportClick.substring(1), "player"));
+        assertEquals("/" + tpTarget(), ChatAssert.clickOf(output, "[B]"));
+        assertEquals("/" + detailsTarget(), ChatAssert.clickOf(output, "Display 0"));
+        assertTrue(ChatAssert.tooltipOf(output, "Display 0").contains("description"));
+        assertEquals(1, dispatcher.execute(tpTarget(), "player"));
         assertNotNull(preparation);
         tpAllowed = false;
         dispatcher.execute(target(), "player");
@@ -207,119 +192,112 @@ class RemoteWaypointCommandTest {
         index.disconnected(A, owner);
         dispatcher.execute(target(), "player");
         assertTrue(clicks(last()).stream().noneMatch(value -> value.startsWith("/wp remote tp ")));
+        assertEquals("Off while Server search is stale", ChatAssert.tooltipOf(last(), "[B]"));
     }
-
-    private static void assertNoInheritedClick(Component component, ClickEvent inherited, String match) {
-        ClickEvent effective = component.clickEvent() == null ? inherited : component.clickEvent();
-        if (component instanceof TextComponent text && text.content().contains(match)) assertNull(effective);
-        if (component instanceof TranslatableComponent translated && translated.key().equals("waypoint.list.page")) assertNull(effective);
-        for (Component child : component.children()) assertNoInheritedClick(child, effective, match);
-    }
-
-    @Test void detailsLinksResolveExactCachedIdentityAndRespectAvailabilityAndPermissions() throws Exception {
+    @Test void detailsResolveExactCachedIdentitiesAndRespectAvailabilityAndPermissions() throws Exception {
         dispatcher.execute(target(), "console");
         List<String> details = clicks(last()).stream().filter(value -> value.startsWith("/wp remote details ")).toList();
-        assertEquals(6, details.size());
+        assertEquals(5, details.size());
         for (String command : details) assertEquals(1, dispatcher.execute(command.substring(1), "console"));
-        assertTrue(keys(last()).containsAll(List.of("waypoint.details.waypoint.title", "waypoint.details.description",
-                "waypoint.details.color", "waypoint.details.keywords")));
-        assertTrue(text(last()).contains("description"));
+        String rendered = ChatAssert.render(last());
+        assertTrue(rendered.contains("Position: ") && rendered.contains("Keywords: village")
+                && rendered.contains("Description: description"));
         assertTrue(clicks(last()).stream().noneMatch(value -> value.startsWith("/wp remote tp ")));
-        String waypointDetails = details.get(1).substring(1);
+        String waypointDetails = details.get(0).substring(1);
         tpAllowed = true;
         dispatcher.execute(waypointDetails, "player");
-        assertTrue(clicks(last()).contains("/" + tpTarget()));
+        assertTrue(ChatAssert.runCommands(last()).stream().anyMatch(value -> value.startsWith("/wp remote tp ")));
         index.disconnected(A, owner);
         dispatcher.execute(waypointDetails, "player");
-        assertTrue(keys(last()).contains("waypoint.remote.state.stale"));
-        assertTrue(clicks(last()).stream().noneMatch(value -> value.startsWith("/wp remote tp ")));
+        assertEquals(NamedTextColor.DARK_GRAY, ChatAssert.colorOf(last(), "[Teleport]"));
+        assertTrue(ChatAssert.runCommands(last()).stream().noneMatch(value -> value.startsWith("/wp remote tp ")));
         time.set(11_000_000); index.maintain();
         assertEquals(0, dispatcher.execute(waypointDetails, "player"));
-        assertFalse(text(last()).contains("description"));
+        assertFalse(ChatAssert.render(last()).contains("description"));
         var parsed = dispatcher.parse(waypointDetails, "player");
         allowed = false;
         int count = messages.size();
         assertEquals(0, dispatcher.execute(parsed));
         assertEquals(count, messages.size());
     }
-
     @Test void longIdentitiesNeverProduceTruncatedOrOversizedActions() throws Exception {
         String longList = "x".repeat(240);
         publish(new RemoteServerId("long"), Map.of(DIMENSION, Map.of(longList,
                 new RemoteListSnapshot("Long list", new RemoteRevision(1), Map.of("waypoint", waypoint("Long waypoint", 0))))));
         tpAllowed = true;
         dispatcher.execute("wp remote list long " + quote(DIMENSION) + " " + quote(longList), "player");
-        assertTrue(text(last()).contains("Long waypoint"));
+        assertTrue(ChatAssert.render(last()).contains("Long waypoint"));
         assertTrue(clicks(last()).stream().allMatch(value -> value.length() <= 256));
         assertTrue(clicks(last()).stream().noneMatch(value -> value.startsWith("/wp remote tp ") || value.startsWith("/wp remote details ")));
     }
-
-    @Test void staleAndUnavailableRemainDifferentFromSuccessfulEmptyCatalogs() throws Exception {
+    @Test void staleUnreachableAndEmptyServersStayDistinct() throws Exception {
         index.disconnected(A, owner);
-        dispatcher.execute(target(), "console"); assertTrue(keys(last()).contains("waypoint.remote.state.stale"));
-        assertTrue(text(last()).contains("Display"));
+        dispatcher.execute(target(), "console");
+        assertTrue(ChatAssert.render(last()).contains("Display"));
+        assertEquals("Stale\nTeleporting is off until it refreshes", ChatAssert.tooltipOf(last(), "●"));
         time.set(11_000_000); index.maintain();
         dispatcher.execute(target(), "console");
-        assertTrue(keys(last()).contains("waypoint.remote.state.unavailable"));
-        assertFalse(keys(last()).contains("waypoint.remote.empty")); assertFalse(text(last()).contains("Display"));
+        assertEquals(List.of("● Server search ⏷", "Server search can't be reached right now. Servers"), ChatAssert.lines(last()));
         assertTrue(suggestions("wp remote list \"search\" ").stream().noneMatch(value -> value.equals(quote(DIMENSION))));
         publish(new RemoteServerId("empty"), Map.of());
         dispatcher.execute("wp remote list empty", "console");
-        assertTrue(keys(last()).containsAll(List.of("waypoint.remote.state.available", "waypoint.remote.empty")));
+        assertEquals(List.of("● Server empty ⏷", "Nothing published yet."), ChatAssert.lines(last()));
+        assertEquals("Available", ChatAssert.tooltipOf(last(), "●"));
     }
-    @Test void missingScopesAndDistanceHaveLocalizedErrorsWithoutUsingLocalCoordinates() throws Exception {
+    @Test void missingScopesAndDistanceAreErrorLines() throws Exception {
         assertEquals(0, dispatcher.execute("wp remote list missing", "console"));
-        assertTrue(keys(errors.get(0)).contains("waypoint.remote.unknown_server"));
+        assertEquals("✘ No server called missing. Servers", ChatAssert.render(errors.get(0)));
         assertEquals(0, dispatcher.execute("wp remote list other missing", "console"));
+        assertEquals("✘ Server other has no dimension missing. Browse", ChatAssert.render(errors.get(1)));
         assertEquals(0, dispatcher.execute("wp remote list other " + quote(DIMENSION) + " missing", "console"));
+        assertTrue(ChatAssert.render(errors.get(2)).startsWith("✘ Server other has no list missing in "));
         assertEquals(0, dispatcher.execute(target() + " sort distance", "console"));
-        assertTrue(keys(errors.get(3)).contains("waypoint.remote.distance_unavailable"));
-        assertEquals(0, dispatcher.execute(target() + " page 2147483647", "console"));
-        assertTrue(keys(errors.get(4)).contains("waypoint.list.page.invalid"));
+        assertEquals("✘ Remote waypoints can't be sorted by distance.", ChatAssert.render(errors.get(3)));
+        assertEquals(1, dispatcher.execute(target() + " page 2147483647", "console"));
+        assertTrue(ChatAssert.render(last()).startsWith("✘ Page 2147483647 does not exist; the last page is 3."));
     }
-    @Test void nameColorAndFuzzyFilteringReuseLocalSemanticsWithoutIdentityCollisions() {
-        var captured = new RemoteCatalogStore(index).snapshot();
-        var scope = new RemoteCatalogQuery.Scope(null, null, null);
-        var result = queries.query(captured, scope, options("vilage", WaypointSorting.SortMode.NAME, false, false));
-        assertEquals(13, result.totalRows());
-        assertEquals(2, result.rows().stream().filter(row -> row.waypointName().equals("base 0")).count());
-        assertEquals(Set.of(A, B), new HashSet<>(result.rows().stream().map(RemoteCatalogQuery.Row::server).toList()));
-        var descending = queries.query(captured, scope, options("village", WaypointSorting.SortMode.NAME, true, false));
-        List<RemoteCatalogQuery.Row> reversed = new ArrayList<>(result.rows()); Collections.reverse(reversed);
-        assertEquals(reversed, descending.rows());
-        var colored = queries.query(captured, scope, options("village", WaypointSorting.SortMode.COLOR, false, false));
-        List<RemoteCatalogQuery.Row> expected = new ArrayList<>(result.rows());
-        _959.server_waypoint.util.ColorUtils.sortWaypointColors(expected, row -> row.waypoint().rgb(),
-                WaypointSorting.<RemoteCatalogQuery.Row>byName(RemoteCatalogQuery.Row::waypointName)
-                        .thenComparing(row -> row.server().value()).thenComparing(RemoteCatalogQuery.Row::dimension).thenComparing(RemoteCatalogQuery.Row::list));
-        assertEquals(expected, colored.rows());
-        assertThrows(UnsupportedOperationException.class, () -> result.rows().clear());
-        assertThrows(UnsupportedOperationException.class, () -> captured.clear());
+    @Test void remoteListsSearchAndSortLikeLocalLists() {
+        var servers = RemoteCatalogQuery.servers(new RemoteCatalogStore(index).snapshot());
+        WaypointQueryEngine.Query fuzzy = new WaypointQueryEngine.Query("vilage", WaypointSorting.SortMode.NAME, null, null, false);
+        assertEquals(13, servers.stream().mapToInt(server -> WaypointQueryEngine.queryLists(server.dimensions(), fuzzy).waypointCount()).sum());
+        var search = servers.stream().filter(server -> server.id().equals(A)).findFirst().orElseThrow();
+        List<String> ascending = WaypointQueryEngine.queryLists(search.dimensions(), fuzzy).dimensions().get(0).lists().stream()
+                .flatMap(list -> list.waypoints().stream()).map(SimpleWaypoint::name).toList();
+        List<String> descending = WaypointQueryEngine.queryLists(search.dimensions(),
+                        new WaypointQueryEngine.Query("vilage", WaypointSorting.SortMode.NAME, null, null, true))
+                .dimensions().get(0).lists().stream().flatMap(list -> list.waypoints().stream()).map(SimpleWaypoint::name).toList();
+        List<String> reversed = new ArrayList<>(ascending); Collections.reverse(reversed);
+        assertEquals(reversed, descending);
+        assertThrows(UnsupportedOperationException.class, () -> search.dimensions().clear());
     }
-    @Test void serverPagesAndHelpHaveOnlyReadOnlyActionsWithNeutralParents() throws Exception {
-        dispatcher.execute("wp remote servers page 1 limit 1", "console");
-        assertTrue(clicks(last()).contains("/wp remote servers page 2 limit 1"));
-        assertTrue(components(last()).stream().filter(c -> c.clickEvent() != null).allMatch(c -> c.children().isEmpty()));
-        for (String command : clicks(last())) assertEquals(1, dispatcher.execute(command.substring(1), "console"));
-        dispatcher.execute("wp remote", "console");
+    @Test void thePickerAndItsPagesOfferOnlyReadOnlyActions() throws Exception {
+        assertEquals(1, dispatcher.execute("wp remote", "console"));
+        assertEquals("Remote servers  2 servers connected", ChatAssert.lines(last()).get(0));
+        for (String command : ChatAssert.runCommands(last())) assertEquals(1, dispatcher.execute(command.substring(1), "console"), command);
+        assertEquals(1, dispatcher.execute("wp remote page 1", "console"));
+        var remote = dispatcher.getRoot().getChild("wp").getChild("remote");
+        assertNull(remote.getChild("servers"));
+        assertNotNull(remote.getChild("tp"));
+        assertThrows(com.mojang.brigadier.exceptions.CommandSyntaxException.class, () -> dispatcher.execute(
+                "wp remote details \"search\" " + quote(DIMENSION) + " \"search\"", "console"));
+        allowed = false; tpAllowed = true;
+        dispatcher.execute("wp remote", "player");
         assertEquals("Remote help", text(last()));
-        assertNotNull(dispatcher.getRoot().getChild("wp").getChild("remote").getChild("tp"));
     }
     @Test void permissionDenialAndRevocationBlockCommandsAndCachedSuggestions() throws Exception {
         var parsed = dispatcher.parse(target(), "console");
         var suggestionParse = dispatcher.parse("wp remote list ", "console");
         allowed = false;
         assertThrows(com.mojang.brigadier.exceptions.CommandSyntaxException.class,
-                () -> dispatcher.execute("wp remote servers", "console"));
+                () -> dispatcher.execute("wp remote page 1", "console"));
         assertEquals(0, dispatcher.execute(parsed));
         assertTrue(dispatcher.getCompletionSuggestions(suggestionParse).join().getList().stream()
                 .noneMatch(suggestion -> Set.of("\"search\"", "other").contains(suggestion.getText())));
         assertTrue(messages.isEmpty());
         assertTrue(errors.isEmpty());
         allowed = true;
-        assertEquals(1, dispatcher.execute("wp remote servers", "console"));
+        assertEquals(1, dispatcher.execute("wp remote page 1", "console"));
     }
-    private String tpTarget() { return target().replace("remote list", "remote tp") + " " + quote("base 0"); }
     @Test void teleportCommandReachesFakeTransferOnlyAfterMatchingPreparation() throws Exception {
         tpAllowed = true;
         assertEquals(1, dispatcher.execute(tpTarget(), "player"));
@@ -374,7 +352,9 @@ class RemoteWaypointCommandTest {
     @Test void unauthorizedViewsNeverExposeRetainedCoordinates() {
         var existing = index.views().get(A);
         var hidden = new CatalogReceiver.View(existing.snapshot(), RemoteCatalogState.UNAUTHORIZED, existing.displayName(), existing.mode(), "minecraft:compass");
-        var result = queries.query(Map.of(A, hidden), new RemoteCatalogQuery.Scope(null, null, null), options("", WaypointSorting.SortMode.DEFAULT, false, true));
-        assertEquals(1, result.rows().size()); assertNull(result.rows().get(0).waypoint()); assertNull(result.rows().get(0).dimension());
+        var server = RemoteCatalogQuery.servers(Map.of(A, hidden)).get(0);
+        assertFalse(server.readable());
+        assertTrue(server.dimensions().isEmpty());
+        assertEquals(0, server.waypointCount());
     }
 }

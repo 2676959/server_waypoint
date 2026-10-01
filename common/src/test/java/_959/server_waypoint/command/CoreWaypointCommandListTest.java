@@ -137,7 +137,7 @@ class CoreWaypointCommandListTest {
                         new ApplicationMessage.CatalogSnapshot(id, revision, UUID.randomUUID(), 0,
                                 bytes.length, new ApplicationMessage.Bytes(bytes))), snapshot));
         this.server.setRemoteCatalogStore(new RemoteCatalogStore(index));
-        this.dispatcher.execute("wp remote servers", this.source);
+        this.dispatcher.execute("wp remote", this.source);
         assertTrue(plainText(lastMessage()).contains("Remote only"));
         this.dispatcher.execute("wp help remote", this.source);
         assertTrue(plainText(lastMessage()).contains("/wp remote list"));

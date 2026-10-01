@@ -226,7 +226,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 sender::sendError, () -> CONFIG.defaultPageLimit(),
                 remotePermissions::canList, remotePermissions::canRequestTeleport,
                 (source, selection, feedback) -> remoteTeleport.initiate(source, selection, feedback),
-                source -> HelpScreen.topic(this.viewer(source), HelpTopics.Topic.REMOTE, false));
+                source -> HelpScreen.topic(this.viewer(source), HelpTopics.Topic.REMOTE, false), this::viewer);
         this.permissionManager = permissionManager;
         this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
         this.restoreRegistry = new WaypointRestoreRegistry<>();
