@@ -243,14 +243,15 @@ final class CommandHarness {
             task.run();
         }
 
+        /** Like Paper's help-map source, a source without a dimension has no level to read. */
         @Override
         protected String getSourceDimension(Source source) {
-            return source.dimension();
+            return java.util.Objects.requireNonNull(source.dimension(), "the source has no level");
         }
 
         @Override
         protected WaypointPos getSourcePosition(Source source) {
-            return source.position();
+            return java.util.Objects.requireNonNull(source.position(), "the source has no level");
         }
 
         @Override

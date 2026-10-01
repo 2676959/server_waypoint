@@ -294,6 +294,19 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     /** Whoever reads this source's feedback, built once per command source (spec 17). */
     protected final Viewer viewer(S source) {
+        Set<Viewer.Permission> permissions = permissions(source);
+        P player = getPlayer(source);
+        boolean hasMod = player != null
+                && (this.sender.canSendChunkedMessage(player) || usesLocalUpload(source, player));
+        return new Viewer(permissions, hasMod, this.sender.isPlainTextReceiver(source),
+                toDimensionName(getSourceDimension(source)), getSourcePosition(source), getSourceYaw(source));
+    }
+
+    /**
+     * What this source may do, without reading where it is: requirement checks run for sources
+     * that have no level, such as the one Paper's help map uses at startup.
+     */
+    private Set<Viewer.Permission> permissions(S source) {
         Set<Viewer.Permission> permissions = EnumSet.noneOf(Viewer.Permission.class);
         if (hasAddPermission(source)) permissions.add(Viewer.Permission.ADD);
         if (hasEditPermission(source)) permissions.add(Viewer.Permission.EDIT);
@@ -305,11 +318,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         if (hasUploadDeletePermission(source)) permissions.add(Viewer.Permission.UPLOAD_DELETE);
         if (this.remoteCommand.canList(source)) permissions.add(Viewer.Permission.REMOTE_LIST);
         if (this.remoteCommand.canTeleport(source)) permissions.add(Viewer.Permission.REMOTE_TP);
-        P player = getPlayer(source);
-        boolean hasMod = player != null
-                && (this.sender.canSendChunkedMessage(player) || usesLocalUpload(source, player));
-        return new Viewer(permissions, hasMod, this.sender.isPlainTextReceiver(source),
-                toDimensionName(getSourceDimension(source)), getSourcePosition(source), getSourceYaw(source));
+        return permissions;
     }
 
     protected final DimensionStyle dimensions(S source, Viewer viewer) {
@@ -1029,7 +1038,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         });
         for (HelpTopics.Topic topic : HelpTopics.Topic.values()) {
             help.then(LiteralArgumentBuilder.<S>literal(topic.id())
-                    .requires(source -> topic.readableBy(viewer(source)))
+                    .requires(source -> topic.readableBy(new Viewer(permissions(source), false, false, null, null, 0F)))
                     .executes(context -> {
                         this.sender.sendMessage(context.getSource(), HelpScreen.topic(viewer(context.getSource()), topic,
                                 this.isNavigationMethodSupported(NavigationMethod.TEXT_DISPLAY)));

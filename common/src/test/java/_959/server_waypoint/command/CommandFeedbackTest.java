@@ -307,6 +307,15 @@ class CommandFeedbackTest {
     }
 
     @Test
+    void requirementChecksNeverReadTheSourcesLevel() {
+        CommandHarness.Source noLevel = new CommandHarness.Source("Help map", null, null, 0F, false, true,
+                CommandHarness.EVERY_PERMISSION);
+        var help = this.harness.dispatcher.getRoot().getChild("wp").getChild("help");
+
+        assertEquals(9, this.harness.dispatcher.getSmartUsage(help, noLevel).size());
+    }
+
+    @Test
     void playersMessagesEndWithOneNewline() {
         assertEquals("Farms\n", render(PlatformMessageSender.forPlayer(text("Farms"))));
     }
