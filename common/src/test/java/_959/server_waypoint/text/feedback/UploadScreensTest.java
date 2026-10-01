@@ -65,7 +65,8 @@ class UploadScreensTest {
 
         assertEquals(List.of(
                 "✘ Upload from VoxelMap stopped early",
-                "1 added · 2 replaced · 3 removed · 4 skipped",
+                "1 added · 2 replaced · 3 removed",
+                "4 skipped",
                 "2 dimensions changed meanwhile; not updated. Try again",
                 "✘ Some uploaded waypoints couldn't be saved to disk."), lines(result));
         assertEquals("/wp upload voxelmap force local delete", clickOf(result, "Try again"));

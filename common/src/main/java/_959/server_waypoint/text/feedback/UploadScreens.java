@@ -27,6 +27,8 @@ import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
 public final class UploadScreens {
     /** Whoever uploads is a player whose client has the mod. */
     private static final Viewer UPLOADER = new Viewer(Set.of(), true, false, null, null, 0F);
+    /** Six counts don't fit the 320 px chat on one line, so each line holds at most three. */
+    private static final int COUNTS_PER_LINE = 3;
 
     /** What an upload changed, and the commands that follow up on it. */
     public record Outcome(UploadTarget source, int added, int replaced, int deleted, int unchanged, int conflicts,
@@ -78,7 +80,12 @@ public final class UploadScreens {
         count(counts, outcome.unchanged(), translatable("wp.upload.count.unchanged", text(outcome.unchanged())), "unchanged");
         count(counts, outcome.conflicts(), Chat.count("wp.count.conflict", outcome.conflicts()), "conflicts");
         count(counts, outcome.skipped(), translatable("wp.upload.count.skipped", text(outcome.skipped())), "skipped");
-        lines.add(counts.isEmpty() ? translatable("wp.upload.nothing", GRAY) : Chat.colored(Chat.join(counts), GRAY));
+        if (counts.isEmpty()) {
+            lines.add(translatable("wp.upload.nothing", GRAY));
+        }
+        for (int start = 0; start < counts.size(); start += COUNTS_PER_LINE) {
+            lines.add(Chat.colored(Chat.join(counts.subList(start, Math.min(counts.size(), start + COUNTS_PER_LINE))), GRAY));
+        }
         if (outcome.conflicts() > 0 && outcome.preferMine() != null) {
             lines.line(translatable("wp.upload.conflicts_kept", GRAY, Chat.count("wp.count.conflict", outcome.conflicts())),
                     text("  "), Chat.link(UPLOADER, translatable("wp.upload.prefer_mine"), YELLOW,
