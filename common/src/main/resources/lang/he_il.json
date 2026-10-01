@@ -84,5 +84,26 @@
   "waypoint.remote.tp.invalid_request": "תשובת המעבר לא תאמה לבקשה.",
   "waypoint.remote.tp.internal_error": "אירעה שגיאה פנימית בשירות השיגור המרוחק.",
   "waypoint.help.remote.tp": "בקשת שיגור באמצעות מזהי השרת, הממד, הרשימה ונקודת הציון המדויקים. יש להקיף שמות עם רווחים במירכאות; המעבר ממתין להכנת היעד.",
-  "waypoint.remote.tp.arrived": "השיגור המרוחק הושלם."
+  "waypoint.remote.tp.arrived": "השיגור המרוחק הושלם.",
+
+  "wp.count.waypoint.one": "{0} נקודת ציון",
+  "wp.count.waypoint.other": "{0} נקודות ציון",
+  "wp.count.list.one": "{0} רשימה",
+  "wp.count.list.other": "{0} רשימות",
+  "wp.count.dimension.one": "{0} ממד",
+  "wp.count.dimension.other": "{0} ממדים",
+  "wp.count.server.one": "{0} שרת",
+  "wp.count.server.other": "{0} שרתים",
+  "wp.count.match.one": "{0} תוצאה",
+  "wp.count.match.other": "{0} תוצאות",
+  "wp.hint.details": "לחצו לפרטים",
+  "wp.hint.open": "לחצו לפתיחה",
+  "wp.hint.reverse": "לחצו להיפוך הסדר",
+  "wp.hint.page": "לחצו להקלדת מספר עמוד",
+  "wp.hint.type_name": "הקלידו שם ולחצו Enter",
+  "wp.hint.type_coordinates": "הקלידו קואורדינטות ושם ולחצו Enter",
+  "wp.hint.type_search": "הקלידו מה לחפש ולחצו Enter",
+  "wp.hint.confirm": "לחצו Enter לאישור",
+  "wp.hint.fill": "לחצו למילוי",
+  "wp.hint.run": "לחצו להרצה"
 }

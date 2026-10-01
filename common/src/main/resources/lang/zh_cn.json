@@ -320,5 +320,26 @@
   "waypoint.remote.tp.invalid_request": "跨服传送回复与请求不匹配。",
   "waypoint.remote.tp.internal_error": "远程传送服务发生内部错误。",
   "waypoint.help.remote.tp": "使用精确的服务器、维度、列表和路径点标识请求传送。含空格的名称请加引号；目标服务器准备成功后才会切换。",
-  "waypoint.remote.tp.arrived": "远程传送已完成。"
+  "waypoint.remote.tp.arrived": "远程传送已完成。",
+
+  "wp.count.waypoint.one": "{0} 个路径点",
+  "wp.count.waypoint.other": "{0} 个路径点",
+  "wp.count.list.one": "{0} 个列表",
+  "wp.count.list.other": "{0} 个列表",
+  "wp.count.dimension.one": "{0} 个维度",
+  "wp.count.dimension.other": "{0} 个维度",
+  "wp.count.server.one": "{0} 个服务器",
+  "wp.count.server.other": "{0} 个服务器",
+  "wp.count.match.one": "{0} 个结果",
+  "wp.count.match.other": "{0} 个结果",
+  "wp.hint.details": "点击查看详情",
+  "wp.hint.open": "点击打开",
+  "wp.hint.reverse": "点击反转顺序",
+  "wp.hint.page": "点击输入页码",
+  "wp.hint.type_name": "输入名称，然后按回车",
+  "wp.hint.type_coordinates": "输入坐标和名称，然后按回车",
+  "wp.hint.type_search": "输入要查找的内容，然后按回车",
+  "wp.hint.confirm": "按回车确认",
+  "wp.hint.fill": "点击填入命令",
+  "wp.hint.run": "点击运行"
 }

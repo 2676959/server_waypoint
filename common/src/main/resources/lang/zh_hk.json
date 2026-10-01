@@ -84,5 +84,26 @@
   "waypoint.remote.tp.invalid_request": "跨服傳送回覆與請求不符。",
   "waypoint.remote.tp.internal_error": "遠端傳送服務發生內部錯誤。",
   "waypoint.help.remote.tp": "使用精確的伺服器、維度、清單及路徑點識別名稱請求傳送。含空格的名稱請加引號；目標伺服器準備成功後才會切換。",
-  "waypoint.remote.tp.arrived": "遠端傳送已完成。"
+  "waypoint.remote.tp.arrived": "遠端傳送已完成。",
+
+  "wp.count.waypoint.one": "{0} 個路徑點",
+  "wp.count.waypoint.other": "{0} 個路徑點",
+  "wp.count.list.one": "{0} 個列表",
+  "wp.count.list.other": "{0} 個列表",
+  "wp.count.dimension.one": "{0} 個維度",
+  "wp.count.dimension.other": "{0} 個維度",
+  "wp.count.server.one": "{0} 個伺服器",
+  "wp.count.server.other": "{0} 個伺服器",
+  "wp.count.match.one": "{0} 個結果",
+  "wp.count.match.other": "{0} 個結果",
+  "wp.hint.details": "點擊查看詳情",
+  "wp.hint.open": "點擊開啟",
+  "wp.hint.reverse": "點擊反轉順序",
+  "wp.hint.page": "點擊輸入頁碼",
+  "wp.hint.type_name": "輸入名稱，然後按 Enter",
+  "wp.hint.type_coordinates": "輸入座標和名稱，然後按 Enter",
+  "wp.hint.type_search": "輸入要搜尋的內容，然後按 Enter",
+  "wp.hint.confirm": "按 Enter 確認",
+  "wp.hint.fill": "點擊填入指令",
+  "wp.hint.run": "點擊執行"
 }

@@ -320,5 +320,26 @@
   "waypoint.remote.tp.invalid_request": "The handoff reply did not match the request.",
   "waypoint.remote.tp.internal_error": "The remote teleport service encountered an internal error.",
   "waypoint.help.remote.tp": "Request a teleport using exact server, dimension, list, and waypoint identities. Quote names containing spaces; transfer waits for destination preparation.",
-  "waypoint.remote.tp.arrived": "Remote teleport completed."
+  "waypoint.remote.tp.arrived": "Remote teleport completed.",
+
+  "wp.count.waypoint.one": "{0} waypoint",
+  "wp.count.waypoint.other": "{0} waypoints",
+  "wp.count.list.one": "{0} list",
+  "wp.count.list.other": "{0} lists",
+  "wp.count.dimension.one": "{0} dimension",
+  "wp.count.dimension.other": "{0} dimensions",
+  "wp.count.server.one": "{0} server",
+  "wp.count.server.other": "{0} servers",
+  "wp.count.match.one": "{0} match",
+  "wp.count.match.other": "{0} matches",
+  "wp.hint.details": "Click for details",
+  "wp.hint.open": "Click to open",
+  "wp.hint.reverse": "Click to reverse",
+  "wp.hint.page": "Click to type a page",
+  "wp.hint.type_name": "Type its name, then press Enter",
+  "wp.hint.type_coordinates": "Type its coordinates and name, then press Enter",
+  "wp.hint.type_search": "Type what to look for, then press Enter",
+  "wp.hint.confirm": "Press Enter to confirm",
+  "wp.hint.fill": "Click to fill it in",
+  "wp.hint.run": "Click to run it"
 }
