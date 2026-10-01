@@ -52,6 +52,7 @@ import _959.server_waypoint.text.feedback.Errors;
 import _959.server_waypoint.text.chat.Chat;
 import _959.server_waypoint.text.feedback.Broadcasts;
 import _959.server_waypoint.text.feedback.DetailsScreen;
+import _959.server_waypoint.text.feedback.NavigationScreens;
 import _959.server_waypoint.text.feedback.Results;
 import _959.server_waypoint.text.feedback.ListScreen;
 import _959.server_waypoint.text.feedback.PickerScreens;
@@ -1748,8 +1749,16 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     private void executeNavigateDisable(S source) {
         P player = getNavigationPlayer(source);
-        if (player != null) {
-            sendNavigationResult(source, this.navigationService.disableAll(player));
+        if (player == null) {
+            return;
+        }
+        NavigationSession previous = this.navigationService.status(player).session();
+        NavigationResult result = this.navigationService.disableAll(player);
+        if (result.code() == NavigationResult.Code.NAVIGATION_DISABLED) {
+            this.sender.sendMessage(source, NavigationScreens.stopped(dimensions(source),
+                    previous == null ? null : place(previous.target())));
+        } else {
+            sendNavigationResult(source, result);
         }
     }
 
@@ -1761,9 +1770,35 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     }
 
     private void executeNavigateStatus(S source) {
+        executeNavigationPanel(source);
+    }
+
+    /** /wp navigate: the panel while navigating, otherwise where to start. */
+    private void executeNavigationPanel(S source) {
         P player = getNavigationPlayer(source);
-        if (player != null) {
-            sendNavigationResult(source, this.navigationService.status(player));
+        if (player == null) {
+            return;
+        }
+        NavigationResult status = this.navigationService.status(player);
+        if (status.session() == null) {
+            this.sender.sendMessage(source, NavigationScreens.idle(dimensions(source)));
+        } else {
+            sendNavigationResult(source, status);
+        }
+    }
+
+    /** /wp navigate config text_display */
+    private void executeTextDisplayPanel(S source) {
+        P player = getNavigationPlayer(source);
+        if (player == null) {
+            return;
+        }
+        NavigationSession session = this.navigationService.status(player).session();
+        if (session == null) {
+            this.sender.sendError(source, NavigationScreens.notNavigating(viewer(source)));
+        } else {
+            this.sender.sendMessage(source, NavigationScreens.textDisplay(viewer(source),
+                    session.textDisplayTransformation(), null));
         }
     }
 
@@ -1772,16 +1807,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         if (player == null) {
             return;
         }
-        NavigationResult result = this.navigationService.resetTextDisplayTransformation(player);
-        if (result.code() != NavigationResult.Code.TEXT_DISPLAY_TRANSFORMATION_UPDATED) {
-            sendNavigationResult(source, result);
-            return;
-        }
-        sendTextDisplayTransformation(
-                source,
-                "waypoint.navigation.text_display.transformation.reset",
-                result.session().textDisplayTransformation()
-        );
+        sendTextDisplayTransformation(source, this.navigationService.resetTextDisplayTransformation(player),
+                translatable("wp.text_display.reset"));
     }
 
     private void executeTextDisplayTranslation(S source, Vector3f translation) {
@@ -1818,41 +1845,23 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     }
 
     private void sendTextDisplayTransformationUpdate(S source, NavigationResult result) {
-        if (result.code() != NavigationResult.Code.TEXT_DISPLAY_TRANSFORMATION_UPDATED) {
+        sendTextDisplayTransformation(source, result, translatable("wp.text_display.updated"));
+    }
+
+    /** The text display panel with the change on top, or why the change failed. */
+    private void sendTextDisplayTransformation(S source, NavigationResult result, Component updated) {
+        if (result.code() != NavigationResult.Code.TEXT_DISPLAY_TRANSFORMATION_UPDATED || result.session() == null) {
             sendNavigationResult(source, result);
             return;
         }
-        sendTextDisplayTransformation(
-                source,
-                "waypoint.navigation.text_display.transformation.updated",
-                result.session().textDisplayTransformation()
-        );
-    }
-
-    private void sendTextDisplayTransformation(
-            S source,
-            String translationKey,
-            TextDisplayTransformation transformation
-    ) {
-        this.sender.sendMessage(
-                source,
-                translatable(
-                        translationKey,
-                        transformationVector(transformation.translation()),
-                        transformationVector(transformation.rotation()),
-                        transformationVector(transformation.scale())
-                )
-        );
-    }
-
-    private static Component transformationVector(Vector3f vector) {
-        return text(vector.x() + " " + vector.y() + " " + vector.z());
+        this.sender.sendMessage(source, NavigationScreens.textDisplay(viewer(source),
+                result.session().textDisplayTransformation(), updated));
     }
 
     private @Nullable P getNavigationPlayer(S source) {
         P player = getPlayer(source);
         if (player == null) {
-            this.sender.sendError(source, translatable("waypoint.navigation.player_only"));
+            this.sender.sendError(source, Errors.playerOnly());
         }
         return player;
     }
@@ -1865,105 +1874,32 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         return this.navigationService.supportedNavigationMethods();
     }
 
+    /** The navigation panel with what changed on top, or the error a failed result calls for (spec 10). */
     private void sendNavigationResult(S source, NavigationResult result) {
         NavigationSession session = result.session();
-        NavigationMethod method = result.method();
-        switch (result.code()) {
-            case NAVIGATION_STARTED -> this.sender.sendMessage(
-                    source,
-                    translatable(
-                            "waypoint.navigation.started",
-                            navigationTargetName(session.target()),
-                            navigationMethods(session.enabledMethods())
-                    )
-            );
-            case TARGET_CHANGED -> this.sender.sendMessage(
-                    source,
-                    translatable(
-                            "waypoint.navigation.target_changed",
-                            navigationTargetName(session.target()),
-                            navigationMethods(session.enabledMethods())
-                    )
-            );
-            case SELECTION_REPLACED -> this.sender.sendMessage(
-                    source,
-                    translatable(
-                            "waypoint.navigation.selection_replaced",
-                            navigationTargetName(session.target()),
-                            navigationMethods(session.enabledMethods())
-                    )
-            );
-            case METHOD_ENABLED -> this.sender.sendMessage(
-                    source,
-                    translatable("waypoint.navigation.method_enabled", text(method.id()))
-            );
-            case METHOD_ALREADY_ENABLED -> this.sender.sendMessage(
-                    source,
-                    translatable("waypoint.navigation.method_already_enabled", text(method.id()))
-            );
-            case METHOD_DISABLED -> this.sender.sendMessage(
-                    source,
-                    translatable("waypoint.navigation.method_disabled", text(method.id()))
-            );
-            case METHOD_ALREADY_DISABLED -> this.sender.sendMessage(
-                    source,
-                    translatable("waypoint.navigation.method_not_enabled", text(method.id()))
-            );
-            case NAVIGATION_DISABLED -> this.sender.sendMessage(
-                    source,
-                    translatable("waypoint.navigation.disabled")
-            );
-            case STATUS -> this.sender.sendMessage(
-                    source,
-                    translatable(
-                            "waypoint.navigation.status",
-                            navigationTargetName(session.target()),
-                            dimensionNameWithColor(session.target().dimensionName()),
-                            parse(session.target().listDisplayName()),
-                            navigationMethods(session.enabledMethods())
-                    )
-            );
-            case NO_ACTIVE_SESSION -> this.sender.sendError(
-                    source,
-                    translatable("waypoint.navigation.no_active")
-            );
-            case INSUFFICIENT_INVENTORY -> this.sender.sendError(
-                    source,
-                    translatable(
-                            "waypoint.navigation.inventory.insufficient",
-                            text(result.requiredSlots()),
-                            text(result.availableSlots())
-                    )
-            );
-            case TARGET_UNAVAILABLE -> this.sender.sendError(
-                    source,
-                    translatable("waypoint.navigation.target_unavailable")
-            );
-            case INVALID_SELECTION -> this.sender.sendError(
-                    source,
-                    translatable("waypoint.navigation.invalid_selection")
-            );
-            case METHOD_UNAVAILABLE, HANDLER_FAILED, PLATFORM_REJECTED -> this.sender.sendError(
-                    source,
-                    translatable(
-                            "waypoint.navigation.method_failed",
-                            text(method == null ? "unknown" : method.id())
-                    )
-            );
-            case TEXT_DISPLAY_TRANSFORMATION_UPDATED, SUCCESS -> {
-            }
+        if (result.code() == NavigationResult.Code.NO_ACTIVE_SESSION) {
+            this.sender.sendError(source, NavigationScreens.notNavigating(viewer(source)));
+            return;
         }
-    }
-
-    private Component navigationTargetName(NavigationTarget target) {
-        return parse(target.waypointDisplayName()).colorIfAbsent(TextColor.color(target.rgb()));
-    }
-
-    private Component navigationMethods(Set<NavigationMethod> methods) {
-        if (methods.isEmpty()) {
-            return translatable("waypoint.navigation.methods.none");
+        if (!result.successful()) {
+            this.sender.sendError(source, NavigationScreens.failure(result));
+            return;
         }
-        return text(methods.stream().map(NavigationMethod::id).sorted().collect(java.util.stream.Collectors.joining(", ")));
+        if (session == null) {
+            return;
+        }
+        Component updated = switch (result.code()) {
+            case NAVIGATION_STARTED -> translatable("wp.navigation.started");
+            case TARGET_CHANGED -> translatable("wp.navigation.target_changed");
+            case SELECTION_REPLACED -> translatable("wp.navigation.selection_replaced");
+            case METHOD_ENABLED, METHOD_ALREADY_ENABLED -> translatable("wp.navigation.turned_on",
+                    NavigationScreens.methodName(Objects.requireNonNull(result.method())));
+            case METHOD_DISABLED, METHOD_ALREADY_DISABLED -> translatable("wp.navigation.turned_off",
+                    NavigationScreens.methodName(Objects.requireNonNull(result.method())));
+            default -> null;
+        };
+        this.sender.sendMessage(source, NavigationScreens.panel(dimensions(source), place(session.target()),
+                session.enabledMethods(), supportedNavigationMethods(), updated));
     }
 
     private void executeDownload(S source) {
@@ -2177,6 +2113,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private LiteralArgumentBuilder<S> navigationCommandNode() {
         LiteralArgumentBuilder<S> navigateNode = literal(NAVIGATE_COMMAND);
         navigateNode.requires(this::hasNavigatePermission);
+        navigateNode.executes(context -> {
+            executeNavigationPanel(context.getSource());
+            return Command.SINGLE_SUCCESS;
+        });
 
         LiteralArgumentBuilder<S> useNode = literal(USE_COMMAND);
         for (NavigationMethod method : this.supportedNavigationMethods()) {
@@ -2247,6 +2187,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     private LiteralArgumentBuilder<S> textDisplayTransformationCommandNode() {
         LiteralArgumentBuilder<S> textDisplayNode = literal(NavigationMethod.TEXT_DISPLAY.id());
+        textDisplayNode.executes(context -> {
+            executeTextDisplayPanel(context.getSource());
+            return Command.SINGLE_SUCCESS;
+        });
         LiteralArgumentBuilder<S> transformationNode = literal(TRANSFORMATION_COMMAND);
         LiteralArgumentBuilder<S> resetNode = literal(RESET_COMMAND);
         resetNode.executes(context -> {

@@ -286,6 +286,16 @@ class CommandFeedbackTest {
     }
 
     @Test
+    void navigateWithoutArgumentsShowsWhereToStart() {
+        CommandHarness.Source player = CommandHarness.player();
+
+        assertEquals(List.of("Not navigating", "Open a waypoint and choose Navigate:  This dimension · All"),
+                lines(this.harness.run(player, "wp navigate")));
+        assertEquals("✘ You aren't navigating. Browse waypoints", render(this.harness.run(player, "wp navigate disable")));
+        assertEquals("✘ Only players can do that.", render(this.harness.run(CommandHarness.console(), "wp navigate")));
+    }
+
+    @Test
     void playersMessagesEndWithOneNewline() {
         assertEquals("Farms\n", render(PlatformMessageSender.forPlayer(text("Farms"))));
     }

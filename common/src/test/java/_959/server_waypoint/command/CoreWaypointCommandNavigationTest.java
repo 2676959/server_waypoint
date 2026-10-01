@@ -121,7 +121,7 @@ class CoreWaypointCommandNavigationTest {
 
         this.dispatcher.execute("wp navigate overworld bases Home", console);
 
-        assertEquals(List.of("waypoint.navigation.player_only"), this.sender.errorKeys());
+        assertEquals(List.of("wp.error.player_only"), this.sender.errorKeys());
         assertEquals(0, this.navigationService.sessionCount());
     }
 
@@ -149,11 +149,11 @@ class CoreWaypointCommandNavigationTest {
         this.dispatcher.execute("wp navigate status", this.source);
 
         assertEquals(List.of(
-                "waypoint.navigation.no_active",
-                "waypoint.navigation.no_active",
-                "waypoint.navigation.no_active",
-                "waypoint.navigation.no_active"
+                "wp.error.not_navigating",
+                "wp.error.not_navigating",
+                "wp.error.not_navigating"
         ), this.sender.errorKeys());
+        assertEquals(List.of("wp.navigation.none"), this.sender.messageKeys());
         assertTrue(this.command.validatedDimensions.isEmpty());
     }
 
@@ -164,7 +164,7 @@ class CoreWaypointCommandNavigationTest {
         NavigationSession session = this.session();
         assertEquals("Home", session.target().waypointName());
         assertEquals(Set.of(NavigationMethod.ACTIONBAR), session.enabledMethods());
-        assertEquals(List.of("waypoint.navigation.started"), this.sender.messageKeys());
+        assertEquals(List.of("wp.navigation.started"), this.sender.messageKeys());
         assertTrue(this.permissionManager.sawCheck("navigate", 0));
     }
 
@@ -252,7 +252,7 @@ class CoreWaypointCommandNavigationTest {
         NavigationSession session = this.session();
         assertEquals("Mine", session.target().waypointName());
         assertEquals(Set.of(NavigationMethod.COMPASS), session.enabledMethods());
-        assertEquals(List.of("waypoint.navigation.target_changed"), this.sender.messageKeys());
+        assertEquals(List.of("wp.navigation.target_changed"), this.sender.messageKeys());
     }
 
     @Test
@@ -335,7 +335,7 @@ class CoreWaypointCommandNavigationTest {
         assertEquals(transformation.rotationQuaternion(), handler.lastRotation);
         assertEquals(new Vector3f(0.22F, 0.44F, 0.22F), handler.lastScale);
         assertEquals(
-                "waypoint.navigation.text_display.transformation.updated",
+                "wp.text_display.updated",
                 this.sender.lastMessageKey()
         );
 
@@ -385,7 +385,7 @@ class CoreWaypointCommandNavigationTest {
         assertEquals(TextDisplayTransformation.defaultValue().rotationQuaternion(), handler.lastRotation);
         assertEquals(5, handler.transformationCount);
         assertEquals(
-                "waypoint.navigation.text_display.transformation.reset",
+                "wp.text_display.reset",
                 this.sender.lastMessageKey()
         );
     }
@@ -446,21 +446,21 @@ class CoreWaypointCommandNavigationTest {
                 Set.of(NavigationMethod.ACTIONBAR, NavigationMethod.BOSSBAR),
                 this.session().enabledMethods()
         );
-        assertEquals("waypoint.navigation.method_enabled", this.sender.lastMessageKey());
+        assertEquals("wp.navigation.turned_on", this.sender.lastMessageKey());
 
         this.dispatcher.execute("wp navigate status", this.source);
-        assertEquals("waypoint.navigation.status", this.sender.lastMessageKey());
+        assertEquals("wp.navigation.title", this.sender.lastMessageKey());
 
         this.dispatcher.execute("wp navigate disable actionbar", this.source);
         assertEquals(Set.of(NavigationMethod.BOSSBAR), this.session().enabledMethods());
-        assertEquals("waypoint.navigation.method_disabled", this.sender.lastMessageKey());
+        assertEquals("wp.navigation.turned_off", this.sender.lastMessageKey());
 
         this.dispatcher.execute("wp navigate disable", this.source);
         assertTrue(this.navigationService.findSession(this.player.uuid()).isEmpty());
-        assertEquals("waypoint.navigation.disabled", this.sender.lastMessageKey());
+        assertEquals("wp.navigation.stopped", this.sender.lastMessageKey());
 
         this.dispatcher.execute("wp navigate status", this.source);
-        assertEquals("waypoint.navigation.no_active", this.sender.lastErrorKey());
+        assertEquals("wp.navigation.none", this.sender.lastMessageKey());
     }
 
     @Test
@@ -970,11 +970,26 @@ class CoreWaypointCommandNavigationTest {
             this.errors.clear();
         }
 
+        /** The first wp. translation key, depth first: the message's result, title or error line. */
         private static String translationKey(Component component) {
-            if (component instanceof TranslatableComponent translatableComponent) {
-                return translatableComponent.key();
+            String key = firstKey(component);
+            if (key == null) {
+                throw new AssertionError("Expected a wp. translation in " + component);
             }
-            throw new AssertionError("Expected translatable component but got " + component);
+            return key;
+        }
+
+        private static String firstKey(Component component) {
+            if (component instanceof TranslatableComponent translatable && translatable.key().startsWith("wp.")) {
+                return translatable.key();
+            }
+            for (Component child : component.children()) {
+                String key = firstKey(child);
+                if (key != null) {
+                    return key;
+                }
+            }
+            return null;
         }
     }
 }
