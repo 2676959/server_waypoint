@@ -9,6 +9,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.translation.GlobalTranslator;
 import org.jetbrains.annotations.Nullable;
 
@@ -96,6 +97,36 @@ public final class ChatAssert {
     public static @Nullable String tooltipOf(Component component, String text) {
         HoverEvent<?> hover = find(component, text).style().hoverEvent();
         return hover == null ? null : render((Component) hover.value());
+    }
+
+    /**
+     * The chat limits of spec 1: no line over 320 px, at most 19 lines so the trailing blank line
+     * still fits the 20-line window, no bold, only vanilla glyphs and no trailing newline.
+     */
+    public static void assertFitsChat(Component message) {
+        List<String> problems = new ArrayList<>();
+        String text = render(message);
+        if (text.endsWith("\n")) {
+            problems.add("ends with a newline");
+        }
+        List<String> lines = Arrays.asList(text.split("\n", -1));
+        for (String line : lines) {
+            int width = ChatFont.width(line);
+            if (width > ChatFont.CHAT_WIDTH) {
+                problems.add(width + " px: " + line);
+            }
+            line.codePoints().filter(codePoint -> !ChatFont.isVanillaGlyph(codePoint)).forEach(codePoint ->
+                    problems.add("not in the vanilla font: " + new String(Character.toChars(codePoint)) + " in " + line));
+        }
+        if (lines.size() + 1 > ChatFont.CHAT_LINES) {
+            problems.add((lines.size() + 1) + " lines with the trailing blank line");
+        }
+        if (runs(message).stream().anyMatch(run -> run.style().decoration(TextDecoration.BOLD) == TextDecoration.State.TRUE)) {
+            problems.add("bold text");
+        }
+        if (!problems.isEmpty()) {
+            throw new AssertionError(String.join("\n", problems) + "\n--- message ---\n" + text);
+        }
     }
 
     public static List<String> runCommands(Component component) {
