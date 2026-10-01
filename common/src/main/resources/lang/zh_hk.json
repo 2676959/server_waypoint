@@ -303,5 +303,10 @@
   "wp.hint_line.tp": "點擊路徑點的縮寫即可傳送。",
   "wp.hint_line.remove": "點擊路徑點名稱，然後點刪除。",
   "wp.hint_line.edit": "點擊路徑點名稱即可編輯。",
-  "wp.hint_line.details": "點擊路徑點名稱查看詳情。"
+  "wp.hint_line.details": "點擊路徑點名稱查看詳情。",
+
+  "wp.dimensions.on_server": "此伺服器共 {0} 個",
+  "wp.dimensions.no_waypoints": "還沒有路徑點：",
+  "wp.all.title": "所有維度",
+  "wp.all.continued": "（續）"
 }

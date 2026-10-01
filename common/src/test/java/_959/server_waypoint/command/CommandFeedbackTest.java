@@ -168,6 +168,20 @@ class CommandFeedbackTest {
     }
 
     @Test
+    void theDimensionListAndAllDimensionsAnswerTheirCommands() {
+        CommandHarness.Source player = CommandHarness.player();
+
+        assertEquals(List.of("Dimensions  3 on this server", "Overworld · 0 ●", "No waypoints yet: Nether · End",
+                "All dimensions · 0"), lines(this.harness.run(player, "wp list dimensions")));
+        assertEquals("✘ Page 2 does not exist; the last page is 1. Last page",
+                lines(this.harness.run(player, "wp list dimensions page 2")).get(0));
+        assertEquals(List.of("All dimensions ⏷", "No lists yet."), lines(this.harness.run(player, "wp list all")));
+        this.harness.addList("minecraft:the_nether", "Hub", CommandHarness.waypoint("Portal", "P", 0xFF5555, 1, 64, 1));
+        assertEquals("Nether · 1", lines(this.harness.run(player, "wp list all")).get(1));
+        assertEquals("Search \"portal\" · 1 match · Clear", lines(this.harness.run(player, "wp list all search portal")).get(1));
+    }
+
+    @Test
     void playersMessagesEndWithOneNewline() {
         assertEquals("Farms\n", render(PlatformMessageSender.forPlayer(text("Farms"))));
     }

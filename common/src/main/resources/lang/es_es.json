@@ -303,5 +303,10 @@
   "wp.hint_line.tp": "Haz clic en las iniciales de un punto de ruta para teletransportarte.",
   "wp.hint_line.remove": "Haz clic en el nombre de un punto de ruta y luego en Quitar.",
   "wp.hint_line.edit": "Haz clic en el nombre de un punto de ruta para editarlo.",
-  "wp.hint_line.details": "Haz clic en el nombre de un punto de ruta para ver sus detalles."
+  "wp.hint_line.details": "Haz clic en el nombre de un punto de ruta para ver sus detalles.",
+
+  "wp.dimensions.on_server": "{0} en este servidor",
+  "wp.dimensions.no_waypoints": "Aún sin puntos de ruta:",
+  "wp.all.title": "Todas las dimensiones",
+  "wp.all.continued": "(continuación)"
 }

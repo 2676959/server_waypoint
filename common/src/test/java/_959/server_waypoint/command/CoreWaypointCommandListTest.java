@@ -45,7 +45,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.format.TextColor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -508,152 +507,6 @@ class CoreWaypointCommandListTest {
                 .getWaypointByName("marker"));
     }
 
-    @Test
-    void searchUsesFilteredRowsAndNextPagePreservesAllOptions() throws CommandSyntaxException {
-        this.dispatcher.execute(
-                "wp list all search \"base 12\" sort name limit 5",
-                this.source
-        );
-
-        String filteredText = plainText(lastMessage());
-        assertTrue(filteredText.contains("base 12"));
-        assertFalse(filteredText.contains("base 11"));
-
-        this.sender.messages.clear();
-        this.dispatcher.execute(
-                "wp list all search base sort name order descending page 1 limit 5",
-                this.source
-        );
-
-        List<String> runCommands = runCommands(lastMessage());
-        assertTrue(runCommands.contains(
-                "/wp list all search base sort name order descending page 2 limit 5"
-        ));
-    }
-
-    @Test
-    void viewTogglePreservesListOptionsAndSwitchesTheRenderedShape() throws CommandSyntaxException {
-        this.dispatcher.execute("wp list all view flat", this.source);
-
-        assertTrue(plainText(lastMessage()).contains("overworld / bases /"));
-
-        this.sender.messages.clear();
-        this.dispatcher.execute(
-                "wp list all search base sort name order descending page 2 limit 5 view flat",
-                this.source
-        );
-
-        Component flatList = lastMessage();
-        assertTrue(plainText(flatList).contains("overworld / bases /"));
-        assertTrue(translationKeys(flatList).containsAll(List.of(
-                "waypoint.list.view.tree",
-                "button.list.view.tree"
-        )));
-        assertEquals(
-                "/wp list all sort name order descending view flat search ",
-                listSearchSuggestion(flatList)
-        );
-        assertTrue(runCommands(flatList).contains(
-                "/wp list all search base sort name order descending page 1 limit 5 view flat"
-        ));
-
-        String treeViewCommand = runCommands(flatList).stream()
-                .filter(command -> command.endsWith("view tree"))
-                .findFirst()
-                .orElseThrow();
-        assertEquals(
-                "/wp list all search base sort name order descending page 2 limit 5 view tree",
-                treeViewCommand
-        );
-
-        this.sender.messages.clear();
-        this.dispatcher.execute(treeViewCommand.substring(1), this.source);
-
-        Component treeList = lastMessage();
-        assertFalse(plainText(treeList).contains("overworld / bases /"));
-        assertTrue(translationKeys(treeList).containsAll(List.of(
-                "waypoint.list.view.flat",
-                "button.list.view.flat"
-        )));
-        assertTrue(runCommands(treeList).contains(
-                "/wp list all search base sort name order descending page 2 limit 5 view flat"
-        ));
-    }
-
-    @Test
-    void treePagesShowAllDimensionsAndTitlesSelectTheirScope() throws CommandSyntaxException {
-        for (int index = 0; index < 4; index++) {
-            String dimensionName = "dim" + index;
-            String listName = index == 1 ? "list one" : "list" + index;
-            this.server.putWaypointList(dimensionName, new WaypointList(
-                    listName,
-                    1,
-                    List.of(waypoint("marker " + dimensionName, index))
-            ));
-        }
-
-        this.sender.messages.clear();
-        this.dispatcher.execute(
-                "wp list all search marker sort name order descending page 2 limit 1 view tree",
-                this.source
-        );
-
-        Component page = lastMessage();
-        String pageText = plainText(page);
-        assertTrue(pageText.contains("dim0\n  ...\ndim1\n"));
-        assertTrue(pageText.contains("list one"));
-        assertTrue(pageText.contains("dim2\n  ...\ndim3\n  ...\n"));
-        assertEquals(3, countOccurrences(pageText, "  ...\n"));
-        assertTrue(translationKeys(page).contains("button.list.dimension"));
-        assertTrue(translationKeys(page).contains("button.list.waypoint_list"));
-        assertEquals(TextColor.color(0xFFFF55), hoverTextColor(page, "dim0"));
-
-        List<String> commands = runCommands(page);
-        for (int index = 0; index < 4; index++) {
-            assertTrue(commands.contains(
-                    "/wp list dim" + index
-                            + " search marker sort name order descending page 1 limit 1 view tree"
-            ));
-        }
-        assertTrue(commands.contains(
-                "/wp list dim1 \"list one\" search marker sort name order descending page 1 limit 1 view tree"
-        ));
-        assertDoesNotThrow(() -> this.dispatcher.execute(
-                "wp list dim1 \"list one\" search marker sort name order descending page 1 limit 1 view tree",
-                this.source
-        ));
-    }
-
-    @Test
-    void pagePastTheResultReportsTheLastAvailablePage() throws CommandSyntaxException {
-        this.dispatcher.execute("wp list all page 99 limit 5", this.source);
-
-        assertEquals(1, this.sender.errors.size());
-        assertTrue(this.sender.errors.get(0).toString().contains("waypoint.list.page.invalid"));
-    }
-
-    @Test
-    void sortControlsPreserveTheQueryAndResetThePage() throws CommandSyntaxException {
-        this.dispatcher.execute(
-                "wp list all search base sort name order descending page 2 limit 5",
-                this.source
-        );
-
-        List<String> runCommands = runCommands(lastMessage());
-        assertTrue(runCommands.contains(
-                "/wp list all search base page 1 limit 5"
-        ));
-        assertTrue(runCommands.contains(
-                "/wp list all search base sort distance page 1 limit 5"
-        ));
-        assertTrue(runCommands.contains(
-                "/wp list all search base sort color page 1 limit 5"
-        ));
-        assertTrue(runCommands.contains(
-                "/wp list all search base sort name page 1 limit 5"
-        ));
-    }
-
     private Component lastMessage() {
         return this.sender.messages.get(this.sender.messages.size() - 1);
     }
@@ -685,51 +538,6 @@ class CoreWaypointCommandListTest {
         }
     }
 
-    private static TextColor textColor(Component component, String content) {
-        if (component instanceof TextComponent textComponent
-                && textComponent.content().equals(content)) {
-            return component.color();
-        }
-        if (component instanceof TranslatableComponent translatableComponent) {
-            for (var argument : translatableComponent.arguments()) {
-                if (argument.value() instanceof Component argumentComponent) {
-                    TextColor color = textColor(argumentComponent, content);
-                    if (color != null) {
-                        return color;
-                    }
-                }
-            }
-        }
-        for (Component child : component.children()) {
-            TextColor color = textColor(child, content);
-            if (color != null) {
-                return color;
-            }
-        }
-        return null;
-    }
-
-    private static TextColor hoverTextColor(Component component, String content) {
-        if (component.hoverEvent() != null
-                && component.hoverEvent().action()
-                == net.kyori.adventure.text.event.HoverEvent.Action.SHOW_TEXT) {
-            Object hoverValue = component.hoverEvent().value();
-            if (hoverValue instanceof Component hoverComponent) {
-                TextColor color = textColor(hoverComponent, content);
-                if (color != null) {
-                    return color;
-                }
-            }
-        }
-        for (Component child : component.children()) {
-            TextColor color = hoverTextColor(child, content);
-            if (color != null) {
-                return color;
-            }
-        }
-        return null;
-    }
-
     private static List<String> runCommands(Component component) {
         List<String> commands = new ArrayList<>();
         collectRunCommands(component, commands);
@@ -747,23 +555,6 @@ class CoreWaypointCommandListTest {
         List<String> commands = new ArrayList<>();
         collectSuggestedCommands(component, commands);
         return commands;
-    }
-
-    private static String listSearchSuggestion(Component component) {
-        return suggestedCommands(component).stream()
-                .filter(command -> command.startsWith("/wp list"))
-                .findFirst()
-                .orElseThrow();
-    }
-
-    private static int countOccurrences(String text, String substring) {
-        int count = 0;
-        int offset = 0;
-        while ((offset = text.indexOf(substring, offset)) >= 0) {
-            count++;
-            offset += substring.length();
-        }
-        return count;
     }
 
     private static void collectSuggestedCommands(Component component, List<String> commands) {

@@ -26,7 +26,6 @@ import _959.server_waypoint.core.network.message.WaypointListUpdateMessage;
 import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
-import _959.server_waypoint.core.waypoint.WaypointListDisplayModel;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.core.network.upload.UploadConflictPolicy;
@@ -48,14 +47,13 @@ import _959.server_waypoint.text.chat.DimensionStyle;
 import _959.server_waypoint.text.chat.ListQuery;
 import _959.server_waypoint.text.chat.ListView;
 import _959.server_waypoint.text.chat.Viewer;
+import _959.server_waypoint.text.feedback.DimensionScreens;
 import _959.server_waypoint.text.feedback.Errors;
 import _959.server_waypoint.text.feedback.ListScreen;
 import _959.server_waypoint.text.feedback.HelpScreen;
 import _959.server_waypoint.text.feedback.HelpTopics;
 import _959.server_waypoint.text.feedback.MenuScreen;
 import _959.server_waypoint.text.feedback.PlacedWaypoint;
-import _959.server_waypoint.util.StringCommandBuilder.ListOptions;
-import _959.server_waypoint.util.StringCommandBuilder.ListTarget;
 import _959.server_waypoint.util.TriConsumer;
 import _959.server_waypoint.util.WaypointInitials;
 import _959.server_waypoint.util.NamespacedId;
@@ -75,8 +73,6 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.NotNull;
@@ -104,8 +100,6 @@ import static _959.server_waypoint.text.FormattedTextHelper.*;
 import static _959.server_waypoint.translation.LanguageFilesManager.getExternalLoadedLanguages;
 import static _959.server_waypoint.util.ColorUtils.*;
 import static _959.server_waypoint.util.StringCommandBuilder.escapeListName;
-import static _959.server_waypoint.util.StringCommandBuilder.listDimensionCmd;
-import static _959.server_waypoint.util.StringCommandBuilder.listWaypointListCmd;
 import static _959.server_waypoint.util.WaypointInitials.SINGLE_WORD_REGEX;
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
@@ -2383,6 +2377,13 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         LiteralArgumentBuilder<S> listNode = literal(LIST_COMMAND);
         configureListTarget(listNode, ListScope.CURRENT_DIMENSION);
 
+        LiteralArgumentBuilder<S> dimensionsNode = literal("dimensions");
+        dimensionsNode.executes(context -> executeDimensionList(context.getSource(), 1));
+        dimensionsNode.then(LiteralArgumentBuilder.<S>literal(PAGE_COMMAND)
+                .then(RequiredArgumentBuilder.<S, Integer>argument(PAGE_NUMBER_ARG, integer(1))
+                        .executes(context -> executeDimensionList(context.getSource(), getInteger(context, PAGE_NUMBER_ARG)))));
+        listNode.then(dimensionsNode);
+
         LiteralArgumentBuilder<S> allNode = literal("all");
         configureListTarget(allNode, ListScope.ALL_DIMENSIONS);
         listNode.then(allNode);
@@ -2442,14 +2443,13 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         ListQuery query = new ListQuery(getOptionalString(context, SEARCH_QUERY_ARG, ""), sortMode, reversed, view,
                 getOptionalInteger(context, PAGE_NUMBER_ARG, 1), optionalLimit(context));
         if (scope == ListScope.ALL_DIMENSIONS) {
-            ListOptions options = new ListOptions(query.search(), sortMode, query.descending(), query.page(),
-                    query.pageLimit(CONFIG.defaultPageLimit()), view != ListView.FLAT);
-            sendListQueryResult(
-                    source,
-                    new ListTarget(true, null, null),
-                    options,
-                    this.waypointQueryEngine.queryAll(createListQuery(source, options))
-            );
+            Viewer viewer = viewer(source);
+            DimensionStyle dims = dimensions(source, viewer);
+            int pageLimit = query.pageLimit(CONFIG.defaultPageLimit());
+            this.sender.sendMessage(source, query.searching()
+                    ? DimensionScreens.allSearch(dims, this.waypointQueryEngine.queryAll(engineQuery(source, query)),
+                    query, pageLimit)
+                    : DimensionScreens.all(dims, knownDimensions(source), query, pageLimit));
             return;
         }
         D dimensionArgument = scope == ListScope.CURRENT_DIMENSION
@@ -2459,6 +2459,26 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 ? fixedListName
                 : scope == ListScope.WAYPOINT_LIST ? getString(context, LIST_NAME_ARG) : null;
         this.sender.sendMessage(source, listScreen(source, dimensionArgument, listName, query));
+    }
+
+    private int executeDimensionList(S source, int page) {
+        Viewer viewer = viewer(source);
+        this.sender.sendMessage(source, DimensionScreens.dimensionList(dimensions(source, viewer),
+                knownDimensions(source), page, CONFIG.defaultPageLimit()));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    /** The loaded dimensions and those with waypoint files, each with its lists. */
+    private List<DimensionScreens.DimensionLists> knownDimensions(S source) {
+        Set<String> ids = new java.util.LinkedHashSet<>(getDimensionTypes(source).keySet());
+        ids.addAll(this.waypointServer.getFileManagerMap().keySet());
+        List<DimensionScreens.DimensionLists> dimensions = new java.util.ArrayList<>();
+        for (String id : ids) {
+            WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(id);
+            dimensions.add(new DimensionScreens.DimensionLists(id,
+                    fileManager == null ? List.of() : fileManager.getWaypointLists()));
+        }
+        return dimensions;
     }
 
     private @Nullable Integer optionalLimit(CommandContext<S> context) {
@@ -2530,189 +2550,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         } catch (IllegalArgumentException ignored) {
             return defaultValue;
         }
-    }
-
-    private WaypointQueryEngine.Query createListQuery(S source, ListOptions options) {
-        return new WaypointQueryEngine.Query(
-                options.filterText(),
-                options.sortMode(),
-                getSourcePosition(source),
-                toDimensionName(getSourceDimension(source)),
-                options.reversed()
-        );
-    }
-
-    private void sendListQueryResult(
-            S source,
-            ListTarget target,
-            ListOptions options,
-            WaypointQueryEngine.QueryResult result
-    ) {
-        WaypointListDisplayModel.Display display = WaypointListDisplayModel.build(
-                result,
-                options.groupByLists()
-        );
-        if (result.waypointCount() == 0) {
-            if (!options.filterText().trim().isEmpty()) {
-                this.sender.sendMessage(
-                        source,
-                        translatable("waypoint.search.no_results", text(options.filterText()))
-                );
-                return;
-            }
-            if (target.listName() != null) {
-                WaypointFileManager fileManager = this.waypointServer.getWaypointFileManager(target.dimensionName());
-                WaypointList waypointList = fileManager == null
-                        ? null
-                        : fileManager.getWaypointListByName(target.listName());
-                Component listName = waypointList == null
-                        ? text(target.listName())
-                        : parse(waypointList.displayName());
-                this.sender.sendMessage(source, translatable("waypoint.empty.list", listName));
-                return;
-            }
-            if (target.allDimensions() && result.listCount() > 0 && display.groupByLists()) {
-                this.sender.sendMessage(source, getListDisplayText(
-                        source,
-                        display,
-                        display.dimensions(),
-                        false,
-                        target,
-                        options
-                ));
-                return;
-            }
-            if (target.allDimensions()) {
-                this.sender.sendMessage(source, translatable("waypoint.no.waypoints"));
-                return;
-            }
-            this.sender.sendMessage(
-                    source,
-                    translatable("waypoint.empty.dimension", dimensionNameWithColor(target.dimensionName()))
-            );
-            return;
-        }
-
-        WaypointListPage.Page page = WaypointListPage.paginate(display, options.pageNumber(), options.pageLimit());
-        if (page.pageNumber() != options.pageNumber()) {
-            this.sender.sendError(
-                    source,
-                    translatable(
-                            "waypoint.list.page.invalid",
-                            text(options.pageNumber()),
-                            text(page.totalPages())
-                    )
-            );
-            return;
-        }
-
-        Component listText = getListDisplayText(
-                source,
-                page.display(),
-                page.dimensions(),
-                target.listName() != null,
-                target,
-                options
-        );
-        listText = listText.append(getListViewToggleButton(target, options)).appendSpace()
-                .append(getListSearchButton(target, options)).appendSpace()
-                .append(getListSortControls(target, options));
-        if (page.totalPages() > 1) {
-            listText = listText.append(getPageNavigation(
-                    target,
-                    options,
-                    page.totalPages(),
-                    page.totalWaypoints()
-            ));
-        }
-        this.sender.sendMessage(source, listText);
-    }
-
-    private Component getListDisplayText(
-            S source,
-            WaypointListDisplayModel.Display display,
-            List<WaypointListDisplayModel.DisplayDimension> dimensions,
-            boolean listOnly,
-            ListTarget target,
-            ListOptions options
-    ) {
-        boolean withEdit = hasEditPermission(source);
-        boolean withRemove = hasRemovePermission(source);
-        boolean withTp = hasTpPermission(source);
-        if (!display.groupByLists()) {
-            Component listText = text("").appendNewline();
-            for (WaypointListDisplayModel.DisplayWaypoint waypoint : display.flatWaypoints()) {
-                String dimensionName = waypoint.dimensionName();
-                String listName = waypoint.sourceList().name();
-                listText = listText.append(dimensionNameWithColor(dimensionName))
-                        .append(text(" / ", NamedTextColor.DARK_GRAY))
-                        .append(parse(waypoint.sourceList().displayName()).colorIfAbsent(NamedTextColor.GRAY))
-                        .append(text(" / ", NamedTextColor.DARK_GRAY))
-                        .append(getWaypointText(
-                                waypoint.waypoint(),
-                                dimensionName,
-                                listName,
-                                0,
-                                withEdit,
-                                withRemove,
-                                withTp
-                        ))
-                        .appendNewline();
-            }
-            return listText;
-        }
-        if (listOnly) {
-            WaypointListDisplayModel.DisplayList list = display.lists().get(0);
-            return getWaypointListText(
-                    list.sourceList(),
-                    list.waypoints(),
-                    list.dimensionName(),
-                    0,
-                    false,
-                    withEdit,
-                    withRemove,
-                    withTp
-            );
-        }
-
-        Component listText = text("").appendNewline();
-        for (WaypointListDisplayModel.DisplayDimension dimension : dimensions) {
-            Component dimensionTitle = dimensionNameWithColor(dimension.dimensionName());
-            if (target.allDimensions()) {
-                dimensionTitle = dimensionTitle
-                        .clickEvent(ClickEvent.runCommand(listDimensionCmd(
-                                dimension.dimensionName(),
-                                options
-                        )))
-                        .hoverEvent(HoverEvent.showText(translatable(
-                                "button.list.dimension",
-                                dimensionNameWithColor(dimension.dimensionName())
-                        )));
-            }
-            listText = listText.append(dimensionTitle).appendNewline();
-            if (dimension.lists().isEmpty()) {
-                listText = listText.append(text("  ...", NamedTextColor.DARK_GRAY)).appendNewline();
-                continue;
-            }
-            for (WaypointListDisplayModel.DisplayList list : dimension.lists()) {
-                listText = listText.append(getWaypointListText(
-                        list.sourceList(),
-                        list.waypoints(),
-                        dimension.dimensionName(),
-                        1,
-                        true,
-                        withEdit,
-                        withRemove,
-                        withTp,
-                        listWaypointListCmd(
-                                dimension.dimensionName(),
-                                list.sourceList().name(),
-                                options
-                        )
-                ));
-            }
-        }
-        return listText;
     }
 
     private void executeReload(S source) {

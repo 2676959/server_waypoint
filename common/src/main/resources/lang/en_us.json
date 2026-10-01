@@ -448,5 +448,10 @@
   "wp.hint_line.tp": "Click a waypoint''s initials to teleport.",
   "wp.hint_line.remove": "Click a waypoint''s name, then Remove.",
   "wp.hint_line.edit": "Click a waypoint''s name to edit it.",
-  "wp.hint_line.details": "Click a waypoint''s name for details."
+  "wp.hint_line.details": "Click a waypoint''s name for details.",
+
+  "wp.dimensions.on_server": "{0} on this server",
+  "wp.dimensions.no_waypoints": "No waypoints yet:",
+  "wp.all.title": "All dimensions",
+  "wp.all.continued": "(continued)"
 }

@@ -303,5 +303,10 @@
   "wp.hint_line.tp": "לחצו על ראשי התיבות של נקודת ציון כדי להשתגר.",
   "wp.hint_line.remove": "לחצו על שם של נקודת ציון ואז על הסרה.",
   "wp.hint_line.edit": "לחצו על שם של נקודת ציון כדי לערוך אותה.",
-  "wp.hint_line.details": "לחצו על שם של נקודת ציון לפרטים."
+  "wp.hint_line.details": "לחצו על שם של נקודת ציון לפרטים.",
+
+  "wp.dimensions.on_server": "{0} בשרת הזה",
+  "wp.dimensions.no_waypoints": "עדיין ללא נקודות ציון:",
+  "wp.all.title": "כל הממדים",
+  "wp.all.continued": "(המשך)"
 }

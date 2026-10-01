@@ -448,5 +448,10 @@
   "wp.hint_line.tp": "点击路径点的缩写即可传送。",
   "wp.hint_line.remove": "点击路径点名称，然后点删除。",
   "wp.hint_line.edit": "点击路径点名称即可编辑。",
-  "wp.hint_line.details": "点击路径点名称查看详情。"
+  "wp.hint_line.details": "点击路径点名称查看详情。",
+
+  "wp.dimensions.on_server": "此服务器共 {0} 个",
+  "wp.dimensions.no_waypoints": "还没有路径点：",
+  "wp.all.title": "所有维度",
+  "wp.all.continued": "（续）"
 }
