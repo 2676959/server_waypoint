@@ -1,0 +1,75 @@
+# Command feedback validation
+
+Date: 2026-10-01. Build: the `cli-improved` branch at `216e84f5`.
+
+## Builds
+
+| Target | Result |
+| --- | --- |
+| mods 1.20.1-fabric, 1.21.9-fabric, 26.3-fabric | Compiled |
+| mods 1.20.2-neoforge, 1.21.11-neoforge | Compiled |
+| mods 1.20.1-forge, 26.2-forge | Compiled (the first build of both targets) |
+| paper 1.21, 1.21.11, 26.2 | Compiled |
+| `:common:test`, `:mods:26.1.2-fabric:test` | 719 and 508 tests passed |
+
+## Live click-through
+
+The checks ran on the project's local test servers: Fabric 26.1.2 through `:mods:26.1.2-fabric:runServer`
+and Paper 26.2 through `:paper:26.2-paper:runServer`, with commands typed into each server console.
+Minecraft Console Client was the test player.
+
+No player check could run:
+
+- The Fabric dev server disconnects vanilla-protocol clients: "This server requires Fabric Loader and
+  Fabric API installed on your client" (the dev runtime carries Xaero's Minimap and World Map, which
+  add registry entries). No modded test client was available.
+- The Paper test server runs in online mode and the test players are offline accounts. Its
+  authentication was left as it is, and no personal account was used.
+
+| Check | Paper 26.2 | Fabric 26.1.2 | Console |
+| --- | --- | --- | --- |
+| Menu and help | Not run (no player could join) | Not run (needs a modded client) | Passed on both: `/wp` and `/wp help` print the help index, `/wp help list` its usages with indented explanations and examples |
+| Creating | Not run | Not run | Passed on both: list and waypoint results, the quick add with a dimension, the existing-list error |
+| Lists | Not run | Not run | Passed on both: Tree, Flat, search, single list sorted by name, `limit 1 view flat page 2` with its `… 1 more waypoint: <command>` line, the dimension list, all dimensions and their search; rows show coordinates and dimensions their IDs |
+| Details and edits | Not run | Not run | Passed on both: waypoint and list details without buttons, the colour and facing pickers as accepted values, `✘ Nothing changed.` for an identical colour |
+| Results and errors | Not run | Not run | Passed on both: `✔ Removed … Restore with /wp restore <token>`, the restore, missing list and waypoint errors, the non-empty list error, `/wp tp` without a target printing its help topic |
+| Navigation | Not run | Not run | `✘ Only players can do that.` on both |
+| Upload and download | Not run | Not run | Upload: `✘ Only players can do that.`; download: `✘ The waypoints couldn't be delivered to your client.` (download keeps no player check) |
+| Remote | Not run | Not run | `Remote servers  0 servers connected` and `No remote servers are connected yet.` on both |
+| Plain text under `/execute` | Not run | Not run | `execute as` an armor stand `run wp list` and `run wp details …` print plain text to the console on both; `execute as` a player needs a joined player and did not run |
+
+Each run's test data was removed afterwards; the Paper plugin data matches its backup byte for byte,
+and the Fabric waypoint file was put back from its backup after the mod re-saved it with default
+fields. The Fabric run added the test players to `usercache.json`; the operator entry it created was
+removed again.
+
+### Fixed during the check
+
+- **Paper failed to start** (`159fd9c0`). Paper's help map evaluates command requirements with a source
+  that has no level; the `/wp help <topic>` requirement built a full `Viewer`, which reads the source's
+  location. Requirements now use the source's permissions only, and
+  `CommandFeedbackTest.requirementChecksNeverReadTheSourcesLevel` covers it.
+- **Every screen with a link failed on Paper** (`216e84f5`): `NoSuchFieldError` for
+  `ClickEvent$Action.RUN_COMMAND`. Paper bundles a newer Adventure than the 4.16 API that `common`
+  compiles against. `Click` now calls `ClickEvent.runCommand` and `suggestCommand`, and
+  `AdventureCompatibilityTest` fails if a production class refers to `ClickEvent$Action` again.
+
+The unit tests had not caught either failure: they run against Adventure 4.16 and never evaluated
+requirements for a source without a level.
+
+## Risks
+
+- `Open GUI` (`/wp_gui`): not checked; it needs a modded client.
+- Translations that wrap: not observed live. An offline estimate rendered the menu, the help index and
+  every topic, waypoint and list details, the pickers, the navigation and upload panels and two
+  results in `zh_cn`, counting each CJK glyph as 9 px: no line passes 320 px. The widest are the
+  `/wp add` usages at 309 px, which are English syntax.
+
+## Follow-ups
+
+- Run the player click-through: with a modded client on the Fabric dev server, and on Paper with an
+  online test account (or a local offline-mode Paper server if the maintainers want one).
+- Before the `Click` fix, `/wp add` on Paper created the list and the waypoint and then failed to
+  build its reply, so the player saw an internal error for a change that was saved. Commands save
+  before they build their feedback, so any failure while building a reply still looks like a
+  failed command.
