@@ -66,18 +66,17 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
 @Mod(ModInfo.MOD_ID)
 public class ServerWaypointForge implements IPlatformConfigPath {
-    private static final String NETWORK_PROTOCOL_VERSION = Integer.toString(ProtocolVersion.PROTOCOL_VERSION);
 //? if <= 1.20.1 {
     /*public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
             modId("main"),
-            () -> NETWORK_PROTOCOL_VERSION,
-            NETWORK_PROTOCOL_VERSION::equals,
-            NETWORK_PROTOCOL_VERSION::equals
+            () -> ProtocolVersion.PROTOCOL_VERSION_STRING,
+            ProtocolVersion.PROTOCOL_VERSION_STRING::equals,
+            ProtocolVersion.PROTOCOL_VERSION_STRING::equals
     );
 *///?} else {
     public static final SimpleChannel PACKET_CHANNEL = ChannelBuilder
             .named(modId("main"))
-            .networkProtocolVersion(Integer.parseInt(NETWORK_PROTOCOL_VERSION))
+            .networkProtocolVersion(ProtocolVersion.PROTOCOL_VERSION)
             .simpleChannel();
     //?}
 

@@ -56,13 +56,12 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
 @Mod(ModInfo.MOD_ID)
 public class ServerWaypointNeoForge implements IPlatformConfigPath {
-    private static final String NETWORK_PROTOCOL_VERSION = Integer.toString(ProtocolVersion.PROTOCOL_VERSION);
 //? if = 1.20.2 {
     /^public static final SimpleChannel PACKET_CHANNEL = NetworkRegistry.newSimpleChannel(
             modId("main"),
-            () -> NETWORK_PROTOCOL_VERSION,
-            NETWORK_PROTOCOL_VERSION::equals,
-            NETWORK_PROTOCOL_VERSION::equals
+            () -> ProtocolVersion.PROTOCOL_VERSION_STRING,
+            ProtocolVersion.PROTOCOL_VERSION_STRING::equals,
+            ProtocolVersion.PROTOCOL_VERSION_STRING::equals
     );
     ^///?}
 
@@ -175,7 +174,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
 
 //? if >= 1.20.5 {
     private void registerPayloads(RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar(NETWORK_PROTOCOL_VERSION);
+        final PayloadRegistrar registrar = event.registrar(ProtocolVersion.PROTOCOL_VERSION_STRING);
         // S2C
         if (isClientDist()) {
             ServerWaypointNeoForgeClient.registerClientPayloadHandlers(registrar);
@@ -214,7 +213,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
     }
 //?} elif = 1.20.4 {
     /^private void registerPayloads(RegisterPayloadHandlerEvent event) {
-        final IPayloadRegistrar registrar = event.registrar(ModInfo.MOD_ID).versioned(NETWORK_PROTOCOL_VERSION);
+        final IPayloadRegistrar registrar = event.registrar(ModInfo.MOD_ID).versioned(ProtocolVersion.PROTOCOL_VERSION_STRING);
         if (isClientDist()) {
             ServerWaypointNeoForgeClient.registerClientPayloadHandlers(registrar);
         } else {

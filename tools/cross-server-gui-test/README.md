@@ -72,9 +72,9 @@ Loader 0.19.5, Fabric API 0.152.1+26.2 and Java 25. After the probe logs
 wp add minecraft:overworld Test 45 80 30 Added A gold 0 false
 ```
 
-Require the ordered markers `SYNC_PROTOCOL_11`, `WAIT_REMOTE_MUTATION`,
+Require the ordered markers `SYNC_PROTOCOL_2`, `WAIT_REMOTE_MUTATION`,
 `NETWORK_CATALOG_CHANGED`, `TELEPORT_SUBMITTED`, `TELEPORT_SUBMITTED` and
-`PASS real protocol-11 catalog update and immediate proxy transfer`, followed by
+`PASS real protocol-2 catalog update and immediate proxy transfer`, followed by
 clean client termination. The probe opens the initial local manager directly,
 then uses native mouse dispatch for remote navigation, target selection and
 teleport action. It receives catalog changes over the actual network and checks

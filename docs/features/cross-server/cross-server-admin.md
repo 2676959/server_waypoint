@@ -4,7 +4,7 @@ Cross-server waypoints are opt-in and **disabled by default**. Install the match
 backend artifact on each dedicated backend and the shaded `server_waypoint-<version>-velocity.jar`
 on Velocity. The proxy plugin requires Java 25. Use the Java version required by each backend.
 Integrated servers do not participate. Remote commands work with vanilla clients; the remote GUI
-requires a matching protocol-1 client mod. Update the proxy and all participating backends together.
+requires a matching protocol-2 client mod. Update the proxy and all participating backends together.
 See the [release verification record](validation/cross-server-release-readiness.md) before deploying.
 
 ## Pair two backends with KK
@@ -160,7 +160,7 @@ namespaced item identifier, at most 256 ASCII characters; malformed identifiers 
 startup. A valid item unavailable on a client's registry (or air) renders as a compass.
 This setting applies to both modded and Paper backends and is not a coordinator setting.
 
-Server icon metadata keeps application protocol **1** and Minecraft custom-payload protocol **1**.
-Update the coordinator, all backends, and modded clients together; if `protocolVersion` is explicitly
-set in `cross-server.json`, keep it at `1`. Builds from before the selector change advertise the
-same protocol number but do not understand the new icon field.
+Server icon metadata keeps application protocol **1**; modded clients use Minecraft custom-payload
+protocol **2**. Update the coordinator, all backends, and modded clients together; if `protocolVersion`
+is explicitly set in `cross-server.json`, keep it at `1`. Coordinators and backends built before the
+selector change advertise the same application protocol but do not understand the new icon field.

@@ -1,9 +1,10 @@
-# Server selector metadata: protocol 1
+# Server selector metadata
 
-Both the application protocol and Minecraft custom-payload protocol retain version 1. The
-server-selector change extends their version-1 wire formats with the fields below. A pre-selector
-build may not decode a new build even though both advertise version 1; deploy matching builds
-of the client, backends, and coordinator together.
+The application protocol retains version 1, and the server-selector change extends its version-1
+wire format with the fields below. A pre-selector coordinator or backend may not decode a new build
+even though both advertise version 1; deploy matching builds of the client, backends, and
+coordinator together. The Minecraft remote-catalog message carries the icon as well; the 4.0.0
+release sends it under custom-payload protocol 2.
 
 - `CatalogMetadata` (type 10) appends `iconItem` after export policy, encoded as a canonical UTF-8
   string. It must match `[a-z0-9_.-]+:[a-z0-9/._-]+` and be at most 256 characters.

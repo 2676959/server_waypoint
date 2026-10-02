@@ -40,9 +40,9 @@ public final class LiveRemoteGuiProbe implements ClientModInitializer {
                         != WaypointClientMod.ClientNetworkState.SYNC_FINISHED) return;
                 client = WaypointClientMod.getInstance();
                 if (!has("Target")) return;
-                check(ProtocolVersion.PROTOCOL_VERSION == 11, "protocol 11 artifact");
+                check(ProtocolVersion.PROTOCOL_VERSION == 2, "protocol 2 artifact");
                 local = new WaypointManagerScreen(client); mc.gui.setScreen(local);
-                mark(mc, "SYNC_PROTOCOL_11");
+                mark(mc, "SYNC_PROTOCOL_2");
             }
             case 1 -> {
                 click(mc.gui.screen(), (AbstractWidget) field(WaypointManagerScreen.class, "serverScopeToggle").get(local));
@@ -71,7 +71,7 @@ public final class LiveRemoteGuiProbe implements ClientModInitializer {
                 if (Math.abs(mc.player.getX() - 45.5) > .01 || Math.abs(mc.player.getY() - 80) > .01
                         || Math.abs(mc.player.getZ() - 30.5) > .01) return;
                 check(mc.gui.screen() == null, "manager closed after transfer");
-                mark(mc, "PASS real protocol-11 catalog update and immediate proxy transfer x=45.5 y=80 z=30.5");
+                mark(mc, "PASS real protocol-2 catalog update and immediate proxy transfer x=45.5 y=80 z=30.5");
                 stage = 999; mc.stop(); return;
             }
             default -> throw new AssertionError("Unknown stage");

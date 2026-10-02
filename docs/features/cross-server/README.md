@@ -11,7 +11,7 @@ backend/proxy boundary.
 
 | Document | Scope |
 | --- | --- |
-| [Server selector metadata](specs/server-selector-metadata.md) | Icon fields in the version-1 wire formats |
+| [Server selector metadata](specs/server-selector-metadata.md) | Icon fields in the application protocol 1 and remote-catalog wire formats |
 | [Protocol v1](specs/cross-server-protocol-v1.md) | Normative feature contract (step 1) |
 | [Module contracts](specs/cross-server-proxy-module-contracts.md) | Module boundaries and packaging (step 3) |
 | [Catalog models](specs/cross-server-catalog-models.md) | Shared catalog domain types (step 4) |

@@ -5,7 +5,7 @@ Remote catalogs never enter local waypoint codecs, managers, files, renderers or
 
 ## Protocol and lifecycle
 
-The planned 4.0.0 public release uses Minecraft custom-payload protocol **1**; released 3.0.4 uses **0**. Development snapshots previously used **11**. The backend TCP application protocol remains **1**.
+The planned 4.0.0 public release uses Minecraft custom-payload protocol **2**; released 3.0.4 sent handshake version **0** and Forge/NeoForge channel version **1**. Development snapshots previously used **11**. The backend TCP application protocol remains **1**.
 The shared chunked registry adds clientbound `REMOTE_CATALOG` (6) and serverbound
 `REMOTE_CATALOG_REQUEST` (7). Existing Fabric, Forge, NeoForge and Paper chunk payloads carry them;
 no extra platform payload registration is needed. Forge/NeoForge registration versions already
