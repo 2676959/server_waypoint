@@ -515,8 +515,8 @@ Downloading answers `✔ Sent 12 waypoints to your map mod`.
 ```
 Server Waypoint help
 Most things are a click away: open the menu.
-Commands  List · Add · Edit · Remove · Teleport
-  Navigate · Upload · Download · Remote
+Commands  List · Details · Add · Edit · Remove
+  Teleport · Navigate · Upload · Download · Remote
 ```
 
 - **Topics** show usage lines in aqua, with each `<argument>` in the colour of its type and the
@@ -733,8 +733,9 @@ For these viewers, nothing essential may depend on hover, click or colour. Build
    `… 4 more: /wp list minecraft:overworld Farms`, `Restore with /wp restore r12`.
 4. **Show tooltip text as indented lines** where it is documentation: help argument details, and the
    accepted values when `set color` or `set yaw` runs without a value.
-5. **Answer `/wp` with the help index**, since the menu is all links. Player-only actions (teleport,
-   navigate, add here, upload, download) keep their player-only errors.
+5. **Answer `/wp` with the help index**, since the menu is all links, and `/wp tp`, `/wp remove`,
+   `/wp edit` and `/wp details` without a target with that command's help topic. Player-only actions
+   (teleport, navigate, add here, upload, download) keep their player-only errors.
 6. **Ignore the chat limits.** Plain-text lines may pass 320 px, and messages get no trailing
    newline. Paging stays the same, so page numbers match between chat and console.
 7. **Keep the colours of chat.** Every piece keeps the colour players see, and text written out in

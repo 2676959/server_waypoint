@@ -25,7 +25,7 @@ public final class HelpTopics {
     }
 
     public enum Topic {
-        LIST, ADD, EDIT, REMOVE, TP, NAVIGATE, UPLOAD, DOWNLOAD, REMOTE;
+        LIST, DETAILS, ADD, EDIT, REMOVE, TP, NAVIGATE, UPLOAD, DOWNLOAD, REMOTE;
 
         public String id() {
             return this.name().toLowerCase(Locale.ROOT);
@@ -38,7 +38,7 @@ public final class HelpTopics {
         /** Whether the viewer may use the commands this topic is about. */
         public boolean readableBy(Viewer viewer) {
             return switch (this) {
-                case LIST, DOWNLOAD -> true;
+                case LIST, DETAILS, DOWNLOAD -> true;
                 case ADD -> viewer.can(Viewer.Permission.ADD);
                 case EDIT -> viewer.can(Viewer.Permission.EDIT);
                 case REMOVE -> viewer.can(Viewer.Permission.REMOVE);
@@ -117,6 +117,13 @@ public final class HelpTopics {
                     List.of(new Example("/wp list all search {text farm}", "wp.help.list.example.search"),
                             new Example("/wp list {dimension minecraft:overworld} {list \"Home Bases\"} sort {mode name}",
                                     "wp.help.list.example.sort")));
+            case DETAILS -> new Content(List.of(
+                    usage("/wp details waypoint <dimension> <list> <waypoint>", "/wp details waypoint ",
+                            "wp.help.details.waypoint"),
+                    usage("/wp details list <dimension> <list>", "/wp details list ", "wp.help.details.list")),
+                    List.of(new Example(
+                            "/wp details waypoint {dimension minecraft:overworld} {list \"Home Bases\"} {waypoint \"Main Home\"}",
+                            "wp.help.details.example")));
             case ADD -> new Content(List.of(
                     usage("/wp add", "/wp add", "wp.help.add.picker"),
                     usage("/wp add <dimension> <list>", "/wp add ", "wp.help.add.list", note("wp.help.add.list.note")),

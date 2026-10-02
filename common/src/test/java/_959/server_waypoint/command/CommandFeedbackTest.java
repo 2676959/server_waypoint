@@ -80,7 +80,7 @@ class CommandFeedbackTest {
     void helpTopicsFollowPermissions() {
         CommandHarness.Source member = CommandHarness.player().withPermissions("navigate");
 
-        assertEquals("Commands  List · Navigate · Download", lines(this.harness.run(member, "wp help")).get(2));
+        assertEquals("Commands  List · Details · Navigate · Download", lines(this.harness.run(member, "wp help")).get(2));
         this.harness.fails(member, "wp help add");
         assertEquals("Teleport  hover a line for details, click to use it",
                 lines(this.harness.run(CommandHarness.player(), "wp help tp")).get(0));
@@ -154,7 +154,16 @@ class CommandFeedbackTest {
         assertEquals("Click a waypoint's name, then Remove.", lines(this.harness.run(CommandHarness.player(), "wp remove")).get(0));
         assertEquals("Click a waypoint's name to edit it.", lines(this.harness.run(CommandHarness.player(), "wp edit")).get(0));
         assertEquals("Click a waypoint's name for details.", lines(this.harness.run(CommandHarness.player(), "wp details")).get(0));
-        assertEquals("Remove", lines(this.harness.run(CommandHarness.console(), "wp remove")).get(0));
+    }
+
+    @Test
+    void plainTextCommandsWithoutATargetShowTheirOwnHelpTopic() {
+        for (String[] command : new String[][]{{"tp", "Teleport"}, {"remove", "Remove"}, {"edit", "Edit"}, {"details", "Details"}}) {
+            List<String> help = lines(this.harness.run(CommandHarness.console(), "wp " + command[0]));
+
+            assertEquals(command[1], help.get(0));
+            assertTrue(help.get(1).startsWith("/wp " + command[0] + " "), String.join("\n", help));
+        }
     }
 
     @Test
@@ -312,7 +321,7 @@ class CommandFeedbackTest {
                 CommandHarness.EVERY_PERMISSION);
         var help = this.harness.dispatcher.getRoot().getChild("wp").getChild("help");
 
-        assertEquals(9, this.harness.dispatcher.getSmartUsage(help, noLevel).size());
+        assertEquals(10, this.harness.dispatcher.getSmartUsage(help, noLevel).size());
     }
 
     @Test

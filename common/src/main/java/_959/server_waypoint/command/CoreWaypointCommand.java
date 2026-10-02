@@ -405,7 +405,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     private LiteralArgumentBuilder<S> detailsCommandNode() {
         LiteralArgumentBuilder<S> root = literal(DETAILS_COMMAND);
-        root.executes(context -> executeTargetHint(context.getSource(), "wp.hint_line.details", HelpTopics.Topic.LIST));
+        root.executes(context -> executeTargetHint(context.getSource(), "wp.hint_line.details", HelpTopics.Topic.DETAILS));
         RequiredArgumentBuilder<S, D> listDimension = argument(
                 DIMENSION_ARG,
                 this.dimensionArgumentProvider.get()

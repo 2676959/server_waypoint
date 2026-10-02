@@ -29,13 +29,13 @@ class HelpScreenTest {
         assertEquals(List.of(
                 "Server Waypoint help",
                 "Most things are a click away: open the menu.",
-                "Commands  List · Add · Edit · Remove · Teleport",
-                "  Navigate · Upload · Download · Remote"), lines(index));
+                "Commands  List · Details · Add · Edit · Remove",
+                "  Teleport · Navigate · Upload · Download · Remote"), lines(index));
         assertEquals("/wp", clickOf(index, "open the menu"));
-        assertEquals(List.of("/wp", "/wp help list", "/wp help add", "/wp help edit", "/wp help remove", "/wp help tp",
-                "/wp help navigate", "/wp help upload", "/wp help download", "/wp help remote"), runCommands(index));
+        assertEquals(List.of("/wp", "/wp help list", "/wp help details", "/wp help add", "/wp help edit", "/wp help remove",
+                "/wp help tp", "/wp help navigate", "/wp help upload", "/wp help download", "/wp help remote"), runCommands(index));
         assertEquals("Add commands\nUsage and examples", tooltipOf(index, "Add"));
-        assertEquals("Commands  List · Navigate · Download", lines(HelpScreen.index(Fixtures.member())).get(2));
+        assertEquals("Commands  List · Details · Navigate · Download", lines(HelpScreen.index(Fixtures.member())).get(2));
     }
 
     @Test
@@ -45,7 +45,7 @@ class HelpScreenTest {
         assertEquals(List.of(
                 "Server Waypoint help",
                 "Run /wp help <topic> for usage and examples.",
-                "Commands  list · add · edit · remove · tp · navigate · upload · download · remote"),
+                "Commands  list · details · add · edit · remove · tp · navigate · upload · download · remote"),
                 lines(index));
         assertEquals(NamedTextColor.AQUA, colorOf(index, "add"));
         assertEquals(NamedTextColor.AQUA, colorOf(index, "/wp help <topic>"));
