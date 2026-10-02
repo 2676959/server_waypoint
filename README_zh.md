@@ -8,45 +8,55 @@
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/server_waypoint?style=flat-square&logo=modrinth&logoColor=%2300AF5C&label=Modrinth%20Downloads&color=%2300AF5C)](https://modrinth.com/plugin/server_waypoint)
 [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1416929?style=flat-square&logo=curseforge&logoColor=%23F16436&label=CurseForge%20Downloads&color=%23F16436)](https://www.curseforge.com/minecraft/mc-mods/server-waypoint)
 
-[![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
+[![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
 [![Forge](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=Forge&labelColor=959eef)](https://modrinth.com/plugin/server_waypoint/versions?l=forge)
-[![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
-[![Paper](https://img.shields.io/badge/1.21.x%20%2026.1--26.2-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
+[![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
+[![Paper](https://img.shields.io/badge/1.21.x%20%2026.1--26.3-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
+[![Velocity](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Velocity&labelColor=8ec9ea)](https://modrinth.com/plugin/server_waypoint/versions?l=velocity)
 
 [![discord-singular](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/social/discord-singular_vector.svg)](https://discord.com/invite/tKtSSYDkHx)
 [![crowdin](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/translate/crowdin_vector.svg)](https://crowdin.com/project/server-waypoint)
 
-管理路径点并自动将其同步到其他玩家的客户端，兼容 Xaero 小地图 (Xaero's Minimap)。
+在服务器上管理路径点，并自动同步到玩家的客户端。兼容 Xaero 小地图 (Xaero's Minimap)、Xaero 世界地图 (Xaero's World Map) 和 VoxelMap，大部分功能无需在客户端安装本模组。
+
+4.0.0 的更新内容见[更新日志（英文）](CHANGELOG.md)。
 
 ## 主要功能
-- 从服务端自动同步路径点。
-- 自定义路径点渲染。
-- 允许玩家通过图形界面（需要安装客户端）和命令（只需安装服务器）管理路径点。
-- 命令自动补全。
+- 从服务端自动同步路径点，包括同步到 Xaero 小地图和 VoxelMap（Fabric）。
+- 自定义路径点渲染，标记可显示缩写、物品图标或 VoxelMap 图标。
+- 允许玩家通过图形界面（需要安装客户端）和可点击的聊天命令（只需安装服务器）管理路径点。
+- 服务端导航：用指南针、地图、Boss 栏、动作栏或悬浮文字引导玩家前往路径点，无需在客户端安装本模组。
+- 从 Xaero 小地图或 VoxelMap 上传路径点到服务器。
+- 通过 Velocity 代理浏览其他服务器的路径点并跨服务器传送（默认关闭）。
+- 命令自动补全和游戏内帮助。
 - `/wp <选项>` 命令支持自定义权限。兼容 [LuckPerms](https://modrinth.com/plugin/luckperms)。
 - 支持从 Xaero 小地图的聊天分享消息中便捷添加路径点，无需在客户端安装本模组。
+- 服务端翻译：消息按每位玩家的语言显示。
 
 ## 依赖项
 必需：
-  - [Fabric API](https://modrinth.com/mod/fabric-api)
+  - [Fabric API](https://modrinth.com/mod/fabric-api)（Fabric）
   
 可选：
   - [LuckPerms](https://modrinth.com/plugin/luckperms)
   - [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap)
+  - [Xaero's World Map](https://modrinth.com/mod/xaeros-world-map)：在其右键菜单中加入本模组的选项
   - [VoxelMap](https://modrinth.com/mod/voxelmap-updated)（Fabric）
   - [Mod Menu](https://modrinth.com/mod/modmenu)（Fabric）：从模组列表打开客户端设置
+  - [Velocity](https://papermc.io/software/velocity)：仅[跨服务器传送](#跨服务器传送配置)需要
 
 ## 快捷键
 - 按下 `右 Shift` 或使用 `/wp_gui` 打开路径点管理界面。
 - 在路径点管理界面按下 `T` 可传送至鼠标悬停的路径点（需要`/wp tp`命令权限）。
 - 在路径点管理界面按下 `C` 可打开客户端设置。也可以通过 Mod Menu（Fabric）或模组列表（NeoForge 和 Forge）中的配置按钮打开。
-- 添加和编辑路径点界面也可以设置关键词和描述。
+- 添加和编辑路径点界面也可以设置关键词、描述和图标。
+- 在 Xaero 世界地图中右键点击地图，可在该位置向服务器添加路径点；右键点击路径点，可将其添加到服务器，或编辑服务器上的对应路径点。
 
 ## 命令
 运行 `/wp` 打开菜单：大多数功能点一下即可使用，每个界面都会以链接给出下一步操作。控制台、RCON 和命令方块会收到相同信息的纯文本版本，其中写明标识符和坐标。
 - `/wp add` 打开当前维度的列表选择，在你所在的位置添加路径点。同一列表中的标识符不能重复。
   - `/wp add <维度> <列表标识符>` 添加一个路径点列表。
-  - `/wp add <维度> <列表标识符> <x y z> <名称>` 添加一个路径点，缩写自动生成，颜色随机。完整格式还可依次填写缩写、颜色、偏航角、可见范围、关键词、描述和 `icon <namespace:path>`。
+  - `/wp add <x y z> <列表标识符> <名称>` 在当前维度添加一个路径点，缩写自动生成，颜色随机，朝向与你当前的朝向相同。在前面加上维度（`/wp add <维度> <列表标识符> <x y z> <名称>`）可添加到其他维度。完整格式还可依次填写缩写、颜色、偏航角、可见范围、关键词、描述和 `icon <namespace:path>`。
 - `/wp download [<维度> [<列表标识符> [<路径点标识符>]]]` 将路径点发送到你的地图模组（需客户端安装本模组）。
 - `/wp details list <维度> <列表标识符>` 和 `/wp details waypoint <维度> <列表标识符> <路径点标识符>` 显示全部属性，并提供编辑按钮。
 - `/wp edit list ...` 和 `/wp edit waypoint ...` 每次设置一个属性，或清除一个可选属性。不填值时，`set color` 打开颜色选择，`set yaw` 打开朝向选择；`set color random` 随机选择颜色。完整命令格式请运行 `/wp help edit`。
@@ -66,8 +76,8 @@
 - `/wp reload` 重载 `config.json` 和 `<config-path>/server_waypoint/lang/` 目录下的翻译文件。`defaultPageLimit`、`defaultNavigationMethods`、`CommandPermission`、`addWaypointFromChatSharing` 和 `compressChunkedMessages` 立即生效；`serverId`、`cross-server.json` 以及开启 `sendXaerosWorldId` 需要重启服务器才能生效。路径点文件不会重新加载，请在服务器停止时编辑。
 - `/wp remove` 按标识符删除路径点，并给出临时且仅可使用一次的恢复链接。
   - `/wp remove <维度> <列表标识符>` 删除一个空的路径点列表。
-- `/wp restore <令牌>` 在临时令牌有效期间恢复最近删除的路径点。
-- `/wp tp` 将执行该命令的玩家传送至指定路径点。
+- `/wp restore <令牌>` 恢复 10 分钟内删除的路径点。每个令牌只能使用一次。
+- `/wp tp <维度> <列表标识符> <路径点标识符>` 将你传送至指定路径点。
 - `/wp upload` 在客户端安装了本模组时显示上传面板。`/wp upload <xaero|voxelmap>` 从执行玩家客户端上所选的地图模组导入路径点。冲突、强制覆盖和删除行为详见[从客户端地图模组上传](#从客户端地图模组上传)。
 
 ## 跨服务器传送配置
@@ -77,7 +87,7 @@
 - **所有服务器都在同一台电脑上：**使用下面的 `PLAINTEXT` 配置。它设置简单，但服务器之间的连接不加密。
 - **服务器分布在不同电脑上，或需要加密连接：**使用 `NOISE_KK` 配置。它需要多一步交换公钥。
 
-Velocity 和每台后端必须安装相匹配的 Server Waypoint 版本。Velocity 需要 Java 25；后端使用对应版本要求的 Java。玩家使用远程命令无需安装客户端模组；使用远程图形界面则需要匹配的客户端模组。单人游戏不能使用跨服务器传送。
+Velocity 和每台后端必须安装相匹配的 Server Waypoint 版本。Velocity 插件为 `server_waypoint-<版本>-velocity.jar`，可在 [Modrinth](https://modrinth.com/plugin/server_waypoint/versions?l=velocity) 或 [GitHub Releases](https://github.com/2676959/server_waypoint/releases) 下载。Velocity 需要 Java 25；后端使用对应版本要求的 Java。玩家使用远程命令无需安装客户端模组；使用远程图形界面则需要匹配的客户端模组。单人游戏不能使用跨服务器传送。
 
 ### 开始前
 
@@ -216,6 +226,14 @@ Velocity 和每台后端必须安装相匹配的 Server Waypoint 版本。Veloci
 
 远程浏览默认对所有玩家开放。远程传送默认需要等级 2 的来源服务器权限，并在目的地再次检查本地传送权限。具体权限、公钥更换和故障排查参见[管理员指南](docs/features/cross-server/cross-server-admin.md)。
 
+### 跨服务器管理
+
+- 在 Velocity 控制台运行 `/serverwaypoint status`，可查看协调器是否在运行、使用的连接方式，以及哪些后端在线。玩家需要 `server_waypoint.command.cross_server.status` 权限才能使用。Velocity 本身无法授予权限，请通过 LuckPerms 等权限插件授予。
+- 配置好 `cross-server.json` 后，在后端控制台运行 `/sw-cross-server-keygen`，即可生成该后端的 `NOISE_KK` 公钥和私钥，无需先启动再停止一次。此命令需要等级 4，且不会覆盖已有的密钥。
+- 在后端的 `cross-server.json` 中设置 `"serverIconItem": "minecraft:diamond"` 并重启该后端，可更改玩家在服务器选择器中看到的图标。默认值为 `minecraft:beacon`。
+
+跨服务器功能的[发布说明](docs/features/cross-server/cross-server-release-notes.md)和[发布验证](docs/features/cross-server/validation/cross-server-release-readiness.md)提供更多信息。
+
 ## 从客户端地图模组上传
 
 上传由服务器发起，但读取的是执行命令玩家客户端中的地图模组数据。必填的 `<source>` 为 `xaero` 或 `voxelmap`；客户端必须已安装并正确加载 Server Waypoint 和所选地图模组。服务器只接受命令所选维度以及可选列表/路径点范围内的数据。
@@ -224,7 +242,7 @@ Velocity 和每台后端必须安装相匹配的 Server Waypoint 版本。Veloci
 
 Xaero 只导入普通、已启用且非临时的路径点，并同步名称、缩写、坐标、颜色、yaw 和本地/全局可见性。VoxelMap 会跳过已禁用和坐标高亮路径点；服务器同步的名称会还原为原始列表和路径点名称，其他本地路径点会放入固定的 `VoxelMap` 列表，坐标会从维度缩放中还原，缩写和 yaw 使用空值/零值且可见性为本地。更新已有路径点时会保留服务器专有的显示名称、关键词和描述。
 
-VoxelMap 的内置路径点图片会导入为 `voxelmap:` 图标 ID。Xaero 上传会保留现有图标；VoxelMap 上传提供可识别的图片时会替换现有图标。同步至 VoxelMap 时，物品图标及不可用的 VoxelMap 图片会显示为 VoxelMap 默认路径点图片，但 Server Waypoint 仍保留原图标 ID。路径点图标也会在本地及跨服务器路径点数据中传输，因此此次更新后客户端、后端和协调器版本必须匹配。
+VoxelMap 的内置路径点图片会导入为 `voxelmap:` 图标 ID。Xaero 上传会保留现有图标；VoxelMap 上传提供可识别的图片时会替换现有图标。同步至 VoxelMap 时，物品图标及不可用的 VoxelMap 图片会显示为 VoxelMap 默认路径点图片，但 Server Waypoint 仍保留原图标 ID。路径点图标也会在本地及跨服务器路径点数据中传输，因此客户端、后端和 Velocity 插件必须使用相同版本。
 
 VoxelMap 上传使用当前子世界。如果某个请求维度的坐标缩放比例不可用，整个导出会中止；请先进入该维度后重试。上传按维度依次提交。如果后续维度处理失败，之前的更改仍会保留并同步，命令会报告部分完成的结果。
 
@@ -263,7 +281,7 @@ VoxelMap 上传使用当前子世界。如果某个请求维度的坐标缩放�
 显示名称是可选的展示覆盖值，通过 `/wp edit ... set display-name` 单独编辑。清除显示名称会恢复为标识符；将其设为空字符串则会创建一个有意为空的覆盖值。命令补全插入的是标识符，显示名称仅可能出现在提示文本中。
 
 ## 翻译
-此模组发送的消息和命令反馈将根据玩家客户端的语言设置自动翻译。此功能完全在服务器端运行；玩家无需在客户端安装此模组即可看到翻译后的消息。目前，该模组支持英语和简体中文翻译。如果您有兴趣，可以在 [Crowdin](https://crowdin.com/project/server-waypoint) 上添加翻译，帮助我们完善翻译。
+此模组发送的消息和命令反馈将根据玩家客户端的语言设置自动翻译。此功能完全在服务器端运行；玩家无需在客户端安装此模组即可看到翻译后的消息。目前，该模组支持英语、简体中文、繁体中文、繁体中文（香港）、西班牙语和希伯来语翻译。如果您有兴趣，可以在 [Crowdin](https://crowdin.com/project/server-waypoint) 上添加翻译，帮助我们完善翻译。
 
 - ### 添加翻译
   将语言文件放置在目录 `<config-path>/server_waypoint/lang/` 下。模组将在服务器启动时加载它们，如果服务器已运行，请使用 `/wp reload`。
@@ -272,6 +290,8 @@ VoxelMap 上传使用当前子世界。如果某个请求维度的坐标缩放�
   请遵循 [`en_us.json`](./common/src/main/resources/lang/en_us.json) 或 [`zh_cn.json`](./common/src/main/resources/lang/zh_cn.json) 中的格式。
 
   使用[有效的语言代码](https://minecraft.wiki/w/Language#Languages)命名语言文件。
+
+  4.0.0 更改了大部分翻译键，为 3.x 制作的语言文件需要参照当前的 `en_us.json` 重新制作。
   
 - ### 翻译顺序
   如果您添加的翻译文件使用的语言代码与内置语言相同，此模组会首先尝试在您添加的文件中查找翻译键。如果找不到该键，则会回退到使用内置翻译。如果您想使用自己的翻译版本，只需添加您自己的文件并覆盖内置翻译即可轻松实现。
@@ -312,7 +332,7 @@ NeoForge、Forge：
 
 `<minecraft-root>/defaultconfigs/server_waypoint/config.json`
 
-Paper、Purpur：
+Paper、Folia、Purpur：
 
 `<server-root>/plugins/ServerWaypoint/config.json`
 
@@ -392,11 +412,25 @@ Paper、Purpur：
     向客户端发送数据包，以帮助 Xaero 地图模组识别服务器。
 
     **如果在[Leaves](https://leavesmc.org/)服务端上启用了 `xaero-map-protocol` 或其他插件/模组提供了类似功能，则应将此项设置为 `false`。**
-    Example:
+
+    示例：
     ```json5
      {
        "Features": {
          "sendXaerosWorldId": true
+       }
+     }
+     ```
+  - #### compressChunkedMessages
+    默认值：`true`
+
+    压缩服务器与安装了本模组的客户端之间传输的路径点数据。服务器在 `/wp reload` 后立即应用更改；已连接的客户端按加入服务器时收到的设置压缩它发送的数据。
+
+    示例：
+    ```json5
+     {
+       "Features": {
+         "compressChunkedMessages": true
        }
      }
      ```
@@ -407,6 +441,7 @@ Paper、Purpur：
 
 - #### 路径点渲染
   - **在世界中显示路径点**：在世界中绘制路径点标记。默认值：`开`。
+  - **在 F1 模式下渲染路径点**：按 F1 隐藏界面时仍显示世界中的路径点；加载画面中始终隐藏路径点。默认值：`关`。
   - **缩放**：标记的大小，范围 `0` 到 `500`（百分比）。默认值：`100%`。
   - **垂直偏移**：将标记上移或下移，最多半格，范围 `-100` 到 `100`（百分比）。默认值：`0%`。
   - **背景不透明度**：标记背景和图标的不透明度，从 `0`（透明）到 `255`（不透明）。默认值：`128`。
@@ -420,8 +455,4 @@ Paper、Purpur：
 - #### 外观
   - **颜色主题**：打开主题编辑器。
 
-远程目录同步和远程图形界面需要匹配的客户端与后端版本。远程快照与本地路径点文件分开保存。参见[客户端同步](docs/features/cross-server/specs/cross-server-client-sync.md)。
-
-### 跨服务器管理
-
-请先阅读[跨服务器传送配置](#跨服务器传送配置)；更多部署细节参见[管理员指南](docs/features/cross-server/cross-server-admin.md)。[发布说明](docs/features/cross-server/cross-server-release-notes.md)和[发布验证](docs/features/cross-server/validation/cross-server-release-readiness.md)提供更多信息。
+远程目录同步和远程图形界面需要匹配的客户端与后端版本。远程快照与本地路径点文件分开保存。参见[客户端同步](docs/features/cross-server/specs/cross-server-client-sync.md)和[跨服务器传送配置](#跨服务器传送配置)。

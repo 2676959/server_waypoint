@@ -8,45 +8,55 @@
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/server_waypoint?style=flat-square&logo=modrinth&logoColor=%2300AF5C&label=Modrinth%20Downloads&color=%2300AF5C)](https://modrinth.com/plugin/server_waypoint)
 [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1416929?style=flat-square&logo=curseforge&logoColor=%23F16436&label=CurseForge%20Downloads&color=%23F16436)](https://www.curseforge.com/minecraft/mc-mods/server-waypoint)
 
-[![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
+[![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
 [![Forge](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=Forge&labelColor=959eef)](https://modrinth.com/plugin/server_waypoint/versions?l=forge)
-[![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
-[![Paper](https://img.shields.io/badge/1.21.x%20%2026.1--26.2-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
+[![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
+[![Paper](https://img.shields.io/badge/1.21.x%20%2026.1--26.3-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
+[![Velocity](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Velocity&labelColor=8ec9ea)](https://modrinth.com/plugin/server_waypoint/versions?l=velocity)
 
 [![discord-singular](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/social/discord-singular_vector.svg)](https://discord.com/invite/tKtSSYDkHx)
 [![crowdin](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/translate/crowdin_vector.svg)](https://crowdin.com/project/server-waypoint)
 
-Manage waypoints and sync them to other players' clients automatically. Compatible with Xaero's minimap.
+Manage waypoints on the server and sync them to players' clients automatically. Works with Xaero's Minimap, Xaero's World Map and VoxelMap, and most features work for players without the mod.
+
+See the [changelog](CHANGELOG.md) for what's new in 4.0.0.
 
 ## Features
-- Syncing waypoints from the server automatically.
-- Customizable waypoints rendering. 
-- Allow players to manage waypoints by both GUI (need client installation) and commands (only need server installation).
-- Commands auto-completion.
+- Syncing waypoints from the server automatically, including to Xaero's Minimap and VoxelMap (Fabric).
+- Customizable waypoint rendering, with initials or an item or VoxelMap icon on each marker.
+- Allow players to manage waypoints by both GUI (need client installation) and clickable chat commands (only need server installation).
+- Server-side navigation with a compass, a map, the boss bar, the action bar or a floating label, without client installation.
+- Uploading waypoints from Xaero's Minimap or VoxelMap to the server.
+- Browsing and teleporting to waypoints on other servers behind a Velocity proxy (opt-in).
+- Commands auto-completion and in-game help.
 - Custom permission for `/wp <options>` commands. Compatible with [LuckPerms](https://modrinth.com/plugin/luckperms).
 - Support adding waypoint conveniently from Xaero's minimap waypoint chat sharing message without requiring client side installation.
+- Server-side translations that follow each player's language.
 
 ## Dependencies
 Required:
-  - [Fabric API](https://modrinth.com/mod/fabric-api)
+  - [Fabric API](https://modrinth.com/mod/fabric-api) (Fabric)
   
 Optional:
   - [LuckPerms](https://modrinth.com/plugin/luckperms)
   - [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap)
+  - [Xaero's World Map](https://modrinth.com/mod/xaeros-world-map): adds Server Waypoint options to its right-click menus
   - [VoxelMap](https://modrinth.com/mod/voxelmap-updated) (Fabric)
   - [Mod Menu](https://modrinth.com/mod/modmenu) (Fabric): opens the client settings from the mod list
+  - [Velocity](https://papermc.io/software/velocity): only for [cross-server teleport](#cross-server-teleport-setup)
 
 ## Keybinds
 - Press `Right Shift` (default keybind) or use `/wp_gui` to open the waypoint manager screen in game.
 - In the waypoint manager screen, hover over a waypoint and press `T` to teleport (requires `/wp tp` command permission). 
 - In the waypoint manager screen, press `C` to open the client settings. The config button in Mod Menu (Fabric) or the Mods screen (NeoForge and Forge) opens them too.
-- The add and edit waypoint screens also set keywords and a description.
+- The add and edit waypoint screens also set keywords, a description and an icon.
+- In Xaero's World Map, right-click the map to add a waypoint to the server at that spot, or right-click a waypoint to add it to the server or edit its server copy.
 
 ## Commands
 Run `/wp` for a menu: most features are a click away, and every screen offers its next steps as links. The console, RCON and command blocks get the same information as plain text, with identifiers and coordinates written out.
 - `/wp add` opens a picker of the current dimension's lists to add a waypoint where you stand. Identifiers must be unique within their list.
   - `/wp add <dimension> <list-identifier>` adds a waypoint list.
-  - `/wp add <dimension> <list-identifier> <x y z> <name>` adds a waypoint with generated initials and a random colour. The full form continues with initials, colour, yaw, visibility, keywords, description and `icon <namespace:path>`.
+  - `/wp add <x y z> <list-identifier> <name>` adds a waypoint in your current dimension with generated initials, a random colour and your facing. Put a dimension first, `/wp add <dimension> <list-identifier> <x y z> <name>`, to add it elsewhere. The full form continues with initials, colour, yaw, visibility, keywords, description and `icon <namespace:path>`.
 - `/wp download [<dimension> [<list-identifier> [<waypoint-identifier>]]]` sends waypoints to your map mod (needs the mod on your client).
 - `/wp details list <dimension> <list-identifier>` and `/wp details waypoint <dimension> <list-identifier> <waypoint-identifier>` show every property with buttons to edit it.
 - `/wp edit list ...` and `/wp edit waypoint ...` set one property at a time or clear an optional property. Without a value, `set color` opens a colour picker and `set yaw` a facing picker; `set color random` picks a colour. Run `/wp help edit` for the complete grammar.
@@ -66,13 +76,13 @@ Run `/wp` for a menu: most features are a click away, and every screen offers it
 - `/wp reload` reloads `config.json` and the translation files in `/config/server_waypoint/lang`. `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `addWaypointFromChatSharing` and `compressChunkedMessages` apply at once; `serverId`, `cross-server.json` and turning on `sendXaerosWorldId` need a restart. Waypoint files are not reloaded, so edit them while the server is stopped.
 - `/wp remove` removes a waypoint by identifier and answers with a temporary, single-use Restore link.
   - `/wp remove <dimension> <list-identifier>` removes an empty waypoint list.
-- `/wp restore <token>` restores a recently removed waypoint while its temporary token remains valid.
-- `/wp tp` teleport the executor player to a waypoint
+- `/wp restore <token>` restores a waypoint removed in the last 10 minutes. Each token works once.
+- `/wp tp <dimension> <list-identifier> <waypoint-identifier>` teleports you to a waypoint.
 - `/wp upload` shows the upload panel when your client has the mod. `/wp upload <xaero|voxelmap>` imports waypoints from the selected map mod on the executing player’s client. See [Uploading from client map mods](#uploading-from-client-map-mods) for conflict, force, and delete behavior.
 
 ## Cross-server teleport setup
 
-Cross-server teleport is disabled by default and runs through Velocity. Install matching Server Waypoint versions on Velocity and at least two dedicated Paper, Fabric, Forge, or NeoForge backends. Velocity requires Java 25; use the Java version required by each backend. Players can use remote commands without a client mod. The remote GUI requires a matching client mod. Integrated servers do not participate.
+Cross-server teleport is disabled by default and runs through Velocity. Install matching Server Waypoint versions on Velocity and at least two dedicated Paper, Fabric, Forge, or NeoForge backends. The Velocity plugin is `server_waypoint-<version>-velocity.jar`, available on [Modrinth](https://modrinth.com/plugin/server_waypoint/versions?l=velocity) and in the [GitHub releases](https://github.com/2676959/server_waypoint/releases). Velocity requires Java 25; use the Java version required by each backend. Players can use remote commands without a client mod. The remote GUI requires a matching client mod. Integrated servers do not participate.
 
 ### No encryption: PLAINTEXT (same host)
 
@@ -173,6 +183,14 @@ Use `NOISE_KK` when backends run on different hosts or when you want authenticat
 
 Remote browsing uses `server_waypoint.command.remote.list` (default level 0). Remote teleport requires both `server_waypoint.command.tp` and `server_waypoint.command.remote.tp` at the source (default level 2), plus local teleport permission at the destination. See the [administrator guide](docs/features/cross-server/cross-server-admin.md) for permissions, key rotation, and troubleshooting.
 
+### Cross-server administration
+
+- On the Velocity console, `/serverwaypoint status` shows whether the coordinator is running, its transport mode and which backends are online. Players need `server_waypoint.command.cross_server.status` to use it. Velocity can't grant permissions by itself, so give it to them with a permissions plugin such as LuckPerms.
+- On a backend console, `/sw-cross-server-keygen` creates the backend's `NOISE_KK` key pair after you configure `cross-server.json`, without a first start and stop. It requires level 4 and never replaces an existing key.
+- Set `"serverIconItem": "minecraft:diamond"` in a backend's `cross-server.json` and restart that backend to choose the item players see for it in the server selector. The default is `minecraft:beacon`.
+
+The cross-server [release notes](docs/features/cross-server/cross-server-release-notes.md) and [release verification](docs/features/cross-server/validation/cross-server-release-readiness.md) provide more detail.
+
 ## Uploading from client map mods
 
 Upload is initiated by the server but reads map data from the executing player’s client. The required `<source>` is `xaero` or `voxelmap`; the client must have both Server Waypoint and the selected map mod installed and ready. The server accepts only the dimensions and optional list/waypoint selected by the command.
@@ -181,7 +199,7 @@ In singleplayer (integrated-server mode), the host uses the same `/wp upload xae
 
 For Xaero, only normal, enabled, non-temporary waypoints are imported. Upload synchronizes the waypoint name, initials, coordinates, Xaero color, yaw, and local/global visibility. For VoxelMap, disabled and coordinate-highlight waypoints are skipped. Server-synced VoxelMap names are restored to their original list and waypoint identifiers; other VoxelMap waypoints are imported into a fixed `VoxelMap` list. VoxelMap coordinates are converted back from its dimension scale, while initials and yaw use empty/zero values and visibility is local. Server-only display names, keywords, and descriptions are preserved when an existing waypoint is updated.
 
-VoxelMap's built-in waypoint images import as `voxelmap:` icon IDs. Xaero uploads preserve an existing icon, while VoxelMap uploads replace it when they supply a recognized image. Item icons and unavailable VoxelMap images use VoxelMap's default waypoint image during sync; the Server Waypoint icon ID remains stored. Waypoint icons also travel in local and cross-server waypoint data, so client, backend, and coordinator builds must match after this update.
+VoxelMap's built-in waypoint images import as `voxelmap:` icon IDs. Xaero uploads preserve an existing icon, while VoxelMap uploads replace it when they supply a recognized image. Item icons and unavailable VoxelMap images use VoxelMap's default waypoint image during sync; the Server Waypoint icon ID remains stored. Waypoint icons also travel in local and cross-server waypoint data, so clients, backends and the Velocity plugin must run the same version.
 
 VoxelMap uploads use the active subworld. If a requested dimension's coordinate scale is unavailable, the entire export is aborted; visit that dimension before retrying. Uploads commit one dimension at a time. If a later dimension fails, earlier changes remain applied and synchronized, and the command reports a partial result.
 
@@ -220,7 +238,7 @@ List and waypoint identifiers are exact lookup keys. Commands preserve them verb
 Display names are optional presentation overrides edited separately with `/wp edit ... set display-name`. Clearing a display name restores the identifier fallback; setting it to an empty string creates an intentionally empty override. Command suggestions insert identifiers, while a display name may appear only as tooltip context.
 
 ## Server-side Translations
-Messages and command feedbacks sent by this mod will be automatically translated based on the language setting on the receiver's client. This works entirely on the server-side; players can see the translated message without client-side installation of this mod. Right now, the mod comes with translations for English and Simplified Chinese. If you’re interested, you can help out by adding translations on [Crowdin](https://crowdin.com/project/server-waypoint)!
+Messages and command feedbacks sent by this mod will be automatically translated based on the language setting on the receiver's client. This works entirely on the server-side; players can see the translated message without client-side installation of this mod. Right now, the mod comes with translations for English, Simplified Chinese, Traditional Chinese, Traditional Chinese (Hong Kong), Spanish and Hebrew. If you’re interested, you can help out by adding translations on [Crowdin](https://crowdin.com/project/server-waypoint)!
 
 - ### Add translations
   Place the lang files under the directory: `<config-path>/server_waypoint/lang/`. This mod will load them on server starting, use `/wp reload` if the server is already running.
@@ -229,6 +247,8 @@ Messages and command feedbacks sent by this mod will be automatically translated
   Follow the format used in [`en_us.json`](./common/src/main/resources/lang/en_us.json), [`zh_cn.json`](./common/src/main/resources/lang/zh_cn.json).
 
   Name the lang file with a [valid language code](https://minecraft.wiki/w/Language#Languages).
+
+  Version 4.0.0 renamed most translation keys, so lang files made for 3.x need to be rebuilt from the current `en_us.json`.
 
 - ### Translation order
   If the translation you’ve added uses the same language code as the built-in language, this mod will try to find the translation key in the file you added first. If that key isn’t there, it’ll fall back to the built-in translation. So, if you’d like to use your own translation version, you can easily do that by adding your own file and overriding the built-in translation.
@@ -269,7 +289,7 @@ NeoForge, Forge:
 
 `<minecraft-root>/defaultconfigs/server_waypoint/config.json`
 
-Paper, Purpur:
+Paper, Folia, Purpur:
 
 `<server-root>/plugins/ServerWaypoint/config.json`
 
@@ -365,6 +385,19 @@ Paper, Purpur:
        }
      }
      ```
+  - #### compressChunkedMessages
+    Default value: `true`
+
+    Compresses the waypoint data exchanged with clients that have the mod installed. The server applies a change after `/wp reload`; a connected client compresses what it sends according to the setting it received when it joined.
+
+    Example:
+    ```json5
+     {
+       "Features": {
+         "compressChunkedMessages": true
+       }
+     }
+     ```
 
 ## Client Configurations
 
@@ -375,6 +408,7 @@ it, and **Reset to defaults…** resets them all.
 
 - #### Waypoint rendering
   - **Show in-world waypoints**: draws waypoint markers in the world. Default: `On`.
+  - **Render waypoints under F1**: keeps in-world waypoints visible while F1 hides the HUD. Loading screens always hide them. Default: `Off`.
   - **Scale**: size of the markers, from `0` to `500` percent. Default: `100%`.
   - **Vertical offset**: moves the markers up or down by up to half a block, from `-100` to `100` percent. Default: `0%`.
   - **Background opacity**: opacity of marker backgrounds and icons, from `0` (clear) to `255` (solid). Default: `128`.
@@ -390,11 +424,5 @@ it, and **Reset to defaults…** resets them all.
 
 Remote catalog synchronization and the remote GUI require matching client and backend versions.
 Remote snapshots are kept separately from local waypoint files. See
-[client synchronization](docs/features/cross-server/specs/cross-server-client-sync.md).
-
-### Cross-server administration
-
-Start with the [cross-server teleport setup](#cross-server-teleport-setup), or see the
-[administrator guide](docs/features/cross-server/cross-server-admin.md) for more deployment details.
-[Release notes](docs/features/cross-server/cross-server-release-notes.md) and
-[release verification](docs/features/cross-server/validation/cross-server-release-readiness.md) provide more detail.
+[client synchronization](docs/features/cross-server/specs/cross-server-client-sync.md) and the
+[cross-server teleport setup](#cross-server-teleport-setup).
