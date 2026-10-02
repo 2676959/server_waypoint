@@ -184,6 +184,15 @@ class RemoteScreensTest {
     }
 
     @Test
+    void plainTextViewersKeepTheServerTitleCoordinatesAndContinuingCommandsColoured() {
+        Component tree = RemoteScreens.dimension(Fixtures.console(), SURVIVAL, OVERWORLD, ListQuery.DEFAULT, 10);
+
+        assertEquals(NamedTextColor.GOLD, colorOf(tree, "Survival (survival)"));
+        assertEquals(NamedTextColor.GRAY, colorOf(tree, "120, 64, -35"));
+        assertEquals(NamedTextColor.AQUA, colorOf(tree, "/wp remote list survival " + OW + " Farms"));
+    }
+
+    @Test
     void theListsAndFlatViewsShowNoDistancesOrAddActions() {
         assertEquals(List.of(
                 "● Survival ⏷ › Overworld ⏷  3 lists · 14 waypoints",

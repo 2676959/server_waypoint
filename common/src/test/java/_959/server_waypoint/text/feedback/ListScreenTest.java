@@ -220,6 +220,7 @@ class ListScreenTest {
         assertEquals("Home Bases", lines.get(1));
         assertEquals("  [MH] Main Home · 120, 64, -35", lines.get(2));
         assertEquals("  … 4 more: /wp list minecraft:overworld Farms", lines.get(9));
+        assertEquals(NamedTextColor.AQUA, colorOf(tree, "/wp list minecraft:overworld Farms"));
         assertFalse(String.join("\n", lines).contains("Sort"));
         assertTrue(runCommands(tree).isEmpty());
     }

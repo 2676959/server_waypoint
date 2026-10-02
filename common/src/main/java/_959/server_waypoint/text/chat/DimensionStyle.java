@@ -93,13 +93,15 @@ public final class DimensionStyle {
         return name.length() == 0 ? id : name.toString();
     }
 
+    /** The display name without colour, for a link that colours it. Plain-text viewers read "Display (id)". */
+    public Component label(String id) {
+        Component name = displayName(id);
+        return this.viewer.plainText() ? Chat.concat(name, text(" (" + id + ")")) : name;
+    }
+
     /** The name in its colour. Plain-text viewers read "Display (id)". */
     public Component name(String id) {
-        Component name = displayName(id);
-        if (this.viewer.plainText()) {
-            name = Chat.concat(name, text(" (" + id + ")"));
-        }
-        return Chat.colored(name, this.color(id));
+        return Chat.colored(this.label(id), this.color(id));
     }
 
     /** The viewer's dimension, then Overworld, Nether and End, then the rest A–Z by display name. */

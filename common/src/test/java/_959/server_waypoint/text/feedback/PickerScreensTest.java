@@ -61,11 +61,16 @@ class PickerScreensTest {
 
     @Test
     void plainTextViewersReadTheAcceptedValues() {
+        Component color = PickerScreens.color(Fixtures.dims(Fixtures.console()), OVERWORLD, HOME, MAIN_HOME);
+        Component facing = PickerScreens.facing(Fixtures.dims(Fixtures.console()), OVERWORLD, HOME, MAIN_HOME);
+
         assertEquals("  Accepted values: black, dark_blue, dark_green, dark_aqua, dark_red, dark_purple, gold, gray, "
                         + "dark_gray, blue, green, aqua, red, light_purple, yellow, white, random, or a hex code such as 39C5BB",
-                lines(PickerScreens.color(Fixtures.dims(Fixtures.console()), OVERWORLD, HOME, MAIN_HOME)).get(1));
+                lines(color).get(1));
         assertEquals("  Accepted values: a number of degrees, such as 0 (south), 90 (west), 180 (north) or -90 (east)",
-                lines(PickerScreens.facing(Fixtures.dims(Fixtures.console()), OVERWORLD, HOME, MAIN_HOME)).get(1));
+                lines(facing).get(1));
+        assertEquals(NamedTextColor.GRAY, colorOf(color, "Accepted values: black"));
+        assertEquals(NamedTextColor.GRAY, colorOf(facing, "Accepted values: a number"));
     }
 
     @Test

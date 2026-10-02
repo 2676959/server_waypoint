@@ -263,7 +263,7 @@ public final class ListScreen {
         String command = ListTarget.list(dimension, list.name()).command(shown.withView(ListView.DEFAULT));
         Component label = Chat.concat(text(Chat.ELLIPSIS + " "), translatable("wp.more.rows", text(rows - PREVIEW)));
         if (viewer.plainText()) {
-            return translatable("wp.plain.continue", label, text(command));
+            return translatable("wp.plain.continue", AQUA, label, text(command));
         }
         return Chat.link(viewer, label, AQUA, Click.run(command),
                 Tooltip.of("wp.open", WaypointRefs.label(list.displayName(), list.name()))

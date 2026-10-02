@@ -53,11 +53,16 @@ public final class Tooltip {
         return new Tooltip(this.title, this.lines, List.of());
     }
 
-    /** The title and the lines, for plain-text viewers who read documentation as indented lines. */
+    /**
+     * The title and the lines in their tooltip colours, for plain-text viewers who read documentation as
+     * indented lines.
+     */
     public List<Component> textLines() {
         List<Component> text = new ArrayList<>();
-        text.add(this.title);
-        text.addAll(this.lines);
+        text.add(Chat.colored(this.title, NamedTextColor.WHITE));
+        for (Component line : this.lines) {
+            text.add(Chat.colored(line, NamedTextColor.GRAY));
+        }
         return text;
     }
 

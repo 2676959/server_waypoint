@@ -494,7 +494,7 @@ public final class RemoteScreens {
         String command = ListTarget.remote(server.id().value(), dimension, list.name()).command(shown.withView(ListView.DEFAULT));
         Component label = Chat.concat(text(Chat.ELLIPSIS + " "), translatable("wp.more.rows", text(rows - ListScreen.PREVIEW)));
         if (viewer.plainText()) {
-            return translatable("wp.plain.continue", label, text(command));
+            return translatable("wp.plain.continue", AQUA, label, text(command));
         }
         return Chat.link(viewer, label, AQUA, Click.run(command),
                 Tooltip.of("wp.open", RemoteRefs.label(list.displayName(), list.name()))
@@ -519,7 +519,7 @@ public final class RemoteScreens {
 
     /** ● Survival ⏷, the name opening the server picker. */
     private static Component serverTitle(Viewer viewer, Server server) {
-        Component name = viewer.plainText() ? RemoteRefs.serverName(viewer, server)
+        Component name = viewer.plainText() ? Chat.colored(RemoteRefs.serverName(viewer, server), GOLD)
                 : Chat.link(viewer, Chat.concat(RemoteRefs.serverName(viewer, server), text(" " + Chat.PICKER)), GOLD,
                 Click.run("/wp remote"), RemoteRefs.serverTooltip(server, "wp.hint.choose_server"));
         return Chat.concat(RemoteRefs.dot(viewer, server), text(" "), name);

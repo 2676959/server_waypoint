@@ -78,7 +78,9 @@ class WaypointRefsTest {
         assertEquals("1.5 km", render(WaypointRefs.distance(Fixtures.player(), OVERWORLD, new WaypointPos(1600, 64, -20))));
         assertNull(WaypointRefs.distance(Fixtures.player(), NETHER, new WaypointPos(100, 64, -20)));
         assertEquals(NamedTextColor.GRAY, colorOf(WaypointRefs.rowDetail(Fixtures.player(), OVERWORLD, MAIN_HOME.pos()), "25 m"));
-        assertEquals("120, 64, -35", render(WaypointRefs.rowDetail(Fixtures.console(), OVERWORLD, MAIN_HOME.pos())));
+        Component coordinates = WaypointRefs.rowDetail(Fixtures.console(), OVERWORLD, MAIN_HOME.pos());
+        assertEquals("120, 64, -35", render(coordinates));
+        assertEquals(NamedTextColor.GRAY, colorOf(coordinates, "120, 64, -35"));
     }
 
     @Test

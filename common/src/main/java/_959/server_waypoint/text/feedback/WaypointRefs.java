@@ -132,7 +132,7 @@ public final class WaypointRefs {
     /** What follows a row's name: the gray distance for players, the coordinates in plain text. */
     public static @Nullable Component rowDetail(Viewer viewer, String dimension, WaypointPos pos) {
         if (viewer.plainText()) {
-            return text(DimensionStyle.coordinates(pos));
+            return text(DimensionStyle.coordinates(pos), NamedTextColor.GRAY);
         }
         Component distance = distance(viewer, dimension, pos);
         return distance == null ? null : Chat.colored(distance, NamedTextColor.GRAY);

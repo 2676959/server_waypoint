@@ -167,7 +167,7 @@ public final class RemoteRefs {
         Viewer viewer = dims.viewer();
         return Chat.join(reference(dims, server, dimension, list, waypoint),
                 withList ? listLink(dims, server, dimension, list, GRAY, ListQuery.DEFAULT) : null,
-                viewer.plainText() ? text(DimensionStyle.coordinates(waypoint.pos())) : null);
+                viewer.plainText() ? text(DimensionStyle.coordinates(waypoint.pos()), GRAY) : null);
     }
 
     /** Name, description, coordinates, paired coordinates, "On Survival in Overworld", and a hint. */

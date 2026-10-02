@@ -8,6 +8,7 @@ import _959.server_waypoint.text.chat.Tooltip;
 import _959.server_waypoint.text.chat.Viewer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,7 @@ import static net.kyori.adventure.text.Component.translatable;
 import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
 import static net.kyori.adventure.text.format.NamedTextColor.GOLD;
 import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
-import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
+import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 
 /** The help index and topics (spec 12). */
 public final class HelpScreen {
@@ -30,9 +31,9 @@ public final class HelpScreen {
         ChatLines lines = new ChatLines().add(translatable("wp.help.title", GOLD));
         List<HelpTopics.Topic> topics = HelpTopics.readable(viewer);
         if (viewer.plainText()) {
-            lines.add(translatable("wp.help.plain_hint", GRAY));
+            lines.add(translatable("wp.help.plain_hint", GRAY, colorize("/wp help <topic>")));
             lines.line(translatable("wp.help.commands", GRAY), text("  "),
-                    Chat.join(topics.stream().map(topic -> (Component) text(topic.id())).toList()));
+                    Chat.join(topics.stream().map(topic -> (Component) text(topic.id(), AQUA)).toList()));
             return lines.build();
         }
         lines.add(translatable("wp.help.menu_hint", GRAY, Chat.link(viewer, translatable("wp.help.open_menu"), AQUA,
@@ -55,7 +56,7 @@ public final class HelpScreen {
         lines.add(viewer.plainText() ? title : Chat.concat(title, text("  "), translatable("wp.help.topic.hint", GRAY)));
         for (HelpTopics.Usage usage : content.usages()) {
             if (viewer.plainText()) {
-                lines.add(text(usage.syntax()));
+                lines.add(colorize(usage.syntax()));
                 for (Component line : usage.tooltip().textLines()) {
                     lines.line(text("  "), line);
                 }
@@ -63,21 +64,23 @@ public final class HelpScreen {
             }
             Click click = Click.suggest(usage.suggestion());
             Tooltip tooltip = usage.tooltip().hint("wp.hint.fill");
-            int[] depth = {0};
             for (String line : wrap(usage.syntax(), "", "    ")) {
-                lines.add(Chat.link(viewer, colorize(line, depth), AQUA, click, tooltip));
+                lines.add(Chat.link(viewer, colorize(line), AQUA, click, tooltip));
             }
         }
         lines.add(translatable("wp.help.examples", GRAY));
         for (HelpTopics.Example example : content.examples()) {
+            List<@Nullable String> arguments = example.arguments();
             if (viewer.plainText()) {
-                lines.add(text("  " + example.command()));
-                lines.line(text("    "), translatable(example.descriptionKey()));
+                lines.add(Chat.colored(exampleLine("  " + example.command(), arguments, new int[]{0}), AQUA));
+                lines.line(text("    "), translatable(example.descriptionKey(), WHITE));
                 continue;
             }
             Tooltip tooltip = Tooltip.of(translatable(example.descriptionKey())).hint("wp.hint.fill");
+            int[] word = {0};
             for (String line : wrap(example.command(), "  ", "      ")) {
-                lines.add(Chat.link(viewer, text(line), AQUA, Click.suggest(example.command()), tooltip));
+                lines.add(Chat.link(viewer, exampleLine(line, arguments, word), AQUA, Click.suggest(example.command()),
+                        tooltip));
             }
         }
         if (!viewer.plainText()) {
@@ -107,30 +110,31 @@ public final class HelpScreen {
         return lines;
     }
 
-    /** Commands aqua, <arguments> yellow, [optional parts] gray; depth carries brackets across lines. */
-    private static Component colorize(String line, int[] depth) {
+    /**
+     * Commands and keywords aqua, each <argument> in the colour of its type, and the [brackets] and | of
+     * optional parts gray.
+     */
+    private static Component colorize(String line) {
         List<Component> pieces = new ArrayList<>();
         StringBuilder run = new StringBuilder();
         TextColor runColor = null;
-        boolean argument = false;
-        for (char character : line.toCharArray()) {
+        TextColor argument = null;
+        for (int index = 0; index < line.length(); index++) {
+            char character = line.charAt(index);
             if (character == '<') {
-                argument = true;
+                int end = line.indexOf('>', index);
+                argument = HelpTopics.argumentColor(line.substring(index + 1, end < 0 ? line.length() : end));
             }
             TextColor color;
-            if (argument) {
-                color = YELLOW;
-            } else if (character == '[') {
-                depth[0]++;
+            if (argument != null) {
+                color = argument;
+            } else if (character == '[' || character == ']' || character == '|') {
                 color = GRAY;
-            } else if (character == ']') {
-                color = GRAY;
-                depth[0]--;
             } else {
-                color = depth[0] > 0 ? GRAY : AQUA;
+                color = AQUA;
             }
             if (character == '>') {
-                argument = false;
+                argument = null;
             }
             if (runColor != null && !runColor.equals(color)) {
                 pieces.add(text(run.toString(), runColor));
@@ -141,6 +145,24 @@ public final class HelpScreen {
         }
         if (runColor != null) {
             pieces.add(text(run.toString(), runColor));
+        }
+        return Chat.concat(pieces);
+    }
+
+    /**
+     * A line of an example: its indent, then its words, each value in the colour of the argument it fills.
+     * word counts the example's words across its lines.
+     */
+    private static Component exampleLine(String line, List<@Nullable String> arguments, int[] word) {
+        String words = line.stripLeading();
+        List<Component> pieces = new ArrayList<>();
+        pieces.add(text(line.substring(0, line.length() - words.length())));
+        for (String piece : words.split(" ")) {
+            if (pieces.size() > 1) {
+                pieces.add(text(" "));
+            }
+            String argument = arguments.get(word[0]++);
+            pieces.add(argument == null ? text(piece) : text(piece, HelpTopics.argumentColor(argument)));
         }
         return Chat.concat(pieces);
     }

@@ -50,7 +50,7 @@ public final class PickerScreens {
         ChatLines lines = new ChatLines().add(title("wp.details.color", dims, dimension, list, waypoint,
                 colorValue(waypoint.rgb())));
         if (viewer.plainText()) {
-            return lines.line(text("  "), translatable("wp.picker.color.values",
+            return lines.line(text("  "), translatable("wp.picker.color.values", GRAY,
                     text(String.join(", ", VANILLA_COLOR_NAMES)))).build();
         }
         List<Component> swatches = new ArrayList<>();
@@ -77,7 +77,7 @@ public final class PickerScreens {
         ChatLines lines = new ChatLines().add(title("wp.picker.facing", dims, dimension, list, waypoint,
                 yawValue(waypoint.yaw())));
         if (viewer.plainText()) {
-            return lines.line(text("  "), translatable("wp.picker.yaw.values")).build();
+            return lines.line(text("  "), translatable("wp.picker.yaw.values", GRAY)).build();
         }
         List<Component> facings = new ArrayList<>();
         for (int yaw : FACINGS) {

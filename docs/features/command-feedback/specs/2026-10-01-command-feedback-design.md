@@ -519,11 +519,24 @@ Commands  List · Add · Edit · Remove · Teleport
   Navigate · Upload · Download · Remote
 ```
 
-- **Topics** show usage lines in aqua, with `<arguments>` in yellow and `[optional parts]` in gray.
-  Clicking a line suggests the command.
+- **Topics** show usage lines in aqua, with each `<argument>` in the colour of its type and the
+  brackets and `|` of optional parts in gray; keywords inside optional parts stay aqua. Clicking a
+  line suggests the command.
 - **Long usages** break at argument boundaries, with continuation lines indented four spaces.
-- **Tooltips** explain the arguments.
-- **Examples** follow the usages, then `Help index · Menu`.
+- **Tooltips** explain the arguments. A note about one argument names it in its colour:
+  `<mode>: default, name, distance or color`.
+- **Examples** follow the usages, in aqua with each value in the colour of the argument it fills,
+  then `Help index · Menu`.
+
+Argument types follow the command's argument types:
+
+| Type | Arguments | Colour |
+| --- | --- | --- |
+| Text | `<list>`, `<waypoint>`, `<name>`, `<initials>`, `<keywords>`, `<description>`, `<text>`, `<server>`, `<token>`, `<value>` | yellow |
+| Dimensions and IDs | `<dimension>`, `<id>` | green |
+| Coordinates | `<position>` | light purple |
+| Numbers | `<yaw>`, `<number>` | gold |
+| Choices from a fixed set of words | `<mode>`, `<direction>`, `<view>`, `<method>`, `<source>`, `<property>`, `<topic>`, `<color>`, `<global>` | dark purple |
 
 ## 13. Results, broadcasts and errors
 
@@ -724,6 +737,11 @@ For these viewers, nothing essential may depend on hover, click or colour. Build
    navigate, add here, upload, download) keep their player-only errors.
 6. **Ignore the chat limits.** Plain-text lines may pass 320 px, and messages get no trailing
    newline. Paging stays the same, so page numbers match between chat and console.
+7. **Keep the colours of chat.** Every piece keeps the colour players see, and text written out in
+   place of a link, a tooltip or a distance takes its colour: `… N more: <command>` lines are aqua,
+   row coordinates gray, help usages and examples coloured like their links (12), tooltip lines
+   white, then gray, and accepted values gray. Paper's console shows the colours; the Fabric and
+   NeoForge server log and RCON drop them.
 
 ```
 Overworld (minecraft:overworld)  3 lists · 12 waypoints
@@ -845,5 +863,6 @@ kept.
 - **Glyph test**: every glyph used is in the vanilla bitmap font.
 - **Brigadier tests** for added and removed commands.
 - **Paging tests**: local and remote line budgets, `… N more` lines and continued headings.
-- **Plain-text tests**: no essential detail exists only in a hover, click or colour.
+- **Plain-text tests**: no essential detail exists only in a hover, click or colour; every piece is
+  coloured, and pieces shared with chat have chat's colour.
 - **Live click-through** on Paper and Fabric, and the same commands from the console.

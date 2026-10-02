@@ -69,7 +69,7 @@ public final class ListControls {
         }
         Component label = Chat.concat(text(Chat.ELLIPSIS + " "), Chat.count("wp.more." + unit, count));
         if (viewer.plainText()) {
-            return translatable("wp.plain.continue", label, text(command));
+            return translatable("wp.plain.continue", AQUA, label, text(command));
         }
         return Chat.link(viewer, label, AQUA, Click.run(command), Tooltip.of("wp.page.next")
                 .line(translatable("wp.more.after", Chat.count("wp.count." + unit, count))));

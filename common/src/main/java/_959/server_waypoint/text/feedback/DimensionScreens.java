@@ -230,8 +230,7 @@ public final class DimensionScreens {
     private static Component dimensionLink(DimensionStyle dims, DimensionLists dimension, TextColor color, boolean counts) {
         Viewer viewer = dims.viewer();
         String id = dimension.dimension();
-        Component label = viewer.plainText() ? dims.name(id) : DimensionStyle.displayName(id);
-        return Chat.link(viewer, label, color, Click.run("/wp list " + id), dims.tooltip(id,
+        return Chat.link(viewer, dims.label(id), color, Click.run("/wp list " + id), dims.tooltip(id,
                 counts ? DimensionStyle.counts(dimension.waypoints(), dimension.lists().size()) : null, "wp.hint.open"));
     }
 }

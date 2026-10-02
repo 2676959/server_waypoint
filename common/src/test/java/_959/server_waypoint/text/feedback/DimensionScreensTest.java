@@ -174,6 +174,8 @@ class DimensionScreensTest {
 
     @Test
     void plainTextViewersReadIdsAndNoControls() {
+        Component list = DimensionScreens.dimensionList(dims(Fixtures.console()), dimensions(), 1, 10);
+
         assertEquals(List.of(
                 "Dimensions  7 on this server",
                 "Overworld (minecraft:overworld) · 14",
@@ -182,7 +184,8 @@ class DimensionScreensTest {
                 "The Aether (aether:the_aether) · 2",
                 "Twilight Forest (twilightforest:twilight_forest) · 3",
                 "No waypoints yet: Mars (ad_astra:mars) · Undergarden (undergarden:undergarden)"),
-                lines(DimensionScreens.dimensionList(dims(Fixtures.console()), dimensions(), 1, 10)));
+                lines(list));
+        assertEquals(NamedTextColor.GRAY, colorOf(list, "Mars (ad_astra:mars)"));
         assertEquals("All dimensions", lines(DimensionScreens.all(dims(Fixtures.console()), dimensions(), ListQuery.DEFAULT, 10)).get(0));
     }
 }

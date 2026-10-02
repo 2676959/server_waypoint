@@ -57,6 +57,34 @@ removed again.
 The unit tests had not caught either failure: they run against Adventure 4.16 and never evaluated
 requirements for a source without a level.
 
+## Console colours
+
+Date: 2026-10-02. Build: the `cli-improved` branch at `5aa2468a` with plain text keeping the colours of
+chat (spec 15, rule 7). `:common:test` (723 tests) and `:mods:26.1.2-fabric:test` (508 tests) passed.
+
+Paper 26.2 through `:paper:26.2-paper:runServer`, with commands fed to the console and `TERM=xterm-256color`.
+Paper's console serializer, kyori ansi 1.1.1, takes its colour level from `TERM` or an attached terminal,
+and its code prints no colour when it finds neither, as with a console fed through Gradle and no `TERM`.
+`/wp`, `/wp help add`, `/wp list minecraft:overworld`, `/wp list dimensions` and
+`set color` without a value printed every piece with an ANSI colour: aqua topic names and commands,
+yellow `<arguments>`, gray `[optional parts]`, white then gray explanations, gray row coordinates, gray
+names after `No waypoints yet:` and gray accepted values. `logs/latest.log` holds no escape codes, and
+the plugin data matched its backup byte for byte.
+
+The help colours of spec 12 were checked the same way afterwards, with `:common:test` (727 tests) and
+`:mods:26.1.2-fabric:test` (508 tests) passing. `/wp help`, `/wp help add` and `/wp help list` printed
+aqua keywords inside gray brackets and every argument in the colour of its type, in usage lines, at
+the start of notes and in examples: `<dimension>`, `<id>` and `minecraft:overworld` green, `<position>`
+and `~ ~ ~` light purple, `<yaw>` and `<number>` gold, `<topic>`, `<color>`, `<global>`, `<mode>` and
+the example's `name` dark aqua, and text such as `<list>` and `"Home Bases"` yellow.
+
+Dark aqua sat too close to the aqua of command words, so choices became dark purple. A later run of
+`/wp help navigate` and `/wp help` printed `<method>`, the example's `bossbar` and `<topic>` in ANSI
+magenta next to the bright aqua commands; both suites still passed (727 and 508 tests).
+
+Fabric and NeoForge were not run: their console and RCON print `Component.getString()`, so they stay
+plain.
+
 ## Risks
 
 - `Open GUI` (`/wp_gui`): not checked; it needs a modded client.

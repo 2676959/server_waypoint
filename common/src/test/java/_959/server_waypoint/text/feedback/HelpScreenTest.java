@@ -7,9 +7,11 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Objects;
 
 import static _959.server_waypoint.text.chat.ChatAssert.clickOf;
 import static _959.server_waypoint.text.chat.ChatAssert.colorOf;
+import static _959.server_waypoint.text.chat.ChatAssert.find;
 import static _959.server_waypoint.text.chat.ChatAssert.lines;
 import static _959.server_waypoint.text.chat.ChatAssert.render;
 import static _959.server_waypoint.text.chat.ChatAssert.runCommands;
@@ -38,11 +40,16 @@ class HelpScreenTest {
 
     @Test
     void plainTextViewersGetTheTopicIdsToType() {
+        Component index = HelpScreen.index(Fixtures.console());
+
         assertEquals(List.of(
                 "Server Waypoint help",
                 "Run /wp help <topic> for usage and examples.",
                 "Commands  list · add · edit · remove · tp · navigate · upload · download · remote"),
-                lines(HelpScreen.index(Fixtures.console())));
+                lines(index));
+        assertEquals(NamedTextColor.AQUA, colorOf(index, "add"));
+        assertEquals(NamedTextColor.AQUA, colorOf(index, "/wp help <topic>"));
+        assertEquals(NamedTextColor.DARK_PURPLE, colorOf(index, "<topic>"));
     }
 
     @Test
@@ -55,7 +62,7 @@ class HelpScreenTest {
         assertEquals("/wp add <dimension> <list>", lines.get(2));
         assertTrue(lines.get(4).startsWith("    "), lines.get(4));
         assertEquals("Help index · Menu", lines.get(lines.size() - 1));
-        assertEquals(NamedTextColor.YELLOW, colorOf(add, "<dimension>"));
+        assertEquals(NamedTextColor.GREEN, colorOf(add, "<dimension>"));
         assertEquals(NamedTextColor.GRAY, colorOf(add, "[<initials>"));
         assertEquals(NamedTextColor.YELLOW, colorOf(add, "<initials>"));
         assertEquals(NamedTextColor.AQUA, colorOf(add, "/wp add <position>"));
@@ -63,6 +70,68 @@ class HelpScreenTest {
         assertEquals("Create an empty list\nQuote names with spaces\nClick to fill it in", tooltipOf(add, "/wp add <dimension> <list>"));
         assertEquals("/wp add ~ ~ ~ \"Home Bases\" \"Main Home\"", clickOf(add, "  /wp add ~ ~ ~ \"Home Bases\" \"Main Home\""));
         ChatAssert.assertFitsChat(add);
+    }
+
+    @Test
+    void keywordsInOptionalPartsAreAquaAndOnlyTheirBracketsAndBarsAreGray() {
+        Component list = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.LIST, false);
+        Component upload = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.UPLOAD, false);
+
+        assertEquals(NamedTextColor.GRAY, colorOf(list, "[search"));
+        assertEquals(NamedTextColor.AQUA, colorOf(list, "search <text>"));
+        assertEquals(NamedTextColor.YELLOW, colorOf(list, "<text>"));
+        assertEquals(NamedTextColor.AQUA, colorOf(list, "order <direction>"));
+        assertEquals(NamedTextColor.AQUA, colorOf(upload, "force server"));
+        assertEquals(NamedTextColor.GRAY, colorOf(upload, "|local"));
+        assertEquals(NamedTextColor.AQUA, colorOf(upload, "local [delete"));
+    }
+
+    @Test
+    void argumentsAreColouredByTheirType() {
+        Component add = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.ADD, false);
+        Component list = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.LIST, false);
+
+        assertEquals(NamedTextColor.YELLOW, colorOf(add, "<list>"));
+        assertEquals(NamedTextColor.YELLOW, colorOf(add, "<name>"));
+        assertEquals(NamedTextColor.GREEN, colorOf(add, "<dimension>"));
+        assertEquals(NamedTextColor.GREEN, colorOf(add, "<id>"));
+        assertEquals(NamedTextColor.LIGHT_PURPLE, colorOf(add, "<position>"));
+        assertEquals(NamedTextColor.GOLD, colorOf(add, "<yaw>"));
+        assertEquals(NamedTextColor.GOLD, colorOf(list, "<number>"));
+        assertEquals(NamedTextColor.DARK_PURPLE, colorOf(add, "<color>"));
+        assertEquals(NamedTextColor.DARK_PURPLE, colorOf(add, "<global>"));
+        assertEquals(NamedTextColor.DARK_PURPLE, colorOf(list, "<view>"));
+        assertEquals(NamedTextColor.DARK_PURPLE,
+                colorOf(HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.NAVIGATE, false), "<method>"));
+    }
+
+    @Test
+    void notesNameTheirArgumentInTheColourOfItsType() {
+        Component list = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.LIST, false);
+        Component tooltip = (Component) Objects.requireNonNull(find(list, "[search").style().hoverEvent()).value();
+
+        assertEquals(NamedTextColor.DARK_PURPLE, colorOf(tooltip, "<mode>"));
+        assertEquals(NamedTextColor.GRAY, colorOf(tooltip, ": default, name, distance or color"));
+        assertEquals(NamedTextColor.DARK_PURPLE,
+                colorOf(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.LIST, false), "<mode>: default"));
+    }
+
+    @Test
+    void examplesColourEachValueLikeTheArgumentItFills() {
+        String command = "/wp edit waypoint minecraft:overworld \"Home Bases\" \"Main Home\" set color gold";
+        Component edit = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.EDIT, false);
+        Component plain = HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.EDIT, false);
+
+        assertEquals(NamedTextColor.AQUA, colorOf(edit, "set"));
+        assertEquals(NamedTextColor.YELLOW, colorOf(edit, "gold"));
+        assertEquals(command, clickOf(edit, "gold"));
+        assertEquals(NamedTextColor.AQUA, colorOf(plain, "  /wp edit waypoint minecraft:overworld"));
+        assertEquals(NamedTextColor.GREEN, colorOf(plain, "minecraft:overworld \"Home Bases\""));
+        assertEquals(NamedTextColor.YELLOW, colorOf(plain, "\"Home Bases\" \"Main Home\""));
+        assertEquals(NamedTextColor.AQUA, colorOf(plain, "set color gold"));
+        assertEquals(NamedTextColor.DARK_PURPLE, colorOf(plain, "color gold"));
+        assertEquals(NamedTextColor.LIGHT_PURPLE,
+                colorOf(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.ADD, false), "~ ~ ~"));
     }
 
     @Test
@@ -83,6 +152,19 @@ class HelpScreenTest {
         assertTrue(lines.contains("  /wp add ~ ~ ~ \"Home Bases\" \"Main Home\""));
         assertTrue(lines.contains("    Add Main Home where you stand"));
         assertFalse(render(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.ADD, false)).contains("Help index"));
+    }
+
+    @Test
+    void plainTextTopicsKeepTheColoursOfChatAndItsTooltips() {
+        Component add = HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.ADD, false);
+
+        assertEquals(NamedTextColor.AQUA, colorOf(add, "/wp add <dimension> <list>"));
+        assertEquals(NamedTextColor.GREEN, colorOf(add, "<dimension>"));
+        assertEquals(NamedTextColor.GRAY, colorOf(add, "[<initials>"));
+        assertEquals(NamedTextColor.WHITE, colorOf(add, "Create an empty list"));
+        assertEquals(NamedTextColor.GRAY, colorOf(add, "Quote names with spaces"));
+        assertEquals(NamedTextColor.AQUA, colorOf(add, "  /wp add ~ ~ ~ \"Home Bases\" \"Main Home\""));
+        assertEquals(NamedTextColor.WHITE, colorOf(add, "Add Main Home where you stand"));
     }
 
     @Test

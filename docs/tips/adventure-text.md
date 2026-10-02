@@ -49,6 +49,13 @@ Command feedback is built from the pieces in `common/src/main/java/_959/server_w
   command block, decided by the receiver, not the executing entity. They get no clicks, tooltips or
   controls: `Chat.link` keeps the label, `Chat.control` and `Chat.button` return null, and builders
   write out identifiers and coordinates instead.
+- **Plain text keeps the colours of chat.** Every piece has the colour players see, and text written
+  out in place of a link, a tooltip or a distance takes that piece's colour: `… N more: <command>` is
+  aqua, row coordinates are gray, help usages are coloured like their links and `Tooltip.textLines()`
+  is white, then gray. Inside a link that sets its own colour, use `DimensionStyle.label`, since
+  `DimensionStyle.name` carries the dimension colour. Paper's console shows the colours; the Fabric and
+  NeoForge console and RCON print `Component.getString()`, which drops them. `ScreenAuditTest` checks
+  that every plain-text piece is coloured and that pieces shared with chat have chat's colour.
 - **One trailing newline.** The platform sender adds it for players (`PlatformMessageSender.forPlayer`);
   builders never end a message with a newline.
 - **Layout.** `ChatFont` holds the vanilla font advances. `ChatAssert.assertFitsChat` checks a

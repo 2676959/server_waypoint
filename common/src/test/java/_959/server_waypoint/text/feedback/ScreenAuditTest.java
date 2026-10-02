@@ -21,9 +21,12 @@ import _959.server_waypoint.text.chat.Viewer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.TextColor;
 import org.junit.jupiter.api.Test;
 
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +42,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-/** Every screen with the spec's sample data (spec 21): it fits chat, uses vanilla glyphs and reads in plain text. */
+/**
+ * Every screen with the spec's sample data (spec 21): it fits chat, uses vanilla glyphs and reads in plain
+ * text with the colours of chat.
+ */
 class ScreenAuditTest {
     /** Screens only a player with the mod ever receives; they keep their tooltips. */
     private static final Set<String> PLAYER_ONLY = Set.of("upload result", "arrival");
@@ -188,6 +194,36 @@ class ScreenAuditTest {
         assertTrue(ChatAssert.render(console.get("remote dimension")).contains("[MH] Main Home · 120, 64, -35"));
         assertTrue(ChatAssert.render(console.get("remote picker")).contains("● Survival (survival) · 14"));
         assertTrue(ChatAssert.render(console.get("removed")).contains("Restore with /wp restore r12"));
+    }
+
+    @Test
+    void plainTextScreensColourEveryPiece() {
+        screens(Fixtures.console()).forEach((name, screen) -> {
+            for (ChatAssert.Run run : ChatAssert.runs(screen)) {
+                if (!run.text().isBlank() && run.style().color() == null) {
+                    fail(name + " leaves \"" + run.text() + "\" uncoloured for plain-text viewers:\n"
+                            + ChatAssert.render(screen));
+                }
+            }
+        });
+    }
+
+    @Test
+    void plainTextScreensColourWhatTheyShareWithChatTheSameWay() {
+        Map<String, Component> chat = screens(Fixtures.player());
+        screens(Fixtures.console()).forEach((name, screen) -> {
+            Map<String, Set<TextColor>> chatColours = new HashMap<>();
+            for (ChatAssert.Run run : ChatAssert.runs(chat.get(name))) {
+                chatColours.computeIfAbsent(run.text().strip(), text -> new HashSet<>()).add(run.style().color());
+            }
+            for (ChatAssert.Run run : ChatAssert.runs(screen)) {
+                Set<TextColor> colours = chatColours.get(run.text().strip());
+                if (!run.text().isBlank() && colours != null && !colours.contains(run.style().color())) {
+                    fail(name + ": \"" + run.text().strip() + "\" is " + run.style().color()
+                            + " for plain-text viewers but " + colours + " in chat");
+                }
+            }
+        });
     }
 
     private static void assertNoInteraction(String name, Component component) {

@@ -56,8 +56,9 @@ class ListControlsTest {
         assertEquals("/wp list minecraft:overworld page 2", clickOf(more, "3 more lists"));
         assertEquals("Next page\n3 lists after this page", tooltipOf(more, "3 more lists"));
         assertEquals(NamedTextColor.AQUA, colorOf(more, "3 more lists"));
-        assertEquals("… 1 more waypoint: /wp list minecraft:overworld page 2",
-                render(ListControls.more(CONSOLE, "waypoint", 1, "/wp list minecraft:overworld page 2")));
+        Component plain = ListControls.more(CONSOLE, "waypoint", 1, "/wp list minecraft:overworld page 2");
+        assertEquals("… 1 more waypoint: /wp list minecraft:overworld page 2", render(plain));
+        assertEquals(NamedTextColor.AQUA, colorOf(plain, "/wp list minecraft:overworld page 2"));
         assertNull(ListControls.more(PLAYER, "list", 0, "/wp list"));
     }
 
