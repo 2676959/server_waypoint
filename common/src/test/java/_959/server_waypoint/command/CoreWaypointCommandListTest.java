@@ -117,6 +117,38 @@ class CoreWaypointCommandListTest {
     }
 
     @Test
+    void keyGenerationIsStandaloneAndOldCrossServerNodeIsRemoved() {
+        assertNotNull(this.dispatcher.getRoot().getChild("sw-cross-server-keygen"));
+        assertNull(this.dispatcher.getRoot().getChild("wp").getChild("cross-server"));
+        assertThrows(CommandSyntaxException.class,
+                () -> this.dispatcher.execute("wp cross-server generate-key", this.source));
+    }
+
+    @Test
+    void keyGenerationRequiresHighestPermissionServerConsole() {
+        assertThrows(CommandSyntaxException.class,
+                () -> this.dispatcher.execute("sw-cross-server-keygen", this.source));
+        assertFalse(java.nio.file.Files.exists(this.tempDir.resolve("credentials/static.key")));
+    }
+
+    @Test
+    void standaloneKeyGenerationExecutesForAuthorizedConsole() throws Exception {
+        var command = new TestWaypointCommand(
+                new WaypointServerCore(this.tempDir.toRealPath()) {
+                    @Override
+                    protected boolean isRegisteredIconItem(NamespacedId icon) {
+                        return false;
+                    }
+                }, this.sender);
+        command.authorizedConsole = true;
+        var consoleDispatcher = new CommandDispatcher<TestSource>();
+        command.register(consoleDispatcher);
+        assertEquals(1, consoleDispatcher.execute("sw-cross-server-keygen", this.source));
+        assertTrue(java.nio.file.Files.exists(this.tempDir.resolve("credentials/static.key")));
+        assertTrue(java.nio.file.Files.exists(this.tempDir.resolve("cross-server-public-key.txt")));
+    }
+
+    @Test
     void sharedRootReadsAttachedRemoteStoreWithoutChangingLocalLists() throws Exception {
         var index = new CatalogIndex(
                 CatalogCacheLimits.DEFAULT);
@@ -635,9 +667,10 @@ class CoreWaypointCommandListTest {
 
         @Override
         protected boolean isServerConsoleWithHighestPermission(TestSource source) {
-            return false;
+            return this.authorizedConsole;
         }
 
+        private boolean authorizedConsole;
         private Object player;
         private boolean localUpload;
         private UploadTarget collectedTarget;

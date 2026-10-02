@@ -160,7 +160,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     public static final String UPLOAD_SOURCE_ARG = "source";
     public static final String TP_COMMAND = "tp";
     public static final String RELOAD_COMMAND = "reload";
-    public static final String GENERATE_KEY_COMMAND = "generate-key";
+    public static final String GENERATE_KEY_COMMAND = "sw-cross-server-keygen";
     public static final String NAVIGATE_COMMAND = "navigate";
     public static final String USE_COMMAND = "use";
     public static final String DISABLE_COMMAND = "disable";
@@ -917,21 +917,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 .then((ArgumentBuilder<Object, ?>) remoteCommand.build())
                 .then((ArgumentBuilder<Object, ?>) listCommandNode())
                 .then((ArgumentBuilder<Object, ?>) navigationCommandNode())
-                .then(literal("cross-server")
-                        .then(literal(GENERATE_KEY_COMMAND)
-                                .requires(source -> isServerConsoleWithHighestPermission((S) source))
-                                .executes(context -> {
-                                    S source = (S) context.getSource();
-                                    try {
-                                        var publicFile = StaticKeyGenerator.generate(waypointServer.configDirectory());
-                                        sender.sendMessage(source, Results.keyGenerated(publicFile.toString()));
-                                        return Command.SINGLE_SUCCESS;
-                                    } catch (IOException | IllegalArgumentException exception) {
-                                        sender.sendError(source, Errors.of("wp.error.key",
-                                                text(String.valueOf(exception.getMessage()))));
-                                        return 0;
-                                    }
-                                })))
                 .then(literal(RELOAD_COMMAND)
                         .requires(source -> hasReloadPermission((S) source))
                         .executes(
@@ -2495,6 +2480,25 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     public void register(@NotNull CommandDispatcher<S> dispatcher) {
         dispatcher.getRoot().addChild(build());
+        dispatcher.getRoot().addChild(buildKeyGenerationCommand());
+    }
+
+    public LiteralCommandNode<S> buildKeyGenerationCommand() {
+        return LiteralArgumentBuilder.<S>literal(GENERATE_KEY_COMMAND)
+                .requires(this::isServerConsoleWithHighestPermission)
+                .executes(context -> {
+                    S source = context.getSource();
+                    try {
+                        var publicFile = StaticKeyGenerator.generate(waypointServer.configDirectory());
+                        sender.sendMessage(source, Results.keyGenerated(publicFile.toString()));
+                        return Command.SINGLE_SUCCESS;
+                    } catch (IOException | IllegalArgumentException exception) {
+                        sender.sendError(source, Errors.of("wp.error.key",
+                                text(String.valueOf(exception.getMessage()))));
+                        return 0;
+                    }
+                })
+                .build();
     }
 
     private D getDefaultDimension(CommandContext<S> context) {

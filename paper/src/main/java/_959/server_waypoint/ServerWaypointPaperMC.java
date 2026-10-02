@@ -162,9 +162,10 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         );
         LiteralCommandNode<CommandSourceStack> command = waypointCommand.build();
         // register
-        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands ->
-                commands.registrar().register(command)
-        );
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
+            commands.registrar().register(command);
+            commands.registrar().register(waypointCommand.buildKeyGenerationCommand());
+        });
         crossServer = new _959.server_waypoint.handoff.PaperCrossServerRuntime(this, waypointServer, waypointCommand, permissionManager, sender);
         server.getPluginManager().registerEvents(crossServer, this);
         crossServer.start();

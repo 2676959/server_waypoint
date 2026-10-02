@@ -26,7 +26,7 @@ See the [release verification record](validation/cross-server-release-readiness.
    in place for this generation pass. Start and stop the components: invalid pins deliberately
    prevent operation, but KK startup writes each component's `cross-server-public-key.txt`.
    On a Paper or dedicated mod backend, the server console can run
-   `/wp cross-server generate-key` after configuring `cross-server.json` to generate the backend's
+   `/sw-cross-server-keygen` after configuring `cross-server.json` to generate the backend's
    `credentials/static.key` and `cross-server-public-key.txt` without a startup pass. The command
    requires command level 4 and refuses to replace an existing key. With a custom
    `credentialsDirectory`, it writes `static.key` there instead. Restart after pin exchange.
