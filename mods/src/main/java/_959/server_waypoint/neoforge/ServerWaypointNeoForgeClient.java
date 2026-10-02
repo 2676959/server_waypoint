@@ -4,6 +4,7 @@
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.command.ClientWaypointCommand;
+import _959.server_waypoint.common.client.gui.screens.ClientConfigScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
 import _959.server_waypoint.common.client.handlers.S2CPayloadHandler;
 import _959.server_waypoint.common.client.render.OptimizedWaypointRenderer;
@@ -11,8 +12,15 @@ import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.network.payload.s2c.*;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.gui.screens.Screen;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
+import net.neoforged.fml.ModLoadingContext;
+//? if >= 1.20.5 {
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+//?} else {
+/^import net.neoforged.neoforge.client.ConfigScreenHandler;
+^///?}
 //? if >= 1.20.5 {
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 //?} else {
@@ -33,7 +41,6 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 /^import net.neoforged.neoforge.network.PlayNetworkDirection;
 import net.neoforged.neoforge.network.simple.SimpleChannel;
 ^///?}
-import org.lwjgl.glfw.GLFW;
 
 import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
 
@@ -48,6 +55,27 @@ public class ServerWaypointNeoForgeClient {
 //? if <= 1.20.4 {
         /^NeoForge.EVENT_BUS.addListener(ServerWaypointNeoForgeClient::onRenderGui);
 ^///?}
+        registerConfigScreen();
+    }
+
+    /^* The Mods screen's config button opens the client settings. ^/
+    private static void registerConfigScreen() {
+//? if >= 1.21 {
+        ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class,
+                () -> (container, parent) -> createConfigScreen(parent));
+//?} elif >= 1.20.5 {
+        /^ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class,
+                () -> (minecraft, parent) -> createConfigScreen(parent));
+^///?} else {
+        /^ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
+                () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> createConfigScreen(parent)));
+^///?}
+    }
+
+    /^* NeoForge creates the client mod on the first client tick; make sure it exists before the screen. ^/
+    private static Screen createConfigScreen(Screen parent) {
+        ensureClientStarted();
+        return new ClientConfigScreen(parent);
     }
 
     private static void registerKeyBindings(RegisterKeyMappingsEvent event) {
@@ -56,6 +84,7 @@ public class ServerWaypointNeoForgeClient {
     }
 
     private static KeyMapping createKeyBinding() {
+        InputConstants.Type keyboardType = InputConstants.UNKNOWN.getType();
         try {
             Class<?> categoryClass = Class.forName("net.minecraft.client.KeyMapping$Category");
             Object categoryId = modId("mod_name");
@@ -64,12 +93,12 @@ public class ServerWaypointNeoForgeClient {
                     .invoke(null, categoryId);
             return (KeyMapping) KeyMapping.class
                     .getConstructor(String.class, InputConstants.Type.class, int.class, categoryClass)
-                    .newInstance("server_waypoint.waypoint_manager_gui.keybind", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, category);
+                    .newInstance("server_waypoint.waypoint_manager_gui.keybind", keyboardType, InputConstants.KEY_RSHIFT, category);
         } catch (ClassNotFoundException e) {
             try {
                 return (KeyMapping) KeyMapping.class
                         .getConstructor(String.class, InputConstants.Type.class, int.class, String.class)
-                        .newInstance("server_waypoint.waypoint_manager_gui.keybind", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, "key.category.server_waypoint.mod_name");
+                        .newInstance("server_waypoint.waypoint_manager_gui.keybind", keyboardType, InputConstants.KEY_RSHIFT, "key.category.server_waypoint.mod_name");
             } catch (ReflectiveOperationException reflectiveException) {
                 throw new IllegalStateException("Failed to create key binding", reflectiveException);
             }

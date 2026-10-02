@@ -1,0 +1,297 @@
+package _959.server_waypoint.crossserver;
+
+import _959.server_waypoint.command.permission.PermissionManager;
+import _959.server_waypoint.config.CommandPermission;
+import _959.server_waypoint.crossserver.authorization.RemotePermissions;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import javax.tools.ToolProvider;
+import java.net.URLClassLoader;
+import java.nio.file.*;
+import java.util.*;
+import java.util.stream.Stream;
+import static org.junit.jupiter.api.Assertions.*;
+
+/** Executes the actual checked-in adapters against minimal platform API doubles, without booting a game. */
+class PlatformRemotePermissionContractTest {
+    @TempDir Path temporary;
+
+    private enum AdapterVariant {
+        CURRENT,
+        LEGACY_PAPER
+    }
+
+    private static Stream<Arguments> adapterCases() {
+        return Stream.of(
+                Arguments.of("paper", AdapterVariant.CURRENT),
+                Arguments.of("paper", AdapterVariant.LEGACY_PAPER),
+                Arguments.of("fabric", AdapterVariant.CURRENT),
+                Arguments.of("forge", AdapterVariant.CURRENT),
+                Arguments.of("neoforge", AdapterVariant.CURRENT)
+        );
+    }
+
+    @ParameterizedTest(name = "{0}-{1}")
+    @MethodSource("adapterCases")
+    @SuppressWarnings("unchecked")
+    void adapterAssignmentsFallbackConsoleAndRevocation(String platform, AdapterVariant variant) throws Exception {
+        Map<String, String> sources = new HashMap<>();
+        sources.put("fixture.Subject", """
+                package fixture;
+                public class Subject implements org.bukkit.command.CommandSender {
+                    public int level;
+                    public boolean op;
+                    public java.util.Map<String, Boolean> assignments = new java.util.HashMap<>();
+                    public boolean isPermissionSet(String node) { return assignments.containsKey(node); }
+                    public boolean hasPermission(String node) { return assignments.getOrDefault(node, false); }
+                    public boolean isOp() { return op; }
+                    public boolean hasPermission(int level) { return this.level >= level; }
+                    public boolean hasPermissions(int level) { return this.level >= level; }
+                    public org.bukkit.Server getServer() { return new org.bukkit.craftbukkit.CraftServer(); }
+                    public net.minecraft.server.permissions.PermissionSet permissions() {
+                        return new net.minecraft.server.permissions.LevelBasedPermissionSet(
+                            net.minecraft.server.permissions.PermissionLevel.byId(level));
+                    }
+                }
+                """);
+        sources.put("net.minecraft.server.permissions.PermissionLevel", """
+                package net.minecraft.server.permissions;
+                public record PermissionLevel(int value) {
+                    public static PermissionLevel byId(int value) { return new PermissionLevel(value); }
+                    public boolean isEqualOrHigherThan(PermissionLevel other) { return value >= other.value; }
+                }
+                """);
+        sources.put("net.minecraft.server.permissions.Permission", """
+                package net.minecraft.server.permissions;
+                public interface Permission { record HasCommandLevel(PermissionLevel level) implements Permission {} }
+                """);
+        sources.put("net.minecraft.server.permissions.PermissionSet", """
+                package net.minecraft.server.permissions;
+                public interface PermissionSet { boolean hasPermission(Permission permission); }
+                """);
+        sources.put("net.minecraft.server.permissions.LevelBasedPermissionSet", """
+                package net.minecraft.server.permissions;
+                public record LevelBasedPermissionSet(PermissionLevel level) implements PermissionSet {
+                    public boolean hasPermission(Permission permission) {
+                        return level.isEqualOrHigherThan(((Permission.HasCommandLevel) permission).level());
+                    }
+                }
+                """);
+        sources.put("net.minecraft.server.level.ServerPlayer", """
+                package net.minecraft.server.level;
+                public class ServerPlayer extends fixture.Subject {
+                    public net.minecraft.commands.CommandSourceStack createCommandSourceStack() {
+                        return new net.minecraft.commands.CommandSourceStack(this.level);
+                    }
+                }
+                """);
+        sources.put("net.minecraft.commands.CommandSourceStack", """
+                package net.minecraft.commands;
+                public class CommandSourceStack extends fixture.Subject {
+                    public CommandSourceStack() {}
+                    public CommandSourceStack(int level) { this.level = level; }
+                    public net.minecraft.server.level.ServerPlayer player;
+                    public net.minecraft.server.level.ServerPlayer getPlayer() { return player; }
+                }
+                """);
+        sources.put("me.lucko.fabric.api.permissions.v0.Permissions", """
+                package me.lucko.fabric.api.permissions.v0;
+                public class Permissions {
+                    public static java.util.concurrent.CompletableFuture<Boolean> check(java.util.UUID id, String node, boolean fallback) {
+                        return java.util.concurrent.CompletableFuture.completedFuture(fallback);
+                    }
+                    public static boolean check(fixture.Subject subject, String node,
+                            net.minecraft.server.permissions.PermissionLevel level) {
+                        return subject.assignments.getOrDefault(node, subject.level >= level.value());
+                    }
+                }
+                """);
+        sources.put("org.bukkit.Server", "package org.bukkit; public interface Server {}");
+        sources.put("org.bukkit.command.CommandSender", """
+                package org.bukkit.command;
+                public interface CommandSender {
+                    boolean isPermissionSet(String node);
+                    boolean hasPermission(String node);
+                    org.bukkit.Server getServer();
+                }
+                """);
+        sources.put("org.bukkit.entity.Player", """
+                package org.bukkit.entity;
+                public interface Player extends org.bukkit.command.CommandSender {
+                    boolean isOp();
+                }
+                """);
+        sources.put("org.bukkit.craftbukkit.entity.CraftPlayer", """
+                package org.bukkit.craftbukkit.entity;
+                public class CraftPlayer extends net.minecraft.server.level.ServerPlayer implements org.bukkit.entity.Player {
+                    public net.minecraft.server.level.ServerPlayer getHandle() { return this; }
+                }
+                """);
+        sources.put("net.minecraft.server.MinecraftServer", """
+                package net.minecraft.server;
+                public class MinecraftServer {
+                    public net.minecraft.commands.CommandSourceStack createCommandSourceStack() {
+                        return new net.minecraft.commands.CommandSourceStack(4);
+                    }
+                }
+                """);
+        sources.put("net.minecraft.server.dedicated.DedicatedPlayerList", """
+                package net.minecraft.server.dedicated;
+                public class DedicatedPlayerList {
+                    public net.minecraft.server.MinecraftServer getServer() {
+                        return new net.minecraft.server.MinecraftServer();
+                    }
+                }
+                """);
+        sources.put("org.bukkit.craftbukkit.CraftServer", """
+                package org.bukkit.craftbukkit;
+                public class CraftServer implements org.bukkit.Server {
+                    public net.minecraft.server.dedicated.DedicatedPlayerList getHandle() {
+                        return new net.minecraft.server.dedicated.DedicatedPlayerList();
+                    }
+                }
+                """);
+        sources.put("io.papermc.paper.command.brigadier.CommandSourceStack", """
+                package io.papermc.paper.command.brigadier;
+                public class CommandSourceStack {
+                    public fixture.Subject sender = new fixture.Subject();
+                    public org.bukkit.command.CommandSender getSender() { return sender; }
+                }
+                """);
+        String title = switch (platform) {
+            case "paper" -> "Paper";
+            case "fabric" -> "Fabric";
+            case "forge" -> "Forge";
+            default -> "NeoForge";
+        };
+        String packageName = platform.equals("paper") ? "_959.server_waypoint.server.command.permission"
+                : "_959.server_waypoint." + platform + ".permission";
+        String className = packageName + "." + title + "PermissionManager";
+        Path repository = Path.of("").toAbsolutePath();
+        if (!Files.isDirectory(repository.resolve("common"))) repository = repository.getParent();
+        Path adapter = repository.resolve(platform.equals("paper") ? "paper" : "mods")
+                .resolve("src/main/java/" + className.replace('.', '/') + ".java");
+        sources.put(className, adapterSource(adapter, variant));
+        List<String> arguments = new ArrayList<>(List.of("--release", "17", "-d", temporary.toString(),
+                "-classpath", Path.of(PermissionManager.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toString()));
+        for (var entry : sources.entrySet()) {
+            Path source = temporary.resolve(entry.getKey().replace('.', '/') + ".java");
+            Files.createDirectories(source.getParent());
+            Files.writeString(source, entry.getValue());
+            arguments.add(source.toString());
+        }
+        assertEquals(0, ToolProvider.getSystemJavaCompiler().run(null, null, null, arguments.toArray(String[]::new)));
+        try (URLClassLoader loader = new URLClassLoader(new java.net.URL[]{temporary.toUri().toURL()}, getClass().getClassLoader())) {
+            Class<?> adapterClass = loader.loadClass(className);
+            PermissionManager<Object, String, Object> manager = (PermissionManager<Object, String, Object>) adapterClass.getConstructor().newInstance();
+            Object player = loader.loadClass(platform.equals("paper") ? "org.bukkit.craftbukkit.entity.CraftPlayer" : "net.minecraft.server.level.ServerPlayer")
+                    .getConstructor().newInstance();
+            Object source = loader.loadClass(platform.equals("paper") ? "io.papermc.paper.command.brigadier.CommandSourceStack"
+                    : "net.minecraft.commands.CommandSourceStack").getConstructor().newInstance();
+            Object console = source;
+            Object subject = platform.equals("paper") ? source.getClass().getField("sender").get(source) : source;
+            var permissions = new RemotePermissions<>(manager, CommandPermission::new, actual -> actual == player ? player : null);
+            assertFalse(permissions.canRequestTeleport(console));
+            assertTrue(permissions.canList(source));
+            assertFalse(permissions.canTeleportOnArrival(player));
+            player.getClass().getField("level").setInt(player, 1);
+            player.getClass().getField("op").setBoolean(player, false);
+            assertFalse(permissions.canRequestTeleport(player));
+            assertFalse(permissions.canTeleportOnArrival(player));
+            player.getClass().getField("level").setInt(player, 2);
+            assertTrue(permissions.canRequestTeleport(player));
+            assertTrue(permissions.canTeleportOnArrival(player));
+            if (platform.equals("paper")) {
+                assertPaperPlayerSourceFallback(manager, source, player);
+            }
+            subject.getClass().getField("level").setInt(subject, 4);
+            subject.getClass().getField("op").setBoolean(subject, true);
+            assertTrue(permissions.canList(console));
+            if (platform.equals("fabric")) adapterClass.getMethod("setFabricPermissionAPILoaded", boolean.class).invoke(null, true);
+            Map<String, Boolean> assignments = (Map<String, Boolean>) player.getClass().getField("assignments").get(player);
+            if (platform.equals("paper") || platform.equals("fabric")) {
+                assignments.put("server_waypoint.command.remote.tp", false);
+                assertFalse(permissions.canRequestTeleport(player));
+                assertTrue(permissions.canTeleportOnArrival(player));
+                assignments.put("server_waypoint.command.remote.tp", true);
+                assignments.put("server_waypoint.command.tp", false);
+                assertFalse(permissions.canRequestTeleport(player));
+                assertFalse(permissions.canTeleportOnArrival(player));
+                player.getClass().getField("level").setInt(player, 0);
+                player.getClass().getField("op").setBoolean(player, false);
+                assignments.put("server_waypoint.command.tp", true);
+                assertTrue(permissions.canRequestTeleport(player));
+                Map<String, Boolean> sourceAssignments = (Map<String, Boolean>) subject.getClass().getField("assignments").get(subject);
+                sourceAssignments.put("server_waypoint.command.remote.list", false);
+                assertFalse(permissions.canList(console));
+                sourceAssignments.put("server_waypoint.command.remote.list", true);
+                assertTrue(permissions.canList(console));
+            } else {
+                // These adapters currently use vanilla levels; arbitrary node maps have no effect.
+                assignments.put("server_waypoint.command.remote.tp", false);
+                assertTrue(permissions.canRequestTeleport(player));
+                player.getClass().getField("level").setInt(player, 0);
+                assertFalse(permissions.canRequestTeleport(player));
+                assertFalse(permissions.canTeleportOnArrival(player));
+            }
+        }
+    }
+
+    private static String adapterSource(Path adapter, AdapterVariant variant) throws Exception {
+        String source = Files.readString(adapter);
+        if (variant != AdapterVariant.LEGACY_PAPER) {
+            return source;
+        }
+        source = replaceRequired(source, """
+                //? if >= 1.21.11 {
+                import net.minecraft.server.permissions.Permission;
+                import net.minecraft.server.permissions.PermissionLevel;
+                //?}
+                """, "");
+        return replaceRequired(source, """
+                        //? if >= 1.21.11 {
+                        return source.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(defaultLevel)));
+                        //?} else {
+                        /*return source.hasPermission(defaultLevel);
+                        *///?}
+                """, """
+                        return source.hasPermission(defaultLevel);
+                """);
+    }
+
+    private static String replaceRequired(String source, String target, String replacement) {
+        if (!source.contains(target)) {
+            throw new IllegalStateException("Expected Stonecutter branch was not found in the adapter source");
+        }
+        return source.replace(target, replacement);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void assertPaperPlayerSourceFallback(PermissionManager<Object, String, Object> manager,
+                                                         Object source, Object player) throws Exception {
+        var sender = source.getClass().getField("sender");
+        Object originalSender = sender.get(source);
+        var level = player.getClass().getField("level");
+        Map<String, Boolean> assignments =
+                (Map<String, Boolean>) player.getClass().getField("assignments").get(player);
+        try {
+            sender.set(source, player);
+            assignments.clear();
+            level.setInt(player, 1);
+            assertFalse(manager.hasPermission(source, manager.keys.tp(), 2));
+            level.setInt(player, 2);
+            assertTrue(manager.hasPermission(source, manager.keys.tp(), 2));
+            assignments.put("server_waypoint.command.tp", false);
+            assertFalse(manager.hasPermission(source, manager.keys.tp(), 2));
+            assignments.put("server_waypoint.command.tp", true);
+            level.setInt(player, 0);
+            assertTrue(manager.hasPermission(source, manager.keys.tp(), 2));
+        } finally {
+            assignments.clear();
+            level.setInt(player, 2);
+            sender.set(source, originalSender);
+        }
+    }
+}

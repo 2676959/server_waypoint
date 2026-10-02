@@ -1,8 +1,8 @@
 package _959.server_waypoint.util;
 
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
-import _959.server_waypoint.core.waypoint.WaypointSorting;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
+import _959.server_waypoint.core.network.upload.UploadConflictPolicy;
 import _959.server_waypoint.core.network.upload.UploadScope;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import org.jetbrains.annotations.Nullable;
@@ -14,32 +14,6 @@ import static _959.server_waypoint.util.ColorUtils.rgbToNameOrHexCode;
 
 public class StringCommandBuilder {
     public static final String WAYPOINT_COMMAND_WITH_SLASH = "/" + WAYPOINT_COMMAND;
-
-    public record ListTarget(
-            boolean allDimensions,
-            @Nullable String dimensionName,
-            @Nullable String listName
-    ) {
-    }
-
-    public record ListOptions(
-            String filterText,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed,
-            int pageNumber,
-            int pageLimit,
-            boolean groupByLists
-    ) {
-        public ListOptions(
-                String filterText,
-                WaypointSorting.SortMode sortMode,
-                boolean reversed,
-                int pageNumber,
-                int pageLimit
-        ) {
-            this(filterText, sortMode, reversed, pageNumber, pageLimit, true);
-        }
-    }
 
     public static String tpCmd(String dimensionName, String waypointList, String waypointName) {
         return tpCmd(dimensionName, waypointList, waypointName, true);
@@ -70,15 +44,18 @@ public class StringCommandBuilder {
         return navigateDisableCmd() + ' ' + method;
     }
 
-    public static String navigateStatusCmd() {
-        return WAYPOINT_COMMAND_WITH_SLASH + ' ' + NAVIGATE_COMMAND + ' ' + STATUS_COMMAND;
-    }
-
-    public static String uploadLocalCmd(UploadScope scope, UploadRequestBuffer request) {
+    /** /wp upload <source> [force local [delete]] [<dimension> [<list> [<waypoint>]]] for this request's scope. */
+    public static String uploadCmd(UploadScope scope, UploadRequestBuffer request, UploadConflictPolicy conflictPolicy,
+                                   boolean deleteMissing) {
         StringBuilder command = new StringBuilder(WAYPOINT_COMMAND_WITH_SLASH)
                 .append(' ').append(UPLOAD_COMMAND)
-                .append(' ').append(request.target().name().toLowerCase(Locale.ROOT))
-                .append(" force local");
+                .append(' ').append(request.target().name().toLowerCase(Locale.ROOT));
+        if (conflictPolicy == UploadConflictPolicy.LOCAL) {
+            command.append(" force local");
+            if (deleteMissing) {
+                command.append(" delete");
+            }
+        }
         if (scope == UploadScope.WORLD) {
             return command.toString();
         }
@@ -86,11 +63,11 @@ public class StringCommandBuilder {
         if (scope == UploadScope.DIMENSION) {
             return command.toString();
         }
-        command.append(' ').append(StringArgumentType.escapeIfRequired(request.listName()));
+        command.append(' ').append(escapeArgument(request.listName()));
         if (scope == UploadScope.LIST) {
             return command.toString();
         }
-        return command.append(' ').append(StringArgumentType.escapeIfRequired(request.waypointName())).toString();
+        return command.append(' ').append(escapeArgument(request.waypointName())).toString();
     }
 
     private static String selectorCmd(
@@ -134,7 +111,13 @@ public class StringCommandBuilder {
         sb.append(' ').append(rgbToNameOrHexCode(waypoint.rgb(), false));
         sb.append(' ').append(waypoint.yaw());
         sb.append(' ').append(waypoint.global());
-        appendExtraInfo(sb, waypoint);
+        if (waypoint.icon() == null) {
+            appendExtraInfo(sb, waypoint);
+        } else {
+            sb.append(' ').append(escapeArgument(String.join(", ", waypoint.keywords())));
+            sb.append(' ').append(escapeArgument(waypoint.description()));
+            sb.append(" icon ").append(waypoint.icon());
+        }
         return sb.toString();
     }
 
@@ -200,189 +183,6 @@ public class StringCommandBuilder {
         }
     }
 
-    public static String listPageCmd(
-            boolean allDimensions,
-            String dimensionName,
-            String listName,
-            String filterText,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed,
-            int pageNumber,
-            int pageLimit
-    ) {
-        return listPageCmd(
-                allDimensions,
-                dimensionName,
-                listName,
-                filterText,
-                sortMode,
-                reversed,
-                pageNumber,
-                pageLimit,
-                true
-        );
-    }
-
-    public static String listPageCmd(
-            boolean allDimensions,
-            String dimensionName,
-            String listName,
-            String filterText,
-            WaypointSorting.SortMode sortMode,
-            boolean reversed,
-            int pageNumber,
-            int pageLimit,
-            boolean groupByLists
-    ) {
-        StringBuilder command = new StringBuilder(WAYPOINT_COMMAND_WITH_SLASH)
-                .append(' ').append(LIST_COMMAND);
-        if (allDimensions) {
-            command.append(" all");
-        } else {
-            command.append(' ').append(dimensionName);
-            if (listName != null) {
-                command.append(' ').append(escapeListName(listName));
-            }
-        }
-        if (!filterText.trim().isEmpty()) {
-            command.append(' ').append(SEARCH_COMMAND).append(' ')
-                    .append(StringArgumentType.escapeIfRequired(filterText));
-        }
-        if (sortMode != WaypointSorting.SortMode.DEFAULT) {
-            command.append(' ').append(SORT_COMMAND).append(' ')
-                    .append(sortMode.name().toLowerCase(Locale.ROOT));
-            if (reversed) {
-                command.append(' ').append(ORDER_COMMAND).append(" descending");
-            }
-        }
-        command.append(' ').append(PAGE_COMMAND).append(' ').append(pageNumber)
-                .append(' ').append(LIMIT_COMMAND).append(' ').append(pageLimit);
-        if (!groupByLists) {
-            command.append(' ').append(VIEW_COMMAND).append(' ').append(FLAT_VIEW);
-        }
-        return command.toString();
-    }
-
-    public static String listPageCmd(ListTarget target, ListOptions options, int pageNumber) {
-        return listPageCmd(
-                target.allDimensions(),
-                target.dimensionName(),
-                target.listName(),
-                options.filterText(),
-                options.sortMode(),
-                options.reversed(),
-                pageNumber,
-                options.pageLimit(),
-                options.groupByLists()
-        );
-    }
-
-    public static String listSearchCmd(ListTarget target, ListOptions options) {
-        StringBuilder command = new StringBuilder(WAYPOINT_COMMAND_WITH_SLASH)
-                .append(' ').append(LIST_COMMAND);
-        if (target.allDimensions()) {
-            command.append(" all");
-        } else {
-            command.append(' ').append(target.dimensionName());
-            if (target.listName() != null) {
-                command.append(' ').append(escapeListName(target.listName()));
-            }
-        }
-        if (options.sortMode() != WaypointSorting.SortMode.DEFAULT) {
-            command.append(' ').append(SORT_COMMAND).append(' ')
-                    .append(options.sortMode().name().toLowerCase(Locale.ROOT));
-            if (options.reversed()) {
-                command.append(' ').append(ORDER_COMMAND).append(" descending");
-            }
-        }
-        if (!options.groupByLists()) {
-            command.append(' ').append(VIEW_COMMAND).append(' ').append(FLAT_VIEW);
-        }
-        return command.append(' ').append(SEARCH_COMMAND).append(' ').toString();
-    }
-
-    public static String listViewCmd(
-            ListTarget target,
-            ListOptions options,
-            boolean groupByLists
-    ) {
-        String command = listPageCmd(
-                target.allDimensions(),
-                target.dimensionName(),
-                target.listName(),
-                options.filterText(),
-                options.sortMode(),
-                options.reversed(),
-                options.pageNumber(),
-                options.pageLimit(),
-                groupByLists
-        );
-        if (groupByLists) {
-            return command + ' ' + VIEW_COMMAND + ' ' + TREE_VIEW;
-        }
-        return command;
-    }
-
-    public static String listDimensionCmd(String dimensionName, ListOptions options) {
-        return listTargetCmd(new ListTarget(false, dimensionName, null), options);
-    }
-
-    public static String listWaypointListCmd(
-            String dimensionName,
-            String listName,
-            ListOptions options
-    ) {
-        return listTargetCmd(new ListTarget(false, dimensionName, listName), options);
-    }
-
-    private static String listTargetCmd(ListTarget target, ListOptions options) {
-        ListOptions firstPageOptions = new ListOptions(
-                options.filterText(),
-                options.sortMode(),
-                options.reversed(),
-                1,
-                options.pageLimit(),
-                options.groupByLists()
-        );
-        return listViewCmd(
-                target,
-                firstPageOptions,
-                options.groupByLists()
-        );
-    }
-
-    public static String listSortCmd(
-            ListTarget target,
-            ListOptions options,
-            WaypointSorting.SortMode sortMode
-    ) {
-        return listPageCmd(
-                target.allDimensions(),
-                target.dimensionName(),
-                target.listName(),
-                options.filterText(),
-                sortMode,
-                false,
-                1,
-                options.pageLimit(),
-                options.groupByLists()
-        );
-    }
-
-    public static String listOrderCmd(ListTarget target, ListOptions options, boolean reversed) {
-        return listPageCmd(
-                target.allDimensions(),
-                target.dimensionName(),
-                target.listName(),
-                options.filterText(),
-                options.sortMode(),
-                reversed,
-                1,
-                options.pageLimit(),
-                options.groupByLists()
-        );
-    }
-
     public static String escapeListName(String listName) {
         String escaped = escapeArgument(listName);
         if (!escaped.equals(listName) || !isListOptionLiteral(listName)) {
@@ -412,16 +212,6 @@ public class StringCommandBuilder {
                 + escapeArgument(listIdentifier) + ' ' + escapeArgument(waypointIdentifier);
     }
 
-    public static String editListSetCmd(
-            String dimensionName,
-            String listIdentifier,
-            String property,
-            String value
-    ) {
-        return WAYPOINT_COMMAND_WITH_SLASH + " edit list " + dimensionName + ' '
-                + escapeArgument(listIdentifier) + " set " + property + ' ' + escapeArgument(value);
-    }
-
     public static String editListSetSuggestionCmd(
             String dimensionName,
             String listIdentifier,
@@ -442,18 +232,6 @@ public class StringCommandBuilder {
                 + escapeArgument(listIdentifier) + " clear " + property;
     }
 
-    public static String editWaypointSetCmd(
-            String dimensionName,
-            String listIdentifier,
-            String waypointIdentifier,
-            String property,
-            String value
-    ) {
-        return WAYPOINT_COMMAND_WITH_SLASH + " edit waypoint " + dimensionName + ' '
-                + escapeArgument(listIdentifier) + ' ' + escapeArgument(waypointIdentifier)
-                + " set " + property + ' ' + escapeArgument(value);
-    }
-
     public static String editWaypointSetSuggestionCmd(
             String dimensionName,
             String listIdentifier,
@@ -467,6 +245,17 @@ public class StringCommandBuilder {
         return suggestionWithValue(prefix, value);
     }
 
+    public static String editWaypointIconSuggestionCmd(
+            String dimensionName,
+            String listIdentifier,
+            String waypointIdentifier,
+            @Nullable NamespacedId icon
+    ) {
+        return WAYPOINT_COMMAND_WITH_SLASH + " edit waypoint " + dimensionName + ' '
+                + escapeArgument(listIdentifier) + ' ' + escapeArgument(waypointIdentifier)
+                + " set icon " + (icon == null ? "" : icon.toString());
+    }
+
     private static String suggestionWithValue(String prefix, String value) {
         return value.chars().allMatch(StringCommandBuilder::isAllowedChatCharacter)
                 ? prefix + escapeArgument(value)
@@ -475,6 +264,12 @@ public class StringCommandBuilder {
 
     private static boolean isAllowedChatCharacter(int character) {
         return character != '\u00A7' && character >= 32 && character != 127;
+    }
+
+    /** /wp edit waypoint <dimension> <list> <waypoint> followed by the rest of the command. */
+    public static String editWaypointCmd(String dimensionName, String listIdentifier, String waypointIdentifier, String tail) {
+        return WAYPOINT_COMMAND_WITH_SLASH + " edit waypoint " + dimensionName + ' '
+                + escapeArgument(listIdentifier) + ' ' + escapeArgument(waypointIdentifier) + ' ' + tail;
     }
 
     public static String editWaypointClearCmd(
@@ -501,6 +296,20 @@ public class StringCommandBuilder {
 
     public static String restoreCmd(String token) {
         return WAYPOINT_COMMAND_WITH_SLASH + " restore " + escapeArgument(token);
+    }
+
+    /** /wp download <dimension> [<list> [<waypoint>]] */
+    public static String downloadCmd(String dimensionName, @Nullable String listName, @Nullable String waypointName) {
+        StringBuilder command = new StringBuilder(WAYPOINT_COMMAND_WITH_SLASH)
+                .append(' ').append(DOWNLOAD_COMMAND)
+                .append(' ').append(dimensionName);
+        if (listName != null) {
+            command.append(' ').append(escapeArgument(listName));
+            if (waypointName != null) {
+                command.append(' ').append(escapeArgument(waypointName));
+            }
+        }
+        return command.toString();
     }
 
     private static boolean isListOptionLiteral(String listName) {

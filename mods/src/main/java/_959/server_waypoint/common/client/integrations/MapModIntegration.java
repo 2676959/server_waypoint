@@ -14,4 +14,13 @@ public interface MapModIntegration {
     boolean isEnabled(ClientConfig clientConfig);
 
     void onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod waypointClientMod);
+
+    /** Whether the map mod is installed in this game. */
+    boolean isInstalled();
+
+    /** Whether the map mod can take waypoints now. */
+    boolean isReady();
+
+    /** Rewrites the waypoints this mod added to the map mod so they match the synced waypoints. */
+    void syncAll(WaypointClientMod waypointClientMod);
 }

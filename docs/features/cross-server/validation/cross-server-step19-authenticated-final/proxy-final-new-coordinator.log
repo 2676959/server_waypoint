@@ -1,0 +1,25 @@
+[10:16:12 INFO]: Booting up Velocity 4.1.1...
+[10:16:15 INFO]: Connections will use kqueue channels, libdeflate (macOS ARM64 / Apple Silicon) compression, native (macOS ARM64 / Apple Silicon) ciphers
+[10:16:15 INFO]: Loading localizations...
+[10:16:15 INFO]: Loading plugins...
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/private/tmp/server-waypoint-step19-folia/proxy/velocity.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[10:16:15 INFO]: Loaded plugin server_waypoint 3.1.0 by 2676959
+[10:16:15 INFO]: Loaded 2 plugins
+[10:16:15 INFO]: Listening on /127.0.0.1:25980
+[10:16:15 INFO]: Done (5.06s)!
+[10:16:15 INFO] [server_waypoint]: Server Waypoint coordinator startup: SUCCESS
+[10:16:23 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51401) has connected
+[10:16:23 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+[10:16:40 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51401) has disconnected
+[10:16:40 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:17:51 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51443) has connected
+[10:17:51 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has connected
+> >
+[10:18:20 INFO]: Shutting down the proxy...
+[10:18:20 INFO]: Closing endpoint /127.0.0.1:25980
+[10:18:20 INFO]: [connected player] AuthenticatedTestPlayer (/127.0.0.1:51443) has disconnected: Proxy shutting down.
+[10:18:20 INFO]: [server connection] AuthenticatedTestPlayer -> alpha has disconnected
+[10:18:20 INFO] [server_waypoint]: Server Waypoint coordinator stopped: SUCCESS

@@ -4,7 +4,6 @@ package _959.server_waypoint.common.client.gui.widgets;
 import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.render.PaddingBackground;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -27,14 +26,18 @@ public abstract class DialogWidget extends ShiftableClickableWidget implements P
             DIALOG_BACKGROUND, BORDER, true);
     protected final WidgetStack buttonRow = new WidgetStack(0, 0, 10, false);
 
-    public DialogWidget(int x, int y, Component title, WidgetStack content, Font textRenderer) {
+    /**
+     * Lays out the title, the content and a row of {@code buttons} under them; the first button sits
+     * on the right. Buttons come in through the constructor so a subclass can build them from its own
+     * arguments.
+     */
+    protected DialogWidget(int x, int y, Component title, WidgetStack content, List<AbstractWidget> buttons, Font textRenderer) {
         super(x, y, textRenderer.width(title), 0, title);
         this.textRenderer = textRenderer;
         this.title = title;
         this.content = content;
         this.mainLayout.addChild(new ScalableText(0, 0, this.title, 1.2F, TEXT_PRIMARY, this.textRenderer), 0);
         this.mainLayout.addChild(content);
-        List<AbstractWidget> buttons = this.createButtons();
         this.buttonRow.addClickable(buttons.get(0), 0);
         for (int i = 1; i < buttons.size(); i++) {
             this.buttonRow.addClickable(buttons.get(i));
@@ -44,8 +47,6 @@ public abstract class DialogWidget extends ShiftableClickableWidget implements P
         this.width = this.mainLayout.getWidth();
         this.height = this.mainLayout.getHeight();
     }
-
-    abstract protected @Unmodifiable List<AbstractWidget> createButtons();
 
     @Override
     public int getWidth() {

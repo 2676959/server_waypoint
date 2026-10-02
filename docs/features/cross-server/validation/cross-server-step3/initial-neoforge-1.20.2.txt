@@ -1,0 +1,78 @@
+[32m[21:25:18.340] [main/INFO] [Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeserver, --fml.neoForgeVersion, 20.2.93, --fml.fmlVersion, 1.0.16, --fml.mcVersion, 1.20.2, --fml.neoFormVersion, 20231019.002635, nogui]
+[m[32m[21:25:18.341] [main/INFO] [Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.19 by Homebrew; OS Mac OS X arch aarch64 version 26.5
+[m[33m[21:25:18.381] [main/WARN] [loading.FMLConfig/CORE]: Configuration file /private/tmp/server-waypoint-step3-runtime-oxmlwttn/neoforge-1.20.2/config/fml.toml is not correct. Correcting
+[m[32m[21:25:18.381] [main/INFO] [loading.FMLConfig/CORE]: Incorrect key [disableConfigWatcher] was corrected from null to false
+[m[32m[21:25:18.381] [main/INFO] [loading.FMLConfig/CORE]: Incorrect key [earlyWindowSkipGLVersions] was corrected from null to []
+[m[32m[21:25:18.381] [main/INFO] [loading.FMLConfig/CORE]: Incorrect key [earlyWindowSquir] was corrected from null to false
+[m[32m[21:25:18.391] [main/INFO] [loading.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgeserver
+[m[32m[21:25:18.410] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/neoforge-1.20.2/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar%2379!/ Service=ModLauncher Env=SERVER
+[m[32m[21:25:18.445] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "server_waypoint-3.1.0-neoforge-mc1.20.2.jar" of type MOD with provider {mods folder locator at /private/tmp/server-waypoint-step3-runtime-oxmlwttn/neoforge-1.20.2/mods}
+[m[33m[21:25:18.486] [main/WARN] [loading.moddiscovery.ModFileParser/LOADING]: Mod file /private/tmp/server-waypoint-step3-runtime-oxmlwttn/neoforge-1.20.2/libraries/net/neoforged/fancymodloader/core/1.0.16/core-1.0.16.jar is missing mods.toml file
+[m[33m[21:25:18.487] [main/WARN] [loading.moddiscovery.ModFileParser/LOADING]: Mod file /private/tmp/server-waypoint-step3-runtime-oxmlwttn/neoforge-1.20.2/libraries/net/neoforged/fancymodloader/language-java/1.0.16/language-java-1.0.16.jar is missing mods.toml file
+[m[33m[21:25:18.488] [main/WARN] [loading.moddiscovery.ModFileParser/LOADING]: Mod file /private/tmp/server-waypoint-step3-runtime-oxmlwttn/neoforge-1.20.2/libraries/net/neoforged/fancymodloader/language-lowcode/1.0.16/language-lowcode-1.0.16.jar is missing mods.toml file
+[m[33m[21:25:18.488] [main/WARN] [loading.moddiscovery.ModFileParser/LOADING]: Mod file /private/tmp/server-waypoint-step3-runtime-oxmlwttn/neoforge-1.20.2/libraries/net/neoforged/fancymodloader/language-minecraft/1.0.16/language-minecraft-1.0.16.jar is missing mods.toml file
+[m[32m[21:25:18.491] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "core-1.0.16.jar" of type LIBRARY with provider net.neoforged.fml.loading.moddiscovery.MinecraftLocator@1bdf8190
+[m[32m[21:25:18.491] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "language-java-1.0.16.jar" of type LANGPROVIDER with provider net.neoforged.fml.loading.moddiscovery.MinecraftLocator@1bdf8190
+[m[32m[21:25:18.491] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "language-lowcode-1.0.16.jar" of type LANGPROVIDER with provider net.neoforged.fml.loading.moddiscovery.MinecraftLocator@1bdf8190
+[m[32m[21:25:18.491] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "language-minecraft-1.0.16.jar" of type LANGPROVIDER with provider net.neoforged.fml.loading.moddiscovery.MinecraftLocator@1bdf8190
+[m[32m[21:25:18.492] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "server-1.20.2-20231019.002635-srg.jar" of type MOD with provider net.neoforged.fml.loading.moddiscovery.MinecraftLocator@1bdf8190
+[m[32m[21:25:18.492] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "neoforge-20.2.93-universal.jar" of type MOD with provider net.neoforged.fml.loading.moddiscovery.MinecraftLocator@1bdf8190
+[m[32m[21:25:18.493] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "events-1.0.16.jar" of type GAMELIBRARY with provider net.neoforged.fml.loading.moddiscovery.BuiltinGameLibraryLocator@4a9cc6cb
+[m[32m[21:25:18.521] [main/INFO] [loading.moddiscovery.JarInJarDependencyLocator/]: Found 1 dependencies adding them to mods collection
+[m[32m[21:25:18.521] [main/INFO] [loading.moddiscovery.ModDiscoverer/SCAN]: Found mod file "mixinextras-neoforge-0.3.1.jar" of type GAMELIBRARY with provider net.neoforged.fml.loading.moddiscovery.JarInJarDependencyLocator@1b28f282
+[m[32m[21:25:18.892] [main/INFO] [mixin/]: Compatibility level set to JAVA_17
+[m[32m[21:25:18.894] [main/INFO] [LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeserver' with arguments [nogui]
+[m[33m[21:25:18.904] [main/WARN] [mixin/]: Reference map 'server_waypoint-common.refmap.json' for server_waypoint-common.mixins.json could not be read. If this is a development environment you can ignore this message
+[m2026-09-06 21:25:19,047 main WARN Advanced terminal features are not available in this environment
+[21:25:19] [main/WARN] [os.ut.pl.ma.SysctlUtil/]: Failed sysctl call: hw.cpufrequency, Error code: 2
+[21:25:19] [main/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.3.1).
+[21:25:21] [modloading-worker-0/INFO] [ne.ne.ne.co.NeoForgeMod/NEOFORGE-MOD]: NeoForge mod loading, version 20.2.93, for MC 1.20.2 with MCP 20231019.002635
+[21:25:21] [modloading-worker-0/INFO] [server_waypoint_translator/]: Internal translations: zh_hk, en_us, zh_cn, he_il, es_es, zh_tw
+[21:25:21] [modloading-worker-0/INFO] [server_waypoint_mod/]: xaero's mod is not loaded, set sendXaerosWorldId to true by config.json
+SW_NOISE_PLATFORM PASS entrypoint=_959.server_waypoint.neoforge.ServerWaypointNeoForge loader=cpw.mods.modlauncher.TransformingClassLoader source=union:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/neoforge-1.20.2/mods/server_waypoint-3.1.0-neoforge-mc1.20.2.jar%23123!/
+[21:25:21] [main/INFO] [mojang/YggdrasilAuthenticationService]: Environment: Environment[accountsHost=https://api.mojang.com, sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[21:25:21] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/neoforge-1.20.2/libraries/net/minecraft/server/1.20.2-20231019.002635/server-1.20.2-20231019.002635-srg.jar%23125!/assets/.mcassetsroot' uses unexpected schema
+[21:25:21] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/neoforge-1.20.2/libraries/net/minecraft/server/1.20.2-20231019.002635/server-1.20.2-20231019.002635-srg.jar%23125!/data/.mcassetsroot' uses unexpected schema
+[21:25:22] [main/ERROR] [minecraft/DedicatedServerProperties]: No key layers in MapLike[{}]
+[21:25:22] [main/INFO] [minecraft/RecipeManager]: Loaded 7 recipes
+[21:25:22] [main/INFO] [minecraft/AdvancementTree]: Loaded 1271 advancements
+[21:25:22] [Server thread/INFO] [minecraft/DedicatedServer]: Starting minecraft server version 1.20.2
+[21:25:22] [Server thread/INFO] [minecraft/DedicatedServer]: Loading properties
+[21:25:22] [Server thread/INFO] [minecraft/DedicatedServer]: Default game type: SURVIVAL
+[21:25:22] [Server thread/INFO] [minecraft/MinecraftServer]: Generating keypair
+[21:25:22] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:25890
+[21:25:22] [Server thread/INFO] [minecraft/ServerConnectionListener]: Using default channel type
+[21:25:22] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[21:25:22] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.
+[21:25:22] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[21:25:22] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set "online-mode" to "true" in the server.properties file.
+[21:25:22] [Server thread/WARN] [ne.ne.ne.co.ModConfigSpec/CORE]: Configuration file ./world/serverconfig/neoforge-server.toml is not correct. Correcting
+[21:25:22] [Server thread/WARN] [ne.ne.ne.co.ModConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}.
+[21:25:22] [Server thread/WARN] [ne.ne.ne.co.ModConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false.
+[21:25:22] [Server thread/WARN] [ne.ne.ne.co.ModConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false.
+[21:25:22] [Server thread/WARN] [ne.ne.ne.co.ModConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false.
+[21:25:22] [Server thread/WARN] [ne.ne.ne.co.ModConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, neoforge:default_handler.
+[21:25:22] [Server thread/WARN] [ne.ne.ne.co.ModConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true.
+[21:25:22] [Server thread/INFO] [minecraft/DedicatedServer]: Preparing level "world"
+[21:25:22] [Server thread/INFO] [minecraft/MinecraftServer]: Preparing start region for dimension minecraft:overworld
+[21:25:23] [Worker-Main-8/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[21:25:23] [Worker-Main-7/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 30%
+[21:25:23] [Server thread/INFO] [minecraft/LoggerChunkProgressListener]: Time elapsed: 970 ms
+[21:25:23] [Server thread/INFO] [minecraft/DedicatedServer]: Done (1.215s)! For help, type "help"
+[21:25:23] [LanServerPinger #1/WARN] [minecraft/LanServerPinger]: LanServerPinger: No route to host
+[21:25:23] [Server thread/INFO] [ne.ne.ne.se.pe.PermissionAPI/]: Successfully initialized permission handler neoforge:default_handler
+[21:25:23] [Server thread/INFO] [server_waypoint_core/]: Created config file at: /private/tmp/server-waypoint-step3-runtime-oxmlwttn/neoforge-1.20.2/defaultconfigs/server_waypoint/config.json
+[21:25:23] [Server thread/INFO] [server_waypoint_core/]: Loaded 0 languages:
+[21:25:23] [Server thread/INFO] [server_waypoint_core/]: Created waypoints directory at: /private/tmp/server-waypoint-step3-runtime-oxmlwttn/neoforge-1.20.2/defaultconfigs/server_waypoint/waypoints
+[21:25:24] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping the server
+[21:25:24] [Server thread/INFO] [server_waypoint_core/]: Saved config file: /private/tmp/server-waypoint-step3-runtime-oxmlwttn/neoforge-1.20.2/defaultconfigs/server_waypoint/config.json
+[21:25:24] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[21:25:24] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[21:25:24] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[21:25:24] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[21:25:24] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[21:25:24] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[21:25:24] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[21:25:24] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[21:25:24] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[21:25:24] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved

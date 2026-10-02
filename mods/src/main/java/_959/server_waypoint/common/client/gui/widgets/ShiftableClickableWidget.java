@@ -3,6 +3,7 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.layout.Shiftable;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 //? if >= 1.21.9 {
@@ -90,7 +91,7 @@ public abstract class ShiftableClickableWidget extends AbstractWidget implements
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!this.isActive() || button != 0 || !this.isMouseOver(mouseX, mouseY)) {
+        if (!this.isActive() || button != InputConstants.MOUSE_BUTTON_LEFT || !this.isMouseOver(mouseX, mouseY)) {
             return false;
         }
         this.playDownSound(net.minecraft.client.Minecraft.getInstance().getSoundManager());
@@ -105,7 +106,7 @@ public abstract class ShiftableClickableWidget extends AbstractWidget implements
     }
 
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT) {
             this.onRelease(mouseX, mouseY);
             return true;
         }
@@ -119,12 +120,12 @@ public abstract class ShiftableClickableWidget extends AbstractWidget implements
     //? if >= 1.21.9 {
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
-        return this.keyPressed(keyEvent.key(), keyEvent.scancode(), keyEvent.modifiers());
+        return this.keyPressed(keyEvent.key(), /*? if <26.3 {*/ keyEvent.scancode() /*?} else {*//* keyEvent.keycode() *//*?}*/, keyEvent.modifiers());
     }
 
     @Override
     public boolean keyReleased(KeyEvent keyEvent) {
-        return this.keyReleased(keyEvent.key(), keyEvent.scancode(), keyEvent.modifiers());
+        return this.keyReleased(keyEvent.key(), /*? if <26.3 {*/ keyEvent.scancode() /*?} else {*//* keyEvent.keycode() *//*?}*/, keyEvent.modifiers());
     }
 
     @Override

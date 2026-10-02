@@ -34,7 +34,7 @@ class WidgetThemeConfigScreenLayoutTest {
         assertEquals(geometry.gallery().y(), list.y());
         assertEquals(geometry.gallery().bottom(), controls.bottom());
         assertEquals(19, listContent.x());
-        assertEquals(45, listContent.y());
+        assertEquals(65, listContent.y());
         assertEquals(138, listContent.width());
         assertEquals(74, listContent.height());
     }

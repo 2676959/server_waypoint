@@ -285,8 +285,13 @@ public final class ModNavigationItemManager {
             return false;
         }
         BundleContents contents = bundle.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-        java.util.List<ItemStack> items = contents.itemCopyStream().toList();
+        //? if >= 26.3 {
+        /*List<ItemStack> items = contents.itemCopies().toList();
+        BundleContents.Mutable cleaned = new BundleContents.Mutable();
+        *///?} else {
+        List<ItemStack> items = contents.itemCopyStream().toList();
         BundleContents.Mutable cleaned = new BundleContents.Mutable(BundleContents.EMPTY);
+        //?}
         boolean changed = false;
         for (ItemStack item : items) {
             if (ModNavigationItemData.isNavigationItem(item)) {
@@ -307,10 +312,12 @@ public final class ModNavigationItemManager {
                 DataComponents.CONTAINER,
                 ItemContainerContents.EMPTY
         );
-        //? if >= 26 {
-        java.util.List<ItemStack> items = new java.util.ArrayList<>(contents.allItemsCopyStream().toList());
+        //? if >= 26.3 {
+        /*List<ItemStack> items = new ArrayList<>(contents.itemCopies().toList());
+        *///?} elif >= 26 {
+        List<ItemStack> items = new ArrayList<>(contents.allItemsCopyStream().toList());
         //?} else {
-        /*java.util.List<ItemStack> items = new java.util.ArrayList<>(contents.stream().toList());
+        /*List<ItemStack> items = new ArrayList<>(contents.stream().toList());
         *///?}
         boolean changed = false;
         for (int slot = 0; slot < items.size(); slot++) {

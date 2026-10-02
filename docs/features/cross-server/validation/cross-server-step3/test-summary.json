@@ -1,0 +1,14 @@
+{
+  "common": {
+    "tests": 316,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "proxy-common": {
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

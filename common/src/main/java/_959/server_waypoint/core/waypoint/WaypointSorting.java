@@ -24,8 +24,11 @@ public final class WaypointSorting {
     }
 
     public static Comparator<SimpleWaypoint> byName() {
-        return Comparator.comparing(SimpleWaypoint::name, String.CASE_INSENSITIVE_ORDER)
-                .thenComparing(SimpleWaypoint::name);
+        return byName(SimpleWaypoint::name);
+    }
+
+    public static <T> Comparator<T> byName(java.util.function.Function<T, String> name) {
+        return Comparator.comparing(name, String.CASE_INSENSITIVE_ORDER).thenComparing(name);
     }
 
     public static Comparator<SimpleWaypoint> byDistanceFrom(@Nullable WaypointPos origin) {

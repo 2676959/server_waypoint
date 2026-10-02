@@ -3,7 +3,9 @@ package _959.server_waypoint.common.network;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
-import _959.server_waypoint.text.WaypointDetailsTextBuilder;
+import _959.server_waypoint.text.chat.DimensionStyle;
+import _959.server_waypoint.text.chat.Viewer;
+import _959.server_waypoint.text.feedback.DetailsScreen;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
 import org.junit.jupiter.api.Assumptions;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -53,14 +56,13 @@ class ModMessageSenderTest {
         );
         WaypointList list = new WaypointList("", 0, List.of(waypoint));
 
-        var details = WaypointDetailsTextBuilder.waypointDetails(
+        Viewer viewer = new Viewer(Viewer.everything(), true, false, "minecraft:overworld", new WaypointPos(0, 64, 0), 0F);
+        var details = DetailsScreen.waypoint(
+                DimensionStyle.local(viewer, Map.of("minecraft:overworld", "minecraft:overworld")),
                 "minecraft:overworld",
                 list,
                 waypoint,
-                true,
-                true,
-                true,
-                true
+                null
         );
 
         assertNotEquals(

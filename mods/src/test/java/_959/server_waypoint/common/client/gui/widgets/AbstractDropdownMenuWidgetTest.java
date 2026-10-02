@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -102,12 +102,12 @@ class AbstractDropdownMenuWidgetTest {
         );
         TestMenuItem item = dropdown.addItem(16, 16, selections::incrementAndGet);
 
-        assertTrue(dropdown.mouseClicked(18, 28, 0));
+        assertTrue(dropdown.mouseClicked(18, 28, InputConstants.MOUSE_BUTTON_LEFT));
         assertTrue(dropdown.isExpanded());
         assertEquals(-1, dropdown.getHighlightedItemIndex());
         assertFalse(item.isFocused());
 
-        assertTrue(dropdown.mouseClicked(centerX(item), centerY(item), 0));
+        assertTrue(dropdown.mouseClicked(centerX(item), centerY(item), InputConstants.MOUSE_BUTTON_LEFT));
         assertEquals(1, selections.get());
         assertFalse(dropdown.isExpanded());
     }
@@ -129,14 +129,14 @@ class AbstractDropdownMenuWidgetTest {
         TestMenuItem last = dropdown.addItem(16, 16, selections::incrementAndGet);
         dropdown.selectedMenuItemIndex = 1;
 
-        assertTrue(dropdown.mouseClicked(18, 28, 0));
+        assertTrue(dropdown.mouseClicked(18, 28, InputConstants.MOUSE_BUTTON_LEFT));
 
         assertTrue(dropdown.isExpanded());
         assertEquals(-1, dropdown.getHighlightedItemIndex());
         assertFalse(first.isFocused());
         assertFalse(selected.isFocused());
         assertFalse(last.isFocused());
-        assertFalse(dropdown.keyPressed(GLFW.GLFW_KEY_ENTER, 0, 0));
+        assertFalse(dropdown.keyPressed(InputConstants.KEY_RETURN, 0, 0));
         assertEquals(0, selections.get());
         assertTrue(dropdown.isExpanded());
     }
@@ -155,12 +155,12 @@ class AbstractDropdownMenuWidgetTest {
         );
         TestMenuItem item = dropdown.addItem(16, 16, selections::incrementAndGet);
 
-        assertFalse(dropdown.mouseClicked(18, 28, 1));
-        assertFalse(dropdown.mouseClicked(centerX(item), centerY(item), 0));
+        assertFalse(dropdown.mouseClicked(18, 28, InputConstants.MOUSE_BUTTON_RIGHT));
+        assertFalse(dropdown.mouseClicked(centerX(item), centerY(item), InputConstants.MOUSE_BUTTON_LEFT));
         dropdown.setExpanded(true);
         item.visible = false;
         assertFalse(dropdown.isMouseOver(centerX(item), centerY(item)));
-        assertFalse(dropdown.mouseClicked(centerX(item), centerY(item), 0));
+        assertFalse(dropdown.mouseClicked(centerX(item), centerY(item), InputConstants.MOUSE_BUTTON_LEFT));
         assertEquals(0, selections.get());
     }
 
@@ -203,6 +203,30 @@ class AbstractDropdownMenuWidgetTest {
 
         assertFalse(dropdown.isExpanded());
         assertEquals(0, dropdown.expandedChangeCount);
+    }
+
+    @Test
+    void clearingItemsClosesThePopupAndAllowsChoicesToBeRebuilt() {
+        TestDropdown dropdown = new TestDropdown(
+                0,
+                0,
+                16,
+                16,
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.FORWARD,
+                0
+        );
+        dropdown.addItem(16, 16, () -> {
+        });
+        dropdown.setExpanded(true);
+
+        dropdown.clearItems();
+
+        assertFalse(dropdown.isExpanded());
+        assertEquals(0, dropdown.getPopupItemCount());
+        dropdown.addItem(16, 16, () -> {
+        });
+        assertEquals(1, dropdown.getPopupItemCount());
     }
 
     @Test
@@ -263,16 +287,37 @@ class AbstractDropdownMenuWidgetTest {
         dropdown.addItem(16, 16, () -> {
         });
 
-        assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_ENTER, 0, 0));
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_RETURN, 0, 0));
         assertTrue(dropdown.isExpanded());
         assertEquals(0, dropdown.getHighlightedItemIndex());
-        assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_ESCAPE, 0, 0));
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_ESCAPE, 0, 0));
         assertFalse(dropdown.isExpanded());
-        assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_ENTER, 0, 0));
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_RETURN, 0, 0));
         assertEquals(0, dropdown.getHighlightedItemIndex());
-        assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_KP_ENTER, 0, 0));
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_NUMPADENTER, 0, 0));
         assertFalse(dropdown.isExpanded());
         assertEquals(4, dropdown.expandedChangeCount);
+    }
+
+    @Test
+    void losingFocusClosesTheMenu() {
+        TestDropdown dropdown = new TestDropdown(
+                10,
+                20,
+                16,
+                16,
+                LayoutFlow.Orientation.VERTICAL,
+                LayoutFlow.Direction.FORWARD,
+                2
+        );
+        dropdown.addItem(16, 16, () -> {
+        });
+        dropdown.setFocused(true);
+        dropdown.setExpanded(true);
+
+        dropdown.setFocused(false);
+
+        assertFalse(dropdown.isExpanded());
     }
 
     @ParameterizedTest
@@ -285,23 +330,21 @@ class AbstractDropdownMenuWidgetTest {
         TestDropdown dropdown = new TestDropdown(10, 20, 16, 16, orientation, direction, 2);
         dropdown.addItem(16, 16, () -> selectedItem.set(0));
         dropdown.addItem(16, 16, () -> selectedItem.set(1));
-        assertTrue(dropdown.mouseClicked(18, 28, 0));
+        assertTrue(dropdown.mouseClicked(18, 28, InputConstants.MOUSE_BUTTON_LEFT));
 
         int forwardKey = switch (orientation) {
             case HORIZONTAL -> direction == LayoutFlow.Direction.FORWARD
-                    ? GLFW.GLFW_KEY_RIGHT
-                    : GLFW.GLFW_KEY_LEFT;
-            case VERTICAL -> direction == LayoutFlow.Direction.FORWARD
-                    ? GLFW.GLFW_KEY_DOWN
-                    : GLFW.GLFW_KEY_UP;
+                    ? InputConstants.KEY_RIGHT
+                    : InputConstants.KEY_LEFT;
+            case VERTICAL -> InputConstants.KEY_DOWN;
         };
         int backwardKey = switch (orientation) {
-            case HORIZONTAL -> forwardKey == GLFW.GLFW_KEY_RIGHT
-                    ? GLFW.GLFW_KEY_LEFT
-                    : GLFW.GLFW_KEY_RIGHT;
-            case VERTICAL -> forwardKey == GLFW.GLFW_KEY_DOWN
-                    ? GLFW.GLFW_KEY_UP
-                    : GLFW.GLFW_KEY_DOWN;
+            case HORIZONTAL -> forwardKey == InputConstants.KEY_RIGHT
+                    ? InputConstants.KEY_LEFT
+                    : InputConstants.KEY_RIGHT;
+            case VERTICAL -> forwardKey == InputConstants.KEY_DOWN
+                    ? InputConstants.KEY_UP
+                    : InputConstants.KEY_DOWN;
         };
         assertEquals(-1, dropdown.getHighlightedItemIndex());
         assertTrue(dropdown.keyPressed(backwardKey, 0, 0));
@@ -310,7 +353,7 @@ class AbstractDropdownMenuWidgetTest {
         assertEquals(0, dropdown.getHighlightedItemIndex());
         assertTrue(dropdown.keyPressed(forwardKey, 0, 0));
         assertEquals(1, dropdown.getHighlightedItemIndex());
-        assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_ENTER, 0, 0));
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_RETURN, 0, 0));
         assertEquals(1, selectedItem.get());
         assertFalse(dropdown.isExpanded());
     }
@@ -357,7 +400,7 @@ class AbstractDropdownMenuWidgetTest {
         });
         dropdown.initialHighlightedItemIndex = 1;
 
-        assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_ENTER, 0, 0));
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_RETURN, 0, 0));
 
         assertEquals(1, dropdown.getHighlightedItemIndex());
         assertTrue(preferred.isFocused());
@@ -383,7 +426,7 @@ class AbstractDropdownMenuWidgetTest {
         inactive.active = false;
         dropdown.initialHighlightedItemIndex = 1;
 
-        assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_ENTER, 0, 0));
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_RETURN, 0, 0));
 
         assertEquals(2, dropdown.getHighlightedItemIndex());
     }
@@ -403,7 +446,7 @@ class AbstractDropdownMenuWidgetTest {
         });
         dropdown.selectedMenuItemIndex = 1;
 
-        assertTrue(dropdown.keyPressed(GLFW.GLFW_KEY_ENTER, 0, 0));
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_RETURN, 0, 0));
 
         assertEquals(0, dropdown.getHighlightedItemIndex());
         assertFalse(selected.isFocused());
@@ -411,11 +454,9 @@ class AbstractDropdownMenuWidgetTest {
 
         int forwardKey = switch (orientation) {
             case HORIZONTAL -> direction == LayoutFlow.Direction.FORWARD
-                    ? GLFW.GLFW_KEY_RIGHT
-                    : GLFW.GLFW_KEY_LEFT;
-            case VERTICAL -> direction == LayoutFlow.Direction.FORWARD
-                    ? GLFW.GLFW_KEY_DOWN
-                    : GLFW.GLFW_KEY_UP;
+                    ? InputConstants.KEY_RIGHT
+                    : InputConstants.KEY_LEFT;
+            case VERTICAL -> InputConstants.KEY_DOWN;
         };
         assertTrue(dropdown.keyPressed(forwardKey, 0, 0));
         assertEquals(2, dropdown.getHighlightedItemIndex());
@@ -445,7 +486,7 @@ class AbstractDropdownMenuWidgetTest {
         selected.setPosition(200, 200);
 
         assertFalse(dropdown.isMouseOver(centerX(selected), centerY(selected)));
-        assertFalse(dropdown.mouseClicked(centerX(selected), centerY(selected), 0));
+        assertFalse(dropdown.mouseClicked(centerX(selected), centerY(selected), InputConstants.MOUSE_BUTTON_LEFT));
         assertEquals(0, selectedActivations.get());
         assertTrue(dropdown.isExpanded());
     }
@@ -483,12 +524,123 @@ class AbstractDropdownMenuWidgetTest {
         assertPosition(verticalItem, 16, 52);
     }
 
+    @Test
+    void wheelScrollsAHeightLimitedPopupToLaterChoices() {
+        AtomicInteger selected = new AtomicInteger(-1);
+        TestDropdown dropdown = new TestDropdown(10, 20, 40, 10,
+                LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD, 0);
+        for (int i = 0; i < 5; i++) {
+            int value = i;
+            dropdown.addItem(40, 10, () -> selected.set(value));
+        }
+        dropdown.setMaxPopupHeight(20);
+        dropdown.setExpanded(true);
+
+        assertEquals(2, dropdown.getPopupItemCount());
+        assertTrue(dropdown.mouseScrolled(15, 35, 0, -1));
+        assertTrue(dropdown.mouseClicked(15, 35, InputConstants.MOUSE_BUTTON_LEFT));
+        assertEquals(1, selected.get());
+    }
+
+    @Test
+    void keyboardNavigationKeepsLaterChoiceInsideTheLimitedPopup() {
+        AtomicInteger selected = new AtomicInteger(-1);
+        TestDropdown dropdown = new TestDropdown(10, 20, 40, 10,
+                LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD, 0);
+        for (int i = 0; i < 4; i++) {
+            int value = i;
+            dropdown.addItem(40, 10, () -> selected.set(value));
+        }
+        dropdown.setMaxPopupHeight(20);
+        dropdown.setExpanded(true);
+
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_DOWN, 0, 0));
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_DOWN, 0, 0));
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_DOWN, 0, 0));
+        assertEquals(2, dropdown.getHighlightedItemIndex());
+        assertTrue(dropdown.mouseClicked(15, 45, InputConstants.MOUSE_BUTTON_LEFT));
+        assertEquals(2, selected.get());
+    }
+
+    @Test
+    void popupCanOpenTowardTheRoomierSideOfTheScreen() {
+        TestDropdown dropdown = new TestDropdown(10, 60, 40, 10,
+                LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD, 0);
+        TestMenuItem item = dropdown.addItem(40, 10, () -> {
+        });
+        dropdown.setExpansionDirection(LayoutFlow.Direction.REVERSE);
+        dropdown.setExpanded(true);
+
+        assertPosition(item, 10, 50);
+        assertTrue(dropdown.isMouseOver(15, 55));
+    }
+
+    @Test
+    void upwardPopupKeepsChoicesInTopToBottomOrderWhileScrolling() {
+        AtomicInteger selected = new AtomicInteger(-1);
+        TestDropdown dropdown = new TestDropdown(10, 100, 40, 10,
+                LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.REVERSE, 0);
+        TestMenuItem first = dropdown.addItem(40, 10, () -> selected.set(0));
+        TestMenuItem second = dropdown.addItem(40, 10, () -> selected.set(1));
+        TestMenuItem third = dropdown.addItem(40, 10, () -> selected.set(2));
+        dropdown.setMaxPopupHeight(20);
+        dropdown.setExpanded(true);
+
+        assertPosition(first, 10, 80);
+        assertPosition(second, 10, 90);
+        assertTrue(dropdown.mouseScrolled(15, 85, 0, -1));
+        assertPosition(second, 10, 80);
+        assertPosition(third, 10, 90);
+        assertTrue(dropdown.mouseClicked(15, 95, InputConstants.MOUSE_BUTTON_LEFT));
+        assertEquals(2, selected.get());
+    }
+
+    @Test
+    void draggingTheScrollbarReachesTheLastChoiceWithoutSelectingRowsUnderIt() {
+        AtomicInteger selected = new AtomicInteger(-1);
+        TestDropdown dropdown = new TestDropdown(10, 20, 40, 10,
+                LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD, 0);
+        for (int i = 0; i < 5; i++) {
+            int value = i;
+            dropdown.addItem(40, 10, () -> selected.set(value));
+        }
+        dropdown.setMaxPopupHeight(20);
+        dropdown.setExpanded(true);
+
+        assertTrue(dropdown.mouseClicked(48, 31, InputConstants.MOUSE_BUTTON_LEFT));
+        assertTrue(dropdown.isExpanded());
+        assertEquals(-1, selected.get());
+        assertTrue(dropdown.mouseDragged(48, 49, InputConstants.MOUSE_BUTTON_LEFT, 0, 18));
+        dropdown.mouseReleased(48, 49, InputConstants.MOUSE_BUTTON_LEFT);
+        assertTrue(dropdown.mouseClicked(15, 45, InputConstants.MOUSE_BUTTON_LEFT));
+        assertEquals(4, selected.get());
+    }
+
+    @Test
+    void wheelScrollingClearsKeyboardFocusWhenItsChoiceLeavesThePopup() {
+        TestDropdown dropdown = new TestDropdown(10, 20, 40, 10,
+                LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD, 0);
+        for (int i = 0; i < 5; i++) {
+            dropdown.addItem(40, 10, () -> {
+            });
+        }
+        dropdown.setMaxPopupHeight(20);
+        dropdown.setExpanded(true);
+        assertTrue(dropdown.keyPressed(InputConstants.KEY_DOWN, 0, 0));
+        assertEquals(0, dropdown.getHighlightedItemIndex());
+
+        assertTrue(dropdown.mouseScrolled(15, 35, 0, -2));
+
+        assertEquals(-1, dropdown.getHighlightedItemIndex());
+        assertFalse(dropdown.keyPressed(InputConstants.KEY_RETURN, 0, 0));
+    }
+
     private static Stream<Arguments> expansionCases() {
         return Stream.of(
                 Arguments.of(LayoutFlow.Orientation.HORIZONTAL, LayoutFlow.Direction.FORWARD, 123, 106, 136, 107),
                 Arguments.of(LayoutFlow.Orientation.HORIZONTAL, LayoutFlow.Direction.REVERSE, 87, 106, 72, 107),
                 Arguments.of(LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD, 105, 123, 104, 134),
-                Arguments.of(LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.REVERSE, 105, 89, 104, 80)
+                Arguments.of(LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.REVERSE, 105, 80, 104, 91)
         );
     }
 
@@ -533,6 +685,10 @@ class AbstractDropdownMenuWidgetTest {
 
         private TestMenuItem addItem(int width, int height, Runnable callback) {
             return this.addMenuItem(new TestMenuItem(width, height, callback));
+        }
+
+        private void clearItems() {
+            this.clearMenuItems();
         }
 
         @Override

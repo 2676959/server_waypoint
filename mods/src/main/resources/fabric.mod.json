@@ -20,6 +20,9 @@
         ],
         "client": [
             "_959.server_waypoint.fabric.ServerWaypointFabricClient"
+        ],
+        "modmenu": [
+            "_959.server_waypoint.fabric.ServerWaypointModMenu"
         ]
     },
     "mixins": [

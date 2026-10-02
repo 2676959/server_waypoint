@@ -1,5 +1,6 @@
 package _959.server_waypoint.config;
 
+import _959.server_waypoint.crossserver.CrossServerProtocol;
 public class CommandPermission {
     int add = 0;
     int edit = 0;
@@ -9,6 +10,8 @@ public class CommandPermission {
     int reload = 2;
     int upload = 2;
     int uploadDelete = 4;
+    int remoteList = CrossServerProtocol.REMOTE_LIST_DEFAULT_LEVEL;
+    int remoteTp = CrossServerProtocol.REMOTE_TP_DEFAULT_LEVEL;
 
     public CommandPermission() {
     }
@@ -45,6 +48,14 @@ public class CommandPermission {
         return this.uploadDelete;
     }
 
+    public int remoteList() {
+        return this.remoteList;
+    }
+
+    public int remoteTp() {
+        return this.remoteTp;
+    }
+
    @Override
    public String toString() {
       return "CommandPermission{" +
@@ -56,6 +67,8 @@ public class CommandPermission {
               ", reload=" + reload +
               ", upload=" + upload +
               ", uploadDelete=" + uploadDelete +
+              ", remoteList=" + remoteList +
+              ", remoteTp=" + remoteTp +
               '}';
    }
 }

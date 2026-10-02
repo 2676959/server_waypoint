@@ -1,0 +1,32 @@
+[21:53:27 INFO]: Booting up Velocity 4.1.1...
+[21:53:29 INFO]: Connections will use kqueue channels, libdeflate (macOS ARM64 / Apple Silicon) compression, native (macOS ARM64 / Apple Silicon) ciphers
+[21:53:29 INFO]: The forwarding-secret-file does not exist. A new file has been created at forwarding.secret
+[33;1m[21:53:29 WARN]: The proxy is running in offline mode! This is a security risk and you will NOT receive any support!
+[m[33;1m[21:53:29 WARN]: Player info forwarding is disabled! All players will appear to be connecting from the proxy and will have offline-mode UUIDs.
+[m[21:53:29 INFO]: Loading localizations...
+[21:53:30 INFO]: Loading plugins...
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-velocity-4.1.1/velocity.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[21:53:30 INFO]: Loaded plugin server_waypoint 3.1.0 by 2676959
+[21:53:30 INFO]: Loaded 2 plugins
+[21:53:30 INFO] [server_waypoint]: Server Waypoint proxy module initialized; cross-server transport is disabled.
+[21:53:30 INFO]: Listening on /127.0.0.1:25891
+[21:53:30 INFO]: Velocity and some of its plugins collect metrics and send them to bStats (https://bStats.org).
+[21:53:30 INFO]: bStats collects some basic information for plugin authors, like how many people use
+[21:53:30 INFO]: their plugin and their total player count. It's recommended to keep bStats enabled, but
+[21:53:30 INFO]: if you're not comfortable with this, you can opt-out by editing the config.txt file in
+[21:53:30 INFO]: the '/plugins/bStats/' folder and setting enabled to false.
+[21:53:30 INFO]: Done (4.64s)!
+>
+
+[21:53:30 INFO]: SW_NOISE_PLATFORM PASS entrypoint=_959.server_waypoint.velocity.ServerWaypointVelocity loader=com.velocitypowered.proxy.plugin.PluginClassLoader source=file:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-velocity-4.1.1/plugins/server_waypoint-3.1.0-velocity.jar
+> [21:53:30 INFO]: Shutting down the proxy...
+>
+
+[21:53:30 INFO]: Closing endpoint /127.0.0.1:25891
+>
+
+[21:53:30 INFO] [server_waypoint]: Server Waypoint proxy module stopped.
+>

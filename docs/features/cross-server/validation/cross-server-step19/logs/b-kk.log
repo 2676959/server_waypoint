@@ -1,0 +1,661 @@
+Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture
+[01:52:03] [main/INFO]: Loading Minecraft 26.2 with Fabric Loader 0.19.3
+[01:52:03] [main/INFO]: Mappings not present!
+[01:52:03] [main/INFO]: Loading 42 mods:
+	- fabric-api 0.152.1+26.2
+	   |-- fabric-api-base 2.0.4+ece063239c
+	   |-- fabric-api-lookup-api-v1 2.0.17+11e1c9a39c
+	   |-- fabric-biome-api-v1 18.0.6+c7bd5b8e9c
+	   |-- fabric-block-api-v1 3.0.3+ec56b6019c
+	   |-- fabric-block-getter-api-v2 2.0.7+ec56b6019c
+	   |-- fabric-command-api-v2 3.1.0+00cb03469c
+	   |-- fabric-content-registries-v0 11.2.2+b7a678a99c
+	   |-- fabric-convention-tags-v2 4.6.4+2aae60389c
+	   |-- fabric-crash-report-info-v1 1.0.5+086d547a9c
+	   |-- fabric-creative-tab-api-v1 5.0.14+d871b99e9c
+	   |-- fabric-data-attachment-api-v1 2.2.16+aa0fd6fe9c
+	   |-- fabric-data-generation-api-v1 25.4.2+5e56e5409c
+	   |-- fabric-debug-api-v1 1.0.2+c792624d9c
+	   |-- fabric-dimensions-v1 5.1.9+9cbf5da59c
+	   |-- fabric-entity-events-v1 5.0.5+06488ac19c
+	   |-- fabric-events-interaction-v0 5.2.6+8f57f7ee9c
+	   |-- fabric-game-rule-api-v1 4.0.8+46a6d00c9c
+	   |-- fabric-item-api-v1 14.1.6+0ecb053f9c
+	   |-- fabric-key-mapping-api-v1 2.0.5+e2bdee789c
+	   |-- fabric-lifecycle-events-v1 4.1.3+4575b05f9c
+	   |-- fabric-loot-api-v3 3.0.17+06488ac19c
+	   |-- fabric-menu-api-v1 2.0.16+086d547a9c
+	   |-- fabric-message-api-v1 7.0.7+086d547a9c
+	   |-- fabric-model-loading-api-v1 8.0.11+c80601bb9c
+	   |-- fabric-networking-api-v1 6.3.3+72073ef09c
+	   |-- fabric-object-builder-api-v1 24.0.6+46a6d00c9c
+	   |-- fabric-particles-v1 5.0.18+d1756aa99c
+	   |-- fabric-permission-api-v1 1.0.2+7c33558a9c
+	   |-- fabric-recipe-api-v1 9.0.20+11e1c9a39c
+	   |-- fabric-registry-sync-v0 7.1.0+c7bd5b8e9c
+	   |-- fabric-renderer-api-v1 14.0.1+eec4cc519c
+	   |-- fabric-renderer-indigo 9.0.1+e73ab60d9c
+	   |-- fabric-rendering-fluids-v1 6.0.4+06488ac19c
+	   |-- fabric-rendering-v1 25.1.6+46a6d00c9c
+	   |-- fabric-resource-conditions-api-v1 6.1.0+10e9a28b9c
+	   |-- fabric-resource-loader-v0 3.3.20+4fc5413f9c
+	   |-- fabric-resource-loader-v1 2.0.13+9edec1269c
+	   |-- fabric-screen-api-v1 5.0.3+086d547a9c
+	   |-- fabric-serialization-api-v1 2.0.4+11a26f319c
+	   |-- fabric-sound-api-v1 2.0.5+11a26f319c
+	   |-- fabric-tag-api-v1 2.1.3+794df31d9c
+	   |-- fabric-transfer-api-v1 8.0.11+39b5a3929c
+	   \-- fabric-transitive-access-wideners-v1 8.1.3+e098252d9c
+	- fabricloader 0.19.3
+	   \-- mixinextras 0.5.4
+	- java 25
+	- minecraft 26.2
+	- server_waypoint 3.1.0
+[01:52:03] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/private/tmp/server-waypoint-step19-live/b/libraries/net/fabricmc/sponge-mixin/0.17.3+mixin.0.8.7/sponge-mixin-0.17.3+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
+[01:52:03] [main/INFO]: Compatibility level set to JAVA_25
+[01:52:03] [main/INFO]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.4).
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/private/tmp/server-waypoint-step19-live/b/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[01:52:09] [main/INFO]: Internal translations: zh_cn, he_il, es_es, zh_tw, zh_hk, en_us
+[01:52:09] [main/INFO]: fabric-permissions-api is not loaded, use vanilla permission system
+[01:52:09] [main/INFO]: xaero's mod is not loaded, set sendXaerosWorldId to true by config.json
+[01:52:09] [main/WARN]: FileSystem for server_waypoint 3.1.0 has been closed unexpectedly, existing root path references may break!
+[01:52:09] [main/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[01:52:10] [Worker-Main-5/INFO]: No existing world data, creating new world
+[01:52:10] [Worker-Main-5/ERROR]: No key layers in MapLike[{}]
+[01:52:10] [main/INFO]: Loaded 1585 recipes
+[01:52:10] [main/INFO]: Loaded 1688 advancements
+[01:52:11] [main/INFO]: Applied 0 biome modifications to 0 of 66 new biomes in 604.4 μs
+[01:52:11] [Server thread/INFO]: Loaded config Config{serverId=-1792190041, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+[01:52:11] [Server thread/INFO]: Loaded 0 languages:
+[01:52:11] [Server thread/INFO]: Loaded 1 lists and 1 waypoints from file: ./config/server_waypoint/waypoints/minecraft$overworld.json
+[01:52:11] [Server thread/INFO]: Starting minecraft server version 26.2
+[01:52:11] [Server thread/INFO]: Loading properties
+[01:52:11] [Server thread/INFO]: Default game type: CREATIVE
+[01:52:11] [Server thread/INFO]: Generating keypair
+[01:52:11] [server-waypoint-backend-startup/INFO]: Cross-server backend startup: INVALID_CONFIGURATION
+[01:52:11] [Server thread/INFO]: Starting Minecraft server on 127.0.0.1:25972
+[01:52:12] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[01:52:12] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
+[01:52:12] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[01:52:12] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[01:52:12] [Server thread/INFO]: Preparing level "world"
+[01:52:12] [Server thread/INFO]: Selecting global world spawn...
+[01:52:12] [Server thread/INFO]: Loading 0 persistent chunks...
+[01:52:12] [Server thread/INFO]: Preparing spawn area: 100%
+[01:52:12] [Server thread/INFO]: Time elapsed: 180 ms
+[01:52:12] [Server thread/INFO]: Done (0.254s)! For help, type "help"
+[01:52:12] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[01:52:12] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[01:52:12] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[01:52:12] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[01:52:12] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[01:52:12] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[01:52:12] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+[01:52:12] [Server thread/INFO]: An unexpected error occurred while trying to execute that command
+Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture
+[01:52:54] [main/INFO]: Loading Minecraft 26.2 with Fabric Loader 0.19.3
+[01:52:54] [main/INFO]: Mappings not present!
+[01:52:54] [main/INFO]: Loading 42 mods:
+	- fabric-api 0.152.1+26.2
+	   |-- fabric-api-base 2.0.4+ece063239c
+	   |-- fabric-api-lookup-api-v1 2.0.17+11e1c9a39c
+	   |-- fabric-biome-api-v1 18.0.6+c7bd5b8e9c
+	   |-- fabric-block-api-v1 3.0.3+ec56b6019c
+	   |-- fabric-block-getter-api-v2 2.0.7+ec56b6019c
+	   |-- fabric-command-api-v2 3.1.0+00cb03469c
+	   |-- fabric-content-registries-v0 11.2.2+b7a678a99c
+	   |-- fabric-convention-tags-v2 4.6.4+2aae60389c
+	   |-- fabric-crash-report-info-v1 1.0.5+086d547a9c
+	   |-- fabric-creative-tab-api-v1 5.0.14+d871b99e9c
+	   |-- fabric-data-attachment-api-v1 2.2.16+aa0fd6fe9c
+	   |-- fabric-data-generation-api-v1 25.4.2+5e56e5409c
+	   |-- fabric-debug-api-v1 1.0.2+c792624d9c
+	   |-- fabric-dimensions-v1 5.1.9+9cbf5da59c
+	   |-- fabric-entity-events-v1 5.0.5+06488ac19c
+	   |-- fabric-events-interaction-v0 5.2.6+8f57f7ee9c
+	   |-- fabric-game-rule-api-v1 4.0.8+46a6d00c9c
+	   |-- fabric-item-api-v1 14.1.6+0ecb053f9c
+	   |-- fabric-key-mapping-api-v1 2.0.5+e2bdee789c
+	   |-- fabric-lifecycle-events-v1 4.1.3+4575b05f9c
+	   |-- fabric-loot-api-v3 3.0.17+06488ac19c
+	   |-- fabric-menu-api-v1 2.0.16+086d547a9c
+	   |-- fabric-message-api-v1 7.0.7+086d547a9c
+	   |-- fabric-model-loading-api-v1 8.0.11+c80601bb9c
+	   |-- fabric-networking-api-v1 6.3.3+72073ef09c
+	   |-- fabric-object-builder-api-v1 24.0.6+46a6d00c9c
+	   |-- fabric-particles-v1 5.0.18+d1756aa99c
+	   |-- fabric-permission-api-v1 1.0.2+7c33558a9c
+	   |-- fabric-recipe-api-v1 9.0.20+11e1c9a39c
+	   |-- fabric-registry-sync-v0 7.1.0+c7bd5b8e9c
+	   |-- fabric-renderer-api-v1 14.0.1+eec4cc519c
+	   |-- fabric-renderer-indigo 9.0.1+e73ab60d9c
+	   |-- fabric-rendering-fluids-v1 6.0.4+06488ac19c
+	   |-- fabric-rendering-v1 25.1.6+46a6d00c9c
+	   |-- fabric-resource-conditions-api-v1 6.1.0+10e9a28b9c
+	   |-- fabric-resource-loader-v0 3.3.20+4fc5413f9c
+	   |-- fabric-resource-loader-v1 2.0.13+9edec1269c
+	   |-- fabric-screen-api-v1 5.0.3+086d547a9c
+	   |-- fabric-serialization-api-v1 2.0.4+11a26f319c
+	   |-- fabric-sound-api-v1 2.0.5+11a26f319c
+	   |-- fabric-tag-api-v1 2.1.3+794df31d9c
+	   |-- fabric-transfer-api-v1 8.0.11+39b5a3929c
+	   \-- fabric-transitive-access-wideners-v1 8.1.3+e098252d9c
+	- fabricloader 0.19.3
+	   \-- mixinextras 0.5.4
+	- java 25
+	- minecraft 26.2
+	- server_waypoint 3.1.0
+[01:52:54] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/private/tmp/server-waypoint-step19-live/b/libraries/net/fabricmc/sponge-mixin/0.17.3+mixin.0.8.7/sponge-mixin-0.17.3+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
+[01:52:54] [main/INFO]: Compatibility level set to JAVA_25
+[01:52:55] [main/INFO]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.4).
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/private/tmp/server-waypoint-step19-live/b/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[01:53:00] [main/INFO]: Internal translations: zh_hk, en_us, zh_cn, he_il, es_es, zh_tw
+[01:53:00] [main/INFO]: fabric-permissions-api is not loaded, use vanilla permission system
+[01:53:00] [main/INFO]: xaero's mod is not loaded, set sendXaerosWorldId to true by config.json
+[01:53:00] [main/WARN]: FileSystem for server_waypoint 3.1.0 has been closed unexpectedly, existing root path references may break!
+[01:53:00] [main/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[01:53:01] [main/INFO]: Loaded 1585 recipes
+[01:53:01] [main/INFO]: Loaded 1688 advancements
+[01:53:01] [main/INFO]: Applied 0 biome modifications to 0 of 66 new biomes in 595.3 μs
+[01:53:01] [Server thread/INFO]: Loaded config Config{serverId=-1792190041, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+[01:53:01] [Server thread/INFO]: Loaded 0 languages:
+[01:53:01] [Server thread/INFO]: Loaded 1 lists and 1 waypoints from file: ./config/server_waypoint/waypoints/minecraft$overworld.json
+[01:53:01] [Server thread/INFO]: Starting minecraft server version 26.2
+[01:53:01] [Server thread/INFO]: Loading properties
+[01:53:01] [Server thread/INFO]: Default game type: CREATIVE
+[01:53:01] [Server thread/INFO]: Generating keypair
+[01:53:01] [server-waypoint-backend-startup/INFO]: Cross-server backend startup: INVALID_CONFIGURATION
+[01:53:01] [Server thread/INFO]: Starting Minecraft server on 127.0.0.1:25972
+[01:53:02] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[01:53:02] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
+[01:53:02] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[01:53:02] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[01:53:02] [Server thread/INFO]: Preparing level "world"
+[01:53:03] [Server thread/INFO]: Loading 0 persistent chunks...
+[01:53:03] [Server thread/INFO]: Time elapsed: 12 ms
+[01:53:03] [Server thread/INFO]: Done (0.095s)! For help, type "help"
+[01:53:03] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[01:53:03] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[01:53:03] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[01:53:03] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[01:53:03] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[01:53:03] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[01:53:03] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+[01:53:42] [Server thread/INFO]: Stopping the server
+[01:53:42] [Server thread/INFO]: Saved 1 waypoint lists to file: ./config/server_waypoint/waypoints/minecraft$overworld.json
+[01:53:42] [Server thread/INFO]: Saved config file: ./config/server_waypoint/config.json
+[01:53:42] [Server thread/INFO]: Stopping server
+[01:53:42] [Server thread/INFO]: Saving players
+[01:53:42] [Server thread/INFO]: Saving worlds
+[01:53:42] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[01:53:42] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[01:53:42] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[01:53:42] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[01:53:42] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[01:53:42] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[01:53:42] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture
+[01:54:08] [main/INFO]: Loading Minecraft 26.2 with Fabric Loader 0.19.3
+[01:54:08] [main/INFO]: Mappings not present!
+[01:54:08] [main/INFO]: Loading 42 mods:
+	- fabric-api 0.152.1+26.2
+	   |-- fabric-api-base 2.0.4+ece063239c
+	   |-- fabric-api-lookup-api-v1 2.0.17+11e1c9a39c
+	   |-- fabric-biome-api-v1 18.0.6+c7bd5b8e9c
+	   |-- fabric-block-api-v1 3.0.3+ec56b6019c
+	   |-- fabric-block-getter-api-v2 2.0.7+ec56b6019c
+	   |-- fabric-command-api-v2 3.1.0+00cb03469c
+	   |-- fabric-content-registries-v0 11.2.2+b7a678a99c
+	   |-- fabric-convention-tags-v2 4.6.4+2aae60389c
+	   |-- fabric-crash-report-info-v1 1.0.5+086d547a9c
+	   |-- fabric-creative-tab-api-v1 5.0.14+d871b99e9c
+	   |-- fabric-data-attachment-api-v1 2.2.16+aa0fd6fe9c
+	   |-- fabric-data-generation-api-v1 25.4.2+5e56e5409c
+	   |-- fabric-debug-api-v1 1.0.2+c792624d9c
+	   |-- fabric-dimensions-v1 5.1.9+9cbf5da59c
+	   |-- fabric-entity-events-v1 5.0.5+06488ac19c
+	   |-- fabric-events-interaction-v0 5.2.6+8f57f7ee9c
+	   |-- fabric-game-rule-api-v1 4.0.8+46a6d00c9c
+	   |-- fabric-item-api-v1 14.1.6+0ecb053f9c
+	   |-- fabric-key-mapping-api-v1 2.0.5+e2bdee789c
+	   |-- fabric-lifecycle-events-v1 4.1.3+4575b05f9c
+	   |-- fabric-loot-api-v3 3.0.17+06488ac19c
+	   |-- fabric-menu-api-v1 2.0.16+086d547a9c
+	   |-- fabric-message-api-v1 7.0.7+086d547a9c
+	   |-- fabric-model-loading-api-v1 8.0.11+c80601bb9c
+	   |-- fabric-networking-api-v1 6.3.3+72073ef09c
+	   |-- fabric-object-builder-api-v1 24.0.6+46a6d00c9c
+	   |-- fabric-particles-v1 5.0.18+d1756aa99c
+	   |-- fabric-permission-api-v1 1.0.2+7c33558a9c
+	   |-- fabric-recipe-api-v1 9.0.20+11e1c9a39c
+	   |-- fabric-registry-sync-v0 7.1.0+c7bd5b8e9c
+	   |-- fabric-renderer-api-v1 14.0.1+eec4cc519c
+	   |-- fabric-renderer-indigo 9.0.1+e73ab60d9c
+	   |-- fabric-rendering-fluids-v1 6.0.4+06488ac19c
+	   |-- fabric-rendering-v1 25.1.6+46a6d00c9c
+	   |-- fabric-resource-conditions-api-v1 6.1.0+10e9a28b9c
+	   |-- fabric-resource-loader-v0 3.3.20+4fc5413f9c
+	   |-- fabric-resource-loader-v1 2.0.13+9edec1269c
+	   |-- fabric-screen-api-v1 5.0.3+086d547a9c
+	   |-- fabric-serialization-api-v1 2.0.4+11a26f319c
+	   |-- fabric-sound-api-v1 2.0.5+11a26f319c
+	   |-- fabric-tag-api-v1 2.1.3+794df31d9c
+	   |-- fabric-transfer-api-v1 8.0.11+39b5a3929c
+	   \-- fabric-transitive-access-wideners-v1 8.1.3+e098252d9c
+	- fabricloader 0.19.3
+	   \-- mixinextras 0.5.4
+	- java 25
+	- minecraft 26.2
+	- server_waypoint 3.1.0
+[01:54:08] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/private/tmp/server-waypoint-step19-live/b/libraries/net/fabricmc/sponge-mixin/0.17.3+mixin.0.8.7/sponge-mixin-0.17.3+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
+[01:54:08] [main/INFO]: Compatibility level set to JAVA_25
+[01:54:09] [main/INFO]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.4).
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/private/tmp/server-waypoint-step19-live/b/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[01:54:17] [main/INFO]: Internal translations: zh_tw, zh_hk, en_us, zh_cn, he_il, es_es
+[01:54:17] [main/INFO]: fabric-permissions-api is not loaded, use vanilla permission system
+[01:54:17] [main/INFO]: xaero's mod is not loaded, set sendXaerosWorldId to true by config.json
+[01:54:18] [main/WARN]: FileSystem for server_waypoint 3.1.0 has been closed unexpectedly, existing root path references may break!
+[01:54:18] [main/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[01:54:19] [main/INFO]: Loaded 1585 recipes
+[01:54:19] [main/INFO]: Loaded 1688 advancements
+[01:54:19] [main/INFO]: Applied 0 biome modifications to 0 of 66 new biomes in 595.2 μs
+[01:54:19] [Server thread/INFO]: Loaded config Config{serverId=-1792190041, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+[01:54:19] [Server thread/INFO]: Loaded 0 languages:
+[01:54:19] [Server thread/INFO]: Loaded 1 lists and 1 waypoints from file: ./config/server_waypoint/waypoints/minecraft$overworld.json
+[01:54:19] [Server thread/INFO]: Starting minecraft server version 26.2
+[01:54:19] [Server thread/INFO]: Loading properties
+[01:54:19] [Server thread/INFO]: Default game type: CREATIVE
+[01:54:19] [Server thread/INFO]: Generating keypair
+[01:54:19] [server-waypoint-backend-startup/INFO]: Cross-server backend startup: SUCCESS
+[01:54:19] [Server thread/INFO]: Starting Minecraft server on 127.0.0.1:25972
+[01:54:20] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[01:54:20] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
+[01:54:20] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[01:54:20] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[01:54:20] [Server thread/INFO]: Preparing level "world"
+[01:54:20] [Server thread/INFO]: Loading 0 persistent chunks...
+[01:54:20] [Server thread/INFO]: Preparing spawn area: 100%
+[01:54:20] [Server thread/INFO]: Time elapsed: 34 ms
+[01:54:20] [Server thread/INFO]: Done (0.208s)! For help, type "help"
+[01:54:20] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[01:54:20] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[01:54:20] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[01:54:20] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[01:54:20] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[01:54:20] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[01:54:20] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+[01:55:19] [Server thread/INFO]: Stopping the server
+[01:55:19] [Server thread/INFO]: Saved 1 waypoint lists to file: ./config/server_waypoint/waypoints/minecraft$overworld.json
+[01:55:19] [Server thread/INFO]: Saved config file: ./config/server_waypoint/config.json
+[01:55:19] [Server thread/INFO]: Stopping server
+[01:55:19] [Server thread/INFO]: Saving players
+[01:55:19] [Server thread/INFO]: Saving worlds
+[01:55:19] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[01:55:19] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[01:55:19] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[01:55:19] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[01:55:19] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[01:55:19] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[01:55:19] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture
+[01:55:30] [main/INFO]: Loading Minecraft 26.2 with Fabric Loader 0.19.3
+[01:55:30] [main/INFO]: Mappings not present!
+[01:55:30] [main/INFO]: Loading 42 mods:
+	- fabric-api 0.152.1+26.2
+	   |-- fabric-api-base 2.0.4+ece063239c
+	   |-- fabric-api-lookup-api-v1 2.0.17+11e1c9a39c
+	   |-- fabric-biome-api-v1 18.0.6+c7bd5b8e9c
+	   |-- fabric-block-api-v1 3.0.3+ec56b6019c
+	   |-- fabric-block-getter-api-v2 2.0.7+ec56b6019c
+	   |-- fabric-command-api-v2 3.1.0+00cb03469c
+	   |-- fabric-content-registries-v0 11.2.2+b7a678a99c
+	   |-- fabric-convention-tags-v2 4.6.4+2aae60389c
+	   |-- fabric-crash-report-info-v1 1.0.5+086d547a9c
+	   |-- fabric-creative-tab-api-v1 5.0.14+d871b99e9c
+	   |-- fabric-data-attachment-api-v1 2.2.16+aa0fd6fe9c
+	   |-- fabric-data-generation-api-v1 25.4.2+5e56e5409c
+	   |-- fabric-debug-api-v1 1.0.2+c792624d9c
+	   |-- fabric-dimensions-v1 5.1.9+9cbf5da59c
+	   |-- fabric-entity-events-v1 5.0.5+06488ac19c
+	   |-- fabric-events-interaction-v0 5.2.6+8f57f7ee9c
+	   |-- fabric-game-rule-api-v1 4.0.8+46a6d00c9c
+	   |-- fabric-item-api-v1 14.1.6+0ecb053f9c
+	   |-- fabric-key-mapping-api-v1 2.0.5+e2bdee789c
+	   |-- fabric-lifecycle-events-v1 4.1.3+4575b05f9c
+	   |-- fabric-loot-api-v3 3.0.17+06488ac19c
+	   |-- fabric-menu-api-v1 2.0.16+086d547a9c
+	   |-- fabric-message-api-v1 7.0.7+086d547a9c
+	   |-- fabric-model-loading-api-v1 8.0.11+c80601bb9c
+	   |-- fabric-networking-api-v1 6.3.3+72073ef09c
+	   |-- fabric-object-builder-api-v1 24.0.6+46a6d00c9c
+	   |-- fabric-particles-v1 5.0.18+d1756aa99c
+	   |-- fabric-permission-api-v1 1.0.2+7c33558a9c
+	   |-- fabric-recipe-api-v1 9.0.20+11e1c9a39c
+	   |-- fabric-registry-sync-v0 7.1.0+c7bd5b8e9c
+	   |-- fabric-renderer-api-v1 14.0.1+eec4cc519c
+	   |-- fabric-renderer-indigo 9.0.1+e73ab60d9c
+	   |-- fabric-rendering-fluids-v1 6.0.4+06488ac19c
+	   |-- fabric-rendering-v1 25.1.6+46a6d00c9c
+	   |-- fabric-resource-conditions-api-v1 6.1.0+10e9a28b9c
+	   |-- fabric-resource-loader-v0 3.3.20+4fc5413f9c
+	   |-- fabric-resource-loader-v1 2.0.13+9edec1269c
+	   |-- fabric-screen-api-v1 5.0.3+086d547a9c
+	   |-- fabric-serialization-api-v1 2.0.4+11a26f319c
+	   |-- fabric-sound-api-v1 2.0.5+11a26f319c
+	   |-- fabric-tag-api-v1 2.1.3+794df31d9c
+	   |-- fabric-transfer-api-v1 8.0.11+39b5a3929c
+	   \-- fabric-transitive-access-wideners-v1 8.1.3+e098252d9c
+	- fabricloader 0.19.3
+	   \-- mixinextras 0.5.4
+	- java 25
+	- minecraft 26.2
+	- server_waypoint 3.1.0
+[01:55:30] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/private/tmp/server-waypoint-step19-live/b/libraries/net/fabricmc/sponge-mixin/0.17.3+mixin.0.8.7/sponge-mixin-0.17.3+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
+[01:55:30] [main/INFO]: Compatibility level set to JAVA_25
+[01:55:31] [main/INFO]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.4).
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/private/tmp/server-waypoint-step19-live/b/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[01:55:36] [main/INFO]: Internal translations: es_es, he_il, zh_cn, en_us, zh_hk, zh_tw
+[01:55:36] [main/INFO]: fabric-permissions-api is not loaded, use vanilla permission system
+[01:55:36] [main/INFO]: xaero's mod is not loaded, set sendXaerosWorldId to true by config.json
+[01:55:36] [main/WARN]: FileSystem for server_waypoint 3.1.0 has been closed unexpectedly, existing root path references may break!
+[01:55:36] [main/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[01:55:37] [main/INFO]: Loaded 1585 recipes
+[01:55:37] [main/INFO]: Loaded 1688 advancements
+[01:55:37] [main/INFO]: Applied 0 biome modifications to 0 of 66 new biomes in 625.7 μs
+[01:55:37] [Server thread/INFO]: Loaded config Config{serverId=-1792190041, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+[01:55:37] [Server thread/INFO]: Loaded 0 languages:
+[01:55:37] [Server thread/INFO]: Loaded 1 lists and 1 waypoints from file: ./config/server_waypoint/waypoints/minecraft$overworld.json
+[01:55:37] [Server thread/INFO]: Starting minecraft server version 26.2
+[01:55:37] [Server thread/INFO]: Loading properties
+[01:55:37] [Server thread/INFO]: Default game type: CREATIVE
+[01:55:37] [Server thread/INFO]: Generating keypair
+[01:55:37] [server-waypoint-backend-startup/INFO]: Cross-server backend startup: SUCCESS
+[01:55:37] [Server thread/INFO]: Starting Minecraft server on 127.0.0.1:25972
+[01:55:39] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[01:55:39] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
+[01:55:39] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[01:55:39] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[01:55:39] [Server thread/INFO]: Preparing level "world"
+[01:55:39] [Server thread/INFO]: Loading 0 persistent chunks...
+[01:55:39] [Server thread/INFO]: Time elapsed: 13 ms
+[01:55:39] [Server thread/INFO]: Done (0.096s)! For help, type "help"
+[01:55:39] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[01:55:39] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[01:55:39] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[01:55:39] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[01:55:39] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[01:55:39] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[01:55:39] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+[01:56:28] [Server thread/INFO]: CodexStep19[/127.0.0.1:51963] logged in with entity id 1 at (-8.5, -60.0, 8.5)
+[01:56:28] [Server thread/INFO]: CodexStep19 joined the game
+[01:56:54] [Server thread/INFO]: CodexStep19 has the following entity data: [-8.5d, -60.0d, 8.5d]
+[01:56:55] [Server thread/INFO]: CodexStep19 lost connection: Disconnected
+[01:56:55] [Server thread/INFO]: CodexStep19 left the game
+[02:00:09] [Server thread/INFO]: Stopping the server
+[02:00:09] [Server thread/INFO]: Saved 1 waypoint lists to file: ./config/server_waypoint/waypoints/minecraft$overworld.json
+[02:00:09] [Server thread/INFO]: Saved config file: ./config/server_waypoint/config.json
+[02:00:09] [Server thread/INFO]: Stopping server
+[02:00:09] [Server thread/INFO]: Saving players
+[02:00:09] [Server thread/INFO]: Saving worlds
+[02:00:09] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[02:00:09] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[02:00:09] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[02:00:09] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[02:00:09] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[02:00:09] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[02:00:09] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture
+[02:01:02] [main/INFO]: Loading Minecraft 26.2 with Fabric Loader 0.19.3
+[02:01:02] [main/INFO]: Mappings not present!
+[02:01:02] [main/INFO]: Loading 42 mods:
+	- fabric-api 0.152.1+26.2
+	   |-- fabric-api-base 2.0.4+ece063239c
+	   |-- fabric-api-lookup-api-v1 2.0.17+11e1c9a39c
+	   |-- fabric-biome-api-v1 18.0.6+c7bd5b8e9c
+	   |-- fabric-block-api-v1 3.0.3+ec56b6019c
+	   |-- fabric-block-getter-api-v2 2.0.7+ec56b6019c
+	   |-- fabric-command-api-v2 3.1.0+00cb03469c
+	   |-- fabric-content-registries-v0 11.2.2+b7a678a99c
+	   |-- fabric-convention-tags-v2 4.6.4+2aae60389c
+	   |-- fabric-crash-report-info-v1 1.0.5+086d547a9c
+	   |-- fabric-creative-tab-api-v1 5.0.14+d871b99e9c
+	   |-- fabric-data-attachment-api-v1 2.2.16+aa0fd6fe9c
+	   |-- fabric-data-generation-api-v1 25.4.2+5e56e5409c
+	   |-- fabric-debug-api-v1 1.0.2+c792624d9c
+	   |-- fabric-dimensions-v1 5.1.9+9cbf5da59c
+	   |-- fabric-entity-events-v1 5.0.5+06488ac19c
+	   |-- fabric-events-interaction-v0 5.2.6+8f57f7ee9c
+	   |-- fabric-game-rule-api-v1 4.0.8+46a6d00c9c
+	   |-- fabric-item-api-v1 14.1.6+0ecb053f9c
+	   |-- fabric-key-mapping-api-v1 2.0.5+e2bdee789c
+	   |-- fabric-lifecycle-events-v1 4.1.3+4575b05f9c
+	   |-- fabric-loot-api-v3 3.0.17+06488ac19c
+	   |-- fabric-menu-api-v1 2.0.16+086d547a9c
+	   |-- fabric-message-api-v1 7.0.7+086d547a9c
+	   |-- fabric-model-loading-api-v1 8.0.11+c80601bb9c
+	   |-- fabric-networking-api-v1 6.3.3+72073ef09c
+	   |-- fabric-object-builder-api-v1 24.0.6+46a6d00c9c
+	   |-- fabric-particles-v1 5.0.18+d1756aa99c
+	   |-- fabric-permission-api-v1 1.0.2+7c33558a9c
+	   |-- fabric-recipe-api-v1 9.0.20+11e1c9a39c
+	   |-- fabric-registry-sync-v0 7.1.0+c7bd5b8e9c
+	   |-- fabric-renderer-api-v1 14.0.1+eec4cc519c
+	   |-- fabric-renderer-indigo 9.0.1+e73ab60d9c
+	   |-- fabric-rendering-fluids-v1 6.0.4+06488ac19c
+	   |-- fabric-rendering-v1 25.1.6+46a6d00c9c
+	   |-- fabric-resource-conditions-api-v1 6.1.0+10e9a28b9c
+	   |-- fabric-resource-loader-v0 3.3.20+4fc5413f9c
+	   |-- fabric-resource-loader-v1 2.0.13+9edec1269c
+	   |-- fabric-screen-api-v1 5.0.3+086d547a9c
+	   |-- fabric-serialization-api-v1 2.0.4+11a26f319c
+	   |-- fabric-sound-api-v1 2.0.5+11a26f319c
+	   |-- fabric-tag-api-v1 2.1.3+794df31d9c
+	   |-- fabric-transfer-api-v1 8.0.11+39b5a3929c
+	   \-- fabric-transitive-access-wideners-v1 8.1.3+e098252d9c
+	- fabricloader 0.19.3
+	   \-- mixinextras 0.5.4
+	- java 25
+	- minecraft 26.2
+	- server_waypoint 3.1.0
+[02:01:02] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/private/tmp/server-waypoint-step19-live/b/libraries/net/fabricmc/sponge-mixin/0.17.3+mixin.0.8.7/sponge-mixin-0.17.3+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
+[02:01:02] [main/INFO]: Compatibility level set to JAVA_25
+[02:01:02] [main/INFO]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.4).
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/private/tmp/server-waypoint-step19-live/b/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[02:01:08] [main/INFO]: Internal translations: zh_cn, en_us, zh_hk, zh_tw, es_es, he_il
+[02:01:08] [main/INFO]: fabric-permissions-api is not loaded, use vanilla permission system
+[02:01:08] [main/INFO]: xaero's mod is not loaded, set sendXaerosWorldId to true by config.json
+[02:01:08] [main/WARN]: FileSystem for server_waypoint 3.1.0 has been closed unexpectedly, existing root path references may break!
+[02:01:08] [main/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[02:01:09] [main/INFO]: Loaded 1585 recipes
+[02:01:09] [main/INFO]: Loaded 1688 advancements
+[02:01:09] [main/INFO]: Applied 0 biome modifications to 0 of 66 new biomes in 734.2 μs
+[02:01:09] [Server thread/INFO]: Loaded config Config{serverId=-1792190041, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+[02:01:09] [Server thread/INFO]: Loaded 0 languages:
+[02:01:09] [Server thread/INFO]: Loaded 1 lists and 1 waypoints from file: ./config/server_waypoint/waypoints/minecraft$overworld.json
+[02:01:09] [Server thread/INFO]: Starting minecraft server version 26.2
+[02:01:09] [Server thread/INFO]: Loading properties
+[02:01:09] [Server thread/INFO]: Default game type: CREATIVE
+[02:01:09] [Server thread/INFO]: Generating keypair
+[02:01:09] [server-waypoint-backend-startup/INFO]: Cross-server backend startup: SUCCESS
+[02:01:09] [Server thread/INFO]: Starting Minecraft server on 127.0.0.1:25972
+[02:01:11] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[02:01:11] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
+[02:01:11] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[02:01:11] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[02:01:11] [Server thread/INFO]: Preparing level "world"
+[02:01:11] [Server thread/INFO]: Loading 0 persistent chunks...
+[02:01:11] [Server thread/INFO]: Preparing spawn area: 100%
+[02:01:11] [Server thread/INFO]: Time elapsed: 27 ms
+[02:01:11] [Server thread/INFO]: Done (0.113s)! For help, type "help"
+[02:01:11] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[02:01:11] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[02:01:11] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[02:01:11] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[02:01:11] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[02:01:11] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[02:01:11] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+Starting net.fabricmc.loader.impl.game.minecraft.BundlerClassPathCapture
+[10:44:36] [main/INFO]: Loading Minecraft 26.2 with Fabric Loader 0.19.3
+[10:44:36] [main/INFO]: Mappings not present!
+[10:44:37] [main/INFO]: Loading 42 mods:
+	- fabric-api 0.152.1+26.2
+	   |-- fabric-api-base 2.0.4+ece063239c
+	   |-- fabric-api-lookup-api-v1 2.0.17+11e1c9a39c
+	   |-- fabric-biome-api-v1 18.0.6+c7bd5b8e9c
+	   |-- fabric-block-api-v1 3.0.3+ec56b6019c
+	   |-- fabric-block-getter-api-v2 2.0.7+ec56b6019c
+	   |-- fabric-command-api-v2 3.1.0+00cb03469c
+	   |-- fabric-content-registries-v0 11.2.2+b7a678a99c
+	   |-- fabric-convention-tags-v2 4.6.4+2aae60389c
+	   |-- fabric-crash-report-info-v1 1.0.5+086d547a9c
+	   |-- fabric-creative-tab-api-v1 5.0.14+d871b99e9c
+	   |-- fabric-data-attachment-api-v1 2.2.16+aa0fd6fe9c
+	   |-- fabric-data-generation-api-v1 25.4.2+5e56e5409c
+	   |-- fabric-debug-api-v1 1.0.2+c792624d9c
+	   |-- fabric-dimensions-v1 5.1.9+9cbf5da59c
+	   |-- fabric-entity-events-v1 5.0.5+06488ac19c
+	   |-- fabric-events-interaction-v0 5.2.6+8f57f7ee9c
+	   |-- fabric-game-rule-api-v1 4.0.8+46a6d00c9c
+	   |-- fabric-item-api-v1 14.1.6+0ecb053f9c
+	   |-- fabric-key-mapping-api-v1 2.0.5+e2bdee789c
+	   |-- fabric-lifecycle-events-v1 4.1.3+4575b05f9c
+	   |-- fabric-loot-api-v3 3.0.17+06488ac19c
+	   |-- fabric-menu-api-v1 2.0.16+086d547a9c
+	   |-- fabric-message-api-v1 7.0.7+086d547a9c
+	   |-- fabric-model-loading-api-v1 8.0.11+c80601bb9c
+	   |-- fabric-networking-api-v1 6.3.3+72073ef09c
+	   |-- fabric-object-builder-api-v1 24.0.6+46a6d00c9c
+	   |-- fabric-particles-v1 5.0.18+d1756aa99c
+	   |-- fabric-permission-api-v1 1.0.2+7c33558a9c
+	   |-- fabric-recipe-api-v1 9.0.20+11e1c9a39c
+	   |-- fabric-registry-sync-v0 7.1.0+c7bd5b8e9c
+	   |-- fabric-renderer-api-v1 14.0.1+eec4cc519c
+	   |-- fabric-renderer-indigo 9.0.1+e73ab60d9c
+	   |-- fabric-rendering-fluids-v1 6.0.4+06488ac19c
+	   |-- fabric-rendering-v1 25.1.6+46a6d00c9c
+	   |-- fabric-resource-conditions-api-v1 6.1.0+10e9a28b9c
+	   |-- fabric-resource-loader-v0 3.3.20+4fc5413f9c
+	   |-- fabric-resource-loader-v1 2.0.13+9edec1269c
+	   |-- fabric-screen-api-v1 5.0.3+086d547a9c
+	   |-- fabric-serialization-api-v1 2.0.4+11a26f319c
+	   |-- fabric-sound-api-v1 2.0.5+11a26f319c
+	   |-- fabric-tag-api-v1 2.1.3+794df31d9c
+	   |-- fabric-transfer-api-v1 8.0.11+39b5a3929c
+	   \-- fabric-transitive-access-wideners-v1 8.1.3+e098252d9c
+	- fabricloader 0.19.3
+	   \-- mixinextras 0.5.4
+	- java 25
+	- minecraft 26.2
+	- server_waypoint 3.1.0
+[10:44:37] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/private/tmp/server-waypoint-step19-live/b/libraries/net/fabricmc/sponge-mixin/0.17.3+mixin.0.8.7/sponge-mixin-0.17.3+mixin.0.8.7.jar Service=Knot/Fabric Env=SERVER
+[10:44:37] [main/INFO]: Compatibility level set to JAVA_25
+[10:44:37] [main/INFO]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.4).
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/private/tmp/server-waypoint-step19-live/b/libraries/org/joml/joml/1.10.8/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[10:44:43] [main/INFO]: Internal translations: es_es, he_il, zh_cn, en_us, zh_hk, zh_tw
+[10:44:43] [main/INFO]: fabric-permissions-api is not loaded, use vanilla permission system
+[10:44:43] [main/INFO]: xaero's mod is not loaded, set sendXaerosWorldId to true by config.json
+[10:44:43] [main/WARN]: FileSystem for server_waypoint 3.1.0 has been closed unexpectedly, existing root path references may break!
+[10:44:43] [main/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[10:44:45] [main/INFO]: Loaded 1585 recipes
+[10:44:45] [main/INFO]: Loaded 1688 advancements
+[10:44:45] [main/INFO]: Applied 0 biome modifications to 0 of 66 new biomes in 1.094 ms
+[10:44:45] [Server thread/INFO]: Loaded config Config{serverId=-1792190041, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+[10:44:45] [Server thread/INFO]: Loaded 0 languages:
+[10:44:45] [Server thread/INFO]: Loaded 1 lists and 1 waypoints from file: ./config/server_waypoint/waypoints/minecraft$overworld.json
+[10:44:45] [Server thread/INFO]: Starting minecraft server version 26.2
+[10:44:45] [Server thread/INFO]: Loading properties
+[10:44:45] [Server thread/INFO]: Default game type: CREATIVE
+[10:44:45] [Server thread/INFO]: Generating keypair
+[10:44:45] [server-waypoint-backend-startup/INFO]: Cross-server backend startup: SUCCESS
+[10:44:45] [Server thread/INFO]: Starting Minecraft server on 127.0.0.1:25972
+[10:44:46] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[10:44:46] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
+[10:44:46] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[10:44:46] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[10:44:46] [Server thread/INFO]: Preparing level "world"
+[10:44:46] [Server thread/INFO]: Loading 0 persistent chunks...
+[10:44:46] [Server thread/INFO]: Preparing spawn area: 100%
+[10:44:46] [Server thread/INFO]: Time elapsed: 28 ms
+[10:44:46] [Server thread/INFO]: Done (0.153s)! For help, type "help"
+[10:44:46] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[10:44:46] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[10:44:46] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[10:44:46] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[10:44:46] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[10:44:46] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[10:44:46] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+[10:46:02] [Server thread/INFO]: CodexStep19[/127.0.0.1:54561] logged in with entity id 20 at (-8.5, -60.0, 8.5)
+[10:46:02] [Server thread/INFO]: CodexStep19 joined the game
+[10:46:11] [Server thread/INFO]: CodexStep19 has the following entity data: [25.5d, 80.0d, 30.5d]
+[10:46:11] [Server thread/INFO]: CodexStep19 lost connection: Disconnected
+[10:46:11] [Server thread/INFO]: CodexStep19 left the game
+[10:46:49] [Server thread/INFO]: Expected whitespace to end one argument, but found trailing data
+[10:46:49] [Server thread/INFO]: ... waypoint "minecraft:overworld" Test Target set position 45 80 30<--[HERE]
+[10:47:03] [Server thread/INFO]: CodexStep19[/127.0.0.1:54613] logged in with entity id 25 at (25.5, 80.0, 30.5)
+[10:47:03] [Server thread/INFO]: CodexStep19 joined the game
+[10:47:14] [Server thread/INFO]: Saved 1 waypoint lists to file: ./config/server_waypoint/waypoints/minecraft$overworld.json
+[10:47:14] [Server thread/INFO]: Waypoint details
+[📝] Identifier: Target
+[📝] Display name: Target
+Source list display name: Test
+Source list identifier: Test
+Dimension: minecraft:overworld
+[📝] Initials: T
+[📝] Position: 45, 80, 30
+[📝] Color: ■ #FF0000
+[📝] Yaw: 0
+[📝] Visibility: Local
+[📝] Keywords:
+[📝] Description:
+
+[Navigate] [Teleport] [Remove] [Back]
+[10:47:14] [Server thread/INFO]: CodexStep19 lost connection: Disconnected
+[10:47:14] [Server thread/INFO]: CodexStep19 left the game
+[10:47:30] [Server thread/INFO]: Made CodexStep19 no longer a server operator
+[10:47:39] [Server thread/INFO]: CodexStep19[/127.0.0.1:54896] logged in with entity id 35 at (25.5, 80.0, 30.5)
+[10:47:40] [Server thread/INFO]: CodexStep19 joined the game
+[10:47:50] [Server thread/INFO]: CodexStep19 has the following entity data: [25.5d, 80.0d, 30.5d]
+[10:47:50] [Server thread/INFO]: Made CodexStep19 a server operator
+[10:47:50] [Server thread/INFO]: CodexStep19 lost connection: Disconnected
+[10:47:50] [Server thread/INFO]: CodexStep19 left the game
+[10:48:59] [Server thread/INFO]: CodexStep19[/127.0.0.1:54906] logged in with entity id 45 at (25.5, 80.0, 30.5)
+[10:48:59] [Server thread/INFO]: CodexStep19 joined the game
+[10:49:33] [Server thread/INFO]: CodexStep19 lost connection: Disconnected
+[10:49:33] [Server thread/INFO]: CodexStep19 left the game
+[10:49:33] [Server thread/INFO]: No entity was found
+[10:50:16] [Server thread/INFO]: CodexStep19[/127.0.0.1:54929] logged in with entity id 63 at (45.5, 80.0, 30.5)
+[10:50:16] [Server thread/INFO]: CodexStep19 joined the game
+[10:50:39] [Server thread/INFO]: CodexStep19 has the following entity data: [45.5d, 80.0d, 30.5d]
+[10:50:50] [Server thread/INFO]: CodexStep19 lost connection: Disconnected
+[10:50:50] [Server thread/INFO]: CodexStep19 left the game
+[10:50:50] [Server thread/INFO]: Stopping the server
+[10:50:50] [Server thread/INFO]: Saved 1 waypoint lists to file: ./config/server_waypoint/waypoints/minecraft$overworld.json
+[10:50:50] [Server thread/INFO]: Saved config file: ./config/server_waypoint/config.json
+[10:50:50] [Server thread/INFO]: Stopping server
+[10:50:50] [Server thread/INFO]: Saving players
+[10:50:50] [Server thread/INFO]: Saving worlds
+[10:50:50] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[10:50:50] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[10:50:50] [Server thread/INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[10:50:50] [Server thread/INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[10:50:50] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[10:50:50] [Server thread/INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[10:50:50] [Server thread/INFO]: ThreadedAnvilChunkStorage: All dimensions are saved

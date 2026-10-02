@@ -1,144 +1,42 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
-import _959.server_waypoint.common.client.gui.layout.WidgetStack;
-import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
-import _959.server_waypoint.common.client.gui.widgets.ScalableText;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.util.ColorHelper;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.edit.EditResultStatus;
-import _959.server_waypoint.core.edit.PatchField;
 import _959.server_waypoint.core.edit.WaypointPatch;
 import _959.server_waypoint.core.network.message.WaypointEditRequestMessage;
 import _959.server_waypoint.core.network.message.WaypointEditResultMessage;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
-import _959.server_waypoint.util.WaypointInitials;
+import _959.server_waypoint.text.chat.DimensionStyle;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
-import static _959.server_waypoint.text.FormattedTextHelper.plainText;
-import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
+import static _959.server_waypoint.text.FormattedTextHelper.parseKeywords;
 
+/**
+ * Edits a waypoint with one atomic request that carries only the fields that changed, and keeps the
+ * entered values until a matching server result accepts the edit.
+ */
 public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     private static final AtomicLong NEXT_REQUEST_ID = new AtomicLong();
 
     private final String listDisplayName;
     private final int expectedListRevision;
-    private TranslucentButton updateButton;
-    private TranslucentButton resetButton;
-    private TranslucentButton clearDisplayNameButton;
-    private boolean clearDisplayName;
+    private final TranslucentButton saveButton;
+    private final TranslucentButton resetButton;
     private final EditResponseDeadline responseDeadline = new EditResponseDeadline();
-
-    @Override
-    protected @NotNull WidgetStack createTitleRow() {
-        ScalableText titleLabel = new ScalableText(
-                0,
-                0,
-                this.getTitle(),
-                WidgetThemeVariable.TEXT_PRIMARY,
-                font
-        );
-        WidgetStack infoRow = new WidgetStack(0, 0, 5);
-        ScalableText dimensionLabel = new ScalableText(
-                0,
-                0,
-                Component.translatable("waypoint.dimension.info", ""),
-                0.8F,
-                WidgetThemeVariable.TEXT_MUTED,
-                font
-        );
-        int dimensionColor = ColorHelper.scaleRgb(
-                0xFF000000 | getDimensionColor(this.dimensionName).value(),
-                0.8F
-        );
-        ScalableText dimensionNameLabel = new ScalableText(
-                0,
-                0,
-                Component.nullToEmpty(this.dimensionName),
-                0.8F,
-                dimensionColor,
-                font
-        );
-        ScalableText listNameLabel = new ScalableText(
-                0,
-                0,
-                Component.translatable(
-                        "waypoint.list_name.info",
-                        parseFormattedText(this.listDisplayName)
-                ),
-                0.8F,
-                WidgetThemeVariable.TEXT_MUTED,
-                font
-        );
-        infoRow.addChild(dimensionLabel, 0);
-        infoRow.addChild(dimensionNameLabel, 0);
-        infoRow.addChild(listNameLabel);
-        WidgetStack titleRow = new WidgetStack(0, 0, 2, true, false);
-        titleRow.addChild(titleLabel, 0);
-        titleRow.addChild(infoRow);
-        return titleRow;
-    }
-
-    @Override
-    protected @NotNull WidgetStack createButtonRow() {
-        WidgetStack buttonRow = new WidgetStack(0, 0, 6, false);
-        this.updateButton = new TranslucentButton(
-                0,
-                0,
-                50,
-                11,
-                Component.translatable("waypoint.update.button"),
-                this::sendEditRequest
-        );
-        this.resetButton = new TranslucentButton(
-                0,
-                0,
-                50,
-                11,
-                Component.translatable("waypoint.reset.button"),
-                this::resetProperties
-        );
-        this.clearDisplayNameButton = new TranslucentButton(
-                0,
-                0,
-                72,
-                11,
-                Component.translatable("waypoint.display_name.clear.button"),
-                this::toggleDisplayNameClear
-        );
-        buttonRow.addChild(this.cancelButton, 2);
-        buttonRow.addChild(this.resetButton);
-        buttonRow.addChild(this.clearDisplayNameButton);
-        buttonRow.addChild(this.updateButton);
-        return buttonRow;
-    }
-
-    @Override
-    protected List<AbstractWidget> getTitleRowClickableWidgets() {
-        return List.of(this.displayNameEditBox);
-    }
-
-    @Override
-    protected List<AbstractWidget> getButtonRowClickableWidgets() {
-        return List.of(
-                this.updateButton,
-                this.resetButton,
-                this.clearDisplayNameButton,
-                this.cancelButton
-        );
-    }
 
     public WaypointEditScreen(
             Screen previousScreen,
@@ -158,14 +56,11 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
     ) {
         super(
                 previousScreen,
-                Component.translatable(
-                        "waypoint.edit.screen.title",
-                        parseFormattedText(waypoint.displayName())
-                ),
+                Component.translatable("waypoint.edit.screen.title",
+                        parseFormattedText(WaypointFormPatch.Saved.of(waypoint).titleName())),
                 dimensionName,
                 listName,
-                waypoint,
-                true
+                waypoint
         );
         this.listDisplayName = listDisplayName;
         WaypointFileManager fileManager = WaypointClientMod.getInstance()
@@ -174,8 +69,11 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
                 ? null
                 : fileManager.getWaypointListByName(listName);
         this.expectedListRevision = waypointList == null ? 0 : waypointList.getSyncNum();
-        this.configureSuggestions();
-        this.buttonRow.setXOffset(CONTENT_WIDTH);
+        this.saveButton = TranslucentButton.fitted(Component.translatable("waypoint.save.button"), this::submitForm);
+        this.resetButton = TranslucentButton.fitted(Component.translatable("waypoint.reset.button"), this::resetProperties);
+        this.nameEditBox.setSuggestionsProvider(
+                () -> WaypointClientMod.getAllWaypointNames(this.dimensionName, this.listName)
+        );
     }
 
     public static void handleResult(WaypointEditResultMessage result) {
@@ -189,145 +87,160 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
         }
     }
 
-    private void sendEditRequest() {
-        if (this.responseDeadline.pending()) {
-            return;
-        }
-        WaypointPos resolvedPos = this.resolveCoordinateFields();
-        WaypointPatch patch = new WaypointPatch(
-                changed(this.waypointName, this.nameEditBox.getValue()),
-                this.displayNamePatch(),
-                changed(this.initials, this.initialsEditBox.getValue()),
-                changed(new WaypointPos(this.x, this.y, this.z), resolvedPos),
-                changed(this.rgb & 0xFFFFFF, this.colorPickerButton.getColor() & 0xFFFFFF),
-                changed(this.yaw, this.yawEditBox.getIntValue()),
-                changed(this.global, this.globalToggle.getState()),
-                PatchField.unchanged(),
-                PatchField.unchanged()
+    @Override
+    protected List<LeadingRow> leadingRows() {
+        return List.of();
+    }
+
+    /** "In <list> · <dimension>", with the dimension in the color the details panel uses. */
+    @Override
+    protected @Nullable Component subtitle() {
+        int dimensionColor = ColorHelper.scaleRgb(
+                0xFF000000 | DimensionStyle.colorOf(this.dimensionName).value(),
+                0.8F
+        ) & 0xFFFFFF;
+        return Component.translatable(
+                "waypoint.edit.screen.location",
+                parseFormattedText(this.listDisplayName),
+                Component.literal(this.dimensionName).withStyle(style -> style.withColor(dimensionColor))
         );
+    }
+
+    @Override
+    protected boolean hasDisplayNameRow() {
+        return true;
+    }
+
+    @Override
+    protected List<TranslucentButton> footerButtons() {
+        return List.of(this.resetButton, this.cancelButton, this.saveButton);
+    }
+
+    @Override
+    protected TranslucentButton primaryButton() {
+        return this.saveButton;
+    }
+
+    @Override
+    protected WaypointFormCheck.Input checkInput() {
+        return new WaypointFormCheck.Input(
+                false,
+                this.dimensionName,
+                this.listName,
+                this.nameEditBox.getValue(),
+                this.displayNameEditBox.getValue(),
+                this.keywordsEditBox.getValue(),
+                this.descriptionEditBox.getValue(),
+                this.savedWaypoint().name()
+        );
+    }
+
+    /** Whether the form would change the waypoint: its patch has a field to set or clear. */
+    @Override
+    protected boolean hasChanges() {
+        return WaypointFormPatch.changesAnything(this.buildPatch());
+    }
+
+    private WaypointFormPatch.Saved savedWaypoint() {
+        return Objects.requireNonNull(this.saved);
+    }
+
+    private WaypointPatch buildPatch() {
+        return WaypointFormPatch.build(this.savedWaypoint(), new WaypointFormPatch.Values(
+                this.nameEditBox.getValue(),
+                this.displayNameEditBox.getValue(),
+                this.initialsEditBox.getValue(),
+                this.resolveCoordinateFields(),
+                this.colorPickerButton.getColor() & 0xFFFFFF,
+                this.yawEditBox.getIntValue(),
+                this.globalToggle.getState(),
+                parseKeywords(this.keywordsEditBox.getValue()),
+                this.descriptionEditBox.getValue(),
+                this.iconPicker.getSelectedIcon()
+        ));
+    }
+
+    @Override
+    protected void submit() {
+        WaypointPatch patch = this.buildPatch();
         long requestId = NEXT_REQUEST_ID.incrementAndGet();
         this.responseDeadline.begin(requestId, System.nanoTime());
-        this.updateButton.active = false;
-        this.clearFieldErrors();
         boolean sent = WaypointClientMod.getInstance().sendChunkedMessageToServer(new WaypointEditRequestMessage(
                 requestId,
                 this.dimensionName,
                 this.listName,
-                this.waypointName,
+                this.savedWaypoint().name(),
                 this.expectedListRevision,
                 patch
         ));
         if (!sent) {
             this.responseDeadline.clear();
-            this.updateButton.active = true;
+            this.showResult(Component.translatable("waypoint.form.status.send_failed"), WaypointFormCheck.Field.NONE);
         }
     }
 
-    private PatchField<String> displayNamePatch() {
-        if (this.clearDisplayName) {
-            return PatchField.clear();
+    @Override
+    protected @Nullable Component pendingMessage() {
+        return this.responseDeadline.pending() ? Component.translatable("waypoint.form.status.saving") : null;
+    }
+
+    @Override
+    protected void refreshButtons(boolean modal, boolean locked, boolean canSubmit, boolean changed) {
+        this.cancelButton.active = !modal;
+        this.saveButton.active = canSubmit;
+        this.resetButton.active = !locked && changed;
+    }
+
+    @Override
+    protected void onTick() {
+        if (this.responseDeadline.expire(System.nanoTime())) {
+            this.showResult(Component.translatable("waypoint.edit.error.response_timeout"), WaypointFormCheck.Field.NONE);
         }
-        if (!this.waypointDisplayName.equals(this.displayNameEditBox.getValue())) {
-            return PatchField.set(this.displayNameEditBox.getValue());
-        }
-        return PatchField.unchanged();
     }
 
     private void acceptResult(WaypointEditResultMessage result) {
         if (!this.responseDeadline.clearIfMatches(result.requestId())) {
             return;
         }
-        this.updateButton.active = true;
         if (result.status() == EditResultStatus.SUCCESS) {
             this.onClose();
             return;
         }
         Component error = Component.translatable(
-                "waypoint.edit.error." + result.status().name().toLowerCase(java.util.Locale.ROOT)
+                "waypoint.edit.error." + result.status().name().toLowerCase(Locale.ROOT)
         );
-        if (result.status() == EditResultStatus.IDENTIFIER_COLLISION) {
-            this.nameEditBox.setTooltip(Tooltip.create(error));
-        } else if (result.status() == EditResultStatus.INVALID_DISPLAY_TEXT) {
-            this.displayNameEditBox.setTooltip(Tooltip.create(error));
-        } else {
-            this.updateButton.setTooltip(Tooltip.create(error));
-        }
+        this.showResult(error, fieldOf(result.status()));
     }
 
-    public void resetProperties() {
-        this.nameEditBox.setValue(this.waypointName);
-        this.displayNameEditBox.setValue(this.waypointDisplayName);
-        this.clearDisplayName = false;
-        this.syncDisplayNameClearState();
-        this.initialsEditBox.setValue(this.initials);
-        int color = 0xFF000000 | this.rgb;
+    /** The field a rejected edit points at. */
+    private static WaypointFormCheck.Field fieldOf(EditResultStatus status) {
+        return switch (status) {
+            case IDENTIFIER_COLLISION -> WaypointFormCheck.Field.NAME;
+            case INVALID_DISPLAY_TEXT -> WaypointFormCheck.Field.DISPLAY_NAME;
+            case DUPLICATE_KEYWORD -> WaypointFormCheck.Field.KEYWORDS;
+            default -> WaypointFormCheck.Field.NONE;
+        };
+    }
+
+    /** Puts every field back to the saved waypoint and clears the status and the field highlights. */
+    private void resetProperties() {
+        WaypointFormPatch.Saved values = this.savedWaypoint();
+        this.nameEditBox.setValue(values.name());
+        this.displayNameEditBox.setValue(values.displayNameOverride() == null ? "" : values.displayNameOverride());
+        this.initialsEditBox.setValue(values.initials());
+        int color = 0xFF000000 | values.rgb();
         this.colorEditBox.setColor(color);
         this.colorPickerButton.setColor(color);
         this.swatchWidget.setColor(color);
         this.swatchWidget.setPreviousColor(color);
-        this.swatchWidget.visible = false;
-        this.xEditBox.setValue(Integer.toString(this.x));
-        this.yEditBox.setValue(Integer.toString(this.y));
-        this.zEditBox.setValue(Integer.toString(this.z));
-        this.yawEditBox.setValue(Integer.toString(this.yaw));
-        this.globalToggle.setState(this.global);
-        this.clearFieldErrors();
-    }
-
-    private void toggleDisplayNameClear() {
-        this.clearDisplayName = !this.clearDisplayName;
-        this.syncDisplayNameClearState();
-    }
-
-    private void syncDisplayNameClearState() {
-        this.displayNameEditBox.active = !this.clearDisplayName;
-        this.clearDisplayNameButton.setMessage(Component.translatable(
-                this.clearDisplayName
-                        ? "waypoint.display_name.keep.button"
-                        : "waypoint.display_name.clear.button"
-        ));
-    }
-
-    @Override
-    protected void onSwatchClosed() {
-        this.syncDisplayNameClearState();
-        if (this.responseDeadline.pending()) {
-            this.updateButton.active = false;
-        }
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
-        if (!this.responseDeadline.expire(System.nanoTime())) {
-            return;
-        }
-        this.updateButton.active = true;
-        this.updateButton.setTooltip(Tooltip.create(
-                Component.translatable("waypoint.edit.error.response_timeout")
-        ));
-    }
-
-    private void clearFieldErrors() {
-        this.nameEditBox.setTooltip(null);
-        this.displayNameEditBox.setTooltip(null);
-        this.updateButton.setTooltip(null);
-    }
-
-    private void configureSuggestions() {
-        this.nameEditBox.setSuggestionsProvider(
-                () -> WaypointClientMod.getAllWaypointNames(this.dimensionName, this.listName)
-        );
-        this.initialsEditBox.setSuggestionsProvider(this::getWaypointInitialsSuggestions);
-    }
-
-    private List<String> getWaypointInitialsSuggestions() {
-        return WaypointInitials.getInitialsCandidatesFromName(plainText(this.nameEditBox.getValue()));
-    }
-
-    private static <T> PatchField<T> changed(T original, T updated) {
-        return java.util.Objects.equals(original, updated)
-                ? PatchField.unchanged()
-                : PatchField.set(updated);
+        this.xEditBox.setValue(Integer.toString(values.position().x()));
+        this.yEditBox.setValue(Integer.toString(values.position().y()));
+        this.zEditBox.setValue(Integer.toString(values.position().z()));
+        this.yawEditBox.setValue(Integer.toString(values.yaw()));
+        this.globalToggle.setState(values.global());
+        this.keywordsEditBox.setValue(String.join(", ", values.keywords()));
+        this.descriptionEditBox.setValue(values.description());
+        this.iconPicker.setSelectedIcon(values.icon());
+        this.onFormEdited();
     }
 }

@@ -1,0 +1,140 @@
+{
+  "date": "2026-09-10",
+  "status": "PASS",
+  "durationSeconds": 1801.9,
+  "cycles": 60,
+  "successfulTransfers": 120,
+  "sampleCount": 62,
+  "identity": "AuthenticatedTestPlayer / 00000000-0000-4000-8000-000000000019",
+  "proxyOnlineMode": true,
+  "forwarding": "MODERN",
+  "coordinatorTransport": "NOISE_KK",
+  "runtime": "Folia 1.21.11 build14, two region threads per backend; Velocity 4.1.1 build24; MCC26.2 build499 protocol774",
+  "clientEnvironment": {
+    "DOTNET_ReadyToRun": "0"
+  },
+  "metrics": {
+    "a": {
+      "baselineAfterGcKiB": 237273,
+      "finalAfterGcKiB": 235953,
+      "retainedHeapDeltaKiB": -1320,
+      "peakRssKiB": 919024,
+      "peakHeapUsedKiB": 522252,
+      "descriptorRange": [
+        151,
+        151
+      ],
+      "threadRange": [
+        72,
+        74
+      ],
+      "last20SampleThreadCounts": [
+        74
+      ],
+      "coordinatorReaderRange": [
+        0
+      ]
+    },
+    "b": {
+      "baselineAfterGcKiB": 237104,
+      "finalAfterGcKiB": 235875,
+      "retainedHeapDeltaKiB": -1229,
+      "peakRssKiB": 910480,
+      "peakHeapUsedKiB": 525530,
+      "descriptorRange": [
+        151,
+        151
+      ],
+      "threadRange": [
+        72,
+        74
+      ],
+      "last20SampleThreadCounts": [
+        74
+      ],
+      "coordinatorReaderRange": [
+        0
+      ]
+    },
+    "proxy": {
+      "baselineAfterGcKiB": 20311,
+      "finalAfterGcKiB": 20558,
+      "retainedHeapDeltaKiB": 247,
+      "peakRssKiB": 276512,
+      "peakHeapUsedKiB": 96171,
+      "descriptorRange": [
+        59,
+        59
+      ],
+      "threadRange": [
+        96,
+        100
+      ],
+      "last20SampleThreadCounts": [
+        100
+      ],
+      "coordinatorReaderRange": [
+        32
+      ]
+    }
+  },
+  "artifacts": {
+    "server_waypoint-3.1.0-velocity.jar": "be67bf9998b72b3fb3cb87aa2d402cf944edd2b3dd9d72eed4ba2f830ddd865f",
+    "MinecraftClient": "c9d630d123c20c0bf8f8a179334ed8ab9c634843514ec8a8c9e0c399ac770062"
+  },
+  "assertions": [
+    "60 clean authenticated joins and 120 completed transfers; no failed cycle",
+    "Retained backend heaps decreased slightly; proxy retained heap increased by 247 KiB",
+    "Descriptors constant at 151 per backend and 59 proxy; coordinator readers remain32",
+    "Thread counts stabilize at74 per backend and100 proxy over last20 samples",
+    "No runtime error, wrong-owner, stale-current-player or chunked-failure log matches in final rotated runtime logs",
+    "All three disposable Java processes stopped cleanly; authenticated soak client exited cleanly; arrival markers removed"
+  ],
+  "limitations": [
+    "30-minute one-player reconnect/transfer workload, not overnight or high-player-count evidence",
+    "MCC ReadyToRun disabled for this passing run after two archived pre-join CoreCLR crashes; exact upstream defect unconfirmed",
+    "Peak RSS includes JVM native memory; configured heap caps are1GiB per backend and512MiB proxy",
+    "No independent native Folia PLUGIN teleport-event counter; owner/current identity corroborated by audit snapshots"
+  ],
+  "logs": {
+    "soak-results.json": {
+      "rawSha256": "fa60ef6179a2b844f4a9ae5727bf638d42ab61efa1ba711b807a41e4e96781f3",
+      "archivedSha256": "007a6877927a8771201f47b58f2589133d9a057a60770c55d3ed5229fcd8dd54"
+    },
+    "soak-status.json": {
+      "rawSha256": "e666561a830676d469d43055e9141df49f8565ac902fd56a725bd6150611903c",
+      "archivedSha256": "e666561a830676d469d43055e9141df49f8565ac902fd56a725bd6150611903c"
+    },
+    "soak-samples.json": {
+      "rawSha256": "4ecc71e32a056075ae9f242fe79b86f6dcce51d96dcc8a0b98ba57b08809f198",
+      "archivedSha256": "4ecc71e32a056075ae9f242fe79b86f6dcce51d96dcc8a0b98ba57b08809f198"
+    },
+    "soak-progress.log": {
+      "rawSha256": "fe1b568ecc7a61d0fc731f89d16b39c7e151fca77dd1f2214cc8bd388f7a809c",
+      "archivedSha256": "fe1b568ecc7a61d0fc731f89d16b39c7e151fca77dd1f2214cc8bd388f7a809c"
+    },
+    "soak-client-safe.log": {
+      "rawSha256": "406cdf026b0073707e485af8e23fcfe6dc00780706ca3de0a247f40eda4340c8",
+      "archivedSha256": "1f5d95f8e757eea0dcfee2c153171fb35ef369c971f00a294383de5a5a8c18f9"
+    },
+    "a-final-rotated.log": {
+      "rawSha256": "cd6baa1badfd7bc5ddf0fd68151c17719153eb4226d2146061e93ff3d19f817a",
+      "archivedSha256": "dce0901f4f2e1d7d7ddc8ebec133da3a52552e8cf89b2c7f625277f5bec7075f"
+    },
+    "b-final-rotated.log": {
+      "rawSha256": "5e2c65c7620f44ef359eaaa86d11ffa2da37485731725ebee108287bcbf953f4",
+      "archivedSha256": "d6511a0acc5633ec407f68b07a6879b2d5baeba0e9948226c029d6dd594e70af"
+    },
+    "proxy-final-rotation-recovery.log": {
+      "rawSha256": "68b327463d7ba8c1130ea53fbb527b106a9d60e3eb02fac6f2ea628956c36b8f",
+      "archivedSha256": "feae76e602f75f792f43f545a0e72c1dd1a23ee6852b3fb1549ee28129ad20df"
+    }
+  },
+  "identityRedaction": {
+    "profileLabel": "AuthenticatedTestPlayer",
+    "onlineUuidLabel": "00000000-0000-4000-8000-000000000019",
+    "offlineUuidLabel": "00000000-0000-3000-8000-000000000019",
+    "note": "Personal profile name and online/offline UUIDs are replaced consistently with synthetic labels. These labels are not login accounts. Raw source hashes refer to private originals; archived hashes cover redacted evidence."
+  },
+  "archiveNormalization": "Archived logs remove ANSI formatting where captured, console-only prompts and empty lines, expand tabs, normalize line endings and trim trailing whitespace; raw source hashes retain the original private evidence identity."
+}

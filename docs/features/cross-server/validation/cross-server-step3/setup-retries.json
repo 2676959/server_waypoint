@@ -1,0 +1,26 @@
+[
+  {
+    "case": "fabric-1.20.1",
+    "reason": "Omitted Fabric API dependency",
+    "resolved": true,
+    "retained_log": "setup-failure-fabric-1.20.1.txt",
+    "raw_log_sha256": "3a670dedc5e99ac2349ae925b24cdcd763a2b2a1234e02f104298eca3a94babe",
+    "retained_log_sha256": "4a0b404e4b1eb7a9ce7253930ef48d57e002817a6d7b150f6546aaf534cec2f1"
+  },
+  {
+    "case": "fabric-26.2",
+    "reason": "Omitted Fabric API dependency",
+    "resolved": true,
+    "retained_log": "setup-failure-fabric-26.2.txt",
+    "raw_log_sha256": "8b8a12990845bf6c1c259cdc87a638d30684095ebee69cd50d8b9576eaa6c3fc",
+    "retained_log_sha256": "9b2adc09c31d1db2a99aea39c503c84daeea6c66166f2ad1dbf30f6eb9c08aae"
+  },
+  {
+    "case": "forge-26.2",
+    "reason": "Omitted Forge shim launcher",
+    "resolved": true,
+    "retained_log": "setup-failure-forge-26.2.txt",
+    "raw_log_sha256": "cc739d2e0160e7b7c1851434223c45989dd3dbf89b897d786322ff14e352d7c4",
+    "retained_log_sha256": "cc739d2e0160e7b7c1851434223c45989dd3dbf89b897d786322ff14e352d7c4"
+  }
+]

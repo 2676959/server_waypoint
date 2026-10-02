@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import _959.server_waypoint.common.util.MathHelper;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -41,7 +42,7 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
     }
 
     public boolean checkScrollbarDragged(double mouseX, double mouseY, int button) {
-        if (!this.active || button != 0) {
+        if (!this.active || button != InputConstants.MOUSE_BUTTON_LEFT) {
             return false;
         }
         int x = this.getX();
@@ -129,7 +130,7 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+        if (button == InputConstants.MOUSE_BUTTON_LEFT) {
             this.scrolling = false;
         }
         return super.mouseReleased(mouseX, mouseY, button);

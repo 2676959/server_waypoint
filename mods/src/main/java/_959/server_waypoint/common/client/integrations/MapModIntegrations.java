@@ -33,7 +33,8 @@ public final class MapModIntegrations {
         }
     }
 
-    public static Optional<MapModIntegration> findUploadCollector(UploadTarget target) {
+    /** The integration for {@code target}, or empty when this loader has none. */
+    public static Optional<MapModIntegration> find(UploadTarget target) {
         return INTEGRATIONS.stream()
                 .filter(integration -> integration.uploadTarget() == target)
                 .findFirst();
@@ -41,7 +42,7 @@ public final class MapModIntegrations {
 
     /** Collects a detached snapshot; callers must run this on the Minecraft client thread. */
     public static WaypointData collectUpload(UploadRequestBuffer request) {
-        return findUploadCollector(request.target())
+        return find(request.target())
                 .map(integration -> integration.collectUpload(request))
                 .orElseGet(() -> WaypointData.upload(request.requestId(), switch (request.target()) {
                     case XAERO -> UploadStatus.XAERO_NOT_INSTALLED;
@@ -57,10 +58,15 @@ public final class MapModIntegrations {
         return List.copyOf(integrations);
     }
 
-    public static void syncXaerosMinimap(WaypointClientMod waypointClientMod) {
-        if (!WaypointClientMod.isXaerosMinimapReady) {
-            return;
-        }
-        XaerosMinimapWaypointHelper.replaceAll(waypointClientMod);
+    /**
+     * Rewrites the waypoints this mod added to a map mod, if this loader supports it and it's
+     * installed and ready. Returns whether it ran.
+     */
+    public static boolean syncNow(UploadTarget target, WaypointClientMod waypointClientMod) {
+        Optional<MapModIntegration> integration = find(target)
+                .filter(MapModIntegration::isInstalled)
+                .filter(MapModIntegration::isReady);
+        integration.ifPresent(mapMod -> mapMod.syncAll(waypointClientMod));
+        return integration.isPresent();
     }
 }

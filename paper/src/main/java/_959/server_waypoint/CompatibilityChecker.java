@@ -11,7 +11,7 @@ final class CompatibilityChecker {
      *///?} elif =1.21.11 {
      /*{new MinecraftVersionRange(1, 21, 11, 11), new MinecraftVersionRange(26, 1, 0, 2)};
      *///?} else {
-        {new MinecraftVersionRange(26, 2, 0, -1)};
+        {new MinecraftVersionRange(26, 2, 0, -1), new MinecraftVersionRange(26, 3, 0, -1)};
     //?}
 
     public static boolean isCompatible(String minecraftVersion) {

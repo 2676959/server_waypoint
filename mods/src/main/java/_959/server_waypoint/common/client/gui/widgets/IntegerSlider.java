@@ -20,14 +20,20 @@ public class IntegerSlider extends ShiftableClickableWidget {
     }
 
     public IntegerSlider(int x, int y, int sliderWidth, int fieldWidth, int min, int max, int defaultValue, Consumer<Integer> onChange, Font textRenderer) {
-        super(x, y, sliderWidth + fieldWidth + padding, 0, Component.nullToEmpty("Integer Slider"));
-        this.onChange = onChange;
-        this.integerField = new IntegerField(x + sliderWidth + padding, y, fieldWidth, min, max, defaultValue, Component.empty(), textRenderer);
-        this.integerField.setYOffset(2);
-        this.slider = new Slider(x, y, sliderWidth, this.integerField.getVisualHeight(), max - min);
-        this.height = this.integerField.getVisualHeight();
+        this(x, y, sliderWidth, numberField(x + sliderWidth + padding, y, fieldWidth, min, max, defaultValue, textRenderer), onChange);
+        this.setValue(defaultValue);
+    }
 
-        this.slider.setSliderLevel(defaultValue - min);
+    /**
+     * A slider around {@code integerField}, which sits right of the track and gives it its range and
+     * height, and which typing goes to first. It doesn't set a value; call {@link #setValue}.
+     */
+    protected IntegerSlider(int x, int y, int sliderWidth, IntegerField integerField, Consumer<Integer> onChange) {
+        super(x, y, sliderWidth + integerField.getWidth() + padding, integerField.getVisualHeight(), Component.nullToEmpty("Integer Slider"));
+        this.onChange = onChange;
+        this.integerField = integerField;
+        int min = integerField.minValue;
+        this.slider = new Slider(x, y, sliderWidth, this.height, integerField.maxValue - min);
 
         this.integerField.setValueEnteredCallback(value -> {
             this.slider.setSliderLevelWithNoUpdate(value - min);
@@ -40,7 +46,12 @@ public class IntegerSlider extends ShiftableClickableWidget {
             this.onChange.accept(value);
         });
         this.focused = this.integerField;
-        this.setValue(defaultValue);
+    }
+
+    private static IntegerField numberField(int x, int y, int width, int min, int max, int defaultValue, Font textRenderer) {
+        IntegerField field = new IntegerField(x, y, width, min, max, defaultValue, Component.empty(), textRenderer);
+        field.setYOffset(2);
+        return field;
     }
 
     public void updateFocused(GuiEventListener focused) {
@@ -64,6 +75,14 @@ public class IntegerSlider extends ShiftableClickableWidget {
         super.setFocused(focused);
         if (focused) updateFocused(this.focused);
         else this.focused.setFocused(false);
+    }
+
+    /**
+     * Whether typing goes to the number field: the slider has focus, and its field rather than its
+     * track was selected last.
+     */
+    public boolean isEditingNumber() {
+        return this.integerField.isFocused();
     }
 
     @Override
@@ -99,7 +118,7 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!this.active) {
+        if (!this.isActive()) {
             return false;
         }
         if (this.integerField.mouseClicked(mouseX, mouseY, button)) {
@@ -117,7 +136,7 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (!this.active) {
+        if (!this.isActive()) {
             return false;
         }
         if (this.focused == this.slider) {
@@ -129,7 +148,7 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        if (!this.active) {
+        if (!this.isActive()) {
             return false;
         }
         if (mouseX >= this.slider.getX() && mouseX <= this.slider.getX() + this.slider.getWidth() &&
@@ -142,12 +161,12 @@ public class IntegerSlider extends ShiftableClickableWidget {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        return this.active && this.integerField.keyPressed(keyCode, scanCode, modifiers);
+        return this.isActive() && this.integerField.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        return this.active && this.integerField.charTyped(chr, modifiers);
+        return this.isActive() && this.integerField.charTyped(chr, modifiers);
     }
 
     @Override

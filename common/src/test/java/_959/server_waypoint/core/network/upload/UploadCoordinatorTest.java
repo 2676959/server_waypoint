@@ -11,6 +11,7 @@ import _959.server_waypoint.core.network.data.WaypointData;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.navigation.NavigationPlatform;
 import _959.server_waypoint.navigation.NavigationMethod;
 import _959.server_waypoint.navigation.NavigationMethodHandler;
@@ -50,6 +51,19 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UploadCoordinatorTest {
+    @Test
+    void mergePreservesExistingIconUnlessNativeUploadSelectsOne() {
+        SimpleWaypoint server = new SimpleWaypoint("home", "home", "H", new WaypointPos(1, 2, 3),
+                0xFFFFFF, 0, true, List.of(), "", NamespacedId.parse("minecraft:diamond"));
+        SimpleWaypoint xaero = new SimpleWaypoint("home", "H", new WaypointPos(1, 2, 3),
+                0xFFFFFF, 0, true);
+        SimpleWaypoint voxelmap = new SimpleWaypoint("home", "home", "H", new WaypointPos(1, 2, 3),
+                0xFFFFFF, 0, true, List.of(), "", NamespacedId.parse("voxelmap:star"));
+
+        assertEquals(server.icon(), UploadCoordinator.mergeXaeroProperties(server, xaero).icon());
+        assertEquals(voxelmap.icon(), UploadCoordinator.mergeXaeroProperties(server, voxelmap).icon());
+        assertFalse(UploadCoordinator.hasSameXaeroProperties(server, voxelmap));
+    }
     @TempDir
     private Path tempDir;
 
@@ -581,7 +595,7 @@ class UploadCoordinatorTest {
         List<String> feedback = new ArrayList<>();
         UploadCoordinator<String> coordinator = new UploadCoordinator<>(
                 server,
-                (player, message) -> feedback.add(((net.kyori.adventure.text.TranslatableComponent) message).key()),
+                (player, message) -> feedback.add(firstKey(message)),
                 update -> {
                     ChunkedMessageManager.validateEncodable(update);
                     broadcasts.add(update);
@@ -606,9 +620,9 @@ class UploadCoordinatorTest {
         assertEquals(1, broadcasts.size());
         assertEquals(List.of("minecraft:overworld"), broadcasts.get(0).dimensions()
                 .stream().map(DimensionWaypointData::dimensionName).toList());
-        assertTrue(feedback.contains("waypoint.network.encoding_failed"));
-        assertTrue(feedback.contains("waypoint.upload.partial"));
-        assertFalse(feedback.contains("waypoint.upload.complete"));
+        assertTrue(feedback.contains("wp.error.encoding"));
+        assertTrue(feedback.contains("wp.upload.partial"));
+        assertFalse(feedback.contains("wp.upload.done"));
     }
 
     @Test
@@ -651,7 +665,7 @@ class UploadCoordinatorTest {
         List<String> feedback = new ArrayList<>();
         UploadCoordinator<String> coordinator = new UploadCoordinator<>(
                 server,
-                (player, message) -> feedback.add(((net.kyori.adventure.text.TranslatableComponent) message).key()),
+                (player, message) -> feedback.add(firstKey(message)),
                 broadcasts::add,
                 player -> true,
                 player -> true,
@@ -676,11 +690,26 @@ class UploadCoordinatorTest {
         assertEquals(25, broadcasts.get(0).dimensions().get(0).waypointLists().get(0)
                 .getWaypointByName("target").x());
         assertEquals(25, navigation.findSession(playerUuid()).orElseThrow().target().position().x());
-        assertTrue(feedback.contains("waypoint.upload.partial"));
-        assertFalse(feedback.contains("waypoint.upload.complete"));
+        assertTrue(feedback.contains("wp.upload.partial"));
+        assertFalse(feedback.contains("wp.upload.done"));
         assertNull(server.getWaypointFileManager("minecraft:the_nether"));
         assertTrue(coordinator.tryBeginEditRequest());
         coordinator.finishEditRequest();
+    }
+
+    /** The first wp. translation key of a message, depth first: its result or error line. */
+    private static String firstKey(net.kyori.adventure.text.Component message) {
+        if (message instanceof net.kyori.adventure.text.TranslatableComponent translatable
+                && translatable.key().startsWith("wp.")) {
+            return translatable.key();
+        }
+        for (net.kyori.adventure.text.Component child : message.children()) {
+            String key = firstKey(child);
+            if (!key.isEmpty()) {
+                return key;
+            }
+        }
+        return "";
     }
 
     private static SimpleWaypoint waypoint(String name, int x) {

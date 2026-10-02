@@ -96,6 +96,71 @@ class WidgetPackTest {
         assertPosition(nestedEnd, 80, 34);
     }
 
+    @Test
+    void startIsTheDefaultAlignment() {
+        assertEquals(WidgetPack.CrossAxisAlignment.START, new WidgetPack().getCrossAxisAlignment());
+    }
+
+    @Test
+    void centerAlignmentCentersChildrenAcrossAHorizontalPack() {
+        WidgetPack pack = new WidgetPack(10, 20, 100, 21, LayoutFlow.Orientation.HORIZONTAL);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        TestElement label = new TestElement(40, 9);
+        TestElement control = new TestElement(50, 13);
+
+        pack.addChild(label, LayoutFlow.Direction.FORWARD);
+        pack.addChild(control, LayoutFlow.Direction.REVERSE);
+
+        assertPosition(label, 10, 26);
+        assertPosition(control, 60, 24);
+    }
+
+    @Test
+    void centerAlignmentCentersChildrenAcrossAVerticalPack() {
+        WidgetPack pack = new WidgetPack(5, 7, 40, 90, LayoutFlow.Orientation.VERTICAL);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        TestElement child = new TestElement(11, 20);
+
+        pack.addChild(child, LayoutFlow.Direction.FORWARD);
+
+        assertPosition(child, 19, 7);
+    }
+
+    @Test
+    void centerAlignmentUsesTheVisualBoundsOfPaddedChildren() {
+        WidgetPack pack = new WidgetPack(0, 0, 60, 20, LayoutFlow.Orientation.HORIZONTAL);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        PaddedElement padded = new PaddedElement(10, 9, 2, 3);
+
+        pack.addChild(padded, LayoutFlow.Direction.FORWARD);
+
+        assertEquals(0, padded.getVisualX());
+        assertEquals(4, padded.getVisualY());
+    }
+
+    @Test
+    void centerAlignmentRoundsTowardTheStartWhenAChildIsTallerThanThePack() {
+        WidgetPack pack = new WidgetPack(0, 10, 50, 10, LayoutFlow.Orientation.HORIZONTAL);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        TestElement child = new TestElement(10, 13);
+
+        pack.addChild(child, LayoutFlow.Direction.FORWARD);
+
+        assertPosition(child, 0, 8);
+    }
+
+    @Test
+    void changingTheAlignmentLaysExistingChildrenOutAgain() {
+        WidgetPack pack = new WidgetPack(0, 0, 50, 20, LayoutFlow.Orientation.HORIZONTAL);
+        TestElement child = new TestElement(10, 10);
+        pack.addChild(child, LayoutFlow.Direction.FORWARD);
+        assertPosition(child, 0, 0);
+
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+
+        assertPosition(child, 0, 5);
+    }
+
     private static void assertPosition(TestElement element, int x, int y) {
         assertEquals(x, element.getX());
         assertEquals(y, element.getY());

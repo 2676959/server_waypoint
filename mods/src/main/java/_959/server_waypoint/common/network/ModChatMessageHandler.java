@@ -9,7 +9,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
 import static _959.server_waypoint.common.server.WaypointServerMod.LOGGER;
-import static _959.server_waypoint.common.util.DimensionFileHelper.getDimensionKey;
+import static _959.server_waypoint.common.util.DimensionKeyParser.getDimensionKey;
 
 //? if neoforge || forge
 /*import net.minecraft.network.chat.Component;*/

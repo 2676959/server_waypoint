@@ -2,12 +2,10 @@ package _959.server_waypoint.core.network;
 
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.buffer.MessageChunkBuffer;
-import _959.server_waypoint.core.network.message.WaypointModificationMessage;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.PreparedMessage;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveFailure;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveLimits;
-import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import net.kyori.adventure.text.Component;
 
 import java.util.List;
@@ -17,11 +15,22 @@ import java.util.function.Consumer;
 
 import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
-import static _959.server_waypoint.text.WaypointTextHelper.waypointTextNoTp;
-import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
-import static _959.server_waypoint.text.FormattedTextHelper.parse;
-
 public interface PlatformMessageSender<S, P> {
+    /**
+     * Every message to a player ends with one newline, which the game draws as a blank line before
+     * the next message. Platforms add it when they send; builders never end with a newline.
+     */
+    static Component forPlayer(Component message) {
+        return Component.empty().append(message).appendNewline();
+    }
+
+    /**
+     * Whether this source's output goes to a plain-text receiver such as the console, RCON or a
+     * command block. It follows the receiver, not the executing entity: /execute as a player from
+     * the console still prints plain text.
+     */
+    boolean isPlainTextReceiver(S source);
+
     void sendMessage(S source, Component component);
     void sendPlayerMessage(P player, Component component);
     void sendError(S source, Component component);
@@ -221,32 +230,7 @@ public interface PlatformMessageSender<S, P> {
         return ChunkedMessageManagerRegistry.get(this);
     }
 
-    default void broadcastWaypointModification(S source, WaypointModificationMessage modification) {
-        Component info = this.getModificationMessage(this.getSenderName(source), modification);
-        Iterable<? extends P> recipients = this.getBroadcastPlayers(source);
-        for (P player : recipients) {
-            this.sendPlayerMessage(player, info);
-        }
-        this.broadcastChunkedMessage(recipients, modification);
-    }
-
     default void broadcastChunkedMessageFromPlayer(P player, ChunkedMessage message) {
         this.broadcastChunkedMessage(this.getBroadcastPlayersFromPlayer(player), message);
-    }
-
-    default Component getModificationMessage(Component senderName, WaypointModificationMessage modification) {
-        return switch (modification.type()) {
-            case ADD, REMOVE, UPDATE -> {
-                Component waypointText;
-                if (modification.type() == WaypointModificationType.REMOVE) {
-                    waypointText = waypointTextNoTp(modification.waypoint(), modification.dimensionName());
-                } else {
-                    waypointText = waypointTextWithTp(modification.waypoint(), modification.dimensionName(), modification.listName());
-                }
-                yield Component.translatable("waypoint.modification.broadcast.player", senderName, modification.type().toTranslatable(), waypointText);
-            }
-            case ADD_LIST, REMOVE_LIST ->
-                Component.translatable("waypoint_list.modification.broadcast.player", senderName, modification.type().toTranslatable(), parse(modification.listDisplayName()));
-        };
     }
 }

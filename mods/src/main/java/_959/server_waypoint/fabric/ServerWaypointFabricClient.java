@@ -20,7 +20,6 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
-import org.lwjgl.glfw.GLFW;
 
 import static _959.server_waypoint.common.util.ResourceLocationHelper.modId;
 
@@ -33,8 +32,8 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
         ClientConfig.isVoxelMapLoaded = FabricLoader.getInstance().isModLoaded("voxelmap");
         keyBinding = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "server_waypoint.waypoint_manager_gui.keybind",
-                InputConstants.Type.KEYSYM,
-                GLFW.GLFW_KEY_RIGHT_SHIFT,
+                InputConstants.UNKNOWN.getType(),
+                InputConstants.KEY_RSHIFT,
                 //? if >= 1.21.9 {
                 KeyMapping.Category.register(modId("mod_name"))
                 //?} else {

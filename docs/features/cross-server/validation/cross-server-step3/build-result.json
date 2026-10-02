@@ -1,0 +1,11 @@
+{
+  "base_commit": "fd3ba53",
+  "upload_fix_commit": "f0d8281",
+  "command": "./gradlew build --max-workers=2 --console=plain",
+  "result": "BUILD SUCCESSFUL in 2m 38s",
+  "tasks": 563,
+  "raw_log": "/private/tmp/server-waypoint-step3-rebased-build.log",
+  "raw_log_sha256": "75ca8470e13025847278cedf6329929c86d2a3449d5a9966bc4cd100560c691f",
+  "retained_log": "build.txt",
+  "retained_log_sha256": "f4d70ebd592ce341c11774fcfb8bbf3116819b573c457843f700429b3fd95549"
+}

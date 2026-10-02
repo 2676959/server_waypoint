@@ -23,6 +23,7 @@ import _959.server_waypoint.navigation.PaperNavigationPlatform;
 import _959.server_waypoint.navigation.PaperTextDisplayNavigationHandler;
 import _959.server_waypoint.network.PaperChatMessageHandler;
 import _959.server_waypoint.network.PaperMessageSender;
+import _959.server_waypoint.network.XaeroCompatibilityPayloads;
 import _959.server_waypoint.server.WaypointServerPlugin;
 import _959.server_waypoint.server.command.WaypointCommand;
 import _959.server_waypoint.server.command.permission.PaperPermissionManager;
@@ -54,6 +55,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
     private static final String BUILD_PROPERTIES_RESOURCE = "/server-waypoint-paper.properties";
     private static final String MINECRAFT_VERSION_RANGE_PROPERTY = "minecraft-version-range";
 
+    private _959.server_waypoint.handoff.PaperCrossServerRuntime crossServer;
     private WaypointServerPlugin waypointServer;
     private WaypointCommand waypointCommand;
     private NavigationService<Player> navigationService;
@@ -76,7 +78,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         metrics.addCustomChart(new SingleLineChart("players", () -> Bukkit.getOnlinePlayers().size()));
 
         Server server = getServer();
-        waypointServer = new WaypointServerPlugin(this.getAssignedConfigDirectory(), server.getWorldContainer().toPath());
+        waypointServer = new WaypointServerPlugin(this.getAssignedConfigDirectory());
         try {
             waypointServer.load();
         } catch (IOException e) {
@@ -133,7 +135,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 this,
                 new PaperChatMessageHandler(server, sender, permissionManager)
         );
-        PlayerRegisterChannelListener channelRegisterListener = new PlayerRegisterChannelListener();
+        PlayerRegisterChannelListener channelRegisterListener = new PlayerRegisterChannelListener(this);
         this.c2sPacketHandler = new C2SPacketHandler<>(
                 sender,
                 waypointServer,
@@ -160,9 +162,13 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         );
         LiteralCommandNode<CommandSourceStack> command = waypointCommand.build();
         // register
-        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands ->
-                commands.registrar().register(command)
-        );
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
+            commands.registrar().register(command);
+            commands.registrar().register(waypointCommand.buildKeyGenerationCommand());
+        });
+        crossServer = new _959.server_waypoint.handoff.PaperCrossServerRuntime(this, waypointServer, waypointCommand, permissionManager, sender);
+        server.getPluginManager().registerEvents(crossServer, this);
+        crossServer.start();
         registerChannels();
         server.getPluginManager().registerEvents(chatListener, this);
         server.getPluginManager().registerEvents(channelRegisterListener, this);
@@ -171,6 +177,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
 
     @Override
     public void onDisable() {
+        if (crossServer != null) crossServer.stop();
         if (this.c2sPacketHandler != null) {
             this.c2sPacketHandler.resetSession();
         }
@@ -207,8 +214,10 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
         messenger.registerIncomingPluginChannel(this, MESSAGE_CHUNK_CHANNEL.ID, this);
         messenger.registerIncomingPluginChannel(this, UPLOAD_CHUNK_CHANNEL.ID, this);
 
-        // register for xaero's minimap mod
+        // register for Xaero's map mods
         messenger.registerOutgoingPluginChannel(this, XAEROS_WORLD_ID_CHANNEL.ID);
+        messenger.registerOutgoingPluginChannel(this, XaeroCompatibilityPayloads.XAERO_WORLD_MAP_CHANNEL);
+        messenger.registerOutgoingPluginChannel(this, XaeroCompatibilityPayloads.XAEROLIB_CHANNEL);
     }
 
     @Override

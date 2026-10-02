@@ -1,0 +1,25 @@
+{"status": "RUNNING", "completedCycles": 1, "transfers": 2, "elapsedSeconds": 11.6}
+{"status": "RUNNING", "completedCycles": 2, "transfers": 4, "elapsedSeconds": 38.8}
+{"status": "RUNNING", "completedCycles": 3, "transfers": 6, "elapsedSeconds": 68.9}
+{"status": "RUNNING", "completedCycles": 4, "transfers": 8, "elapsedSeconds": 98.8}
+{"status": "RUNNING", "completedCycles": 5, "transfers": 10, "elapsedSeconds": 129.2}
+{"status": "RUNNING", "completedCycles": 6, "transfers": 12, "elapsedSeconds": 159.2}
+{"status": "RUNNING", "completedCycles": 7, "transfers": 14, "elapsedSeconds": 188.9}
+{"status": "RUNNING", "completedCycles": 8, "transfers": 16, "elapsedSeconds": 219.4}
+{"status": "RUNNING", "completedCycles": 9, "transfers": 18, "elapsedSeconds": 249.0}
+{"status": "RUNNING", "completedCycles": 10, "transfers": 20, "elapsedSeconds": 279.2}
+{"status": "RUNNING", "completedCycles": 11, "transfers": 22, "elapsedSeconds": 309.3}
+{"status": "RUNNING", "completedCycles": 12, "transfers": 24, "elapsedSeconds": 338.9}
+{"status": "RUNNING", "completedCycles": 13, "transfers": 26, "elapsedSeconds": 368.9}
+{"status": "RUNNING", "completedCycles": 14, "transfers": 28, "elapsedSeconds": 398.8}
+{"status": "RUNNING", "completedCycles": 15, "transfers": 30, "elapsedSeconds": 429.2}
+{"status": "RUNNING", "completedCycles": 16, "transfers": 32, "elapsedSeconds": 459.0}
+SOAK_FAILED Client exited before expected game response; safe diagnostic keywords=
+Traceback (most recent call last):
+  File "/private/tmp/server-waypoint-step19-folia/run-soak.py", line 54, in <module>
+    waitFor('[MCC] Server was successfully joined.')
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/server-waypoint-step19-folia/run-soak.py", line 51, in waitFor
+    if line=='PROCESS_EXIT':raise RuntimeError('Client exited before expected game response; safe diagnostic keywords='+','.join(sorted(diagnostics)))
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Client exited before expected game response; safe diagnostic keywords=

@@ -1,0 +1,96 @@
+Starting org.bukkit.craftbukkit.Main
+[05:09:52 INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.11; Homebrew Homebrew) on Mac OS X 26.5 (aarch64)
+[05:09:52 INFO]: [bootstrap] Loading Folia 1.21.11-14-ver/1.21.11@529aabc (2026-02-22T20:22:23Z) for Minecraft 1.21.11
+[05:09:54 INFO]: [PluginInitializerManager] Initializing plugins...
+[05:09:54 INFO]: [PluginInitializerManager] Initialized 2 plugins
+[05:09:54 INFO]: [PluginInitializerManager] Paper plugins (1):
+ - ServerWaypoint (3.1.0)
+[05:09:54 INFO]: [PluginInitializerManager] Bukkit plugins (1):
+ - TeleportAudit (4)
+[05:09:56 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[05:09:57 INFO]: Loaded 1470 recipes
+[05:09:57 INFO]: Loaded 1584 advancements
+[05:09:57 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[05:09:57 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 181.7ms
+[05:09:57 INFO]: Starting minecraft server version 1.21.11
+[05:09:57 INFO]: Loading properties
+[05:09:57 INFO]: This server is running Folia version 1.21.11-14-ver/1.21.11@529aabc (2026-02-22T20:22:23Z) (Implementing API version 1.21.11-R0.1-SNAPSHOT)
+[05:09:57 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[05:09:57 INFO]: Using 4 threads for Netty based IO
+[05:09:57 INFO]: Server Ping Player Sample Count: 12
+[05:09:57 INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[05:09:57 INFO]: [io.papermc.paper.threadedregions.TickRegions] Initialised EDF Folia scheduler with initial 2 target thread(s)
+[05:09:57 INFO]: Default game type: CREATIVE
+[05:09:57 INFO]: Generating keypair
+>   [05:09:57 INFO]: Starting Minecraft server on 127.0.0.1:25982
+>   [05:10:02 INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+>   [05:10:02 INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+>   [05:10:02 INFO]: [server_waypoint_plugin] Loading server plugin ServerWaypoint v3.1.0
+>   [05:10:02 INFO]: [TeleportAudit] Loading server plugin TeleportAudit v4
+>   [05:10:02 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>   [05:10:02 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+>   [05:10:02 WARN]: The server will make no attempt to authenticate usernames. Beware.
+>   [05:10:02 WARN]: Whilst this makes it possible to use Velocity, unless access to your server is properly restricted, it also opens up the ability for hackers to connect with any username they choose.
+>   [05:10:02 WARN]: Please see https://docs.papermc.io/velocity/security for further information.
+>   [05:10:02 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+>   [05:10:02 INFO]: Preparing level "world"
+>   [05:10:02 INFO]: Loading 0 persistent chunks for world 'minecraft:overworld'...
+>   [05:10:02 INFO]: Prepared spawn area in 0 ms
+>   [05:10:02 INFO]: Loading 0 persistent chunks for world 'minecraft:the_nether'...
+>   [05:10:02 INFO]: Prepared spawn area in 0 ms
+>   [05:10:02 INFO]: Loading 0 persistent chunks for world 'minecraft:the_end'...
+>   [05:10:02 INFO]: Prepared spawn area in 0 ms
+>   [05:10:02 INFO]: Done preparing level "world" (0.119s)
+>   [05:10:02 INFO]: [server_waypoint_plugin] Enabling ServerWaypoint v3.1.0
+>   [05:10:02 INFO]: [server_waypoint_translator] Internal translations: zh_tw, zh_hk, en_us, zh_cn, he_il, es_es
+>   [05:10:02 INFO]: [server_waypoint_core] Loaded config Config{serverId=178368554, defaultPageLimit=10, defaultNavigationMethods=[ACTIONBAR], CommandPermission=CommandPermission{add=0, edit=0, remove=0, navigate=0, tp=2, reload=2, upload=2, uploadDelete=4, remoteList=0, remoteTp=2}, Features={addWaypointFromChatSharing=true, sendXaerosWorldId=true, compressChunkedMessages=true}}
+>   [05:10:02 INFO]: [server_waypoint_core] Loaded 0 languages:
+>   [05:10:02 INFO]: [server_waypoint_core] Loaded 1 lists and 2 waypoints from file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+>   [05:10:02 INFO]: [TeleportAudit] Enabling TeleportAudit v4
+>   [05:10:02 INFO]: [spark] The spark plugin has been preferred but was not loaded. The bundled spark profiler will enabled instead.
+>   [05:10:02 INFO]: [spark] The spark profiler will not be enabled because it is currently disabled in the configuration.
+>   [05:10:02 INFO]: [server_waypoint_core] Cross-server backend startup: SUCCESS
+>   [05:10:02 INFO]: Done (10.885s)! For help, type "help"
+>   [05:11:45 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+>   [05:11:46 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+>   [05:11:46 INFO]: AuthenticatedTestPlayer joined the game
+>   [05:11:46 INFO]: AuthenticatedTestPlayer[/127.0.0.1:63579] logged in with entity id 11 at ([world]8197.5, 76.08009323197534, 30.5)
+>   [05:11:46 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=8197.5 y=80.0 z=30.5
+>   [05:12:15 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp a "minecraft:overworld" Test Target
+>   [05:12:15 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+>   [05:12:15 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+>   [05:12:15 INFO]: AuthenticatedTestPlayer left the game
+>   [05:13:45 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+>   [05:13:46 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+>   [05:13:46 INFO]: AuthenticatedTestPlayer joined the game
+>   [05:13:46 INFO]: AuthenticatedTestPlayer[/127.0.0.1:63669] logged in with entity id 22 at ([world]8197.5, 76.08002391836494, 30.5)
+>   [05:13:47 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=8197.5 y=80.0 z=30.5
+>   [05:14:12 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+>   [05:14:12 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+>   [05:14:12 INFO]: AuthenticatedTestPlayer left the game
+>   [10:01:31 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+>   [10:01:31 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+>   [10:01:31 INFO]: AuthenticatedTestPlayer joined the game
+>   [10:01:31 INFO]: AuthenticatedTestPlayer[/127.0.0.1:50898] logged in with entity id 33 at ([world]8197.5, 76.08010139997681, 30.5)
+>   [10:01:32 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=8197.5 y=80.0 z=30.5
+>   [10:01:56 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+>   [10:01:56 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+>   [10:01:56 INFO]: AuthenticatedTestPlayer left the game
+>   [10:02:45 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+>   [10:02:46 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+>   [10:02:46 INFO]: AuthenticatedTestPlayer joined the game
+>   [10:02:46 INFO]: AuthenticatedTestPlayer[/127.0.0.1:50946] logged in with entity id 44 at ([world]8197.5, 76.0801445166318, 30.5)
+>   [10:02:46 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=8197.5 y=80.0 z=30.5
+>   [10:02:48 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp a "minecraft:overworld" Test Target
+>   [10:02:48 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+>   [10:02:48 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+>   [10:02:48 INFO]: AuthenticatedTestPlayer left the game
+>   [10:03:13 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+>   [10:03:13 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+>   [10:03:13 INFO]: AuthenticatedTestPlayer joined the game
+>   [10:03:13 INFO]: AuthenticatedTestPlayer[/127.0.0.1:50959] logged in with entity id 55 at ([world]8197.5, 77.6592803332828, 30.5)
+>   [10:03:14 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=8197.5 y=80.0 z=30.5
+>   [10:03:15 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp a "minecraft:overworld" Test Target
+>   [10:03:15 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+>   [10:03:15 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+>   [10:03:15 INFO]: AuthenticatedTestPlayer left the game

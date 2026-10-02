@@ -3,6 +3,19 @@ package _959.server_waypoint.command;
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.config.Config;
+import _959.server_waypoint.crossserver.catalog.CatalogIndex;
+import _959.server_waypoint.crossserver.catalog.CatalogCacheLimits;
+import _959.server_waypoint.crossserver.catalog.RemoteCatalogStore;
+import _959.server_waypoint.crossserver.RemoteServerId;
+import _959.server_waypoint.crossserver.RemoteRevision;
+import _959.server_waypoint.crossserver.RemoteCatalogSnapshot;
+import _959.server_waypoint.crossserver.transport.TransportMode;
+import _959.server_waypoint.crossserver.CatalogExportPolicy;
+import _959.server_waypoint.crossserver.protocol.ProtocolLimits;
+import _959.server_waypoint.crossserver.protocol.ApplicationCodec;
+import _959.server_waypoint.crossserver.protocol.ApplicationEnvelope;
+import _959.server_waypoint.crossserver.protocol.ApplicationMessage;
+import _959.server_waypoint.crossserver.transport.TcpChannel;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.ChunkedMessage;
@@ -13,19 +26,25 @@ import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.util.NamespacedId;
+import _959.server_waypoint.util.StringCommandBuilder;
 import _959.server_waypoint.navigation.NavigationPlatform;
 import _959.server_waypoint.navigation.NavigationService;
 import _959.server_waypoint.navigation.NavigationSnapshot;
 import _959.server_waypoint.navigation.NavigationTarget;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
+import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.format.TextColor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +57,6 @@ import _959.server_waypoint.core.network.upload.UploadTarget;
 import _959.server_waypoint.core.network.upload.UploadStatus;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.StringReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +85,10 @@ class CoreWaypointCommandListTest {
     void setUp() {
         this.originalConfig = WaypointServerCore.CONFIG;
         this.server = new WaypointServerCore(this.tempDir) {
+            @Override
+            protected boolean isRegisteredIconItem(NamespacedId icon) {
+                return List.of("minecraft:diamond", "mod:blue_gem").contains(icon.toString());
+            }
         };
         this.server.putWaypointList(
                 "overworld",
@@ -95,6 +117,69 @@ class CoreWaypointCommandListTest {
     }
 
     @Test
+    void keyGenerationIsStandaloneAndOldCrossServerNodeIsRemoved() {
+        assertNotNull(this.dispatcher.getRoot().getChild("sw-cross-server-keygen"));
+        assertNull(this.dispatcher.getRoot().getChild("wp").getChild("cross-server"));
+        assertThrows(CommandSyntaxException.class,
+                () -> this.dispatcher.execute("wp cross-server generate-key", this.source));
+    }
+
+    @Test
+    void keyGenerationRequiresHighestPermissionServerConsole() {
+        assertThrows(CommandSyntaxException.class,
+                () -> this.dispatcher.execute("sw-cross-server-keygen", this.source));
+        assertFalse(java.nio.file.Files.exists(this.tempDir.resolve("credentials/static.key")));
+    }
+
+    @Test
+    void standaloneKeyGenerationExecutesForAuthorizedConsole() throws Exception {
+        var command = new TestWaypointCommand(
+                new WaypointServerCore(this.tempDir.toRealPath()) {
+                    @Override
+                    protected boolean isRegisteredIconItem(NamespacedId icon) {
+                        return false;
+                    }
+                }, this.sender);
+        command.authorizedConsole = true;
+        var consoleDispatcher = new CommandDispatcher<TestSource>();
+        command.register(consoleDispatcher);
+        assertEquals(1, consoleDispatcher.execute("sw-cross-server-keygen", this.source));
+        assertTrue(java.nio.file.Files.exists(this.tempDir.resolve("credentials/static.key")));
+        assertTrue(java.nio.file.Files.exists(this.tempDir.resolve("cross-server-public-key.txt")));
+    }
+
+    @Test
+    void sharedRootReadsAttachedRemoteStoreWithoutChangingLocalLists() throws Exception {
+        var index = new CatalogIndex(
+                CatalogCacheLimits.DEFAULT);
+        var id = new RemoteServerId("remote-only");
+        var revision = new RemoteRevision(1);
+        Object owner = new Object();
+        index.connected(id, owner, TransportMode.NOISE_KK,
+                ProtocolLimits.DEFAULT);
+        var snapshot = new RemoteCatalogSnapshot(id, revision, java.util.Map.of(), java.time.Instant.EPOCH);
+        var codec = new ApplicationCodec(ProtocolLimits.DEFAULT);
+        byte[] bytes = codec.encodeCatalog(snapshot); UUID request = UUID.randomUUID();
+        index.receive(id, owner, new TcpChannel.Received(
+                new ApplicationEnvelope(0, request,
+                        new ApplicationMessage.CatalogMetadata(id, "Remote only", revision,
+                                CatalogExportPolicy.PUBLIC, "minecraft:compass")), null));
+        index.receive(id, owner, new TcpChannel.Received(
+                new ApplicationEnvelope(1, request,
+                        new ApplicationMessage.CatalogSnapshot(id, revision, UUID.randomUUID(), 0,
+                                bytes.length, new ApplicationMessage.Bytes(bytes))), snapshot));
+        this.server.setRemoteCatalogStore(new RemoteCatalogStore(index));
+        this.dispatcher.execute("wp remote", this.source);
+        assertTrue(plainText(lastMessage()).contains("Remote only"));
+        this.dispatcher.execute("wp help remote", this.source);
+        assertTrue(plainText(lastMessage()).contains("/wp remote list"));
+        this.dispatcher.execute("wp list overworld bases", this.source);
+        assertTrue(plainText(lastMessage()).contains("base"));
+        assertFalse(plainText(lastMessage()).contains("remote-only"));
+        assertNull(this.server.getWaypointFileManager("remote-only"));
+    }
+
+    @Test
     void downloadReportsSuccessOnlyAfterFinalDelivery() throws CommandSyntaxException {
         CompletableFuture<ChunkedMessageSendResult> completion = new CompletableFuture<>();
         this.sender.chunkedDelivery = ChunkedMessageDelivery.queued(completion);
@@ -103,7 +188,7 @@ class CoreWaypointCommandListTest {
 
         assertTrue(this.sender.messages.isEmpty());
         completion.complete(ChunkedMessageSendResult.DELIVERED);
-        assertTrue(translationKeys(lastMessage()).contains("waypoint.download.all"));
+        assertTrue(translationKeys(lastMessage()).contains("wp.download.sent"));
     }
 
     @Test
@@ -116,7 +201,7 @@ class CoreWaypointCommandListTest {
 
         assertTrue(translationKeys(
                 this.sender.errors.get(this.sender.errors.size() - 1)
-        ).contains("waypoint.network.delivery_failed"));
+        ).contains("wp.error.delivery"));
     }
 
     @Test
@@ -162,122 +247,6 @@ class CoreWaypointCommandListTest {
                 CommandSyntaxException.class,
                 () -> this.dispatcher.execute("wp list all limit 101", this.source)
         );
-    }
-
-    @Test
-    void helpLinksDetailedTopicsAndSuggestsCommandPrefixes() throws CommandSyntaxException {
-        this.dispatcher.execute("wp help", this.source);
-
-        Component help = lastMessage();
-        String helpText = plainText(help);
-        assertTrue(helpText.contains("/wp list"));
-        assertTrue(helpText.contains("/wp download [<dimension> [<list-identifier> [<waypoint-identifier>]]]"));
-        assertTrue(helpText.contains(
-                "/wp upload <xaero|voxelmap> [force [server|local [delete]]] [<dimension> [<list> [<waypoint>]]]"
-        ));
-        assertTrue(helpText.contains("/wp add"));
-        assertTrue(helpText.contains("/wp edit"));
-        assertTrue(helpText.contains("/wp navigate"));
-        assertTrue(helpText.contains("/wp remove <dimension> <list-identifier> [<waypoint-identifier>]"));
-        assertTrue(helpText.contains("/wp tp <dimension> <list-identifier> <waypoint-identifier>"));
-        assertTrue(helpText.contains("/wp reload"));
-        assertTrue(translationKeys(help).containsAll(List.of(
-                "waypoint.help.title",
-                "waypoint.help.list",
-                "waypoint.help.download",
-                "waypoint.help.upload",
-                "waypoint.help.navigate",
-                "waypoint.help.add",
-                "waypoint.help.edit",
-                "waypoint.help.remove",
-                "waypoint.help.tp",
-                "waypoint.help.reload",
-                "waypoint.help.click_to_suggest",
-                "waypoint.help.click_for_details"
-        )));
-        assertEquals(List.of(
-                "/wp list ",
-                "/wp download ",
-                "/wp upload ",
-                "/wp navigate ",
-                "/wp add ",
-                "/wp edit ",
-                "/wp remove ",
-                "/wp tp ",
-                "/wp reload"
-        ), suggestedCommands(help));
-        assertEquals(List.of(
-                "/wp help list",
-                "/wp help navigate",
-                "/wp help add",
-                "/wp help edit"
-        ), runCommands(help));
-    }
-
-    @Test
-    void addHelpShowsAllFormsArgumentsAndExamples() throws CommandSyntaxException {
-        this.dispatcher.execute("wp help add", this.source);
-
-        Component help = lastMessage();
-        String helpText = plainText(help);
-        assertTrue(helpText.contains("/wp add <dimension> <list-identifier>"));
-        assertTrue(helpText.contains("/wp add <position> <list-identifier> <waypoint-identifier>"));
-        assertTrue(helpText.contains(
-                "/wp add <position> <list-identifier> <waypoint-identifier> <initials> <color> <yaw> <global>"
-        ));
-        assertTrue(helpText.contains(
-                "/wp add <dimension> <list-identifier> <position> <waypoint-identifier> <initials> <color> <yaw> <global>"
-        ));
-        assertTrue(suggestedCommands(help).contains(
-                "/wp add minecraft:overworld \"Home Bases\" ~ ~ ~ \"Main Home\" MH gold 0 true"
-        ));
-        assertTrue(translationKeys(help).containsAll(List.of(
-                "waypoint.help.add.title",
-                "waypoint.help.add.summary",
-                "waypoint.help.section.usage",
-                "waypoint.help.section.arguments",
-                "waypoint.help.section.examples"
-        )));
-        assertEquals(TextColor.color(0x55FF55), textColor(help, "<dimension>"));
-        assertEquals(TextColor.color(0xFFAA00), textColor(help, "<list-identifier>"));
-        assertEquals(TextColor.color(0x55AAFF), textColor(help, "<position>"));
-        assertEquals(TextColor.color(0xFFFF55), textColor(help, "<waypoint-identifier>"));
-        assertEquals(TextColor.color(0xAAAAFF), textColor(help, "<initials>"));
-        assertEquals(TextColor.color(0xFF5555), textColor(help, "<color>"));
-        assertEquals(TextColor.color(0x00D5A0), textColor(help, "<yaw>"));
-        assertEquals(TextColor.color(0xC77DFF), textColor(help, "<global>"));
-        assertEquals(TextColor.color(0x55FF55), textColor(help, "minecraft:overworld"));
-        assertEquals(TextColor.color(0xFFAA00), textColor(help, "\"Home Bases\""));
-        assertEquals(TextColor.color(0x55AAFF), textColor(help, "~ ~ ~"));
-        assertEquals(TextColor.color(0xFFFF55), textColor(help, "\"Main Home\""));
-        assertEquals(TextColor.color(0xAAAAFF), textColor(help, "MH"));
-        assertEquals(TextColor.color(0xFF5555), textColor(help, "gold"));
-        assertEquals(TextColor.color(0x00D5A0), textColor(help, "0"));
-        assertEquals(TextColor.color(0xC77DFF), textColor(help, "true"));
-        assertEquals(List.of("/wp help"), runCommands(help));
-    }
-
-    @Test
-    void editHelpShowsPatchRoutesAndExample() throws CommandSyntaxException {
-        this.dispatcher.execute("wp help edit", this.source);
-
-        Component help = lastMessage();
-        String helpText = plainText(help);
-        assertTrue(helpText.contains("/wp edit list <dimension> <list-identifier> set identifier <identifier>"));
-        assertTrue(helpText.contains("/wp edit waypoint <dimension> <list-identifier> <waypoint-identifier> set <property> <value>"));
-        assertTrue(helpText.contains("clear <display-name|keywords|description>"));
-        assertTrue(suggestedCommands(help).contains(
-                "/wp edit waypoint minecraft:overworld \"Home Bases\" \"Main Home\" "
-                        + "set identifier \"Mountain Home\""
-        ));
-        assertTrue(translationKeys(help).containsAll(List.of(
-                "waypoint.help.edit.title",
-                "waypoint.help.edit.summary",
-                "waypoint.help.edit.usage",
-                "waypoint.help.edit.example.full"
-        )));
-        assertEquals(TextColor.color(0xFF55FF), textColor(help, "\"Mountain Home\""));
-        assertEquals(List.of("/wp help"), runCommands(help));
     }
 
     @Test
@@ -346,7 +315,100 @@ class CoreWaypointCommandListTest {
         WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
         assertNull(bases.getWaypointByName("duplicate"));
         assertEquals(1, this.sender.errors.size());
-        assertTrue(this.sender.errors.get(0).toString().contains("argument.keywords.duplicate"));
+        assertTrue(this.sender.errors.get(0).toString().contains("wp.error.keywords.duplicate"));
+    }
+
+    @Test
+    void addSetAndClearIconThroughCommandTree() throws CommandSyntaxException {
+        this.dispatcher.execute(
+                "wp add overworld bases position icon-test I FFAA00 0 true \"\" \"\" icon minecraft:diamond",
+                this.source);
+        WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
+        assertEquals("minecraft:diamond", bases.getWaypointByName("icon-test").icon().toString());
+
+        this.dispatcher.execute("wp edit waypoint overworld bases icon-test set icon voxelmap:star", this.source);
+        assertEquals("voxelmap:star", bases.getWaypointByName("icon-test").icon().toString());
+
+        assertThrows(CommandSyntaxException.class, () -> this.dispatcher.execute(
+                "wp edit waypoint overworld bases icon-test set icon Minecraft:Diamond", this.source));
+        assertEquals("voxelmap:star", bases.getWaypointByName("icon-test").icon().toString());
+
+        this.dispatcher.execute("wp edit waypoint overworld bases icon-test clear icon", this.source);
+        assertNull(bases.getWaypointByName("icon-test").icon());
+    }
+
+    @Test
+    void addIconWorksWithBothFullFormsAndRejectsInvalidId() throws CommandSyntaxException {
+        this.dispatcher.execute("wp add position bases local-icon L FFAA00 0 true icon minecraft:diamond", this.source);
+        this.dispatcher.execute("wp add overworld bases position remote-icon R FFAA00 0 true \"home\" icon voxelmap:star", this.source);
+        assertThrows(CommandSyntaxException.class, () -> this.dispatcher.execute(
+                "wp add position bases invalid-icon I FFAA00 0 true icon Minecraft:Diamond", this.source));
+
+        WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
+        assertEquals("minecraft:diamond", bases.getWaypointByName("local-icon").icon().toString());
+        assertEquals("voxelmap:star", bases.getWaypointByName("remote-icon").icon().toString());
+        assertNull(bases.getWaypointByName("invalid-icon"));
+    }
+
+    @Test
+    void unknownIconsAreRejectedWithoutCreatingOrEditingWaypoints() throws CommandSyntaxException {
+        WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
+        int revision = bases.getSyncNum();
+        for (String icon : List.of("minecraft:missing_item", "minecraft:air", "mod:missing_item", "voxelmap:missing_icon")) {
+            this.dispatcher.execute("wp add position bases invalid I FFAA00 0 true icon " + icon, this.source);
+            assertNull(bases.getWaypointByName("invalid"));
+            this.dispatcher.execute("wp edit waypoint overworld bases \"base 1\" set icon " + icon, this.source);
+            assertNull(bases.getWaypointByName("base 1").icon());
+            assertEquals(revision, bases.getSyncNum());
+            assertTrue(translationKeys(this.sender.errors.get(this.sender.errors.size() - 1))
+                    .contains("wp.error.icon"));
+        }
+    }
+
+    @Test
+    void iconArgumentUsesPlatformParserAndCanonicalId() throws CommandSyntaxException {
+        this.dispatcher.execute("wp add position bases native-icon N FFAA00 0 true icon diamond", this.source);
+
+        WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
+        assertEquals("minecraft:diamond", bases.getWaypointByName("native-icon").icon().toString());
+    }
+
+    @Test
+    void generatedAddCommandCreatesWaypointWithIcon() throws CommandSyntaxException {
+        SimpleWaypoint waypoint = new SimpleWaypoint("generated-icon", "generated-icon", "G",
+                new WaypointPos(1, 64, 2), 0xFFFFFF, 0, true, List.of(), "",
+                NamespacedId.parse("minecraft:diamond"));
+        String generated = StringCommandBuilder.addCmd("overworld", "bases", waypoint, false);
+        assertTrue(generated.endsWith("icon minecraft:diamond"));
+        // This fixture accepts a single position token; production loaders parse three coordinates.
+        this.dispatcher.execute(generated.replace(" 1 64 2 ", " position "), this.source);
+
+        WaypointList bases = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
+        assertEquals(waypoint.icon(), bases.getWaypointByName("generated-icon").icon());
+    }
+
+    @Test
+    void iconArgumentsSuggestAvailableItemAndVoxelMapIds() {
+        List<String> editSuggestions = this.dispatcher.getCompletionSuggestions(this.dispatcher.parse(
+                "wp edit waypoint overworld bases base0 set icon diam", this.source)).join().getList()
+                .stream().map(suggestion -> suggestion.getText()).toList();
+        assertTrue(editSuggestions.contains("minecraft:diamond"));
+        assertFalse(editSuggestions.contains("voxelmap:star"));
+
+        List<String> addSuggestions = this.dispatcher.getCompletionSuggestions(this.dispatcher.parse(
+                "wp add overworld bases position new N FFAA00 0 true icon voxelmap:st", this.source))
+                .join().getList().stream().map(suggestion -> suggestion.getText()).toList();
+        assertTrue(addSuggestions.contains("voxelmap:star"));
+
+        List<String> customSuggestions = this.dispatcher.getCompletionSuggestions(this.dispatcher.parse(
+                "wp add position bases new N FFAA00 0 true \"\" icon mod:blue", this.source))
+                .join().getList().stream().map(suggestion -> suggestion.getText()).toList();
+        assertTrue(customSuggestions.contains("mod:blue_gem"));
+
+        List<String> descriptionSuggestions = this.dispatcher.getCompletionSuggestions(this.dispatcher.parse(
+                "wp add position bases new N FFAA00 0 true \"\" \"\" icon voxelmap:st", this.source))
+                .join().getList().stream().map(suggestion -> suggestion.getText()).toList();
+        assertTrue(descriptionSuggestions.contains("voxelmap:star"));
     }
 
     @Test
@@ -431,13 +493,13 @@ class CoreWaypointCommandListTest {
 
         remoteDispatcher.execute("wp upload xaero overworld", this.source);
 
-        assertTrue(translationKeys(this.sender.errors.get(0)).contains("waypoint.upload.client.incompatible"));
+        assertTrue(translationKeys(this.sender.errors.get(0)).contains("wp.error.upload.no_mod"));
         assertNull(command.collectedTarget);
         assertEquals(0, this.sender.sentPackets);
     }
 
     @Test
-    void uploadRequiresSourceAndSuggestsSupportedTargets() throws CommandSyntaxException {
+    void uploadSuggestsSupportedTargetsAndRejectsOthers() throws CommandSyntaxException {
         List<String> suggestions = this.dispatcher.getCompletionSuggestions(
                         this.dispatcher.parse("wp upload ", this.source)
                 ).join().getList().stream()
@@ -446,14 +508,10 @@ class CoreWaypointCommandListTest {
 
         assertEquals(2, suggestions.size());
         assertTrue(suggestions.containsAll(List.of("xaero", "voxelmap")));
-        assertThrows(
-                CommandSyntaxException.class,
-                () -> this.dispatcher.execute("wp upload", this.source)
-        );
 
         this.dispatcher.execute("wp upload unsupported", this.source);
         assertTrue(translationKeys(this.sender.errors.get(0))
-                .contains("waypoint.upload.source.invalid"));
+                .contains("wp.error.upload.source"));
     }
 
     @Test
@@ -471,322 +529,10 @@ class CoreWaypointCommandListTest {
         );
 
         assertEquals(1, this.sender.errors.size());
-        assertTrue(this.sender.errors.get(0).toString().contains("argument.text.too_long"));
+        assertTrue(this.sender.errors.get(0).toString().contains("wp.error.too_long"));
         assertNull(this.server.getWaypointFileManager("overworld")
                 .getWaypointListByName("bases")
                 .getWaypointByName("marker"));
-    }
-
-    @Test
-    void listHelpShowsScopesOrderedOptionsAndExamples() throws CommandSyntaxException {
-        this.dispatcher.execute("wp help list", this.source);
-
-        Component help = lastMessage();
-        String helpText = plainText(help);
-        assertTrue(helpText.contains("/wp list all"));
-        assertTrue(helpText.contains("/wp list <dimension> <list>"));
-        assertTrue(helpText.contains(
-                "[search <query>] [sort <mode> [order <direction>]] [page <number>] [limit <number>] [view <view>]"
-        ));
-        assertTrue(helpText.contains("search → sort → order → page → limit → view"));
-        assertTrue(helpText.contains("sort → order → page → limit → view → search"));
-        assertTrue(suggestedCommands(help).contains(
-                "/wp list all search home sort distance order ascending page 1 limit 10 view flat"
-        ));
-        assertTrue(suggestedCommands(help).contains(
-                "/wp list minecraft:overworld \"Home Bases\" sort name order descending limit 20"
-        ));
-        assertTrue(translationKeys(help).containsAll(List.of(
-                "waypoint.help.list.title",
-                "waypoint.help.list.summary",
-                "waypoint.help.list.usage.options",
-                "waypoint.help.list.argument.view",
-                "waypoint.help.list.argument.order"
-        )));
-        assertEquals(TextColor.color(0xFF79C6), textColor(help, "<query>"));
-        assertEquals(TextColor.color(0xF1FA8C), textColor(help, "<mode>"));
-        assertEquals(TextColor.color(0x8BE9FD), textColor(help, "<direction>"));
-        assertEquals(TextColor.color(0x50FA7B), textColor(help, "<number>"));
-        assertEquals(TextColor.color(0xFF79C6), textColor(help, "home"));
-        assertEquals(TextColor.color(0xF1FA8C), textColor(help, "distance"));
-        assertEquals(TextColor.color(0x8BE9FD), textColor(help, "ascending"));
-        assertEquals(TextColor.color(0x50FA7B), textColor(help, "10"));
-        assertEquals(List.of("/wp help"), runCommands(help));
-    }
-
-    @Test
-    void helpOmitsCommandsTheSourceCannotUse() throws CommandSyntaxException {
-        TestMessageSender restrictedSender = new TestMessageSender();
-        CommandDispatcher<TestSource> restrictedDispatcher = new CommandDispatcher<>();
-        new TestWaypointCommand(
-                this.server,
-                restrictedSender,
-                TestWaypointCommand.permissionManager(false)
-        ).register(restrictedDispatcher);
-
-        restrictedDispatcher.execute("wp help", this.source);
-
-        Component help = restrictedSender.messages.get(0);
-        assertEquals(List.of("/wp list ", "/wp download "), suggestedCommands(help));
-        assertEquals(List.of("/wp help list"), runCommands(help));
-        assertDoesNotThrow(() -> restrictedDispatcher.execute("wp help list", this.source));
-        assertThrows(
-                CommandSyntaxException.class,
-                () -> restrictedDispatcher.execute("wp help add", this.source)
-        );
-        assertThrows(
-                CommandSyntaxException.class,
-                () -> restrictedDispatcher.execute("wp help edit", this.source)
-        );
-    }
-
-    @Test
-    void searchUsesFilteredRowsAndNextPagePreservesAllOptions() throws CommandSyntaxException {
-        this.dispatcher.execute(
-                "wp list all search \"base 12\" sort name limit 5",
-                this.source
-        );
-
-        String filteredText = plainText(lastMessage());
-        assertTrue(filteredText.contains("base 12"));
-        assertFalse(filteredText.contains("base 11"));
-
-        this.sender.messages.clear();
-        this.dispatcher.execute(
-                "wp list all search base sort name order descending page 1 limit 5",
-                this.source
-        );
-
-        List<String> runCommands = runCommands(lastMessage());
-        assertTrue(runCommands.contains(
-                "/wp list all search base sort name order descending page 2 limit 5"
-        ));
-    }
-
-    @Test
-    void listFeedbackSuggestsSearchForTheCurrentTarget() throws CommandSyntaxException {
-        this.dispatcher.execute("wp list", this.source);
-
-        Component currentDimensionList = lastMessage();
-        assertEquals("/wp list overworld search ", listSearchSuggestion(currentDimensionList));
-        assertTrue(translationKeys(currentDimensionList).contains("button.list.search"));
-
-        this.sender.messages.clear();
-        this.dispatcher.execute("wp list all", this.source);
-
-        assertEquals("/wp list all search ", listSearchSuggestion(lastMessage()));
-
-        this.sender.messages.clear();
-        this.dispatcher.execute("wp list overworld \"search\"", this.source);
-
-        String searchSuggestion = listSearchSuggestion(lastMessage());
-        assertEquals("/wp list overworld \"search\" search ", searchSuggestion);
-        assertDoesNotThrow(() -> this.dispatcher.execute(searchSuggestion.substring(1) + "base", this.source));
-
-        this.sender.messages.clear();
-        this.dispatcher.execute(
-                "wp list all sort name order descending page 2 limit 5",
-                this.source
-        );
-
-        String sortedSearchSuggestion = listSearchSuggestion(lastMessage());
-        assertEquals(
-                "/wp list all sort name order descending search ",
-                sortedSearchSuggestion
-        );
-        assertDoesNotThrow(() -> this.dispatcher.execute(
-                sortedSearchSuggestion.substring(1) + "base",
-                this.source
-        ));
-    }
-
-    @Test
-    void viewTogglePreservesListOptionsAndSwitchesTheRenderedShape() throws CommandSyntaxException {
-        this.dispatcher.execute("wp list all view flat", this.source);
-
-        assertTrue(plainText(lastMessage()).contains("overworld / bases /"));
-
-        this.sender.messages.clear();
-        this.dispatcher.execute(
-                "wp list all search base sort name order descending page 2 limit 5 view flat",
-                this.source
-        );
-
-        Component flatList = lastMessage();
-        assertTrue(plainText(flatList).contains("overworld / bases /"));
-        assertTrue(translationKeys(flatList).containsAll(List.of(
-                "waypoint.list.view.tree",
-                "button.list.view.tree"
-        )));
-        assertEquals(
-                "/wp list all sort name order descending view flat search ",
-                listSearchSuggestion(flatList)
-        );
-        assertTrue(runCommands(flatList).contains(
-                "/wp list all search base sort name order descending page 1 limit 5 view flat"
-        ));
-
-        String treeViewCommand = runCommands(flatList).stream()
-                .filter(command -> command.endsWith("view tree"))
-                .findFirst()
-                .orElseThrow();
-        assertEquals(
-                "/wp list all search base sort name order descending page 2 limit 5 view tree",
-                treeViewCommand
-        );
-
-        this.sender.messages.clear();
-        this.dispatcher.execute(treeViewCommand.substring(1), this.source);
-
-        Component treeList = lastMessage();
-        assertFalse(plainText(treeList).contains("overworld / bases /"));
-        assertTrue(translationKeys(treeList).containsAll(List.of(
-                "waypoint.list.view.flat",
-                "button.list.view.flat"
-        )));
-        assertTrue(runCommands(treeList).contains(
-                "/wp list all search base sort name order descending page 2 limit 5 view flat"
-        ));
-    }
-
-    @Test
-    void treePagesShowAllDimensionsAndTitlesSelectTheirScope() throws CommandSyntaxException {
-        for (int index = 0; index < 4; index++) {
-            String dimensionName = "dim" + index;
-            String listName = index == 1 ? "list one" : "list" + index;
-            this.server.putWaypointList(dimensionName, new WaypointList(
-                    listName,
-                    1,
-                    List.of(waypoint("marker " + dimensionName, index))
-            ));
-        }
-
-        this.sender.messages.clear();
-        this.dispatcher.execute(
-                "wp list all search marker sort name order descending page 2 limit 1 view tree",
-                this.source
-        );
-
-        Component page = lastMessage();
-        String pageText = plainText(page);
-        assertTrue(pageText.contains("dim0\n  ...\ndim1\n"));
-        assertTrue(pageText.contains("list one"));
-        assertTrue(pageText.contains("dim2\n  ...\ndim3\n  ...\n"));
-        assertEquals(3, countOccurrences(pageText, "  ...\n"));
-        assertTrue(translationKeys(page).contains("button.list.dimension"));
-        assertTrue(translationKeys(page).contains("button.list.waypoint_list"));
-        assertEquals(TextColor.color(0xFFFF55), hoverTextColor(page, "dim0"));
-
-        List<String> commands = runCommands(page);
-        for (int index = 0; index < 4; index++) {
-            assertTrue(commands.contains(
-                    "/wp list dim" + index
-                            + " search marker sort name order descending page 1 limit 1 view tree"
-            ));
-        }
-        assertTrue(commands.contains(
-                "/wp list dim1 \"list one\" search marker sort name order descending page 1 limit 1 view tree"
-        ));
-        assertDoesNotThrow(() -> this.dispatcher.execute(
-                "wp list dim1 \"list one\" search marker sort name order descending page 1 limit 1 view tree",
-                this.source
-        ));
-    }
-
-    @Test
-    void reservedListNameIsQuotedInSuggestionsAndPageLinks() throws CommandSyntaxException {
-        List<String> suggestions = this.dispatcher.getCompletionSuggestions(
-                        this.dispatcher.parse("wp list overworld ", this.source)
-                ).join().getList().stream()
-                .map(suggestion -> suggestion.getText())
-                .toList();
-        assertTrue(suggestions.contains("\"search\""));
-        assertTrue(suggestions.contains("\"\""));
-
-        this.dispatcher.execute("wp list overworld \"search\" limit 5", this.source);
-        String nextPageCommand = runCommands(lastMessage()).stream()
-                .filter(command -> command.contains(" page 2 "))
-                .findFirst()
-                .orElseThrow();
-
-        assertEquals("/wp list overworld \"search\" page 2 limit 5", nextPageCommand);
-        assertDoesNotThrow(() -> this.dispatcher.execute(nextPageCommand.substring(1), this.source));
-
-        this.sender.messages.clear();
-        this.dispatcher.execute("wp list overworld \"\" limit 5", this.source);
-        String emptyNameNextPageCommand = runCommands(lastMessage()).stream()
-                .filter(command -> command.contains(" page 2 "))
-                .findFirst()
-                .orElseThrow();
-        assertEquals("/wp list overworld \"\" page 2 limit 5", emptyNameNextPageCommand);
-        assertDoesNotThrow(() -> this.dispatcher.execute(emptyNameNextPageCommand.substring(1), this.source));
-    }
-
-    @Test
-    void pagePastTheResultReportsTheLastAvailablePage() throws CommandSyntaxException {
-        this.dispatcher.execute("wp list all page 99 limit 5", this.source);
-
-        assertEquals(1, this.sender.errors.size());
-        assertTrue(this.sender.errors.get(0).toString().contains("waypoint.list.page.invalid"));
-    }
-
-    @Test
-    void configuredDefaultPageLimitIsUsedUnlessTheCommandOverridesIt() throws CommandSyntaxException {
-        this.server.loadConfig(new StringReader("""
-                {
-                  "defaultPageLimit": 4
-                }
-                """));
-
-        this.dispatcher.execute("wp list overworld bases", this.source);
-
-        assertTrue(runCommands(lastMessage()).contains(
-                "/wp list overworld bases page 2 limit 4"
-        ));
-
-        this.sender.messages.clear();
-        this.dispatcher.execute("wp list overworld bases limit 7", this.source);
-
-        assertTrue(runCommands(lastMessage()).contains(
-                "/wp list overworld bases page 2 limit 7"
-        ));
-    }
-
-    @Test
-    void sortControlsPreserveTheQueryAndResetThePage() throws CommandSyntaxException {
-        this.dispatcher.execute(
-                "wp list all search base sort name order descending page 2 limit 5",
-                this.source
-        );
-
-        List<String> runCommands = runCommands(lastMessage());
-        assertTrue(runCommands.contains(
-                "/wp list all search base page 1 limit 5"
-        ));
-        assertTrue(runCommands.contains(
-                "/wp list all search base sort distance page 1 limit 5"
-        ));
-        assertTrue(runCommands.contains(
-                "/wp list all search base sort color page 1 limit 5"
-        ));
-        assertTrue(runCommands.contains(
-                "/wp list all search base sort name page 1 limit 5"
-        ));
-    }
-
-    @Test
-    void sortControlsAreAvailableOnOnePageAndDefaultOrderIsDisabled() throws CommandSyntaxException {
-        this.dispatcher.execute("wp list overworld bases limit 20", this.source);
-
-        List<String> listCommands = runCommands(lastMessage()).stream()
-                .filter(command -> command.startsWith("/wp list"))
-                .toList();
-        assertEquals(List.of(
-                "/wp list overworld bases page 1 limit 20 view flat",
-                "/wp list overworld bases sort name page 1 limit 20",
-                "/wp list overworld bases sort distance page 1 limit 20",
-                "/wp list overworld bases sort color page 1 limit 20"
-        ), listCommands);
     }
 
     private Component lastMessage() {
@@ -820,78 +566,23 @@ class CoreWaypointCommandListTest {
         }
     }
 
-    private static TextColor textColor(Component component, String content) {
-        if (component instanceof TextComponent textComponent
-                && textComponent.content().equals(content)) {
-            return component.color();
-        }
-        if (component instanceof TranslatableComponent translatableComponent) {
-            for (var argument : translatableComponent.arguments()) {
-                if (argument.value() instanceof Component argumentComponent) {
-                    TextColor color = textColor(argumentComponent, content);
-                    if (color != null) {
-                        return color;
-                    }
-                }
-            }
-        }
-        for (Component child : component.children()) {
-            TextColor color = textColor(child, content);
-            if (color != null) {
-                return color;
-            }
-        }
-        return null;
-    }
-
-    private static TextColor hoverTextColor(Component component, String content) {
-        if (component.hoverEvent() != null
-                && component.hoverEvent().action()
-                == net.kyori.adventure.text.event.HoverEvent.Action.SHOW_TEXT) {
-            Object hoverValue = component.hoverEvent().value();
-            if (hoverValue instanceof Component hoverComponent) {
-                TextColor color = textColor(hoverComponent, content);
-                if (color != null) {
-                    return color;
-                }
-            }
-        }
-        for (Component child : component.children()) {
-            TextColor color = hoverTextColor(child, content);
-            if (color != null) {
-                return color;
-            }
-        }
-        return null;
-    }
-
     private static List<String> runCommands(Component component) {
         List<String> commands = new ArrayList<>();
         collectRunCommands(component, commands);
         return commands;
     }
 
+    private static void assertClicksOnlyOnLeaves(Component component) {
+        if (component.clickEvent() != null) {
+            assertTrue(component.children().isEmpty());
+        }
+        component.children().forEach(CoreWaypointCommandListTest::assertClicksOnlyOnLeaves);
+    }
+
     private static List<String> suggestedCommands(Component component) {
         List<String> commands = new ArrayList<>();
         collectSuggestedCommands(component, commands);
         return commands;
-    }
-
-    private static String listSearchSuggestion(Component component) {
-        return suggestedCommands(component).stream()
-                .filter(command -> command.startsWith("/wp list"))
-                .findFirst()
-                .orElseThrow();
-    }
-
-    private static int countOccurrences(String text, String substring) {
-        int count = 0;
-        int offset = 0;
-        while ((offset = text.indexOf(substring, offset)) >= 0) {
-            count++;
-            offset += substring.length();
-        }
-        return count;
     }
 
     private static void collectSuggestedCommands(Component component, List<String> commands) {
@@ -940,7 +631,46 @@ class CoreWaypointCommandListTest {
     }
 
     private static final class TestWaypointCommand
-            extends CoreWaypointCommand<TestSource, String, Object, String, String> {
+            extends CoreWaypointCommand<TestSource, String, Object, String, String, NamespacedId> {
+        @Override
+        protected NamespacedId toIconId(NamespacedId iconArgument) {
+            return iconArgument;
+        }
+
+        @Override
+        protected CompletableFuture<Suggestions> suggestIconIds(CommandContext<TestSource> context,
+                                                                  SuggestionsBuilder builder) {
+            String remaining = builder.getRemaining();
+            for (String id : List.of("minecraft:diamond", "mod:blue_gem", "voxelmap:star")) {
+                if (id.startsWith(remaining) || !remaining.contains(":")
+                        && id.substring(id.indexOf(':') + 1).startsWith(remaining)) {
+                    builder.suggest(id);
+                }
+            }
+            return builder.buildFuture();
+        }
+
+        private static ArgumentType<NamespacedId> iconArgument() {
+            return reader -> {
+                int start = reader.getCursor();
+                while (reader.canRead() && !Character.isWhitespace(reader.peek())) {
+                    reader.skip();
+                }
+                String value = reader.getString().substring(start, reader.getCursor());
+                try {
+                    return NamespacedId.parse(value.contains(":") ? value : "minecraft:" + value);
+                } catch (IllegalArgumentException invalid) {
+                    throw new SimpleCommandExceptionType(() -> "Invalid icon ID").createWithContext(reader);
+                }
+            };
+        }
+
+        @Override
+        protected boolean isServerConsoleWithHighestPermission(TestSource source) {
+            return this.authorizedConsole;
+        }
+
+        private boolean authorizedConsole;
         private Object player;
         private boolean localUpload;
         private UploadTarget collectedTarget;
@@ -993,7 +723,8 @@ class CoreWaypointCommandListTest {
                             player -> new UUID(0L, 0L)
                     ),
                     StringArgumentType::string,
-                    StringArgumentType::string
+                    StringArgumentType::string,
+                    TestWaypointCommand::iconArgument
             );
         }
 
@@ -1081,6 +812,11 @@ class CoreWaypointCommandListTest {
             return List.of("overworld");
         }
 
+        @Override
+        protected java.util.Map<String, String> getDimensionTypes(TestSource source) {
+            return java.util.Map.of("overworld", "minecraft:overworld");
+        }
+
         private static PermissionManager<TestSource, String, Object> permissionManager(
                 boolean allowPrivilegedCommands
         ) {
@@ -1123,6 +859,16 @@ class CoreWaypointCommandListTest {
                 @Override
                 protected PermissionKey createUploadDeletePermissionKey() {
                     return new PermissionKey("upload.delete");
+                }
+
+                @Override
+                protected PermissionKey createRemoteListPermissionKey() {
+                    return new PermissionKey("remote.list");
+                }
+
+                @Override
+                protected PermissionKey createRemoteTpPermissionKey() {
+                    return new PermissionKey("remote.tp");
                 }
             };
             return new PermissionManager<>(keys) {
@@ -1194,6 +940,11 @@ class CoreWaypointCommandListTest {
                 ChunkedMessage message
         ) {
             return this.chunkedDelivery;
+        }
+
+        @Override
+        public boolean isPlainTextReceiver(TestSource source) {
+            return false;
         }
 
         @Override

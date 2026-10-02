@@ -8,9 +8,14 @@ import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.upload.UploadCoordinator;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
+import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.navigation.NavigationService;
 import com.mojang.brigadier.Message;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.MessageComponentSerializer;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
@@ -18,17 +23,53 @@ import io.papermc.paper.command.brigadier.argument.resolvers.BlockPositionResolv
 import io.papermc.paper.math.BlockPosition;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.craftbukkit.CraftServer;
+//? if >= 1.21.11 {
+import net.minecraft.server.permissions.Permission;
+import net.minecraft.server.permissions.PermissionLevel;
+//?}
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
 @SuppressWarnings("UnstableApiUsage")
-public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, Player, World, BlockPositionResolver> {
+public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, Player, World, BlockPositionResolver, NamespacedKey> {
     private final PaperScheduler scheduler;
+
+    @Override
+    protected NamespacedId toIconId(NamespacedKey iconArgument) {
+        return new NamespacedId(iconArgument.getNamespace(), iconArgument.getKey());
+    }
+
+    @Override
+    protected CompletableFuture<Suggestions> suggestIconIds(CommandContext<CommandSourceStack> context,
+                                                               SuggestionsBuilder builder) {
+        String query = builder.getRemaining().toLowerCase(Locale.ROOT);
+        Stream<String> itemIds = Arrays.stream(Material.values())
+                .filter(material -> !material.isLegacy() && material.isItem() && !material.isAir())
+                .map(Material::getKey)
+                .map(NamespacedKey::asString);
+        Stream<String> voxelMapIds = Stream.concat(Stream.of("voxelmap:waypoint"),
+                WaypointIconPolicy.voxelMapSuffixes().stream().map(suffix -> "voxelmap:" + suffix));
+        Stream.concat(itemIds, voxelMapIds).distinct().sorted()
+                .filter(id -> id.startsWith(query) || !query.contains(":")
+                        && id.substring(id.indexOf(':') + 1).startsWith(query))
+                .limit(100).forEach(builder::suggest);
+        return builder.buildFuture();
+    }
 
     public WaypointCommand(
             WaypointServerCore waypointServer,
@@ -44,7 +85,8 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
                 navigationService,
                 uploadCoordinator,
                 ArgumentTypes::world,
-                ArgumentTypes::blockPosition
+                ArgumentTypes::blockPosition,
+                ArgumentTypes::namespacedKey
         );
         this.scheduler = new PaperScheduler(ServerWaypointPaperMC.getSelf());
     }
@@ -103,6 +145,17 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     }
 
     @Override
+    protected boolean isServerConsoleWithHighestPermission(CommandSourceStack source) {
+        if (!(source.getSender() instanceof ConsoleCommandSender)) return false;
+        var vanilla = ((CraftServer) source.getSender().getServer()).getHandle().getServer().createCommandSourceStack();
+        //? if >= 1.21.11 {
+        return vanilla.permissions().hasPermission(new Permission.HasCommandLevel(PermissionLevel.byId(4)));
+        //?} else {
+        /*return vanilla.hasPermission(4);
+        *///?}
+    }
+
+    @Override
     protected String getPlayerName(Player player) {
         return player.getName();
     }
@@ -116,6 +169,20 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     @Override
     protected Message getMessageFromComponent(Component component) {
         return MessageComponentSerializer.message().serialize(component);
+    }
+
+    @Override
+    protected Map<String, String> getDimensionTypes(CommandSourceStack source) {
+        Map<String, String> types = new LinkedHashMap<>();
+        for (World world : source.getSender().getServer().getWorlds()) {
+            types.put(world.getKey().asString(), switch (world.getEnvironment()) {
+                case NORMAL -> "minecraft:overworld";
+                case NETHER -> "minecraft:the_nether";
+                case THE_END -> "minecraft:the_end";
+                default -> "custom";
+            });
+        }
+        return types;
     }
 
     @Override

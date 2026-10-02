@@ -24,6 +24,8 @@ repositories {
 }
 
 dependencies {
+    compileOnly("net.luckperms:api:5.5")
+    testImplementation("net.luckperms:api:5.5")
     val paperApiVersion : String by project
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     paperweight.paperDevBundle(paperApiVersion)
@@ -47,9 +49,11 @@ tasks.jar {
 }
 
 tasks.shadowJar {
+    relocate("com.southernstorm.noise", "_959.server_waypoint.internal.noisekk")
     configurations = listOf(project.configurations.runtimeClasspath.get())
     dependencies {
-        exclude { it.moduleGroup != "org.bstats" && it.moduleName != "common" }
+        exclude { it.moduleGroup != "org.bstats" && it.moduleName != "common"
+                && !(it.moduleGroup == "org.signal.forks" && it.moduleName == "noise-java") }
     }
     relocate("org.bstats", project.group.toString())
     archiveClassifier.set("")
@@ -108,3 +112,5 @@ tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
 }
+
+apply(from = rootProject.file("gradle/noise-packaging.gradle.kts"))

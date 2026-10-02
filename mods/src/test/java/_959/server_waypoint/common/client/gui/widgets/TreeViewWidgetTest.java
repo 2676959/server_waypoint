@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -60,7 +61,7 @@ class TreeViewWidgetTest {
         TestTreeView tree = new TestTreeView(10);
         tree.updateRoots(List.of(root));
 
-        boolean handled = tree.mouseClicked(5, 5, 0);
+        boolean handled = tree.mouseClicked(5, 5, InputConstants.MOUSE_BUTTON_LEFT);
 
         assertTrue(handled);
         assertFalse(root.expanded);

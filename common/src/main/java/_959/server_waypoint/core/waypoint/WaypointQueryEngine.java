@@ -100,7 +100,27 @@ public final class WaypointQueryEngine {
         return new DimensionResult(dimensionName, Collections.unmodifiableList(listResults));
     }
 
-    private ListResult queryList(String dimensionName, WaypointList waypointList, String filter, Query query) {
+    /** Searches and sorts lists that don't live in this server's files, such as a remote catalog's lists. */
+    public static QueryResult queryLists(Map<String, List<WaypointList>> dimensions, Query query) {
+        Query resolvedQuery = resolveQuery(query);
+        String filter = resolvedQuery.normalizedFilter();
+        List<DimensionResult> dimensionResults = new ArrayList<>();
+        dimensions.forEach((dimensionName, lists) -> {
+            List<ListResult> listResults = new ArrayList<>();
+            for (WaypointList waypointList : lists) {
+                ListResult listResult = queryList(dimensionName, waypointList, filter, resolvedQuery);
+                if (listResult.include()) {
+                    listResults.add(listResult);
+                }
+            }
+            if (!listResults.isEmpty()) {
+                dimensionResults.add(new DimensionResult(dimensionName, Collections.unmodifiableList(listResults)));
+            }
+        });
+        return new QueryResult(Collections.unmodifiableList(dimensionResults), resolvedQuery);
+    }
+
+    private static ListResult queryList(String dimensionName, WaypointList waypointList, String filter, Query query) {
         boolean includeAll = filter.isEmpty();
         boolean listMatched = !includeAll && matchesText(waypointList.name(), filter);
         List<SimpleWaypoint> waypointSnapshots = new ArrayList<>();
@@ -142,6 +162,11 @@ public final class WaypointQueryEngine {
             }
         }
         return false;
+    }
+
+    /** Shared identifier/keyword filtering for local and immutable remote query adapters. */
+    public static boolean matchesFilter(String text, String filterText) {
+        return matchesText(text, filterText == null ? "" : filterText.trim().toLowerCase(Locale.ROOT));
     }
 
     private static boolean matchesText(String text, String filter) {

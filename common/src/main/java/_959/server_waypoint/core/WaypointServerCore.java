@@ -1,8 +1,11 @@
 package _959.server_waypoint.core;
 
 import _959.server_waypoint.config.Config;
+import _959.server_waypoint.crossserver.catalog.RemoteCatalogStore;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
+import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
+import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.translation.AdventureTranslator;
 import _959.server_waypoint.translation.LanguageFilesManager;
 import com.google.gson.Gson;
@@ -40,6 +43,33 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
     private final LanguageFilesManager languageFilesManager;
     private final ReentrantLock configIoLock = new ReentrantLock(true);
     private volatile boolean resourcesLoaded;
+    private volatile RemoteCatalogStore remoteCatalogStore =
+            RemoteCatalogStore.empty();
+
+    /** Read-only service attachment; remote catalogs never enter the local waypoint file map. */
+    public void setRemoteCatalogStore(RemoteCatalogStore store) {
+        remoteCatalogStore = Objects.requireNonNull(store);
+    }
+    public RemoteCatalogStore remoteCatalogStore() { return remoteCatalogStore; }
+    public Path configDirectory() { return configDir; }
+
+    /** Validates a newly selected icon against this server, without requiring client resources. */
+    public final boolean isWaypointIconValid(@Nullable NamespacedId icon) {
+        if (icon == null) {
+            return true;
+        }
+        if (icon.toString().length() > WaypointIconPolicy.MAX_LENGTH) {
+            return false;
+        }
+        return icon.namespace().equals("voxelmap")
+                ? WaypointIconPolicy.isKnownVoxelMapIcon(icon)
+                : this.isRegisteredIconItem(icon);
+    }
+
+    /** Platforms accept only registered, non-air items. No registry means no accepted item IDs. */
+    protected boolean isRegisteredIconItem(NamespacedId icon) {
+        return false;
+    }
 
     /**
      * constructor for a dedicated server </br>
@@ -240,25 +270,30 @@ public abstract class WaypointServerCore extends WaypointFilesManagerCore {
         try {
             if (Files.exists(xaeromapFile) && Files.isRegularFile(xaeromapFile)) {
                 //read xaeromap.txt and get the id
-                String idString = Files.readString(xaeromapFile);
+                String idString = Files.readString(xaeromapFile).trim();
                 if (idString.startsWith("id:")) {
                     worldId = Integer.parseInt(idString.split(":")[1]);
+                    return;
                 } else {
                     LOGGER.error("Invalid xaeromap.txt file format, cannot read id, creating a new one");
                 }
             }
         } catch (Exception e) {
             LOGGER.error("Failed to read xaeromap file. creating a new one", e);
-            try {
-                int id = (new Random()).nextInt();
-                String idString = "id:" + id;
-                Files.writeString(xaeromapFile, idString);
-                worldId = id;
-            } catch (Exception ee) {
-                CONFIG.Features().sendXaerosWorldId(false);
-                LOGGER.error("Cannot enable sendXaerosWorldId: failed to create xaeromap.txt: ", ee);
-            }
         }
+        try {
+            int id = (new Random()).nextInt();
+            String idString = "id:" + id;
+            Files.writeString(xaeromapFile, idString);
+            worldId = id;
+        } catch (Exception e) {
+            CONFIG.Features().sendXaerosWorldId(false);
+            LOGGER.error("Cannot enable sendXaerosWorldId: failed to create xaeromap.txt: ", e);
+        }
+    }
+
+    protected final void setXaeroWorldId(int id) {
+        worldId = id;
     }
 
     public static int getWorldId() {

@@ -50,6 +50,8 @@ public class C2SPacketHandler<S, K, P> {
             8_192
     );
 
+    private final _959.server_waypoint.crossserver.catalog.ClientCatalogSync<P> remoteCatalogSync =
+            new _959.server_waypoint.crossserver.catalog.ClientCatalogSync<>();
     private final PlatformMessageSender<S, P> sender;
     private final WaypointServerCore waypointServer;
     private final PermissionManager<S, K, P> permissionManager;
@@ -74,6 +76,7 @@ public class C2SPacketHandler<S, K, P> {
     }
 
     public void onClientHandshake(P player, ClientHandshakeBuffer buffer) {
+        this.remoteCatalogSync.disconnect(player);
         int clientVersion = buffer.version();
         boolean compatible = clientVersion == ProtocolVersion.PROTOCOL_VERSION;
         this.sender.setChunkedMessageCapable(player, compatible);
@@ -93,6 +96,15 @@ public class C2SPacketHandler<S, K, P> {
             ));
             LOGGER.warn("client version mismatch: {}", clientVersion);
         }
+    }
+
+    public void onRemoteCatalogRequest(P player, RemoteCatalogRequestMessage request) {
+        if (!this.sender.canSendChunkedMessage(player) || !this.remoteCatalogSync.admit(player)) return;
+        boolean authorized = this.permissionManager.checkPlayerPermission(player,
+                this.permissionManager.keys.remoteList(), CONFIG.CommandPermission().remoteList());
+        this.sender.sendPlayerChunkedMessage(player,
+                _959.server_waypoint.crossserver.catalog.ClientCatalogSync.snapshot(request.requestId(), authorized,
+                        authorized ? this.waypointServer.remoteCatalogStore().snapshot() : Map.of()));
     }
 
     public void onClientUpdateRequest(P player, ClientUpdateRequestMessage buffer) {
@@ -171,6 +183,11 @@ public class C2SPacketHandler<S, K, P> {
                 CONFIG.CommandPermission().edit()
         )) {
             this.sendEditResult(player, request, EditResultStatus.PERMISSION_DENIED, null, 0);
+            return;
+        }
+        if (request.patch().icon().isSet()
+                && !this.waypointServer.isWaypointIconValid(request.patch().icon().requiredValue())) {
+            this.sendEditResult(player, request, EditResultStatus.INVALID_VALUE, null, 0);
             return;
         }
         try {
@@ -327,6 +344,8 @@ public class C2SPacketHandler<S, K, P> {
                         if (message instanceof ClientUpdateRequestMessage updateRequest) {
                             validateClientUpdateRequest(updateRequest);
                             this.onClientUpdateRequest(player, updateRequest);
+                        } else if (message instanceof RemoteCatalogRequestMessage request) {
+                            this.onRemoteCatalogRequest(player, request);
                         } else if (message instanceof WaypointEditRequestMessage editRequest) {
                             validateWaypointEditRequest(editRequest);
                             this.onWaypointEditRequest(player, editRequest);
@@ -436,6 +455,7 @@ public class C2SPacketHandler<S, K, P> {
     }
 
     public void onDisconnect(P player) {
+        this.remoteCatalogSync.disconnect(player);
         this.sender.disconnectChunkedMessages(player);
         this.uploadChunkedMessages.clear(player);
         UploadTransportSession<P> session = this.activeUploadTransportSession.get();
@@ -446,6 +466,7 @@ public class C2SPacketHandler<S, K, P> {
     }
 
     public void resetSession() {
+        this.remoteCatalogSync.clear();
         this.uploadChunkedMessages.clearAll();
         this.activeUploadTransportSession.set(null);
         this.uploadCoordinator.resetSession();
@@ -488,6 +509,7 @@ public class C2SPacketHandler<S, K, P> {
     }
 
     private static ReceiveLimits generalServerboundLimits(int messageTypeId) {
+        if (messageTypeId == ChunkedMessageRegistry.REMOTE_CATALOG_REQUEST.id()) return new ReceiveLimits(16, 4);
         if (messageTypeId == ChunkedMessageRegistry.CLIENT_UPDATE_REQUEST.id()) {
             return UPDATE_REQUEST_LIMITS;
         }

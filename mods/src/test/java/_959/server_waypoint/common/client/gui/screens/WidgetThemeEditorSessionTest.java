@@ -1,6 +1,7 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.gui.render.WidgetTheme;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeSelection;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeJson;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
@@ -76,6 +77,49 @@ class WidgetThemeEditorSessionTest {
         assertEquals(session.getDraftTheme(), WidgetThemeManager.getTheme());
         assertThrows(IllegalStateException.class,
                 () -> session.setColor(WidgetThemeVariable.ACCENT, 0xFF000000));
+    }
+
+    @Test
+    void presetSwitchingRetainsCustomEditsAcrossSaveAndReopen() throws IOException {
+        Path path = this.tempDirectory.resolve("widget-theme.json");
+        WidgetTheme original = WidgetThemes.DEFAULT;
+        WidgetThemeEditorSession session = new WidgetThemeEditorSession(original, path);
+        session.setColor(WidgetThemeVariable.ACCENT, 0x7F123456);
+        WidgetTheme custom = session.getDraftTheme();
+        session.select(WidgetThemeSelection.MODERN_DARK);
+        assertEquals(WidgetThemes.MODERN_DARK, WidgetThemeManager.getTheme());
+        session.select(WidgetThemeSelection.HIGH_CONTRAST);
+        session.select(WidgetThemeSelection.CUSTOM);
+        assertEquals(custom, session.getDraftTheme());
+        session.select(WidgetThemeSelection.HIGH_CONTRAST);
+        session.save();
+        session.cancel();
+        assertEquals(WidgetThemes.HIGH_CONTRAST, WidgetThemeJson.loadAndApply(path));
+
+        WidgetThemeEditorSession reopened = new WidgetThemeEditorSession(
+                WidgetThemeManager.getTheme(), path, WidgetThemeJson.loadSettings(path));
+        assertEquals(WidgetThemeSelection.HIGH_CONTRAST, reopened.getSelection());
+        assertFalse(reopened.isDirty());
+        reopened.select(WidgetThemeSelection.CUSTOM);
+        assertEquals(custom, reopened.getDraftTheme());
+        reopened.cancel();
+        assertEquals(WidgetThemes.HIGH_CONTRAST, WidgetThemeManager.getTheme());
+        assertEquals(WidgetThemeSelection.HIGH_CONTRAST, WidgetThemeJson.loadSettings(path).selection());
+    }
+
+    @Test
+    void editingPresetCreatesCustomPaletteAndResetPreservesIt() {
+        WidgetThemeEditorSession session = new WidgetThemeEditorSession(
+                WidgetThemes.DEFAULT, this.tempDirectory.resolve("widget-theme.json"));
+        session.select(WidgetThemeSelection.MODERN_DARK);
+        session.setColor(WidgetThemeVariable.ACCENT, 0x7F123456);
+        WidgetTheme custom = WidgetThemes.MODERN_DARK.withColor(WidgetThemeVariable.ACCENT, 0x7F123456);
+        assertEquals(WidgetThemeSelection.CUSTOM, session.getSelection());
+        assertEquals(custom, session.getDraftTheme());
+        session.reset();
+        assertEquals(WidgetThemes.DEFAULT, session.getDraftTheme());
+        session.select(WidgetThemeSelection.CUSTOM);
+        assertEquals(custom, session.getDraftTheme());
     }
 
     @Test

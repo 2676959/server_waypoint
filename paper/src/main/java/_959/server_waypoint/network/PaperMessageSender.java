@@ -80,20 +80,26 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
     }
 
     @Override
+    public boolean isPlainTextReceiver(CommandSourceStack source) {
+        return !(source.getSender() instanceof Player);
+    }
+
+    @Override
     public void sendMessage(CommandSourceStack source, Component component) {
         CommandSender sender = source.getSender();
-        this.scheduler.execute(sender, () -> sender.sendMessage(component));
+        Component message = this.isPlainTextReceiver(source) ? component : PlatformMessageSender.forPlayer(component);
+        this.scheduler.execute(sender, () -> sender.sendMessage(message));
     }
 
     @Override
     public void sendPlayerMessage(Player player, Component component) {
-        this.scheduler.execute(player, () -> player.sendMessage(component));
+        Component message = PlatformMessageSender.forPlayer(component);
+        this.scheduler.execute(player, () -> player.sendMessage(message));
     }
 
     @Override
     public void sendError(CommandSourceStack source, Component component) {
-        CommandSender sender = source.getSender();
-        this.scheduler.execute(sender, () -> sender.sendMessage(component));
+        this.sendMessage(source, component);
     }
 
     @Override

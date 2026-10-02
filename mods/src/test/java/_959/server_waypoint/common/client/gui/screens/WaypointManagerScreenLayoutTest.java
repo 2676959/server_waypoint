@@ -53,17 +53,15 @@ class WaypointManagerScreenLayoutTest {
     }
 
     @Test
-    void verticalSpaceGoesToTheDimensionAndWaypointLists() {
+    void verticalSpaceGoesToTheWaypointList() {
         WaypointManagerScreen.ManagerLayoutGeometry geometry =
                 WaypointManagerScreen.calculateLayoutGeometry(854, 480);
 
         assertEquals(394, geometry.contentHeight());
-        assertEquals(292, geometry.dimensionListHeight());
         assertEquals(379, geometry.waypointListHeight(11));
 
         WaypointManagerScreen.ManagerLayoutGeometry shorter =
                 WaypointManagerScreen.calculateLayoutGeometry(854, 200);
-        assertTrue(shorter.dimensionListHeight() < geometry.dimensionListHeight());
         assertTrue(shorter.waypointListHeight(11) < geometry.waypointListHeight(11));
     }
 

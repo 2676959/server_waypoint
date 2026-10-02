@@ -1,12 +1,12 @@
 package _959.server_waypoint.navigation;
 
+import _959.server_waypoint.text.chat.DimensionStyle;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
 import java.util.List;
 
-import static _959.server_waypoint.text.WaypointTextHelper.dimensionNameWithColor;
 import static net.kyori.adventure.text.Component.empty;
 import static net.kyori.adventure.text.Component.newline;
 import static net.kyori.adventure.text.Component.text;
@@ -37,10 +37,15 @@ public final class NavigationDisplayText {
 
     public static List<Component> buildItemLore(NavigationTarget target) {
         if (target.waypointDescription().isEmpty()) {
-            return List.of(dimensionNameWithColor(target.dimensionName()).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE));
+            return List.of(dimensionName(target).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE));
         }
-        return List.of(dimensionNameWithColor(target.dimensionName()).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE),
+        return List.of(dimensionName(target).decoration(TextDecoration.ITALIC, TextDecoration.State.FALSE),
                 parse(target.waypointDescription()).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE));
+    }
+
+    /** The dimension ID in its colour; item lore and live displays show the ID as it is. */
+    private static Component dimensionName(NavigationTarget target) {
+        return text(target.dimensionName()).color(DimensionStyle.colorOf(target.dimensionName()));
     }
 
     public static Component build(NavigationSession session, NavigationSnapshot snapshot) {

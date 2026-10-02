@@ -45,6 +45,14 @@ class WidgetThemeStateTest {
     }
 
     @Test
+    void inactiveIconsTakeTheDisabledTextColorAndActiveIconsKeepTheirOwn() {
+        WidgetThemeManager.setColor(WidgetThemeVariable.TEXT_DISABLED, 0xFF444444);
+
+        assertEquals(0xFF444444, WidgetThemeState.iconTint(false));
+        assertEquals(0xFFFFFFFF, WidgetThemeState.iconTint(true));
+    }
+
+    @Test
     void disabledOverlayPreservesThemeRgbWithTranslucentAlpha() {
         WidgetThemeManager.setColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND, 0xFF123456);
 

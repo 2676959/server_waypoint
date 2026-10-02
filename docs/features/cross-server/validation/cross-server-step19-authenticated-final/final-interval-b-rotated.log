@@ -1,0 +1,144 @@
+[10:09:18 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:09:18 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:09:18 INFO]: AuthenticatedTestPlayer joined the game
+[10:09:18 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51134] logged in with entity id 166 at ([world]8197.5, 77.6592803332828, 30.5)
+[10:09:19 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=8197.5 y=80.0 z=30.5
+[10:09:21 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp a "minecraft:overworld" Test Target
+[10:09:21 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:09:21 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:09:21 INFO]: AuthenticatedTestPlayer left the game
+[10:09:46 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:09:46 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:09:46 INFO]: AuthenticatedTestPlayer joined the game
+[10:09:46 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51150] logged in with entity id 177 at ([world]8197.5, 77.6592803332828, 30.5)
+[10:09:47 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=8197.5 y=80.0 z=30.5
+[10:09:48 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp a "minecraft:overworld" Test Target
+[10:09:48 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:09:48 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:09:48 INFO]: AuthenticatedTestPlayer left the game
+[10:10:16 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:10:16 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:10:16 INFO]: AuthenticatedTestPlayer joined the game
+[10:10:16 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51165] logged in with entity id 188 at ([world]8197.5, 77.6592803332828, 30.5)
+[10:10:17 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=8197.5 y=80.0 z=30.5
+[10:10:18 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp a "minecraft:overworld" Test Target
+[10:10:18 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:10:18 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:10:18 INFO]: AuthenticatedTestPlayer left the game
+[10:10:46 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:10:46 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:10:46 INFO]: AuthenticatedTestPlayer joined the game
+[10:10:46 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51180] logged in with entity id 199 at ([world]8197.5, 77.6592803332828, 30.5)
+[10:10:47 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=8197.5 y=80.0 z=30.5
+[10:10:48 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp a "minecraft:overworld" Test Target
+[10:10:49 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:10:49 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:10:49 INFO]: AuthenticatedTestPlayer left the game
+[10:11:16 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:11:16 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:11:16 INFO]: AuthenticatedTestPlayer joined the game
+[10:11:16 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51197] logged in with entity id 210 at ([world]8197.5, 77.62769468044557, 30.5)
+[10:11:17 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=8197.5 y=80.0 z=30.5
+[10:11:18 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp a "minecraft:overworld" Test Target
+[10:11:18 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:11:18 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:11:18 INFO]: AuthenticatedTestPlayer left the game
+[10:11:46 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:11:46 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:11:46 INFO]: AuthenticatedTestPlayer joined the game
+[10:11:46 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51276] logged in with entity id 221 at ([world]8197.5, 77.6592803332828, 30.5)
+[10:11:47 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=8197.5 y=80.0 z=30.5
+[10:11:49 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp a "minecraft:overworld" Test Target
+[10:11:49 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:11:49 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:11:49 INFO]: AuthenticatedTestPlayer left the game
+[10:14:07 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:14:07 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:14:07 INFO]: AuthenticatedTestPlayer joined the game
+[10:14:07 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51326] logged in with entity id 232 at ([world]8197.5, 77.6592803332828, 30.5)
+[10:14:07 INFO]: [TeleportAudit] STEP19_ARRIVAL_ACTION player=00000000-0000-4000-8000-000000000019 action=deny-permission owned=true
+[10:14:08 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=8197.5 y=77.6592803332828 z=30.5
+[10:14:12 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:14:12 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:14:12 INFO]: AuthenticatedTestPlayer left the game
+[10:14:19 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:14:19 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:14:19 INFO]: AuthenticatedTestPlayer joined the game
+[10:14:19 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51336] logged in with entity id 234 at ([world]8197.5, 74.16404838584577, 30.5)
+[10:14:19 INFO]: [TeleportAudit] STEP19_ARRIVAL_ACTION player=00000000-0000-4000-8000-000000000019 action=move-target owned=true
+[10:14:20 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=8197.5 y=81.0 z=30.5
+[10:14:20 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[10:14:28 INFO]: AuthenticatedTestPlayer issued server command: /wp edit waypoint minecraft:overworld Test Target set position 8197 80 30
+[10:14:29 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[10:14:33 INFO]: AuthenticatedTestPlayer issued server command: /wp remote tp a "minecraft:overworld" Test Target
+[10:14:33 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:14:33 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:14:33 INFO]: AuthenticatedTestPlayer left the game
+[10:14:47 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:14:47 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:14:47 INFO]: AuthenticatedTestPlayer joined the game
+[10:14:47 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51345] logged in with entity id 246 at ([world]8197.5, 77.09744946467497, 30.5)
+[10:14:47 INFO]: [TeleportAudit] STEP19_ARRIVAL_ACTION player=00000000-0000-4000-8000-000000000019 action=disconnect owned=true
+[10:14:47 INFO]: AuthenticatedTestPlayer lost connection: STEP19 controlled authenticated arrival disconnect
+[10:14:47 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:14:47 INFO]: [TeleportAudit] STEP19_RETIRED player=00000000-0000-4000-8000-000000000019
+[10:14:47 INFO]: AuthenticatedTestPlayer left the game
+[10:14:55 INFO]: UUID of player AuthenticatedTestPlayer is 00000000-0000-4000-8000-000000000019
+[10:14:56 INFO]: [TeleportAudit] STEP19_JOIN player=00000000-0000-4000-8000-000000000019 owned=true
+[10:14:56 INFO]: AuthenticatedTestPlayer joined the game
+[10:14:56 INFO]: AuthenticatedTestPlayer[/127.0.0.1:51350] logged in with entity id 257 at ([world]8197.5, 77.09744946467497, 30.5)
+[10:14:56 INFO]: [TeleportAudit] STEP19_OWNER player=00000000-0000-4000-8000-000000000019 owned=true current=true online=true x=8197.5 y=80.0 z=30.5
+[10:15:12 INFO]: AuthenticatedTestPlayer lost connection: Disconnected
+[10:15:12 INFO]: [TeleportAudit] STEP19_QUIT player=00000000-0000-4000-8000-000000000019 owned=true
+[10:15:12 INFO]: AuthenticatedTestPlayer left the game
+> >
+[10:16:41 INFO]: Stopping the server
+[10:16:41 INFO]: [RegionShutdownThread] Awaiting scheduler termination for 60s...
+[10:16:41 INFO]: [RegionShutdownThread] Scheduler halted
+[10:16:41 INFO]: Stopping server
+[10:16:41 INFO]: [TeleportAudit] Disabling TeleportAudit v4
+[10:16:41 INFO]: [server_waypoint_plugin] Disabling ServerWaypoint v3.1.0
+[10:16:41 INFO]: [server_waypoint_core] Saved 1 waypoint lists to file: plugins/ServerWaypoint/waypoints/minecraft$overworld.json
+[10:16:41 INFO]: [server_waypoint_core] Saved config file: plugins/ServerWaypoint/config.json
+[10:16:41 INFO]: [RegionShutdownThread] Halting chunk systems...
+[10:16:41 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world'
+[10:16:41 INFO]: [ChunkHolderManager] Halted chunk system for world 'world'
+[10:16:41 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_nether'
+[10:16:41 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_nether'
+[10:16:41 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_the_end'
+[10:16:41 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_the_end'
+[10:16:41 INFO]: [RegionShutdownThread] Halted chunk systems
+[10:16:41 INFO]: [RegionShutdownThread] Finishing pending teleports...
+[10:16:41 INFO]: [RegionShutdownThread] Finished pending teleports
+[10:16:41 INFO]: [RegionShutdownThread] Saving all worlds
+[10:16:41 INFO]: [RegionShutdownThread] Saving world data for world 'world'
+[10:16:41 INFO]: [RegionShutdownThread] Closing player inventories...
+[10:16:41 INFO]: [RegionShutdownThread] Closed player inventories
+[10:16:41 INFO]: [RegionShutdownThread] Saving chunks...
+[10:16:41 INFO]: [RegionShutdownThread] Saved chunks
+[10:16:41 INFO]: [RegionShutdownThread] Saving level data...
+[10:16:41 INFO]: [RegionShutdownThread] Saved level data
+[10:16:41 INFO]: [RegionShutdownThread] Saved world data for world 'world'
+[10:16:41 INFO]: [RegionShutdownThread] Saving world data for world 'world_nether'
+[10:16:41 INFO]: [RegionShutdownThread] Closing player inventories...
+[10:16:41 INFO]: [RegionShutdownThread] Closed player inventories
+[10:16:41 INFO]: [RegionShutdownThread] Saving chunks...
+[10:16:41 INFO]: [RegionShutdownThread] Saved chunks
+[10:16:41 INFO]: [RegionShutdownThread] Saving level data...
+[10:16:41 INFO]: [RegionShutdownThread] Saved level data
+[10:16:41 INFO]: [RegionShutdownThread] Saved world data for world 'world_nether'
+[10:16:41 INFO]: [RegionShutdownThread] Saving world data for world 'world_the_end'
+[10:16:41 INFO]: [RegionShutdownThread] Closing player inventories...
+[10:16:41 INFO]: [RegionShutdownThread] Closed player inventories
+[10:16:41 INFO]: [RegionShutdownThread] Saving chunks...
+[10:16:41 INFO]: [RegionShutdownThread] Saved chunks
+[10:16:41 INFO]: [RegionShutdownThread] Saving level data...
+[10:16:41 INFO]: [RegionShutdownThread] Saved level data
+[10:16:41 INFO]: [RegionShutdownThread] Saved world data for world 'world_the_end'
+[10:16:41 INFO]: [RegionShutdownThread] Saved all worlds
+[10:16:41 INFO]: [RegionShutdownThread] Saving all player data...
+[10:16:41 INFO]: [RegionShutdownThread] Saved all player data
+[10:16:41 INFO]: Waiting for all RegionFile I/O tasks to complete...
+[10:16:41 INFO]: All RegionFile I/O tasks to complete
+[10:16:41 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+[10:16:41 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...

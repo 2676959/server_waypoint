@@ -1,0 +1,76 @@
+2026-09-06 21:53:40,371 main WARN Advanced terminal features are not available in this environment
+[21:53:40] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgeserver, --fml.forgeVersion, 47.4.20, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412, nogui]
+[21:53:40] [main/INFO] [cp.mo.mo.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.19 by Homebrew; OS Mac OS X arch aarch64 version 26.5
+[21:53:40] [main/WARN] [ne.mi.fm.lo.FMLConfig/CORE]: Configuration file /private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/config/fml.toml is not correct. Correcting
+[21:53:40] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowSkipGLVersions] was corrected from null to []
+[21:53:40] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowLogHelpMessage] was corrected from null to true
+[21:53:40] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowSquir] was corrected from null to false
+[21:53:40] [main/INFO] [ne.mi.fm.lo.FMLConfig/CORE]: Incorrect key [earlyWindowShowCPU] was corrected from null to false
+[21:53:40] [main/INFO] [ne.mi.fm.lo.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgeserver
+[21:53:40] [main/INFO] [mixin/]: SpongePowered MIXIN Subsystem Version=0.8.5 Source=union:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/libraries/org/spongepowered/mixin/0.8.5/mixin-0.8.5.jar%2365!/ Service=ModLauncher Env=SERVER
+[21:53:40] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/libraries/net/minecraftforge/fmlcore/1.20.1-47.4.20/fmlcore-1.20.1-47.4.20.jar is missing mods.toml file
+[21:53:40] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/libraries/net/minecraftforge/javafmllanguage/1.20.1-47.4.20/javafmllanguage-1.20.1-47.4.20.jar is missing mods.toml file
+[21:53:40] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/libraries/net/minecraftforge/lowcodelanguage/1.20.1-47.4.20/lowcodelanguage-1.20.1-47.4.20.jar is missing mods.toml file
+[21:53:40] [main/WARN] [ne.mi.fm.lo.mo.ModFileParser/LOADING]: Mod file /private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/libraries/net/minecraftforge/mclanguage/1.20.1-47.4.20/mclanguage-1.20.1-47.4.20.jar is missing mods.toml file
+[21:53:40] [main/INFO] [ne.mi.fm.lo.mo.JarInJarDependencyLocator/]: Found 2 dependencies adding them to mods collection
+[21:53:41] [main/INFO] [mixin/]: Compatibility level set to JAVA_17
+[21:53:41] [main/INFO] [cp.mo.mo.LaunchServiceHandler/MODLAUNCHER]: Launching target 'forgeserver' with arguments [nogui]
+[21:53:41] [main/WARN] [os.ut.pl.ma.SysctlUtil/]: Failed sysctl call: hw.cpufrequency, Error code: 2
+[21:53:42] [main/INFO] [MixinExtras|Service/]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.4).
+[21:53:43] [modloading-worker-0/INFO] [ne.mi.co.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.20, for MC 1.20.1 with MCP 20230612.114412
+[21:53:43] [modloading-worker-0/INFO] [ne.mi.co.MinecraftForge/FORGE]: MinecraftForge v47.4.20 Initialized
+[21:53:43] [modloading-worker-0/INFO] [server_waypoint_translator/]: Internal translations: en_us, zh_cn, he_il, es_es, zh_tw, zh_hk
+[21:53:43] [modloading-worker-0/INFO] [server_waypoint_mod/]: xaero's mod is not loaded, set sendXaerosWorldId to true by config.json
+SW_NOISE_PLATFORM PASS entrypoint=_959.server_waypoint.forge.ServerWaypointForge loader=cpw.mods.modlauncher.TransformingClassLoader source=union:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/mods/server_waypoint-3.1.0-forge-mc1.20-1.20.1.jar%23101!/
+[21:53:43] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Starting version check at https://files.minecraftforge.net/net/minecraftforge/forge/promotions_slim.json
+[21:53:44] [main/INFO] [mojang/YggdrasilAuthenticationService]: Environment: authHost='https://authserver.mojang.com', accountsHost='https://api.mojang.com', sessionHost='https://sessionserver.mojang.com', servicesHost='https://api.minecraftservices.com', name='PROD'
+[21:53:44] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23103!/assets/.mcassetsroot' uses unexpected schema
+[21:53:44] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/libraries/net/minecraft/server/1.20.1-20230612.114412/server-1.20.1-20230612.114412-srg.jar%23103!/data/.mcassetsroot' uses unexpected schema
+[21:53:44] [Forge Version Check/INFO] [ne.mi.fm.VersionChecker/]: [forge] Found status: OUTDATED Current: 47.4.20 Target: 47.4.23
+[21:53:44] [main/ERROR] [minecraft/DedicatedServerProperties]: No key layers in MapLike[{}]
+[21:53:44] [main/INFO] [minecraft/RecipeManager]: Loaded 7 recipes
+[21:53:44] [main/INFO] [minecraft/AdvancementList]: Loaded 1271 advancements
+[21:53:45] [Server thread/INFO] [minecraft/DedicatedServer]: Starting minecraft server version 1.20.1
+[21:53:45] [Server thread/INFO] [minecraft/DedicatedServer]: Loading properties
+[21:53:45] [Server thread/INFO] [minecraft/DedicatedServer]: Default game type: SURVIVAL
+[21:53:45] [Server thread/INFO] [minecraft/MinecraftServer]: Generating keypair
+[21:53:45] [Server thread/INFO] [minecraft/DedicatedServer]: Starting Minecraft server on 127.0.0.1:25890
+[21:53:45] [Server thread/INFO] [minecraft/ServerConnectionListener]: Using default channel type
+[21:53:45] [Server thread/WARN] [minecraft/DedicatedServer]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[21:53:45] [Server thread/WARN] [minecraft/DedicatedServer]: The server will make no attempt to authenticate usernames. Beware.
+[21:53:45] [Server thread/WARN] [minecraft/DedicatedServer]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[21:53:45] [Server thread/WARN] [minecraft/DedicatedServer]: To change this, set "online-mode" to "true" in the server.properties file.
+[21:53:45] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Configuration file ./world/serverconfig/forge-server.toml is not correct. Correcting
+[21:53:45] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}.
+[21:53:45] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false.
+[21:53:45] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false.
+[21:53:45] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false.
+[21:53:45] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1.
+[21:53:45] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05.
+[21:53:45] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler.
+[21:53:45] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true.
+[21:53:45] [Server thread/WARN] [ne.mi.co.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false.
+[21:53:45] [Server thread/INFO] [minecraft/DedicatedServer]: Preparing level "world"
+[21:53:45] [Server thread/INFO] [minecraft/MinecraftServer]: Preparing start region for dimension minecraft:overworld
+[21:53:45] [Worker-Main-9/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 0%
+[21:53:46] [Worker-Main-5/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 11%
+[21:53:46] [Worker-Main-5/INFO] [minecraft/LoggerChunkProgressListener]: Preparing spawn area: 84%
+[21:53:46] [Server thread/INFO] [minecraft/LoggerChunkProgressListener]: Time elapsed: 1123 ms
+[21:53:46] [Server thread/INFO] [minecraft/DedicatedServer]: Done (1.526s)! For help, type "help"
+[21:53:46] [LanServerPinger #1/WARN] [minecraft/LanServerPinger]: LanServerPinger: No route to host
+[21:53:46] [Server thread/INFO] [ne.mi.se.pe.PermissionAPI/]: Successfully initialized permission handler forge:default_handler
+[21:53:46] [Server thread/INFO] [server_waypoint_core/]: Created config file at: /private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/defaultconfigs/server_waypoint/config.json
+[21:53:46] [Server thread/INFO] [server_waypoint_core/]: Loaded 0 languages:
+[21:53:46] [Server thread/INFO] [server_waypoint_core/]: Created waypoints directory at: /private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/defaultconfigs/server_waypoint/waypoints
+[21:53:46] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping the server
+[21:53:46] [Server thread/INFO] [server_waypoint_core/]: Saved config file: /private/tmp/server-waypoint-step3-runtime-oxmlwttn/rebased-forge-1.20.1/defaultconfigs/server_waypoint/config.json
+[21:53:46] [Server thread/INFO] [minecraft/MinecraftServer]: Stopping server
+[21:53:46] [Server thread/INFO] [minecraft/MinecraftServer]: Saving players
+[21:53:46] [Server thread/INFO] [minecraft/MinecraftServer]: Saving worlds
+[21:53:47] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[21:53:47] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+[21:53:47] [Server thread/INFO] [minecraft/MinecraftServer]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+[21:53:47] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[21:53:47] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[21:53:47] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[21:53:47] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved

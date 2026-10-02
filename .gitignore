@@ -52,7 +52,7 @@ builds/
 /mods/versions/*/logs/
 
 # misc
-plans/
+/plans/
 /TODO.md
 
 # zed editor

@@ -1,7 +1,9 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import _959.server_waypoint.common.client.gui.render.WidgetTextures;
+import _959.server_waypoint.common.client.gui.render.WaypointRowRenderer;
 import _959.server_waypoint.common.client.gui.screens.WaypointAddScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
@@ -14,6 +16,7 @@ import _959.server_waypoint.core.waypoint.WaypointListDisplayModel;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
+import _959.server_waypoint.text.chat.DimensionStyle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,15 +54,13 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 import static _959.server_waypoint.common.client.util.ClientCommandUtils.sendCommand;
 import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
-import static _959.server_waypoint.text.WaypointTextHelper.getDimensionColor;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
 import static _959.server_waypoint.util.StringCommandBuilder.removeCmd;
 import static _959.server_waypoint.util.StringCommandBuilder.removeListCmd;
 import static _959.server_waypoint.util.StringCommandBuilder.tpCmd;
 
 public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNode> {
-    public static int TELEPORT_KEY = 84;
-    public static final Component EMPTY_INFO_TEXT = Component.translatable("waypoint.empty_mark");
+    private static final int EMPTY_MESSAGE_INSET = 5;
     private static final int listIconSize = 16;
     private static final int buttonIconSize = 12;
     private static final int itemHeight = 20;
@@ -79,6 +80,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private final int listIconVertOffset;
     private final int buttonIconVertOffset;
     private final int buttonIconHrzOffset;
+    private final ScalableText emptyMessage;
     private final int btnWidth = 19;
     private int thirdBtnXPos = width - btnWidth;
     private int secondBtnXPos = thirdBtnXPos - btnWidth;
@@ -117,6 +119,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         listIconVertOffset = centered(itemHeight, listIconSize);
         buttonIconVertOffset = centered(itemHeight, buttonIconSize);
         buttonIconHrzOffset = centered(btnWidth, buttonIconSize);
+        emptyMessage = new ScalableText(EMPTY_MESSAGE_INSET, textVertOffset, Component.empty(), TEXT_MUTED, textRenderer);
     }
 
     /**
@@ -145,6 +148,30 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     static void setDimensionExpanded(String dimensionName, boolean expanded) {
         DIMENSION_EXPANSION_STATES.put(dimensionName, expanded);
+    }
+
+    /** Why the list has no rows; {@link #renderEmpty} shows the matching message. */
+    enum EmptyReason {
+        NO_MATCHES("waypoint.empty.no_matches"),
+        NO_WAYPOINTS("waypoint.empty.all"),
+        NO_WAYPOINTS_IN_DIMENSION("waypoint.empty.dimension");
+
+        private final String translationKey;
+
+        EmptyReason(String translationKey) {
+            this.translationKey = translationKey;
+        }
+
+        String translationKey() {
+            return this.translationKey;
+        }
+    }
+
+    static EmptyReason resolveEmptyReason(String query, boolean showAllDimensions) {
+        if (!query.isBlank()) {
+            return EmptyReason.NO_MATCHES;
+        }
+        return showAllDimensions ? EmptyReason.NO_WAYPOINTS : EmptyReason.NO_WAYPOINTS_IN_DIMENSION;
     }
 
     /**
@@ -282,6 +309,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                     .toList();
         }
         updateRoots(roots);
+        emptyMessage.setText(Component.translatable(
+                resolveEmptyReason(this.searchQuery, this.showAllDimensions).translationKey(),
+                this.searchQuery
+        ));
         reconcileSelection(display);
     }
 
@@ -449,7 +480,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     @Override
     protected boolean onEntryClicked(TreeEntry<RowNode> entry, double contentMouseX, double contentMouseY, int button) {
-        if (button != 0) {
+        if (button != InputConstants.MOUSE_BUTTON_LEFT) {
             return false;
         }
         RowNode value = entry.value();
@@ -637,7 +668,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         boolean ret = false;
-        if (keyCode == TELEPORT_KEY) {
+        if (isTeleportKey(keyCode)) {
             TreeEntry<RowNode> hoveredEntry = getHoveredEntry();
             if (hoveredEntry != null && hoveredEntry.value() instanceof WaypointNode waypointNode) {
                 sendCommand(tpCmd(
@@ -652,9 +683,20 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         return ret || super.keyPressed(keyCode, scanCode, modifiers);
     }
 
+    static boolean isTeleportKey(int keyCode) {
+        return keyCode == InputConstants.KEY_T;
+    }
+
     @Override
     protected void renderEmpty(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
-        drawText(context, textRenderer, EMPTY_INFO_TEXT, 5, textVertOffset, getColor(TEXT_DISABLED), true);
+        int availableWidth = Math.max(1, getContentWidth() - EMPTY_MESSAGE_INSET * 2);
+        if (emptyMessage.getWidth() != availableWidth) {
+            emptyMessage.setMaxWidth(availableWidth);
+        }
+        emptyMessage.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, deltaTicks);
     }
 
     @Override
@@ -673,7 +715,11 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 );
             }
         }
-        distanceColumnX = Math.max(0, firstBtnXPos - labelTextGap - maxDistanceWidth);
+        distanceColumnX = firstBtnXPos - labelTextGap - maxDistanceWidth;
+    }
+
+    static int waypointLabelX(int indent) {
+        return indent + 35;
     }
 
     @Override
@@ -798,10 +844,9 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         int textColor = applyWaypointTextOpacity(getColor(TEXT_PRIMARY), wpRendered);
         int metadataTextColor = applyWaypointTextOpacity(getColor(TEXT_MUTED), wpRendered);
         int rgb = waypoint.rgb();
-        int y2 = rowY + itemHeight;
         boolean selected = isSelected(waypointNode);
+        WaypointRowRenderer.background(context, rowY, contentWidth, itemHeight, rgb, hovered, selected);
         if (hovered) {
-            context.fill(0, rowY, contentWidth, y2, 0x60000000 + rgb);
             int wpCenteredBtnY = rowY + buttonIconVertOffset;
             if (canToggleVisibility(waypointNode.dimensionName())) {
                 if (wpRendered) {
@@ -817,12 +862,6 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 texture(context, WidgetTextures.REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
                 removeClickedPos = -1;
             }
-            renderOutline(context, 0, rowY, contentWidth, itemHeight, 0xFF000000 + rgb);
-        } else if (selected) {
-            context.fill(0, rowY, contentWidth, y2, getColor(SELECTION_BACKGROUND));
-            renderOutline(context, 0, rowY, contentWidth, itemHeight, getColor(FOCUS_RING));
-        } else {
-            context.fill(0, rowY, contentWidth, y2, 0x10000000 + rgb);
         }
 
         final int finalY = rowY + textVertOffset;
@@ -830,7 +869,14 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         if (waypoint.global()) {
             drawText(context, textRenderer, "*", indent + 6, finalY, textColor);
         }
-        drawInitialsBox(context, initials, indent + 15, finalY - 1, backgroundColor, getInitialsTextColor(rgb, wpRendered));
+        var resolvedIcon = _959.server_waypoint.common.client.gui.render.WaypointIconRenderer.resolve(waypoint.icon());
+        if (resolvedIcon.kind() == _959.server_waypoint.common.client.gui.render.WaypointIconRenderer.Kind.INITIALS) {
+            drawInitialsBox(context, initials, indent + 15, finalY - 1, backgroundColor,
+                    getInitialsTextColor(rgb, wpRendered));
+        } else {
+            WaypointRowRenderer.icon(context, textRenderer, resolvedIcon, indent + 15, finalY - 4, 16,
+                    waypoint.rgb());
+        }
         String dimensionLine = "";
         Component listName = Component.empty();
         int dimensionColor = metadataTextColor;
@@ -857,8 +903,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 listName,
                 name,
                 distanceLabel,
-                indent + 55,
+                waypointLabelX(indent),
                 rowY,
+                contentWidth,
+                hovered,
                 dimensionColor,
                 metadataTextColor,
                 textColor
@@ -873,23 +921,27 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             DistanceLabel distanceLabel,
             int x,
             int rowY,
+            int contentWidth,
+            boolean hovered,
             int dimensionColor,
             int metadataColor,
             int nameColor
     ) {
-        int availableWidth = Math.max(0, distanceColumnX - x - labelTextGap);
         int metadataLineHeight = Math.round(textRenderer.lineHeight * metadataTextScale);
         int listWidth = (int)Math.ceil(textRenderer.width(listName) * metadataTextScale);
         int waypointX = listName.getString().isEmpty() ? 0 : listWidth + labelTextGap;
         int detailWidth = waypointX + textRenderer.width(waypointName);
         int dimensionWidth = (int)Math.ceil(textRenderer.width(dimensionLine) * metadataTextScale);
         int labelWidth = Math.max(dimensionWidth, detailWidth);
-        if (availableWidth == 0 || labelWidth == 0) {
+        int distanceWidth = (int)Math.ceil(textRenderer.width(distanceLabel.text()) * metadataTextScale);
+        NameDistanceLayout layout = resolveNameDistanceLayout(x, labelWidth, distanceWidth,
+                contentWidth, firstBtnXPos, distanceColumnX, hovered);
+        float labelScale = layout.nameScale();
+        if (labelScale == 0.0F) {
             return;
         }
 
         boolean twoLines = !dimensionLine.isEmpty();
-        float labelScale = Math.min(1.0F, (float)availableWidth / labelWidth);
         int textHeight = twoLines
                 ? metadataLineHeight + labelLineGap + textRenderer.lineHeight
                 : textRenderer.lineHeight;
@@ -915,19 +967,55 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         drawText(context, textRenderer, waypointName, waypointX, detailY, nameColor);
         pop(context);
 
-        if (!distanceLabel.isEmpty()) {
+        if (layout.showDistance()) {
             push(context);
-            translate(context, distanceColumnX, y);
-            scale(context, labelScale, labelScale);
+            int distanceY = y + Math.round((detailY + textRenderer.lineHeight) * labelScale) - metadataLineHeight;
+            translate(context, layout.distanceX(), distanceY);
             renderMetadataText(
                     context,
                     distanceLabel.text(),
                     0,
-                    detailY + textRenderer.lineHeight - metadataLineHeight,
+                    0,
                     distanceLabel.color()
             );
             pop(context);
         }
+    }
+
+    static float resolveLabelScale(int availableWidth, int labelWidth) {
+        if (availableWidth == 0) {
+            return 0.0F;
+        }
+        // Keep an ordinary baseline for distance-only rows with no name or context.
+        if (labelWidth == 0) {
+            return 1.0F;
+        }
+        float scale = Math.min(1.0F, (float)availableWidth / labelWidth);
+        // Division can round upward; do not let the text consume a pixel of its reserved gap.
+        return (double)labelWidth * scale > availableWidth ? Math.nextDown(scale) : scale;
+    }
+
+    record NameDistanceLayout(float nameScale, int distanceX, boolean showDistance) { }
+
+    static NameDistanceLayout resolveNameDistanceLayout(int x, int labelWidth, int distanceWidth,
+                                                       int contentWidth, int firstActionX,
+                                                       int preferredDistanceX, boolean buttonsVisible) {
+        int availableWidth = Math.max(0, contentWidth - x - labelTextGap);
+        boolean hasDistance = distanceWidth > 0
+                && availableWidth >= distanceWidth + labelTextGap + (labelWidth > 0 ? 1 : 0);
+        int nameWidth = Math.max(0, availableWidth - (hasDistance ? distanceWidth + labelTextGap : 0));
+        float nameScale = resolveLabelScale(nameWidth, labelWidth);
+        // Start with the non-hovered geometry so hovering never moves the distance into a
+        // different column. Only names that cannot fit beside the buttons shrink on hover.
+        int nameEnd = x + (int)Math.ceil(labelWidth * nameScale);
+        int distanceX = Math.max(preferredDistanceX, nameEnd + labelTextGap);
+        if (buttonsVisible) {
+            nameScale = Math.min(nameScale,
+                    resolveLabelScale(Math.max(0, firstActionX - x - labelTextGap), labelWidth));
+        }
+        int rightEdge = (buttonsVisible ? firstActionX : contentWidth) - labelTextGap;
+        return new NameDistanceLayout(nameScale, distanceX,
+                hasDistance && distanceX + distanceWidth <= rightEdge);
     }
 
     private DistanceLabel getDistanceLabel(SimpleWaypoint waypoint, String waypointDimension) {
@@ -1004,7 +1092,7 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     private static int getDisplayDimensionColor(String dimensionName) {
         return ColorHelper.scaleRgb(
-                0xFF000000 | getDimensionColor(dimensionName).value(),
+                0xFF000000 | DimensionStyle.colorOf(dimensionName).value(),
                 0.8F
         );
     }
@@ -1015,12 +1103,14 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     }
 
     private void drawInitialsBox(GuiGraphicsExtractor context, String initials, int x, int y, int backgroundColor, int textColor) {
-        int textWidth = textRenderer.width(initials);
-        int bgWidth = Math.max(textWidth + 2, textRenderer.lineHeight);
-        int textX = (bgWidth - Math.max(0, textWidth - 1)) / 2;
-
-        context.fill(x, y, x + bgWidth, y + textRenderer.lineHeight, backgroundColor);
-        drawText(context, textRenderer, initials, x + textX, y + 1, textColor, true);
+        // Initials share the icon's 16-pixel slot, leaving the compact name offset clear.
+        int badgeWidth = Math.max(textRenderer.width(initials) + 2, textRenderer.lineHeight);
+        float badgeScale = Math.min(1.0F, 16.0F / badgeWidth);
+        push(context);
+        translate(context, x, y + (textRenderer.lineHeight * (1.0F - badgeScale)) / 2.0F);
+        scale(context, badgeScale, badgeScale);
+        WaypointRowRenderer.initials(context, textRenderer, initials, 0, 0, backgroundColor, textColor);
+        pop(context);
     }
 
     private static int getInitialsTextColor(int rgb, boolean rendered) {

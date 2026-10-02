@@ -1,0 +1,46 @@
+{
+    "date": "2026-09-08",
+    "baseCommit": "4d91de1",
+    "minecraftProtocol": 11,
+    "tcpApplicationProtocol": 1,
+    "tests": {
+        "common": {
+            "tests": 531,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        "proxy-common": {
+            "tests": 106,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        "velocity": {
+            "tests": 6,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        "mods/versions/26.1.2-fabric": {
+            "tests": 204,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        },
+        "paper/versions/1.21-paper": {
+            "tests": 5,
+            "failures": 0,
+            "errors": 0,
+            "skipped": 0
+        }
+    },
+    "nativeSessionRun": false,
+    "additionalCompileTargets": [
+        "paper:26.2-paper",
+        "mods:1.20.1-fabric",
+        "mods:1.21.2-neoforge",
+        "mods:26.1.2-forge"
+    ],
+    "validation": "Actual WaypointClientMod JVM dispatch with multi-frame remote replacement preserves local manager identity, local revision and on-disk file contents. Fresh native protocol-11 sessions remain a release gate."
+}

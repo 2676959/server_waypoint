@@ -10,8 +10,8 @@ import _959.server_waypoint.core.network.MessageEncodingException;
 import _959.server_waypoint.core.network.SinglePacketMessage;
 import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
 import _959.server_waypoint.common.server.WaypointServerMod;
+import _959.server_waypoint.mixin.CommandSourceStackAccessor;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.Translator;
@@ -64,13 +64,17 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
         *///?}
     }
 
+    /** Renders for the receiver: a player gets their language and the trailing newline. */
     private net.minecraft.network.chat.Component getTranslatedText(CommandSourceStack source, Component component) {
-        ServerPlayer player = source.getPlayer();
-        if (player != null) {
-            return getTranslatedText(player, component);
-        } else {
-            return toVanillaText(GlobalTranslator.render(component, Locale.getDefault()));
+        if (((CommandSourceStackAccessor) source).serverWaypoint$getSource() instanceof ServerPlayer player) {
+            return getTranslatedText(player, PlatformMessageSender.forPlayer(component));
         }
+        return toVanillaText(GlobalTranslator.render(component, Locale.getDefault()));
+    }
+
+    @Override
+    public boolean isPlainTextReceiver(CommandSourceStack source) {
+        return !(((CommandSourceStackAccessor) source).serverWaypoint$getSource() instanceof ServerPlayer);
     }
 
     public net.minecraft.network.chat.Component getTranslatedText(ServerPlayer player, Component component) {
@@ -93,12 +97,12 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
 
     @Override
     public void sendPlayerMessage(ServerPlayer player, Component component) {
-        player.sendSystemMessage(getTranslatedText(player, component));
+        player.sendSystemMessage(getTranslatedText(player, PlatformMessageSender.forPlayer(component)));
     }
 
     @Override
     public void sendError(CommandSourceStack source, Component component) {
-        source.sendSystemMessage(getTranslatedText(source, component.color(NamedTextColor.RED)));
+        this.sendMessage(source, component);
     }
 
     @Override

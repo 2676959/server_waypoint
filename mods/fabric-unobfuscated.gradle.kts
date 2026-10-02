@@ -90,6 +90,7 @@ dependencies {
     val xaeros_minimap_fabric: String by project
     val xaeros_world_map_fabric: String by project
     val voxelmap_fabric: String by project
+    val modmenu: String by project
 
     implementation("net.fabricmc:fabric-loader:$fabric_loader")
     implementation("net.fabricmc.fabric-api:fabric-api:$fabric_api")
@@ -109,6 +110,9 @@ dependencies {
 
     // Use Modrinth version IDs because some VoxelMap version numbers collide with Forge uploads.
     implementation("maven.modrinth:voxelmap-updated:$voxelmap_fabric")
+
+    // Mod Menu loads ServerWaypointModMenu only when it's installed, so it's needed only to compile.
+    compileOnly("maven.modrinth:modmenu:$modmenu")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -173,6 +177,10 @@ tasks.jar {
 }
 
 tasks.shadowJar {
+    relocate("com.southernstorm.noise", "_959.server_waypoint.internal.noisekk")
+    dependencies {
+        include(dependency("org.signal.forks:noise-java:.*"))
+    }
     dependencies {
         include(project(":common"))
         include(dependency("net.kyori:.*"))
@@ -215,3 +223,5 @@ tasks.register<Copy>("buildAndCollect") {
 fun DependencyHandlerScope.addAdventureSerializerDependency() {
     implementation("net.kyori:adventure-text-serializer-gson:4.25.0")
 }
+
+apply(from = rootProject.file("gradle/noise-packaging.gradle.kts"))

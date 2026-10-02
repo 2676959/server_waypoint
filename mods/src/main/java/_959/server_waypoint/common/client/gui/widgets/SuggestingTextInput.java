@@ -1,0 +1,705 @@
+//~ gui_graphics_26
+package _959.server_waypoint.common.client.gui.widgets;
+
+import _959.server_waypoint.common.client.gui.api.PopupOwner;
+import _959.server_waypoint.common.client.gui.layout.AnchorMode;
+import _959.server_waypoint.common.client.gui.layout.Expandable;
+import _959.server_waypoint.common.client.gui.layout.Padding;
+import _959.server_waypoint.common.client.gui.layout.Shiftable;
+
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.POPUP_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SELECTION_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_DISABLED;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_MUTED;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PLACEHOLDER;
+
+import static com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE;
+import static com.mojang.blaze3d.platform.InputConstants.KEY_TAB;
+import static com.mojang.blaze3d.platform.InputConstants.KEY_DOWN;
+import static com.mojang.blaze3d.platform.InputConstants.KEY_UP;
+import static com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Supplier;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.EditBox;
+//? if >= 1.21.9 {
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
+//?}
+import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
+
+/** Surface-free editable input with shared completion, popup, and layout behavior. */
+public class SuggestingTextInput extends EditBox implements Shiftable, Expandable, Padding, PopupOwner {
+    static final int OUTLINE_PADDING = 2;
+    private static final int SUGGESTION_LINE_HEIGHT = 12;
+    private static final int MAX_VISIBLE_SUGGESTIONS = 5;
+
+    private final Font textRenderer;
+    private final AnchorMode anchorMode;
+    private int shiftedX;
+    private int shiftedY;
+    private int xOffset;
+    private int yOffset;
+    protected final int backgroundHeight;
+    private Supplier<List<String>> suggestionsProvider = List::of;
+    private List<String> suggestions = List.of();
+    private int selectedSuggestion;
+    private int suggestionOffset;
+    private boolean tabCycles;
+    private String tabCycleBaseValue = "";
+    private int suggestionsX;
+    private int suggestionsY;
+    private int suggestionsWidth;
+    private int suggestionsHeight;
+    private int lastSuggestionMouseX = Integer.MIN_VALUE;
+    private int lastSuggestionMouseY = Integer.MIN_VALUE;
+    private String inlineSuggestion;
+    private boolean suggestionsEnabled = true;
+    private boolean suggestionsDismissed;
+    private @Nullable Supplier<Component> placeholder;
+    private @Nullable Component shownPlaceholder;
+    private int shownPlaceholderColor;
+
+    public SuggestingTextInput(int x, int y, int width, Component text, Font textRenderer) {
+        this(x, y, width, text, textRenderer, AnchorMode.CONTENT);
+    }
+
+    public SuggestingTextInput(int x, int y, int width, Component text, Font textRenderer, AnchorMode anchorMode) {
+        super(
+                textRenderer,
+                AnchorMode.normalize(anchorMode).getContentX(x, OUTLINE_PADDING),
+                AnchorMode.normalize(anchorMode).getContentY(y, OUTLINE_PADDING),
+                width,
+                textRenderer.lineHeight,
+                null,
+                text
+        );
+        this.textRenderer = textRenderer;
+        this.anchorMode = AnchorMode.normalize(anchorMode);
+        this.updateThemeTextColors();
+        this.setBordered(false);
+        this.backgroundHeight = this.height + 2;
+        this.setX(x);
+        this.setY(y);
+    }
+
+    /** Enables suggestions independently of editing, for composites with another popup. */
+    public void setSuggestionsEnabled(boolean enabled) {
+        this.suggestionsEnabled = enabled;
+        if (!enabled) {
+            this.hideSuggestions();
+        }
+    }
+
+    public boolean closeSuggestionsIfOpen() {
+        if (!this.isSuggestionListVisible()) {
+            return false;
+        }
+        this.hideSuggestions();
+        this.suggestionsDismissed = true;
+        return true;
+    }
+
+    @Override
+    public boolean closePopupIfOpen() {
+        return this.closeSuggestionsIfOpen();
+    }
+
+    /**
+     * Scrolls the suggestion list with the wheel while the pointer is over it, at least a row per
+     * event like the choice dropdown. The row under the pointer becomes the selected one, as when
+     * the pointer moves, because a selection that scrolled out of view is scrolled back to at the
+     * next redraw. A list that fits still takes the wheel, so it does not scroll what it covers.
+     */
+    @Override
+    public boolean scrollPopupIfOver(double mouseX, double mouseY, double verticalAmount) {
+        if (verticalAmount == 0 || !this.isMouseOverSuggestion(mouseX, mouseY)) {
+            return false;
+        }
+        int rows = (int) Math.max(1, Math.ceil(Math.abs(verticalAmount)));
+        int maxOffset = Math.max(this.suggestions.size() - MAX_VISIBLE_SUGGESTIONS, 0);
+        int offset = Math.max(0, Math.min(maxOffset, this.suggestionOffset + (verticalAmount < 0 ? rows : -rows)));
+        if (offset != this.suggestionOffset) {
+            this.suggestionOffset = offset;
+            this.selectedSuggestion = this.suggestionIndexAt(mouseY);
+            this.updateInlineSuggestion();
+        }
+        return true;
+    }
+
+    public boolean isMouseOverSuggestion(double mouseX, double mouseY) {
+        if (!this.isSuggestionListVisible()) {
+            return false;
+        }
+        this.updateSuggestionBounds();
+        return this.isOverSuggestionBounds(mouseX, mouseY);
+    }
+
+    /** The list starts at the field's outline, so their left edges line up. */
+    protected int getSuggestionsX() {
+        return this.getVisualX();
+    }
+
+    /** The outline's width, widened to the right when the text needs it, with a border column after it. */
+    protected int getSuggestionsWidth(int maxTextWidth) {
+        int textInset = this.getTextAnchorX() - this.getSuggestionsX();
+        return Math.max(this.getVisualWidth(), textInset + maxTextWidth + 1);
+    }
+
+    protected int getSuggestionsY(int suggestionHeight) {
+        return this.getShiftedY() - 2 + this.backgroundHeight;
+    }
+
+    /**
+     * Shows themed text while the field is empty and unfocused, in {@code TEXT_PLACEHOLDER}, or
+     * {@code TEXT_DISABLED} while inactive. It goes through vanilla's hint, which gives text without a
+     * color of its own a fixed gray. The supplier is read every frame, so the text can follow another field.
+     */
+    public void setPlaceholder(Supplier<Component> placeholder) {
+        this.placeholder = Objects.requireNonNull(placeholder, "placeholder");
+        this.shownPlaceholder = null;
+        this.updatePlaceholder();
+    }
+
+    public void setSuggestionsProvider(Supplier<List<String>> suggestionsProvider) {
+        this.suggestionsProvider = suggestionsProvider == null ? List::of : suggestionsProvider;
+        this.refreshSuggestions();
+    }
+
+    /** Invalidates a completion cycle after the provider's catalog changes. */
+    public void refreshSuggestions() {
+        this.tabCycles = false;
+        this.suggestionsDismissed = false;
+        this.updateSuggestions();
+    }
+
+    @Override
+    public void
+    //$ render_widget_method_swap
+    extractWidgetRenderState
+            (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        this.updateThemeTextColors();
+        this.renderTextField(context, mouseX, mouseY, deltaTicks);
+    }
+
+    public void renderTextField(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        super.
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+        (context, mouseX, mouseY, deltaTicks);
+        this.renderInlineSuggestion(context);
+    }
+
+    public void renderSuggestions(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+        if (!this.layoutSuggestions(mouseX, mouseY)) {
+            return;
+        }
+
+        int visibleSuggestions = Math.min(this.suggestions.size(), MAX_VISIBLE_SUGGESTIONS);
+        context.fill(
+                this.suggestionsX,
+                this.suggestionsY,
+                this.suggestionsX + this.suggestionsWidth,
+                this.suggestionsY + this.suggestionsHeight,
+                getColor(POPUP_BACKGROUND)
+        );
+        renderOutline(
+                context,
+                this.suggestionsX,
+                this.suggestionsY,
+                this.suggestionsWidth,
+                this.suggestionsHeight,
+                getColor(BORDER)
+        );
+        for (int i = 0; i < visibleSuggestions; i++) {
+            int suggestionIndex = i + this.suggestionOffset;
+            String suggestion = this.suggestions.get(suggestionIndex);
+            int y = this.suggestionsY + i * SUGGESTION_LINE_HEIGHT;
+            boolean selected = suggestionIndex == this.selectedSuggestion;
+            if (selected) {
+                context.fill(
+                        this.suggestionsX + 1,
+                        Math.max(y, this.suggestionsY + 1),
+                        this.suggestionsX + this.suggestionsWidth - 1,
+                        Math.min(y + SUGGESTION_LINE_HEIGHT, this.suggestionsY + this.suggestionsHeight - 1),
+                        getColor(SELECTION_BACKGROUND)
+                );
+            }
+            int color = selected ? WidgetThemeState.text(this.active) : getColor(this.active ? TEXT_MUTED : TEXT_DISABLED);
+            drawText(
+                    context,
+                    this.textRenderer,
+                    this.textRenderer.plainSubstrByWidth(suggestion,
+                            Math.max(0, this.suggestionsX + this.suggestionsWidth - 1 - this.getTextAnchorX())),
+                    this.getTextAnchorX(),
+                    y + 2,
+                    color,
+                    true
+            );
+        }
+    }
+
+    /** Positions a visible list and selects the row under the pointer if it has moved; false when hidden. */
+    boolean layoutSuggestions(int mouseX, int mouseY) {
+        if (!this.isSuggestionListVisible()) {
+            return false;
+        }
+        this.updateSuggestionBounds();
+        this.updateHoveredSuggestion(mouseX, mouseY);
+        return true;
+    }
+
+    public boolean mouseClickedSuggestion(double mouseX, double mouseY) {
+        return this.handleSuggestionMouseClicked(mouseX, mouseY);
+    }
+
+    /**
+     * Takes the highlighted suggestion, as clicking it does, for a screen that gives Enter this meaning
+     * while a list is open; false when no list is showing.
+     */
+    public boolean acceptHighlightedSuggestion() {
+        if (!this.isSuggestionListVisible()) {
+            return false;
+        }
+        this.useSuggestion(this.getValue());
+        this.tabCycles = false;
+        this.suggestionsDismissed = false;
+        this.updateSuggestions();
+        return true;
+    }
+
+    /** Whether the suggestion list is showing: the field is focused and has suggestions. */
+    public boolean isSuggestionListOpen() {
+        return this.isSuggestionListVisible();
+    }
+
+    @Override
+    public int getVisualHeight() {
+        return this.backgroundHeight;
+    }
+
+    @Override
+    public int getVisualWidth() {
+        return this.width;
+    }
+
+    @Override
+    public int getVisualX() {
+        return getX() - OUTLINE_PADDING;
+    }
+
+    @Override
+    public int getVisualY() {
+        return getY() - OUTLINE_PADDING;
+    }
+
+    @Override
+    public int getHeight() {
+        return this.backgroundHeight;
+    }
+
+    @Override
+    public void setVisualHeight(int height) {
+    }
+
+    @Override
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    @Override
+    public void setHeight(int height) {
+    }
+
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (this.handleSuggestionKey(keyCode, modifiers)) {
+            return true;
+        }
+        //? if >= 1.21.9 {
+        boolean handled = super.keyPressed(new KeyEvent(keyCode, scanCode, modifiers));
+        //?} else {
+        /*boolean handled = super.keyPressed(keyCode, scanCode, modifiers);
+        *///?}
+        if (handled) {
+            this.tabCycles = false;
+            this.suggestionsDismissed = false;
+            this.updateSuggestions();
+        }
+        return handled;
+    }
+
+    public boolean charTyped(char chr, int modifiers) {
+        //? if >= 1.21.9 {
+        boolean handled = super.charTyped(new CharacterEvent(chr/*? if <26 {*//*, modifiers*//*?}*/));
+        //?} else {
+        /*boolean handled = super.charTyped(chr, modifiers);
+        *///?}
+        if (handled) {
+            this.tabCycles = false;
+            this.suggestionsDismissed = false;
+            this.updateSuggestions();
+        }
+        return handled;
+    }
+
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == MOUSE_BUTTON_LEFT && this.handleSuggestionMouseClicked(mouseX, mouseY)) {
+            return true;
+        }
+        //? if >= 1.21.9 {
+        boolean handled = super.mouseClicked(new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(button, 0)), false);
+        //?} else {
+        /*boolean handled = super.mouseClicked(mouseX, mouseY, button);
+        *///?}
+        if (handled) {
+            this.tabCycles = false;
+            this.suggestionsDismissed = false;
+            this.updateSuggestions();
+        }
+        return handled;
+    }
+
+    @Override
+    public void setValue(String value) {
+        super.setValue(value);
+        this.tabCycles = false;
+        this.suggestionsDismissed = false;
+        this.updateSuggestions();
+    }
+
+    @Override
+    public void insertText(String text) {
+        super.insertText(text);
+        this.tabCycles = false;
+        this.suggestionsDismissed = false;
+        this.updateSuggestions();
+    }
+
+    @Override
+    public void setFocused(boolean focused) {
+        super.setFocused(focused);
+        if (focused) {
+            this.suggestionsDismissed = false;
+            this.updateSuggestions();
+        } else {
+            this.hideSuggestions();
+        }
+    }
+
+    @Override
+    public void setSuggestion(String suggestion) {
+        this.inlineSuggestion = suggestion;
+        super.setSuggestion(null);
+    }
+
+    //? if >= 1.21.9 {
+    @Override
+    public boolean keyPressed(KeyEvent keyEvent) {
+        return this.keyPressed(keyEvent.key(), /*? if <26.3 {*/ keyEvent.scancode() /*?} else {*//* keyEvent.keycode() *//*?}*/, keyEvent.modifiers());
+    }
+
+    @Override
+    public boolean charTyped(CharacterEvent characterEvent) {
+        return this.charTyped(
+                characterEvent.codepointAsString().charAt(0),
+                /*? if >=26 {*/ 0 /*?} else {*/ /*characterEvent.modifiers() *//*?}*/
+        );
+    }
+    //?}
+
+    @Override
+    public int getX() {
+        return this.shiftedX;
+    }
+
+    @Override
+    public int getY() {
+        return this.shiftedY;
+    }
+
+    @Override
+    public void setX(int x) {
+        this.shiftedX = this.anchorMode.getContentX(x + this.xOffset, OUTLINE_PADDING);
+        super.setX(this.anchorMode.getContentX(x, OUTLINE_PADDING));
+    }
+
+    @Override
+    public void setY(int y) {
+        this.shiftedY = this.anchorMode.getContentY(y + this.yOffset, OUTLINE_PADDING);
+        super.setY(this.anchorMode.getContentY(y, OUTLINE_PADDING));
+    }
+
+    @Override
+    public void setXOffset(int x) {
+        this.xOffset = x;
+        int anchorX = this.anchorMode.getAnchorX(super.getX(), OUTLINE_PADDING);
+        this.shiftedX = this.anchorMode.getContentX(anchorX + x, OUTLINE_PADDING);
+        super.setX(super.getX());
+    }
+
+    @Override
+    public void setYOffset(int y) {
+        this.yOffset = y;
+        int anchorY = this.anchorMode.getAnchorY(super.getY(), OUTLINE_PADDING);
+        this.shiftedY = this.anchorMode.getContentY(anchorY + y, OUTLINE_PADDING);
+        super.setY(super.getY());
+    }
+
+    @Override
+    public int getShiftedX() {
+        return this.shiftedX;
+    }
+
+    @Override
+    public int getShiftedY() {
+        return this.shiftedY;
+    }
+
+    private boolean handleSuggestionKey(int keyCode, int modifiers) {
+        if (!this.isFocused() || !this.active || !this.visible || !this.suggestionsEnabled) {
+            return false;
+        }
+        if (keyCode == KEY_ESCAPE && this.isSuggestionListVisible()) {
+            return this.closeSuggestionsIfOpen();
+        }
+        if (keyCode == KEY_UP || keyCode == KEY_DOWN) {
+            this.updateSuggestions();
+            if (this.suggestions.isEmpty()) {
+                return false;
+            }
+            this.cycleSuggestion(keyCode == KEY_UP ? -1 : 1);
+            this.tabCycles = false;
+            return true;
+        }
+        if (keyCode != KEY_TAB) {
+            return false;
+        }
+        if (!this.tabCycles) {
+            this.updateSuggestions();
+            this.tabCycleBaseValue = this.getValue();
+        } else {
+            this.cycleSuggestion(hasShiftDown(modifiers) ? -1 : 1);
+        }
+        if (this.suggestions.isEmpty()) {
+            return false;
+        }
+        this.useSuggestion(this.tabCycleBaseValue);
+        this.tabCycles = true;
+        return true;
+    }
+
+    private boolean handleSuggestionMouseClicked(double mouseX, double mouseY) {
+        if (!this.isMouseOverSuggestion(mouseX, mouseY)) {
+            return false;
+        }
+        int suggestionIndex = this.suggestionIndexAt(mouseY);
+        if (suggestionIndex >= 0 && suggestionIndex < this.suggestions.size()) {
+            this.selectedSuggestion = suggestionIndex;
+            this.useSuggestion(this.getValue());
+            this.tabCycles = false;
+            this.suggestionsDismissed = false;
+            this.updateSuggestions();
+        }
+        return true;
+    }
+
+    private void updateHoveredSuggestion(int mouseX, int mouseY) {
+        if (mouseX == this.lastSuggestionMouseX && mouseY == this.lastSuggestionMouseY) {
+            return;
+        }
+        this.lastSuggestionMouseX = mouseX;
+        this.lastSuggestionMouseY = mouseY;
+        if (!this.isOverSuggestionBounds(mouseX, mouseY)) {
+            return;
+        }
+        int suggestionIndex = this.suggestionIndexAt(mouseY);
+        if (suggestionIndex >= 0 && suggestionIndex < this.suggestions.size()) {
+            this.selectedSuggestion = suggestionIndex;
+            this.updateInlineSuggestion();
+        }
+    }
+
+    private boolean isOverSuggestionBounds(double mouseX, double mouseY) {
+        return mouseX >= this.suggestionsX && mouseX < this.suggestionsX + this.suggestionsWidth
+                && mouseY >= this.suggestionsY && mouseY < this.suggestionsY + this.suggestionsHeight;
+    }
+
+    /** The index of the suggestion in the row at this height, which must be inside the list. */
+    private int suggestionIndexAt(double mouseY) {
+        return this.suggestionOffset + (int) ((mouseY - this.suggestionsY) / SUGGESTION_LINE_HEIGHT);
+    }
+
+    private void updateSuggestions() {
+        if (!this.suggestionsEnabled || this.suggestionsDismissed) {
+            this.hideSuggestions();
+            return;
+        }
+        if (this.tabCycles) {
+            return;
+        }
+        Set<String> uniqueSuggestions = new LinkedHashSet<>();
+        for (String suggestion : this.suggestionsProvider.get()) {
+            if (suggestion != null && !suggestion.isEmpty()) {
+                uniqueSuggestions.add(suggestion);
+            }
+        }
+        String value = this.getValue();
+        String lowerValue = value.toLowerCase(Locale.ROOT);
+        List<String> matches = new ArrayList<>(uniqueSuggestions.size());
+        for (String suggestion : uniqueSuggestions) {
+            if (suggestion.equals(value)) {
+                continue;
+            }
+            if (this.shouldShowSuggestion(suggestion, value, lowerValue)) {
+                matches.add(suggestion);
+            }
+        }
+        matches.sort(String.CASE_INSENSITIVE_ORDER);
+        this.suggestions = matches;
+        this.selectedSuggestion = Math.min(this.selectedSuggestion, Math.max(this.suggestions.size() - 1, 0));
+        this.suggestionOffset = Math.min(this.suggestionOffset, Math.max(this.suggestions.size() - MAX_VISIBLE_SUGGESTIONS, 0));
+        this.ensureSelectedSuggestionVisible();
+        this.updateInlineSuggestion();
+    }
+
+    protected boolean shouldShowSuggestion(String suggestion, String value, String lowerValue) {
+        return lowerValue.isEmpty() || suggestion.toLowerCase(Locale.ROOT).startsWith(lowerValue);
+    }
+
+    private void updateSuggestionBounds() {
+        int maxTextWidth = 0;
+        for (String suggestion : this.suggestions) {
+            maxTextWidth = Math.max(maxTextWidth, this.textRenderer.width(suggestion));
+        }
+        this.suggestionsX = this.getSuggestionsX();
+        this.suggestionsHeight = Math.min(this.suggestions.size(), MAX_VISIBLE_SUGGESTIONS) * SUGGESTION_LINE_HEIGHT;
+        this.suggestionsY = this.getSuggestionsY(this.suggestionsHeight);
+        this.suggestionsWidth = this.getSuggestionsWidth(maxTextWidth);
+    }
+
+    private boolean isSuggestionListVisible() {
+        if (!this.isFocused() || !this.active || !this.visible || !this.suggestionsEnabled) {
+            return false;
+        }
+        this.updateSuggestions();
+        return !this.suggestions.isEmpty();
+    }
+
+    private void cycleSuggestion(int direction) {
+        if (this.suggestions.isEmpty()) {
+            return;
+        }
+        this.selectedSuggestion += direction;
+        if (this.selectedSuggestion < 0) {
+            this.selectedSuggestion = this.suggestions.size() - 1;
+        } else if (this.selectedSuggestion >= this.suggestions.size()) {
+            this.selectedSuggestion = 0;
+        }
+        this.ensureSelectedSuggestionVisible();
+        this.updateInlineSuggestion();
+    }
+
+    private void ensureSelectedSuggestionVisible() {
+        int lastVisibleSuggestion = this.suggestionOffset + MAX_VISIBLE_SUGGESTIONS - 1;
+        if (this.selectedSuggestion < this.suggestionOffset) {
+            this.suggestionOffset = this.selectedSuggestion;
+        } else if (this.selectedSuggestion > lastVisibleSuggestion) {
+            this.suggestionOffset = this.selectedSuggestion - MAX_VISIBLE_SUGGESTIONS + 1;
+        }
+        this.suggestionOffset = Math.max(this.suggestionOffset, 0);
+    }
+
+    private void useSuggestion(String baseValue) {
+        if (this.suggestions.isEmpty()) {
+            return;
+        }
+        String suggestion = this.suggestions.get(this.selectedSuggestion);
+        super.setValue(suggestion);
+        this.setCursorPosition(suggestion.length());
+        this.setHighlightPos(suggestion.length());
+        this.tabCycleBaseValue = baseValue;
+        this.updateInlineSuggestion();
+    }
+
+    private void updateInlineSuggestion() {
+        if (this.suggestions.isEmpty() || !this.isFocused()) {
+            this.setSuggestion(null);
+            return;
+        }
+        String value = this.getValue();
+        String suggestion = this.suggestions.get(this.selectedSuggestion);
+        this.setSuggestion(suggestion.startsWith(value) ? suggestion.substring(value.length()) : null);
+    }
+
+    private void renderInlineSuggestion(GuiGraphicsExtractor context) {
+        if (this.inlineSuggestion == null || this.inlineSuggestion.isEmpty() || !this.isFocused() || this.getCursorPosition() != this.getValue().length()) {
+            return;
+        }
+        drawText(
+                context,
+                this.textRenderer,
+                this.inlineSuggestion,
+                this.getInlineSuggestionX(),
+                this.getShiftedY(),
+                getColor(this.active ? TEXT_PLACEHOLDER : TEXT_DISABLED),
+                true
+        );
+    }
+
+    protected void updateThemeTextColors() {
+        this.setTextColor(WidgetThemeState.text(this.active));
+        this.setTextColorUneditable(getColor(TEXT_DISABLED));
+        this.updatePlaceholder();
+    }
+
+    private void updatePlaceholder() {
+        if (this.placeholder == null) {
+            return;
+        }
+        Component text = this.placeholder.get();
+        int color = getColor(this.active ? TEXT_PLACEHOLDER : TEXT_DISABLED) & 0x00FFFFFF;
+        if (color == this.shownPlaceholderColor && text.equals(this.shownPlaceholder)) {
+            return;
+        }
+        this.shownPlaceholder = text;
+        this.shownPlaceholderColor = color;
+        this.setHint(text.copy().withStyle(style -> style.withColor(color)));
+    }
+
+    private int getTextAnchorX() {
+        return this.getShiftedX();
+    }
+
+    private int getInlineSuggestionX() {
+        if (this.getValue().isEmpty()) {
+            return this.getTextAnchorX();
+        }
+        return this.getTextAnchorX() + this.textRenderer.width(this.getValue());
+    }
+
+    private void hideSuggestions() {
+        this.suggestions = List.of();
+        this.selectedSuggestion = 0;
+        this.suggestionOffset = 0;
+        this.tabCycles = false;
+        this.setSuggestion(null);
+    }
+
+    private static boolean hasShiftDown(int modifiers) {
+        return (modifiers & 1) != 0;
+    }
+}

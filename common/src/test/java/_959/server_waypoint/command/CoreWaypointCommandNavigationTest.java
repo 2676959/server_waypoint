@@ -21,12 +21,16 @@ import _959.server_waypoint.navigation.NavigationSnapshot;
 import _959.server_waypoint.navigation.NavigationTarget;
 import _959.server_waypoint.navigation.TextDisplayTransformation;
 import _959.server_waypoint.navigation.TextDisplayTransformationHandler;
+import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.util.StringCommandBuilder;
 import com.google.gson.JsonParseException;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
@@ -50,6 +54,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -116,7 +121,7 @@ class CoreWaypointCommandNavigationTest {
 
         this.dispatcher.execute("wp navigate overworld bases Home", console);
 
-        assertEquals(List.of("waypoint.navigation.player_only"), this.sender.errorKeys());
+        assertEquals(List.of("wp.error.player_only"), this.sender.errorKeys());
         assertEquals(0, this.navigationService.sessionCount());
     }
 
@@ -137,18 +142,17 @@ class CoreWaypointCommandNavigationTest {
     }
 
     @Test
-    void useDisableAndStatusLiteralsAreNotParsedAsDimensions() throws CommandSyntaxException {
+    void useAndDisableLiteralsAreNotParsedAsDimensions() throws CommandSyntaxException {
         this.dispatcher.execute("wp navigate use compass", this.source);
         this.dispatcher.execute("wp navigate disable map", this.source);
         this.dispatcher.execute("wp navigate disable", this.source);
-        this.dispatcher.execute("wp navigate status", this.source);
 
         assertEquals(List.of(
-                "waypoint.navigation.no_active",
-                "waypoint.navigation.no_active",
-                "waypoint.navigation.no_active",
-                "waypoint.navigation.no_active"
+                "wp.error.not_navigating",
+                "wp.error.not_navigating",
+                "wp.error.not_navigating"
         ), this.sender.errorKeys());
+        assertEquals(List.of(), this.sender.messageKeys());
         assertTrue(this.command.validatedDimensions.isEmpty());
     }
 
@@ -159,7 +163,7 @@ class CoreWaypointCommandNavigationTest {
         NavigationSession session = this.session();
         assertEquals("Home", session.target().waypointName());
         assertEquals(Set.of(NavigationMethod.ACTIONBAR), session.enabledMethods());
-        assertEquals(List.of("waypoint.navigation.started"), this.sender.messageKeys());
+        assertEquals(List.of("wp.navigation.started"), this.sender.messageKeys());
         assertTrue(this.permissionManager.sawCheck("navigate", 0));
     }
 
@@ -235,109 +239,6 @@ class CoreWaypointCommandNavigationTest {
     }
 
     @Test
-    void navigateHelpDocumentsEverySyntaxMethodAndClickableExample() throws CommandSyntaxException {
-        this.dispatcher.execute("wp help navigate", this.source);
-
-        Component help = this.sender.messages.get(this.sender.messages.size() - 1);
-        String helpText = plainText(help);
-        assertTrue(helpText.contains("/wp navigate <dimension> <list> <waypoint>"));
-        assertTrue(helpText.contains(
-                "/wp navigate <dimension> <list> <waypoint> [default|all|<method>]"
-        ));
-        assertTrue(helpText.contains("/wp navigate use <method>"));
-        assertTrue(helpText.contains("/wp navigate disable [<method>]"));
-        assertTrue(helpText.contains("/wp navigate status"));
-        assertTrue(helpText.contains(
-                "/wp navigate config text_display transformation translation <x> <y> <z>"
-        ));
-        assertTrue(helpText.contains(
-                "/wp navigate config text_display transformation rotation <x> <y> <z>"
-        ));
-        assertTrue(helpText.contains(
-                "/wp navigate config text_display transformation scale <x> <y> <z>"
-        ));
-        assertTrue(helpText.contains(
-                "/wp navigate config text_display transformation reset"
-        ));
-        assertFalse(helpText.contains(" using "));
-        assertFalse(helpText.contains("/wp navigate methods"));
-
-        assertTrue(translationKeys(help).containsAll(List.of(
-                "waypoint.help.navigate.title",
-                "waypoint.help.navigate.summary",
-                "waypoint.help.section.usage",
-                "waypoint.help.navigate.usage.start",
-                "waypoint.help.navigate.usage.methods",
-                "waypoint.help.navigate.usage.use",
-                "waypoint.help.navigate.usage.disable",
-                "waypoint.help.navigate.usage.status",
-                "waypoint.help.navigate.usage.transformation.translation",
-                "waypoint.help.navigate.usage.transformation.rotation",
-                "waypoint.help.navigate.usage.transformation.scale",
-                "waypoint.help.navigate.usage.transformation.reset",
-                "waypoint.help.section.arguments",
-                "waypoint.help.navigate.argument.target_methods",
-                "waypoint.help.navigate.argument.method",
-                "waypoint.help.navigate.argument.transformation.vector",
-                "waypoint.help.navigate.section.methods",
-                "waypoint.help.navigate.method.compass",
-                "waypoint.help.navigate.method.map",
-                "waypoint.help.navigate.method.bossbar",
-                "waypoint.help.navigate.method.actionbar",
-                "waypoint.help.navigate.method.text_display",
-                "waypoint.help.navigate.section.inventory",
-                "waypoint.help.navigate.inventory",
-                "waypoint.help.section.examples",
-                "waypoint.help.navigate.example.default",
-                "waypoint.help.navigate.example.all",
-                "waypoint.help.navigate.example.method",
-                "waypoint.help.navigate.example.use",
-                "waypoint.help.navigate.example.transformation.translation",
-                "waypoint.help.navigate.example.transformation.rotation",
-                "waypoint.help.navigate.example.transformation.scale"
-        )));
-
-        List<String> suggestions = suggestedCommands(help);
-        assertTrue(suggestions.contains(
-                "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\""
-        ));
-        assertTrue(suggestions.contains(
-                "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\" all"
-        ));
-        assertTrue(suggestions.contains(
-                "/wp navigate minecraft:overworld \"Villages\" \"Oak Village\" bossbar"
-        ));
-        assertTrue(suggestions.contains("/wp navigate use bossbar"));
-        assertTrue(suggestions.contains(
-                "/wp navigate config text_display transformation translation 0 0.1 0"
-        ));
-        assertTrue(suggestions.contains(
-                "/wp navigate config text_display transformation rotation 5 0 0"
-        ));
-        assertTrue(suggestions.contains(
-                "/wp navigate config text_display transformation scale 1.35 1.35 1.35"
-        ));
-        assertFalse(suggestions.contains("/wp navigate methods"));
-        assertEquals(List.of("/wp help"), runCommands(help));
-    }
-
-    @Test
-    void helpLinksNavigateTopicWithoutRegisteringMethodsSubcommand() throws CommandSyntaxException {
-        this.dispatcher.execute("wp help", this.source);
-
-        Component mainHelp = this.sender.messages.get(this.sender.messages.size() - 1);
-        assertTrue(translationKeys(mainHelp).contains("waypoint.help.navigate"));
-        assertTrue(suggestedCommands(mainHelp).contains("/wp navigate "));
-        assertTrue(runCommands(mainHelp).contains("/wp help navigate"));
-        assertFalse(plainText(mainHelp).contains("/wp navigate methods"));
-
-        var navigateNode = this.dispatcher.getRoot()
-                .getChild("wp")
-                .getChild("navigate");
-        assertNull(navigateNode.getChild("methods"));
-    }
-
-    @Test
     void retargetWithoutMethodSuffixPreservesCurrentMethods() throws CommandSyntaxException {
         this.dispatcher.execute(
                 "wp navigate overworld bases Home compass",
@@ -350,7 +251,7 @@ class CoreWaypointCommandNavigationTest {
         NavigationSession session = this.session();
         assertEquals("Mine", session.target().waypointName());
         assertEquals(Set.of(NavigationMethod.COMPASS), session.enabledMethods());
-        assertEquals(List.of("waypoint.navigation.target_changed"), this.sender.messageKeys());
+        assertEquals(List.of("wp.navigation.target_changed"), this.sender.messageKeys());
     }
 
     @Test
@@ -433,7 +334,7 @@ class CoreWaypointCommandNavigationTest {
         assertEquals(transformation.rotationQuaternion(), handler.lastRotation);
         assertEquals(new Vector3f(0.22F, 0.44F, 0.22F), handler.lastScale);
         assertEquals(
-                "waypoint.navigation.text_display.transformation.updated",
+                "wp.text_display.updated",
                 this.sender.lastMessageKey()
         );
 
@@ -483,7 +384,7 @@ class CoreWaypointCommandNavigationTest {
         assertEquals(TextDisplayTransformation.defaultValue().rotationQuaternion(), handler.lastRotation);
         assertEquals(5, handler.transformationCount);
         assertEquals(
-                "waypoint.navigation.text_display.transformation.reset",
+                "wp.text_display.reset",
                 this.sender.lastMessageKey()
         );
     }
@@ -531,13 +432,11 @@ class CoreWaypointCommandNavigationTest {
         this.dispatcher.execute("wp help navigate", this.source);
         Component help = this.sender.messages.get(this.sender.messages.size() - 1);
         assertFalse(plainText(help).contains("text_display"));
-        assertFalse(translationKeys(help).contains(
-                "waypoint.help.navigate.usage.transformation.translation"
-        ));
+        assertFalse(translationKeys(help).contains("wp.help.navigate.text_display"));
     }
 
     @Test
-    void useDisableAndStatusOperateOnTheActiveSession() throws CommandSyntaxException {
+    void useDisableAndThePanelFollowTheActiveSession() throws CommandSyntaxException {
         this.dispatcher.execute("wp navigate overworld bases Home", this.source);
         this.sender.clear();
 
@@ -546,21 +445,21 @@ class CoreWaypointCommandNavigationTest {
                 Set.of(NavigationMethod.ACTIONBAR, NavigationMethod.BOSSBAR),
                 this.session().enabledMethods()
         );
-        assertEquals("waypoint.navigation.method_enabled", this.sender.lastMessageKey());
+        assertEquals("wp.navigation.turned_on", this.sender.lastMessageKey());
 
-        this.dispatcher.execute("wp navigate status", this.source);
-        assertEquals("waypoint.navigation.status", this.sender.lastMessageKey());
+        this.dispatcher.execute("wp navigate", this.source);
+        assertEquals("wp.navigation.title", this.sender.lastMessageKey());
 
         this.dispatcher.execute("wp navigate disable actionbar", this.source);
         assertEquals(Set.of(NavigationMethod.BOSSBAR), this.session().enabledMethods());
-        assertEquals("waypoint.navigation.method_disabled", this.sender.lastMessageKey());
+        assertEquals("wp.navigation.turned_off", this.sender.lastMessageKey());
 
         this.dispatcher.execute("wp navigate disable", this.source);
         assertTrue(this.navigationService.findSession(this.player.uuid()).isEmpty());
-        assertEquals("waypoint.navigation.disabled", this.sender.lastMessageKey());
+        assertEquals("wp.navigation.stopped", this.sender.lastMessageKey());
 
-        this.dispatcher.execute("wp navigate status", this.source);
-        assertEquals("waypoint.navigation.no_active", this.sender.lastErrorKey());
+        this.dispatcher.execute("wp navigate", this.source);
+        assertEquals("wp.navigation.none", this.sender.lastMessageKey());
     }
 
     @Test
@@ -593,10 +492,6 @@ class CoreWaypointCommandNavigationTest {
         assertEquals(
                 "/wp navigate disable map",
                 StringCommandBuilder.navigateDisableCmd("map")
-        );
-        assertEquals(
-                "/wp navigate status",
-                StringCommandBuilder.navigateStatusCmd()
         );
     }
 
@@ -693,7 +588,23 @@ class CoreWaypointCommandNavigationTest {
     }
 
     private static final class TestWaypointCommand
-            extends CoreWaypointCommand<TestSource, String, TestPlayer, String, String> {
+            extends CoreWaypointCommand<TestSource, String, TestPlayer, String, String, String> {
+        @Override
+        protected NamespacedId toIconId(String iconArgument) {
+            return NamespacedId.parse(iconArgument);
+        }
+
+        @Override
+        protected CompletableFuture<Suggestions> suggestIconIds(
+                CommandContext<TestSource> context, SuggestionsBuilder builder) {
+            return builder.buildFuture();
+        }
+
+        @Override
+        protected boolean isServerConsoleWithHighestPermission(TestSource source) {
+            return false;
+        }
+
         private final List<String> validatedDimensions = new ArrayList<>();
 
         private TestWaypointCommand(
@@ -718,6 +629,7 @@ class CoreWaypointCommandNavigationTest {
                             navigationService,
                             TestPlayer::uuid
                     ),
+                    StringArgumentType::string,
                     StringArgumentType::string,
                     StringArgumentType::string
             );
@@ -787,6 +699,11 @@ class CoreWaypointCommandNavigationTest {
         @Override
         protected List<String> getAvailableDimensionNames(TestSource source) {
             return List.of("overworld");
+        }
+
+        @Override
+        protected java.util.Map<String, String> getDimensionTypes(TestSource source) {
+            return java.util.Map.of("overworld", "minecraft:overworld");
         }
     }
 
@@ -867,6 +784,16 @@ class CoreWaypointCommandNavigationTest {
         @Override
         protected PermissionKey createUploadDeletePermissionKey() {
             return new PermissionKey("upload.delete");
+        }
+
+        @Override
+        protected PermissionKey createRemoteListPermissionKey() {
+            return new PermissionKey("remote.list");
+        }
+
+        @Override
+        protected PermissionKey createRemoteTpPermissionKey() {
+            return new PermissionKey("remote.tp");
         }
     }
 
@@ -1003,6 +930,11 @@ class CoreWaypointCommandNavigationTest {
         }
 
         @Override
+        public boolean isPlainTextReceiver(TestSource source) {
+            return false;
+        }
+
+        @Override
         public Iterable<? extends TestPlayer> getBroadcastPlayers(TestSource source) {
             return List.of();
         }
@@ -1033,11 +965,26 @@ class CoreWaypointCommandNavigationTest {
             this.errors.clear();
         }
 
+        /** The first wp. translation key, depth first: the message's result, title or error line. */
         private static String translationKey(Component component) {
-            if (component instanceof TranslatableComponent translatableComponent) {
-                return translatableComponent.key();
+            String key = firstKey(component);
+            if (key == null) {
+                throw new AssertionError("Expected a wp. translation in " + component);
             }
-            throw new AssertionError("Expected translatable component but got " + component);
+            return key;
+        }
+
+        private static String firstKey(Component component) {
+            if (component instanceof TranslatableComponent translatable && translatable.key().startsWith("wp.")) {
+                return translatable.key();
+            }
+            for (Component child : component.children()) {
+                String key = firstKey(child);
+                if (key != null) {
+                    return key;
+                }
+            }
+            return null;
         }
     }
 }

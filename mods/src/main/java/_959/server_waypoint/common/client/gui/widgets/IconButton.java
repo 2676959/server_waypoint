@@ -13,7 +13,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-public class IconButton extends ShiftableClickableWidget implements Expandable {
+public class IconButton extends ShiftableButtonWidget implements Expandable {
     private static final int ICON_PADDING = 2;
     private final
     //$ resource_location_type_swap
@@ -31,7 +31,7 @@ public class IconButton extends ShiftableClickableWidget implements Expandable {
     }
 
     @Override
-    public void onClick(double mouseX, double mouseY) {
+    protected void onPress() {
         this.callback.onClick();
     }
 
@@ -58,6 +58,7 @@ public class IconButton extends ShiftableClickableWidget implements Expandable {
         int iconWidth = Math.max(0, width - ICON_PADDING * 2);
         int iconHeight = Math.max(0, height - ICON_PADDING * 2);
         if (iconWidth > 0 && iconHeight > 0) {
+            // An inactive icon takes the disabled text color, so it reads as unavailable.
             texture(
                     context,
                     icon,
@@ -68,7 +69,8 @@ public class IconButton extends ShiftableClickableWidget implements Expandable {
                     iconWidth,
                     iconHeight,
                     iconWidth,
-                    iconHeight
+                    iconHeight,
+                    WidgetThemeState.iconTint(this.active)
             );
         }
     }

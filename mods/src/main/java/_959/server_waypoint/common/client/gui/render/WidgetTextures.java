@@ -111,6 +111,26 @@ public final class WidgetTextures {
     Identifier
     SORT_DESCENDING_ICON = modId("textures/gui/arrow_downward.png");
 
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    HOME_ICON = modId("textures/gui/home.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    LAN_SERVERS_ICON = modId("textures/gui/lan_servers.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    RESET_ICON = modId("textures/gui/reset.png");
+
+    public static final
+    //$ resource_location_type_swap
+    Identifier
+    CLEAR_ICON = modId("textures/gui/clear.png");
+
     private WidgetTextures() {
     }
 }

@@ -1,5 +1,6 @@
 package _959.server_waypoint.command.permission;
 
+import _959.server_waypoint.crossserver.CrossServerProtocol;
 import _959.server_waypoint.ModInfo;
 
 public class PermissionStringKeys extends PermissionKeys<String> {
@@ -49,5 +50,14 @@ public class PermissionStringKeys extends PermissionKeys<String> {
     @Override
     protected PermissionKeys<String>.PermissionKey createUploadDeletePermissionKey() {
         return build("command.upload.delete");
+    }
+    @Override
+    protected PermissionKey createRemoteListPermissionKey() {
+        return new PermissionKey(CrossServerProtocol.REMOTE_LIST_PERMISSION);
+    }
+
+    @Override
+    protected PermissionKey createRemoteTpPermissionKey() {
+        return new PermissionKey(CrossServerProtocol.REMOTE_TP_PERMISSION);
     }
 }

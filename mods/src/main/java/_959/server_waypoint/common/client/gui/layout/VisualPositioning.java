@@ -2,7 +2,11 @@ package _959.server_waypoint.common.client.gui.layout;
 
 import net.minecraft.client.gui.layouts.LayoutElement;
 
-final class VisualPositioning {
+/**
+ * Reads and moves an element by its visual bounds: a {@link Padding} element's complete drawn
+ * rectangle, and any other element's own bounds.
+ */
+public final class VisualPositioning {
     private VisualPositioning() {
     }
 
@@ -23,11 +27,19 @@ final class VisualPositioning {
         setVisualY(widget, (Padding) widget, visualY);
     }
 
-    static int getVisualWidth(LayoutElement widget) {
+    public static int getVisualX(LayoutElement widget) {
+        return widget instanceof Padding padding ? padding.getVisualX() : widget.getX();
+    }
+
+    public static int getVisualY(LayoutElement widget) {
+        return widget instanceof Padding padding ? padding.getVisualY() : widget.getY();
+    }
+
+    public static int getVisualWidth(LayoutElement widget) {
         return widget instanceof Padding padding ? padding.getVisualWidth() : widget.getWidth();
     }
 
-    static int getVisualHeight(LayoutElement widget) {
+    public static int getVisualHeight(LayoutElement widget) {
         return widget instanceof Padding padding ? padding.getVisualHeight() : widget.getHeight();
     }
 
