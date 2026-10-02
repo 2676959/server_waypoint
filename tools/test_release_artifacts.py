@@ -68,11 +68,11 @@ class ReleaseArtifactsTest(unittest.TestCase):
         self.assertTrue((velocity / name).exists())
 
     def test_complete_set(self):
-        self.verify(True, "Verified 39")
+        self.verify(True, "Verified 41")
 
     def test_missing_velocity(self):
         (self.directory / self.names[0]).unlink()
-        self.verify(False, "Expected 39")
+        self.verify(False, "Expected 41")
 
     def test_wrong_target_cannot_fill_missing_version(self):
         name = next(name for name in self.names if "fabric-mc" in name)
