@@ -1,8 +1,9 @@
 # Upload documentation
 
-Chunked upload and download transport, shipped in 3.1.0.
+Chunked upload and download transport, shipped in 4.0.0. It was developed as 3.1.0, which was
+never released.
 
-- [Release notes 3.1.0](release-notes-3.1.0.md)
+- [3.1.0 candidate notes](release-notes-3.1.0.md) — unreleased; kept as history
 - [Forge and NeoForge startup fixes](upload-startup-fixes.md)
 - [Transport progress](upload-transport-progress.md)
 - [Validation evidence](validation)

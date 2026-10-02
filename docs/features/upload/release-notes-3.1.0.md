@@ -1,11 +1,10 @@
-# Server Waypoint 3.1.0
+# Server Waypoint 3.1.0 (unreleased)
 
-Historical development-candidate notes: 3.1.0 was not publicly released. The next planned
-public release is 4.0.0, using network protocol 2; released 3.0.4 sent handshake version 0 and
-Forge/NeoForge channel version 1.
-The candidate version and protocol numbers below describe earlier development snapshots.
-
-Release candidate for the chunked upload and download transport.
+3.1.0 was never released. Its chunked upload and download transport shipped in 4.0.0 instead; see
+the [changelog](../../../CHANGELOG.md). These notes are kept as the record of the 3.1.0 release
+candidates, so their version numbers, protocol numbers and compatibility notes describe those
+development snapshots, not 4.0.0. 4.0.0 uses network protocol 2; released 3.0.4 sent handshake
+version 0 and Forge/NeoForge channel version 1.
 
 ## Breaking change: network protocol 11
 

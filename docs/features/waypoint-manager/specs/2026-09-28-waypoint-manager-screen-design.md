@@ -1,6 +1,6 @@
 # Waypoint Manager Screen Design
 
-Status: design agreed on 2026-09-28. Not implemented yet.
+Status: design agreed on 2026-09-28. Implemented; see the [validation record](../validation/2026-09-28-results.md).
 
 ## Intent
 

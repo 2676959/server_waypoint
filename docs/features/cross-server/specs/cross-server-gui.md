@@ -1,11 +1,12 @@
 # Step 18: remote waypoint manager
 
 Open the waypoint manager and use the local/remote toggle in its sidebar. The toggle appears once
-the remote catalog holds at least one server. The server rail above the controls selects a server,
-the dimension rail shows that server's catalog, and the list shows its list → waypoint rows, or
-dimension → list → waypoint rows in all-dimensions mode. Expand/collapse the hierarchy, search by
-identifier/list/keyword, and use the shared sort and group controls. Select a waypoint to see its
-exact server identity and read-only metadata. The toggle returns to the local view. The
+the remote catalog holds at least one server, and stays while the remote view is open. The server
+rail above the controls selects a server, the dimension rail shows that server's catalog, and the
+list shows its list → waypoint rows, or dimension → list → waypoint rows in all-dimensions mode.
+Expand/collapse the hierarchy, search by identifier/list/keyword, and use the shared sort and group
+controls. Select a waypoint to see its exact server identity and read-only metadata. The toggle
+returns to the local view. The
 [waypoint manager screen design](../../waypoint-manager/specs/2026-09-28-waypoint-manager-screen-design.md)
 describes the whole screen.
 
@@ -22,9 +23,9 @@ Source and destination permission checks remain server-side, including destinati
 before the proxy transfers the player. A changed or removed target requires a fresh selection;
 server transfers, disconnects and handshakes invalidate browser sessions.
 
-Rows use the local list's 20-pixel height, colored backgrounds, initials badges, hover and selection
-outlines, formatted display names, and expand/collapse icons. Exact identities remain in tooltips;
-remote rows do not expose local edit or visibility actions.
+Rows use the local list's 20-pixel height, colored backgrounds, initials or icon badges, hover and
+selection outlines, formatted display names, and expand/collapse icons. Exact identities remain in
+tooltips; remote rows do not expose local edit or visibility actions.
 
 The GUI never truncates identities to fit a command packet. Unsupported chat characters or commands
 longer than 256 characters disable the action with a tooltip; their read-only details remain visible.
