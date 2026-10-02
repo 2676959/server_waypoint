@@ -5,6 +5,8 @@ import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.text.chat.Viewer;
+import _959.server_waypoint.text.feedback.HelpTopics;
+import com.mojang.brigadier.tree.CommandNode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,7 @@ import net.kyori.adventure.text.Component;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -86,6 +89,39 @@ class CommandFeedbackTest {
                 lines(this.harness.run(CommandHarness.player(), "wp help tp")).get(0));
         assertEquals("Download  hover a line for details, click to use it",
                 lines(this.harness.run(member, "wp help download")).get(0));
+        this.harness.fails(member, "wp help reload");
+        assertEquals("Reload  hover a line for details, click to use it",
+                lines(this.harness.run(CommandHarness.player(), "wp help reload")).get(0));
+    }
+
+    @Test
+    void everySubcommandHasAHelpUsage() {
+        Set<String> documented = new HashSet<>();
+        for (HelpTopics.Topic topic : HelpTopics.Topic.values()) {
+            for (HelpTopics.Usage usage : HelpTopics.content(topic, true).usages()) {
+                String[] words = usage.syntax().split(" ");
+                if (words.length > 1 && words[0].equals("/wp")) {
+                    documented.add(words[1]);
+                }
+            }
+        }
+        List<String> undocumented = new ArrayList<>();
+        for (CommandNode<CommandHarness.Source> subcommand : this.harness.dispatcher.getRoot().getChild("wp").getChildren()) {
+            if (!subcommand.getName().equals("help") && !documented.contains(subcommand.getName())) {
+                undocumented.add(subcommand.getName());
+            }
+        }
+
+        assertEquals(List.of(), undocumented);
+    }
+
+    @Test
+    void theReloadTopicHasNoExamples() {
+        List<String> reload = lines(this.harness.run(CommandHarness.console(), "wp help reload"));
+
+        assertEquals("Reload", reload.get(0));
+        assertEquals("/wp reload", reload.get(1));
+        assertFalse(reload.contains("Examples"), String.join("\n", reload));
     }
 
     @Test
@@ -321,7 +357,7 @@ class CommandFeedbackTest {
                 CommandHarness.EVERY_PERMISSION);
         var help = this.harness.dispatcher.getRoot().getChild("wp").getChild("help");
 
-        assertEquals(10, this.harness.dispatcher.getSmartUsage(help, noLevel).size());
+        assertEquals(11, this.harness.dispatcher.getSmartUsage(help, noLevel).size());
     }
 
     @Test

@@ -517,16 +517,19 @@ Server Waypoint help
 Most things are a click away: open the menu.
 Commands  List · Details · Add · Edit · Remove
   Teleport · Navigate · Upload · Download · Remote
+  Reload
 ```
 
+- **The index** lists the topics the viewer may use, five to a row. Every `/wp` subcommand has a
+  usage in some topic; only the page links of pickers, such as `/wp add page <n>`, are left out.
 - **Topics** show usage lines in aqua, with each `<argument>` in the colour of its type and the
   brackets and `|` of optional parts in gray; keywords inside optional parts stay aqua. Clicking a
   line suggests the command.
 - **Long usages** break at argument boundaries, with continuation lines indented four spaces.
 - **Tooltips** explain the arguments. A note about one argument names it in its colour:
   `<mode>: default, name, distance or color`.
-- **Examples** follow the usages, in aqua with each value in the colour of the argument it fills,
-  then `Help index · Menu`.
+- **Examples** follow the usages in topics that have them, in aqua with each value in the colour of
+  the argument it fills, then `Help index · Menu`.
 
 Argument types follow the command's argument types:
 
@@ -535,7 +538,7 @@ Argument types follow the command's argument types:
 | Text | `<list>`, `<waypoint>`, `<name>`, `<initials>`, `<keywords>`, `<description>`, `<text>`, `<server>`, `<token>`, `<value>` | yellow |
 | Dimensions and IDs | `<dimension>`, `<id>` | green |
 | Coordinates | `<position>` | light purple |
-| Numbers | `<yaw>`, `<number>` | gold |
+| Numbers | `<yaw>`, `<number>`, `<x>`, `<y>`, `<z>` | gold |
 | Choices from a fixed set of words | `<mode>`, `<direction>`, `<view>`, `<method>`, `<source>`, `<property>`, `<topic>`, `<color>`, `<global>` | dark purple |
 
 ## 13. Results, broadcasts and errors
@@ -782,6 +785,7 @@ Remote servers  5 servers connected
 | `/wp edit waypoint … set yaw` | New without a value: the facing picker |
 | `/wp navigate` | New without arguments: the navigation panel |
 | `/wp navigate config text_display` | New: the text display panel |
+| `/wp navigate status` | Removed; `/wp navigate` shows the same panel |
 | `/wp upload` | New without arguments: the upload panel |
 | `/wp list dimensions [page <n>]` | New: the dimension list |
 | `view lists` | New list option, local and remote |

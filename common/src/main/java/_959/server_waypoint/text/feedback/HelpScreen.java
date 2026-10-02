@@ -22,7 +22,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 
 /** The help index and topics (spec 12). */
 public final class HelpScreen {
-    private static final int TOPICS_ON_FIRST_LINE = 5;
+    private static final int TOPICS_PER_LINE = 5;
 
     private HelpScreen() {
     }
@@ -41,10 +41,13 @@ public final class HelpScreen {
         List<Component> links = topics.stream().map(topic -> Chat.link(viewer, topic.label(), AQUA,
                 Click.run("/wp help " + topic.id()),
                 Tooltip.of("wp.help.topic.tooltip", topic.label()).line("wp.help.topic.detail"))).toList();
-        int split = Math.min(TOPICS_ON_FIRST_LINE, links.size());
-        lines.line(translatable("wp.help.commands", GRAY), text("  "), Chat.join(links.subList(0, split)));
-        if (split < links.size()) {
-            lines.line(text("  "), Chat.join(links.subList(split, links.size())));
+        for (int start = 0; start < links.size(); start += TOPICS_PER_LINE) {
+            Component row = Chat.join(links.subList(start, Math.min(start + TOPICS_PER_LINE, links.size())));
+            if (start == 0) {
+                lines.line(translatable("wp.help.commands", GRAY), text("  "), row);
+            } else {
+                lines.line(text("  "), row);
+            }
         }
         return lines.build();
     }
@@ -68,7 +71,9 @@ public final class HelpScreen {
                 lines.add(Chat.link(viewer, colorize(line), AQUA, click, tooltip));
             }
         }
-        lines.add(translatable("wp.help.examples", GRAY));
+        if (!content.examples().isEmpty()) {
+            lines.add(translatable("wp.help.examples", GRAY));
+        }
         for (HelpTopics.Example example : content.examples()) {
             List<@Nullable String> arguments = example.arguments();
             if (viewer.plainText()) {

@@ -44,10 +44,6 @@ public class StringCommandBuilder {
         return navigateDisableCmd() + ' ' + method;
     }
 
-    public static String navigateStatusCmd() {
-        return WAYPOINT_COMMAND_WITH_SLASH + ' ' + NAVIGATE_COMMAND + ' ' + STATUS_COMMAND;
-    }
-
     /** /wp upload <source> [force local [delete]] [<dimension> [<list> [<waypoint>]]] for this request's scope. */
     public static String uploadCmd(UploadScope scope, UploadRequestBuffer request, UploadConflictPolicy conflictPolicy,
                                    boolean deleteMissing) {

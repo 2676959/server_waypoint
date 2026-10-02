@@ -25,7 +25,7 @@ public final class HelpTopics {
     }
 
     public enum Topic {
-        LIST, DETAILS, ADD, EDIT, REMOVE, TP, NAVIGATE, UPLOAD, DOWNLOAD, REMOTE;
+        LIST, DETAILS, ADD, EDIT, REMOVE, TP, NAVIGATE, UPLOAD, DOWNLOAD, REMOTE, RELOAD;
 
         public String id() {
             return this.name().toLowerCase(Locale.ROOT);
@@ -46,6 +46,7 @@ public final class HelpTopics {
                 case NAVIGATE -> viewer.can(Viewer.Permission.NAVIGATE);
                 case UPLOAD -> viewer.can(Viewer.Permission.UPLOAD);
                 case REMOTE -> viewer.can(Viewer.Permission.REMOTE_LIST) || viewer.can(Viewer.Permission.REMOTE_TP);
+                case RELOAD -> viewer.can(Viewer.Permission.RELOAD);
             };
         }
     }
@@ -90,7 +91,7 @@ public final class HelpTopics {
         return switch (name) {
             case "dimension", "id" -> GREEN;
             case "position" -> LIGHT_PURPLE;
-            case "yaw", "number" -> GOLD;
+            case "yaw", "number", "x", "y", "z" -> GOLD;
             case "mode", "direction", "view", "method", "source", "property", "topic", "color", "global" -> DARK_PURPLE;
             default -> YELLOW;
         };
@@ -109,11 +110,11 @@ public final class HelpTopics {
                     usage("/wp list [<dimension> [<list>]]", "/wp list ", "wp.help.list.browse",
                             note("wp.help.list.browse.note")),
                     usage("/wp list all", "/wp list all", "wp.help.list.all"),
-                    usage("/wp list dimensions", "/wp list dimensions", "wp.help.list.dimensions"),
                     usage("[search <text>] [sort <mode> [order <direction>]] [limit <number>] [view <view>] [page <number>]",
                             "/wp list ", "wp.help.list.options", param("mode", "wp.help.list.options.mode"),
                             param("direction", "wp.help.list.options.direction"), param("view", "wp.help.list.options.view"),
-                            param("number", "wp.help.list.options.number"))),
+                            param("number", "wp.help.list.options.number")),
+                    usage("/wp list dimensions [page <number>]", "/wp list dimensions", "wp.help.list.dimensions")),
                     List.of(new Example("/wp list all search {text farm}", "wp.help.list.example.search"),
                             new Example("/wp list {dimension minecraft:overworld} {list \"Home Bases\"} sort {mode name}",
                                     "wp.help.list.example.sort")));
@@ -169,6 +170,11 @@ public final class HelpTopics {
                 if (textDisplay) {
                     usages.add(usage("/wp navigate config text_display", "/wp navigate config text_display",
                             "wp.help.navigate.text_display"));
+                    usages.add(usage("/wp navigate config text_display transformation translation|rotation|scale <x> <y> <z>",
+                            "/wp navigate config text_display transformation ", "wp.help.navigate.transformation",
+                            note("wp.help.navigate.transformation.note")));
+                    usages.add(usage("/wp navigate config text_display transformation reset",
+                            "/wp navigate config text_display transformation reset", "wp.help.navigate.transformation.reset"));
                 }
                 yield new Content(usages, List.of(new Example("/wp navigate {dimension minecraft:overworld} {list Villages}"
                         + " {waypoint \"Oak Village\"} {method bossbar}", "wp.help.navigate.example")));
@@ -186,8 +192,13 @@ public final class HelpTopics {
                     usage("/wp remote", "/wp remote", "wp.help.remote.servers"),
                     usage("/wp remote list [<server> [<dimension> [<list>]]]", "/wp remote list ", "wp.help.remote.list",
                             note("wp.help.remote.list.note")),
+                    usage("/wp remote details <server> <dimension> <list> <waypoint>", "/wp remote details ",
+                            "wp.help.remote.details"),
                     usage("/wp remote tp <server> <dimension> <list> <waypoint>", "/wp remote tp ", "wp.help.remote.tp")),
                     List.of(new Example("/wp remote list {server survival}", "wp.help.remote.example")));
+            case RELOAD -> new Content(List.of(usage("/wp reload", "/wp reload", "wp.help.reload.run",
+                    note("wp.help.reload.applies"), note("wp.help.reload.restart"), note("wp.help.reload.waypoints"))),
+                    List.of());
         };
     }
 

@@ -63,7 +63,7 @@
   - 启用跨服务器配置后开始同步目录。参见[Velocity 运行时配置](docs/features/cross-server/specs/cross-server-velocity-runtime.md)和[远程目录查询](docs/features/cross-server/specs/cross-server-catalog-queries.md)。
 - `/wp remote tp <服务器> <维度> <列表> <路径点>` 使用缓存中的精确标识符请求跨服务器传送（含空格的名称须加引号）。过期或不存在的目标会在准备阶段前被拒绝；目的地准备完成且重新检查权限通过前，玩家仍留在来源服务器，到达后由目的地服务器确认。参见[远程传送发起流程](docs/features/cross-server/specs/cross-server-source-teleport.md)。
   - Velocity 与专用后端的运行时集成已实现，默认禁用。命令补全仅使用本地缓存。维度标识符也须加引号，例如 `"minecraft:overworld"`。参见[配置与验证](docs/features/cross-server/specs/cross-server-velocity-runtime.md)。
-- `/wp reload` 重载 `config.json` 和 `<config-path>/server_waypoint/lang/` 目录下的翻译文件。`sendXaerosWorldId` 特性需要重启服务器才能生效。
+- `/wp reload` 重载 `config.json` 和 `<config-path>/server_waypoint/lang/` 目录下的翻译文件。`defaultPageLimit`、`defaultNavigationMethods`、`CommandPermission`、`addWaypointFromChatSharing` 和 `compressChunkedMessages` 立即生效；`serverId`、`cross-server.json` 以及开启 `sendXaerosWorldId` 需要重启服务器才能生效。路径点文件不会重新加载，请在服务器停止时编辑。
 - `/wp remove` 按标识符删除路径点，并给出临时且仅可使用一次的恢复链接。
   - `/wp remove <维度> <列表标识符>` 删除一个空的路径点列表。
 - `/wp restore <令牌>` 在临时令牌有效期间恢复最近删除的路径点。
@@ -316,7 +316,7 @@ Paper、Purpur：
 
 `<server-root>/plugins/ServerWaypoint/config.json`
 
-部分对 `config.json` 的更改将在服务器重启后生效。
+`/wp reload` 会立即应用 `defaultPageLimit`、`defaultNavigationMethods`、`CommandPermission`、`addWaypointFromChatSharing` 和 `compressChunkedMessages` 的更改；更改 `serverId`、开启 `sendXaerosWorldId` 以及修改 `cross-server.json` 需要重启服务器才能生效。
 
 - ### 默认每页数量 Default Page Limit
   设置 `/wp list` 和 `/wp remote list` 未指定 `limit` 时的每页数量 `L`：平铺视图和单个列表每页显示 `L` 行，树状视图、每列表一行的视图以及维度列表和服务器列表每页最多 `L + 5` 行。有效范围为 `1-100`，默认值为 `10`。使用 `/wp reload` 后此设置即可生效。

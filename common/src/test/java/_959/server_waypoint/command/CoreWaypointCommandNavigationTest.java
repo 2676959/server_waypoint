@@ -142,18 +142,17 @@ class CoreWaypointCommandNavigationTest {
     }
 
     @Test
-    void useDisableAndStatusLiteralsAreNotParsedAsDimensions() throws CommandSyntaxException {
+    void useAndDisableLiteralsAreNotParsedAsDimensions() throws CommandSyntaxException {
         this.dispatcher.execute("wp navigate use compass", this.source);
         this.dispatcher.execute("wp navigate disable map", this.source);
         this.dispatcher.execute("wp navigate disable", this.source);
-        this.dispatcher.execute("wp navigate status", this.source);
 
         assertEquals(List.of(
                 "wp.error.not_navigating",
                 "wp.error.not_navigating",
                 "wp.error.not_navigating"
         ), this.sender.errorKeys());
-        assertEquals(List.of("wp.navigation.none"), this.sender.messageKeys());
+        assertEquals(List.of(), this.sender.messageKeys());
         assertTrue(this.command.validatedDimensions.isEmpty());
     }
 
@@ -437,7 +436,7 @@ class CoreWaypointCommandNavigationTest {
     }
 
     @Test
-    void useDisableAndStatusOperateOnTheActiveSession() throws CommandSyntaxException {
+    void useDisableAndThePanelFollowTheActiveSession() throws CommandSyntaxException {
         this.dispatcher.execute("wp navigate overworld bases Home", this.source);
         this.sender.clear();
 
@@ -448,7 +447,7 @@ class CoreWaypointCommandNavigationTest {
         );
         assertEquals("wp.navigation.turned_on", this.sender.lastMessageKey());
 
-        this.dispatcher.execute("wp navigate status", this.source);
+        this.dispatcher.execute("wp navigate", this.source);
         assertEquals("wp.navigation.title", this.sender.lastMessageKey());
 
         this.dispatcher.execute("wp navigate disable actionbar", this.source);
@@ -459,7 +458,7 @@ class CoreWaypointCommandNavigationTest {
         assertTrue(this.navigationService.findSession(this.player.uuid()).isEmpty());
         assertEquals("wp.navigation.stopped", this.sender.lastMessageKey());
 
-        this.dispatcher.execute("wp navigate status", this.source);
+        this.dispatcher.execute("wp navigate", this.source);
         assertEquals("wp.navigation.none", this.sender.lastMessageKey());
     }
 
@@ -493,10 +492,6 @@ class CoreWaypointCommandNavigationTest {
         assertEquals(
                 "/wp navigate disable map",
                 StringCommandBuilder.navigateDisableCmd("map")
-        );
-        assertEquals(
-                "/wp navigate status",
-                StringCommandBuilder.navigateStatusCmd()
         );
     }
 

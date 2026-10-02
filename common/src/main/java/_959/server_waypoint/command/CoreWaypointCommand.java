@@ -164,7 +164,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     public static final String NAVIGATE_COMMAND = "navigate";
     public static final String USE_COMMAND = "use";
     public static final String DISABLE_COMMAND = "disable";
-    public static final String STATUS_COMMAND = "status";
     public static final String TRANSFORMATION_COMMAND = "transformation";
     public static final String RESET_COMMAND = "reset";
     public static final String SEARCH_COMMAND = "search";
@@ -1777,10 +1776,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         }
     }
 
-    private void executeNavigateStatus(S source) {
-        executeNavigationPanel(source);
-    }
-
     /** /wp navigate: the panel while navigating, otherwise where to start. */
     private void executeNavigationPanel(S source) {
         P player = getNavigationPlayer(source);
@@ -2118,13 +2113,6 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             disableNode.then(methodNode);
         }
         navigateNode.then(disableNode);
-
-        LiteralArgumentBuilder<S> statusNode = literal(STATUS_COMMAND);
-        statusNode.executes(context -> {
-            executeNavigateStatus(context.getSource());
-            return Command.SINGLE_SUCCESS;
-        });
-        navigateNode.then(statusNode);
 
         LiteralArgumentBuilder<S> configNode = literal(CONFIG_LITERAL_NODE);
 

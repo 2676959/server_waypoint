@@ -1,8 +1,11 @@
 package _959.server_waypoint.text.feedback;
 
+import _959.server_waypoint.config.Config;
 import _959.server_waypoint.text.chat.ChatAssert;
 import _959.server_waypoint.text.chat.ChatFont;
 import _959.server_waypoint.translation.TranslationFilesTest;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.translation.Translator;
@@ -10,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static _959.server_waypoint.text.chat.ChatAssert.clickOf;
@@ -33,10 +37,12 @@ class HelpScreenTest {
                 "Server Waypoint help",
                 "Most things are a click away: open the menu.",
                 "Commands  List · Details · Add · Edit · Remove",
-                "  Teleport · Navigate · Upload · Download · Remote"), lines(index));
+                "  Teleport · Navigate · Upload · Download · Remote",
+                "  Reload"), lines(index));
         assertEquals("/wp", clickOf(index, "open the menu"));
         assertEquals(List.of("/wp", "/wp help list", "/wp help details", "/wp help add", "/wp help edit", "/wp help remove",
-                "/wp help tp", "/wp help navigate", "/wp help upload", "/wp help download", "/wp help remote"), runCommands(index));
+                "/wp help tp", "/wp help navigate", "/wp help upload", "/wp help download", "/wp help remote",
+                "/wp help reload"), runCommands(index));
         assertEquals("Add commands\nUsage and examples", tooltipOf(index, "Add"));
         assertEquals("Commands  List · Details · Navigate · Download", lines(HelpScreen.index(Fixtures.member())).get(2));
     }
@@ -48,7 +54,7 @@ class HelpScreenTest {
         assertEquals(List.of(
                 "Server Waypoint help",
                 "Run /wp help <topic> for usage and examples.",
-                "Commands  list · details · add · edit · remove · tp · navigate · upload · download · remote"),
+                "Commands  list · details · add · edit · remove · tp · navigate · upload · download · remote · reload"),
                 lines(index));
         assertEquals(NamedTextColor.AQUA, colorOf(index, "add"));
         assertEquals(NamedTextColor.AQUA, colorOf(index, "/wp help <topic>"));
@@ -106,6 +112,44 @@ class HelpScreenTest {
         assertEquals(NamedTextColor.DARK_PURPLE, colorOf(list, "<view>"));
         assertEquals(NamedTextColor.DARK_PURPLE,
                 colorOf(HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.NAVIGATE, false), "<method>"));
+        assertEquals(NamedTextColor.GOLD, colorOf(HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.NAVIGATE, true), "<x>"));
+    }
+
+    @Test
+    void listOptionsComeAfterOnlyTheUsagesThatTakeThem() {
+        List<String> lines = lines(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.LIST, false));
+        int options = lines.indexOf("  Options, in this order, after any of the above");
+
+        assertTrue(lines.indexOf("/wp list all") < options, String.join("\n", lines));
+        assertTrue(options < lines.indexOf("/wp list dimensions [page <number>]"), String.join("\n", lines));
+    }
+
+    @Test
+    void reloadHelpSaysWhetherEachConfigSettingReloads() {
+        String help = render(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.RELOAD, false));
+        List<String> unnamed = new ArrayList<>();
+        for (Map.Entry<String, JsonElement> setting : new Gson().toJsonTree(new Config()).getAsJsonObject().entrySet()) {
+            if (help.contains(setting.getKey())) {
+                continue;
+            }
+            if (!setting.getValue().isJsonObject()) {
+                unnamed.add(setting.getKey());
+                continue;
+            }
+            for (String child : setting.getValue().getAsJsonObject().keySet()) {
+                if (!help.contains(child)) {
+                    unnamed.add(setting.getKey() + "." + child);
+                }
+            }
+        }
+
+        assertEquals(List.of(), unnamed, help);
+    }
+
+    @Test
+    void remoteHelpCoversDetails() {
+        assertTrue(lines(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.REMOTE, false))
+                .contains("/wp remote details <server> <dimension> <list> <waypoint>"));
     }
 
     @Test
@@ -192,8 +236,12 @@ class HelpScreenTest {
 
     @Test
     void navigateHelpMentionsTheTextDisplayOnlyWhereItIsSupported() {
+        List<String> supported = lines(HelpScreen.topic(Fixtures.console(), HelpTopics.Topic.NAVIGATE, true));
+
         assertFalse(render(HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.NAVIGATE, false)).contains("text_display"));
-        assertTrue(render(HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.NAVIGATE, true)).contains("/wp navigate config text_display"));
+        assertTrue(supported.contains("/wp navigate config text_display"));
+        assertTrue(supported.contains("/wp navigate config text_display transformation translation|rotation|scale <x> <y> <z>"));
+        assertTrue(supported.contains("/wp navigate config text_display transformation reset"));
     }
 
     @Test
