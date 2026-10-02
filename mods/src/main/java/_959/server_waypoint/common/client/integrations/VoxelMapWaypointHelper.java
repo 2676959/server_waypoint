@@ -17,6 +17,8 @@ import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.WaypointManager;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -28,6 +30,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
+import static _959.server_waypoint.common.network.ModMessageSender.toVanillaText;
+import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
 
 public final class VoxelMapWaypointHelper {
     private VoxelMapWaypointHelper() {
@@ -172,7 +176,18 @@ public final class VoxelMapWaypointHelper {
         switch (type) {
             case ADD, UPDATE -> {
                 removeSyncedWaypoint(manager, dimensionName, listName, waypointName);
-                addWaypoint(manager, dimensionName, listName, waypoint);
+                boolean synced = addWaypoint(manager, dimensionName, listName, waypoint);
+                if (synced && type == WaypointModificationType.UPDATE) {
+                    var player = Minecraft.getInstance().player;
+                    if (player != null) {
+                        Component message = Component.translatable("server_waypoint.modification.update.voxelmap",
+                                toVanillaText(waypointTextWithTp(waypoint, dimensionName, listName)));
+                        //? if >=26
+                        player.sendSystemMessage(message);
+                        //? if <26
+                        /*player.displayClientMessage(message, false);*/
+                    }
+                }
             }
             case REMOVE -> removeSyncedWaypoint(manager, dimensionName, listName, waypointName);
             case REMOVE_LIST -> removeList(dimensionName, listName);
@@ -202,15 +217,16 @@ public final class VoxelMapWaypointHelper {
         }
     }
 
-    private static void addWaypoint(WaypointManager manager, String dimensionName, String listName, SimpleWaypoint simpleWaypoint) {
+    private static boolean addWaypoint(WaypointManager manager, String dimensionName, String listName, SimpleWaypoint simpleWaypoint) {
         if (simpleWaypoint == null) {
-            return;
+            return false;
         }
         Waypoint waypoint = toVoxelMapWaypoint(manager, dimensionName, listName, simpleWaypoint);
         if (waypoint == null) {
-            return;
+            return false;
         }
         manager.addWaypoint(waypoint);
+        return true;
     }
 
     private static Waypoint toVoxelMapWaypoint(WaypointManager manager, String dimensionName, String listName, SimpleWaypoint simpleWaypoint) {

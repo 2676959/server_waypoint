@@ -14,6 +14,7 @@
   "server_waypoint.modification.add.xaeros": "Waypoint %1$s has been added to Xaero's minimap",
   "server_waypoint.modification.remove.xaeros": "Waypoint %1$s has been removed from Xaero's minimap",
   "server_waypoint.modification.update.xaeros": "Waypoint %1$s has been updated on Xaero's minimap",
+  "server_waypoint.modification.update.voxelmap": "Waypoint %1$s has been updated on VoxelMap",
   "server_waypoint.dimension.decode.fail": "Failed to decode dimension %1$s",
 
   "waypoint.empty.no_matches": "No waypoints match \"%s\".",

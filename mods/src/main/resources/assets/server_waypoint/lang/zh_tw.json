@@ -11,6 +11,7 @@
   "server_waypoint.modification.add.xaeros": "路徑點%1$s已新增至Xaero's minimap",
   "server_waypoint.modification.remove.xaeros": "路徑點%1$s已從Xaero's minimap移除",
   "server_waypoint.modification.update.xaeros": "路徑點%1$s已更新至Xaero's minimap",
+  "server_waypoint.modification.update.voxelmap": "路徑點%1$s已更新至VoxelMap",
   "server_waypoint.dimension.decode.fail": "無法解碼維度「%1$s」",
   "waypoint.empty.no_matches": "沒有符合「%s」的路徑點。",
   "waypoint.empty.all": "尚未有路徑點。使用 + 按鈕新增一個。",
