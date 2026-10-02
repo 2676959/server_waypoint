@@ -117,8 +117,14 @@ allprojects {
                         ModDependency("P7dR8mSH", "required"),
                         ModDependency("Vebnzrzj", "optional"),
                         ModDependency("1bokaNcj", "optional"),
+                        ModDependency("NcUtCpym", "optional"),
+                        ModDependency("wkzK5379", "optional"),
                     )
-                    "forge", "neoforge" -> listOf(ModDependency("1bokaNcj", "optional"))
+                    "forge", "neoforge" -> listOf(
+                        ModDependency("1bokaNcj", "optional"),
+                        ModDependency("NcUtCpym", "optional"),
+                    )
+                    "paper" -> listOf(ModDependency("Vebnzrzj", "optional"))
                     else -> emptyList()
                 })
                 detectLoaders.set(false)
@@ -179,15 +185,15 @@ allprojects {
                 "fabric" -> {
                     mainFile.addModLoader("Fabric", "Quilt")
                     mainFile.addRequirement("fabric-api")
-                    mainFile.addOptional("luckperms", "xaeros-minimap")
+                    mainFile.addOptional("luckperms", "xaeros-minimap", "xaeros-world-map")
                 }
                 "forge" -> {
                     mainFile.addModLoader("Forge")
-                    mainFile.addOptional("xaeros-minimap")
+                    mainFile.addOptional("xaeros-minimap", "xaeros-world-map")
                 }
                 "neoforge" -> {
                     mainFile.addModLoader("NeoForge")
-                    mainFile.addOptional("xaeros-minimap")
+                    mainFile.addOptional("xaeros-minimap", "xaeros-world-map")
                 }
             }
         }
