@@ -1,6 +1,7 @@
 plugins {
     java
     id("com.gradleup.shadow")
+    id("com.modrinth.minotaur")
 }
 
 group = property("maven_group") as String
