@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-/** Renders messages in English and finds the style of the pieces a player sees. */
+/** Renders messages, in English unless given a locale, and finds the style of the pieces a player sees. */
 public final class ChatAssert {
     private static boolean installed;
 
@@ -40,9 +40,13 @@ public final class ChatAssert {
 
     /** The visible pieces in order, with the style each one ends up with. */
     public static List<Run> runs(Component component) {
+        return runs(component, Locale.US);
+    }
+
+    public static List<Run> runs(Component component, Locale locale) {
         install();
         List<Run> runs = new ArrayList<>();
-        collect(GlobalTranslator.render(component, Locale.US), Style.empty(), runs);
+        collect(GlobalTranslator.render(component, locale), Style.empty(), runs);
         return runs;
     }
 
@@ -59,11 +63,19 @@ public final class ChatAssert {
     }
 
     public static String render(Component component) {
-        return runs(component).stream().map(Run::text).collect(Collectors.joining());
+        return render(component, Locale.US);
+    }
+
+    public static String render(Component component, Locale locale) {
+        return runs(component, locale).stream().map(Run::text).collect(Collectors.joining());
     }
 
     public static List<String> lines(Component component) {
-        return Arrays.asList(render(component).split("\n", -1));
+        return lines(component, Locale.US);
+    }
+
+    public static List<String> lines(Component component, Locale locale) {
+        return Arrays.asList(render(component, locale).split("\n", -1));
     }
 
     /**
@@ -104,8 +116,20 @@ public final class ChatAssert {
      * still fits the 20-line window, no bold, only vanilla glyphs and no trailing newline.
      */
     public static void assertFitsChat(Component message) {
+        List<String> problems = fitProblems(message, Locale.US);
+        if (!problems.isEmpty()) {
+            throw new AssertionError(String.join("\n", problems) + "\n--- message ---\n" + render(message));
+        }
+    }
+
+    /**
+     * What keeps the message from fitting chat for a viewer who reads it in this locale: the limits of
+     * {@link #assertFitsChat(Component)}, except that only English is held to the vanilla glyphs, since
+     * the Chinese locales cannot avoid Unifont.
+     */
+    public static List<String> fitProblems(Component message, Locale locale) {
         List<String> problems = new ArrayList<>();
-        String text = render(message);
+        String text = render(message, locale);
         if (text.endsWith("\n")) {
             problems.add("ends with a newline");
         }
@@ -115,18 +139,18 @@ public final class ChatAssert {
             if (width > ChatFont.CHAT_WIDTH) {
                 problems.add(width + " px: " + line);
             }
-            line.codePoints().filter(codePoint -> !ChatFont.isVanillaGlyph(codePoint)).forEach(codePoint ->
-                    problems.add("not in the vanilla font: " + new String(Character.toChars(codePoint)) + " in " + line));
+            if (locale.getLanguage().equals(Locale.ENGLISH.getLanguage())) {
+                line.codePoints().filter(codePoint -> !ChatFont.isVanillaGlyph(codePoint)).forEach(codePoint ->
+                        problems.add("not in the vanilla font: " + new String(Character.toChars(codePoint)) + " in " + line));
+            }
         }
         if (lines.size() + 1 > ChatFont.CHAT_LINES) {
             problems.add((lines.size() + 1) + " lines with the trailing blank line");
         }
-        if (runs(message).stream().anyMatch(run -> run.style().decoration(TextDecoration.BOLD) == TextDecoration.State.TRUE)) {
+        if (runs(message, locale).stream().anyMatch(run -> run.style().decoration(TextDecoration.BOLD) == TextDecoration.State.TRUE)) {
             problems.add("bold text");
         }
-        if (!problems.isEmpty()) {
-            throw new AssertionError(String.join("\n", problems) + "\n--- message ---\n" + text);
-        }
+        return problems;
     }
 
     public static List<String> runCommands(Component component) {

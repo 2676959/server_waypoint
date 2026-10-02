@@ -58,6 +58,9 @@ Command feedback is built from the pieces in `common/src/main/java/_959/server_w
   that every plain-text piece is coloured and that pieces shared with chat have chat's colour.
 - **One trailing newline.** The platform sender adds it for players (`PlatformMessageSender.forPlayer`);
   builders never end a message with a newline.
-- **Layout.** `ChatFont` holds the vanilla font advances. `ChatAssert.assertFitsChat` checks a
-  message against the 320 px width, the 20-line window, bold text and the vanilla glyphs, and
-  `ScreenAuditTest` checks every screen.
+- **Layout.** `ChatFont` holds the advances of every glyph in the vanilla bitmap font, accented
+  Latin and Hebrew included; anything else, such as Chinese, counts as 9 px. `ChatAssert.assertFitsChat`
+  checks a message against the 320 px width, the 20-line window, bold text and the vanilla glyphs, and
+  `ScreenAuditTest` checks every screen, in every locale too (`ChatAssert.fitProblems`, which leaves
+  the glyph check to English). A translation can wrap where the English line fits, so measure it:
+  shorten it, or accept the wrap by adding the line the test reports to `ScreenAuditTest.ACCEPTED_WRAPS`.

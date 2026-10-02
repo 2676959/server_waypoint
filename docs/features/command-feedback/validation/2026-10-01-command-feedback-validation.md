@@ -88,10 +88,20 @@ plain.
 ## Risks
 
 - `Open GUI` (`/wp_gui`): not checked; it needs a modded client.
-- Translations that wrap: not observed live. An offline estimate rendered the menu, the help index and
-  every topic, waypoint and list details, the pickers, the navigation and upload panels and two
-  results in `zh_cn`, counting each CJK glyph as 9 px: no line passes 320 px. The widest are the
-  `/wp add` usages at 309 px, which are English syntax.
+- Translations that wrap: not observed live, but measured in all six locales since 2026-10-02.
+  `ChatFont` used to count every glyph beyond ASCII and its symbols as 9 px. It now has the advance
+  of every glyph in the three sheets of the vanilla bitmap font, taken from the 26.3 client (`ñ` is
+  6 px, `í` 3 px, most Hebrew letters 6 px), and only Chinese still counts as 9 px, the advance of a
+  full-width Unifont glyph. `ScreenAuditTest.everyScreenFitsChatInEveryLocale` renders the 86 player
+  screens in each locale and measures every line. `en_us`, `zh_cn`, `zh_hk`, `zh_tw` and `he_il` fit
+  (the widest line, 319 px, is the English `/wp upload` usage), but 14 `es_es` lines pass 320 px, from
+  323 px to 385 px (the navigation panel's methods), so chat wraps them. The maintainers accepted
+  these wraps on 2026-10-02: the test lists them in `ACCEPTED_WRAPS` and fails on any other line over
+  320 px, and on a listed line that fits again. The 9 px estimate had put 26 `he_il` lines over, up to
+  423 px. Help topic titles start with their label and `wp.help.topic.hint`; the shorter `es_es` hint
+  was needed (the original gives a 430 px title), the shorter `he_il` one was not (the original gives
+  240 px). `HelpScreenTest.everyTopicTitleFitsTheChatInEveryLocale` also checks that every title is
+  translated.
 
 ## Follow-ups
 

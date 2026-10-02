@@ -136,7 +136,7 @@
   "wp.help.commands": "Comandos",
   "wp.help.topic.tooltip": "Comandos de {0}",
   "wp.help.topic.detail": "Uso y ejemplos",
-  "wp.help.topic.hint": "pasa el ratón por una línea para ver detalles, haz clic para usarla",
+  "wp.help.topic.hint": "detalles al pasar el ratón, clic para usar",
   "wp.help.examples": "Ejemplos",
   "wp.help.index": "Índice de ayuda",
   "wp.help.index.tooltip": "Todos los temas",

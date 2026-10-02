@@ -42,8 +42,21 @@ class ChatFontTest {
     }
 
     @Test
+    void lettersBeyondAsciiHaveTheAdvancesOfTheirSheets() {
+        Map<Character, Integer> glyphs = Map.ofEntries(
+                Map.entry('ñ', 6), Map.entry('á', 6), Map.entry('í', 3), Map.entry('Í', 4),
+                Map.entry('¿', 6), Map.entry('¡', 2), Map.entry('λ', 6), Map.entry('я', 6),
+                Map.entry('א', 6), Map.entry('ג', 5), Map.entry('נ', 4), Map.entry('ו', 2),
+                Map.entry('י', 2), Map.entry('ת', 6), Map.entry('▼', 6));
+        glyphs.forEach((glyph, advance) -> {
+            assertEquals(advance, ChatFont.advance(glyph), String.valueOf(glyph));
+            assertTrue(ChatFont.isVanillaGlyph(glyph), String.valueOf(glyph));
+        });
+    }
+
+    @Test
     void glyphsThatFallBackToUnifontAreNotVanilla() {
-        for (char glyph : "⋯▸▾✓✗▼".toCharArray()) {
+        for (char glyph : "⋯▸▾✓✗路".toCharArray()) {
             assertFalse(ChatFont.isVanillaGlyph(glyph), String.valueOf(glyph));
             assertEquals(9, ChatFont.advance(glyph));
         }
@@ -54,6 +67,8 @@ class ChatFontTest {
     void widthsAddUpTheAdvances() {
         assertEquals(185, ChatFont.width("Sort Default · Name · Distance · Color"));
         assertEquals(212, ChatFont.width("Server Waypoint   Open GUI · Help · Reload"));
+        assertEquals(38, ChatFont.width("Añadido"));
+        assertEquals(26, ChatFont.width("רשימה"));
     }
 
     @Test

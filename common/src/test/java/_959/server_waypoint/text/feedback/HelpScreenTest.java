@@ -2,10 +2,13 @@ package _959.server_waypoint.text.feedback;
 
 import _959.server_waypoint.text.chat.ChatAssert;
 import _959.server_waypoint.text.chat.ChatFont;
+import _959.server_waypoint.translation.TranslationFilesTest;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.translation.Translator;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -139,6 +142,26 @@ class HelpScreenTest {
         for (HelpTopics.Topic topic : HelpTopics.Topic.values()) {
             ChatAssert.assertFitsChat(HelpScreen.topic(Fixtures.player(), topic, true));
         }
+    }
+
+    @Test
+    void everyTopicTitleFitsTheChatInEveryLocale() {
+        List<String> problems = new ArrayList<>();
+        for (HelpTopics.Topic topic : HelpTopics.Topic.values()) {
+            Component help = HelpScreen.topic(Fixtures.player(), topic, true);
+            String english = lines(help).get(0);
+            for (String locale : TranslationFilesTest.LOCALES) {
+                String title = lines(help, Translator.parseLocale(locale)).get(0);
+                if (!locale.equals("en_us") && title.equals(english)) {
+                    problems.add(locale + " falls back to English: " + title);
+                }
+                int width = ChatFont.width(title);
+                if (width > ChatFont.CHAT_WIDTH) {
+                    problems.add(locale + ", " + width + " px: " + title);
+                }
+            }
+        }
+        assertTrue(problems.isEmpty(), String.join("\n", problems));
     }
 
     @Test

@@ -852,15 +852,17 @@ kept.
 - **`/wp_gui` link.** A click that runs a client-side command may not reach client commands on some
   loaders and on 1.21.6+. Fallback: a server-side `/wp gui` that asks the client to open the manager
   with an S2C packet.
-- **Translations** longer than English may wrap. The width test covers English only.
+- **Translations** longer than English may wrap. The layout test measures every locale and lists the
+  wraps the maintainers accepted.
 - **Plain-text detection** must follow the output receiver, including under `/execute`.
 
 ## 21. Testing
 
 - **Builder unit tests** for every screen: content, click commands, tooltips, hidden controls and
   plain-text output.
-- **Layout test**: lays out every screen with the vanilla font advances. In English, no line may
-  pass 320 px and no message may pass 20 lines with its trailing blank line.
+- **Layout test**: lays out every screen with the vanilla font advances, in English and in every
+  other locale. No line may pass 320 px and no message may pass 20 lines with its trailing blank
+  line, except the translated lines the test lists as accepted wraps.
 - **Glyph test**: every glyph used is in the vanilla bitmap font.
 - **Brigadier tests** for added and removed commands.
 - **Paging tests**: local and remote line budgets, `… N more` lines and continued headings.

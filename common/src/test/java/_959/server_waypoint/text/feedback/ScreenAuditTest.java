@@ -18,17 +18,21 @@ import _959.server_waypoint.text.chat.DimensionStyle;
 import _959.server_waypoint.text.chat.ListQuery;
 import _959.server_waypoint.text.chat.ListView;
 import _959.server_waypoint.text.chat.Viewer;
+import _959.server_waypoint.translation.TranslationFilesTest;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.translation.Translator;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,6 +53,26 @@ import static org.junit.jupiter.api.Assertions.fail;
 class ScreenAuditTest {
     /** Screens only a player with the mod ever receives; they keep their tooltips. */
     private static final Set<String> PLAYER_ONLY = Set.of("upload result", "arrival");
+    /**
+     * Lines of translations that pass 320 px, so chat wraps them, and that the maintainers accepted on
+     * 2026-10-02. Each is spelled as {@link #everyScreenFitsChatInEveryLocale()} reports it: add one to
+     * accept a wrap, and delete it once its translation fits.
+     */
+    private static final Set<String> ACCEPTED_WRAPS = Set.of(
+            "es_es, added: 331 px: ✔ Añadido [IF] Iron Farm a Farms   Detalles · Navegar · Deshacer",
+            "es_es, created list: 331 px: ✔ Creada la lista Storage en Mundo principal   Añadir aquí · Abrir",
+            "es_es, no list: 332 px: ✘ No hay ninguna lista llamada Farm en Mundo principal. Ver listas",
+            "es_es, edit DIMENSION_NOT_FOUND: 345 px: ✘ No hay ninguna dimensión llamada minecraft:overworld. Dimensiones",
+            "es_es, edit LIST_NOT_FOUND: 338 px: ✘ No hay ninguna lista llamada Farms en Mundo principal. Ver listas",
+            "es_es, edit WAYPOINT_NOT_FOUND: 323 px: ✘ No hay ningún punto llamado Iron Farm en Farms. Abrir Farms",
+            "es_es, edit ENCODING_FAILED: 337 px: ✘ Ese cambio es demasiado grande para enviarlo a los jugadores.",
+            "es_es, edit UPLOAD_BUSY: 343 px: ✘ La edición está en pausa mientras se sube algo. Inténtalo pronto.",
+            "es_es, navigation: 385 px: ✔ Brújula · ✔ Mapa · ✔ Barra de jefe · ✔ Barra de acción · ✔ Texto flotante",
+            "es_es, upload result: 343 px: 2 conflictos mantuvieron la versión del servidor.  Preferir los míos",
+            "es_es, upload result: 357 px: 2 dimensiones cambiaron mientras tanto; no se actualizaron. Reintentar",
+            "es_es, switch STALE_CATALOG: 354 px: ✘ Survival está desactualizado; espera a que se actualice. Reintentar",
+            "es_es, switch UNSUPPORTED: 327 px: ✘ Este servidor no puede llevar jugadores a otros servidores.",
+            "es_es, switch INVALID_REQUEST: 351 px: ✘ Survival respondió algo que no coincide con la solicitud. Reintentar");
 
     private static Map<String, Component> screens(Viewer viewer) {
         DimensionStyle dims = Fixtures.dims(viewer);
@@ -160,6 +184,21 @@ class ScreenAuditTest {
             }
             assertFalse(ChatAssert.render(screen).contains("<missing"), name + ": " + ChatAssert.render(screen));
         });
+    }
+
+    @Test
+    void everyScreenFitsChatInEveryLocale() {
+        Map<String, Component> screens = screens(Fixtures.player());
+        List<String> problems = new ArrayList<>();
+        for (String code : TranslationFilesTest.LOCALES) {
+            Locale locale = Translator.parseLocale(code);
+            screens.forEach((name, screen) -> ChatAssert.fitProblems(screen, locale)
+                    .forEach(problem -> problems.add(code + ", " + name + ": " + problem)));
+        }
+        List<String> unaccepted = problems.stream().filter(problem -> !ACCEPTED_WRAPS.contains(problem)).toList();
+        List<String> fitNow = ACCEPTED_WRAPS.stream().filter(wrap -> !problems.contains(wrap)).sorted().toList();
+        assertTrue(unaccepted.isEmpty(), unaccepted.size() + " problems:\n" + String.join("\n", unaccepted));
+        assertTrue(fitNow.isEmpty(), "Accepted wraps that no longer happen, delete them:\n" + String.join("\n", fitNow));
     }
 
     @Test
