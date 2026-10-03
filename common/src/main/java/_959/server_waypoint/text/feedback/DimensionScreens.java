@@ -70,7 +70,7 @@ public final class DimensionScreens {
             }
         }
         if (!empty.isEmpty()) {
-            rows.add(new Row(Chat.concat(translatable("wp.dimensions.no_waypoints", DARK_GRAY), text(" "),
+            rows.add(new Row(Chat.concat(translatable("wp.dimensions.no_waypoints", WHITE), text(" "),
                     Chat.join(empty.stream().map(dimension -> dimensionLink(dims, dimension, GRAY)).toList())), empty.size()));
         }
         List<List<Row>> pages = Paging.bySize(rows, pageLimit + 5);
