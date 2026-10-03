@@ -108,6 +108,20 @@ class WidgetThemeEditorSessionTest {
     }
 
     @Test
+    void classicPresetPreviewsAtOnceAndSurvivesSaveAndReload() throws IOException {
+        Path path = this.tempDirectory.resolve("widget-theme.json");
+        WidgetThemeEditorSession session = new WidgetThemeEditorSession(WidgetThemes.DEFAULT, path);
+
+        session.select(WidgetThemeSelection.CLASSIC);
+        assertEquals(WidgetThemes.CLASSIC, WidgetThemeManager.getTheme());
+        session.save();
+        session.cancel();
+
+        assertEquals(WidgetThemeSelection.CLASSIC, WidgetThemeJson.loadSettings(path).selection());
+        assertEquals(WidgetThemes.CLASSIC, WidgetThemeJson.loadAndApply(path));
+    }
+
+    @Test
     void editingPresetCreatesCustomPaletteAndResetPreservesIt() {
         WidgetThemeEditorSession session = new WidgetThemeEditorSession(
                 WidgetThemes.DEFAULT, this.tempDirectory.resolve("widget-theme.json"));

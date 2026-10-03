@@ -85,6 +85,88 @@ class WidgetThemeTest {
     }
 
     @Test
+    void classicLetsMoreOfTheWorldThroughThanTheGlassPresetsOnEverySurface() {
+        assertMoreTranslucent("Translucent Dark", WidgetThemes.TRANSLUCENT_DARK);
+        assertMoreTranslucent("Modern Dark", WidgetThemes.MODERN_DARK);
+    }
+
+    private static void assertMoreTranslucent(String presetName, WidgetTheme glass) {
+        for (WidgetThemeVariable surface : new WidgetThemeVariable[]{
+                WidgetThemeVariable.SCREEN_BACKGROUND, WidgetThemeVariable.PANEL_BACKGROUND,
+                WidgetThemeVariable.POPUP_BACKGROUND, WidgetThemeVariable.DIALOG_BACKGROUND,
+                WidgetThemeVariable.CONTROL_BACKGROUND, WidgetThemeVariable.CONTROL_HOVER_BACKGROUND,
+                WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND, WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND,
+                WidgetThemeVariable.SELECTION_BACKGROUND, WidgetThemeVariable.ROW_HOVER_BACKGROUND,
+                WidgetThemeVariable.SCROLLBAR_TRACK, WidgetThemeVariable.SUCCESS_BACKGROUND,
+                WidgetThemeVariable.WARNING_BACKGROUND, WidgetThemeVariable.DANGER_BACKGROUND}) {
+            assertTrue(alpha(WidgetThemes.CLASSIC.getColor(surface)) < alpha(glass.getColor(surface)),
+                    () -> surface + " is not more translucent than in " + presetName);
+        }
+    }
+
+    @Test
+    void classicSurfacesComposeToThePixelsOfThePreviousRelease() {
+        // The previous release (3.0.4) drew a panel of 60% black straight over the world, a control fill of
+        // 53% black on the panel, a border of 50% white on the panel, a scrollbar thumb of 50% white on a
+        // track of 60% black on the panel, and a list-row hover of 19% white on the panel. These pixels are
+        // those layers composed by hand over each world, rounding after every layer as the framebuffer does.
+        int[][] expected = {
+                // world       panel       control     border      thumb       row hover
+                {0xFF000000, 0xFF000000, 0xFF000000, 0xFF7F7F7F, 0xFF7F7F7F, 0xFF303030},
+                {0xFFFFFFFF, 0xFF666666, 0xFF303030, 0xFFB2B2B2, 0xFF949494, 0xFF838383},
+                {0xFF87B9F0, 0xFF364A60, 0xFF19232D, 0xFF9AA4AF, 0xFF8A8E92, 0xFF5C6C7E}
+        };
+        WidgetTheme classic = WidgetThemes.CLASSIC;
+        for (int[] row : expected) {
+            String world = String.format("world #%06X", row[0] & 0xFFFFFF);
+            int screen = compositeOver(classic.getColor(WidgetThemeVariable.SCREEN_BACKGROUND), row[0]);
+            int panel = compositeOver(classic.getColor(WidgetThemeVariable.PANEL_BACKGROUND), screen);
+            int track = compositeOver(classic.getColor(WidgetThemeVariable.SCROLLBAR_TRACK), panel);
+            assertPixel(row[1], panel, "panel over " + world);
+            assertPixel(row[2], compositeOver(classic.getColor(WidgetThemeVariable.CONTROL_BACKGROUND), panel),
+                    "control over " + world);
+            assertPixel(row[3], compositeOver(classic.getColor(WidgetThemeVariable.BORDER), panel),
+                    "border over " + world);
+            assertPixel(row[4], compositeOver(classic.getColor(WidgetThemeVariable.SCROLLBAR_THUMB), track),
+                    "scrollbar thumb over " + world);
+            assertPixel(row[5], compositeOver(classic.getColor(WidgetThemeVariable.ROW_HOVER_BACKGROUND), panel),
+                    "row hover over " + world);
+        }
+    }
+
+    @Test
+    void classicKeepsItsLabelsReadableOnTheSurfacesTheyAreDrawnOn() {
+        WidgetTheme classic = WidgetThemes.CLASSIC;
+        for (int world : new int[]{0xFF000000, 0xFFFFFFFF, 0xFF87B9F0}) {
+            int screen = compositeOver(classic.getColor(WidgetThemeVariable.SCREEN_BACKGROUND), world);
+            int panel = compositeOver(classic.getColor(WidgetThemeVariable.PANEL_BACKGROUND), screen);
+            assertContrastAtLeast(classic.getColor(WidgetThemeVariable.TEXT_PRIMARY),
+                    classic.getColor(WidgetThemeVariable.PANEL_BACKGROUND), screen, 4.5D);
+            for (WidgetThemeVariable surface : new WidgetThemeVariable[]{
+                    WidgetThemeVariable.CONTROL_BACKGROUND, WidgetThemeVariable.POPUP_BACKGROUND,
+                    WidgetThemeVariable.DIALOG_BACKGROUND}) {
+                assertContrastAtLeast(classic.getColor(WidgetThemeVariable.TEXT_PRIMARY),
+                        classic.getColor(surface), panel, 4.5D);
+            }
+            for (WidgetThemeVariable fill : new WidgetThemeVariable[]{
+                    WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND, WidgetThemeVariable.SUCCESS_BACKGROUND,
+                    WidgetThemeVariable.WARNING_BACKGROUND, WidgetThemeVariable.DANGER_BACKGROUND}) {
+                assertContrastAtLeast(classic.getColor(WidgetThemeVariable.TEXT_ON_ACCENT),
+                        classic.getColor(fill), panel, 4.5D);
+            }
+        }
+    }
+
+    /** Two composited pixels may differ by one in a channel through rounding. */
+    private static void assertPixel(int expected, int actual, String what) {
+        for (int shift = 16; shift >= 0; shift -= 8) {
+            int difference = Math.abs((expected >> shift & 0xFF) - (actual >> shift & 0xFF));
+            assertTrue(difference <= 1,
+                    () -> String.format("%s: expected #%06X, got #%06X", what, expected & 0xFFFFFF, actual & 0xFFFFFF));
+        }
+    }
+
+    @Test
     void customColorDoesNotMutateBaseTheme() {
         WidgetTheme baseTheme = WidgetTheme.modernDark();
         WidgetTheme customTheme = baseTheme.withColor(WidgetThemeVariable.ACCENT, 0xFF123456);

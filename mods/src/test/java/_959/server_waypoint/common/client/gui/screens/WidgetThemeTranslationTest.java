@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.client.gui.screens;
 
+import _959.server_waypoint.common.client.gui.render.WidgetThemeSelection;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -38,6 +39,23 @@ class WidgetThemeTranslationTest {
     void themeEditorIsTranslatedInSupportedLanguages() throws IOException {
         this.assertThemeEditorTranslated("en_us");
         this.assertThemeEditorTranslated("zh_cn");
+    }
+
+    @Test
+    void everyPresetNameIsTranslatedInEveryLanguage() throws IOException {
+        for (String language : List.of("en_us", "es_es", "he_il", "zh_cn", "zh_hk", "zh_tw")) {
+            String resource = "/assets/server_waypoint/lang/" + language + ".json";
+            InputStream stream = WidgetThemeTranslationTest.class.getResourceAsStream(resource);
+            assertNotNull(stream, () -> "Missing language resource: " + resource);
+            try (Reader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
+                JsonObject translations = JsonParser.parseReader(reader).getAsJsonObject();
+                for (WidgetThemeSelection selection : WidgetThemeSelection.values()) {
+                    String key = "server_waypoint.theme.preset." + selection.getId();
+                    assertTrue(translations.has(key),
+                            () -> "Missing " + language + " translation for " + key);
+                }
+            }
+        }
     }
 
     private void assertThemeEditorTranslated(String language) throws IOException {

@@ -114,6 +114,46 @@ public final class WidgetThemes {
             .build();
 
     /**
+     * The look of the previous release: a panel of 60% black, controls of 53% black and borders of 50%
+     * white, with no dimming of the screen, so the world shows through every surface. Popups and dialogs
+     * are as translucent as the panels, so labels under them show through. The toggle and status fills
+     * are the old green, blue and red toggle colors laid over the old control fill, flattened into one
+     * layer. Contrast is as low as it was on a bright world, where muted text and hovered controls fade.
+     */
+    public static final WidgetTheme CLASSIC = WidgetTheme.builder()
+            .setColor(WidgetThemeVariable.TEXT_PRIMARY, 0xFFFFFFFF)
+            .setColor(WidgetThemeVariable.TEXT_MUTED, 0xFFA0A0A0)
+            .setColor(WidgetThemeVariable.TEXT_DISABLED, 0xFF909090)
+            .setColor(WidgetThemeVariable.TEXT_PLACEHOLDER, 0xFFA0A0A0)
+            .setColor(WidgetThemeVariable.TEXT_ON_ACCENT, 0xFFFFFFFF)
+            .setColor(WidgetThemeVariable.SCREEN_BACKGROUND, 0x00000000)
+            .setColor(WidgetThemeVariable.PANEL_BACKGROUND, 0x99000000)
+            .setColor(WidgetThemeVariable.POPUP_BACKGROUND, 0x99000000)
+            .setColor(WidgetThemeVariable.DIALOG_BACKGROUND, 0x99000000)
+            .setColor(WidgetThemeVariable.CONTROL_BACKGROUND, 0x88000000)
+            .setColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND, 0x66FFFFFF)
+            .setColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND, 0x55000000)
+            .setColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND, 0xCF0043A9)
+            .setColor(WidgetThemeVariable.BORDER, 0x7FFFFFFF)
+            .setColor(WidgetThemeVariable.FOCUS_RING, 0xFFFFFFFF)
+            .setColor(WidgetThemeVariable.ACCENT, 0xFF808080)
+            .setColor(WidgetThemeVariable.ACCENT_HOVER, 0xFF959595)
+            .setColor(WidgetThemeVariable.SELECTION_BACKGROUND, 0x59FFFFFF)
+            .setColor(WidgetThemeVariable.ROW_HOVER_BACKGROUND, 0x30FFFFFF)
+            .setColor(WidgetThemeVariable.SCROLLBAR_TRACK, 0x99000000)
+            .setColor(WidgetThemeVariable.SCROLLBAR_THUMB, 0x7FFFFFFF)
+            .setColor(WidgetThemeVariable.SCROLLBAR_THUMB_ACTIVE, 0xFFFFFFFF)
+            .setColor(WidgetThemeVariable.SCROLLBAR_THUMB_DISABLED, 0x40FFFFFF)
+            .setColor(WidgetThemeVariable.SLIDER_THUMB_DISABLED, 0xFF606060)
+            .setColor(WidgetThemeVariable.SUCCESS, 0xFF55FF55)
+            .setColor(WidgetThemeVariable.WARNING, 0xFFFFFF55)
+            .setColor(WidgetThemeVariable.DANGER, 0xFFFF5555)
+            .setColor(WidgetThemeVariable.SUCCESS_BACKGROUND, 0xCF007D00)
+            .setColor(WidgetThemeVariable.WARNING_BACKGROUND, 0xCF7E3F00)
+            .setColor(WidgetThemeVariable.DANGER_BACKGROUND, 0xCF7D0000)
+            .build();
+
+    /**
      * Theme used by initial state, resets, and persistence fallbacks.
      */
     public static final WidgetTheme DEFAULT = TRANSLUCENT_DARK;

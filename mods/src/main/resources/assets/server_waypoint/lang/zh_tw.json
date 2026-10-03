@@ -164,5 +164,6 @@
   "server_waypoint.theme.preset.custom": "自訂",
   "server_waypoint.theme.preset.translucent_dark": "半透明深色",
   "server_waypoint.theme.preset.modern_dark": "現代深色",
-  "server_waypoint.theme.preset.high_contrast": "高對比"
+  "server_waypoint.theme.preset.high_contrast": "高對比",
+  "server_waypoint.theme.preset.classic": "經典"
 }

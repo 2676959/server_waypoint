@@ -406,6 +406,20 @@ translucent; contrast varies with the world behind the glass. Selected controls 
 preset through the editor dropdown or `WidgetThemeManager.setTheme(WidgetThemes.HIGH_CONTRAST)`;
 it does not change the default theme.
 
+`WidgetThemes.CLASSIC` reproduces the previous release (3.0.4), whose key trait is translucence:
+panels are 60% black, controls 53% black and borders 50% white, and it is more translucent than
+Translucent Dark and Modern Dark on every surface. Nothing dims the world behind a screen. Popups, dialogs
+and scrollbar tracks are as translucent as the panels, so labels beneath a popup show through.
+Hovering and selecting are white washes (`ROW_HOVER_BACKGROUND` 19%, `SELECTION_BACKGROUND` 35%,
+`CONTROL_HOVER_BACKGROUND` 40%). The selected and On/Off fills are the old blue, green and red toggle
+colors laid over the old control fill and flattened into one layer, because a toggle paints a single
+fill. Status text uses Minecraft's own light green, yellow and red, and the accent is a neutral gray
+that keeps white `TEXT_ON_ACCENT` readable. Contrast is as low as it was on a bright world, where muted
+text and hovered controls fade, so only the main text and the toggle labels are tested for
+readability. The `WidgetThemeTest` pixel check pins its panel, control, border, scrollbar and row-hover
+layers to the previous release's pixels. Apply it through the editor dropdown; it does not change the
+default theme.
+
 `DIALOG_BACKGROUND` is darker and more opaque than `POPUP_BACKGROUND` because `DialogWidget`
 always renders above other controls. Keep suggestion lists, color-picker popups, and other
 non-modal floating surfaces on `POPUP_BACKGROUND`. Hovered controls and rows use lighter
@@ -1051,7 +1065,7 @@ The gallery is screen-local rather than a reusable widget API. Its interactive c
 The package-private `WidgetThemeEditorSession` owns the editing transaction; it is an implementation seam for the screen, not a public theme API:
 
 - `setColor` updates the immutable draft and publishes it for live preview.
-- The theme dropdown selects Custom, Translucent Dark, Modern Dark, or High Contrast and previews immediately. It reuses `AbstractDropdownMenuWidget`, registers once, routes popup clicks before covered controls, and renders the popup after the body. Escape closes the dropdown first; the swatch modal disables it.
+- The theme dropdown selects Custom, Translucent Dark, Modern Dark, High Contrast, or Classic and previews immediately. It reuses `AbstractDropdownMenuWidget`, registers once, routes popup clicks before covered controls, and renders the popup after the body. Escape closes the dropdown first; the swatch modal disables it.
 - Its trigger and choices use `font.lineHeight + 2` height and a two-pixel text inset, matching text fields and comboboxes. The screen positions its full-width outline alongside the body panels. Popup rows share single-pixel separators; labels are clipped within the outline, with the trigger reserving space for a right-aligned open/closed arrow. This selection-only control has no suggestion popup.
 - Switching presets retains the custom palette. Editing a preset copies its colors into Custom; subsequent preset switches retain those edits.
 - Reset selects the default Translucent Dark preset without erasing Custom; it does not write the file by itself.

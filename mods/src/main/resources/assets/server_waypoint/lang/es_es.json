@@ -164,5 +164,6 @@
   "server_waypoint.theme.preset.custom": "Personalizado",
   "server_waypoint.theme.preset.translucent_dark": "Oscuro translúcido",
   "server_waypoint.theme.preset.modern_dark": "Oscuro moderno",
-  "server_waypoint.theme.preset.high_contrast": "Alto contraste"
+  "server_waypoint.theme.preset.high_contrast": "Alto contraste",
+  "server_waypoint.theme.preset.classic": "Clásico"
 }
