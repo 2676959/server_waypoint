@@ -257,7 +257,8 @@ not show hover tooltips because their values are already presented by the input 
 
 Pass choices, initial text, field label, font, and `Consumer<String>` to the constructor. Duplicate
 choices are removed in insertion order. `getValue` returns the current text; `setValue` accepts any
-non-null text without calling the callback. `setValues` replaces the popup choices, closes an open
+non-null text without calling the callback. `setMaxLength` limits the text length, which is
+otherwise unlimited, and cuts longer text without calling the callback. `setValues` replaces the popup choices, closes an open
 popup, and preserves the current text without invoking the callback. User edits and popup selections invoke the callback.
 Suggestions default to the current choices; `setSuggestionsProvider(Supplier<List<String>>)` can
 supply a separate dynamic catalog, and `null` disables suggestions. Matching is case-insensitive
@@ -271,8 +272,8 @@ separately. Route popup clicks before overlapping controls using `isMouseOver(..
 Escape dismisses whichever is showing.
 
 Call `ComboBoxWidget.layoutPopup(screenHeight, maxRows)` after positioning the control and before
-rendering its popups to opt into screen-aware vertical placement (the waypoint icon picker uses
-eight rows). Refresh it as the screen size, control position, or choices change. The choice list
+rendering its popups to opt into screen-aware vertical placement (the waypoint form's
+comboboxes use eight rows). Refresh it as the screen size, control position, or choices change. The choice list
 prefers downward expansion whenever its visible rows fit within a four-pixel screen margin;
 otherwise it uses the side with more room and limits its scrollable height. Suggestions choose
 their direction independently using their actual height, so a shorter suggestion list can still
@@ -327,11 +328,14 @@ When a dropdown appears early in a manually rendered layout, call
 `setRenderPopupSeparately(true)` and then `renderPopup(...)` once after the other controls.
 The default still renders the popup with its control. This prevents later controls from covering
 popup choices, including on newer render strata APIs. `AbstractWaypointPropertiesScreen` draws the
-popup of every dropdown it holds, the icon picker's and Add's dimension combobox, after the rows,
-the suggestions and the field tooltip. The dimension combobox is populated from the same complete
+popup of every dropdown it holds, the icon picker's and Add's dimension and list comboboxes, after the rows,
+the suggestions and the field tooltip, and calls `layoutPopup(height, 8)` on each first, so a popup
+shows at most eight rows and opens on the side with room. The dimension combobox is populated from the same complete
 integrated-server or remote-suggestion dimension catalog as `WaypointManagerScreen`, with the
-supplied starting dimension retained. List and waypoint-name
-suggestions and submission read the current selection. Popup clicks have priority over overlapping
+supplied starting dimension retained. The list combobox offers the waypoint lists of the chosen
+dimension: the screen replaces its choices with `setValues` whenever the dimension changes, so the
+text already typed stays and a name that isn't a list yet still creates one. `setMaxLength` caps
+it at `MAX_NAME_LENGTH`. Waypoint-name suggestions and submission read the current selection. Popup clicks have priority over overlapping
 fields, outside clicks continue to their targets, and Escape closes the popup before the screen.
 
 ## `render`: drawing and presentation

@@ -3,7 +3,6 @@ package _959.server_waypoint.common.client.gui.screens;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
-import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointPos;
@@ -30,7 +29,7 @@ import static _959.server_waypoint.util.StringCommandBuilder.addCmd;
  */
 public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     private final ComboBoxWidget dimensionField;
-    private final TranslucentTextField listNameField;
+    private final ComboBoxWidget listNameField;
     private final TranslucentButton addButton;
     private final PendingAdd pendingAdd = new PendingAdd();
 
@@ -45,12 +44,12 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
                 List.of(dimensionName)
         );
         this.dimensionField = new ComboBoxWidget(0, 0, 155, Component.translatable("waypoint.form.dimension"), this.font,
-                dimensions, dimensionName, value -> this.onFormEdited());
+                dimensions, dimensionName, value -> this.onDimensionEdited());
         this.dimensionField.setRenderPopupSeparately(true);
-        this.listNameField = new TranslucentTextField(0, 0, 90, Component.translatable("waypoint.form.list"), this.font);
+        this.listNameField = new ComboBoxWidget(0, 0, 90, Component.translatable("waypoint.form.list"), this.font,
+                WaypointClientMod.getAllWaypointListNames(dimensionName), listName, value -> this.onFormEdited());
+        this.listNameField.setRenderPopupSeparately(true);
         this.listNameField.setMaxLength(MAX_NAME_LENGTH);
-        this.listNameField.setValue(listName);
-        this.listNameField.setResponder(value -> this.onFormEdited());
         this.addButton = TranslucentButton.fitted(Component.translatable("waypoint.add.button"), this::submitForm);
         this.configureSuggestions();
         this.setDefaultPos(defaultPos == null ? this.getCurrentDefaultPos() : defaultPos);
@@ -89,8 +88,13 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         ));
     }
 
+    /** The list choices belong to the chosen dimension, so they follow it; the list name already typed stays. */
+    private void onDimensionEdited() {
+        this.listNameField.setValues(WaypointClientMod.getAllWaypointListNames(this.dimensionField.getValue()));
+        this.onFormEdited();
+    }
+
     private void configureSuggestions() {
-        this.listNameField.setSuggestionsProvider(() -> WaypointClientMod.getAllWaypointListNames(this.dimensionField.getValue()));
         this.nameEditBox.setSuggestionsProvider(() -> WaypointClientMod.getAllWaypointNames(this.dimensionField.getValue(), this.listNameField.getValue()));
     }
 

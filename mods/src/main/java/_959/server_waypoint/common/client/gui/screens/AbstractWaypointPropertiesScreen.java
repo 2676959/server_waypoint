@@ -1156,8 +1156,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             field.renderSuggestions(context, mouseX, mouseY);
         }
         previousLayer(context);
-        this.iconPicker.menu().layoutPopup(this.height, 8);
         for (ComboBoxWidget dropdown : this.dropdowns) {
+            dropdown.layoutPopup(this.height, 8);
             dropdown.renderPopup(context, mouseX, mouseY, delta);
         }
         this.renderFieldTooltip(context, mouseX, mouseY);

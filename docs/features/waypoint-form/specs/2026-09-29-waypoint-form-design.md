@@ -117,7 +117,7 @@ The header, the panel and the footer form one group, centered on screen.
 | Row | Add | Edit | Controls, left to right |
 | --- | --- | --- | --- |
 | Dimension | Yes | | Dimension `ComboBoxWidget`, stretched to the column |
-| List | Yes | | List `TranslucentTextField`, stretched |
+| List | Yes | | List `ComboBoxWidget`, stretched; its choices are the chosen dimension's lists |
 | Name + Initials | Yes | Yes | Name field, stretched; at the right, the "Initials" label and a 26-pixel field |
 | Display name | | Yes | Display name field, stretched |
 | Icon | Yes | Yes | 11-pixel icon preview; icon dropdown, stretched; 13×13 remove-icon button |
@@ -214,7 +214,8 @@ follows the [GUI guide](../../../tips/gui/local-guide.md):
 
 - The dimension choices and their asynchronous refresh are unchanged. So are the suggestions: list
   names for the chosen dimension, waypoint names for the chosen list, initials candidates,
-  coordinates and yaw.
+  coordinates and yaw. The list names are also the List combobox's choices, so its arrow opens
+  them, and they are replaced whenever the Dimension field changes.
 - Add sends the same command as today, built by `StringCommandBuilder.addCmd`, now with the parsed
   keywords and the description. The command already carries both.
 
@@ -336,8 +337,8 @@ Save:
   - Edit: Name, Initials, Display name, icon dropdown, remove-icon button, color button, hex field,
     Visibility, X, Y, Z, Yaw, Keywords, Description, Reset, Cancel, Save.
 - **Enter** in one of the form's text fields submits when Add or Save is active. While a suggestion
-  list is open, Enter picks the highlighted entry instead, as today. The dropdowns keep their own use
-  of Enter.
+  list is open, Enter picks the highlighted entry instead, as today. The dropdowns, which include
+  Dimension and List on Add, keep their own use of Enter.
 - **Escape** closes an open popup, then leaves the focused field, then closes the screen, as today.
   While the color picker is open, Escape closes it and focus returns to the color button.
 - **First focus:** Add focuses the first empty required field: List when it's empty, otherwise Name.

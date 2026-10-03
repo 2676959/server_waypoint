@@ -95,6 +95,21 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget {
         this.input.setPlaceholder(placeholder);
     }
 
+    /** Limits the text length; longer text is cut without invoking the user-change callback. */
+    public void setMaxLength(int maxLength) {
+        boolean cut = this.getValue().length() > maxLength;
+        this.settingValue = true;
+        try {
+            this.input.setMaxLength(maxLength);
+            if (cut) {
+                // EditBox cuts the text but keeps its old cursor and scroll position; setting it again resets both.
+                this.input.setValue(this.input.getValue());
+            }
+        } finally {
+            this.settingValue = false;
+        }
+    }
+
     public boolean closeSuggestionsIfOpen() {
         return this.input.closeSuggestionsIfOpen();
     }

@@ -38,6 +38,7 @@ A manual pass on 26.1.2 Fabric. Compiling can't prove these. Tick a box only aft
 - [ ] Add closes when the waypoint appears, in singleplayer and on a dedicated server.
 - [ ] When the server refuses, for example without permission, "Adding…" locks the form and after 5 seconds it unlocks with "The server didn't add the waypoint. Check the chat."
 - [ ] A new list name shows the note "Adding creates the list …" and doesn't block.
+- [ ] List is a combobox: its arrow opens the lists of the chosen dimension, picking one fills the field, and changing Dimension swaps the choices and keeps what's typed. More than eight lists scroll.
 - [ ] The keywords and the description reach the waypoint, as the manager's details show.
 
 ### Edit
