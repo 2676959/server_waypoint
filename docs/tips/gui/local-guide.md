@@ -574,7 +574,7 @@ The main base classes have distinct roles:
   `activatesOn(keyCode)` reports whether a key would press the button. Screens route those keys
   as described in [Input](#4-input-preserve-focus-and-text-entry).
 - Extend `ShiftableScrollableWidget` when the widget has a vertically scrollable viewport.
-- Extend `TreeViewWidget<T>` when the content is a flattened visible view of expandable hierarchical data. Implement child lookup, expansion state, empty rendering, and row rendering; the base class handles scroll bounds, hit testing, visible-row calculation, clipping, and scrollbar drawing.
+- Extend `TreeViewWidget<T>` when the content is a flattened visible view of expandable hierarchical data. Implement child lookup, expansion state, empty rendering, and row rendering; the base class handles scroll bounds, hit testing, visible-row calculation, clipping, and scrollbar drawing. A tree paints its own `PANEL_BACKGROUND` fill, which is right when nothing else paints under it, as in the theme editor's variable list. A tree on a panel that already paints that fill overrides `backgroundColor()` to return 0, as the waypoint list and the remote browser tree do on the manager's list panel: a translucent layer composited twice (60% black twice is 84%) makes the tree look darker than the panels beside it.
 
 `WaypointListWidget` supports both one-dimension and all-dimensions query scopes. Call
 `setShowAllDimensions(true)` to use `WaypointQueryEngine.queryAll`; grouped mode then renders
@@ -638,7 +638,11 @@ and the details content width as 32% clamped to 150–320 pixels. When their com
 exceeds the space inside the 12-pixel screen margins, proportionally shrink both while keeping all
 three panels visible. Content height uses 82% of the viewport clamped to 120–400 pixels and the
 available vertical margins. Resize the search field and waypoint list by visual width together with
-their panels so drawing and hitboxes continue to match the calculated geometry.
+their panels so drawing and hitboxes continue to match the calculated geometry. The manager paints
+each panel's fill once, over the whole panel; the waypoint list, the remote tree and both rails sit on
+that fill and paint none of their own, so they match the other panels at any theme translucence. The
+list keeps its own outline, which frames it inside the list panel. A widget added to a panel follows
+the same rule.
 
 The manager's sidebar `HOME_ICON` / `LAN_SERVERS_ICON` toggle switches its middle list and right
 details panel between current-server and remote waypoints without opening another screen. The
@@ -663,7 +667,9 @@ and its width and height allow either horizontal or vertical separators. Returni
 restores the local dimension selection.
 
 `IconListWidget<T>` owns per-instance selection, scroll, clipping, item positioning, padding,
-hover labels and left-click dispatch for both `DimensionListWidget` and `ServerListWidget`.
+hover labels and left-click dispatch for both `DimensionListWidget` and `ServerListWidget`. It paints no
+background: a rail sits on the manager's left panel, which already paints the fill, and its
+`backgroundColor()` returns 0 so the translucent role isn't composited twice.
 Hover labels are scheduled at the cursor after resolving the hovered icon, so scrolling or
 resizing either rail does not anchor a label to the full widget bounds.
 Dimension hover labels use the shared dimension color mapping and the same GUI color scale as

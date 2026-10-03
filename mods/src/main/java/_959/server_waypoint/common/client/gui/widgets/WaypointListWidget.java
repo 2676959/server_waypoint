@@ -122,6 +122,12 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         emptyMessage = new ScalableText(EMPTY_MESSAGE_INSET, textVertOffset, Component.empty(), TEXT_MUTED, textRenderer);
     }
 
+    /** The manager's list panel behind this list already paints the fill; painting it again would darken the list. */
+    @Override
+    protected int backgroundColor() {
+        return 0;
+    }
+
     /**
      * Clears scroll and dimension-node expansion state at the start of a new server or local-world
      * session. Dimension expansion survives manager reconstruction within the session; scroll does

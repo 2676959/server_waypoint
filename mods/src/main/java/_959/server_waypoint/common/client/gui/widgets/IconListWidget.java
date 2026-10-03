@@ -7,6 +7,7 @@ import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.render.PaddingBackground;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 
 import java.util.List;
@@ -21,7 +22,6 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.*;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.FOCUS_RING;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.PANEL_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.ROW_HOVER_BACKGROUND;
 
 public abstract class IconListWidget<T> extends ShiftableClickableWidget implements Padding, Expandable {
@@ -53,12 +53,21 @@ public abstract class IconListWidget<T> extends ShiftableClickableWidget impleme
                 this,
                 verticalPadding,
                 horizontalPadding,
-                PANEL_BACKGROUND,
-                BORDER,
+                this::backgroundColor,
+                WidgetThemeManager.getColorSupplier(BORDER),
                 false
         );
         scrolledPosition = 0;
         index = 0;
+    }
+
+    /**
+     * The fill painted behind the icons, read each time the rail is drawn: none, because a rail sits on a
+     * panel that already paints {@code PANEL_BACKGROUND}, and a translucent layer composited twice looks
+     * darker than the panel around it.
+     */
+    protected int backgroundColor() {
+        return 0;
     }
 
     public void resetSelection() {

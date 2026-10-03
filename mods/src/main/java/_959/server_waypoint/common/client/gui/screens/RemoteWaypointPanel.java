@@ -268,6 +268,9 @@ final class RemoteWaypointPanel {
                 EMPTY_MESSAGE_INSET, MovementAllowedScreen.centered(20, font.lineHeight) + 1,
                 Component.translatable("waypoint.remote.no_servers"), TEXT_MUTED, font);
         BrowserTree() { super(0, 0, 160, 160, 20, Component.translatable("waypoint.remote.title")); }
+        // The manager's list panel behind the tree already paints the fill; painting it again would darken the tree.
+        @Override
+        protected int backgroundColor() { return 0; }
         void setEmptyReason(RemoteBrowserModel.EmptyReason reason) {
             emptyMessage.setText(Component.translatable(reason.translationKey(), filter));
         }

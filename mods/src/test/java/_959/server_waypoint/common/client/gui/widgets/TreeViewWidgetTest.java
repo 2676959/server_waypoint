@@ -1,6 +1,8 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
+import _959.server_waypoint.common.client.gui.render.WidgetThemes;
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,6 +86,19 @@ class TreeViewWidgetTest {
 
         assertEquals(1, range.startRow());
         assertEquals(5, range.endRow());
+    }
+
+    @Test
+    void aTreeOnItsOwnPaintsThePanelFill() {
+        // The theme editor's variable list stands on no other panel, so it keeps the fill that trees
+        // paint by default. Only a tree on a panel that already paints it overrides backgroundColor().
+        try {
+            WidgetThemeManager.setTheme(WidgetThemes.CLASSIC);
+
+            assertEquals(0x99000000, new TestTreeView(10).backgroundColor());
+        } finally {
+            WidgetThemeManager.resetTheme();
+        }
     }
 
     private static void assertRow(TestTreeView tree, int index, Node node, int depth) {
