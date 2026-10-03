@@ -66,6 +66,7 @@
   "wp.more.server.other": "{0} more servers",
   "wp.more.after": "{0} after this page",
   "wp.plain.continue": "{0}: {1}",
+  "wp.viewed_as": "Viewed as {0}",
   "wp.sort": "Sort",
   "wp.sort.default": "Default",
   "wp.sort.name": "Name",

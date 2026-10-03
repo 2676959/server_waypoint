@@ -71,6 +71,22 @@ class CommandFeedbackTest {
     }
 
     @Test
+    void thePermissionsAreThoseOfTheSourceTheFeedbackIsViewedFrom() {
+        CommandHarness.Source admin = CommandHarness.console();
+        assertTrue(this.harness.command.viewer(admin).can(Viewer.Permission.RELOAD));
+
+        CommandHarness.Source member = CommandHarness.player().withPermissions("navigate");
+        this.harness.sender.viewAs(admin, member);
+        Viewer viewer = this.harness.command.viewer(admin);
+
+        assertEquals(Set.of(Viewer.Permission.NAVIGATE), viewer.permissions());
+        assertTrue(viewer.plainText(), "the platform still answers who reads plain text");
+        assertEquals(new WaypointPos(0, 64, 0), viewer.position(), "where the command runs stays the source's");
+        assertTrue(this.harness.command.viewer(CommandHarness.player()).can(Viewer.Permission.RELOAD),
+                "other sources are unaffected");
+    }
+
+    @Test
     void theMenuAnswersPlayersAndTheHelpIndexAnswersPlainText() {
         assertEquals("Server Waypoint   Open GUI · Help · Reload",
                 lines(this.harness.run(CommandHarness.player(), "wp")).get(0));

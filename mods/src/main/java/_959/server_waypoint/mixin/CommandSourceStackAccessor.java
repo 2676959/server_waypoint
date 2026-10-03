@@ -9,4 +9,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface CommandSourceStackAccessor {
     @Accessor("source")
     CommandSource serverWaypoint$getSource();
+
+    /** Whether the stack suppresses its output, as the stacks that run datapack functions do. */
+    @Accessor("silent")
+    boolean serverWaypoint$isSilent();
 }

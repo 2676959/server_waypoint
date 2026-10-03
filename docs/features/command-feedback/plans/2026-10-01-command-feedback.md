@@ -10,6 +10,8 @@
 
 **Spec:** [`docs/features/command-feedback/specs/2026-10-01-command-feedback-design.md`](../specs/2026-10-01-command-feedback-design.md). The plan argues from it, so read both. Where they differ, the spec wins, except for the places listed in "Decisions where the spec was silent or inexact" at the end, which the plan had to choose.
 
+> **Amended 2026-10-02.** On every platform, `/execute as <player>` no longer follows the receiver. The feedback is the player's view, and the commander gets a copy under a `Viewed as <player>` line (spec 15). Review Focus 3, the receiver rule in Task 6 (and the `isPlainTextReceiver` Javadoc it quotes), the `adventure-text.md` excerpt in Task 20 and step 9 of the Task 21 click-through below describe the original rule.
+
 ## Global Constraints
 
 - Java 17 compatible code, 4-space indentation, never tabs; Kotlin DSL for Gradle scripts (none change); GSON for JSON. (`AGENTS.md`)

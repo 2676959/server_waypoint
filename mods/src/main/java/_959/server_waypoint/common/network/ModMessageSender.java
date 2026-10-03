@@ -11,6 +11,7 @@ import _959.server_waypoint.core.network.SinglePacketMessage;
 import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.mixin.CommandSourceStackAccessor;
+import _959.server_waypoint.text.chat.Chat;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
@@ -66,18 +67,30 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
         *///?}
     }
 
-    /** Renders for the receiver: a player gets their language and the trailing newline. */
-    private net.minecraft.network.chat.Component getTranslatedText(CommandSourceStack source, Component component) {
-        ServerPlayer player = getReceivingPlayer(source);
-        if (player != null) {
-            return getTranslatedText(player, PlatformMessageSender.forPlayer(component));
-        }
-        return toVanillaText(GlobalTranslator.render(component, Locale.getDefault()));
+    /**
+     * The player whose view the feedback is: the player a command runs as, such as /execute as a
+     * player, else the player who owns the stack's command source. Null for the console, RCON and
+     * command blocks, which read plain text.
+     */
+    @Nullable
+    private static ServerPlayer getViewingPlayer(CommandSourceStack source) {
+        ServerPlayer executor = source.getPlayer();
+        return executor != null ? executor : getReceivingPlayer(source);
     }
 
     @Override
     public boolean isPlainTextReceiver(CommandSourceStack source) {
-        return getReceivingPlayer(source) == null;
+        return getViewingPlayer(source) == null;
+    }
+
+    /**
+     * The stack of the player the feedback is viewed as when a commander ran it for them, so the
+     * view shows what that player may do; otherwise the stack itself.
+     */
+    @Override
+    public CommandSourceStack viewingSource(CommandSourceStack source) {
+        ServerPlayer viewer = getViewingPlayer(source);
+        return viewer == null || viewer == getReceivingPlayer(source) ? source : viewer.createCommandSourceStack();
     }
 
     /** The player who owns this stack's command source, or null for the console, RCON and command blocks. */
@@ -98,22 +111,63 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
         *///?}
     }
 
-    public net.minecraft.network.chat.Component getTranslatedText(ServerPlayer player, Component component) {
+    private static Locale getLocale(ServerPlayer player) {
         //? if <= 1.20.1 {
         /*String language = ((PlayerLocaleAccessor) player).sw$getLocale();
         *///?} else {
         String language = player.clientInformation().language();
         //?}
         Locale locale = Translator.parseLocale(language);
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-        return toVanillaText(GlobalTranslator.render(component, locale));
+        return locale == null ? Locale.getDefault() : locale;
     }
 
+    public net.minecraft.network.chat.Component getTranslatedText(ServerPlayer player, Component component) {
+        return toVanillaText(GlobalTranslator.render(component, getLocale(player)));
+    }
+
+    /**
+     * The feedback goes to the player whose view it is, in their language. When a commander ran it
+     * for that player with /execute as, the commander also gets the view, under a "Viewed as" line.
+     * Vanilla's {@code CommandSourceStack.sendSystemMessage} would pick the player a command runs as
+     * on its own; this decides the receivers itself so that the view and its receivers always agree.
+     */
     @Override
     public void sendMessage(CommandSourceStack source, Component component) {
-        source.sendSystemMessage(getTranslatedText(source, component));
+        CommandSourceStackAccessor accessor = (CommandSourceStackAccessor) source;
+        if (accessor.serverWaypoint$isSilent()) {
+            // Vanilla's sendSystemMessage drops the output of a suppressed stack the same way.
+            return;
+        }
+        CommandSource commander = accessor.serverWaypoint$getSource();
+        ServerPlayer viewer = getViewingPlayer(source);
+        if (viewer == null) {
+            commander.sendSystemMessage(toVanillaText(GlobalTranslator.render(component, Locale.getDefault())));
+            return;
+        }
+        viewer.sendSystemMessage(getTranslatedText(viewer, PlatformMessageSender.forPlayer(component)));
+        ServerPlayer commanderPlayer = getReceivingPlayer(source);
+        if (commanderPlayer != viewer) {
+            commander.sendSystemMessage(getViewedAsText(viewer, commanderPlayer, component));
+        }
+    }
+
+    /**
+     * The commander's copy of a player's view: a "Viewed as" line in the commander's language, then
+     * the feedback in the player's. A player commander gets the trailing newline; the console, RCON
+     * and command blocks read plain text without it.
+     */
+    private net.minecraft.network.chat.Component getViewedAsText(
+            ServerPlayer viewer,
+            @Nullable ServerPlayer commanderPlayer,
+            Component component
+    ) {
+        Locale commanderLocale = commanderPlayer == null ? Locale.getDefault() : getLocale(commanderPlayer);
+        Component line = GlobalTranslator.render(Chat.viewedAs(viewer.getName().getString()), commanderLocale);
+        Component view = GlobalTranslator.render(
+                commanderPlayer == null ? component : PlatformMessageSender.forPlayer(component),
+                getLocale(viewer)
+        );
+        return toVanillaText(PlatformMessageSender.forCommander(line, view));
     }
 
     @Override

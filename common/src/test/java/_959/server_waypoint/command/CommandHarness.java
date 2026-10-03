@@ -59,7 +59,10 @@ final class CommandHarness {
                     this.permissions);
         }
 
-        /** The same player run from the console with /execute as: the console reads the feedback. */
+        /**
+         * A player's source whose feedback is read as plain text: it keeps the player's name and
+         * permissions, so a test can set the plain-text layout beside the player's own.
+         */
         Source readByConsole() {
             return new Source(this.name, this.dimension, this.position, this.yaw, this.player, true,
                     this.permissions);
@@ -132,7 +135,18 @@ final class CommandHarness {
         final List<Component> errors = new ArrayList<>();
         final List<Map.Entry<Object, Component>> toPlayers = new ArrayList<>();
         final List<Object> online = new ArrayList<>();
+        final Map<Source, Source> viewingSources = new LinkedHashMap<>();
         boolean handshake = true;
+
+        /** Shows the commander's feedback as the viewer's, the way the mods do for /execute as a player. */
+        void viewAs(Source commander, Source viewer) {
+            this.viewingSources.put(commander, viewer);
+        }
+
+        @Override
+        public Source viewingSource(Source source) {
+            return this.viewingSources.getOrDefault(source, source);
+        }
 
         @Override
         public void sendMessage(Source source, Component component) {

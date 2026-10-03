@@ -4,6 +4,9 @@ Status: design agreed on 2026-10-01 and implemented; see the
 [implementation plan](../plans/2026-10-01-command-feedback.md) and the
 [validation record](../validation/2026-10-01-command-feedback-validation.md).
 
+Amended on 2026-10-02: `/execute as <player>` shows the player's view to both the player and the
+commander, on every platform (15). The rest of the design is unchanged.
+
 ## Intent
 
 The chat feedback of `/wp` grew one command at a time and was never designed as a whole:
@@ -90,10 +93,10 @@ Out of scope:
 | aqua | links, click hints and typing instructions in tooltips |
 | green | add and create actions, `✔` results, the available server dot |
 | red | `✘` errors, destructive actions, the unreachable server dot |
-| yellow | `[✎]` edit buttons, `Custom…`, `Prefer mine`, `Adjust text display`, the stale server dot |
+| yellow | `[✎]` edit buttons, `Custom…`, `Prefer mine`, `Adjust text display`, the stale server dot, the player's name in the `Viewed as` line (15) |
 | light purple | navigation and teleport actions |
 | white | names of waypoints, lists and servers; property values |
-| gray | labels, counts, distances, descriptions, status words, secondary links such as `Help` and `Back` |
+| gray | labels, counts, distances, descriptions, status words, secondary links such as `Help` and `Back`, and the italic `Viewed as` line (15) |
 | dark gray | separators, disabled controls and minor annotations (`No waypoints yet:`, `(continued)`, `none`) |
 | waypoint colour | `[AB]` initials and colour swatches |
 | dimension colour | dimension names |
@@ -719,9 +722,23 @@ Switching you to Survival for [IF] Iron Farm…
 ## 15. Plain-text viewers
 
 The console, RCON and command blocks drop tooltips and clicks. The Fabric and NeoForge server log
-and RCON also drop colour. A message goes to a plain-text viewer when its receiver is not a player.
-The receiver is where the output goes, not the executing entity: `/execute as <player> run wp list`
-from the console still prints plain text.
+and RCON also drop colour. A message goes to a plain-text viewer when no player reads it.
+
+The feedback is the view of the player a command runs as, on every platform. In
+`/execute as <player> run wp list` the player gets the feedback in their language, with the
+trailing newline and the controls they may use. The commander (the console, RCON, a command block
+or another player) gets the same view under a first line, `Viewed as <player>`, gray and italic
+with the name in yellow, in the commander's own language. A server admin sees what the player sees and can guide them. The
+copy for the console, RCON or a command block is plain text without the trailing newline. A command
+that runs as the commander's own player, or as something that is not a player, sends one message to
+the commander. On Fabric, NeoForge and Forge a suppressed stack, such as the one that runs a
+datapack function (`/function`, a tick or load tag, a scheduled function), sends nothing, as in
+vanilla; Paper does not check for one.
+
+What the viewer may do comes from the view's own player (the platform's `viewingSource`), so the
+commander's copy shows the help lines and buttons the player sees. Where the command runs (the
+dimension, position and distances) still comes from the command source, as for any `/execute`; use
+`execute as <player> at <player>` to read the feedback from the player's position.
 
 For these viewers, nothing essential may depend on hover, click or colour. Builders:
 
@@ -858,7 +875,8 @@ kept.
   with an S2C packet.
 - **Translations** longer than English may wrap. The layout test measures every locale and lists the
   wraps the maintainers accepted.
-- **Plain-text detection** must follow the output receiver, including under `/execute`.
+- **Plain-text detection** must follow the viewer, the player a command runs as (15), including
+  under `/execute`.
 
 ## 21. Testing
 

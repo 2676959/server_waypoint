@@ -291,9 +291,13 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         return this.permissionManager.hasPermission(source, this.permissionKeys.uploadDelete(), CONFIG.CommandPermission().uploadDelete());
     }
 
-    /** Whoever reads this source's feedback, built once per command source (spec 17). */
+    /**
+     * Whoever reads this source's feedback, built once per command source (spec 17). What the viewer
+     * may do comes from the source the feedback is viewed from; where the command runs, from the
+     * source itself.
+     */
     protected final Viewer viewer(S source) {
-        Set<Viewer.Permission> permissions = permissions(source);
+        Set<Viewer.Permission> permissions = permissions(this.sender.viewingSource(source));
         P player = getPlayer(source);
         boolean hasMod = player != null
                 && (this.sender.canSendChunkedMessage(player) || usesLocalUpload(source, player));

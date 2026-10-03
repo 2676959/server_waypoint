@@ -3,13 +3,16 @@ package _959.server_waypoint.text.chat;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import static _959.server_waypoint.text.chat.ChatAssert.clickOf;
 import static _959.server_waypoint.text.chat.ChatAssert.colorOf;
+import static _959.server_waypoint.text.chat.ChatAssert.find;
 import static _959.server_waypoint.text.chat.ChatAssert.lines;
 import static _959.server_waypoint.text.chat.ChatAssert.render;
 import static _959.server_waypoint.text.chat.ChatAssert.runCommands;
@@ -85,6 +88,18 @@ class ChatTest {
         assertEquals("✘ Missing. Browse", render(error));
         assertEquals(NamedTextColor.RED, colorOf(error, "Missing."));
         assertEquals("✔ Saved", render(Chat.ok(text("Saved"), java.util.Arrays.<Component>asList(null, null))));
+    }
+
+    @Test
+    void theViewedAsLineIsGrayItalicsWithThePlayersNameInYellow() {
+        Component line = Chat.viewedAs("Alex");
+
+        assertEquals("Viewed as Alex", render(line));
+        assertEquals(NamedTextColor.GRAY, colorOf(line, "Viewed as"));
+        assertEquals(TextDecoration.State.TRUE, find(line, "Viewed as").style().decoration(TextDecoration.ITALIC));
+        assertEquals(NamedTextColor.YELLOW, colorOf(line, "Alex"));
+        assertEquals(TextDecoration.State.TRUE, find(line, "Alex").style().decoration(TextDecoration.ITALIC));
+        assertEquals("Visto como Alex", render(line, Locale.forLanguageTag("es-ES")));
     }
 
     @Test

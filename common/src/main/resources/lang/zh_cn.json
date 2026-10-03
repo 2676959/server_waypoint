@@ -66,6 +66,7 @@
   "wp.more.server.other": "还有 {0} 个服务器",
   "wp.more.after": "此页之后还有{0}",
   "wp.plain.continue": "{0}：{1}",
+  "wp.viewed_as": "以 {0} 的视角查看",
   "wp.sort": "排序",
   "wp.sort.default": "默认",
   "wp.sort.name": "名称",

@@ -85,6 +85,49 @@ magenta next to the bright aqua commands; both suites still passed (727 and 508 
 Fabric and NeoForge were not run: their console and RCON print `Component.getString()`, so they stay
 plain.
 
+## `/execute as` shows the player's view
+
+Date: 2026-10-02. Build: the `cli-improved` branch at `53cf600d` plus the change that implements
+spec 15 (`ModMessageSender` and `PaperMessageSender` route by viewer, `Chat.viewedAs`,
+`PlatformMessageSender.forCommander` and `viewingSource`).
+
+| Target | Result |
+| --- | --- |
+| mods, all 39 targets (14 Fabric, 13 NeoForge, 12 Forge) and paper 1.21, 1.21.11, 26.2 | Compiled |
+| `:common:test` | 746 tests passed |
+| `:mods:26.1.2-fabric:test`, `:mods:1.20.1-fabric:test` | 508 and 505 tests passed |
+| `:paper:1.21-paper:test`, `:paper:1.21.11-paper:test`, `:paper:26.2-paper:test` | 25 tests passed on each |
+
+`ChatTest.theViewedAsLineIsGrayItalicsWithThePlayersNameInYellow` pins the line in English and Spanish, and
+`PlatformMessageSenderViewTest` the copy the commander gets.
+`CommandFeedbackTest.thePermissionsAreThoseOfTheSourceTheFeedbackIsViewedFrom` pins that the viewer's
+permissions come from the platform's `viewingSource` while the position stays the source's; it fails
+when the hook is bypassed.
+
+`PaperMessageSenderDeliveryTest` pins who gets what on Paper, with stand-ins for the sender, the
+executor and the source, in five cases: a player's own command, the console running as a player, a
+player running as another player, a command running as an armor stand, and the console alone. It ran
+on the Adventure each target bundles (4.17.0 on 1.21, 4.26.1 on 1.21.11 and 5.2.0 on 26.2), so it
+also showed that the new `common` code, compiled against Adventure 4.16, runs on all three.
+
+Two things have no test. The sends themselves: the `CommandSourceStackAccessor` mixin behind
+`ModMessageSender.sendMessage` is not applied in a plain JUnit run, and Paper's region scheduling
+needs a server. And `viewingSource` on both platforms, which needs a real player. These need a live
+check, and it did not run. The mods check needs real players, such as a throwaway mod that places
+`ServerPlayer`s on the Fabric 26.1.2 dev server, the way the original defect was found: a console
+running `execute as ProbeA run wp help` printed nothing while ProbeA got the console layout, and
+ProbeA running `execute as ProbeB run wp help` sent ProbeB the layout rendered for ProbeA. The Paper
+test server runs in online mode and its authentication was left as it is, so that check needs an
+online test account. The expected results now, on both platforms:
+
+| Command | The player it runs as gets | The commander gets |
+| --- | --- | --- |
+| console: `execute as ProbeA run wp help` | ProbeA's language and buttons, with the trailing newline | `Viewed as ProbeA`, then the same text without the colours and without the trailing newline |
+| ProbeA: `execute as ProbeB run wp help` | ProbeB's language and buttons | `Viewed as ProbeB` in ProbeA's language, then ProbeB's view with the trailing newline |
+| ProbeA: `wp help` | one message, no `Viewed as` line (ProbeA is both) | none |
+| ProbeA: `execute as <armor stand> run wp help` | nothing | ProbeA's own view |
+| a datapack function running `wp help` (Fabric, NeoForge and Forge) | nothing | nothing |
+
 ## Risks
 
 - `Open GUI` (`/wp_gui`): not checked; it needs a modded client.
@@ -107,6 +150,8 @@ plain.
 
 - Run the player click-through: with a modded client on the Fabric dev server, and on Paper with an
   online test account (or a local offline-mode Paper server if the maintainers want one).
+- Run the `/execute as` live check above with real players: on the Fabric dev server, and on Paper
+  with an online test account.
 - Before the `Click` fix, `/wp add` on Paper created the list and the waypoint and then failed to
   build its reply, so the player saw an internal error for a change that was saved. Commands save
   before they build their feedback, so any failure while building a reply still looks like a

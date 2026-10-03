@@ -25,11 +25,32 @@ public interface PlatformMessageSender<S, P> {
     }
 
     /**
-     * Whether this source's output goes to a plain-text receiver such as the console, RCON or a
-     * command block. It follows the receiver, not the executing entity: /execute as a player from
-     * the console still prints plain text.
+     * The copy of a player's view that goes to the commander who ran a command as that player with
+     * /execute as: the "Viewed as" line, then the view itself. The player gets the view alone. Pass
+     * the view with its trailing newline ({@link #forPlayer}) for a player commander, and without it
+     * for the console, RCON and command blocks.
+     */
+    static Component forCommander(Component viewedAsLine, Component view) {
+        return Component.empty().append(viewedAsLine).appendNewline().append(view);
+    }
+
+    /**
+     * Whether this source's feedback is written for a plain-text viewer such as the console, RCON or
+     * a command block. The feedback is the view of the player a command runs as, so /execute as a
+     * player from the console is that player's view, not plain text; the console reads a copy of it
+     * ({@link #forCommander}). Without such a player it is the view of whoever the source is.
      */
     boolean isPlainTextReceiver(S source);
+
+    /**
+     * The source whose permissions decide what this source's feedback shows, such as which help
+     * lines and buttons appear. It is the source itself unless a commander ran the command as a
+     * player with /execute as: then it is that player's own source, so the view carries what the
+     * player may do, not what the commander may.
+     */
+    default S viewingSource(S source) {
+        return source;
+    }
 
     void sendMessage(S source, Component component);
     void sendPlayerMessage(P player, Component component);

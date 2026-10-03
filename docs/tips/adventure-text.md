@@ -46,9 +46,11 @@ Command feedback is built from the pieces in `common/src/main/java/_959/server_w
 - **Tooltips** come from `Tooltip`: a white first line naming the object or the action, gray detail
   lines, and aqua click hints and typing instructions last.
 - **Plain-text viewers.** `Viewer.plainText()` is true when the output goes to the console, RCON or a
-  command block, decided by the receiver, not the executing entity. They get no clicks, tooltips or
-  controls: `Chat.link` keeps the label, `Chat.control` and `Chat.button` return null, and builders
-  write out identifiers and coordinates instead.
+  command block and no player reads it. The feedback is the view of the player a command runs as, so
+  `/execute as` from the console is that player's view, and the console gets a copy under a
+  `Chat.viewedAs` line (`PlatformMessageSender.forCommander`, spec 15). Plain-text viewers get no
+  clicks, tooltips or controls: `Chat.link` keeps the label, `Chat.control` and `Chat.button` return
+  null, and builders write out identifiers and coordinates instead.
 - **Plain text keeps the colours of chat.** Every piece has the colour players see, and text written
   out in place of a link, a tooltip or a distance takes that piece's colour: `… N more: <command>` is
   aqua, row coordinates are gray, help usages are coloured like their links and `Tooltip.textLines()`

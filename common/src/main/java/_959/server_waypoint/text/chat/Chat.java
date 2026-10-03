@@ -5,6 +5,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -148,6 +149,16 @@ public final class Chat {
     /** An error line followed by the link that helps recover from it. */
     public static Component error(Component message, @Nullable Component recovery) {
         return recovery == null ? error(message) : concat(error(message), Component.space(), recovery);
+    }
+
+    /**
+     * "Viewed as Alex", gray and italic with the name in yellow, like vanilla's notices about
+     * someone else's command: the first line of the copy a commander gets when /execute as shows
+     * the feedback as Alex's.
+     */
+    public static Component viewedAs(String playerName) {
+        return Component.empty().color(NamedTextColor.GRAY).decorate(TextDecoration.ITALIC)
+                .append(Component.translatable("wp.viewed_as", Component.text(playerName).color(NamedTextColor.YELLOW)));
     }
 
     /** "1 waypoint" or "12 waypoints": the key's .one or .other form with the number as {0}. */
