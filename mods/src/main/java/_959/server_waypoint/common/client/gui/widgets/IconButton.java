@@ -20,6 +20,7 @@ public class IconButton extends ShiftableButtonWidget implements Expandable {
     Identifier
     icon;
     private final ButtonClickCallback callback;
+    private boolean fillsAtRest = true;
 
     public IconButton(int x, int y, int width, int height, Component message,
     //$ resource_location_type_swap
@@ -33,6 +34,20 @@ public class IconButton extends ShiftableButtonWidget implements Expandable {
     @Override
     protected void onPress() {
         this.callback.onClick();
+    }
+
+    /**
+     * For a button on a panel that already paints a fill: it paints none of its own while idle, so the
+     * panel shows through, and still fills when hovered or disabled.
+     */
+    public IconButton withoutRestingFill() {
+        this.fillsAtRest = false;
+        return this;
+    }
+
+    /** The fill painted behind the icon, for the button's current state. */
+    protected int surfaceColor() {
+        return WidgetThemeState.controlBackground(this.active, isHovered(), this.fillsAtRest);
     }
 
     @Override
@@ -52,8 +67,7 @@ public class IconButton extends ShiftableButtonWidget implements Expandable {
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
-        int bgColor = WidgetThemeState.controlBackground(this.active, isHovered());
-        context.fill(x, y, x + width, y + height, bgColor);
+        context.fill(x, y, x + width, y + height, this.surfaceColor());
         renderOutline(context, x, y, width, height, WidgetThemeState.border(this.active, isFocused(), isHovered()));
         int iconWidth = Math.max(0, width - ICON_PADDING * 2);
         int iconHeight = Math.max(0, height - ICON_PADDING * 2);

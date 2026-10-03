@@ -15,10 +15,22 @@ final class WidgetThemeState {
     }
 
     static int controlBackground(boolean active, boolean hovered) {
+        return controlBackground(active, hovered, true);
+    }
+
+    /**
+     * The fill of a control in its current state. A control on a panel that already paints a fill passes
+     * {@code fillAtRest} false, so while idle it paints none and the panel shows through; hovering and
+     * the disabled look still fill.
+     */
+    static int controlBackground(boolean active, boolean hovered, boolean fillAtRest) {
         if (!active) {
             return getColor(CONTROL_DISABLED_BACKGROUND);
         }
-        return getColor(hovered ? CONTROL_HOVER_BACKGROUND : CONTROL_BACKGROUND);
+        if (hovered) {
+            return getColor(CONTROL_HOVER_BACKGROUND);
+        }
+        return fillAtRest ? getColor(CONTROL_BACKGROUND) : 0;
     }
 
     static int border(boolean active, boolean focused, boolean hovered) {

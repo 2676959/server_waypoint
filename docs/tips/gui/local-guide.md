@@ -282,7 +282,11 @@ explicit expansion direction until this method is used.
 
 `SuggestingTextInput` is the reusable surface-free input base. It owns editing, shifted layout,
 completion state, inline text, and suggestion rendering/hit testing; `TranslucentTextField` adds
-only its themed surface. By default the list takes the field's outline: it starts at `getVisualX()`
+only its themed surface, whose fill `surfaceColor()` returns for the field's state. A field on a panel
+that already paints a translucent fill overrides it to leave out the resting fill, as
+`WaypointSearchBarWidget` does on the manager's list panel; hovering and the disabled look still fill.
+Such a field shows its hint through `setPlaceholder`, as the search bar does, because vanilla's fixed
+dark gray hint is unreadable on a bare panel (1.2:1 against a light world). By default the list takes the field's outline: it starts at `getVisualX()`
 and is `getVisualWidth()` wide, so its edges line up with the field's, and it widens to the right
 only when a suggestion's text needs more room. Composites can override `getSuggestionsX()`,
 `getSuggestionsY()`, and `getSuggestionsWidth(int maxTextWidth)` to anchor suggestions to their outer
@@ -552,6 +556,11 @@ An inactive `IconButton` multiplies its icon by the theme's `TEXT_DISABLED`, the
 button's label takes, so an unavailable action, such as resetting a setting that's already at its
 default, doesn't look pressable. Draw icons in a light gray or white so the tint shows.
 
+An `IconButton` fills like other controls: the control background at rest, and the hover and disabled
+fills in those states. On a panel that already paints a translucent fill, call `withoutRestingFill()` so
+the button paints none of its own while idle and the panel shows through (the manager's add button does).
+The fill painted for the current state is `surfaceColor()`.
+
 `ToggleButton` takes each state's fill either as a `WidgetThemeVariable`, which follows the theme (as
 `OnOffToggleButton` does with `SUCCESS_BACKGROUND` and `DANGER_BACKGROUND`), or as an int ARGB, which is
 used as given and never follows the theme. The waypoint form's Visibility toggle uses fixed colors on
@@ -642,7 +651,11 @@ their panels so drawing and hitboxes continue to match the calculated geometry. 
 each panel's fill once, over the whole panel; the waypoint list, the remote tree and both rails sit on
 that fill and paint none of their own, so they match the other panels at any theme translucence. The
 list keeps its own outline, which frames it inside the list panel. A widget added to a panel follows
-the same rule.
+the same rule. The same goes for controls: the sidebar's icon buttons (the scope, grouping and sort-order
+toggles, the sort dropdown's button and the add button) and the search field paint no fill while idle, only
+their border, so a control isn't a second translucent layer stacked on the panel. Hovering, the disabled
+look and a selected control still fill. The sort dropdown's popup rows float over other widgets, so they keep
+their resting fill; `WaypointManagerScreen.resolveIconControlFill` makes that choice.
 
 The manager's sidebar `HOME_ICON` / `LAN_SERVERS_ICON` toggle switches its middle list and right
 details panel between current-server and remote waypoints without opening another screen. The

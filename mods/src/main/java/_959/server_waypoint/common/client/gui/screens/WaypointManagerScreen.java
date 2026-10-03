@@ -165,7 +165,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 Component.translatable("waypoint.add.button"),
                 WidgetTextures.ADD_ICON,
                 this::openAddWaypointScreen
-        );
+        ).withoutRestingFill();
         allDimensionsToggle = new IconToggleButton(
                 Component.translatable("waypoint.dimension.show_selected"),
                 Component.translatable("waypoint.dimension.show_all"),
@@ -184,7 +184,6 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                     refreshRemoteOptions();
                 }
         );
-        searchField.setHint(Component.translatable("waypoint.search.hint"));
         groupModeToggle = new IconToggleButton(
                 Component.translatable("waypoint.group.flat"),
                 Component.translatable("waypoint.group.lists"),
@@ -1303,18 +1302,10 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             Identifier
             icon,
             boolean selected,
-            boolean focusVisible
+            boolean focusVisible,
+            boolean fillAtRest
     ) {
-        int backgroundColor;
-        if (!widget.active) {
-            backgroundColor = WidgetThemeManager.getColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND);
-        } else if (selected) {
-            backgroundColor = WidgetThemeManager.getColor(WidgetThemeVariable.SELECTION_BACKGROUND);
-        } else {
-            backgroundColor = WidgetThemeManager.getColor(widget.isHovered()
-                    ? WidgetThemeVariable.CONTROL_HOVER_BACKGROUND
-                    : WidgetThemeVariable.CONTROL_BACKGROUND);
-        }
+        WidgetThemeVariable fill = resolveIconControlFill(widget.active, selected, widget.isHovered(), fillAtRest);
         int borderColor = WidgetThemeManager.getColor(resolveIconControlBorder(
                 widget.active,
                 widget.isFocused(),
@@ -1323,7 +1314,9 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         ));
         int x = widget.getX();
         int y = widget.getY();
-        context.fill(x, y, x + widget.getWidth(), y + widget.getHeight(), backgroundColor);
+        if (fill != null) {
+            context.fill(x, y, x + widget.getWidth(), y + widget.getHeight(), WidgetThemeManager.getColor(fill));
+        }
         renderOutline(context, x, y, widget.getWidth(), widget.getHeight(), borderColor);
         int iconWidth = Math.max(0, widget.getWidth() - CONTROL_ICON_PADDING * 2);
         int iconHeight = Math.max(0, widget.getHeight() - CONTROL_ICON_PADDING * 2);
@@ -1341,6 +1334,29 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                     iconHeight
             );
         }
+    }
+
+    /**
+     * The fill behind an icon control, or null for none. Controls on a panel pass {@code fillAtRest} false:
+     * the panel already paints a translucent fill, so a second one at rest would stack on it. A popup row
+     * floats over other widgets and keeps its fill.
+     */
+    static @Nullable WidgetThemeVariable resolveIconControlFill(
+            boolean active,
+            boolean selected,
+            boolean hovered,
+            boolean fillAtRest
+    ) {
+        if (!active) {
+            return WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND;
+        }
+        if (selected) {
+            return WidgetThemeVariable.SELECTION_BACKGROUND;
+        }
+        if (hovered) {
+            return WidgetThemeVariable.CONTROL_HOVER_BACKGROUND;
+        }
+        return fillAtRest ? WidgetThemeVariable.CONTROL_BACKGROUND : null;
     }
 
     static WidgetThemeVariable resolveIconControlBorder(
@@ -1411,7 +1427,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 int mouseY,
                 float deltaTicks
         ) {
-            renderIconControl(context, this, this.getSelectedIcon(), false, this.isExpanded());
+            renderIconControl(context, this, this.getSelectedIcon(), false, this.isExpanded(), false);
         }
 
         private
@@ -1493,7 +1509,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 int mouseY,
                 float deltaTicks
         ) {
-            renderIconControl(context, this, this.icon, this.selected, true);
+            renderIconControl(context, this, this.icon, this.selected, true, true);
         }
     }
 
@@ -1558,7 +1574,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                     this,
                     this.state ? this.state1Icon : this.state0Icon,
                     false,
-                    true
+                    true,
+                    false
             );
         }
 

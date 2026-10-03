@@ -29,6 +29,18 @@ class WidgetThemeStateTest {
     }
 
     @Test
+    void aControlWithoutRestingFillIsClearUntilHoveredOrDisabled() {
+        WidgetThemeManager.setColor(WidgetThemeVariable.CONTROL_BACKGROUND, 0xFF010203);
+        WidgetThemeManager.setColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND, 0xFF040506);
+        WidgetThemeManager.setColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND, 0xFF070809);
+
+        assertEquals(0, WidgetThemeState.controlBackground(true, false, false));
+        assertEquals(0xFF040506, WidgetThemeState.controlBackground(true, true, false));
+        assertEquals(0xFF070809, WidgetThemeState.controlBackground(false, false, false));
+        assertEquals(0xFF010203, WidgetThemeState.controlBackground(true, false, true));
+    }
+
+    @Test
     void borderAndTextStatesIgnoreFocusWhenDisabled() {
         WidgetThemeManager.setColor(WidgetThemeVariable.BORDER, 0xFF111111);
         WidgetThemeManager.setColor(WidgetThemeVariable.FOCUS_RING, 0xFF222222);

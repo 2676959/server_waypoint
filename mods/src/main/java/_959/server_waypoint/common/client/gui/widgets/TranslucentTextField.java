@@ -22,6 +22,11 @@ public class TranslucentTextField extends SuggestingTextInput {
         super(x, y, width, text, textRenderer, anchorMode);
     }
 
+    /** The fill painted inside the outline, for the field's current state. */
+    protected int surfaceColor() {
+        return WidgetThemeState.controlBackground(this.active, isHovered());
+    }
+
     /** Draws the outline in the danger color instead of the border color, for a value the form rejects. */
     public void setInvalid(boolean invalid) {
         this.invalid = invalid;
@@ -38,7 +43,7 @@ public class TranslucentTextField extends SuggestingTextInput {
         int bottom = y - 1 + this.backgroundHeight;
         this.updateThemeTextColors();
         this.isHovered = mouseX >= x && mouseY >= y && mouseX <= right && mouseY <= bottom;
-        context.fill(x + 1, y + 1, right, bottom, WidgetThemeState.controlBackground(this.active, isHovered()));
+        context.fill(x + 1, y + 1, right, bottom, this.surfaceColor());
         int bdColor = this.invalid ? getColor(DANGER) : WidgetThemeState.border(this.active, isFocused(), isHovered());
         renderOutline(context, x, y, this.width, this.backgroundHeight, bdColor);
         this.renderTextField(context, mouseX, mouseY, deltaTicks);
