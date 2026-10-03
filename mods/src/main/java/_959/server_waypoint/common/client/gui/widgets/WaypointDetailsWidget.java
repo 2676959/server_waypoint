@@ -9,6 +9,7 @@ import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.crossserver.RemoteWaypointKey;
 import _959.server_waypoint.crossserver.catalog.CatalogReceiver;
 import _959.server_waypoint.text.chat.DimensionStyle;
+import _959.server_waypoint.text.feedback.RemoteRefs;
 import _959.server_waypoint.util.NamespacedId;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,8 +31,6 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.tr
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColorSupplier;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DANGER;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SUCCESS;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_MUTED;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
@@ -76,10 +75,13 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
         this.remoteKey = key;
         this.selection = null;
         List<DetailRow> details = new ArrayList<>();
-        details.add(detail("waypoint.remote.gui.read_only", Component.empty()));
+        if (key == null) {
+            details.add(detail("waypoint.remote.gui.read_only", Component.empty()));
+        }
         if (view != null) {
-            details.add(detail("waypoint.remote.gui.status", Component.translatable(
-                    "waypoint.remote.state." + view.state().name().toLowerCase(java.util.Locale.ROOT))));
+            details.add(coloredDetail("waypoint.remote.gui.status", Component.translatable(
+                    "waypoint.remote.state." + view.state().name().toLowerCase(java.util.Locale.ROOT)),
+                    () -> RemoteRefs.stateColor(view.state()).value()));
         }
         var waypoint = key == null || view == null || view.snapshot() == null
                 ? null : view.snapshot().find(key).orElse(null);
@@ -98,7 +100,7 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
             }
             details.add(detail("waypoint.details.position", Component.literal(waypoint.position().toShortString())));
             details.add(detail("waypoint.details.yaw", Component.literal(Integer.toString(waypoint.yaw()))));
-            details.add(detail("waypoint.details.color", Component.literal(rgbToHexCode(waypoint.rgb(), true))));
+            details.add(colorDetail(waypoint.rgb()));
             details.add(detail("waypoint.details.keywords", Component.literal(String.join(", ", waypoint.keywords()))));
             details.add(detail("waypoint.details.description", Component.literal(waypoint.description())));
         }
@@ -126,6 +128,13 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
     @Override
     public double getDeltaYPerScroll() {
         return 8.0D;
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        return this.isMouseOver(mouseX, mouseY)
+                && this.checkScrollbarDragged(mouseX, mouseY, button)
+                && super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
@@ -264,9 +273,7 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
             return rows;
         }
 
-        SimpleWaypoint liveWaypoint = this.selection.waypoint();
-        boolean rendered = liveWaypoint.isRendered();
-        SimpleWaypoint waypoint = new SimpleWaypoint(liveWaypoint);
+        SimpleWaypoint waypoint = new SimpleWaypoint(this.selection.waypoint());
         Component none = Component.translatable("waypoint.details.none");
         Component keywords = waypoint.keywords().isEmpty()
                 ? none
@@ -303,26 +310,23 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
                 "waypoint.details.visibility",
                 Component.translatable(waypoint.global() ? "waypoint.global" : "waypoint.local")
         ));
-        rows.add(new DetailRow(
+        rows.add(colorDetail(waypoint.rgb()));
+        rows.add(detail("waypoint.details.keywords", keywords));
+        rows.add(detail("waypoint.details.description", description));
+        return rows;
+    }
+
+    private static DetailRow colorDetail(int rgb) {
+        return new DetailRow(
                 Component.translatable("waypoint.details.color", Component.empty()),
                 getColorSupplier(TEXT_MUTED),
                 ROW_GAP,
                 new SwatchValue(
-                        Component.literal(rgbToHexCode(waypoint.rgb(), true)),
+                        Component.literal(rgbToHexCode(rgb, true)),
                         getColorSupplier(TEXT_PRIMARY),
-                        waypoint.rgb()
+                        rgb
                 )
-        ));
-        rows.add(coloredDetail(
-                "waypoint.details.rendered",
-                Component.translatable(rendered
-                        ? "server_waypoint.config.true"
-                        : "server_waypoint.config.false"),
-                getColorSupplier(rendered ? SUCCESS : DANGER)
-        ));
-        rows.add(detail("waypoint.details.keywords", keywords));
-        rows.add(detail("waypoint.details.description", description));
-        return rows;
+        );
     }
 
     private static DetailRow detail(String translationKey, Component value) {

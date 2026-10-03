@@ -52,7 +52,6 @@
   "waypoint.details.yaw": "偏航角：%1$s",
   "waypoint.details.visibility": "可见范围：%1$s",
   "waypoint.details.color": "颜色：%1$s",
-  "waypoint.details.rendered": "当前已渲染：%1$s",
   "waypoint.details.keywords": "关键词：%1$s",
   "waypoint.details.description": "描述：%1$s",
   "waypoint.add.screen.title": "添加路径点",

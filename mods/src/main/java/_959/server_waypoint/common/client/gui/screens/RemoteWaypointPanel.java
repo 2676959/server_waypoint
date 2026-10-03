@@ -23,6 +23,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractWidget;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import _959.server_waypoint.text.chat.DimensionStyle;
+import _959.server_waypoint.text.feedback.RemoteRefs;
 import java.util.function.Consumer;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
@@ -128,8 +129,8 @@ final class RemoteWaypointPanel {
         footerHasServer = view != null;
         if (view != null) {
             footer.setText(Component.translatable("waypoint.remote.gui.server_status", view.displayName(),
-                    Component.translatable(ServerListWidget.stateTranslationKey(view.state()))));
-            footer.setColor(ServerListWidget.stateColor(view.state()));
+                    Component.translatable(ServerListWidget.stateTranslationKey(view.state()))
+                            .withStyle(style -> style.withColor(RemoteRefs.stateColor(view.state()).value()))));
         }
         layoutList();
     }

@@ -3,11 +3,11 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
-import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.crossserver.RemoteCatalogState;
 import _959.server_waypoint.crossserver.RemoteServerId;
 import _959.server_waypoint.crossserver.catalog.CatalogReceiver;
+import _959.server_waypoint.text.feedback.RemoteRefs;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -31,7 +31,7 @@ public final class ServerListWidget extends IconListWidget<RemoteServerId> {
                 LayoutFlow.Direction.FORWARD, gap, 0, 0, Component.translatable("waypoint.remote.title"));
     }
 
-    /** The theme role that marks a server's availability in its tooltip and the remote list footer. */
+    /** The theme role used by degraded server icon badges. */
     public static WidgetThemeVariable stateColor(RemoteCatalogState state) {
         return switch (state) {
             case AVAILABLE -> WidgetThemeVariable.TEXT_MUTED;
@@ -57,7 +57,7 @@ public final class ServerListWidget extends IconListWidget<RemoteServerId> {
     @Override
     protected Component entryLabel(RemoteServerId server) {
         CatalogReceiver.View view = servers.get(server);
-        int stateRgb = WidgetThemeManager.getColor(stateColor(view.state())) & 0x00FFFFFF;
+        int stateRgb = RemoteRefs.stateColor(view.state()).value();
         // Vanilla tooltip splitting treats the newline as a line break.
         return Component.literal(view.displayName() + " [" + server.value() + "]\n")
                 .append(Component.translatable(stateTranslationKey(view.state()))

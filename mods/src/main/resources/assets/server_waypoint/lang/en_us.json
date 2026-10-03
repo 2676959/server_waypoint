@@ -52,7 +52,6 @@
   "waypoint.details.yaw": "Yaw: %1$s",
   "waypoint.details.visibility": "Visibility: %1$s",
   "waypoint.details.color": "Color: %1$s",
-  "waypoint.details.rendered": "Currently rendered: %1$s",
   "waypoint.details.keywords": "Keywords: %1$s",
   "waypoint.details.description": "Description: %1$s",
   "waypoint.add.screen.title": "Add waypoint",

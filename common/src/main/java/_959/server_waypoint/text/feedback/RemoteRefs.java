@@ -60,14 +60,19 @@ public final class RemoteRefs {
         return viewer.plainText() ? Chat.concat(name, text(" (" + truncate(server.id().value()) + ")")) : name;
     }
 
-    /** The coloured ●: green available, yellow stale, red unreachable, dark gray no access. */
-    public static Component dot(Viewer viewer, Server server) {
-        NamedTextColor color = switch (server.state()) {
+    /** Shared server-status colors for command feedback and client details. */
+    public static NamedTextColor stateColor(RemoteCatalogState state) {
+        return switch (state) {
             case AVAILABLE -> GREEN;
             case STALE -> YELLOW;
             case UNAVAILABLE -> RED;
             case UNAUTHORIZED -> DARK_GRAY;
         };
+    }
+
+    /** The coloured ●: green available, yellow stale, red unreachable, dark gray no access. */
+    public static Component dot(Viewer viewer, Server server) {
+        NamedTextColor color = stateColor(server.state());
         Tooltip tooltip = Tooltip.of("wp.remote.state." + switch (server.state()) {
             case AVAILABLE -> "available";
             case STALE -> "stale";

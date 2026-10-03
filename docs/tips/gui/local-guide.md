@@ -633,14 +633,19 @@ control even while the mouse hovers over a waypoint.
 `WaypointDetailsWidget` consumes that selection and presents every stored waypoint field plus its
 dimension/list context in a separately scrollable viewport. Keep formatted display names and
 descriptions parsed only at this render boundary, and reserve scrollbar width while wrapping so
-content does not relayout when overflow begins. Its optional icon row uses the same `Icon:` label
+content does not relayout when overflow begins. Its content ignores clicks without playing a button
+sound; only the visible scrollbar accepts clicks for dragging, while the mouse wheel scrolls the
+viewport. Local and remote selections share a color row with a bordered swatch beside the saved
+hex value, reserving the swatch width during wrapping and content-height calculation.
+Remote status values use `RemoteRefs.stateColor`, matching `/wp remote`: green for available,
+yellow for stale, red for unavailable, and dark gray for unauthorized; the status label stays muted.
+Its optional icon row uses the same `Icon:` label
 as the waypoint form, draws the resolved item or VoxelMap image beside the saved ID, and shows
 initials if the image cannot be resolved. Keep the preview one font line high and align its image
 with the text baseline. Reserve its width in both rendering and content-height calculations so
 wrapped IDs and following rows do not overlap it. The dimension
-row uses the same shared dimension-color mapping as the waypoint list, and boolean render state
-uses the theme's semantic
-`SUCCESS` / `DANGER` text roles. `WaypointManagerScreen` always renders this panel and centers the
+row uses the same shared dimension-color mapping as the waypoint list. `WaypointManagerScreen`
+always renders this panel and centers the
 left rail, middle waypoint list, and right details panel as one group with two-pixel inter-panel
 gaps. Calculate the middle content width as 38% of the scaled viewport clamped to 180–360 pixels,
 and the details content width as 32% clamped to 150–320 pixels. When their combined desired width
@@ -696,8 +701,9 @@ icon, the rail draws a 5×5 dot (a 3×3 fill in that role inside a one-pixel `BO
 with the top-right corner of each badged icon cell, above the icons through
 `DrawContextHelper.nextItemOverlayLayer` and inside the rail's scissor. `ServerListWidget` badges
 stale servers with `WARNING` and unavailable ones with `DANGER`; available servers get no badge.
-Its hover label adds the state on a second line, colored by `ServerListWidget.stateColor`, which
-also colors the remote list footer.
+Its hover label adds the state on a second line, colored by `RemoteRefs.stateColor` to match
+`/wp remote` and the remote details pane. `ServerListWidget.stateColor` supplies the theme roles
+for icon badges.
 
 `preferredHeight()` reports the icon strip's natural content height with a one-icon minimum.
 `OpposedExpansionLayout.allocate` reserves the fixed minimum for each rail and shares constrained
@@ -715,13 +721,14 @@ must not replace the remote dimension catalog.
 Server item icons resolve from `CatalogReceiver.View.iconItem()` through the client's item registry.
 Missing registry entries and air use a compass; tooltip labels include the exact server ID.
 Remote data stays in `RemoteClientCatalogs`; no remote row creates a local waypoint or mutation
-handle. The remote details remain read-only. The teleport button sends immediately without a
+handle. The remote details remain read-only; the read-only tip appears only while no waypoint is
+selected. The teleport button sends immediately without a
 confirmation dialog, after rechecking session, catalog revision, exact identity, and waypoint data.
 The bottom of its outline lines up with the details content bottom, 4 pixels below the details
 viewport. Its tooltip shows `teleport_hint` while disabled, the chat-feedback note while enabled,
 and the failure message after a failed attempt until the selection changes. Below the remote tree,
-a `ScalableText` footer shows the selected server's display name and state in
-`ServerListWidget.stateColor`; `RemoteWaypointPanel.splitListArea` gives the tree the rest of the
+a `ScalableText` footer shows the selected server's display name in `TEXT_MUTED` and its state in
+`RemoteRefs.stateColor`; `RemoteWaypointPanel.splitListArea` gives the tree the rest of the
 list area and hides the footer when no server is selected or the tree would drop below one row.
 Both lists use 20-pixel rows and `WaypointRowRenderer.background(...)` / `initials(...)` for waypoint
 color washes, hover/selection outlines and initials badges. The initials method returns the badge
