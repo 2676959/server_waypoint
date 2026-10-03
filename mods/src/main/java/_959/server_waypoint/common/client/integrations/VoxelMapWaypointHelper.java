@@ -30,8 +30,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
+import static _959.server_waypoint.common.client.integrations.MapModChatHelper.displayClientMessage;
+import static _959.server_waypoint.common.client.integrations.MapModChatHelper.waypointText;
 import static _959.server_waypoint.common.network.ModMessageSender.toVanillaText;
-import static _959.server_waypoint.text.WaypointTextHelper.waypointTextWithTp;
 
 public final class VoxelMapWaypointHelper {
     private VoxelMapWaypointHelper() {
@@ -180,12 +181,7 @@ public final class VoxelMapWaypointHelper {
                 if (synced && type == WaypointModificationType.UPDATE) {
                     var player = Minecraft.getInstance().player;
                     if (player != null) {
-                        Component message = Component.translatable("server_waypoint.modification.update.voxelmap",
-                                toVanillaText(waypointTextWithTp(waypoint, dimensionName, listName)));
-                        //? if >=26
-                        player.sendSystemMessage(message);
-                        //? if <26
-                        /*player.displayClientMessage(message, false);*/
+                        displayClientMessage(player, Component.translatable("server_waypoint.modification.update.voxelmap", toVanillaText(waypointText(waypoint, dimensionName, listName))));
                     }
                 }
             }

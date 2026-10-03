@@ -12,12 +12,6 @@ import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.common.util.SyncedWaypointName;
 import _959.server_waypoint.common.util.XaerosWaypointHelper;
-import _959.server_waypoint.text.FormattedTextHelper;
-import _959.server_waypoint.text.chat.DimensionStyle;
-import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -35,11 +29,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.LOGGER;
+import static _959.server_waypoint.common.client.integrations.MapModChatHelper.displayClientMessage;
+import static _959.server_waypoint.common.client.integrations.MapModChatHelper.waypointText;
 import static _959.server_waypoint.common.network.ModMessageSender.toVanillaText;
 import static _959.server_waypoint.common.util.DimensionKeyParser.getDimensionKey;
 import static _959.server_waypoint.common.util.TextHelper.getDimensionColor;
 import static _959.server_waypoint.common.util.XaeroMinimapHelper.*;
-import static _959.server_waypoint.util.StringCommandBuilder.tpCmd;
 
 public final class XaerosMinimapWaypointHelper {
     private XaerosMinimapWaypointHelper() {
@@ -216,25 +211,6 @@ public final class XaerosMinimapWaypointHelper {
         saveMinimapWorldWithFeedback(session, minimapWorld, player);
     }
 
-    /**
-     * [AB] Name for this client's own chat: the initials teleport, with the client's translation
-     * of the hint, and the name shows the description and coordinates.
-     */
-    private static net.kyori.adventure.text.Component waypointText(SimpleWaypoint waypoint, String dimensionName, String listName) {
-        net.kyori.adventure.text.Component where = net.kyori.adventure.text.Component.text(DimensionStyle.coordinates(waypoint.pos()));
-        if (!waypoint.description().isEmpty()) {
-            where = FormattedTextHelper.parse(waypoint.description()).appendNewline().append(where);
-        }
-        return net.kyori.adventure.text.Component.empty()
-                .append(net.kyori.adventure.text.Component.text("[" + waypoint.initials() + "]", TextColor.color(waypoint.rgb()))
-                        .clickEvent(ClickEvent.runCommand(tpCmd(dimensionName, listName, waypoint.name())))
-                        .hoverEvent(HoverEvent.showText(net.kyori.adventure.text.Component.translatable("button.initials.tp"))))
-                .append(net.kyori.adventure.text.Component.space())
-                .append(net.kyori.adventure.text.Component.empty().color(NamedTextColor.WHITE)
-                        .hoverEvent(HoverEvent.showText(where))
-                        .append(FormattedTextHelper.parse(waypoint.displayName())));
-    }
-
     private static void replaceDimension(MinimapSession session, WaypointFileManager fileManager) {
         ResourceKey<Level> dimKey = getValidDimensionKey(fileManager.getDimensionName());
         if (dimKey == null) {
@@ -260,15 +236,5 @@ public final class XaerosMinimapWaypointHelper {
     private static void warnInvalidDimension(Player player, String dimensionName) {
         LOGGER.warn("Failed to decode dimension {}", dimensionName);
         displayClientMessage(player, Component.translatable("server_waypoint.dimension.decode.fail", Component.literal(dimensionName)));
-    }
-
-    private static void displayClientMessage(Player player, Component message) {
-        if (player == null) {
-            return;
-        }
-        //? if >=26
-        player.sendSystemMessage(message);
-        //? if <26
-        /*player.displayClientMessage(message, false);*/
     }
 }
