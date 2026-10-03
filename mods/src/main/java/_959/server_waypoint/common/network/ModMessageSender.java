@@ -15,8 +15,10 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.Translator;
+import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Locale;
@@ -66,7 +68,8 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
 
     /** Renders for the receiver: a player gets their language and the trailing newline. */
     private net.minecraft.network.chat.Component getTranslatedText(CommandSourceStack source, Component component) {
-        if (((CommandSourceStackAccessor) source).serverWaypoint$getSource() instanceof ServerPlayer player) {
+        ServerPlayer player = getReceivingPlayer(source);
+        if (player != null) {
             return getTranslatedText(player, PlatformMessageSender.forPlayer(component));
         }
         return toVanillaText(GlobalTranslator.render(component, Locale.getDefault()));
@@ -74,7 +77,25 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
 
     @Override
     public boolean isPlainTextReceiver(CommandSourceStack source) {
-        return !(((CommandSourceStackAccessor) source).serverWaypoint$getSource() instanceof ServerPlayer);
+        return getReceivingPlayer(source) == null;
+    }
+
+    /** The player who owns this stack's command source, or null for the console, RCON and command blocks. */
+    @Nullable
+    private static ServerPlayer getReceivingPlayer(CommandSourceStack source) {
+        CommandSource receiver = ((CommandSourceStackAccessor) source).serverWaypoint$getSource();
+        //? if >= 1.21.2 {
+        // Since 1.21.2 a player holds a separate command source instead of being one; vanilla's admin
+        // broadcast finds the player the same way.
+        for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
+            if (player.commandSource() == receiver) {
+                return player;
+            }
+        }
+        return null;
+        //?} else {
+        /*return receiver instanceof ServerPlayer player ? player : null;
+        *///?}
     }
 
     public net.minecraft.network.chat.Component getTranslatedText(ServerPlayer player, Component component) {
