@@ -24,7 +24,6 @@ import java.util.Set;
 import static _959.server_waypoint.text.chat.ChatAssert.lines;
 import static _959.server_waypoint.text.chat.ChatAssert.render;
 import static _959.server_waypoint.text.chat.ChatAssert.runCommands;
-import static net.kyori.adventure.text.Component.text;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -377,7 +376,34 @@ class CommandFeedbackTest {
     }
 
     @Test
-    void playersMessagesEndWithOneNewline() {
-        assertEquals("Farms\n", render(PlatformMessageSender.forPlayer(text("Farms"))));
+    void screensEndWithABlankLineForPlayers() {
+        this.harness.addList("minecraft:overworld", "Farms", CommandHarness.waypoint("Iron Farm", "IF", 0xAAAAAA, 300, 80, 150));
+        CommandHarness.Source player = CommandHarness.player();
+
+        for (String command : List.of("wp", "wp help", "wp help tp", "wp list", "wp list minecraft:overworld Farms",
+                "wp list dimensions", "wp list all", "wp add", "wp tp", "wp navigate", "wp upload",
+                "wp details list minecraft:overworld Farms",
+                "wp edit waypoint minecraft:overworld Farms \"Iron Farm\" set yaw 90")) {
+            assertTrue(readBy(player, command).endsWith("\n"), command);
+        }
+    }
+
+    @Test
+    void resultsAndErrorsReachPlayersWithoutABlankLine() {
+        this.harness.addList("minecraft:overworld", "Farms", CommandHarness.waypoint("Iron Farm", "IF", 0xAAAAAA, 300, 80, 150));
+        CommandHarness.Source player = CommandHarness.player();
+
+        assertEquals("✘ No list called Farm in Overworld. Browse lists",
+                readBy(player, "wp list minecraft:overworld Farm"));
+        assertEquals("✘ You aren't navigating. Browse waypoints", readBy(player, "wp navigate disable"));
+        assertEquals("✔ Added [PP] Pumpkin Patch to Farms   Details · Navigate · Undo",
+                readBy(player, "wp add minecraft:overworld Farms 80 66 40 \"Pumpkin Patch\" PP FFAA00 0 true"));
+        assertEquals("✔ Removed [IF] Iron Farm from Farms   Restore",
+                readBy(player, "wp remove minecraft:overworld Farms \"Iron Farm\""));
+    }
+
+    /** What the player reads for the command: its feedback with the trailing newline the platform adds. */
+    private String readBy(CommandHarness.Source player, String command) {
+        return render(PlatformMessageSender.forPlayer(this.harness.run(player, command)));
     }
 }

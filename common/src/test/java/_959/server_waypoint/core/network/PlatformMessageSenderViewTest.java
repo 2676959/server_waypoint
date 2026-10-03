@@ -14,13 +14,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PlatformMessageSenderViewTest {
     @Test
-    void aPlayerViewEndsWithOneNewline() {
-        assertEquals(List.of("Saved", ""), lines(PlatformMessageSender.forPlayer(text("Saved"))));
+    void aScreenEndsWithOneNewlineForAPlayer() {
+        assertEquals(List.of("Saved", ""), lines(PlatformMessageSender.forPlayer(Chat.screen(text("Saved")))));
     }
 
     @Test
-    void theCommandersCopyIsTheViewedAsLineThenTheView() {
-        Component view = PlatformMessageSender.forPlayer(text("Saved"));
+    void aMessageReachesAPlayerAsItIs() {
+        assertEquals(List.of("✔ Saved"), lines(PlatformMessageSender.forPlayer(text("✔ Saved"))));
+    }
+
+    @Test
+    void theCommandersCopyOfAScreenIsTheViewedAsLineThenTheView() {
+        Component view = PlatformMessageSender.forPlayer(Chat.screen(text("Saved")));
 
         Component copy = PlatformMessageSender.forCommander(Chat.viewedAs("Alex"), view);
 
@@ -29,8 +34,17 @@ class PlatformMessageSenderViewTest {
     }
 
     @Test
-    void thePlainTextCopyHasNoTrailingNewline() {
-        Component copy = PlatformMessageSender.forCommander(Chat.viewedAs("Alex"), text("Saved"));
+    void theCommandersCopyOfAMessageHasNoTrailingNewlineEither() {
+        Component view = PlatformMessageSender.forPlayer(text("Saved"));
+
+        Component copy = PlatformMessageSender.forCommander(Chat.viewedAs("Alex"), view);
+
+        assertEquals(List.of("Viewed as Alex", "Saved"), lines(copy));
+    }
+
+    @Test
+    void thePlainTextCopyOfAScreenHasNoTrailingNewline() {
+        Component copy = PlatformMessageSender.forCommander(Chat.viewedAs("Alex"), Chat.screen(text("Saved")));
 
         assertEquals(List.of("Viewed as Alex", "Saved"), lines(copy));
     }

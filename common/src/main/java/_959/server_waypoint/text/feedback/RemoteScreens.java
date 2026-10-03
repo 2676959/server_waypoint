@@ -72,7 +72,7 @@ public final class RemoteScreens {
         ChatLines lines = new ChatLines().line(translatable("wp.remote.title", GOLD), text("  "),
                 translatable("wp.remote.connected", GRAY, Chat.count("wp.count.server", servers.size())));
         if (servers.isEmpty()) {
-            return lines.add(translatable("wp.remote.none", GRAY)).build();
+            return lines.add(translatable("wp.remote.none", GRAY)).buildScreen();
         }
         List<List<Server>> pages = Paging.bySize(servers.stream().sorted(ORDER).toList(), pageLimit + 5);
         if (page > pages.size()) {
@@ -90,7 +90,7 @@ public final class RemoteScreens {
                     ListControls.pager(viewer, target, query, pages.size(),
                             ListControls.pageDetail(pageLimit + 5, Chat.count("wp.count.server", servers.size()))));
         }
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** /wp remote list: each server with its dimensions, L + 5 lines per page. */
@@ -104,7 +104,7 @@ public final class RemoteScreens {
         }
         ChatLines lines = new ChatLines().add(allTitle(viewer));
         if (blocks.isEmpty()) {
-            return lines.add(translatable("wp.remote.none", GRAY)).build();
+            return lines.add(translatable("wp.remote.none", GRAY)).buildScreen();
         }
         List<List<Line>> pages = pageBlocks(blocks, pageLimit + 5);
         if (query.page() > pages.size()) {
@@ -125,7 +125,7 @@ public final class RemoteScreens {
         ListControls.controls(lines, ListControls.pager(viewer, target, query, pages.size(),
                         ListControls.pageDetail(pageLimit + 5, Chat.count("wp.count.server", servers.size()))),
                 ListControls.search(viewer, target, translatable("wp.remote.search.everywhere")));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** /wp remote list <server>: its dimensions and their lists, L + 5 lines per page. */
@@ -139,10 +139,10 @@ public final class RemoteScreens {
             return lines.add(title).line(translatable(server.state() == RemoteCatalogState.UNAUTHORIZED
                                     ? "wp.remote.no_access" : "wp.remote.unreachable", GRAY,
                             RemoteRefs.label(server.displayName(), server.id().value())),
-                    servers == null ? null : text(" "), servers).build();
+                    servers == null ? null : text(" "), servers).buildScreen();
         }
         if (server.dimensions().isEmpty()) {
-            return lines.add(title).add(translatable("wp.remote.nothing", GRAY)).build();
+            return lines.add(title).add(translatable("wp.remote.nothing", GRAY)).buildScreen();
         }
         lines.line(title, text("  "), Chat.colored(Chat.join(Chat.count("wp.count.dimension", server.dimensions().size()),
                 Chat.count("wp.count.waypoint", server.waypointCount())), GRAY));
@@ -171,7 +171,7 @@ public final class RemoteScreens {
                         ListControls.pageDetail(pageLimit + 5, Chat.count("wp.count.list", server.listCount()))),
                 ListControls.search(viewer, target, translatable("wp.remote.search.server",
                         RemoteRefs.label(server.displayName(), server.id().value()))));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /**
@@ -195,7 +195,7 @@ public final class RemoteScreens {
                             matches.add(new Match(server, dimension.dimensionName(), list.sourceList(), waypoint)))));
         }
         if (matches.isEmpty()) {
-            return lines.add(ListControls.noMatches(viewer, query.search(), clear)).build();
+            return lines.add(ListControls.noMatches(viewer, query.search(), clear)).buildScreen();
         }
         List<List<Match>> pages = Paging.bySize(matches, pageLimit);
         if (query.page() > pages.size()) {
@@ -220,7 +220,7 @@ public final class RemoteScreens {
                 target.command(query.withPage(query.page() + 1))));
         ListControls.controls(lines, ListControls.pager(viewer, target, query, pages.size(),
                 ListControls.pageDetail(pageLimit, Chat.count("wp.count.match", matches.size()))));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** /wp remote list <server> <dimension>: the local views (spec 6.2) with remote actions. */
@@ -231,11 +231,11 @@ public final class RemoteScreens {
         ListTarget target = ListTarget.remote(server.id().value(), dimension, null);
         ChatLines lines = new ChatLines().add(dimensionHeader(dims, server, dimension, totals));
         if (totals.lists() == 0) {
-            return lines.add(translatable("wp.dimension.no_lists.sentence", GRAY)).build();
+            return lines.add(translatable("wp.dimension.no_lists.sentence", GRAY)).buildScreen();
         }
         WaypointQueryEngine.QueryResult result = WaypointQueryEngine.queryLists(Map.of(dimension, lists), engineQuery(query));
         if (query.searching() && result.listCount() == 0) {
-            return lines.add(ListControls.noMatches(viewer, query.search(), target.command(query.withSearch("")))).build();
+            return lines.add(ListControls.noMatches(viewer, query.search(), target.command(query.withSearch("")))).buildScreen();
         }
         List<WaypointListDisplayModel.DisplayList> groups = WaypointListDisplayModel.build(result, true).lists();
         ListView view = ListScreen.resolveView(query, groups, totals, pageLimit);
@@ -261,7 +261,7 @@ public final class RemoteScreens {
                         RemoteRefs.listTooltip(list, null)));
         ChatLines lines = new ChatLines();
         if (list.isEmpty()) {
-            return lines.add(crumb).add(translatable("wp.list.empty.sentence", GRAY)).build();
+            return lines.add(crumb).add(translatable("wp.list.empty.sentence", GRAY)).buildScreen();
         }
         lines.line(crumb, text("  "), Chat.colored(Chat.count("wp.count.waypoint", list.size()), GRAY));
         WaypointQueryEngine.QueryResult result = WaypointQueryEngine.queryLists(Map.of(dimension, List.of(list)),
@@ -272,7 +272,7 @@ public final class RemoteScreens {
         if (query.searching()) {
             String clear = target.command(query.withSearch(""));
             if (rows.isEmpty()) {
-                return lines.add(ListControls.noMatches(viewer, query.search(), clear)).build();
+                return lines.add(ListControls.noMatches(viewer, query.search(), clear)).buildScreen();
             }
             lines.add(ListControls.searchLine(viewer, query.search(), rows.size(), clear));
         }
@@ -290,7 +290,7 @@ public final class RemoteScreens {
                 ListControls.search(viewer, target, translatable("wp.search.list",
                         RemoteRefs.label(list.displayName(), list.name()))),
                 sortRow(viewer, target, query));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** /wp remote details: read-only, with Identifier first when the display name differs. */
@@ -327,7 +327,7 @@ public final class RemoteScreens {
         if (!Chat.isEmpty(buttons)) {
             lines.add(Chat.spaced(buttons));
         }
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** ✘ No server called x. Servers */
@@ -441,7 +441,7 @@ public final class RemoteScreens {
                         Chat.count("wp.count.list", totals.lists()), Chat.count("wp.count.waypoint", totals.waypoints()))),
                 viewRow(dims, server, dimension, totals, shown, ListView.TREE),
                 totals.waypoints() > 0 ? sortRow(viewer, target, shown) : null);
-        return lines.build();
+        return lines.buildScreen();
     }
 
     private static Component listsView(DimensionStyle dims, Server server, String dimension, ListScreen.Totals totals,
@@ -463,7 +463,7 @@ public final class RemoteScreens {
         ListControls.controls(lines, ListControls.pager(viewer, target, shown, pages.size(),
                         ListControls.pageDetail(pageLimit + 5, Chat.count("wp.count.list", totals.lists()))),
                 viewRow(dims, server, dimension, totals, shown, ListView.LISTS));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     private static Component flatView(DimensionStyle dims, Server server, String dimension, ListScreen.Totals totals,
@@ -484,7 +484,7 @@ public final class RemoteScreens {
         ListControls.controls(lines, ListControls.pager(viewer, target, shown, pages.size(),
                         ListControls.pageDetail(pageLimit, Chat.count("wp.count.waypoint", rows.size()))),
                 viewRow(dims, server, dimension, totals, shown, ListView.FLAT), sortRow(viewer, target, shown));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** "… 4 more" opening the whole list on its server, keeping the search and the sort. */

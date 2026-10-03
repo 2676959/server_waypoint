@@ -75,9 +75,19 @@ class ChatFontTest {
     void theLayoutCheckRejectsWideTallBoldAndForeignText() {
         assertDoesNotThrow(() -> ChatAssert.assertFitsChat(text("Farms · 7")));
         assertThrows(AssertionError.class, () -> ChatAssert.assertFitsChat(text("x".repeat(60))));
-        assertThrows(AssertionError.class, () -> ChatAssert.assertFitsChat(text("line\n".repeat(19) + "line")));
+        assertThrows(AssertionError.class, () -> ChatAssert.assertFitsChat(text("line\n".repeat(20) + "line")));
         assertThrows(AssertionError.class, () -> ChatAssert.assertFitsChat(text("Farms").decorate(TextDecoration.BOLD)));
         assertThrows(AssertionError.class, () -> ChatAssert.assertFitsChat(text("Farms ⋯")));
         assertThrows(AssertionError.class, () -> ChatAssert.assertFitsChat(Component.text("Farms").appendNewline()));
+    }
+
+    @Test
+    void onlyAScreenCountsItsTrailingBlankLineAgainstTheTwentyLineWindow() {
+        String nineteenLines = "line\n".repeat(18) + "line";
+        String twentyLines = "line\n".repeat(19) + "line";
+
+        assertDoesNotThrow(() -> ChatAssert.assertFitsChat(text(twentyLines)));
+        assertDoesNotThrow(() -> ChatAssert.assertFitsChat(Chat.screen(text(nineteenLines))));
+        assertThrows(AssertionError.class, () -> ChatAssert.assertFitsChat(Chat.screen(text(twentyLines))));
     }
 }

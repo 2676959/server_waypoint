@@ -89,7 +89,7 @@ public final class DimensionScreens {
                     ListControls.pager(viewer, target, query, pages.size(), ListControls.pageDetail(pageLimit + 5,
                             Chat.count("wp.count.dimension", dimensions.size()))));
         }
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** /wp list all */
@@ -106,7 +106,7 @@ public final class DimensionScreens {
         }
         ChatLines lines = new ChatLines().add(allTitle(viewer));
         if (blocks.isEmpty()) {
-            return lines.add(translatable("wp.dimension.no_lists.sentence", GRAY)).build();
+            return lines.add(translatable("wp.dimension.no_lists.sentence", GRAY)).buildScreen();
         }
         List<List<Block>> pages = pageBlocks(blocks, pageLimit + 5);
         if (query.page() > pages.size()) {
@@ -126,7 +126,7 @@ public final class DimensionScreens {
         ListControls.controls(lines, ListControls.pager(viewer, target, query, pages.size(), translatable("wp.in",
                         Chat.count("wp.count.list", listCount), Chat.count("wp.count.dimension", blocks.size() - listCount))),
                 ListControls.search(viewer, target, translatable("wp.search.everywhere")));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** /wp list all search <text>: matches under dimension headings, pageLimit rows per page. */
@@ -142,7 +142,7 @@ public final class DimensionScreens {
                 .forEach(dimension -> dimension.lists().forEach(list -> list.waypoints().forEach(waypoint ->
                         rows.add(new Match(dimension.dimensionName(), list.sourceList(), waypoint)))));
         if (rows.isEmpty()) {
-            return lines.add(ListControls.noMatches(viewer, query.search(), clear)).build();
+            return lines.add(ListControls.noMatches(viewer, query.search(), clear)).buildScreen();
         }
         List<List<Match>> pages = Paging.bySize(rows, pageLimit);
         if (query.page() > pages.size()) {
@@ -163,7 +163,7 @@ public final class DimensionScreens {
                 target.command(query.withPage(query.page() + 1))));
         ListControls.controls(lines, ListControls.pager(viewer, target, query, pages.size(),
                 ListControls.pageDetail(pageLimit, Chat.count("wp.count.match", rows.size()))));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** The viewer's dimension first, then Overworld, Nether and End, then the rest A–Z. */

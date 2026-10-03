@@ -58,8 +58,16 @@ Command feedback is built from the pieces in `common/src/main/java/_959/server_w
   `DimensionStyle.name` carries the dimension colour. Paper's console shows the colours; the Fabric and
   NeoForge console and RCON print `Component.getString()`, which drops them. `ScreenAuditTest` checks
   that every plain-text piece is coloured and that pieces shared with chat have chat's colour.
-- **One trailing newline.** The platform sender adds it for players (`PlatformMessageSender.forPlayer`);
-  builders never end a message with a newline.
+- **Screens.** A screen is structured feedback that players read apart from the next message: the
+  menu, help, lists, details, pickers, navigation, upload and remote screens. Builders mark their
+  screens, with `Chat.screen` or `ChatLines.buildScreen` for a message built line by line; results,
+  errors, broadcasts and prompts stay unmarked and read like chat lines. The platform sender ends a
+  marked message with one newline for players (`PlatformMessageSender.forPlayer`); builders never end
+  a message with a newline. Mark a path only when it returns a screen: an empty state or a search
+  without matches is one, a page that doesn't exist is an error line. The mark is an empty piece
+  after the screen, found anywhere in a message, so a hint above a list screen makes the whole
+  message a screen. `ScreenAuditTest` and `ScreenMarksTest` check that exactly the screens are
+  marked, so a new screen builder goes into their sample data.
 - **Layout.** `ChatFont` holds the advances of every glyph in the vanilla bitmap font, accented
   Latin and Hebrew included; anything else, such as Chinese, counts as 9 px. `ChatAssert.assertFitsChat`
   checks a message against the 320 px width, the 20-line window, bold text and the vanilla glyphs, and

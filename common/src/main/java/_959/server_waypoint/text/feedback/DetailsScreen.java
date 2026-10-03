@@ -129,7 +129,7 @@ public final class DetailsScreen {
                         : null,
                 Chat.button(viewer, translatable("wp.action.back"), GRAY, Click.run(listCommand),
                         Tooltip.of("wp.action.back.tooltip", WaypointRefs.label(list.displayName(), listId)))));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** /wp details list, with the result of an edit on top. */
@@ -169,7 +169,7 @@ public final class DetailsScreen {
                 Chat.button(viewer, translatable("wp.action.back"), GRAY,
                         Click.run(ListTarget.dimension(dimension).command(ListQuery.DEFAULT)),
                         Tooltip.of("wp.action.back.tooltip", dims.name(dimension)))));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** "Updated the colour" or "Cleared the description": the first property the patch changes. */

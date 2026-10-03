@@ -56,7 +56,7 @@ public final class UploadScreens {
                             Tooltip.of("wp.upload.mirror.tooltip").line("wp.upload.mirror.detail").hint("wp.hint.confirm"))
                             : null));
         }
-        return lines.add(translatable("wp.upload.scope_hint", GRAY)).build();
+        return lines.add(translatable("wp.upload.scope_hint", GRAY)).buildScreen();
     }
 
     /** Asking your map mod for its waypoints… and, when mirroring, what will be removed. */

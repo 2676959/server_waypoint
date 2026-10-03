@@ -7,6 +7,9 @@ Status: design agreed on 2026-10-01 and implemented; see the
 Amended on 2026-10-02: `/execute as <player>` shows the player's view to both the player and the
 commander, on every platform (15). The rest of the design is unchanged.
 
+Amended on 2026-10-03: only screens end with the trailing blank line; results, errors, broadcasts and
+prompts read like chat lines and get none (2.3).
+
 ## Intent
 
 The chat feedback of `/wp` grew one command at a time and was never designed as a whole:
@@ -80,8 +83,8 @@ Out of scope:
 - The client refuses click commands longer than 256 characters. An action whose command would be
   longer is rendered as plain text without a click.
 - Characters missing from the bitmap font fall back to Unifont and look out of place.
-- Targets, in English with typical names: every line at most 320 px, and every message at most 19
-  lines plus its trailing blank line.
+- Targets, in English with typical names: every line at most 320 px, every screen at most 19 lines
+  plus its trailing blank line, and every other message at most 20 lines.
 
 ## 2. Visual language
 
@@ -139,9 +142,15 @@ Only these glyphs are used. All are in the vanilla bitmap font; advances in px.
   undecorated, and clicking them teleports. Without teleport permission they are plain coloured text
   with the waypoint tooltip. The name is white and opens details.
 - **`⏷`** after a name opens the picker for that level.
-- **One trailing newline.** Every message to a player ends with exactly one newline, which the game
-  draws as a blank line before the next message. The send boundary adds it; builders never end with
-  `\n`. Today's leading blank line on lists goes away. Plain-text viewers get no trailing newline.
+- **Screens end with a blank line.** A screen is structured feedback that players read apart from the
+  next message: the menu, help, lists, details, pickers, navigation, upload and remote screens. A
+  screen to a player ends with exactly one newline, which the game draws as a blank line before the
+  next message. Every other message, such as a result, an error, a broadcast, a prompt or the upload
+  report, reads like a chat line and gets none. Builders mark their screens (`Chat.screen`, or
+  `ChatLines.buildScreen` for a message built line by line); the send boundary adds the newline, so
+  builders never end with `\n`. A screen's empty state and its search without matches are still
+  screens; a page that doesn't exist is an error line. Today's leading blank line on lists goes away.
+  Plain-text viewers get no trailing newline.
 - **Hidden controls.** Controls the viewer can't use because of a missing permission or client mod
   are left out. The one disabled control is Distance sorting outside the player's dimension (6.4).
 - **Mod-only controls** are `Open GUI`, `Download` and `Upload`. Players count as having the mod
@@ -725,10 +734,11 @@ The console, RCON and command blocks drop tooltips and clicks. The Fabric and Ne
 and RCON also drop colour. A message goes to a plain-text viewer when no player reads it.
 
 The feedback is the view of the player a command runs as, on every platform. In
-`/execute as <player> run wp list` the player gets the feedback in their language, with the
+`/execute as <player> run wp list` the player gets the feedback in their language, with a screen's
 trailing newline and the controls they may use. The commander (the console, RCON, a command block
 or another player) gets the same view under a first line, `Viewed as <player>`, gray and italic
-with the name in yellow, in the commander's own language. A server admin sees what the player sees and can guide them. The
+with the name in yellow, in the commander's own language. A server admin sees what the player sees and can guide them. A
+player commander's copy ends with the blank line when the view is a screen, as the player's does. The
 copy for the console, RCON or a command block is plain text without the trailing newline. A command
 that runs as the commander's own player, or as something that is not a player, sends one message to
 the commander. On Fabric, NeoForge and Forge a suppressed stack, such as the one that runs a
@@ -818,8 +828,8 @@ kept.
 
 - **Chat kit** in `common/src/main/java/_959/server_waypoint/text/chat/`:
   - **Text pieces**: text, links that run or suggest a command, `[buttons]`, the separator, joining,
-    `✔` and `✘` lines, the pager, `… N more` lines, the view and sort rows, and the status dot. Every
-    click goes through the 256-character guard.
+    `✔` and `✘` lines, the pager, `… N more` lines, the view and sort rows, the status dot and the
+    screen mark. Every click goes through the 256-character guard.
   - **Tooltip builder**: white title, gray details, aqua hints, separator splitting.
   - **`Viewer` record**: permissions, has-the-mod, plain text, dimension, position and yaw, built once
     per command source.
@@ -839,8 +849,8 @@ kept.
   moves from rows to the same budgets.
 - **Dimension types**: a platform method next to `getAvailableDimensionNames` returns each
   dimension's type, from the level's dimension type on mods and the world environment on Paper.
-- **Senders**: `PlatformMessageSender` adds the trailing newline for players, and `sendError` stops
-  colouring.
+- **Senders**: `PlatformMessageSender` adds a screen's trailing newline for players, and `sendError`
+  stops colouring.
 - **Remote**: `RemoteWaypointCommand` uses the remote builders and the new grammar.
 - Builders follow `docs/tips/adventure-text.md`: lines are built from neutral parents, so click and
   hover events never spill onto neighbouring text.
@@ -883,8 +893,12 @@ kept.
 - **Builder unit tests** for every screen: content, click commands, tooltips, hidden controls and
   plain-text output.
 - **Layout test**: lays out every screen with the vanilla font advances, in English and in every
-  other locale. No line may pass 320 px and no message may pass 20 lines with its trailing blank
-  line, except the translated lines the test lists as accepted wraps.
+  other locale. No line may pass 320 px, no screen may pass 20 lines with its trailing blank line
+  and no other message may pass 20 lines, except the translated lines the test lists as accepted
+  wraps.
+- **Screen marks**: the audit's sample data, and the empty states, searches without matches and
+  missing pages it doesn't reach, check that exactly the screens are marked. Command tests check
+  what players receive: a blank line after screens, none after results and errors.
 - **Glyph test**: every glyph used is in the vanilla bitmap font.
 - **Brigadier tests** for added and removed commands.
 - **Paging tests**: local and remote line budgets, `… N more` lines and continued headings.

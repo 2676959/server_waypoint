@@ -12,6 +12,7 @@ import _959.server_waypoint.crossserver.catalog.RemoteCatalogQuery.Server;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result;
 import _959.server_waypoint.navigation.NavigationMethod;
 import _959.server_waypoint.navigation.TextDisplayTransformation;
+import _959.server_waypoint.text.chat.Chat;
 import _959.server_waypoint.text.chat.ChatAssert;
 import _959.server_waypoint.text.chat.ChatFont;
 import _959.server_waypoint.text.chat.DimensionStyle;
@@ -42,6 +43,7 @@ import static _959.server_waypoint.text.feedback.Fixtures.OVERWORLD;
 import static _959.server_waypoint.text.feedback.Fixtures.TWILIGHT;
 import static net.kyori.adventure.text.Component.text;
 import static net.kyori.adventure.text.Component.translatable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -53,6 +55,16 @@ import static org.junit.jupiter.api.Assertions.fail;
 class ScreenAuditTest {
     /** Screens only a player with the mod ever receives; they keep their tooltips. */
     private static final Set<String> PLAYER_ONLY = Set.of("upload result", "arrival");
+    /**
+     * The outputs the maintainers call screens, spelled as {@link #screens(Viewer)} names them: structured
+     * feedback that players read apart from the next message. Every "help &lt;topic&gt;" is one too. The rest,
+     * such as results, errors, broadcasts and prompts, reads like a chat line.
+     */
+    private static final Set<String> SCREENS = Set.of(
+            "menu", "help", "tree", "lists", "flat", "search", "list", "empty list", "dimensions", "all", "all search",
+            "details", "list details", "colour picker", "facing picker", "add picker", "navigation", "not navigating",
+            "text display", "upload", "remote picker", "remote all", "remote server", "remote search",
+            "remote dimension", "remote list", "remote details", "unreachable");
     /**
      * Lines of translations that pass 320 px, so chat wraps them, and that the maintainers accepted on
      * 2026-10-02. Each is spelled as {@link #everyScreenFitsChatInEveryLocale()} reports it: add one to
@@ -184,6 +196,18 @@ class ScreenAuditTest {
             }
             assertFalse(ChatAssert.render(screen).contains("<missing"), name + ": " + ChatAssert.render(screen));
         });
+    }
+
+    @Test
+    void onlyTheScreensAreMarkedAsScreens() {
+        for (Viewer viewer : List.of(Fixtures.player(), Fixtures.console())) {
+            screens(viewer).forEach((name, output) -> {
+                boolean screen = SCREENS.contains(name) || name.startsWith("help ");
+                assertEquals(screen, Chat.isScreen(output),
+                        name + (screen ? " is a screen" : " is not a screen") + " for "
+                                + (viewer.plainText() ? "plain-text viewers" : "players"));
+            });
+        }
     }
 
     @Test

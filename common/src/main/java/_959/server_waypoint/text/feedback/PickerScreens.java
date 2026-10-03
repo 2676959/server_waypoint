@@ -51,7 +51,7 @@ public final class PickerScreens {
                 colorValue(waypoint.rgb())));
         if (viewer.plainText()) {
             return lines.line(text("  "), translatable("wp.picker.color.values", GRAY,
-                    text(String.join(", ", VANILLA_COLOR_NAMES)))).build();
+                    text(String.join(", ", VANILLA_COLOR_NAMES)))).buildScreen();
         }
         List<Component> swatches = new ArrayList<>();
         for (int index = 0; index < VANILLA_COLORS.length; index++) {
@@ -67,7 +67,7 @@ public final class PickerScreens {
                         Click.suggest(edit + " " + rgbToHexCode(waypoint.rgb(), false)),
                         Tooltip.of("wp.picker.custom.color").hint("wp.hint.type_hex")),
                 back(viewer, dimension, list, waypoint)));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** set yaw without a value */
@@ -77,7 +77,7 @@ public final class PickerScreens {
         ChatLines lines = new ChatLines().add(title("wp.picker.facing", dims, dimension, list, waypoint,
                 yawValue(waypoint.yaw())));
         if (viewer.plainText()) {
-            return lines.line(text("  "), translatable("wp.picker.yaw.values", GRAY)).build();
+            return lines.line(text("  "), translatable("wp.picker.yaw.values", GRAY)).buildScreen();
         }
         List<Component> facings = new ArrayList<>();
         for (int yaw : FACINGS) {
@@ -94,7 +94,7 @@ public final class PickerScreens {
                         Click.suggest(edit + " " + waypoint.yaw()),
                         Tooltip.of("wp.picker.custom.facing").hint("wp.hint.type_degrees")),
                 back(viewer, dimension, list, waypoint)));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** /wp add without arguments: this dimension's lists to add a waypoint here to. */
@@ -108,7 +108,7 @@ public final class PickerScreens {
                 Tooltip.of("wp.picker.back.menu"));
         if (lists.isEmpty()) {
             return lines.line(translatable("wp.dimension.no_lists.sentence", GRAY), newList == null ? null : text(" "),
-                    newList).build();
+                    newList).buildScreen();
         }
         List<Component> links = lists.stream().map(list -> Chat.link(viewer,
                 WaypointRefs.label(viewer, list.displayName(), list.name()), GREEN, ListActions.addClick(viewer, dimension, list),
@@ -116,7 +116,7 @@ public final class PickerScreens {
                 .toList();
         if (lists.size() <= pageLimit) {
             lines.line(translatable("wp.picker.into", GRAY), text("  "), Chat.join(links));
-            return lines.add(Chat.join(newList, back)).build();
+            return lines.add(Chat.join(newList, back)).buildScreen();
         }
         ListTarget target = new ListTarget("/wp add");
         ListQuery query = ListQuery.DEFAULT.withPage(page);
@@ -129,7 +129,7 @@ public final class PickerScreens {
         lines.add(ListControls.more(viewer, "list", Paging.after(pages, page), target.command(query.withPage(page + 1))));
         ListControls.controls(lines, ListControls.pager(viewer, target, query, pages.size(),
                 ListControls.pageDetail(pageLimit + 5, Chat.count("wp.count.list", lists.size()))), Chat.join(newList, back));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** "0° (south)": the yaw, and the direction when it is one of the four. */

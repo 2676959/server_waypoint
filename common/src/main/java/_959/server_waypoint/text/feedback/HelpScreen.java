@@ -34,7 +34,7 @@ public final class HelpScreen {
             lines.add(translatable("wp.help.plain_hint", GRAY, colorize("/wp help <topic>")));
             lines.line(translatable("wp.help.commands", GRAY), text("  "),
                     Chat.join(topics.stream().map(topic -> (Component) text(topic.id(), AQUA)).toList()));
-            return lines.build();
+            return lines.buildScreen();
         }
         lines.add(translatable("wp.help.menu_hint", GRAY, Chat.link(viewer, translatable("wp.help.open_menu"), AQUA,
                 Click.run("/wp"), Tooltip.of("wp.help.open_menu.tooltip"))));
@@ -49,7 +49,7 @@ public final class HelpScreen {
                 lines.line(text("  "), row);
             }
         }
-        return lines.build();
+        return lines.buildScreen();
     }
 
     public static Component topic(Viewer viewer, HelpTopics.Topic topic, boolean textDisplay) {
@@ -93,7 +93,7 @@ public final class HelpScreen {
                     Chat.link(viewer, translatable("wp.help.index"), GRAY, Click.run("/wp help"), Tooltip.of("wp.help.index.tooltip")),
                     Chat.link(viewer, translatable("wp.help.menu"), GRAY, Click.run("/wp"), Tooltip.of("wp.help.open_menu.tooltip"))));
         }
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** Breaks text at spaces so no line passes the chat width; later lines start with the continuation indent. */

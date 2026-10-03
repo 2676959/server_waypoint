@@ -1,6 +1,7 @@
 package _959.server_waypoint.network;
 
 import _959.server_waypoint.network.PaperMessageSender.Delivery;
+import _959.server_waypoint.text.chat.Chat;
 import _959.server_waypoint.translation.AdventureTranslator;
 import _959.server_waypoint.translation.LanguageFilesManager;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -31,6 +32,8 @@ class PaperMessageSenderDeliveryTest {
     private static final Locale ENGLISH = Locale.US;
     private static final Locale SPANISH = Locale.forLanguageTag("es-ES");
     private static final Component FIRST_PAGE = Component.translatable("wp.page.first");
+    /** The same words as a screen, which players read with a blank line after it. */
+    private static final Component FIRST_PAGE_SCREEN = Chat.screen(FIRST_PAGE);
 
     @TempDir
     static Path directory;
@@ -46,7 +49,7 @@ class PaperMessageSenderDeliveryTest {
         Player alex = fake(Player.class, "Alex", ENGLISH);
         CommandSourceStack source = source(alex, alex);
 
-        List<Delivery> deliveries = PaperMessageSender.deliveries(source, FIRST_PAGE);
+        List<Delivery> deliveries = PaperMessageSender.deliveries(source, FIRST_PAGE_SCREEN);
 
         assertEquals(1, deliveries.size());
         assertSame(alex, deliveries.get(0).recipient());
@@ -55,12 +58,25 @@ class PaperMessageSenderDeliveryTest {
     }
 
     @Test
+    void aMessageReachesAPlayerAndTheirCommanderWithoutABlankLine() {
+        Player alex = fake(Player.class, "Alex", ENGLISH);
+        Player bea = fake(Player.class, "Bea", SPANISH);
+
+        List<Delivery> own = PaperMessageSender.deliveries(source(alex, alex), FIRST_PAGE);
+        List<Delivery> forAnother = PaperMessageSender.deliveries(source(alex, bea), FIRST_PAGE);
+
+        assertEquals("First page", read(own.get(0), ENGLISH));
+        assertEquals("Primera página", read(forAnother.get(0), SPANISH));
+        assertEquals("Viewed as Bea\nPrimera página", read(forAnother.get(1), ENGLISH));
+    }
+
+    @Test
     void theConsoleRunningAsAPlayerGetsThePlayersViewUnderAViewedAsLine() {
         ConsoleCommandSender console = fake(ConsoleCommandSender.class, "CONSOLE", ENGLISH);
         Player alex = fake(Player.class, "Alex", SPANISH);
         CommandSourceStack source = source(console, alex);
 
-        List<Delivery> deliveries = PaperMessageSender.deliveries(source, FIRST_PAGE);
+        List<Delivery> deliveries = PaperMessageSender.deliveries(source, FIRST_PAGE_SCREEN);
 
         assertEquals(2, deliveries.size());
         assertSame(alex, deliveries.get(0).recipient());
@@ -77,7 +93,7 @@ class PaperMessageSenderDeliveryTest {
         Player bea = fake(Player.class, "Bea", SPANISH);
         CommandSourceStack source = source(alex, bea);
 
-        List<Delivery> deliveries = PaperMessageSender.deliveries(source, FIRST_PAGE);
+        List<Delivery> deliveries = PaperMessageSender.deliveries(source, FIRST_PAGE_SCREEN);
 
         assertEquals(2, deliveries.size());
         assertSame(bea, deliveries.get(0).recipient());
@@ -95,7 +111,7 @@ class PaperMessageSenderDeliveryTest {
         ArmorStand stand = fake(ArmorStand.class, "Stand", ENGLISH);
         CommandSourceStack source = source(alex, stand);
 
-        List<Delivery> deliveries = PaperMessageSender.deliveries(source, FIRST_PAGE);
+        List<Delivery> deliveries = PaperMessageSender.deliveries(source, FIRST_PAGE_SCREEN);
 
         assertEquals(1, deliveries.size());
         assertSame(alex, deliveries.get(0).recipient());
@@ -109,7 +125,7 @@ class PaperMessageSenderDeliveryTest {
         ArmorStand stand = fake(ArmorStand.class, "Stand", ENGLISH);
 
         for (CommandSourceStack source : List.of(source(console, null), source(console, stand))) {
-            List<Delivery> deliveries = PaperMessageSender.deliveries(source, FIRST_PAGE);
+            List<Delivery> deliveries = PaperMessageSender.deliveries(source, FIRST_PAGE_SCREEN);
 
             assertEquals(1, deliveries.size());
             assertSame(console, deliveries.get(0).recipient());

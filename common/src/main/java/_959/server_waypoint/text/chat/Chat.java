@@ -24,6 +24,8 @@ public final class Chat {
     public static final String ELLIPSIS = "…";
     public static final String PICKER = "⏷";
     public static final String DOT = "●";
+    private static final String SCREEN_INSERTION = "server_waypoint:screen";
+    private static final Component SCREEN_MARK = Component.empty().insertion(SCREEN_INSERTION);
 
     private Chat() {
     }
@@ -164,5 +166,31 @@ public final class Chat {
     /** "1 waypoint" or "12 waypoints": the key's .one or .other form with the number as {0}. */
     public static Component count(String key, int count) {
         return Component.translatable(key + (count == 1 ? ".one" : ".other"), Component.text(count));
+    }
+
+    /**
+     * Marks a message as a screen: structured feedback such as the menu, a list or a picker, which players
+     * read apart from the next message. The platforms end a screen with a blank line for players; results,
+     * errors, broadcasts and prompts are not screens and get none. The mark is an empty piece after the
+     * screen. It draws nothing and, as a sibling, never touches the style of the screen's own text.
+     */
+    public static Component screen(Component screen) {
+        return Component.empty().append(screen).append(SCREEN_MARK);
+    }
+
+    /**
+     * Whether the message is a screen or has one among its pieces, such as a hint above a list. A screen
+     * inside a tooltip or a translation argument doesn't count.
+     */
+    public static boolean isScreen(Component message) {
+        if (SCREEN_INSERTION.equals(message.style().insertion())) {
+            return true;
+        }
+        for (Component child : message.children()) {
+            if (isScreen(child)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -6,6 +6,7 @@ import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.PreparedMessage;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveFailure;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager.ReceiveLimits;
+import _959.server_waypoint.text.chat.Chat;
 import net.kyori.adventure.text.Component;
 
 import java.util.List;
@@ -17,18 +18,19 @@ import static _959.server_waypoint.core.WaypointServerCore.CONFIG;
 
 public interface PlatformMessageSender<S, P> {
     /**
-     * Every message to a player ends with one newline, which the game draws as a blank line before
-     * the next message. Platforms add it when they send; builders never end with a newline.
+     * A screen ({@link Chat#screen}) ends with one newline, which the game draws as a blank line
+     * before the next message. Every other message reaches the player as it is. Platforms apply this
+     * when they send; builders never end with a newline.
      */
     static Component forPlayer(Component message) {
-        return Component.empty().append(message).appendNewline();
+        return Chat.isScreen(message) ? Component.empty().append(message).appendNewline() : message;
     }
 
     /**
      * The copy of a player's view that goes to the commander who ran a command as that player with
      * /execute as: the "Viewed as" line, then the view itself. The player gets the view alone. Pass
-     * the view with its trailing newline ({@link #forPlayer}) for a player commander, and without it
-     * for the console, RCON and command blocks.
+     * the view as {@link #forPlayer} makes it, with a screen's trailing newline, for a player
+     * commander, and as the builder made it for the console, RCON and command blocks.
      */
     static Component forCommander(Component viewedAsLine, Component view) {
         return Component.empty().append(viewedAsLine).appendNewline().append(view);

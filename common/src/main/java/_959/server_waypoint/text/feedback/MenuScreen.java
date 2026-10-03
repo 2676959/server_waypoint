@@ -82,7 +82,7 @@ public final class MenuScreen {
         if (!transfer.isEmpty()) {
             group(lines, "wp.menu.transfer", Chat.join(transfer));
         }
-        return lines.build();
+        return lines.buildScreen();
     }
 
     private static void group(ChatLines lines, String labelKey, Component items) {

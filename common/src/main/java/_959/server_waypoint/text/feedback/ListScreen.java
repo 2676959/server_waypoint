@@ -53,10 +53,10 @@ public final class ListScreen {
         if (totals.lists() == 0) {
             Component newList = ListActions.newList(dims, dimension);
             return lines.line(translatable("wp.dimension.no_lists.sentence", GRAY), newList == null ? null : text(" "),
-                    newList).build();
+                    newList).buildScreen();
         }
         if (query.searching() && result.listCount() == 0) {
-            return lines.add(ListControls.noMatches(viewer, query.search(), target.command(query.withSearch("")))).build();
+            return lines.add(ListControls.noMatches(viewer, query.search(), target.command(query.withSearch("")))).buildScreen();
         }
         List<WaypointListDisplayModel.DisplayList> groups = WaypointListDisplayModel.build(result, true).lists();
         ListView view = resolveView(query, groups, totals, pageLimit);
@@ -88,7 +88,7 @@ public final class ListScreen {
             actions.add(ListActions.add(dims, dimension, list));
             actions.add(ListActions.removeList(dims, dimension, list));
             return lines.line(translatable("wp.list.empty.sentence", GRAY), Chat.isEmpty(actions) ? null : text(" "),
-                    Chat.join(actions)).build();
+                    Chat.join(actions)).buildScreen();
         }
         lines.line(crumb, text("  "), Chat.colored(Chat.count("wp.count.waypoint", list.size()), GRAY),
                 all == null ? null : Chat.SEPARATOR, all);
@@ -98,7 +98,7 @@ public final class ListScreen {
         if (query.searching()) {
             String clear = target.command(query.withSearch(""));
             if (rows.isEmpty()) {
-                return lines.add(ListControls.noMatches(viewer, query.search(), clear)).build();
+                return lines.add(ListControls.noMatches(viewer, query.search(), clear)).buildScreen();
             }
             lines.add(ListControls.searchLine(viewer, query.search(), rows.size(), clear));
         }
@@ -118,7 +118,7 @@ public final class ListScreen {
         ListControls.controls(lines, ListControls.pager(viewer, target, query, pages.size(),
                         ListControls.pageDetail(pageLimit, Chat.count("wp.count.waypoint", rows.size()))),
                 actions, sortRow(dims, dimension, target, query));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** The dimension in its colour, opening its lists: the first step of a breadcrumb. */
@@ -209,7 +209,7 @@ public final class ListScreen {
                         Chat.count("wp.count.list", totals.lists()), Chat.count("wp.count.waypoint", totals.waypoints()))),
                 viewRow(dims, dimension, totals, shown, ListView.TREE),
                 totals.waypoints() > 0 ? sortRow(dims, dimension, target, shown) : null);
-        return lines.build();
+        return lines.buildScreen();
     }
 
     private static Component listsView(DimensionStyle dims, String dimension, Totals totals,
@@ -232,7 +232,7 @@ public final class ListScreen {
         ListControls.controls(lines, ListControls.pager(viewer, target, shown, pages.size(),
                         ListControls.pageDetail(pageLimit + 5, Chat.count("wp.count.list", totals.lists()))),
                 viewRow(dims, dimension, totals, shown, ListView.LISTS));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     private static Component flatView(DimensionStyle dims, String dimension, Totals totals,
@@ -253,7 +253,7 @@ public final class ListScreen {
         ListControls.controls(lines, ListControls.pager(viewer, target, shown, pages.size(),
                         ListControls.pageDetail(pageLimit, Chat.count("wp.count.waypoint", rows.size()))),
                 viewRow(dims, dimension, totals, shown, ListView.FLAT), sortRow(dims, dimension, target, shown));
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** "… 4 more" opening the whole list, keeping the search and the sort. */

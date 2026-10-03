@@ -79,7 +79,7 @@ public final class NavigationScreens {
         if (!Chat.isEmpty(actions)) {
             lines.add(Chat.join(actions));
         }
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** Not navigating, then where to start. */
@@ -87,14 +87,14 @@ public final class NavigationScreens {
         Viewer viewer = dims.viewer();
         ChatLines lines = new ChatLines().add(translatable("wp.navigation.none", GOLD));
         if (viewer.plainText()) {
-            return lines.build();
+            return lines.buildScreen();
         }
         String here = Objects.requireNonNullElse(viewer.dimension(), "minecraft:overworld");
         return lines.line(translatable("wp.navigation.choose", GRAY), text("  "), Chat.join(
                 Chat.link(viewer, translatable("wp.menu.this_dimension"), AQUA, Click.run("/wp list"),
                         Tooltip.of(translatable("wp.menu.this_dimension.tooltip", dims.name(here)))),
                 Chat.link(viewer, translatable("wp.all"), AQUA, Click.run("/wp list all"), Tooltip.of("wp.all.tooltip"))))
-                .build();
+                .buildScreen();
     }
 
     /** ✔ Stopped navigating   Resume */
@@ -152,7 +152,7 @@ public final class NavigationScreens {
         if (!Chat.isEmpty(buttons)) {
             lines.add(Chat.spaced(buttons));
         }
-        return lines.build();
+        return lines.buildScreen();
     }
 
     /** Move  X [−][+]  Y [−][+]  Z [−][+]  0, 0, 0 [✎] */

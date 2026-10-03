@@ -3,9 +3,11 @@ package _959.server_waypoint.common.network;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
+import _959.server_waypoint.text.chat.Chat;
 import _959.server_waypoint.text.chat.DimensionStyle;
 import _959.server_waypoint.text.chat.Viewer;
 import _959.server_waypoint.text.feedback.DetailsScreen;
+import net.kyori.adventure.text.Component;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
 import org.junit.jupiter.api.Assumptions;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class ModMessageSenderTest {
@@ -69,5 +72,14 @@ class ModMessageSenderTest {
                 "failed to decode message component",
                 ModMessageSender.toVanillaText(details).getString()
         );
+    }
+
+    @Test
+    void convertsAScreenWithItsMarkToTheScreensTextAlone() {
+        net.minecraft.network.chat.Component converted = ModMessageSender.toVanillaText(
+                Chat.screen(Component.text("Farms"))
+        );
+
+        assertEquals("Farms", converted.getString());
     }
 }

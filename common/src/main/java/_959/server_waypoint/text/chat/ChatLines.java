@@ -45,4 +45,9 @@ public final class ChatLines {
         }
         return message;
     }
+
+    /** The message as a screen, which players read apart from the next message ({@link Chat#screen}). */
+    public Component buildScreen() {
+        return Chat.screen(this.build());
+    }
 }

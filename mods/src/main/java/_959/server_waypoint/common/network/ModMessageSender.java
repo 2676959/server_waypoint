@@ -153,8 +153,8 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
 
     /**
      * The commander's copy of a player's view: a "Viewed as" line in the commander's language, then
-     * the feedback in the player's. A player commander gets the trailing newline; the console, RCON
-     * and command blocks read plain text without it.
+     * the feedback in the player's. A player commander gets a screen's trailing newline, as the
+     * player does; the console, RCON and command blocks read plain text without it.
      */
     private net.minecraft.network.chat.Component getViewedAsText(
             ServerPlayer viewer,

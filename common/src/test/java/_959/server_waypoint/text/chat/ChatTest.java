@@ -118,6 +118,30 @@ class ChatTest {
     }
 
     @Test
+    void aScreenIsMarkedAndTheMarkDrawsNothing() {
+        Component screen = Chat.screen(new ChatLines().add(text("Farms")).add(text("Iron Farm")).build());
+
+        assertTrue(Chat.isScreen(screen));
+        assertEquals(List.of("Farms", "Iron Farm"), lines(screen));
+        assertFalse(Chat.isScreen(Chat.ok(text("Saved"))));
+    }
+
+    @Test
+    void aScreenInsideALargerMessageStillMakesItAScreen() {
+        Component message = new ChatLines().add(text("Click a name.")).add(Chat.screen(text("Farms"))).build();
+
+        assertTrue(Chat.isScreen(message));
+    }
+
+    @Test
+    void theMarkDoesNotSpillOntoTheScreensText() {
+        Component screen = Chat.screen(Chat.colored(text("Farms"), NamedTextColor.WHITE));
+
+        assertNull(find(screen, "Farms").style().insertion());
+        assertEquals(NamedTextColor.WHITE, colorOf(screen, "Farms"));
+    }
+
+    @Test
     void tooltipsHaveAWhiteTitleGrayLinesAndAquaHints() {
         Component tooltip = Tooltip.of(text("Farms")).line(text("7 waypoints"), text("Overworld"))
                 .hint("wp.hint.open").build();

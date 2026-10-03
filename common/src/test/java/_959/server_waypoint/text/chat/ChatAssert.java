@@ -112,8 +112,9 @@ public final class ChatAssert {
     }
 
     /**
-     * The chat limits of spec 1: no line over 320 px, at most 19 lines so the trailing blank line
-     * still fits the 20-line window, no bold, only vanilla glyphs and no trailing newline.
+     * The chat limits of spec 1: no line over 320 px, at most 20 lines, or 19 for a screen so the
+     * trailing blank line players get still fits the 20-line window, no bold, only vanilla glyphs and
+     * no trailing newline.
      */
     public static void assertFitsChat(Component message) {
         List<String> problems = fitProblems(message, Locale.US);
@@ -144,8 +145,12 @@ public final class ChatAssert {
                         problems.add("not in the vanilla font: " + new String(Character.toChars(codePoint)) + " in " + line));
             }
         }
-        if (lines.size() + 1 > ChatFont.CHAT_LINES) {
-            problems.add((lines.size() + 1) + " lines with the trailing blank line");
+        if (Chat.isScreen(message)) {
+            if (lines.size() + 1 > ChatFont.CHAT_LINES) {
+                problems.add((lines.size() + 1) + " lines with the trailing blank line");
+            }
+        } else if (lines.size() > ChatFont.CHAT_LINES) {
+            problems.add(lines.size() + " lines");
         }
         if (runs(message, locale).stream().anyMatch(run -> run.style().decoration(TextDecoration.BOLD) == TextDecoration.State.TRUE)) {
             problems.add("bold text");
