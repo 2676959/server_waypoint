@@ -552,6 +552,15 @@ An inactive `IconButton` multiplies its icon by the theme's `TEXT_DISABLED`, the
 button's label takes, so an unavailable action, such as resetting a setting that's already at its
 default, doesn't look pressable. Draw icons in a light gray or white so the tint shows.
 
+`ToggleButton` takes each state's fill either as a `WidgetThemeVariable`, which follows the theme (as
+`OnOffToggleButton` does with `SUCCESS_BACKGROUND` and `DANGER_BACKGROUND`), or as an int ARGB, which is
+used as given and never follows the theme. The waypoint form's Visibility toggle uses fixed colors on
+purpose: Local is green and Global is blue in every theme, so keep it off the theme roles. A toggle paints
+only its one fill, so pass the alpha you want over the panel. The form's `LOCAL_TOGGLE_COLOR` and
+`GLOBAL_TOGGLE_COLOR` are the previous release's #04E500 and #005AE5 at 60% over its 53%-black button fill,
+flattened into one layer, and `WaypointFormToggleColorsTest` pins them to those pixels. The outline, the
+hover and focus ring, the label color and the disabled look still follow the theme.
+
 The main base classes have distinct roles:
 
 - Extend `ShiftableWidget` for a non-interactive `LayoutElement`/`Renderable`.

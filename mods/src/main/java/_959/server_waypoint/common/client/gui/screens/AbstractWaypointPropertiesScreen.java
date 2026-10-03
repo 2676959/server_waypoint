@@ -98,6 +98,13 @@ import static _959.server_waypoint.util.WaypointInitials.getInitialsCandidatesFr
 public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedScreen {
     private static final float TITLE_SCALE = 1.2F;
     private static final long TOOLTIP_DELAY_NANOS = 500_000_000L;
+    /**
+     * The Visibility toggle's own fills, the same in every theme. They are the previous release's Local
+     * (#04E500) and Global (#005AE5) at 60% over a button fill of 53% black, flattened into the one layer
+     * the toggle paints, so over the panel they look as the two layers did.
+     */
+    static final int LOCAL_TOGGLE_COLOR = 0xCF03A900;
+    static final int GLOBAL_TOGGLE_COLOR = 0xCF0043A9;
     private static final int PREVIEW_SIZE = 11;
     private static final int MIN_STATUS_WIDTH = 100;
     private static final String AXIS_LETTERS = "XYZRUF";
@@ -127,8 +134,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             11,
             Component.translatable("waypoint.local"),
             Component.translatable("waypoint.global"),
-            WidgetThemeVariable.CONTROL_BACKGROUND,
-            WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND,
+            LOCAL_TOGGLE_COLOR,
+            GLOBAL_TOGGLE_COLOR,
             state -> this.onFormEdited()
     );
     protected final SwatchWidget swatchWidget = new SwatchWidget(0, 0, font, color -> {

@@ -38,6 +38,10 @@ public class ToggleButton extends ShiftableButtonWidget implements Expandable, P
     private final IntSupplier state0Color;
     private final IntSupplier state1Color;
 
+    /**
+     * A toggle whose two state fills are fixed ARGB colors, used as given: they never follow the theme.
+     * Pass the alpha you want, because the toggle paints this one layer and nothing under it.
+     */
     public ToggleButton(int x, int y, int width, int height, Component state0Text,
                         Component state1Text, int state0color, int state1color,
                         ToggleButtonCallback callback) {
@@ -96,9 +100,9 @@ public class ToggleButton extends ShiftableButtonWidget implements Expandable, P
         }
     }
 
-    private static IntSupplier fixedStateColor(int color) {
-        int translucentColor = 0x99000000 | (0x00FFFFFF & color);
-        return () -> translucentColor;
+    /** A state fill that never follows the theme: the ARGB value is used as given. */
+    static IntSupplier fixedStateColor(int color) {
+        return () -> color;
     }
 
     @Override
