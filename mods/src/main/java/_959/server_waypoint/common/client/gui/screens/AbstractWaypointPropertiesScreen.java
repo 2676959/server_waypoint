@@ -66,6 +66,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.NO_MOUSE;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
@@ -1129,6 +1130,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         if (layout == null) {
             return;
         }
+        // Disabled controls still calculate hover and request cursors during rendering.
+        int contentMouseX = this.swatchWidget.visible ? NO_MOUSE : mouseX;
+        int contentMouseY = this.swatchWidget.visible ? NO_MOUSE : mouseY;
         context.fill(layout.panelX(), layout.panelY(), layout.panelX() + layout.panelWidth(),
                 layout.panelY() + layout.panelHeight(), getColor(PANEL_BACKGROUND));
         renderOutline(context, layout.panelX(), layout.panelY(), layout.panelWidth(), layout.panelHeight(), getColor(BORDER));
@@ -1136,31 +1140,31 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             part.
             //$ render_method_swap
             extractRenderState
-                    (context, mouseX, mouseY, delta);
+                    (context, contentMouseX, contentMouseY, delta);
         }
         for (AbstractWidget widget : this.tabOrder) {
             widget.
             //$ render_method_swap
             extractRenderState
-                    (context, mouseX, mouseY, delta);
+                    (context, contentMouseX, contentMouseY, delta);
         }
         if (this.hasStatus) {
             this.statusText.
             //$ render_method_swap
             extractRenderState
-                    (context, mouseX, mouseY, delta);
+                    (context, contentMouseX, contentMouseY, delta);
         }
         this.drawIconPreview(context);
         nextLayer(context);
         for (TranslucentTextField field : this.suggestionFields) {
-            field.renderSuggestions(context, mouseX, mouseY);
+            field.renderSuggestions(context, contentMouseX, contentMouseY);
         }
         previousLayer(context);
         for (ComboBoxWidget dropdown : this.dropdowns) {
             dropdown.layoutPopup(this.height, 8);
-            dropdown.renderPopup(context, mouseX, mouseY, delta);
+            dropdown.renderPopup(context, contentMouseX, contentMouseY, delta);
         }
-        this.renderFieldTooltip(context, mouseX, mouseY);
+        this.renderFieldTooltip(context, contentMouseX, contentMouseY);
         nextLayer(context);
         this.swatchWidget.
         //$ render_widget_method_swap

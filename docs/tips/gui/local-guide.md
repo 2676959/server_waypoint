@@ -344,6 +344,9 @@ Use `DrawContextHelper` for drawing operations whose Minecraft API changes acros
 
 To draw widgets with no hover state or tooltip, as under a dialog or for a clipped settings row,
 pass `DrawContextHelper.NO_MOUSE` as both mouse coordinates.
+`AbstractWaypointPropertiesScreen` does this for the form and its popups while its modal
+`SwatchWidget` is visible, and passes the real mouse coordinates only to the swatch. Disabling
+controls alone does not suppress hover or cursor requests during rendering.
 
 `DrawContextHelper.texture` has an overload with a trailing ARGB color that multiplies every pixel
 of the texture, as `IconButton` does to tint an inactive icon. It uses the colored blit on 1.21.2
