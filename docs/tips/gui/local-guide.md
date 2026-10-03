@@ -767,6 +767,27 @@ right. Register the buttons through the dialog's `visitWidgets`, keep them inact
 is hidden, and render the open dialog on a later layer. Escape should close an open dialog before the
 screen; `ClientConfigScreen` shows the pattern.
 
+### Color pickers
+
+`HSVColorPicker` and `RGBColorPicker`, which `SwatchWidget` combines, extend
+`Abstract3ChannelColorPicker<T>`. It owns three sliders, sends mouse, wheel and key input to the
+slider under the cursor, and reports each change through its `ColorPickerCallback`. A subclass
+implements `getColor()`, `setColor(int)` and the three protected `onChannelNUpdate()` hooks, which
+run after a channel changes and refresh the other sliders' gradients.
+
+Its sliders extend `Abstract3ChannelColorPicker.ColorGradientSlider`, not `AbstractColorBgSlider`
+directly. Every gradient shows the picker's current color at its handle, so a fixed or inverted
+handle color can vanish against it: the inverse of `#808080` is `#7F7F7F`. The picker wires each
+slider to its `getColor()`, and the slider draws its handle in `ColorUtils.getContrastColor(...)`
+of that color, black or white with at least 4.5:1 contrast. The color is read whenever the handle is
+drawn, so no input path can leave a stale one. Use `getContrastColor` for a marker over an arbitrary
+color and `getSafeTextColor` for text, which favors white.
+
+`AbstractColorBgSlider.getHandleColor()` is the hook that picks a slider's handle color. Its default
+is the themed `ACCENT`, or `SLIDER_THUMB_DISABLED` while the slider is inactive, and a
+`ColorGradientSlider` keeps the disabled color. The handle is one pixel wide and stays inside the
+slider on every version.
+
 ### New interactive widget checklist
 
 1. Put it in `client.gui.widgets` unless it is private to a single screen.
