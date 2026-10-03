@@ -11,10 +11,10 @@ import _959.server_waypoint.core.network.MessageEncodingException;
 import _959.server_waypoint.core.network.SinglePacketMessage;
 import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
 import _959.server_waypoint.common.server.WaypointServerMod;
+import _959.server_waypoint.common.util.TextHelper;
 import _959.server_waypoint.mixin.CommandSourceStackAccessor;
 import _959.server_waypoint.text.chat.Chat;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.Translator;
 import net.minecraft.commands.CommandSource;
@@ -57,14 +57,14 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
 
     public static net.minecraft.network.chat.Component toVanillaText(Component component) {
         //? if >= 1.20.3 {
-        var result = ComponentSerialization.CODEC.decode(JsonOps.INSTANCE, GsonComponentSerializer.gson().serializeToTree(component)).result();
+        var result = ComponentSerialization.CODEC.decode(JsonOps.INSTANCE, TextHelper.JSON.serializeToTree(component)).result();
         if (result.isPresent()) {
             return result.get().getFirst();
         } else {
             return net.minecraft.network.chat.Component.literal("failed to decode message component");
         }
         //?} else {
-        /*return net.minecraft.network.chat.Component.Serializer.fromJson(GsonComponentSerializer.gson().serializeToTree(component));
+        /*return net.minecraft.network.chat.Component.Serializer.fromJson(TextHelper.JSON.serializeToTree(component));
         *///?}
     }
 

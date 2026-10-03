@@ -367,7 +367,7 @@
   "wp.result.removed.plain": "{0} הוסרה מ-{1}. לשחזור: {2}",
   "wp.result.removed_list": "הרשימה {0} הוסרה מ-{1}",
   "wp.result.restored": "{0} שוחזרה אל {1}",
-  "wp.result.teleported": "שוגרתם אל {0}",
+  "wp.result.teleported": "{0} שוגר/ה אל {1}",
   "wp.result.reloaded": "ההגדרות וקובצי השפה נטענו מחדש",
   "wp.result.languages": "שפות: {0}",
   "wp.result.key_generated": "מפתח בין-שרתי נוצר. מפתח ציבורי: {0}",

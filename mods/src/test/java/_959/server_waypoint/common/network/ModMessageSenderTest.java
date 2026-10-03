@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.network;
 
+import _959.server_waypoint.common.MinecraftTestRuntime;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
@@ -7,7 +8,9 @@ import _959.server_waypoint.text.chat.Chat;
 import _959.server_waypoint.text.chat.DimensionStyle;
 import _959.server_waypoint.text.chat.Viewer;
 import _959.server_waypoint.text.feedback.DetailsScreen;
+import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
 import org.junit.jupiter.api.Assumptions;
@@ -16,9 +19,11 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ModMessageSenderTest {
     @BeforeAll
@@ -72,6 +77,18 @@ class ModMessageSenderTest {
                 "failed to decode message component",
                 ModMessageSender.toVanillaText(details).getString()
         );
+    }
+
+    @Test
+    void convertsAPlayersNameWithItsEntityHoverForTheClient() {
+        MinecraftTestRuntime.assumeEntityTypesAreRegistered();
+        Component name = Component.text("Alex").hoverEvent(HoverEvent.showEntity(
+                Key.key("minecraft:player"), UUID.fromString("c3b0f8d2-5a1e-4c7e-9f3a-2b1d4e6f8a90"), Component.text("Alex")));
+
+        net.minecraft.network.chat.Component converted = ModMessageSender.toVanillaText(name);
+
+        assertEquals("Alex", converted.getString());
+        assertNotNull(converted.getStyle().getHoverEvent());
     }
 
     @Test

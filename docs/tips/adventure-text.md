@@ -32,6 +32,20 @@ Regression tests for interactive feedback should verify both component order and
 inherited state: the property text must not inherit the button's click event, while its decoration
 and color states must match the intended presentation.
 
+## Minecraft text in the mods
+
+The mods convert between vanilla and Adventure text through JSON: `TextHelper.toMinecraft` and
+`ModMessageSender.toVanillaText` go to vanilla, `TextHelper.toAdventure` comes back. All of them use
+`TextHelper.JSON`, never `GsonComponentSerializer.gson()` directly: before 1.20.3 vanilla reads a hover
+entity's id only as a string, and Adventure's default writes the int array that later versions accept as
+well, so a message with a player's hover fails to convert on 1.20.1 and 1.20.2.
+
+Bring text that comes from Minecraft, such as a player's display name, in with `toAdventure`, so it keeps its
+colours, hover, click and insertion. `Component.text(text.getString())` drops all of them. `TextHelperTest` and
+`ModMessageSenderTest` check both directions wherever the unit-test runtime can bootstrap Minecraft: every
+Fabric and Forge target, and NeoForge up to 1.21.2. NeoForge's runtime cannot from 1.21.3 on, so they skip
+there (`MinecraftTestRuntime` keeps the entity-hover cases from failing in a half-bootstrapped JVM).
+
 ## Chat kit
 
 Command feedback is built from the pieces in `common/src/main/java/_959/server_waypoint/text/chat/`

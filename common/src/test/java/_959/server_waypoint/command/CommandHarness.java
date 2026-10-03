@@ -87,6 +87,8 @@ final class CommandHarness {
     final Sender sender = new Sender();
     final Map<String, String> dimensionTypes = new LinkedHashMap<>();
     final List<Teleport> teleports = new ArrayList<>();
+    /** Display names by account name; a player without one is shown by account name. */
+    final Map<String, Component> displayNames = new LinkedHashMap<>();
     CompletableFuture<Boolean> teleportCompletion = CompletableFuture.completedFuture(true);
     Consumer<Runnable> serverExecutor = Runnable::run;
     boolean failSave;
@@ -301,6 +303,12 @@ final class CommandHarness {
         @Override
         protected String getPlayerName(Object player) {
             return ((Source) player).name();
+        }
+
+        @Override
+        protected Component getPlayerDisplayName(Object player) {
+            String name = getPlayerName(player);
+            return this.harness.displayNames.getOrDefault(name, Component.text(name));
         }
 
         @Override

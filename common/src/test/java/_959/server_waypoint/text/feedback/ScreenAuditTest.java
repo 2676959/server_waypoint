@@ -135,7 +135,7 @@ class ScreenAuditTest {
         screens.put("removed", Results.removed(dims, OVERWORLD, home, mainHome, "r12"));
         screens.put("removed list", Results.removedList(dims, NETHER, storage));
         screens.put("restored", Results.restored(dims, OVERWORLD, home, mainHome));
-        screens.put("teleported", Results.teleported(dims, OVERWORLD, home, mainHome));
+        screens.put("teleported", Results.teleported(dims, text("Steve"), OVERWORLD, home, mainHome));
         screens.put("reloaded", Results.reloaded(List.of("en_us", "es_es", "he_il", "zh_cn", "zh_hk", "zh_tw")));
         screens.put("sent", Results.sent(12));
         screens.put("broadcast", Broadcasts.added(dims, text("Steve"), OVERWORLD, farms, iron));

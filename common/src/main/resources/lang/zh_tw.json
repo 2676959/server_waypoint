@@ -367,7 +367,7 @@
   "wp.result.removed.plain": "已從{1}中刪除{0}。還原指令：{2}",
   "wp.result.removed_list": "已從{1}中刪除列表{0}",
   "wp.result.restored": "已將{0}還原到{1}",
-  "wp.result.teleported": "已傳送到{0}",
+  "wp.result.teleported": "已將{0}傳送到{1}",
   "wp.result.reloaded": "已重新載入設定和語言檔案",
   "wp.result.languages": "語言：{0}",
   "wp.result.key_generated": "已產生跨伺服器金鑰。公鑰：{0}",

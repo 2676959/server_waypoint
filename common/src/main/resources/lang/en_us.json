@@ -377,7 +377,7 @@
   "wp.result.removed.plain": "Removed {0} from {1}. Restore with {2}",
   "wp.result.removed_list": "Removed the list {0} from {1}",
   "wp.result.restored": "Restored {0} to {1}",
-  "wp.result.teleported": "Teleported to {0}",
+  "wp.result.teleported": "Teleported {0} to {1}",
   "wp.result.reloaded": "Reloaded the configuration and language files",
   "wp.result.languages": "Languages: {0}",
   "wp.result.key_generated": "Generated the cross-server key. Public key: {0}",

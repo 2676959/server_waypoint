@@ -261,6 +261,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     protected abstract @Nullable P getPlayer(S source);
     protected abstract boolean isServerConsoleWithHighestPermission(S source);
     protected abstract String getPlayerName(P player);
+    /** The player's display name, such as a nickname or team prefix; {@link #getPlayerName} is the account name. */
+    protected abstract Component getPlayerDisplayName(P player);
     protected abstract CompletionStage<Boolean> teleportPlayer(S source, P player, D dimensionArgument, WaypointPos pos, int yaw);
     protected abstract Message getMessageFromComponent(Component component);
     protected abstract List<String> getAvailableDimensionNames(S source);
@@ -1690,7 +1692,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     }
                     this.sender.sendPlayerMessage(player, Results.teleported(
                             DimensionStyle.local(recipientViewer(player), getDimensionTypes(source)),
-                            fileManager.getDimensionName(), waypointList, waypoint));
+                            getPlayerDisplayName(player), fileManager.getDimensionName(), waypointList, waypoint));
                 }));
     }
 

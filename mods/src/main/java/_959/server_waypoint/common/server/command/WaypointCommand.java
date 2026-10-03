@@ -16,6 +16,7 @@ import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.core.waypoint.WaypointIconPolicy;
 import _959.server_waypoint.util.NamespacedId;
 import _959.server_waypoint.common.util.ResourceLocationHelper;
+import _959.server_waypoint.common.util.TextHelper;
 
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.context.CommandContext;
@@ -217,6 +218,18 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     @Override
     protected String getPlayerName(ServerPlayer player) {
         return player.getName().getString();
+    }
+
+    @Override
+    protected Component getPlayerDisplayName(ServerPlayer player) {
+        net.minecraft.network.chat.Component displayName = player.getDisplayName();
+        try {
+            return TextHelper.toAdventure(displayName);
+        } catch (RuntimeException exception) {
+            // The name only decorates the line, so a name whose format can't be kept is said in plain text.
+            WaypointServerMod.LOGGER.warn("Could not keep the format of {}'s display name", getPlayerName(player), exception);
+            return Component.text(displayName.getString());
+        }
     }
 
     @Override

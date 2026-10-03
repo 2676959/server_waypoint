@@ -6,6 +6,7 @@ import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.text.chat.Viewer;
 import _959.server_waypoint.text.feedback.HelpTopics;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -327,6 +328,20 @@ class CommandFeedbackTest {
         assertEquals("✔ Restored [IF] Iron Farm to Farms", render(this.harness.run(player, restore.substring(1))));
         assertTrue(render(this.harness.run(CommandHarness.console(), "wp remove minecraft:overworld Farms \"Iron Farm\""))
                 .startsWith("✔ Removed [IF] Iron Farm from Farms. Restore with /wp restore "));
+    }
+
+    @Test
+    void teleportingConfirmsWithThePlayersDisplayNameNotTheAccountName() throws CommandSyntaxException {
+        this.harness.addList("minecraft:overworld", "Farms", CommandHarness.waypoint("Iron Farm", "IF", 0xAAAAAA, 300, 80, 150));
+        this.harness.displayNames.put("Alex", Component.text("Alex the Builder"));
+        CommandHarness.Source alex = CommandHarness.player();
+
+        this.harness.dispatcher.execute("wp tp minecraft:overworld Farms \"Iron Farm\"", alex);
+
+        assertEquals(1, this.harness.sender.toPlayers.size());
+        assertEquals(alex, this.harness.sender.toPlayers.get(0).getKey());
+        assertEquals("✔ Teleported Alex the Builder to [IF] Iron Farm",
+                render(this.harness.sender.toPlayers.get(0).getValue()));
     }
 
     @Test

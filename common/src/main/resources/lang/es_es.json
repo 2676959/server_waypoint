@@ -367,7 +367,7 @@
   "wp.result.removed.plain": "Quitado {0} de {1}. Recupéralo con {2}",
   "wp.result.removed_list": "Quitada la lista {0} de {1}",
   "wp.result.restored": "Recuperado {0} en {1}",
-  "wp.result.teleported": "Teletransportado a {0}",
+  "wp.result.teleported": "Teletransportado {0} a {1}",
   "wp.result.reloaded": "Configuración y archivos de idioma recargados",
   "wp.result.languages": "Idiomas: {0}",
   "wp.result.key_generated": "Clave entre servidores generada. Clave pública: {0}",

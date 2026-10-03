@@ -100,9 +100,11 @@ public final class Results {
                 listLink(dims, dimension, list)));
     }
 
-    /** ✔ Teleported to [MH] Main Home */
-    public static Component teleported(DimensionStyle dims, String dimension, WaypointList list, SimpleWaypoint waypoint) {
-        return Chat.ok(translatable("wp.result.teleported", WaypointRefs.reference(dims, dimension, list, waypoint)));
+    /** ✔ Teleported Steve to [MH] Main Home */
+    public static Component teleported(DimensionStyle dims, Component player, String dimension, WaypointList list,
+                                       SimpleWaypoint waypoint) {
+        return Chat.ok(translatable("wp.result.teleported", Chat.colored(player, WHITE),
+                WaypointRefs.reference(dims, dimension, list, waypoint)));
     }
 
     /** ✔ Reloaded the configuration and language files, then the external languages that were loaded. */

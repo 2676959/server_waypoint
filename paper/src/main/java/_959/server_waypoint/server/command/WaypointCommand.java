@@ -162,6 +162,11 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     }
 
     @Override
+    protected Component getPlayerDisplayName(Player player) {
+        return player.displayName();
+    }
+
+    @Override
     protected CompletionStage<Boolean> teleportPlayer(CommandSourceStack source, Player player, World dimensionArgument, WaypointPos pos, int yaw) {
         Location location = new Location(dimensionArgument, pos.X(), pos.y(), pos.Z(), yaw, 0);
         return player.teleportAsync(location, PlayerTeleportEvent.TeleportCause.COMMAND);

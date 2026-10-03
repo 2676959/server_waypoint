@@ -794,6 +794,11 @@ class CoreWaypointCommandListTest {
         }
 
         @Override
+        protected Component getPlayerDisplayName(Object player) {
+            return Component.text(getPlayerName(player));
+        }
+
+        @Override
         protected java.util.concurrent.CompletionStage<Boolean> teleportPlayer(
                 TestSource source,
                 Object player,

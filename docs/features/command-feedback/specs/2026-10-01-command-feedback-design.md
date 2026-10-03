@@ -563,10 +563,12 @@ Results:
 ✔ Removed [MH] Main Home from Home Bases   Restore
 ✔ Removed the list Storage from Nether   Undo
 ✔ Restored [MH] Main Home to Home Bases
-✔ Teleported to [MH] Main Home
+✔ Teleported Steve to [MH] Main Home
 ```
 
-`Undo` after adding suggests the remove command. `Restore` runs `/wp restore <token>`.
+`Undo` after adding suggests the remove command. `Restore` runs `/wp restore <token>`. `Teleported`
+names the player by display name and keeps the format the name has, such as a team colour or the
+hover and click a player's name carries; a name without a colour is white.
 
 Broadcasts to other players:
 

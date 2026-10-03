@@ -79,10 +79,21 @@ class ResultsTest {
         assertEquals("/wp add minecraft:the_nether Storage", clickOf(removed, "Undo"));
         assertEquals(NamedTextColor.GREEN, colorOf(removed, "Undo"));
         assertEquals("✔ Restored [IF] Iron Farm to Farms", render(Results.restored(dims(), OVERWORLD, FARMS, IRON)));
-        assertEquals("✔ Teleported to [IF] Iron Farm", render(Results.teleported(dims(), OVERWORLD, FARMS, IRON)));
+        assertEquals("✔ Teleported Steve to [IF] Iron Farm",
+                render(Results.teleported(dims(), text("Steve"), OVERWORLD, FARMS, IRON)));
         assertEquals(List.of("✔ Reloaded the configuration and language files", "Languages: en_us, zh_cn"),
                 lines(Results.reloaded(List.of("en_us", "zh_cn"))));
         assertEquals(List.of("✔ Reloaded the configuration and language files"), lines(Results.reloaded(List.of())));
+    }
+
+    @Test
+    void teleportingNamesThePlayerInWhiteUnlessTheDisplayNameHasItsOwnColour() {
+        Component plain = Results.teleported(dims(), text("Steve"), OVERWORLD, FARMS, IRON);
+        Component team = Results.teleported(dims(), text("Steve", NamedTextColor.GOLD), OVERWORLD, FARMS, IRON);
+
+        assertEquals(NamedTextColor.GREEN, colorOf(plain, "✔ Teleported "));
+        assertEquals(NamedTextColor.WHITE, colorOf(plain, "Steve"));
+        assertEquals(NamedTextColor.GOLD, colorOf(team, "Steve"));
     }
 
     @Test

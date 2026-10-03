@@ -377,7 +377,7 @@
   "wp.result.removed.plain": "已从{1}中删除{0}。恢复命令：{2}",
   "wp.result.removed_list": "已从{1}中删除列表{0}",
   "wp.result.restored": "已将{0}恢复到{1}",
-  "wp.result.teleported": "已传送到{0}",
+  "wp.result.teleported": "已将{0}传送到{1}",
   "wp.result.reloaded": "已重新加载配置和语言文件",
   "wp.result.languages": "语言：{0}",
   "wp.result.key_generated": "已生成跨服密钥。公钥：{0}",
