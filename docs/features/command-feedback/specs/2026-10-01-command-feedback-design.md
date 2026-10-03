@@ -100,7 +100,7 @@ Out of scope:
 | light purple | navigation and teleport actions |
 | white | names of waypoints, lists and servers; property values |
 | gray | labels, counts, distances, descriptions, status words, secondary links such as `Help` and `Back`, and the italic `Viewed as` line (15) |
-| dark gray | separators, disabled controls and minor annotations (`No waypoints yet:`, `(continued)`, `none`) |
+| dark gray | separators, disabled controls and minor annotations (`(continued)`, `none`) |
 | waypoint colour | `[AB]` initials and colour swatches |
 | dimension colour | dimension names |
 
@@ -209,7 +209,7 @@ colour.
 - **The viewer's dimension** has a gold `●` after its count, with the tooltip `● You are here`. It
   always gets its own row, even with no waypoints.
 - **Dimensions without waypoints** share one line: `No waypoints yet: Mars · Venus`. The label is
-  dark gray; the names are gray and clickable.
+  white; the names are gray and clickable.
 - **Counts** read `Nether · 4`. The tooltip has `4 waypoints in 1 list`.
 - **Unloaded dimensions** with waypoint files appear in gray with `Not loaded` in the tooltip. Their
   lists still open.

@@ -81,7 +81,7 @@ class DimensionScreensTest {
         assertEquals(NamedTextColor.GRAY, colorOf(list, "The Aether"));
         assertTrue(tooltipOf(list, "The Aether").contains("Not loaded"));
         assertEquals("Nether\nminecraft:the_nether\nNether type\n4 waypoints in 2 lists\nClick to open", tooltipOf(list, "Nether"));
-        assertEquals(NamedTextColor.DARK_GRAY, colorOf(list, "No waypoints yet:"));
+        assertEquals(NamedTextColor.WHITE, colorOf(list, "No waypoints yet:"));
         assertEquals(NamedTextColor.GRAY, colorOf(list, "Mars"));
         assertEquals("/wp list ad_astra:mars", clickOf(list, "Mars"));
         assertEquals(NamedTextColor.GOLD, colorOf(list, "●"));
