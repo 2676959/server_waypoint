@@ -1,5 +1,6 @@
 package _959.server_waypoint.common.server.handoff;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.crossserver.handoff.DestinationPlatform;
 import _959.server_waypoint.crossserver.handoff.DestinationResolver;
 import net.minecraft.server.MinecraftServer;
@@ -46,6 +47,16 @@ public final class ModDestinationPlatform implements DestinationPlatform<ServerP
     }
     @Override public boolean canTeleport(ServerPlayer player) { return permission.test(player); }
     @Override public CompletionStage<Boolean> teleport(ServerPlayer player, DestinationResolver.Target target) {
+        PlayerActionLog.Actor actor = new PlayerActionLog.Actor(player.getUUID(), player.getName().getString());
+        var key = target.key();
+        return teleportToTarget(player, target).whenComplete((success, error) ->
+                PlayerActionLog.log(actor, "remote_tp_arrival",
+                        error == null && Boolean.TRUE.equals(success) ? "success" : "failed",
+                        "server", key.serverId().value(), "dimension", key.dimensionName(),
+                        "list", key.listName(), "waypoint", key.waypointName()));
+    }
+
+    private CompletionStage<Boolean> teleportToTarget(ServerPlayer player, DestinationResolver.Target target) {
         if (!ownsThread(player) || !isCurrentPlayer(player)) return CompletableFuture.completedFuture(false);
         for (var level : server.getAllLevels()) {
             //? if >=1.21.11 {

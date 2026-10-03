@@ -1,5 +1,6 @@
 package _959.server_waypoint.command;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.crossserver.authorization.RemotePermissions;
 import _959.server_waypoint.crossserver.handoff.RemoteTeleportInitiator;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result;
@@ -220,7 +221,18 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         this.remoteCommand = new RemoteWaypointCommand<>(waypointServer::remoteCatalogStore, sender::sendMessage,
                 sender::sendError, () -> CONFIG.defaultPageLimit(),
                 remotePermissions::canList, remotePermissions::canRequestTeleport,
-                (source, selection, feedback) -> remoteTeleport.initiate(source, selection, feedback),
+                (source, selection, feedback) -> {
+                    PlayerActionLog.Actor actor = actor(source);
+                    var key = selection.key();
+                    PlayerActionLog.log(actor, "remote_tp", "requested", "server", key.serverId().value(),
+                            "dimension", key.dimensionName(), "list", key.listName(), "waypoint", key.waypointName());
+                    remoteTeleport.initiate(source, selection, result -> {
+                        PlayerActionLog.log(actor, "remote_tp", result.name().toLowerCase(Locale.ROOT),
+                                "server", key.serverId().value(), "dimension", key.dimensionName(),
+                                "list", key.listName(), "waypoint", key.waypointName());
+                        feedback.accept(result);
+                    });
+                },
                 source -> HelpScreen.topic(this.viewer(source), HelpTopics.Topic.REMOTE, false), this::viewer);
         this.permissionManager = permissionManager;
         this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
@@ -249,7 +261,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     protected abstract @Nullable P getPlayer(S source);
     protected abstract boolean isServerConsoleWithHighestPermission(S source);
     protected abstract String getPlayerName(P player);
-    protected abstract void teleportPlayer(S source, P player, D dimensionArgument, WaypointPos pos, int yaw);
+    protected abstract CompletionStage<Boolean> teleportPlayer(S source, P player, D dimensionArgument, WaypointPos pos, int yaw);
     protected abstract Message getMessageFromComponent(Component component);
     protected abstract List<String> getAvailableDimensionNames(S source);
     /** Each loaded dimension and its dimension type ID, such as minecraft:the_nether. */
@@ -1292,7 +1304,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                         WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
                         WaypointList before = Objects.requireNonNull(result.beforeSnapshot());
                         WaypointList after = Objects.requireNonNull(result.afterSnapshot());
-                        saveChanges(source, fileManager);
+                        saveChanges(source, fileManager, "list_edit", "dimension", dimensionName, "list", before.name(), "new_list", after.name());
                         this.navigationService.refreshListIdentity(
                                 dimensionName,
                                 before.name(),
@@ -1354,7 +1366,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                         WaypointList list = Objects.requireNonNull(result.listSnapshot());
                         SimpleWaypoint before = Objects.requireNonNull(result.beforeSnapshot());
                         SimpleWaypoint after = Objects.requireNonNull(result.afterSnapshot());
-                        saveChanges(source, fileManager);
+                        saveChanges(source, fileManager, "edit", "dimension", dimensionName, "list", list.name(), "waypoint", before.name(), "new_waypoint", after.name());
                         this.navigationService.refreshTarget(
                                 new NavigationTarget(dimensionName, list, before),
                                 new NavigationTarget(dimensionName, list, after)
@@ -1439,7 +1451,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                     WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
                                     WaypointList list = Objects.requireNonNull(result.waypointList());
                                     SimpleWaypoint waypoint = Objects.requireNonNull(result.waypointSnapshot());
-                                    saveChanges(source, fileManager);
+                                    saveChanges(source, fileManager, "restore", "dimension", entry.dimensionName(), "list", list.name(), "waypoint", waypoint.name());
                                     Component actor = this.sender.getSenderName(source);
                                     this.broadcast(source, new WaypointModificationMessage(
                                             entry.dimensionName(),
@@ -1490,7 +1502,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                         this.broadcast(source, new WaypointModificationMessage(dimensionName, listName, listName, null, null, ADD_LIST, SERVER_N),
                                 dims -> Broadcasts.createdList(dims, actor, dimensionName, created));
                         this.sender.sendMessage(source, Results.createdList(dimensions(source), dimensionName, created));
-                        saveChanges(source, result.fileManager());
+                        saveChanges(source, result.fileManager(), "list_add", "dimension", dimensionName, "list", listName);
                     }
                     case EXISTS -> this.sender.sendError(source,
                             Errors.listExists(dimensions(source), dimensionName, result.waypointList()));
@@ -1518,7 +1530,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         this.waypointServer.addWaypoint(dimensionName, listName, listName, newWaypoint, result -> {
             switch (result.status()) {
                 case ADDED -> {
-                    saveChanges(source, result.fileManager());
+                    saveChanges(source, result.fileManager(), "add", "dimension", dimensionName, "list", listName, "waypoint", name);
                     WaypointList list = result.waypointList();
                     SimpleWaypoint added = result.waypointSnapshot();
                     Component actor = this.sender.getSenderName(source);
@@ -1612,7 +1624,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     this.broadcast(source, new WaypointModificationMessage(dimensionName, listName, waypointList.displayName(), null, null, REMOVE_LIST, waypointList.getSyncNum() + 1),
                             dims -> Broadcasts.removedList(dims, actor, dimensionName, waypointList));
                     this.sender.sendMessage(source, Results.removedList(dimensions(source), dimensionName, waypointList));
-                    saveChanges(source, fileManager);
+                    saveChanges(source, fileManager, "list_remove", "dimension", dimensionName, "list", listName);
                 }
                 case DIMENSION_NOT_FOUND -> this.sender.sendError(source, Errors.noLists(dimensions(source), dimensionName));
                 case LIST_NOT_FOUND -> this.sender.sendError(source, Errors.noList(dimensions(source), dimensionName, listName));
@@ -1633,7 +1645,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 case REMOVED -> {
                     WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
                     SimpleWaypoint waypoint = Objects.requireNonNull(result.waypointSnapshot());
-                    saveChanges(source, fileManager);
+                    saveChanges(source, fileManager, "remove", "dimension", dimensionName, "list", listName, "waypoint", name);
                     WaypointModificationMessage buffer = new WaypointModificationMessage(
                             dimensionName,
                             listName,
@@ -1665,7 +1677,17 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private void executeTp(S source, D dimensionArgument, String listName, String name) {
         runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) ->
                 runIfPlayerExists(source, player -> {
-                    teleportPlayer(source, player, dimensionArgument, waypoint.pos(), waypoint.yaw());
+                    PlayerActionLog.Actor actor = this.sender.playerActor(player);
+                    try {
+                        teleportPlayer(source, player, dimensionArgument, waypoint.pos(), waypoint.yaw())
+                                .whenComplete((success, error) -> PlayerActionLog.log(actor, "tp",
+                                        error == null && Boolean.TRUE.equals(success) ? "success" : "failed",
+                                        "dimension", fileManager.getDimensionName(), "list", listName, "waypoint", name));
+                    } catch (RuntimeException exception) {
+                        PlayerActionLog.log(actor, "tp", "failed", "dimension", fileManager.getDimensionName(),
+                                "list", listName, "waypoint", name);
+                        throw exception;
+                    }
                     this.sender.sendPlayerMessage(player, Results.teleported(
                             DimensionStyle.local(recipientViewer(player), getDimensionTypes(source)),
                             fileManager.getDimensionName(), waypointList, waypoint));
@@ -1766,6 +1788,10 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         NavigationSession previous = this.navigationService.status(player).session();
         NavigationResult result = this.navigationService.disableAll(player);
         if (result.code() == NavigationResult.Code.NAVIGATION_DISABLED) {
+            PlayerActionLog.log(actor(source), "navigation_stop", "success",
+                    "dimension", previous == null ? null : previous.target().dimensionName(),
+                    "list", previous == null ? null : previous.target().listName(),
+                    "waypoint", previous == null ? null : previous.target().waypointName());
             this.sender.sendMessage(source, NavigationScreens.stopped(dimensions(source),
                     previous == null ? null : place(previous.target())));
         } else {
@@ -1884,6 +1910,14 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     /** The navigation panel with what changed on top, or the error a failed result calls for (spec 10). */
     private void sendNavigationResult(S source, NavigationResult result) {
         NavigationSession session = result.session();
+        switch (result.code()) {
+            case NAVIGATION_STARTED, TARGET_CHANGED, SELECTION_REPLACED, METHOD_ENABLED, METHOD_DISABLED, NAVIGATION_DISABLED ->
+                    PlayerActionLog.log(actor(source), "navigation", result.code().name().toLowerCase(Locale.ROOT),
+                            "dimension", session == null ? null : session.target().dimensionName(),
+                            "list", session == null ? null : session.target().listName(),
+                            "waypoint", session == null ? null : session.target().waypointName(), "method", result.method());
+            default -> { }
+        }
         if (result.code() == NavigationResult.Code.NO_ACTIVE_SESSION) {
             this.sender.sendError(source, NavigationScreens.notNavigating(viewer(source)));
             return;
@@ -1960,16 +1994,20 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     /** ✔ Sent 12 waypoints to your map mod, once the client has received every chunk. */
     private void sendDownload(S source, ChunkedMessage message, int waypoints) {
+        PlayerActionLog.Actor actor = actor(source);
         _959.server_waypoint.core.network.ChunkedMessageDelivery delivery =
                 this.sender.sendChunkedMessage(source, message);
         if (!delivery.queued()) {
+            PlayerActionLog.log(actor, "download", "rejected", "waypoints", waypoints);
             this.sender.sendError(source, Errors.of("wp.error.delivery"));
             return;
         }
         delivery.completion().whenComplete((result, exception) -> {
             if (exception == null && result != null && result.delivered()) {
+                PlayerActionLog.log(actor, "download", "success", "waypoints", waypoints);
                 this.sender.sendMessage(source, Results.sent(waypoints));
             } else {
+                PlayerActionLog.log(actor, "download", "failed", "waypoints", waypoints);
                 this.sender.sendError(source, Errors.of("wp.error.delivery"));
             }
         });
@@ -2453,17 +2491,28 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     }
 
     private void executeReload(S source) {
+        PlayerActionLog.Actor actor = actor(source);
         executeByServer(source, () -> {
             this.waypointServer.reload();
+            PlayerActionLog.log(actor, "reload", "completed");
             this.sender.sendMessage(source, Results.reloaded(getExternalLoadedLanguages()));
         });
     }
 
-    private void saveChanges(S source, WaypointFileManager fileManager) {
+    private PlayerActionLog.Actor actor(S source) {
+        P player = getPlayer(source);
+        return player == null ? new PlayerActionLog.Actor(null, this.sender.getSenderName(source) instanceof net.kyori.adventure.text.TextComponent text ? text.content() : "server")
+                : this.sender.playerActor(player);
+    }
+
+    private void saveChanges(S source, WaypointFileManager fileManager, String action, Object... fields) {
+        PlayerActionLog.Actor actor = actor(source);
         executeByServer(source, () -> {
             try {
                 this.waypointServer.saveWaypointFile(fileManager);
+                PlayerActionLog.log(actor, action, "success", fields);
             } catch (IOException e) {
+                PlayerActionLog.log(actor, action, "save_failed", fields);
                 this.sender.sendError(source, Errors.of("wp.error.save", text(fileManager.getDimensionFile().toString())));
                 throw new RuntimeException(e);
             }

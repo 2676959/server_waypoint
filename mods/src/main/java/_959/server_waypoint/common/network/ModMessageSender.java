@@ -2,6 +2,7 @@ package _959.server_waypoint.common.network;
 
 //? if <= 1.20.1
 /*import _959.server_waypoint.access.PlayerLocaleAccessor;*/
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.ChunkedMessage;
 import _959.server_waypoint.core.network.ChunkedMessageDelivery;
@@ -190,6 +191,11 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
         return WaypointServerMod.MINECRAFT_SERVER == null
                 ? java.util.List.of(player)
                 : WaypointServerMod.MINECRAFT_SERVER.getPlayerList().getPlayers();
+    }
+
+    @Override
+    public PlayerActionLog.Actor playerActor(ServerPlayer player) {
+        return new PlayerActionLog.Actor(player.getUUID(), player.getName().getString());
     }
 
     @Override

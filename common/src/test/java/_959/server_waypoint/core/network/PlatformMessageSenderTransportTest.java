@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.core.network.buffer.MessageChunkBuffer;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
@@ -200,6 +201,11 @@ class PlatformMessageSenderTransportTest {
         @Override
         public Iterable<? extends String> getBroadcastPlayers(String source) {
             return List.of(source);
+        }
+
+        @Override
+        public PlayerActionLog.Actor playerActor(String player) {
+            return new PlayerActionLog.Actor(java.util.UUID.nameUUIDFromBytes(player.getBytes(java.nio.charset.StandardCharsets.UTF_8)), player);
         }
 
         @Override

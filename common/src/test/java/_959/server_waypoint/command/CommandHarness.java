@@ -1,5 +1,6 @@
 package _959.server_waypoint.command;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.core.WaypointServerCore;
@@ -86,11 +87,20 @@ final class CommandHarness {
     final Sender sender = new Sender();
     final Map<String, String> dimensionTypes = new LinkedHashMap<>();
     final List<Teleport> teleports = new ArrayList<>();
+    CompletableFuture<Boolean> teleportCompletion = CompletableFuture.completedFuture(true);
+    Consumer<Runnable> serverExecutor = Runnable::run;
+    boolean failSave;
     final TestCommand command;
     final CommandDispatcher<Source> dispatcher = new CommandDispatcher<>();
 
     CommandHarness(Path directory) {
         this.server = new WaypointServerCore(directory) {
+            @Override
+            public void saveWaypointFile(_959.server_waypoint.core.WaypointFileManager manager) throws java.io.IOException {
+                if (failSave) throw new java.io.IOException("simulated disk failure");
+                super.saveWaypointFile(manager);
+            }
+
             @Override
             protected boolean isRegisteredIconItem(NamespacedId icon) {
                 return icon.toString().equals("minecraft:diamond");
@@ -192,6 +202,11 @@ final class CommandHarness {
         }
 
         @Override
+        public PlayerActionLog.Actor playerActor(Object player) {
+            return new PlayerActionLog.Actor(new UUID(0L, 0L), ((Source) player).name());
+        }
+
+        @Override
         public Component getSenderName(Source source) {
             return Component.text(source.name());
         }
@@ -209,7 +224,7 @@ final class CommandHarness {
             super(harness.server, harness.sender, permissions(), navigation(),
                     new UploadCoordinator<>(harness.server, (player, message) -> {
                     }, packet -> {
-                    }, player -> true, player -> true, navigation(), player -> new UUID(0L, 0L)),
+                    }, player -> true, player -> true, navigation(), harness.sender::playerActor),
                     () -> word(), CommandHarness::position, () -> reader -> NamespacedId.parse(readWord(reader)));
             this.harness = harness;
         }
@@ -254,7 +269,7 @@ final class CommandHarness {
 
         @Override
         protected void executeByServer(Source source, Runnable task) {
-            task.run();
+            this.harness.serverExecutor.accept(task);
         }
 
         /** Like Paper's help-map source, a source without a dimension has no level to read. */
@@ -289,8 +304,9 @@ final class CommandHarness {
         }
 
         @Override
-        protected void teleportPlayer(Source source, Object player, String dimension, WaypointPos pos, int yaw) {
+        protected java.util.concurrent.CompletionStage<Boolean> teleportPlayer(Source source, Object player, String dimension, WaypointPos pos, int yaw) {
             this.harness.teleports.add(new Teleport((Source) player, dimension, pos, yaw));
+            return this.harness.teleportCompletion;
         }
 
         @Override

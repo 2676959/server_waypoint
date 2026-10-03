@@ -1,5 +1,6 @@
 package _959.server_waypoint.network;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.PaperScheduler;
 import _959.server_waypoint.core.network.ChunkedMessage;
 import _959.server_waypoint.core.network.ChunkedMessageDelivery;
@@ -168,6 +169,11 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
     @Override
     public Collection<? extends Player> getBroadcastPlayersFromPlayer(Player player) {
         return player.getServer().getOnlinePlayers();
+    }
+
+    @Override
+    public PlayerActionLog.Actor playerActor(Player player) {
+        return new PlayerActionLog.Actor(player.getUniqueId(), player.getName());
     }
 
     @Override

@@ -1,5 +1,6 @@
 package _959.server_waypoint.handoff;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.crossserver.handoff.DestinationPlatform;
 import _959.server_waypoint.crossserver.handoff.DestinationResolver;
 import org.bukkit.Bukkit;
@@ -41,6 +42,16 @@ public final class PaperDestinationPlatform implements DestinationPlatform<Playe
     }
     @Override public boolean canTeleport(Player player) { return permission.test(player); }
     @Override public CompletionStage<Boolean> teleport(Player player, DestinationResolver.Target target) {
+        PlayerActionLog.Actor actor = new PlayerActionLog.Actor(player.getUniqueId(), player.getName());
+        var key = target.key();
+        return teleportToTarget(player, target).whenComplete((success, error) ->
+                PlayerActionLog.log(actor, "remote_tp_arrival",
+                        error == null && Boolean.TRUE.equals(success) ? "success" : "failed",
+                        "server", key.serverId().value(), "dimension", key.dimensionName(),
+                        "list", key.listName(), "waypoint", key.waypointName()));
+    }
+
+    private CompletionStage<Boolean> teleportToTarget(Player player, DestinationResolver.Target target) {
         if (!ownsThread(player) || !isCurrentPlayer(player)) return CompletableFuture.completedFuture(false);
         NamespacedKey key = NamespacedKey.fromString(target.key().dimensionName());
         var world = key == null ? null : plugin.getServer().getWorld(key);

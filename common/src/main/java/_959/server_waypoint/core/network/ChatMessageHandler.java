@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.WaypointFileManager;
@@ -36,7 +37,6 @@ public abstract class ChatMessageHandler<S, K, P> {
                 this.permissionManager.checkPlayerPermission(player, this.permissionManager.keys.add(), config.CommandPermission().add())) {
             String[] args = message.split(XAEROS_SEPARATOR);
             if (isValidXaerosSharingMessage(args)) {
-                LOGGER.info("Found chat shared waypoint");
                 Pair<SimpleWaypoint, String> waypointWithDim;
                 try {
                     waypointWithDim = toSimpleWaypoint(args);
@@ -46,6 +46,8 @@ public abstract class ChatMessageHandler<S, K, P> {
                 }
                 SimpleWaypoint waypoint = waypointWithDim.left();
                 String dimensionName = waypointWithDim.right();
+                PlayerActionLog.log(this.sender.playerActor(player), "share", "received",
+                        "dimension", dimensionName, "waypoint", waypoint.name());
                 WaypointServerCore waypointServer = WaypointServerCore.INSTANCE;
                 WaypointFileManager waypointFileManager = waypointServer.getWaypointFileManager(dimensionName);
                 DimensionStyle dims = DimensionStyle.local(this.viewer(player), Map.of());

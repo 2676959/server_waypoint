@@ -1,5 +1,6 @@
 package _959.server_waypoint.server.command;
 
+import java.util.concurrent.CompletionStage;
 import _959.server_waypoint.ServerWaypointPaperMC;
 import _959.server_waypoint.PaperScheduler;
 import _959.server_waypoint.command.CoreWaypointCommand;
@@ -161,9 +162,9 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     }
 
     @Override
-    protected void teleportPlayer(CommandSourceStack source, Player player, World dimensionArgument, WaypointPos pos, int yaw) {
+    protected CompletionStage<Boolean> teleportPlayer(CommandSourceStack source, Player player, World dimensionArgument, WaypointPos pos, int yaw) {
         Location location = new Location(dimensionArgument, pos.X(), pos.y(), pos.Z(), yaw, 0);
-        player.teleportAsync(location, PlayerTeleportEvent.TeleportCause.COMMAND);
+        return player.teleportAsync(location, PlayerTeleportEvent.TeleportCause.COMMAND);
     }
 
     @Override

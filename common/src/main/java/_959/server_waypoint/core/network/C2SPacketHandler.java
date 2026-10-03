@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.ModInfo;
 import _959.server_waypoint.ProtocolVersion;
 import _959.server_waypoint.core.WaypointFileManager;
@@ -213,11 +214,17 @@ public class C2SPacketHandler<S, K, P> {
                     result -> {
                         if (result.status() == EditResultStatus.SUCCESS) {
                             WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
+                            String outcome = "success";
                             try {
                                 this.waypointServer.saveWaypointFile(fileManager);
                             } catch (IOException exception) {
+                                outcome = "save_failed";
                                 LOGGER.error("Failed to persist waypoint edit", exception);
                             }
+                            PlayerActionLog.log(this.sender.playerActor(player), "edit", outcome,
+                                    "via", "gui", "dimension", request.dimensionName(),
+                                    "list", request.listIdentifier(), "waypoint", request.waypointIdentifier(),
+                                    "new_waypoint", Objects.requireNonNull(result.afterSnapshot()).name());
                             WaypointList list = Objects.requireNonNull(result.listSnapshot());
                             this.navigationService.refreshTarget(
                                     new NavigationTarget(

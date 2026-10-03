@@ -121,7 +121,7 @@ public class ServerWaypointPaperMC extends JavaPlugin implements PluginMessageLi
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete()),
                 this.navigationService,
-                Player::getUniqueId
+                sender::playerActor
         );
 
         waypointCommand = new WaypointCommand(

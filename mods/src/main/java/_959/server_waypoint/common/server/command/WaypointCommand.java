@@ -48,7 +48,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 
-//? if >= 1.21.2
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -221,15 +220,17 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     }
 
     @Override
-    protected void teleportPlayer(CommandSourceStack source, ServerPlayer player,
+    protected CompletionStage<Boolean> teleportPlayer(CommandSourceStack source, ServerPlayer player,
     //$ resource_location_type_swap
     Identifier
     dimensionArgument, WaypointPos pos, int yaw) {
         ServerLevel world = getWorldFromId(source, dimensionArgument);
         //? if >= 1.21.2 {
-        player.teleportTo(world, pos.X(), pos.y(), pos.Z(), Collections.emptySet(), yaw, 0, false);
+        return CompletableFuture.completedFuture(
+                player.teleportTo(world, pos.X(), pos.y(), pos.Z(), Collections.emptySet(), yaw, 0, false));
         //?} else {
-        /*player.teleportTo(world, pos.X(), pos.y(), pos.Z(), yaw, 0);
+        /*return CompletableFuture.completedFuture(
+                player.teleportTo(world, pos.X(), pos.y(), pos.Z(), Collections.emptySet(), yaw, 0));
         *///?}
     }
 

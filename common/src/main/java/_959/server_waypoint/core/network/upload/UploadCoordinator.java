@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network.upload;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.WaypointServerCore;
@@ -57,7 +58,7 @@ public final class UploadCoordinator<P> {
     private final Predicate<P> permissionChecker;
     private final Predicate<P> deletePermissionChecker;
     private final NavigationService<P> navigationService;
-    private final Function<P, UUID> playerUuidExtractor;
+    private final Function<P, PlayerActionLog.Actor> playerActorExtractor;
     private final Clock clock;
     private final Duration requestTimeout;
     private final Duration reacquisitionCooldown;
@@ -73,7 +74,7 @@ public final class UploadCoordinator<P> {
             Predicate<P> permissionChecker,
             Predicate<P> deletePermissionChecker,
             NavigationService<P> navigationService,
-            Function<P, UUID> playerUuidExtractor
+            Function<P, PlayerActionLog.Actor> playerActorExtractor
     ) {
         this(
                 waypointServer,
@@ -82,7 +83,7 @@ public final class UploadCoordinator<P> {
                 permissionChecker,
                 deletePermissionChecker,
                 navigationService,
-                playerUuidExtractor,
+                playerActorExtractor,
                 Clock.systemUTC(),
                 REQUEST_TIMEOUT,
                 REACQUISITION_COOLDOWN
@@ -96,7 +97,7 @@ public final class UploadCoordinator<P> {
             Predicate<P> permissionChecker,
             Predicate<P> deletePermissionChecker,
             NavigationService<P> navigationService,
-            Function<P, UUID> playerUuidExtractor,
+            Function<P, PlayerActionLog.Actor> playerActorExtractor,
             Clock clock,
             Duration requestTimeout,
             Duration reacquisitionCooldown
@@ -107,7 +108,7 @@ public final class UploadCoordinator<P> {
         this.permissionChecker = Objects.requireNonNull(permissionChecker, "permissionChecker");
         this.deletePermissionChecker = Objects.requireNonNull(deletePermissionChecker, "deletePermissionChecker");
         this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
-        this.playerUuidExtractor = Objects.requireNonNull(playerUuidExtractor, "playerUuidExtractor");
+        this.playerActorExtractor = Objects.requireNonNull(playerActorExtractor, "playerActorExtractor");
         this.clock = Objects.requireNonNull(clock, "clock");
         this.requestTimeout = requirePositive(requestTimeout, "requestTimeout");
         this.reacquisitionCooldown = requirePositive(reacquisitionCooldown, "reacquisitionCooldown");
@@ -119,17 +120,15 @@ public final class UploadCoordinator<P> {
         if (deleteMissing && conflictPolicy != UploadConflictPolicy.LOCAL) {
             throw new IllegalArgumentException("Only force-local uploads can delete missing waypoints");
         }
-        UUID playerUuid = Objects.requireNonNull(
-                this.playerUuidExtractor.apply(player),
-                "playerUuidExtractor result"
-        );
+        PlayerActionLog.Actor actor = this.playerActorExtractor.apply(player);
+        UUID playerUuid = Objects.requireNonNull(actor.playerId(), "player UUID");
         Instant now = this.clock.instant();
         UploadRequestBuffer request = new UploadRequestBuffer(
                 UUID.randomUUID(), dimensionNames, listName, waypointName, target
         );
         PendingUpload<P> pending = new PendingUpload<>(
                 player,
-                playerUuid,
+                actor,
                 request,
                 scope,
                 conflictPolicy,
@@ -164,13 +163,14 @@ public final class UploadCoordinator<P> {
             this.finishPending(pending, false);
             return BeginResult.busy();
         }
+        audit(pending, "requested");
         return BeginResult.started(request);
     }
 
     public void onDisconnect(P player) {
         PendingUpload<P> pending = this.activeUpload.get();
         if (pending != null && this.matchesPlayer(pending, player)) {
-            this.finishPending(pending, false);
+            if (this.finishPending(pending, false)) audit(pending, "disconnected");
         }
     }
 
@@ -178,10 +178,12 @@ public final class UploadCoordinator<P> {
         Objects.requireNonNull(requestId, "requestId");
         Objects.requireNonNull(reason, "reason");
         PendingUpload<P> pending = this.activeUpload.get();
-        return pending != null
+        boolean cancelled = pending != null
                 && this.matchesPlayer(pending, player)
                 && pending.request.requestId().equals(requestId)
                 && this.finishPending(pending, false);
+        if (cancelled) audit(pending, "cancelled", "reason", reason);
+        return cancelled;
     }
 
     public Optional<UUID> tick() {
@@ -192,6 +194,7 @@ public final class UploadCoordinator<P> {
                 && this.finishPending(pending, false)
                 ? pending.request.requestId()
                 : null;
+        if (expiredRequestId != null) audit(pending, "expired");
         synchronized (this.admissionMonitor) {
             this.removeExpiredCooldowns(now);
         }
@@ -247,6 +250,7 @@ public final class UploadCoordinator<P> {
         }
         if (pending.expired(this.clock.instant())) {
             this.finishPending(pending, false);
+            audit(pending, "expired");
             this.playerMessageSender.send(player, Errors.of("wp.error.upload.expired"));
             return;
         }
@@ -256,14 +260,17 @@ public final class UploadCoordinator<P> {
         }
         try {
             if (!this.permissionChecker.test(player)) {
+                audit(pending, "permission_denied");
                 this.playerMessageSender.send(player, Errors.of("wp.error.upload.permission"));
                 return;
             }
             if (pending.deleteMissing && !this.deletePermissionChecker.test(player)) {
+                audit(pending, "permission_denied");
                 this.playerMessageSender.send(player, Errors.of("wp.error.upload.delete_permission"));
                 return;
             }
             if (upload.status() != UploadStatus.SUCCESS) {
+                audit(pending, "export_failed", "status", upload.status());
                 this.playerMessageSender.send(player, switch (upload.status()) {
                     case XAERO_NOT_INSTALLED -> Errors.of("wp.error.upload.xaero.missing");
                     case XAERO_NOT_READY -> Errors.of("wp.error.upload.xaero.not_ready");
@@ -278,6 +285,7 @@ public final class UploadCoordinator<P> {
             try {
                 appendUpload(pending, waypointData.dimensions());
             } catch (IllegalArgumentException exception) {
+                audit(pending, "invalid_data");
                 this.playerMessageSender.send(player, Errors.of("wp.error.upload.request"));
                 return;
             }
@@ -297,6 +305,11 @@ public final class UploadCoordinator<P> {
                 WaypointServerCore.LOGGER.warn("Failed to apply waypoint upload", exception);
                 failure = Errors.of("wp.error.upload.apply");
             }
+            audit(pending, failure != null ? (summary.dimensionUpdates.isEmpty() ? "failed" : "partial")
+                            : summary.saveFailed ? "save_failed" : summary.staleDimensions > 0 ? "partial" : "success",
+                    "added", summary.added, "replaced", summary.replaced, "deleted", summary.deleted,
+                    "unchanged", summary.unchanged, "conflicts", summary.conflicts, "skipped", summary.skipped,
+                    "stale_dimensions", summary.staleDimensions, "save_failed", summary.saveFailed);
             // Dimensions commit independently. Publish the validated committed results even
             // if a later dimension failed, without consuming one transfer slot per dimension.
             if (!summary.dimensionUpdates.isEmpty()) {
@@ -324,6 +337,16 @@ public final class UploadCoordinator<P> {
         }
     }
 
+    private static void audit(PendingUpload<?> pending, String outcome, Object... details) {
+        Object[] fields = new Object[16 + details.length];
+        Object[] context = {"request", pending.request.requestId(), "dimensions", pending.request.dimensionNames(), "source", pending.request.target(),
+                "scope", pending.scope, "policy", pending.conflictPolicy, "delete_missing", pending.deleteMissing,
+                "list", pending.request.listName(), "waypoint", pending.request.waypointName()};
+        System.arraycopy(context, 0, fields, 0, context.length);
+        System.arraycopy(details, 0, fields, context.length, details.length);
+        PlayerActionLog.log(pending.actor, "upload", outcome, fields);
+    }
+
     private boolean finishPending(PendingUpload<P> pending, boolean applyingMayFinish) {
         synchronized (this.admissionMonitor) {
             if (this.activeUpload.get() != pending) {
@@ -345,7 +368,7 @@ public final class UploadCoordinator<P> {
     }
 
     private boolean matchesPlayer(PendingUpload<P> pending, P player) {
-        return pending.playerUuid.equals(this.playerUuidExtractor.apply(player));
+        return pending.playerUuid.equals(this.playerActorExtractor.apply(player).playerId());
     }
 
     private void removeExpiredCooldowns(Instant now) {
@@ -757,6 +780,7 @@ public final class UploadCoordinator<P> {
 
     private static final class PendingUpload<P> {
         private final UUID playerUuid;
+        private final PlayerActionLog.Actor actor;
         private final UploadRequestBuffer request;
         private final UploadScope scope;
         private final UploadConflictPolicy conflictPolicy;
@@ -771,7 +795,7 @@ public final class UploadCoordinator<P> {
 
         private PendingUpload(
                 P player,
-                UUID playerUuid,
+                PlayerActionLog.Actor actor,
                 UploadRequestBuffer request,
                 UploadScope scope,
                 UploadConflictPolicy conflictPolicy,
@@ -779,7 +803,8 @@ public final class UploadCoordinator<P> {
                 Instant expiresAt
         ) {
             Objects.requireNonNull(player, "player");
-            this.playerUuid = Objects.requireNonNull(playerUuid, "playerUuid");
+            this.actor = Objects.requireNonNull(actor, "actor");
+            this.playerUuid = Objects.requireNonNull(actor.playerId(), "playerUuid");
             this.request = request;
             this.scope = scope;
             this.conflictPolicy = conflictPolicy;

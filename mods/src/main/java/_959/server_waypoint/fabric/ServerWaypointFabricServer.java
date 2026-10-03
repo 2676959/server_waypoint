@@ -57,7 +57,7 @@ public class ServerWaypointFabricServer implements ModInitializer, IPlatformConf
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete()),
                 waypointServer.navigation().service(),
-                ServerPlayer::getUUID
+                messageSender::playerActor
         );
         C2SPacketHandler<CommandSourceStack, String, ServerPlayer> c2sPacketHandler = new C2SPacketHandler<>(
                 messageSender,

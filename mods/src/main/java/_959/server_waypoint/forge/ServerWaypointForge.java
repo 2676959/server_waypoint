@@ -97,7 +97,7 @@ public class ServerWaypointForge implements IPlatformConfigPath {
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.upload(), CONFIG.CommandPermission().upload()),
                 player -> permissionManager.checkPlayerPermission(player, permissionManager.keys.uploadDelete(), CONFIG.CommandPermission().uploadDelete()),
                 this.waypointServer.navigation().service(),
-                ServerPlayer::getUUID
+                messageSender::playerActor
         );
         this.c2sPacketHandler = new C2SPacketHandler<>(
                 messageSender,

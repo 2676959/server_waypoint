@@ -56,10 +56,15 @@ class PlatformArrivalSchedulingTest {
                     public String identifier() { return "minecraft:overworld"; }
                 }
                 """);
+        sources.put("net.minecraft.network.chat.Component", """
+                package net.minecraft.network.chat;
+                public class Component { public String getString() { return "Alex"; } }
+                """);
         sources.put("net.minecraft.server.level.ServerPlayer", """
                 package net.minecraft.server.level;
                 public class ServerPlayer {
                     public java.util.UUID getUUID() { return new java.util.UUID(19, 1); }
+                    public net.minecraft.network.chat.Component getName() { return new net.minecraft.network.chat.Component(); }
                     public boolean hasDisconnected() { return false; }
                     public boolean teleportTo(ServerLevel l, double x, double y, double z,
                             java.util.Set<?> flags, float yaw, float pitch, boolean camera) { return true; }
@@ -94,6 +99,7 @@ class PlatformArrivalSchedulingTest {
                 package org.bukkit.entity;
                 public class Player {
                     public java.util.UUID getUniqueId() { return new java.util.UUID(19, 1); }
+                    public String getName() { return "Alex"; }
                     public boolean isOnline() { return fixture.State.current == this; }
                     public Player getScheduler() { return this; }
                     public boolean execute(org.bukkit.plugin.java.JavaPlugin plugin, Runnable task, Runnable retired, long delay) {

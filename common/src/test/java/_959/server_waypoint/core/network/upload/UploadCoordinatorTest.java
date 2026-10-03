@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network.upload;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.WaypointServerCore;
@@ -51,6 +52,26 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UploadCoordinatorTest {
+    @Test
+    void uploadAuditSummarizesChangesWithTheRequestAndPlayerIdentity() {
+        UploadCoordinator<String> coordinator = coordinator(server());
+        org.slf4j.impl.StaticLoggerBinder.clear();
+        var request = coordinator.begin("player", UploadTarget.XAERO, UploadScope.WORLD,
+                UploadConflictPolicy.LOCAL, false, List.of("minecraft:overworld"), null, null).request();
+        coordinator.onUpload("player", WaypointData.upload(request.requestId(), UploadStatus.SUCCESS,
+                List.of(new DimensionWaypointData("minecraft:overworld",
+                        List.of(new WaypointList("list", 1, List.of(waypoint("home", 0), waypoint("mine", 1))))))));
+        var events = org.slf4j.impl.StaticLoggerBinder.events().stream()
+                .filter(e -> e.startsWith("server_waypoint.actions ")).toList();
+        assertEquals(2, events.size(), "one request and one summary, not an event per uploaded waypoint");
+        assertTrue(events.get(0).contains("outcome=requested"));
+        assertTrue(events.get(1).contains("outcome=success"));
+        assertTrue(events.get(1).contains("added=2"));
+        assertTrue(events.get(1).contains("player_id=" + UUID.nameUUIDFromBytes("player".getBytes(StandardCharsets.UTF_8))));
+        assertTrue(events.get(1).contains("request=" + request.requestId()));
+        org.slf4j.impl.StaticLoggerBinder.clear();
+    }
+
     @Test
     void mergePreservesExistingIconUnlessNativeUploadSelectsOne() {
         SimpleWaypoint server = new SimpleWaypoint("home", "home", "H", new WaypointPos(1, 2, 3),
@@ -600,7 +621,7 @@ class UploadCoordinatorTest {
                     ChunkedMessageManager.validateEncodable(update);
                     broadcasts.add(update);
                 },
-                player -> true, player -> true, navigationService(), player -> playerUuid()
+                player -> true, player -> true, navigationService(), player -> new PlayerActionLog.Actor(playerUuid(), player)
         );
         UploadRequestBuffer request = coordinator.begin(
                 "player", UploadTarget.XAERO, UploadScope.WORLD, UploadConflictPolicy.LOCAL,
@@ -640,6 +661,7 @@ class UploadCoordinatorTest {
     }
 
     private void assertLaterDimensionFailurePublishesCommittedResult(RuntimeException failure) {
+        org.slf4j.impl.StaticLoggerBinder.clear();
         WaypointServerCore server = new WaypointServerCore(this.tempDir) {
             @Override
             public <T> WaypointFilesManagerCore.RevisionedDimensionMutationResult<T> applyDimensionMutationIfRevision(
@@ -670,7 +692,7 @@ class UploadCoordinatorTest {
                 player -> true,
                 player -> true,
                 navigation,
-                player -> playerUuid()
+                player -> new PlayerActionLog.Actor(playerUuid(), player)
         );
         UploadRequestBuffer request = coordinator.begin(
                 "player", UploadTarget.XAERO, UploadScope.WORLD, UploadConflictPolicy.LOCAL, false,
@@ -682,6 +704,11 @@ class UploadCoordinatorTest {
                         dimension, List.of(new WaypointList("list", WaypointList.SERVER_N, List.of(waypoint("target", 25))))
                 )).toList()
         ));
+
+        var audit = org.slf4j.impl.StaticLoggerBinder.events().stream()
+                .filter(e -> e.contains("action=upload") && e.contains("outcome=partial")).toList();
+        assertEquals(1, audit.size());
+        assertTrue(audit.get(0).contains("replaced=1"));
 
         assertEquals(25, server.getWaypointFileManager("minecraft:overworld")
                 .getWaypointListByName("list").getWaypointByName("target").x());
@@ -767,7 +794,7 @@ class UploadCoordinatorTest {
                 permissionChecker,
                 player -> true,
                 navigationService,
-                player -> UUID.nameUUIDFromBytes(player.getBytes(StandardCharsets.UTF_8)),
+                player -> new PlayerActionLog.Actor(UUID.nameUUIDFromBytes(player.getBytes(StandardCharsets.UTF_8)), player),
                 clock,
                 requestTimeout,
                 cooldown

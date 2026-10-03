@@ -1,5 +1,6 @@
 package _959.server_waypoint.command;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.config.Config;
@@ -720,7 +721,7 @@ class CoreWaypointCommandListTest {
                             player -> true,
                             player -> true,
                             navigationService(),
-                            player -> new UUID(0L, 0L)
+                            player -> new PlayerActionLog.Actor(new UUID(0L, 0L), "player")
                     ),
                     StringArgumentType::string,
                     StringArgumentType::string,
@@ -793,13 +794,14 @@ class CoreWaypointCommandListTest {
         }
 
         @Override
-        protected void teleportPlayer(
+        protected java.util.concurrent.CompletionStage<Boolean> teleportPlayer(
                 TestSource source,
                 Object player,
                 String dimensionArgument,
                 WaypointPos pos,
                 int yaw
         ) {
+            return java.util.concurrent.CompletableFuture.completedFuture(true);
         }
 
         @Override
@@ -950,6 +952,11 @@ class CoreWaypointCommandListTest {
         @Override
         public Iterable<?> getBroadcastPlayers(TestSource source) {
             return List.of();
+        }
+
+        @Override
+        public PlayerActionLog.Actor playerActor(Object player) {
+            return new PlayerActionLog.Actor(new UUID(0L, 0L), "player");
         }
 
         @Override

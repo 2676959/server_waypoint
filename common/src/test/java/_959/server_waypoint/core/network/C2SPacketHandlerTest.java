@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.command.permission.PermissionKeys;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.core.WaypointServerCore;
@@ -53,6 +54,37 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class C2SPacketHandlerTest {
     @TempDir
     private Path tempDir;
+
+    @Test
+    void guiEditLogsActorAndPersistenceOutcome() {
+        for (boolean failSave : List.of(false, true)) {
+            TestSender sender = new TestSender();
+            WaypointServerCore server = new WaypointServerCore(this.tempDir) {
+                @Override
+                public void saveWaypointFile(_959.server_waypoint.core.WaypointFileManager manager) throws java.io.IOException {
+                    if (failSave) throw new java.io.IOException("simulated disk failure");
+                    super.saveWaypointFile(manager);
+                }
+            };
+            server.putWaypointList("minecraft:overworld", new WaypointList("list", 1, List.of(
+                    new SimpleWaypoint("waypoint", "W", new WaypointPos(0, 64, 0), 0, 0, true))));
+            var handler = new C2SPacketHandler<>(sender, server, new TestPermissionManager(true),
+                    navigationService(), uploadCoordinator(server));
+            var patch = new WaypointPatch(PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged(),
+                    PatchField.unchanged(), PatchField.unchanged(), PatchField.set(90), PatchField.unchanged(),
+                    PatchField.unchanged(), PatchField.unchanged(), PatchField.unchanged());
+            org.slf4j.impl.StaticLoggerBinder.clear();
+            handler.onWaypointEditRequest("player", new WaypointEditRequestMessage(17L, "minecraft:overworld",
+                    "list", "waypoint", 1, patch));
+            var events = org.slf4j.impl.StaticLoggerBinder.events().stream()
+                    .filter(e -> e.startsWith("server_waypoint.actions ")).toList();
+            assertEquals(1, events.size());
+            assertTrue(events.get(0).contains("player_id=" + UUID.nameUUIDFromBytes("player".getBytes(java.nio.charset.StandardCharsets.UTF_8))));
+            assertTrue(events.get(0).contains("via=gui"));
+            assertTrue(events.get(0).contains("outcome=" + (failSave ? "save_failed" : "success")));
+        }
+        org.slf4j.impl.StaticLoggerBinder.clear();
+    }
 
     @Test
     void remoteSynchronizationRequiresCompatibleHandshakeAndCurrentPermission() {
@@ -560,7 +592,7 @@ class C2SPacketHandlerTest {
                 player -> true,
                 player -> true,
                 navigationService(),
-                player -> UUID.nameUUIDFromBytes(player.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                player -> new PlayerActionLog.Actor(UUID.nameUUIDFromBytes(player.getBytes(java.nio.charset.StandardCharsets.UTF_8)), player)
         );
     }
 
@@ -749,6 +781,11 @@ class C2SPacketHandlerTest {
         @Override
         public Iterable<? extends String> getBroadcastPlayers(String source) {
             return List.of(source);
+        }
+
+        @Override
+        public PlayerActionLog.Actor playerActor(String player) {
+            return new PlayerActionLog.Actor(UUID.nameUUIDFromBytes(player.getBytes(java.nio.charset.StandardCharsets.UTF_8)), player);
         }
 
         @Override

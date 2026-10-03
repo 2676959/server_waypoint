@@ -1,5 +1,6 @@
 package _959.server_waypoint.core.network;
 
+import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.network.buffer.MessageChunkBuffer;
 import _959.server_waypoint.core.network.codec.ChunkedMessageManager;
@@ -66,6 +67,7 @@ public interface PlatformMessageSender<S, P> {
         return List.of(player);
     }
     Component getSenderName(S source);
+    PlayerActionLog.Actor playerActor(P player);
 
     default ChunkedMessageSendResult sendPlayerChunkedMessage(P player, ChunkedMessage message) {
         return this.sendPlayerChunkedMessageTracked(player, message).admissionResult();
