@@ -495,7 +495,7 @@ class C2SPacketHandlerTest {
                 List.of("minecraft:overworld"),
                 null,
                 null
-        );
+        , new PlayerActionLog.Actor(null, "TestSender"));
         assertEquals(UploadCoordinator.BeginStatus.STARTED, result.status());
         return result.request();
     }
@@ -786,6 +786,11 @@ class C2SPacketHandlerTest {
         @Override
         public PlayerActionLog.Actor playerActor(String player) {
             return new PlayerActionLog.Actor(UUID.nameUUIDFromBytes(player.getBytes(java.nio.charset.StandardCharsets.UTF_8)), player);
+        }
+
+        @Override
+        public PlayerActionLog.Actor commandSenderActor(String source) {
+            return new PlayerActionLog.Actor(null, source);
         }
 
         @Override

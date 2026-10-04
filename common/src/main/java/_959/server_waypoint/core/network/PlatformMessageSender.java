@@ -68,6 +68,8 @@ public interface PlatformMessageSender<S, P> {
     }
     Component getSenderName(S source);
     PlayerActionLog.Actor playerActor(P player);
+    /** Identity of the original sender, independent of the stack's /execute as executor. */
+    PlayerActionLog.Actor commandSenderActor(S source);
 
     default ChunkedMessageSendResult sendPlayerChunkedMessage(P player, ChunkedMessage message) {
         return this.sendPlayerChunkedMessageTracked(player, message).admissionResult();

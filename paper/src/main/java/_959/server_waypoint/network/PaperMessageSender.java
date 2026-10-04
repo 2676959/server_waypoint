@@ -181,6 +181,13 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
     }
 
     @Override
+    public PlayerActionLog.Actor commandSenderActor(CommandSourceStack source) {
+        CommandSender sender = source.getSender();
+        return sender instanceof Player player ? this.playerActor(player)
+                : new PlayerActionLog.Actor(null, sender.getName());
+    }
+
+    @Override
     public Component getSenderName(CommandSourceStack source) {
         return source.getSender().name();
     }

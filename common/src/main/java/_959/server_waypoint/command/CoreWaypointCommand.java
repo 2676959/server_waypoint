@@ -223,7 +223,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 sender::sendError, () -> CONFIG.defaultPageLimit(),
                 remotePermissions::canList, remotePermissions::canRequestTeleport,
                 (source, selection, feedback) -> {
-                    PlayerActionLog.Actor actor = actor(source);
+                    PlayerActionLog.Context actor = actor(source);
                     var key = selection.key();
                     PlayerActionLog.log(actor, "remote_tp", "requested", "server", key.serverId().value(),
                             "dimension", key.dimensionName(), "list", key.listName(), "waypoint", key.waypointName());
@@ -1696,7 +1696,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private void executeTp(S source, D dimensionArgument, String listName, String name) {
         runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) ->
                 runIfPlayerExists(source, player -> {
-                    PlayerActionLog.Actor actor = this.sender.playerActor(player);
+                    PlayerActionLog.Context actor = actor(source);
                     try {
                         teleportPlayer(source, player, dimensionArgument, waypoint.pos(), waypoint.yaw())
                                 .whenComplete((success, error) -> PlayerActionLog.log(actor, "tp",
@@ -2013,7 +2013,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     /** ✔ Sent 12 waypoints to your map mod, once the client has received every chunk. */
     private void sendDownload(S source, ChunkedMessage message, int waypoints) {
-        PlayerActionLog.Actor actor = actor(source);
+        PlayerActionLog.Context actor = actor(source);
         _959.server_waypoint.core.network.ChunkedMessageDelivery delivery =
                 this.sender.sendChunkedMessage(source, message);
         if (!delivery.queued()) {
@@ -2110,7 +2110,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         }
 
         UploadCoordinator.BeginResult beginResult = this.uploadCoordinator.begin(
-                player, target, scope, conflictPolicy, deleteMissing, dimensions, listName, waypointName
+                player, target, scope, conflictPolicy, deleteMissing, dimensions, listName, waypointName,
+                this.sender.commandSenderActor(source)
         );
         if (beginResult.status() == UploadCoordinator.BeginStatus.BUSY) {
             this.sender.sendError(source, Errors.of("wp.error.upload.busy"));
@@ -2510,7 +2511,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     }
 
     private void executeReload(S source) {
-        PlayerActionLog.Actor actor = actor(source);
+        PlayerActionLog.Context actor = actor(source);
         executeByServer(source, () -> {
             this.waypointServer.reload();
             PlayerActionLog.log(actor, "reload", "completed");
@@ -2518,14 +2519,17 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         });
     }
 
-    private PlayerActionLog.Actor actor(S source) {
+    private PlayerActionLog.Context actor(S source) {
         P player = getPlayer(source);
-        return player == null ? new PlayerActionLog.Actor(null, this.sender.getSenderName(source) instanceof net.kyori.adventure.text.TextComponent text ? text.content() : "server")
+        PlayerActionLog.Actor executor = player == null
+                ? new PlayerActionLog.Actor(null, this.sender.getSenderName(source) instanceof net.kyori.adventure.text.TextComponent text
+                        ? text.content() : "server")
                 : this.sender.playerActor(player);
+        return new PlayerActionLog.Context(executor, this.sender.commandSenderActor(source));
     }
 
     private void saveChanges(S source, WaypointFileManager fileManager, String action, Object... fields) {
-        PlayerActionLog.Actor actor = actor(source);
+        PlayerActionLog.Context actor = actor(source);
         executeByServer(source, () -> {
             try {
                 this.waypointServer.saveWaypointFile(fileManager);

@@ -107,6 +107,37 @@ class PlayerActionLoggingTest {
         assertFalse(actions().get(0).contains("\u2028"));
     }
 
+    @Test
+    void executeAsKeepsTheOriginalPlayerSenderThroughTheDelayedSave() {
+        var executor = CommandHarness.player();
+        var commander = new CommandHarness.Source("Steve", executor.dimension(), executor.position(), executor.yaw(),
+                true, false, executor.permissions());
+        harness.sender.commandSenders.put(executor, commander);
+        var tasks = new java.util.ArrayList<Runnable>();
+        harness.serverExecutor = tasks::add;
+        harness.run(executor, "wp add minecraft:overworld Test");
+        harness.sender.commandSenders.put(executor, CommandHarness.console());
+        tasks.remove(0).run();
+        var event = actions().get(0);
+        assertTrue(event.contains("player=Alex player_id=00000000-0000-0000-0000-000000000000"));
+        assertTrue(event.contains("sender=Steve sender_id=00000000-0000-0000-0000-000000000001"));
+    }
+
+    @Test
+    void executeAsRetainsTheConsoleSenderUntilTeleportCompletes() throws Exception {
+        var executor = CommandHarness.player();
+        harness.run(executor, "wp add minecraft:overworld Test 0 64 0 Home");
+        harness.sender.commandSenders.put(executor, CommandHarness.console());
+        harness.teleportCompletion = new java.util.concurrent.CompletableFuture<>();
+        StaticLoggerBinder.clear();
+        harness.dispatcher.execute("wp tp minecraft:overworld Test Home", executor);
+        harness.sender.commandSenders.clear();
+        harness.teleportCompletion.complete(true);
+        var event = actions().get(0);
+        assertTrue(event.contains("player=Alex"));
+        assertTrue(event.contains("sender=Server sender_id=non-player"));
+    }
+
     private java.util.List<String> actions() {
         return StaticLoggerBinder.events().stream().filter(s -> s.startsWith("server_waypoint.actions ")).toList();
     }

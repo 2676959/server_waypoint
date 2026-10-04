@@ -209,6 +209,11 @@ class PlatformMessageSenderTransportTest {
         }
 
         @Override
+        public PlayerActionLog.Actor commandSenderActor(String source) {
+            return new PlayerActionLog.Actor(null, source);
+        }
+
+        @Override
         public Component getSenderName(String source) {
             return Component.text(source);
         }

@@ -116,7 +116,7 @@ public final class UploadCoordinator<P> {
 
     public BeginResult begin(P player, UploadTarget target, UploadScope scope,
                              UploadConflictPolicy conflictPolicy, boolean deleteMissing,
-                             List<String> dimensionNames, String listName, String waypointName) {
+                             List<String> dimensionNames, String listName, String waypointName, PlayerActionLog.Actor sender) {
         if (deleteMissing && conflictPolicy != UploadConflictPolicy.LOCAL) {
             throw new IllegalArgumentException("Only force-local uploads can delete missing waypoints");
         }
@@ -129,6 +129,7 @@ public final class UploadCoordinator<P> {
         PendingUpload<P> pending = new PendingUpload<>(
                 player,
                 actor,
+                sender,
                 request,
                 scope,
                 conflictPolicy,
@@ -344,7 +345,7 @@ public final class UploadCoordinator<P> {
                 "list", pending.request.listName(), "waypoint", pending.request.waypointName()};
         System.arraycopy(context, 0, fields, 0, context.length);
         System.arraycopy(details, 0, fields, context.length, details.length);
-        PlayerActionLog.log(pending.actor, "upload", outcome, fields);
+        PlayerActionLog.log(new PlayerActionLog.Context(pending.actor, pending.sender), "upload", outcome, fields);
     }
 
     private boolean finishPending(PendingUpload<P> pending, boolean applyingMayFinish) {
@@ -781,6 +782,7 @@ public final class UploadCoordinator<P> {
     private static final class PendingUpload<P> {
         private final UUID playerUuid;
         private final PlayerActionLog.Actor actor;
+        private final PlayerActionLog.Actor sender;
         private final UploadRequestBuffer request;
         private final UploadScope scope;
         private final UploadConflictPolicy conflictPolicy;
@@ -796,6 +798,7 @@ public final class UploadCoordinator<P> {
         private PendingUpload(
                 P player,
                 PlayerActionLog.Actor actor,
+                PlayerActionLog.Actor sender,
                 UploadRequestBuffer request,
                 UploadScope scope,
                 UploadConflictPolicy conflictPolicy,
@@ -804,6 +807,7 @@ public final class UploadCoordinator<P> {
         ) {
             Objects.requireNonNull(player, "player");
             this.actor = Objects.requireNonNull(actor, "actor");
+            this.sender = Objects.requireNonNull(sender, "sender");
             this.playerUuid = Objects.requireNonNull(actor.playerId(), "playerUuid");
             this.request = request;
             this.scope = scope;

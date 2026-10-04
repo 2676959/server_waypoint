@@ -149,6 +149,7 @@ final class CommandHarness {
         final List<Map.Entry<Object, Component>> toPlayers = new ArrayList<>();
         final List<Object> online = new ArrayList<>();
         final Map<Source, Source> viewingSources = new LinkedHashMap<>();
+        final Map<Source, Source> commandSenders = new LinkedHashMap<>();
         boolean handshake = true;
 
         /** Shows the commander's feedback as the viewer's, the way the mods do for /execute as a player. */
@@ -207,6 +208,13 @@ final class CommandHarness {
         @Override
         public PlayerActionLog.Actor playerActor(Object player) {
             return new PlayerActionLog.Actor(new UUID(0L, 0L), ((Source) player).name());
+        }
+
+        @Override
+        public PlayerActionLog.Actor commandSenderActor(Source source) {
+            Source sender = this.commandSenders.getOrDefault(source, source);
+            return sender.player() ? new PlayerActionLog.Actor(new UUID(0L, sender.name().equals("Alex") ? 0L : 1L), sender.name())
+                    : new PlayerActionLog.Actor(null, sender.name());
         }
 
         @Override

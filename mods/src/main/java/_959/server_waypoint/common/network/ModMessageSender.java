@@ -201,6 +201,28 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
     }
 
     @Override
+    public PlayerActionLog.Actor commandSenderActor(CommandSourceStack source) {
+        ServerPlayer player = getReceivingPlayer(source);
+        if (player != null) {
+            return this.playerActor(player);
+        }
+        CommandSource receiver = ((CommandSourceStackAccessor) source).serverWaypoint$getSource();
+        String name;
+        if (receiver == source.getServer()) {
+            name = "Console";
+        } else if (receiver instanceof net.minecraft.server.rcon.RconConsoleSource) {
+            name = "RCON";
+        } else if (receiver == CommandSource.NULL) {
+            name = "Function";
+        } else {
+            // Custom and command-block sources may not expose a name. Preserve the actual
+            // source instance rather than using the executor's overwritten stack name.
+            name = receiver.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(receiver));
+        }
+        return new PlayerActionLog.Actor(null, name);
+    }
+
+    @Override
     public Component getSenderName(CommandSourceStack source) {
         return Component.text(source.getTextName());
     }

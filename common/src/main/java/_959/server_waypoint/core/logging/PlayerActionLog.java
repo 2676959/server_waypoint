@@ -19,11 +19,28 @@ public final class PlayerActionLog {
         }
     }
 
+    /** Snapshot of the executor and original command sender, which /execute as can separate. */
+    public record Context(Actor executor, Actor sender) {
+        public Context {
+            Objects.requireNonNull(executor, "executor");
+            Objects.requireNonNull(sender, "sender");
+        }
+    }
+
+    /** Direct player actions such as GUI edits have the player as both executor and sender. */
     public static void log(Actor actor, String action, String outcome, Object... fields) {
+        log(new Context(actor, actor), action, outcome, fields);
+    }
+
+    public static void log(Context context, String action, String outcome, Object... fields) {
+        Actor actor = context.executor();
+        Actor sender = context.sender();
         if (fields.length % 2 != 0) throw new IllegalArgumentException("Expected key/value pairs");
         StringBuilder message = new StringBuilder("action=").append(safe(action))
                 .append(" player=").append(safe(actor.name()))
                 .append(" player_id=").append(actor.playerId() == null ? "non-player" : actor.playerId())
+                .append(" sender=").append(safe(sender.name()))
+                .append(" sender_id=").append(sender.playerId() == null ? "non-player" : sender.playerId())
                 .append(" outcome=").append(safe(outcome));
         for (int i = 0; i < fields.length; i += 2) {
             message.append(' ').append(safe(fields[i])).append('=').append(safe(fields[i + 1]));

@@ -952,6 +952,11 @@ class CoreWaypointCommandNavigationTest {
         }
 
         @Override
+        public PlayerActionLog.Actor commandSenderActor(TestSource source) {
+            return new PlayerActionLog.Actor(null, "Server");
+        }
+
+        @Override
         public Component getSenderName(TestSource source) {
             return Component.text("tester");
         }
