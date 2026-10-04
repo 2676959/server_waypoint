@@ -996,6 +996,10 @@ Let registered widgets receive ordinary input through the screen. Intercept only
   Shortcuts that run before `super.keyPressed`, such as the manager's `C` binding and the list's
   T teleport, must leave Enter, Space and keypad Enter to the focused widget.
 - Call `acceptMovementKeys(false)` while text entry or another control must own movement-key input.
+  On Forge and NeoForge, `MovementAllowedScreen` temporarily extends the seven movement bindings'
+  conflict contexts so they stay active while this screen accepts movement. Modifier checks and
+  original conflict rules remain in effect. Rebuilds retain the original contexts, and `removed()`
+  restores them; overrides must call `super.removed()`.
 - A modal should disable underlying controls and move focus into the modal; restore both when it closes.
   On a `MovementAllowedScreen`, override `hasOpenModal()` to report it: from 1.20.5, vanilla moves
   focus to the next Tab stop after every rebuild, such as a resize, when the keyboard was used last,

@@ -22,6 +22,16 @@ import net.minecraft.client.input.MouseButtonEvent;
 //?}
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
+//? if forge || neoforge {
+/*import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.function.BooleanSupplier;
+//? if neoforge {
+import net.neoforged.neoforge.client.settings.IKeyConflictContext;
+//?} else {
+import net.minecraftforge.client.settings.IKeyConflictContext;
+//?}
+*///?}
 
 public abstract class MovementAllowedScreen extends Screen {
     protected final Font font = Minecraft.getInstance().font;
@@ -47,6 +57,9 @@ public abstract class MovementAllowedScreen extends Screen {
     private int sneakKeyCode;
     private int sprintKeyCode;
     private boolean movementAllowed = true;
+    //? if forge || neoforge {
+    /*private Map<KeyMapping, MovementKeyContext> movementKeyContexts;
+    *///?}
 
     protected MovementAllowedScreen(Component title) {
         super(title);
@@ -211,6 +224,21 @@ public abstract class MovementAllowedScreen extends Screen {
         sneakKeyBinding = this.minecraft.options.keyShift;
         sprintKeyBinding = this.minecraft.options.keySprint;
 
+        //? if forge || neoforge {
+        /*if (movementKeyContexts == null) {
+            movementKeyContexts = new IdentityHashMap<>();
+        }
+        for (KeyMapping binding : new KeyMapping[]{forwardKeyBinding, leftKeyBinding, backKeyBinding,
+                rightKeyBinding, jumpKeyBinding, sneakKeyBinding, sprintKeyBinding}) {
+            // Keep the original context across resize/rebuild calls to init().
+            MovementKeyContext context = movementKeyContexts.computeIfAbsent(binding,
+                    key -> new MovementKeyContext(key.getKeyConflictContext(),
+                            () -> /^? if >=26.2 {^/ this.minecraft.gui.screen() /^?} else {^/ this.minecraft.screen /^?}^/
+                                    == this && this.movementAllowed));
+            binding.setKeyConflictContext(context);
+        }
+        *///?}
+
         forwardKey = ((BoundKeyAccessor) forwardKeyBinding).getBoundKey();
         leftKey = ((BoundKeyAccessor) leftKeyBinding).getBoundKey();
         backKey = ((BoundKeyAccessor) backKeyBinding).getBoundKey();
@@ -227,6 +255,31 @@ public abstract class MovementAllowedScreen extends Screen {
         sneakKeyCode = sneakKey.getValue();
         sprintKeyCode = sprintKey.getValue();
     }
+
+    //? if forge || neoforge {
+    /*@Override
+    public void removed() {
+        if (movementKeyContexts != null) {
+            movementKeyContexts.forEach((binding, context) -> binding.setKeyConflictContext(context.original()));
+            movementKeyContexts.clear();
+        }
+        super.removed();
+    }
+
+    // Extends only movement bindings' contexts; the loader still checks each binding's modifiers.
+    private record MovementKeyContext(IKeyConflictContext original, BooleanSupplier movementActive)
+            implements IKeyConflictContext {
+        @Override
+        public boolean isActive() {
+            return movementActive.getAsBoolean() || original.isActive();
+        }
+
+        @Override
+        public boolean conflicts(IKeyConflictContext other) {
+            return original.conflicts(other instanceof MovementKeyContext context ? context.original() : other);
+        }
+    }
+    *///?}
 
     private void unpressAllMovementKeys() {
         forwardKeyBinding.setDown(false);
