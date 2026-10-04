@@ -122,8 +122,7 @@ Only these glyphs are used. All are in the vanilla bitmap font; advances in px.
 | `«` `»` | 7 | first and last page |
 | `…` | 8 | `… N more`, `Custom…`, progress |
 | `·` | 2 | separator |
-| `■` | 6 | colour value in details |
-| `█` | 9 | colour swatches |
+| `█` | 9 | colour previews and picker buttons |
 | `✎` | 8 | edit buttons |
 | `×` | 6 | clear buttons |
 | `−` `+` | 6 | nudge buttons; add |
@@ -395,7 +394,7 @@ Overworld › Home Bases › [MH] Main Home
 [✎] Initials: MH
 [✎] Icon: none
 [✎] Position: 120, 64, -35 [Here]
-[✎] Color: ■ #FFAA00
+[✎] Color: █ #FFAA00
 [✎] Yaw: 0° (south)
 [✎] Visibility: Global
 [✎] Keywords: home, base [×]
@@ -434,7 +433,7 @@ Overworld › Home Bases  3 waypoints
 Colour, from `set color` without a value:
 
 ```
-Color · [MH] Main Home   now ■ #FFAA00
+Color · [MH] Main Home   now █ #FFAA00
 █ █ █ █ █ █ █ █ █ █ █ █ █ █ █ █
 Random · Custom… · Back
 ```
@@ -705,7 +704,7 @@ Details are read-only, without the `[✎]` column:
 ```
 ● Survival › Overworld › Farms › [IF] Iron Farm
 Position: 300, 80, 150
-Color: ■ #AAAAAA
+Color: █ #AAAAAA
 Yaw: 0° (south)
 Visibility: Global
 Keywords: iron

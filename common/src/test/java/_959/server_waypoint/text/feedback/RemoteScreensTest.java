@@ -248,7 +248,7 @@ class RemoteScreensTest {
         assertEquals(List.of(
                 "● Survival › Overworld › Farms › [IF] Iron Farm",
                 "Position: 300, 80, 150",
-                "Color: ■ #AAAAAA",
+                "Color: █ #AAAAAA",
                 "Yaw: 0° (south)",
                 "Visibility: Global",
                 "Keywords: none",

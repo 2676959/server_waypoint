@@ -31,12 +31,15 @@ class PickerScreensTest {
         Component picker = PickerScreens.color(Fixtures.dims(Fixtures.player()), OVERWORLD, HOME, MAIN_HOME);
 
         assertEquals(List.of(
-                "Color · [MH] Main Home   now ■ #FFAA00",
+                "Color · [MH] Main Home   now █ #FFAA00",
                 "█ █ █ █ █ █ █ █ █ █ █ █ █ █ █ █",
                 "Random · Custom… · Back"), lines(picker));
-        assertEquals(EDIT + "set color black", clickOf(picker, "█"));
-        assertEquals("Black\n#000000", tooltipOf(picker, "█"));
-        assertEquals(TextColor.color(0x000000), colorOf(picker, "█"));
+        ChatAssert.Run blackSwatch = ChatAssert.runs(picker).stream()
+                .filter(run -> run.text().equals("█") && run.style().clickEvent() != null)
+                .findFirst().orElseThrow();
+        assertEquals(EDIT + "set color black", blackSwatch.style().clickEvent().value());
+        assertEquals("Black\n#000000", render((Component) blackSwatch.style().hoverEvent().value()));
+        assertEquals(TextColor.color(0x000000), blackSwatch.style().color());
         assertEquals(EDIT + "set color random", clickOf(picker, "Random"));
         assertEquals(EDIT + "set color FFAA00", clickOf(picker, "Custom…"));
         assertEquals(NamedTextColor.YELLOW, colorOf(picker, "Custom…"));

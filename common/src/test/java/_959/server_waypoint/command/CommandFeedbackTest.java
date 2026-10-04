@@ -288,7 +288,7 @@ class CommandFeedbackTest {
         CommandHarness.Source player = CommandHarness.player();
         String waypoint = "wp edit waypoint minecraft:overworld Farms \"Iron Farm\" ";
 
-        assertEquals("Color · [IF] Iron Farm   now ■ #AAAAAA", lines(this.harness.run(player, waypoint + "set color")).get(0));
+        assertEquals("Color · [IF] Iron Farm   now █ #AAAAAA", lines(this.harness.run(player, waypoint + "set color")).get(0));
         assertEquals("Facing · [IF] Iron Farm   now 0° (south)", lines(this.harness.run(player, waypoint + "set yaw")).get(0));
         this.harness.run(player, waypoint + "set color random");
         this.harness.run(player, waypoint + "set yaw -90");

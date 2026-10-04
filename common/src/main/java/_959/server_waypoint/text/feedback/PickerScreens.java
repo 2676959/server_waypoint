@@ -39,6 +39,7 @@ import static net.kyori.adventure.text.format.NamedTextColor.YELLOW;
 /** The colour, facing and add pickers (spec 9). */
 public final class PickerScreens {
     private static final int[] FACINGS = {0, 90, 180, -90};
+    private static final String COLOR_SWATCH = "█";
 
     private PickerScreens() {
     }
@@ -55,7 +56,7 @@ public final class PickerScreens {
         }
         List<Component> swatches = new ArrayList<>();
         for (int index = 0; index < VANILLA_COLORS.length; index++) {
-            swatches.add(Chat.link(viewer, text("█"), TextColor.color(VANILLA_COLORS[index]),
+            swatches.add(Chat.link(viewer, text(COLOR_SWATCH), TextColor.color(VANILLA_COLORS[index]),
                     Click.run(edit + " " + VANILLA_COLOR_NAMES[index]),
                     Tooltip.of("wp.color." + VANILLA_COLOR_NAMES[index]).line(text(VANILLA_COLOR_CODES[index]))));
         }
@@ -139,9 +140,9 @@ public final class PickerScreens {
         return facing == null ? degrees : translatable("wp.yaw.facing", degrees, translatable("wp.facing." + facing));
     }
 
-    /** "■ #FFAA00": a swatch in the colour and its hex code in white. */
+    /** "█ #FFAA00": a swatch in the colour and its hex code in white. */
     public static Component colorValue(int rgb) {
-        return Chat.concat(text("■", TextColor.color(rgb)), text(" " + rgbToHexCode(rgb, true), WHITE));
+        return Chat.concat(text(COLOR_SWATCH, TextColor.color(rgb)), text(" " + rgbToHexCode(rgb, true), WHITE));
     }
 
     /** Back to the waypoint's details. */
@@ -160,7 +161,7 @@ public final class PickerScreens {
         };
     }
 
-    /** "Color · [MH] Main Home   now ■ #FFAA00" */
+    /** "Color · [MH] Main Home   now █ #FFAA00" */
     private static Component title(String titleKey, DimensionStyle dims, String dimension, WaypointList list,
                                    SimpleWaypoint waypoint, Component value) {
         return Chat.concat(translatable(titleKey, GOLD), Chat.SEPARATOR,
