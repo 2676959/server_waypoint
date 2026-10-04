@@ -1,5 +1,6 @@
 package _959.server_waypoint.command;
 
+import _959.server_waypoint.text.chat.ChatIcons;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.crossserver.authorization.RemotePermissions;
 import _959.server_waypoint.crossserver.handoff.RemoteTeleportInitiator;
@@ -269,6 +270,22 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     /** Each loaded dimension and its dimension type ID, such as minecraft:the_nether. */
     protected abstract Map<String, String> getDimensionTypes(S source);
 
+    protected ChatIcons chatIcons() {
+        return ChatIcons.NONE;
+    }
+
+    /** The name after the player's head where the platform draws heads; the space belongs to the head. */
+    private Component playerName(P player, Component name) {
+        Component head = chatIcons().playerHead(this.sender.playerActor(player).playerId());
+        return head == null ? name : Component.empty().append(head.color(NamedTextColor.WHITE).appendSpace()).append(name);
+    }
+
+    /** Who made a change, as broadcasts name them: the player by account name, otherwise the sender. */
+    private Component actorName(S source) {
+        P player = getPlayer(source);
+        return player == null ? this.sender.getSenderName(source) : playerName(player, text(getPlayerName(player)));
+    }
+
     private boolean hasAddPermission(S source) {
         return this.permissionManager.hasPermission(source, this.permissionKeys.add(), CONFIG.CommandPermission().add());
     }
@@ -316,7 +333,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
         boolean hasMod = player != null
                 && (this.sender.canSendChunkedMessage(player) || usesLocalUpload(source, player));
         return new Viewer(permissions, hasMod, this.sender.isPlainTextReceiver(source),
-                toDimensionName(getSourceDimension(source)), getSourcePosition(source), getSourceYaw(source));
+                toDimensionName(getSourceDimension(source)), getSourcePosition(source), getSourceYaw(source), chatIcons());
     }
 
     /**
@@ -1144,7 +1161,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private Viewer recipientViewer(P player) {
         boolean teleport = this.permissionManager.checkPlayerPermission(player, this.permissionKeys.tp(),
                 CONFIG.CommandPermission().tp());
-        return new Viewer(teleport ? Set.of(Viewer.Permission.TP) : Set.of(), false, false, null, null, 0F);
+        return new Viewer(teleport ? Set.of(Viewer.Permission.TP) : Set.of(), false, false, null, null, 0F, chatIcons());
     }
 
     /**
@@ -1318,7 +1335,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                 before.name(),
                                 after
                         );
-                        Component actor = this.sender.getSenderName(source);
+                        Component actor = actorName(source);
                         this.broadcast(source, update, dims -> Broadcasts.updatedList(dims, actor, dimensionName, after));
                         this.sender.sendMessage(source, DetailsScreen.list(dimensions(source), dimensionName,
                                 after, DetailsScreen.updated(patch)));
@@ -1382,7 +1399,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                 WaypointModificationType.UPDATE,
                                 result.syncNum()
                         );
-                        Component actor = this.sender.getSenderName(source);
+                        Component actor = actorName(source);
                         this.broadcast(source, update, dims -> Broadcasts.updated(dims, actor, dimensionName, list, after));
                         this.sender.sendMessage(source, DetailsScreen.waypoint(dimensions(source), dimensionName,
                                 list, after, DetailsScreen.updated(patch)));
@@ -1454,7 +1471,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                                     WaypointList list = Objects.requireNonNull(result.waypointList());
                                     SimpleWaypoint waypoint = Objects.requireNonNull(result.waypointSnapshot());
                                     saveChanges(source, fileManager, "restore", "dimension", entry.dimensionName(), "list", list.name(), "waypoint", waypoint.name());
-                                    Component actor = this.sender.getSenderName(source);
+                                    Component actor = actorName(source);
                                     this.broadcast(source, new WaypointModificationMessage(
                                             entry.dimensionName(),
                                             list.name(),
@@ -1500,7 +1517,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 switch (result.status()) {
                     case ADDED -> {
                         WaypointList created = result.waypointList();
-                        Component actor = this.sender.getSenderName(source);
+                        Component actor = actorName(source);
                         this.broadcast(source, new WaypointModificationMessage(dimensionName, listName, listName, null, null, ADD_LIST, SERVER_N),
                                 dims -> Broadcasts.createdList(dims, actor, dimensionName, created));
                         this.sender.sendMessage(source, Results.createdList(dimensions(source), dimensionName, created));
@@ -1535,7 +1552,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     saveChanges(source, result.fileManager(), "add", "dimension", dimensionName, "list", listName, "waypoint", name);
                     WaypointList list = result.waypointList();
                     SimpleWaypoint added = result.waypointSnapshot();
-                    Component actor = this.sender.getSenderName(source);
+                    Component actor = actorName(source);
                     this.broadcast(source, new WaypointModificationMessage(
                             dimensionName,
                             list.name(),
@@ -1622,7 +1639,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                 case REMOVED -> {
                     WaypointFileManager fileManager = Objects.requireNonNull(result.fileManager());
                     WaypointList waypointList = Objects.requireNonNull(result.waypointList());
-                    Component actor = this.sender.getSenderName(source);
+                    Component actor = actorName(source);
                     this.broadcast(source, new WaypointModificationMessage(dimensionName, listName, waypointList.displayName(), null, null, REMOVE_LIST, waypointList.getSyncNum() + 1),
                             dims -> Broadcasts.removedList(dims, actor, dimensionName, waypointList));
                     this.sender.sendMessage(source, Results.removedList(dimensions(source), dimensionName, waypointList));
@@ -1658,7 +1675,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                             result.syncNum()
                     );
                     WaypointList list = Objects.requireNonNull(result.waypointList());
-                    Component actor = this.sender.getSenderName(source);
+                    Component actor = actorName(source);
                     this.broadcast(source, buffer, dims -> Broadcasts.removed(dims, actor, dimensionName, list, waypoint));
                     String token = this.restoreRegistry.register(
                             this.restoreOwner(source),
@@ -1692,7 +1709,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     }
                     this.sender.sendPlayerMessage(player, Results.teleported(
                             DimensionStyle.local(recipientViewer(player), getDimensionTypes(source)),
-                            getPlayerDisplayName(player), fileManager.getDimensionName(), waypointList, waypoint));
+                            playerName(player, getPlayerDisplayName(player)), fileManager.getDimensionName(), waypointList, waypoint));
                 }));
     }
 

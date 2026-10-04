@@ -11,6 +11,7 @@ import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.SinglePacketMessage;
 import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
 import _959.server_waypoint.core.network.buffer.MessageChunkBuffer;
+import _959.server_waypoint.server.command.CommandChatIcons;
 import _959.server_waypoint.text.chat.Chat;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.text.Component;
@@ -123,7 +124,8 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
      * The feedback goes to the player whose view it is, and Paper renders it in their language.
      * When a commander ran it for that player with /execute as, the commander also gets the view,
      * under a "Viewed as" line that Paper renders in the commander's language. The view itself is
-     * rendered here, in the player's language, since Paper would render it in the commander's.
+     * rendered here, in the player's language, since Paper would render it in the commander's. A
+     * commander who is not a player reads it without chat objects.
      */
     static List<Delivery> deliveries(CommandSourceStack source, Component component) {
         CommandSender commander = source.getSender();
@@ -135,7 +137,9 @@ public class PaperMessageSender implements PlatformMessageSender<CommandSourceSt
         if (commander.equals(viewer)) {
             return List.of(new Delivery(viewer, view));
         }
-        Component viewedByCommander = GlobalTranslator.render(commander instanceof Player ? view : component, viewer.locale());
+        Component viewedByCommander = commander instanceof Player
+                ? GlobalTranslator.render(view, viewer.locale())
+                : CommandChatIcons.INSTANCE.withoutIcons(GlobalTranslator.render(component, viewer.locale()));
         return List.of(
                 new Delivery(viewer, view),
                 new Delivery(commander, PlatformMessageSender.forCommander(Chat.viewedAs(viewer.getName()), viewedByCommander))

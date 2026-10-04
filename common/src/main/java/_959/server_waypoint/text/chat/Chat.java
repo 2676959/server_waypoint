@@ -1,6 +1,8 @@
 package _959.server_waypoint.text.chat;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.TranslationArgument;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -10,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * The pieces chat messages are made of. Every piece is its own component under a neutral parent,
@@ -77,6 +80,21 @@ public final class Chat {
     /** True when every piece was left out. */
     public static boolean isEmpty(List<? extends @Nullable Component> pieces) {
         return pieces.stream().allMatch(piece -> piece == null);
+    }
+
+    /** The message with every matching piece left out, along with its children, translation arguments included. */
+    public static Component without(Component message, Predicate<? super Component> leaveOut) {
+        if (leaveOut.test(message)) {
+            return Component.empty();
+        }
+        Component result = message;
+        if (result instanceof TranslatableComponent translatable) {
+            result = translatable.arguments(translatable.arguments().stream()
+                    .map(argument -> argument.value() instanceof Component value
+                            ? TranslationArgument.component(without(value, leaveOut)) : argument)
+                    .toList());
+        }
+        return result.children(result.children().stream().map(child -> without(child, leaveOut)).toList());
     }
 
     public static Component colored(Component content, TextColor color) {

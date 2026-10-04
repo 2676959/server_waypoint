@@ -11,6 +11,7 @@ import _959.server_waypoint.core.network.MessageEncodingException;
 import _959.server_waypoint.core.network.SinglePacketMessage;
 import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
 import _959.server_waypoint.common.server.WaypointServerMod;
+import _959.server_waypoint.common.server.command.CommandChatIcons;
 import _959.server_waypoint.common.util.TextHelper;
 import _959.server_waypoint.mixin.CommandSourceStackAccessor;
 import _959.server_waypoint.text.chat.Chat;
@@ -155,7 +156,7 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
     /**
      * The commander's copy of a player's view: a "Viewed as" line in the commander's language, then
      * the feedback in the player's. A player commander gets a screen's trailing newline, as the
-     * player does; the console, RCON and command blocks read plain text without it.
+     * player does; the console, RCON and command blocks read plain text without it or chat objects.
      */
     private net.minecraft.network.chat.Component getViewedAsText(
             ServerPlayer viewer,
@@ -168,7 +169,8 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
                 commanderPlayer == null ? component : PlatformMessageSender.forPlayer(component),
                 getLocale(viewer)
         );
-        return toVanillaText(PlatformMessageSender.forCommander(line, view));
+        return toVanillaText(PlatformMessageSender.forCommander(line,
+                commanderPlayer == null ? CommandChatIcons.INSTANCE.withoutIcons(view) : view));
     }
 
     @Override

@@ -56,14 +56,25 @@ public final class WaypointRefs {
 
     /** [AB] Name without clicks, for a waypoint that is gone or not on this server yet. */
     public static Component plain(Viewer viewer, SimpleWaypoint waypoint) {
-        return Chat.concat(Chat.colored(text("[" + waypoint.initials() + "]"), TextColor.color(waypoint.rgb())), text(" "),
+        return Chat.concat(Chat.colored(marker(viewer, waypoint), TextColor.color(waypoint.rgb())), text(" "),
                 Chat.colored(label(viewer, waypoint.displayName(), waypoint.name()), NamedTextColor.WHITE));
+    }
+
+    /** The sprite keeps its original colours; initials and their teleport action remain available. */
+    public static Component marker(Viewer viewer, SimpleWaypoint waypoint) {
+        return withIcon(viewer, waypoint, text("[" + waypoint.initials() + "]"));
+    }
+
+    /** The label after the icon's sprite; the space belongs to the sprite, so leaving the sprite out takes it too. */
+    public static Component withIcon(Viewer viewer, SimpleWaypoint waypoint, Component label) {
+        Component icon = waypoint.icon() == null ? null : viewer.icons().item(waypoint.icon());
+        return icon == null ? label : Chat.concat(icon.color(NamedTextColor.WHITE).append(text(" ")), label);
     }
 
     /** [AB] in the waypoint colour: a teleport link with permission, otherwise coloured text with the waypoint tooltip. */
     public static Component initials(DimensionStyle dims, String dimension, WaypointList list, SimpleWaypoint waypoint) {
         Viewer viewer = dims.viewer();
-        Component initials = text("[" + waypoint.initials() + "]");
+        Component initials = marker(viewer, waypoint);
         TextColor color = TextColor.color(waypoint.rgb());
         if (viewer.can(Viewer.Permission.TP)) {
             return Chat.link(viewer, initials, color, Click.run(tpCmd(dimension, list.name(), waypoint.name())),

@@ -7,7 +7,9 @@ import java.util.*;
 final class CompatibilityChecker {
     public static final MinecraftVersionRange[] COMPATIBLE_VERSIONS =
     //? if =1.21 {
-    /*{new MinecraftVersionRange(1, 21, 0, 10)};
+    /*{new MinecraftVersionRange(1, 21, 0, 8)};
+     *///?} elif =1.21.9 {
+    /*{new MinecraftVersionRange(1, 21, 9, 10)};
      *///?} elif =1.21.11 {
      /*{new MinecraftVersionRange(1, 21, 11, 11), new MinecraftVersionRange(26, 1, 0, 2)};
      *///?} else {

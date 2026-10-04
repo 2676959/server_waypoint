@@ -48,6 +48,36 @@ there (`MinecraftTestRuntime` keeps the entity-hover cases from failing in a hal
 
 ## Chat kit
 
+### Native chat icons
+
+`Viewer.icons()` supplies platform-owned `ChatIcons`. Both platform command adapters select
+their implementation using Stonecutter `>=1.21.9`; older builds use `ChatIcons.NONE`, with no
+references to Adventure's object API in their compiled adapters. Keep common on its existing
+Adventure baseline. Plain-text viewers always use `NONE`; when the console, RCON or a command
+block reads a copy of a player's view (`/execute as`), the platform senders pass it through
+`ChatIcons.withoutIcons`, which leaves the objects out.
+
+Waypoint references keep their initials and teleport/details actions and prepend a white
+(untinted) sprite when the waypoint has a mapped item icon. Player references in command
+broadcasts and teleport confirmations prepend UUID-based player heads; broadcasts name the player
+by account name on every build, and teleport confirmations by display name. The space after a
+sprite or head is the object's child, so leaving the object out takes the space with it.
+
+Chat sprites are flat textures, not rendered item models.
+`assets/server_waypoint/chat-sprites.json` contains 1,383 representative vanilla textures derived
+from the 1.21.9 client item/model definitions and present in every supported newer client. Dynamic
+items use a representative frame; blocks use a face; display-context items use their GUI model.
+Textures an item tints (potions, leaves, grass, dyed leather), entity-rendered items, unmapped
+newer items, custom items, and VoxelMap icons retain initials/text. No resource pack is required.
+The platform factories use the blocks atlas through 1.21.10 and the separate items atlas from
+1.21.11 onward. Regenerate the mapping with `python3 tools/generate_chat_sprites.py
+<1.21.9 client.jar> <every newer supported client.jar...>
+common/src/main/resources/assets/server_waypoint/chat-sprites.json`: the first jar's item
+definitions choose each texture, and every jar must contain it. The generator copies identifiers
+only, not texture images.
+
+### Feedback composition
+
 Command feedback is built from the pieces in `common/src/main/java/_959/server_waypoint/text/chat/`
 (see the [command feedback design](../features/command-feedback/specs/2026-10-01-command-feedback-design.md)):
 

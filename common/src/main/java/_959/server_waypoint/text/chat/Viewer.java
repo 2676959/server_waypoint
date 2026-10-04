@@ -18,7 +18,8 @@ public record Viewer(
         boolean plainText,
         @Nullable String dimension,
         @Nullable WaypointPos position,
-        float yaw
+        float yaw,
+        ChatIcons icons
 ) {
     public enum Permission {
         ADD,
@@ -34,9 +35,16 @@ public record Viewer(
     }
 
     public Viewer {
+        icons = plainText ? ChatIcons.NONE : java.util.Objects.requireNonNull(icons, "icons");
         permissions = permissions.isEmpty()
                 ? Set.of()
                 : Collections.unmodifiableSet(EnumSet.copyOf(permissions));
+    }
+
+    /** A text-only viewer, including builds without native chat objects. */
+    public Viewer(Set<Permission> permissions, boolean hasMod, boolean plainText,
+                  @Nullable String dimension, @Nullable WaypointPos position, float yaw) {
+        this(permissions, hasMod, plainText, dimension, position, yaw, ChatIcons.NONE);
     }
 
     public static Set<Permission> everything() {

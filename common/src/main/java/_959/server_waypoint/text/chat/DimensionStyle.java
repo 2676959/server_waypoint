@@ -41,7 +41,7 @@ public final class DimensionStyle {
      */
     public static DimensionStyle remote(Viewer viewer) {
         return new DimensionStyle(new Viewer(viewer.permissions(), viewer.hasMod(), viewer.plainText(), null, null,
-                viewer.yaw()), null);
+                viewer.yaw(), viewer.icons()), null);
     }
 
     public Viewer viewer() {

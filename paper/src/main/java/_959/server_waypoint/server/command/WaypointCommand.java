@@ -1,5 +1,6 @@
 package _959.server_waypoint.server.command;
 
+import _959.server_waypoint.text.chat.ChatIcons;
 import java.util.concurrent.CompletionStage;
 import _959.server_waypoint.ServerWaypointPaperMC;
 import _959.server_waypoint.PaperScheduler;
@@ -49,6 +50,11 @@ import java.util.stream.Stream;
 @SuppressWarnings("UnstableApiUsage")
 public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, String, Player, World, BlockPositionResolver, NamespacedKey> {
     private final PaperScheduler scheduler;
+
+    @Override
+    protected ChatIcons chatIcons() {
+        return CommandChatIcons.INSTANCE;
+    }
 
     @Override
     protected NamespacedId toIconId(NamespacedKey iconArgument) {

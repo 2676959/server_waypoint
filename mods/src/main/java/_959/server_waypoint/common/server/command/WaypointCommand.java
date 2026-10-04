@@ -1,6 +1,7 @@
 //~ resource_location_import
 package _959.server_waypoint.common.server.command;
 
+import _959.server_waypoint.text.chat.ChatIcons;
 import _959.server_waypoint.common.server.LocalWaypointUpload;
 import _959.server_waypoint.core.network.ChunkedMessageSendResult;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
@@ -65,6 +66,11 @@ public class WaypointCommand extends CoreWaypointCommand<CommandSourceStack, Str
     //$ resource_location_type_swap
     Identifier
     > {
+    @Override
+    protected ChatIcons chatIcons() {
+        return CommandChatIcons.INSTANCE;
+    }
+
     @Override
     protected NamespacedId toIconId(
             //$ resource_location_type_swap

@@ -89,6 +89,7 @@ final class CommandHarness {
     final List<Teleport> teleports = new ArrayList<>();
     /** Display names by account name; a player without one is shown by account name. */
     final Map<String, Component> displayNames = new LinkedHashMap<>();
+    _959.server_waypoint.text.chat.ChatIcons chatIcons = _959.server_waypoint.text.chat.ChatIcons.NONE;
     CompletableFuture<Boolean> teleportCompletion = CompletableFuture.completedFuture(true);
     Consumer<Runnable> serverExecutor = Runnable::run;
     boolean failSave;
@@ -221,6 +222,11 @@ final class CommandHarness {
 
     static final class TestCommand extends CoreWaypointCommand<Source, String, Object, String, String, NamespacedId> {
         private final CommandHarness harness;
+
+        @Override
+        protected _959.server_waypoint.text.chat.ChatIcons chatIcons() {
+            return this.harness.chatIcons;
+        }
 
         private TestCommand(CommandHarness harness) {
             super(harness.server, harness.sender, permissions(), navigation(),

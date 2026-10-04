@@ -81,7 +81,7 @@ public final class DetailsScreen {
                         editWaypointSetSuggestionCmd(dimension, listId, id, "initials", waypoint.initials())),
                 "initials", text(waypoint.initials()), null));
         lines.add(property(suggestEdit(viewer, "icon", editWaypointIconSuggestionCmd(dimension, listId, id, waypoint.icon())),
-                "icon", waypoint.icon() == null ? none() : text(waypoint.icon().toString()),
+                "icon", waypoint.icon() == null ? none() : WaypointRefs.withIcon(viewer, waypoint, text(waypoint.icon().toString())),
                 waypoint.icon() == null ? null : clear(viewer, "icon", editWaypointClearCmd(dimension, listId, id, "icon"))));
         lines.add(property(suggestEdit(viewer, "position", editWaypointPositionCmd(dimension, listId, id, waypoint)),
                 "position", text(DimensionStyle.coordinates(waypoint.pos())),

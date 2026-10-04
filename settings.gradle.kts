@@ -56,6 +56,7 @@ stonecutter {
 
     create("paper") {
         version("1.21-paper", "1.21")
+        version("1.21.9-paper", "1.21.9") // created for item and player head objects in chat feedback
         // codes are identical with 1.21-paper, created because 1.21.11 complies the same method with different descriptor:
         // 1.21    : Transformation(Vector3f, Quaternionf, Vector3f, Quaternionf)
         // 1.21.11 : Transformation(Vector3fc, Quaternionfc, Vector3fc, Quaternionfc)

@@ -48,6 +48,46 @@ class CommandFeedbackTest {
         WaypointServerCore.CONFIG = this.originalConfig;
     }
 
+    /** Icons that draw each player's head as "head:" and the UUID. */
+    private static _959.server_waypoint.text.chat.ChatIcons heads() {
+        return new _959.server_waypoint.text.chat.ChatIcons() {
+            @Override
+            public Component playerHead(java.util.UUID id) {
+                return Component.text("head:" + id);
+            }
+        };
+    }
+
+    @Test
+    void playerHeadsReachThePlayerWhoReceivesTeleportFeedback() throws CommandSyntaxException {
+        this.harness.chatIcons = heads();
+        this.harness.addList("minecraft:overworld", "Farms",
+                CommandHarness.waypoint("Gate", "G", 0xFFFFFF, 0, 64, 0));
+        var player = CommandHarness.player();
+        String command = "wp tp minecraft:overworld Farms Gate";
+        this.harness.dispatcher.execute(command, player);
+        assertEquals("✔ Teleported head:00000000-0000-0000-0000-000000000000 Alex to [G] Gate",
+                render(this.harness.sender.toPlayers.get(0).getValue()));
+        assertEquals(player, this.harness.sender.toPlayers.get(0).getKey());
+        assertTrue(this.harness.sender.received.isEmpty());
+    }
+
+    @Test
+    void broadcastsPutTheActorsHeadBeforeTheNameTheyUseWithoutHeads() {
+        this.harness.chatIcons = heads();
+        this.harness.addList("minecraft:overworld", "Farms");
+        this.harness.displayNames.put("Alex", Component.text("Alex the Builder"));
+        CommandHarness.Source alex = CommandHarness.player();
+        CommandHarness.Source sam = new CommandHarness.Source("Sam", "minecraft:the_nether", new WaypointPos(0, 64, 0), 0F,
+                true, false, Set.of());
+        this.harness.sender.online.addAll(List.of(alex, sam));
+
+        this.harness.run(alex, "wp add minecraft:overworld Farms 80 66 40 \"Pumpkin Patch\" PP FFAA00 0 true");
+
+        assertEquals("head:00000000-0000-0000-0000-000000000000 Alex added [PP] Pumpkin Patch to Farms",
+                render(this.harness.sender.toPlayers.get(0).getValue()));
+    }
+
     @Test
     void theViewerFollowsPermissionsTheModTheReceiverAndThePosition() {
         Viewer viewer = this.harness.command.viewer(CommandHarness.player().withPermissions("add", "tp"));

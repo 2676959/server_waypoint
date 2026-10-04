@@ -119,6 +119,23 @@ class PaperMessageSenderDeliveryTest {
         assertSame(alex, PaperMessageSender.viewingPlayer(source));
     }
 
+    //? if >=1.21.9 {
+    @Test
+    void theConsoleReadsAPlayersViewWithoutChatObjects() {
+        ConsoleCommandSender console = fake(ConsoleCommandSender.class, "CONSOLE", ENGLISH);
+        Player alex = fake(Player.class, "Alex", ENGLISH);
+        Component sprite = Component.object(net.kyori.adventure.text.object.ObjectContents.sprite(
+                net.kyori.adventure.key.Key.key("item/diamond")));
+
+        List<Delivery> deliveries = PaperMessageSender.deliveries(source(console, alex),
+                Component.empty().append(sprite.appendSpace()).append(FIRST_PAGE));
+
+        assertEquals("[item/diamond] First page", read(deliveries.get(0), ENGLISH));
+        assertEquals("Viewed as Alex\nFirst page", read(deliveries.get(1), ENGLISH),
+                "the console would print the sprite's description");
+    }
+    //?}
+
     @Test
     void theConsoleGetsPlainTextWhenNoPlayerReadsIt() {
         ConsoleCommandSender console = fake(ConsoleCommandSender.class, "CONSOLE", ENGLISH);

@@ -123,7 +123,7 @@ public final class RemoteRefs {
 
     /** [AB] Name without clicks, for a waypoint the player is switching to. */
     public static Component plain(Viewer viewer, SimpleWaypoint waypoint) {
-        return Chat.concat(Chat.colored(text("[" + waypoint.initials() + "]"), TextColor.color(waypoint.rgb())), text(" "),
+        return Chat.concat(Chat.colored(WaypointRefs.marker(viewer, waypoint), TextColor.color(waypoint.rgb())), text(" "),
                 Chat.colored(label(viewer, waypoint.displayName(), waypoint.name()), WHITE));
     }
 
@@ -153,7 +153,7 @@ public final class RemoteRefs {
     public static Component initials(DimensionStyle dims, Server server, String dimension, WaypointList list,
                                      SimpleWaypoint waypoint) {
         Viewer viewer = dims.viewer();
-        Component initials = text("[" + waypoint.initials() + "]");
+        Component initials = WaypointRefs.marker(viewer, waypoint);
         TextColor color = TextColor.color(waypoint.rgb());
         boolean permitted = viewer.can(Viewer.Permission.REMOTE_TP);
         if (permitted && server.available()) {
