@@ -120,6 +120,9 @@ neoForge {
     version = neoforge_loader
     validateAccessTransformers = true
     accessTransformers.from(rootProject.file("mods/src/main/resources/META-INF/accesstransformer.cfg"))
+    // Resolve the test classpath together with Minecraft's libraries, so the older Gson, SLF4J, Netty and
+    // Brigadier that :common brings in are upgraded instead of shadowing Minecraft's on the test classpath.
+    addModdingDependenciesTo(sourceSets.test.get())
 
     runs {
         configureEach {
