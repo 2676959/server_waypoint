@@ -1,6 +1,6 @@
 import java.security.MessageDigest
 
-// Shared by every final platform packaging route. The runtime dependency is owned by common.
+// Shared by every final platform packaging route. The runtime dependency is owned by cross-server.
 val noiseVerification = configurations.create("noiseDependencyVerification") {
     isCanBeConsumed = false
     isTransitive = false
@@ -24,6 +24,7 @@ val verifyNoiseDependency = tasks.register("verifyNoiseDependency") {
 
 tasks.named<Jar>("shadowJar") {
     dependsOn(verifyNoiseDependency)
+    exclude("META-INF/maven/**")
     from(rootProject.file("gradle/licenses/noise-java.txt")) {
         into("META-INF")
         rename { "LICENSE-noise-java" }

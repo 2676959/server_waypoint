@@ -183,6 +183,7 @@ tasks.shadowJar {
     }
     dependencies {
         include(project(":common"))
+        include(project(":cross-server"))
         include(dependency("net.kyori:.*"))
         exclude("mappings/*")
     }

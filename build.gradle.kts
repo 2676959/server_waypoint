@@ -201,7 +201,8 @@ allprojects {
     }
 }
 
-subprojects {
+// Translator credits ship only in the jars that ship translations.
+configure(listOf(project(":mods"), project(":paper")).flatMap { it.subprojects }) {
     tasks.withType<Jar>().configureEach {
         from(rootProject.file("CREDITS.txt")) {
             rename { "SERVER_WAYPOINT_CREDITS.txt" }

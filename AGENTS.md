@@ -9,15 +9,19 @@
 
 # Project Structure
 
-This Minecraft modding project has three subprojects: "common", "paper", and "mods".
-- "common": includes the server-side core logic and some common utilities that are shared with "paper" and "mods"
+This Minecraft modding project has six subprojects: "cross-server", "common", "paper", "mods", "proxy-common", and "velocity".
+- "cross-server": the cross-server protocol, transport, catalog models and credentials shared by backends and the proxy; no waypoint core, Minecraft or Adventure types
+- "common": includes the server-side core logic and some common utilities that are shared with "paper" and "mods"; depends on "cross-server"
 - "paper": implements the plugin that runs on Paper servers
 - "mods": implements the mod that runs with Fabric and NeoForge, has both server-side and client-side logic
+- "proxy-common": proxy-side coordination; depends on "cross-server" only
+- "velocity": implements the Velocity proxy plugin; packages "cross-server" and "proxy-common" only
 Projects "paper" and "mods" are independent projects to each other.
 
 # Helper Scope
 
 - Before creating or moving helper classes, identify their usage scope first. Helpers used only by one project must stay in that project instead of `common`.
+- Code both backends and the proxy need belongs in `cross-server`; backend-only code stays in `common`, proxy-only code in `proxy-common`.
 
 # Project Documentation
 

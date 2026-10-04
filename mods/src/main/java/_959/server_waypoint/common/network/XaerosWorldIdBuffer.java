@@ -1,8 +1,7 @@
-package _959.server_waypoint.core.network.buffer;
+package _959.server_waypoint.common.network;
 
 import _959.server_waypoint.core.network.MessageChannelID;
 import _959.server_waypoint.core.network.SinglePacketMessage;
-import _959.server_waypoint.core.network.codec.XaerosWorldIdBufferCodec;
 import io.netty.buffer.ByteBuf;
 
 import static _959.server_waypoint.core.network.MessageChannelID.XAEROS_WORLD_ID_CHANNEL;

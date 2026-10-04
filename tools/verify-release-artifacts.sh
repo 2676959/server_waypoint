@@ -4,11 +4,11 @@ set -euo pipefail
 SCRIPT_DIRECTORY="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPOSITORY_ROOT="$(cd -- "$SCRIPT_DIRECTORY/.." && pwd)"
 ARTIFACT_DIRECTORY="${1:-$REPOSITORY_ROOT/builds}"
-EXPECTED_TOTAL=41
+EXPECTED_TOTAL=42
 EXPECTED_FABRIC=13
 EXPECTED_FORGE=12
 EXPECTED_NEOFORGE=12
-EXPECTED_PAPER=3
+EXPECTED_PAPER=4
 EXPECTED_VELOCITY=1
 
 if [[ ! -d "$ARTIFACT_DIRECTORY" ]]; then
@@ -24,6 +24,8 @@ fi
 
 # Verify exact target ranges as well as counts, so a renamed/duplicate target cannot fill a gap.
 EXPECTED_NAMES=("server_waypoint-$MOD_VERSION-velocity.jar")
+# "<jar name>|<loader>|<Stonecutter version>" for the content check. Bash 3.2 has no associative arrays.
+EXPECTED_TARGETS=("server_waypoint-$MOD_VERSION-velocity.jar|velocity|-")
 for properties in "$REPOSITORY_ROOT"/{mods,paper}/versions/*/gradle.properties; do
     target="$(basename -- "$(dirname -- "$properties")")"
     case "$target" in 1.21.3-fabric|1.21.3-neoforge) continue ;; esac
@@ -33,7 +35,9 @@ for properties in "$REPOSITORY_ROOT"/{mods,paper}/versions/*/gradle.properties; 
         printf 'Missing Minecraft release range: %s\n' "$properties" >&2
         exit 1
     fi
-    EXPECTED_NAMES+=("server_waypoint-$MOD_VERSION-$loader-mc$range.jar")
+    name="server_waypoint-$MOD_VERSION-$loader-mc$range.jar"
+    EXPECTED_NAMES+=("$name")
+    EXPECTED_TARGETS+=("$name|$loader|${target%-*}")
 done
 
 RELEASE_ARTIFACTS=()
@@ -102,6 +106,17 @@ for artifact in "${RELEASE_ARTIFACTS[@]}"; do
             exit 1
         fi
     done
+
+    for record in "${EXPECTED_TARGETS[@]}"; do
+        if [[ "${record%%|*}" == "$artifact_name" ]]; then
+            IFS='|' read -r _ loader version <<< "$record"
+            break
+        fi
+    done
+    if ! python3 "$SCRIPT_DIRECTORY/check_release_jar.py" "$artifact" "$loader" "$version"; then
+        printf 'Release content check failed: %s\n' "$artifact" >&2
+        exit 1
+    fi
 done
 
 DUPLICATE_NAMES="$(printf '%s\n' "${ARTIFACT_NAMES[@]}" | sort | uniq -d)"

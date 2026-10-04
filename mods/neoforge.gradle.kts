@@ -23,6 +23,11 @@ val commonMainSourceSet = project(":common")
     .extensions
     .getByType(org.gradle.api.tasks.SourceSetContainer::class.java)
     .named("main")
+evaluationDependsOn(":cross-server")
+val crossServerMainSourceSet = project(":cross-server")
+    .extensions
+    .getByType(org.gradle.api.tasks.SourceSetContainer::class.java)
+    .named("main")
 
 group = maven_group
 
@@ -142,6 +147,7 @@ neoForge {
         register(mod_id) {
             sourceSet(sourceSets["main"])
             sourceSet(commonMainSourceSet.get())
+            sourceSet(crossServerMainSourceSet.get())
         }
     }
 }
@@ -261,10 +267,18 @@ tasks.shadowJar {
     addMultiReleaseAttribute.set(false)
     dependencies {
         include(project(":common"))
+        include(project(":cross-server"))
         include(dependency("net.kyori:.*"))
         exclude("mappings/*")
     }
     archiveClassifier.set("")
+}
+
+// Sprite objects in chat exist from 1.21.9; older targets never read the sprite table.
+if (stonecutter.eval(stonecutter.current.version, "<1.21.9")) {
+    tasks.shadowJar {
+        exclude("assets/server_waypoint/chat-sprites.json", "_959/server_waypoint/text/chat/VanillaChatSprites.class")
+    }
 }
 
 tasks.assemble {

@@ -30,17 +30,19 @@ def properties(path):
     return dict(line.split('=',1) for line in path.read_text().splitlines() if '=' in line and not line.startswith('#'))
 
 version = properties(repo/'gradle.properties')['mod_version']
+# Development-only targets are never released; the release gate skips them too.
+development_only = {'1.21.3-fabric', '1.21.3-neoforge'}
 artifacts = []
 for branch in ['mods', 'paper']:
     for directory in sorted((repo/branch/'versions').iterdir()):
-        if not (directory/'gradle.properties').is_file():
+        if not (directory/'gradle.properties').is_file() or directory.name in development_only:
             continue
         loader = directory.name.rsplit('-',1)[1]
         mc_range = properties(directory/'gradle.properties')['mcVersionRange']
         artifact = directory/'build/libs'/f'server_waypoint-{version}-{loader}-mc{mc_range}.jar'
         artifacts.append((f'{branch}:{directory.name}', loader, artifact))
 artifacts.append(('velocity', 'velocity', repo/'velocity/build/libs'/f'server_waypoint-{version}-velocity.jar'))
-expected = {'fabric': 13, 'forge': 12, 'neoforge': 12, 'paper': 3, 'velocity': 1}
+expected = {'fabric': 13, 'forge': 12, 'neoforge': 12, 'paper': 4, 'velocity': 1}
 actual = dict(Counter(loader for _, loader, _ in artifacts))
 if actual != expected:
     raise RuntimeError(f'Incomplete or changed version matrix: expected {expected}, found {actual}')
@@ -54,7 +56,12 @@ for project, loader, artifact in artifacts:
         assert noise, f'Missing relocated Noise in {artifact}'
         assert 'META-INF/LICENSE-noise-java' in names
         assert jar.read('META-INF/LICENSE-noise-java') == (repo/'gradle/licenses/noise-java.txt').read_bytes()
-        assert '_959/server_waypoint/crossserver/transport/BackendTransport.class' in names
+        transport = '_959/server_waypoint/crossserver/transport/'
+        if loader != 'velocity':
+            assert transport+'BackendTransport.class' in names
+        else:
+            # Velocity packages cross-server and proxy-common, never common's backend half.
+            assert transport+'TcpChannel.class' in names and transport+'BackendTransport.class' not in names
         assert not any(n.startswith(('com/southernstorm/noise/','com/eatthepath/noise/','org/junit/'))
                        or 'noisespike/' in n or 'NoiseArtifactProbe' in n for n in names)
         if loader=='paper':
@@ -77,7 +84,7 @@ for project, loader, artifact in artifacts:
             'bytes':staged.stat().st_size,'noise_classes':len(noise),'isolated_classloader':run.stdout.strip()}
     results.append(result)
     print('PASS',project,flush=True)
-for module in ['common','proxy-common']:
+for module in ['cross-server','common','proxy-common']:
     jars=list((repo/module/'build/libs').glob('*.jar'))
     assert jars, module
     for artifact in jars:

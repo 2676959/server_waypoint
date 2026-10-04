@@ -9,13 +9,14 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Type;
 import java.util.Set;
 
-import static _959.server_waypoint.core.WaypointServerCore.LOGGER;
-
 public final class WaypointIconPolicy {
+    private static final Logger LOGGER = LoggerFactory.getLogger("server_waypoint_core");
     public static final int MAX_LENGTH = 256;
     private static final Set<String> VOXELMAP_SUFFIXES = Set.of(
             "apple", "axe", "boat", "camera", "carrot", "chicken", "cloud", "diamond",

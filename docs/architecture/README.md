@@ -1,16 +1,17 @@
 # Server Waypoint architecture
 
-Updated against the repository sources on 2026-09-11. This is a whole-project overview; feature contracts and release evidence remain under [features](../features/).
+Updated against the repository sources on 2026-09-11. Module boundaries updated on 2026-10-03. This is a whole-project overview; feature contracts and release evidence remain under [features](../features/).
 
 ## Modules and runtime ownership
 
 | Module | Responsibility | Dependencies and runtime |
 | --- | --- | --- |
-| `common` | Waypoint core, configuration, network codecs, upload coordination, cross-server models, TCP transport and backend services | Java 17 shared library; embedded by adapters, not a standalone process |
+| `cross-server` | Cross-server application codec, TCP and Noise transport primitives, catalog models and index, pairing credentials, runtime configuration and coordinator log | Java 17 shared library with no waypoint core, Minecraft, Brigadier or Adventure types; embedded by every platform |
+| `common` | Waypoint core, configuration, commands, text and translations, network codecs, upload coordination and the backend half of cross-server: runtime, agent, TCP backend, catalog publishing and queries, handoff services and authorization | Java 17 shared library; depends on `cross-server`; embedded by backend adapters, not a standalone process |
 | `mods` | Fabric, Forge and NeoForge adapters, server commands, client cache, GUI, renderer and map integration | Depends on `common`; Stonecutter selects loader/version APIs |
 | `paper` | Paper/Folia server adapter, commands, scheduling and destination arrival | Depends on `common`; independent of `mods`, with no client GUI |
-| `proxy-common` | Proxy contracts, catalog aggregation and handoff coordination | Depends on `common`; contains no platform-specific proxy API types |
-| `velocity` | Velocity lifecycle, registered-server mapping, player routing and coordinator startup | Depends on `proxy-common`; packages both shared libraries; Java 17 source syntax with a Java 25 runtime target |
+| `proxy-common` | Proxy contracts, catalog aggregation, handoff coordination and the TCP coordinator transport | Depends on `cross-server` only; contains no platform-specific proxy API types |
+| `velocity` | Velocity lifecycle, registered-server mapping, player routing and coordinator startup | Depends on `proxy-common`; packages `cross-server` and `proxy-common`, never `common`; Java 17 source syntax with a Java 25 runtime target |
 
 The [Gradle settings](../../settings.gradle.kts) define the module and version matrix. Shared code is loaded inside its consuming process. It is not another network service. A deployment may contain multiple backends, each with its own authoritative local waypoint state.
 
@@ -26,7 +27,7 @@ Client/backend payload **protocol 2** and cross-server TCP **application protoco
 
 ## Source and contract references
 
-- [Payload protocol version](../../common/src/main/java/_959/server_waypoint/ProtocolVersion.java) and [TCP application version](../../common/src/main/java/_959/server_waypoint/crossserver/CrossServerProtocol.java).
+- [Payload protocol version](../../common/src/main/java/_959/server_waypoint/ProtocolVersion.java) and [TCP application version](../../cross-server/src/main/java/_959/server_waypoint/crossserver/CrossServerProtocol.java).
 - [Backend runtime](../../common/src/main/java/_959/server_waypoint/crossserver/handoff/BackendRuntime.java) and [Velocity runtime](../../velocity/src/main/java/_959/server_waypoint/velocity/VelocityRuntime.java).
 - [Remote client state](../../mods/src/main/java/_959/server_waypoint/common/client/RemoteClientCatalogs.java).
 - [Runtime and handoff contract](../features/cross-server/specs/cross-server-velocity-runtime.md), [client synchronization](../features/cross-server/specs/cross-server-client-sync.md) and [remote GUI](../features/cross-server/specs/cross-server-gui.md).
@@ -37,8 +38,8 @@ Client/backend payload **protocol 2** and cross-server TCP **application protoco
 
 The repository includes the [architecture input](server-waypoint.architecture.json) and
 [generated diagram](server-waypoint-architecture.html), with theme switching and image/SVG export.
-The diagram records the 2026-09-11 architecture snapshot; consult the source references above for
-current protocol versions and feature behavior.
+The diagram records the 2026-09-11 architecture snapshot with the module boundaries of 2026-10-03;
+consult the source references above for current protocol versions and feature behavior.
 
 With Node.js and the archify skill installed, set `ARCHIFY_ROOT` to that skill directory and run from the repository root:
 

@@ -281,10 +281,18 @@ tasks.shadowJar {
     }
     dependencies {
         include(project(":common"))
+        include(project(":cross-server"))
         include(dependency("net.kyori:.*"))
         exclude("mappings/*")
     }
     archiveClassifier.set("dev-shadow")
+}
+
+// Sprite objects in chat exist from 1.21.9; older targets never read the sprite table.
+if (stonecutter.eval(stonecutter.current.version, "<1.21.9")) {
+    tasks.shadowJar {
+        exclude("assets/server_waypoint/chat-sprites.json", "_959/server_waypoint/text/chat/VanillaChatSprites.class")
+    }
 }
 
 tasks.remapJar {

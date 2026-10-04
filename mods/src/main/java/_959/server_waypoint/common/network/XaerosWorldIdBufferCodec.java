@@ -1,6 +1,5 @@
-package _959.server_waypoint.core.network.codec;
+package _959.server_waypoint.common.network;
 
-import _959.server_waypoint.core.network.buffer.XaerosWorldIdBuffer;
 import io.netty.buffer.ByteBuf;
 
 public class XaerosWorldIdBufferCodec {

@@ -527,12 +527,12 @@
         <div class="pulse-dot"></div>
         <h1>Server Waypoint Architecture</h1>
       </div>
-      <p class="subtitle">Current module and runtime boundaries · 2026-09-11 · Cross-server support is opt-in</p>
+      <p class="subtitle">Current module and runtime boundaries · 2026-10-03 · Cross-server support is opt-in</p>
     </div>
 
     <!-- Main Diagram -->
     <div class="diagram-container">
-      <svg viewBox="0 0 1180 990" role="img" aria-label="Server Waypoint Architecture — Current module and runtime boundaries · 2026-09-11 · Cross-server support is opt-in (architecture diagram)">
+      <svg viewBox="0 0 1180 990" role="img" aria-label="Server Waypoint Architecture — Current module and runtime boundaries · 2026-10-03 · Cross-server support is opt-in (architecture diagram)">
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -565,8 +565,8 @@
         <rect x="840" y="100" width="300" height="480" rx="12" class="c-region" stroke-width="1"/>
         <text x="848" y="118" class="t-cloud" font-size="9" font-weight="600">PROXY AND TRUST CONFIGURATION</text>
 
-        <rect x="40" y="730" width="1100" height="120" rx="12" class="c-region" stroke-width="1"/>
-        <text x="48" y="748" class="t-cloud" font-size="9" font-weight="600">COMPILE-TIME MODULES AND BUILD (NOT EXTRA RUNTIME SERVICES)</text>
+        <rect x="20" y="730" width="1140" height="120" rx="12" class="c-region" stroke-width="1"/>
+        <text x="28" y="748" class="t-cloud" font-size="9" font-weight="600">COMPILE-TIME MODULES AND BUILD (NOT EXTRA RUNTIME SERVICES)</text>
 
         <!-- Connection paths (before components for correct z-order) -->
         <path d="M 310 165 L 470 165" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
@@ -631,23 +631,29 @@
         <text x="990" y="539" class="t-muted" font-size="9" text-anchor="middle">Pinned Noise keys / exact mappings</text>
         <text x="990" y="552" class="t-security" font-size="7" text-anchor="middle">BACKEND + PROXY CONFIG</text>
 
-        <rect x="70" y="760" width="240" height="70" rx="6" class="c-mask"/>
-        <rect x="70" y="760" width="240" height="70" rx="6" class="c-backend" stroke-width="1.5"/>
-        <text x="190" y="793" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">common</text>
-        <text x="190" y="809" class="t-muted" font-size="9" text-anchor="middle">Core / codecs / transport / services</text>
-        <text x="190" y="822" class="t-backend" font-size="7" text-anchor="middle">JAVA 17 SHARED LIBRARY</text>
+        <rect x="50" y="760" width="240" height="70" rx="6" class="c-mask"/>
+        <rect x="50" y="760" width="240" height="70" rx="6" class="c-backend" stroke-width="1.5"/>
+        <text x="170" y="793" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">common</text>
+        <text x="170" y="809" class="t-muted" font-size="9" text-anchor="middle">Core / codecs / transport / services</text>
+        <text x="170" y="822" class="t-backend" font-size="7" text-anchor="middle">JAVA 17 SHARED LIBRARY</text>
 
-        <rect x="470" y="760" width="240" height="70" rx="6" class="c-mask"/>
-        <rect x="470" y="760" width="240" height="70" rx="6" class="c-backend" stroke-width="1.5"/>
-        <text x="590" y="793" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">proxy-common</text>
-        <text x="590" y="809" class="t-muted" font-size="9" text-anchor="middle">Proxy contracts / coordinator logic</text>
-        <text x="590" y="822" class="t-backend" font-size="7" text-anchor="middle">DEPENDS ON COMMON</text>
+        <rect x="330" y="760" width="240" height="70" rx="6" class="c-mask"/>
+        <rect x="330" y="760" width="240" height="70" rx="6" class="c-backend" stroke-width="1.5"/>
+        <text x="450" y="793" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">cross-server</text>
+        <text x="450" y="809" class="t-muted" font-size="9" text-anchor="middle">Protocol / transport / catalog models</text>
+        <text x="450" y="822" class="t-backend" font-size="7" text-anchor="middle">JAVA 17 SHARED LIBRARY</text>
 
-        <rect x="870" y="760" width="240" height="70" rx="6" class="c-mask"/>
-        <rect x="870" y="760" width="240" height="70" rx="6" class="c-cloud" stroke-width="1.5"/>
-        <text x="990" y="793" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Gradle + Stonecutter + CI</text>
-        <text x="990" y="809" class="t-muted" font-size="9" text-anchor="middle">Versioned backends + Velocity JAR</text>
-        <text x="990" y="822" class="t-cloud" font-size="7" text-anchor="middle">JDK 17 / 21 / 25</text>
+        <rect x="610" y="760" width="240" height="70" rx="6" class="c-mask"/>
+        <rect x="610" y="760" width="240" height="70" rx="6" class="c-backend" stroke-width="1.5"/>
+        <text x="730" y="793" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">proxy-common</text>
+        <text x="730" y="809" class="t-muted" font-size="9" text-anchor="middle">Proxy contracts / coordinator logic</text>
+        <text x="730" y="822" class="t-backend" font-size="7" text-anchor="middle">DEPENDS ON CROSS-SERVER</text>
+
+        <rect x="890" y="760" width="240" height="70" rx="6" class="c-mask"/>
+        <rect x="890" y="760" width="240" height="70" rx="6" class="c-cloud" stroke-width="1.5"/>
+        <text x="1010" y="793" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">Gradle + Stonecutter + CI</text>
+        <text x="1010" y="809" class="t-muted" font-size="9" text-anchor="middle">Versioned backends + Velocity JAR</text>
+        <text x="1010" y="822" class="t-cloud" font-size="7" text-anchor="middle">JDK 17 / 21 / 25</text>
 
         <!-- Connection labels -->
         <rect x="339.4" y="106" width="101.2" height="14" rx="3" class="c-mask"/>
@@ -709,7 +715,7 @@
         </div>
         <ul>
           <li>&bull; Cross-server configuration is disabled by default. NOISE_KK uses pinned keys; explicit PLAINTEXT is unauthenticated and literal-loopback-only, with no downgrade fallback. Reserved plugin messages do not authorize handoffs.</li>
-          <li>&bull; mods and paper depend on common. proxy-common depends on common; velocity depends on proxy-common and packages both libraries. Shared libraries are code, not standalone servers.</li>
+          <li>&bull; mods and paper depend on common, which depends on cross-server. proxy-common depends on cross-server only; velocity packages cross-server and proxy-common, never common. Shared libraries are code, not standalone servers.</li>
           <li>&bull; Stonecutter selects backend loader/version projects. Velocity builds separately with Java 17 source syntax and a Java 25 runtime target. Final-artifact verification covers backend and Velocity release JARs.</li>
           <li>&bull; Features: docs/features/. Shared implementation guidance: docs/tips/. This overview: docs/architecture/. See each feature validation record for runtime evidence and release limitations.</li>
         </ul>

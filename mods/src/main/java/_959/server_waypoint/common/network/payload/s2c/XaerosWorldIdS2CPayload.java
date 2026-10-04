@@ -1,9 +1,9 @@
 //~ resource_location_import
 package _959.server_waypoint.common.network.payload.s2c;
 
+import _959.server_waypoint.common.network.XaerosWorldIdBuffer;
+import _959.server_waypoint.common.network.XaerosWorldIdBufferCodec;
 import _959.server_waypoint.common.network.payload.ModPayload;
-import _959.server_waypoint.core.network.buffer.XaerosWorldIdBuffer;
-import _959.server_waypoint.core.network.codec.XaerosWorldIdBufferCodec;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.resources.Identifier;
 //? if >= 1.20.5 {

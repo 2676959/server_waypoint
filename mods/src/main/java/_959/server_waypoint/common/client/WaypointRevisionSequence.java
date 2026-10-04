@@ -1,4 +1,4 @@
-package _959.server_waypoint.core.network;
+package _959.server_waypoint.common.client;
 
 import org.jetbrains.annotations.Nullable;
 

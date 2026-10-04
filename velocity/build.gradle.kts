@@ -39,7 +39,7 @@ tasks.jar {
 }
 
 tasks.shadowJar {
-    relocate("org.bstats", project.group.toString())
+    relocate("org.bstats", "${project.group}.internal.bstats")
     relocate("com.southernstorm.noise", "_959.server_waypoint.internal.noisekk")
     dependencies {
         include(dependency("org.bstats:.*:.*"))
@@ -47,7 +47,7 @@ tasks.shadowJar {
     }
     archiveClassifier.set("")
     dependencies {
-        include(project(":common"))
+        include(project(":cross-server"))
         include(project(":proxy-common"))
     }
     from(rootProject.file("LICENSE")) {

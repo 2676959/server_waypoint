@@ -1,7 +1,7 @@
 package _959.server_waypoint.mixin;
 
 import _959.server_waypoint.common.network.ModMessageSender;
-import _959.server_waypoint.core.network.buffer.XaerosWorldIdBuffer;
+import _959.server_waypoint.common.network.XaerosWorldIdBuffer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;

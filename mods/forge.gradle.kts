@@ -47,6 +47,11 @@ val commonMainSourceSet = project(":common")
     .extensions
     .getByType(org.gradle.api.tasks.SourceSetContainer::class.java)
     .named("main")
+evaluationDependsOn(":cross-server")
+val crossServerMainSourceSet = project(":cross-server")
+    .extensions
+    .getByType(org.gradle.api.tasks.SourceSetContainer::class.java)
+    .named("main")
 
 group = maven_group
 version = mod_version
@@ -212,6 +217,7 @@ minecraft {
                 create(mod_id) {
                     source(sourceSets.main.get())
                     source(commonMainSourceSet.get())
+                    source(crossServerMainSourceSet.get())
                 }
             }
         }
@@ -238,6 +244,25 @@ minecraft {
                 "--existing", file("src/main/resources/")
             )
         }
+    }
+}
+
+// Forge's dev launcher loads each library jar on a run's classpath as its own module, and common and
+// cross-server share packages. The runs get one merged jar in their place, named like common's own jar so
+// the launcher sees the same single module as before the split.
+val devSharedModulesJar = tasks.register<Zip>("devSharedModulesJar") {
+    archiveFileName.set("common.jar")
+    destinationDirectory.set(layout.buildDirectory.dir("devlibs"))
+    from(commonMainSourceSet.get().output, crossServerMainSourceSet.get().output)
+}
+tasks.withType<JavaExec>().matching { it.name.startsWith("run") }.configureEach {
+    dependsOn(devSharedModulesJar)
+    val separateJars = listOf(":common", ":cross-server").map { path ->
+        project(path).tasks.named<Jar>("jar").flatMap { it.archiveFile }
+    }
+    doFirst {
+        val replaced = separateJars.map { it.get().asFile }.toSet()
+        classpath = classpath.filter { it !in replaced } + files(devSharedModulesJar)
     }
 }
 
@@ -374,7 +399,15 @@ shadowJarTask.configure {
     exclude("META-INF/*.DSA", "META-INF/*.RSA", "META-INF/*.SF", "META-INF/MANIFEST.MF", "mappings/**")
     dependencies {
         include(project(":common"))
+        include(project(":cross-server"))
         include(dependency("net.kyori:.*"))
+    }
+}
+
+// Sprite objects in chat exist from 1.21.9; older targets never read the sprite table.
+if (stonecutter.eval(stonecutter.current.version, "<1.21.9")) {
+    shadowJarTask.configure {
+        exclude("assets/server_waypoint/chat-sprites.json", "_959/server_waypoint/text/chat/VanillaChatSprites.class")
     }
 }
 

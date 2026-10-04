@@ -9,9 +9,9 @@ command, plugin-message channel, scheduled worker, or connection service.
 
 | Module | API | Contract |
 | --- | --- | --- |
-| `common` | `TransportLifecycle` | Nonblocking, idempotent start/stop with stable `TransportResult` outcomes. The owner serializes lifecycle and crypto work; shutdown completion includes resource cleanup. |
+| `cross-server` | `TransportLifecycle` | Nonblocking, idempotent start/stop with stable `TransportResult` outcomes. The owner serializes lifecycle and crypto work; shutdown completion includes resource cleanup. |
 | `common` | `BackendTransport` | Outbound lifecycle for an explicitly configured `RemoteServerId`. |
-| `common` | `CoordinatorTransport` | Listener lifecycle and per-ID session disconnect. Disconnect alone does not revoke an ID; registry policy must prevent re-admission. |
+| `proxy-common` | `CoordinatorTransport` | Listener lifecycle and per-ID session disconnect. Disconnect alone does not revoke an ID; registry policy must prevent re-admission. |
 | `proxy-common` | `ProxyPlayerRouter<S>` / `TransferAdapter<S>` | Lookup by proxy-authenticated UUID and asynchronous switch request to opaque adapter-owned destination `S`, with an expected source ID checked immediately before switching. |
 | `proxy-common` | `ProxyPlayerSnapshot` | Immutable point-in-time UUID/current-server observation. It is not a forwarded player claim or authorization for a later switch. |
 | `proxy-common` | `ProxyServerDirectory<S>` | Exact configured stable server-ID mapping to an opaque adapter handle. No hostname or display-name inference. |

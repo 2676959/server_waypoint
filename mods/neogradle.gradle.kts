@@ -205,10 +205,13 @@ tasks.shadowJar {
     addMultiReleaseAttribute.set(false)
     dependencies {
         include(project(":common"))
+        include(project(":cross-server"))
         include(dependency("net.kyori:.*"))
         exclude("mappings/*")
     }
     archiveClassifier.set("")
+    // Sprite objects in chat exist from 1.21.9; older targets never read the sprite table.
+    exclude("assets/server_waypoint/chat-sprites.json", "_959/server_waypoint/text/chat/VanillaChatSprites.class")
 }
 
 val prepareRunMods by tasks.registering(Copy::class) {

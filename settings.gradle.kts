@@ -66,6 +66,7 @@ stonecutter {
 }
 
 rootProject.name = "server_waypoint"
+include("cross-server")
 include("common")
 include("mods")
 include("paper")

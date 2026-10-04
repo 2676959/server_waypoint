@@ -1,4 +1,4 @@
-package _959.server_waypoint.util;
+package _959.server_waypoint.common.client.util;
 
 public final class MathUtils {
     public static int clamp(int value, int min, int max) {

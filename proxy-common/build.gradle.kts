@@ -7,7 +7,10 @@ repositories {
 }
 
 dependencies {
-    api(project(":common"))
+    api(project(":cross-server"))
+    // Contract tests drive real backend transports; TcpTransportTest also uses Noise directly.
+    testImplementation(project(":common"))
+    testImplementation("org.signal.forks:noise-java:${property("noise_version")}")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

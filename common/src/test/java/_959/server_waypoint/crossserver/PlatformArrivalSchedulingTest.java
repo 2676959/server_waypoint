@@ -117,8 +117,11 @@ class PlatformArrivalSchedulingTest {
         Path repository = Path.of("").toAbsolutePath();
         if (!Files.isDirectory(repository.resolve("common"))) repository = repository.getParent();
         sources.put(name, Files.readString(repository.resolve(project + "/src/main/java/" + name.replace('.', '/') + ".java")));
-        List<String> arguments = new ArrayList<>(List.of("--release", "17", "-d", temporary.toString(), "-classpath",
-                Path.of(DestinationPlatform.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toString()));
+        // The adapters compile against both shared modules: common and cross-server.
+        String classpath = String.join(java.io.File.pathSeparator,
+                Path.of(DestinationPlatform.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toString(),
+                Path.of(RemoteWaypointKey.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toString());
+        List<String> arguments = new ArrayList<>(List.of("--release", "17", "-d", temporary.toString(), "-classpath", classpath));
         for (var entry : sources.entrySet()) {
             Path file = temporary.resolve(entry.getKey().replace('.', '/') + ".java");
             Files.createDirectories(file.getParent()); Files.writeString(file, entry.getValue()); arguments.add(file.toString());

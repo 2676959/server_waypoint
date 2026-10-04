@@ -1,7 +1,6 @@
 package _959.server_waypoint.common.client;
 
 import _959.server_waypoint.core.network.ChunkedMessageRegistry;
-import _959.server_waypoint.core.network.WaypointRevisionSequence;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;

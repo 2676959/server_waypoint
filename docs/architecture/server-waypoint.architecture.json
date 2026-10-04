@@ -3,7 +3,7 @@
     "diagram_type": "architecture",
     "meta": {
         "title": "Server Waypoint Architecture",
-        "subtitle": "Current module and runtime boundaries \u00b7 2026-09-11 \u00b7 Cross-server support is opt-in",
+        "subtitle": "Current module and runtime boundaries \u00b7 2026-10-03 \u00b7 Cross-server support is opt-in",
         "output": "server-waypoint-architecture.html",
         "viewBox": [
             1180,
@@ -152,7 +152,22 @@
             "label": "common",
             "sublabel": "Core / codecs / transport / services",
             "pos": [
-                70,
+                50,
+                760
+            ],
+            "size": [
+                240,
+                70
+            ],
+            "tag": "JAVA 17 SHARED LIBRARY"
+        },
+        {
+            "id": "cross_server",
+            "type": "backend",
+            "label": "cross-server",
+            "sublabel": "Protocol / transport / catalog models",
+            "pos": [
+                330,
                 760
             ],
             "size": [
@@ -167,14 +182,14 @@
             "label": "proxy-common",
             "sublabel": "Proxy contracts / coordinator logic",
             "pos": [
-                470,
+                610,
                 760
             ],
             "size": [
                 240,
                 70
             ],
-            "tag": "DEPENDS ON COMMON"
+            "tag": "DEPENDS ON CROSS-SERVER"
         },
         {
             "id": "build",
@@ -182,7 +197,7 @@
             "label": "Gradle + Stonecutter + CI",
             "sublabel": "Versioned backends + Velocity JAR",
             "pos": [
-                870,
+                890,
                 760
             ],
             "size": [
@@ -225,6 +240,7 @@
             "label": "COMPILE-TIME MODULES AND BUILD (NOT EXTRA RUNTIME SERVICES)",
             "wraps": [
                 "common",
+                "cross_server",
                 "proxy_common",
                 "build"
             ]
@@ -305,7 +321,7 @@
             "title": "Trust, packaging and documentation",
             "items": [
                 "Cross-server configuration is disabled by default. NOISE_KK uses pinned keys; explicit PLAINTEXT is unauthenticated and literal-loopback-only, with no downgrade fallback. Reserved plugin messages do not authorize handoffs.",
-                "mods and paper depend on common. proxy-common depends on common; velocity depends on proxy-common and packages both libraries. Shared libraries are code, not standalone servers.",
+                "mods and paper depend on common, which depends on cross-server. proxy-common depends on cross-server only; velocity packages cross-server and proxy-common, never common. Shared libraries are code, not standalone servers.",
                 "Stonecutter selects backend loader/version projects. Velocity builds separately with Java 17 source syntax and a Java 25 runtime target. Final-artifact verification covers backend and Velocity release JARs.",
                 "Features: docs/features/. Shared implementation guidance: docs/tips/. This overview: docs/architecture/. See each feature validation record for runtime evidence and release limitations."
             ]
