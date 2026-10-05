@@ -38,6 +38,17 @@ public class TextHelper {
         }
     }
 
+    /** Decodes description line breaks after JSON parsing, preserving each text component's style. */
+    public static Component parseDescription(String rawText) {
+        net.kyori.adventure.text.Component description = FormattedTextHelper.parse(rawText)
+                .replaceText(config -> config.match("\\R|\\\\n").replacement("\n"));
+        try {
+            return toMinecraft(description);
+        } catch (IllegalArgumentException ignored) {
+            return Component.literal(rawText == null ? "" : rawText.replaceAll("\\R|\\\\n", "\n"));
+        }
+    }
+
     public static Component toMinecraft(net.kyori.adventure.text.Component adventureText) {
         Objects.requireNonNull(adventureText, "adventureText");
         //? if >= 1.20.3 {

@@ -38,6 +38,29 @@ class TextHelperTest {
     }
 
     @Test
+    void descriptionDecodesLiteralAndActualLineBreaks() {
+        assertEquals("First\nSecond\nThird\nFourth",
+                TextHelper.parseDescription("First\\nSecond\nThird\r\nFourth").getString());
+    }
+
+    @Test
+    void descriptionDecodesLineBreaksAfterJsonParsingAndKeepsChildStyles() {
+        String raw = "{\"text\":\"First\\nSecond\",\"color\":\"gold\",\"extra\":["
+                + "{\"text\":\"\\\\nThird\",\"color\":\"light_purple\"}]}";
+        net.minecraft.network.chat.Component description = TextHelper.parseDescription(raw);
+
+        assertEquals("First\nSecond\nThird", description.getString());
+        List<Piece> pieces = new ArrayList<>();
+        collect(TextHelper.toAdventure(description), null, null, pieces);
+        assertEquals("First\nSecond", pieces.stream()
+                .filter(piece -> NamedTextColor.GOLD.equals(piece.color()))
+                .map(Piece::text).collect(java.util.stream.Collectors.joining()));
+        assertEquals("\nThird", pieces.stream()
+                .filter(piece -> NamedTextColor.LIGHT_PURPLE.equals(piece.color()))
+                .map(Piece::text).collect(java.util.stream.Collectors.joining()));
+    }
+
+    @Test
     void aPlayersDisplayNameKeepsItsColourHoverClickAndInsertionOnTheWayThroughMinecraftText() {
         MinecraftTestRuntime.assumeEntityTypesAreRegistered();
         UUID id = UUID.fromString("c3b0f8d2-5a1e-4c7e-9f3a-2b1d4e6f8a90");

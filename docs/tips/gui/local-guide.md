@@ -633,7 +633,10 @@ control even while the mouse hovers over a waypoint.
 `WaypointDetailsWidget` consumes that selection and presents every stored waypoint field plus its
 dimension/list context in a separately scrollable viewport. Keep formatted display names and
 descriptions parsed only at this render boundary, and reserve scrollbar width while wrapping so
-content does not relayout when overflow begins. Its content ignores clicks without playing a button
+content does not relayout when overflow begins. Local and remote descriptions start below their
+label. Parse their JSON before decoding literal `\n` and actual line separators through
+`TextHelper.parseDescription`, keeping styles on nested text; the same wrapped component determines
+both rendering and scroll height. Its content ignores clicks without playing a button
 sound; only the visible scrollbar accepts clicks for dragging, while the mouse wheel scrolls the
 viewport. Local and remote selections share a color row with a bordered swatch beside the saved
 hex value, reserving the swatch width during wrapping and content-height calculation.

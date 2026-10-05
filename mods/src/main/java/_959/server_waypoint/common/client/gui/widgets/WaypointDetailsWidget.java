@@ -34,6 +34,7 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_MUTED;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 import static _959.server_waypoint.common.util.TextHelper.parseFormattedText;
+import static _959.server_waypoint.common.util.TextHelper.parseDescription;
 import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
 import static _959.server_waypoint.util.ColorUtils.rgbToHexCode;
 
@@ -102,7 +103,7 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
             details.add(detail("waypoint.details.yaw", Component.literal(Integer.toString(waypoint.yaw()))));
             details.add(colorDetail(waypoint.rgb()));
             details.add(detail("waypoint.details.keywords", Component.literal(String.join(", ", waypoint.keywords()))));
-            details.add(detail("waypoint.details.description", Component.literal(waypoint.description())));
+            details.add(descriptionDetail(waypoint.description()));
         }
         this.rows = List.copyOf(details);
         this.rebuildContentHeight();
@@ -278,9 +279,6 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
         Component keywords = waypoint.keywords().isEmpty()
                 ? none
                 : Component.literal(String.join(", ", waypoint.keywords()));
-        Component description = waypoint.description().isEmpty()
-                ? none
-                : parseFormattedText(waypoint.description());
 
         rows.add(new DetailRow(
                 parseFormattedText(waypoint.displayName()),
@@ -312,8 +310,15 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
         ));
         rows.add(colorDetail(waypoint.rgb()));
         rows.add(detail("waypoint.details.keywords", keywords));
-        rows.add(detail("waypoint.details.description", description));
+        rows.add(descriptionDetail(waypoint.description()));
         return rows;
+    }
+
+    private static DetailRow descriptionDetail(String rawText) {
+        Component description = rawText.isEmpty()
+                ? Component.translatable("waypoint.details.none")
+                : parseDescription(rawText);
+        return detail("waypoint.details.description", Component.literal("\n").append(description));
     }
 
     private static DetailRow colorDetail(int rgb) {
