@@ -214,15 +214,18 @@ class PlatformRemotePermissionContractTest {
             if (platform.equals("paper") || platform.equals("fabric")) {
                 assignments.put("server_waypoint.command.remote.tp", false);
                 assertFalse(permissions.canRequestTeleport(player));
-                assertTrue(permissions.canTeleportOnArrival(player));
+                assertFalse(permissions.canTeleportOnArrival(player));
                 assignments.put("server_waypoint.command.remote.tp", true);
                 assignments.put("server_waypoint.command.tp", false);
-                assertFalse(permissions.canRequestTeleport(player));
+                assertTrue(permissions.canRequestTeleport(player));
                 assertFalse(permissions.canTeleportOnArrival(player));
                 player.getClass().getField("level").setInt(player, 0);
                 player.getClass().getField("op").setBoolean(player, false);
+                assertTrue(permissions.canRequestTeleport(player));
+                assertFalse(permissions.canTeleportOnArrival(player));
                 assignments.put("server_waypoint.command.tp", true);
                 assertTrue(permissions.canRequestTeleport(player));
+                assertTrue(permissions.canTeleportOnArrival(player));
                 Map<String, Boolean> sourceAssignments = (Map<String, Boolean>) subject.getClass().getField("assignments").get(subject);
                 sourceAssignments.put("server_waypoint.command.remote.list", false);
                 assertFalse(permissions.canList(console));

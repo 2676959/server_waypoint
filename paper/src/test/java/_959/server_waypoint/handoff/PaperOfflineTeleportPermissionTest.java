@@ -13,6 +13,7 @@ class PaperOfflineTeleportPermissionTest {
     private final UUID player = new UUID(17, 31);
     private final CompletableFuture<User> loaded = new CompletableFuture<>();
     private Tristate permission = Tristate.UNDEFINED;
+    private Tristate remotePermission = Tristate.UNDEFINED;
     private Object options;
 
     @Test void waitsForDestinationUserAndExplicitDenialOverridesOperator() {
@@ -25,11 +26,32 @@ class PaperOfflineTeleportPermissionTest {
 
     @Test void grantsNonOperatorAndUsesOperatorFallbackOnlyForUndefined() {
         permission = Tristate.TRUE;
+        remotePermission = Tristate.TRUE;
         loaded.complete(api(User.class));
         assertTrue(check(false));
         permission = Tristate.UNDEFINED;
+        remotePermission = Tristate.UNDEFINED;
         assertFalse(check(false));
         assertTrue(check(true));
+    }
+
+    @Test void localTeleportGrantCannotOverrideRemoteTeleportDenial() {
+        permission = Tristate.TRUE;
+        remotePermission = Tristate.FALSE;
+        loaded.complete(api(User.class));
+        assertFalse(check(false));
+        assertFalse(check(true));
+    }
+
+    @Test void nonOperatorNeedsBothDestinationGrants() {
+        permission = Tristate.TRUE;
+        loaded.complete(api(User.class));
+        assertFalse(check(false));
+        remotePermission = Tristate.TRUE;
+        assertTrue(check(false));
+        permission = Tristate.FALSE;
+        assertFalse(check(false));
+        assertFalse(check(true));
     }
 
     @Test void providerFailureCannotGrantAnOperator() {
@@ -49,7 +71,12 @@ class PaperOfflineTeleportPermissionTest {
                 case "loadUser": assertEquals(player, args[0]); return loaded;
                 case "getStaticQueryOptions": options = api(method.getReturnType()); return options;
                 case "getPermissionData": assertSame(options, args[0]); return api(method.getReturnType());
-                case "checkPermission": assertEquals("server_waypoint.command.tp", args[0]); return permission;
+                case "checkPermission":
+                    return switch ((String) args[0]) {
+                        case "server_waypoint.command.tp" -> permission;
+                        case "server_waypoint.command.remote.tp" -> remotePermission;
+                        default -> throw new AssertionError("Unexpected permission node: " + args[0]);
+                    };
                 default: return api(method.getReturnType());
             }
         });

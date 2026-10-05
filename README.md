@@ -181,7 +181,7 @@ Use `NOISE_KK` when backends run on different hosts or when you want authenticat
    Replace the placeholders with the full Base64 public keys. Keep each component's `credentials/static.key` private; never copy it to another component. No pairing command is needed.
 6. Restart Velocity, then both backends. Configure authenticated Velocity player forwarding so player UUIDs agree across servers. Run `/wp remote` and `/wp remote list survival`, then test `/wp remote tp creative "minecraft:overworld" "Public list" "Home"` with an existing exported waypoint. Verify destination coordinates and feedback in both directions.
 
-Remote browsing uses `server_waypoint.command.remote.list` (default level 0). Remote teleport requires both `server_waypoint.command.tp` and `server_waypoint.command.remote.tp` at the source (default level 2), plus local teleport permission at the destination. See the [administrator guide](docs/features/cross-server/cross-server-admin.md) for permissions, key rotation, and troubleshooting.
+Remote browsing uses `server_waypoint.command.remote.list` (default level 0). Remote teleport requires `server_waypoint.command.remote.tp` at the source, plus both `server_waypoint.command.tp` and `server_waypoint.command.remote.tp` at the destination (each defaults to level 2). The source's local teleport permission is independent. See the [administrator guide](docs/features/cross-server/cross-server-admin.md) for permissions, key rotation, and troubleshooting.
 
 ### Cross-server administration
 
@@ -321,9 +321,10 @@ Paper, Folia, Purpur:
   Upload defaults to level 2. The destructive `force local delete` mode requires level 4 and can be granted separately with `server_waypoint.command.upload.delete`; normal upload uses `server_waypoint.command.upload`.
   
   Remote browsing uses `server_waypoint.command.remote.list` (`remoteList`, level 0).
-  Remote teleport source authorization requires both `server_waypoint.command.tp` and
-  `server_waypoint.command.remote.tp` (`remoteTp`, level 2). Remote teleport does not require the
-  separate browsing permission. Arrival rechecks the destination player's local teleport permission.
+  Remote teleport source authorization requires `server_waypoint.command.remote.tp` (`remoteTp`,
+  level 2), independently of the source's local teleport and browsing permissions. Destination
+  preparation checks both `server_waypoint.command.tp` and `server_waypoint.command.remote.tp`,
+  and arrival rechecks both destination permissions. Local waypoint teleportation still requires only `tp`.
   Paper uses the vanilla command-source level for unset nodes; explicit permission grants or denials
   take precedence. Fabric's permissions API supports node overrides; the current Forge/NeoForge
   adapters use vanilla levels.

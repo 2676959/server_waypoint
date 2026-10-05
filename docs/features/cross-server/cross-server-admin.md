@@ -71,11 +71,19 @@ to plaintext; investigate the error instead of switching modes as a recovery sho
 ## Permissions and read-only behavior
 
 Remote browsing requires `server_waypoint.command.remote.list` (`remoteList`, default level 0).
-Remote teleport requires both `server_waypoint.command.tp` and
-`server_waypoint.command.remote.tp` (`tp` and `remoteTp`, default level 2) at the source. The
-actual destination player must pass local teleport permission and current PUBLIC export checks.
+Remote teleport requires `server_waypoint.command.remote.tp` (`remoteTp`, default level 2) at the
+source, independently of its local teleport permission. Destination preparation requires both
+`server_waypoint.command.tp` and `server_waypoint.command.remote.tp` (`tp` and `remoteTp`, each
+default level 2); the actual destination player must pass both permissions again on arrival,
+along with current PUBLIC export checks. Local waypoint teleportation requires only `tp`.
 An optional Velocity `proxyPermission` adds another check; omitting it does not remove backend checks.
 Remote teleport does not require browse permission. See [authorization](specs/cross-server-authorization.md).
+
+For a Survival/Creative setup, deny `server_waypoint.command.tp` and grant
+`server_waypoint.command.remote.tp` on Survival; grant both on Creative. Players can leave Survival
+for exported Creative waypoints and teleport locally on Creative. Survival rejects incoming remote
+teleports, so players return with `/server survival` if the proxy permits that command and connection.
+The proxy and Survival server determine the location used by an ordinary server switch.
 
 Remote catalogs are read-only caches, separate from local waypoint storage. Exact server, dimension,
 list and waypoint identities are retained; quote spaces, empty names and dimension IDs. `STALE`,
@@ -149,7 +157,7 @@ separately. Connection entries cover registration, failures, disconnects, backen
 coordinator start/stop. These logs exclude credentials, raw packets and waypoint coordinates;
 control characters in labels are replaced and logged labels are bounded.
 
-Destination teleport permission is checked before the proxy switches servers, then checked again
+Both destination teleport permissions are checked before the proxy switches servers, then checked again
 on arrival. See [offline provider behavior](specs/cross-server-authorization.md#permission-check-before-transfer).
 
 ## Remote server selector icon

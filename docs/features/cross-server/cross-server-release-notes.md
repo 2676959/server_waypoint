@@ -34,9 +34,10 @@ covers the rest of that release.
 - `serverIconItem` in a backend's `cross-server.json` sets the item shown for that server in the
   server rail. The default is `minecraft:beacon`.
 - Remote browsing requires `server_waypoint.command.remote.list` (`remoteList`, default level 0).
-  Remote teleport requires `server_waypoint.command.tp` and `server_waypoint.command.remote.tp`
-  (`tp` and `remoteTp`, default level 2) at the source, and local teleport permission at the
-  destination.
+  Remote teleport requires `server_waypoint.command.remote.tp` (`remoteTp`, default level 2) at
+  the source, independently of its local teleport permission. The destination requires both
+  `server_waypoint.command.tp` and `server_waypoint.command.remote.tp` (`tp` and `remoteTp`, each
+  default level 2) before transfer and on arrival. Local waypoint teleportation requires only `tp`.
 
 ## Compatibility
 

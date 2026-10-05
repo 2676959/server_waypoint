@@ -22,7 +22,7 @@ final class ModOfflineTeleportPermission {
         server.execute(() -> {
             try {
                 if (server.isStopped()) { result.complete(false); return; }
-                int required = _959.server_waypoint.core.WaypointServerCore.CONFIG.CommandPermission().tp();
+                var required = _959.server_waypoint.core.WaypointServerCore.CONFIG.CommandPermission();
                 // Operator lists are keyed by UUID; the placeholder name is never used for authorization.
                 //? if >=1.21.11 {
                 var entry = server.getPlayerList().getOps().get(new net.minecraft.server.players.NameAndId(playerId, ""));
@@ -34,7 +34,10 @@ final class ModOfflineTeleportPermission {
                 /*var entry = server.getPlayerList().getOps().get(new com.mojang.authlib.GameProfile(playerId, ""));
                 int level = entry == null ? 0 : entry.getLevel();
                 *///?}
-                permissions.checkOfflinePermission(playerId, permissions.keys.tp(), level >= required)
+                permissions.checkOfflinePermission(playerId, permissions.keys.tp(), level >= required.tp())
+                        .thenCompose(allowed -> Boolean.TRUE.equals(allowed)
+                                ? permissions.checkOfflinePermission(playerId, permissions.keys.remoteTp(), level >= required.remoteTp())
+                                : CompletableFuture.completedFuture(false))
                         .whenComplete((allowed, failure) -> {
                             if (failure != null) result.completeExceptionally(failure);
                             else result.complete(Boolean.TRUE.equals(allowed));

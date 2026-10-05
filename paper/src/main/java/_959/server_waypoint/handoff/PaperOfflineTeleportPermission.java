@@ -40,9 +40,11 @@ final class PaperOfflineTeleportPermission {
         static CompletionStage<Boolean> check(net.luckperms.api.LuckPerms api, UUID playerId, boolean operator) {
             return api.getUserManager().loadUser(playerId).thenApply(user -> {
                 var options = api.getContextManager().getStaticQueryOptions();
-                var permission = user.getCachedData().getPermissionData(options)
-                        .checkPermission("server_waypoint.command.tp");
-                return permission == net.luckperms.api.util.Tristate.UNDEFINED ? operator : permission.asBoolean();
+                var permissions = user.getCachedData().getPermissionData(options);
+                var teleport = permissions.checkPermission("server_waypoint.command.tp");
+                var remoteTeleport = permissions.checkPermission("server_waypoint.command.remote.tp");
+                return (teleport == net.luckperms.api.util.Tristate.UNDEFINED ? operator : teleport.asBoolean())
+                        && (remoteTeleport == net.luckperms.api.util.Tristate.UNDEFINED ? operator : remoteTeleport.asBoolean());
             });
         }
     }

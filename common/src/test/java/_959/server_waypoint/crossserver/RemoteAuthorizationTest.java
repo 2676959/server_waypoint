@@ -45,7 +45,7 @@ class RemoteAuthorizationTest {
         assertEquals(UNAVAILABLE, failedPermission.arrive(key, new Object()));
     }
 
-    @Test void sourceUsesBothPlayerNodesAndCurrentConfiguredLevelsWhileArrivalUsesOnlyLocalTp() {
+    @Test void sourceUsesRemoteTpWhileArrivalRequiresBothPlayerNodesAndCurrentConfiguredLevels() {
         Map<String, Boolean> allowed = new HashMap<>();
         List<String> checks = new ArrayList<>();
         Object player = new Object();
@@ -65,21 +65,52 @@ class RemoteAuthorizationTest {
         assertTrue(permissions.canList("console"));
         assertFalse(permissions.canRequestTeleport("console"));
         allowed.put("server_waypoint.command.remote.tp", true);
-        assertFalse(permissions.canRequestTeleport("player"));
+        allowed.put("server_waypoint.command.tp", false);
+        assertTrue(permissions.canRequestTeleport("player"));
+        assertFalse(permissions.canTeleportOnArrival(player));
         allowed.put("server_waypoint.command.tp", true);
         assertTrue(permissions.canRequestTeleport("player"));
         allowed.put("server_waypoint.command.remote.tp", false);
         assertFalse(permissions.canRequestTeleport("player"));
+        assertFalse(permissions.canTeleportOnArrival(player));
+        allowed.put("server_waypoint.command.remote.tp", true);
         assertTrue(permissions.canTeleportOnArrival(player));
         allowed.put("server_waypoint.command.tp", false);
         assertFalse(permissions.canTeleportOnArrival(player));
         assertFalse(permissions.canTeleportOnArrival(null));
         config.set(new Gson().fromJson("{\"remoteList\":3,\"remoteTp\":4,\"tp\":1}", CommandPermission.class));
         permissions.canList("console");
+        assertTrue(checks.contains("source:server_waypoint.command.remote.list:3"));
         allowed.put("server_waypoint.command.tp", true);
         permissions.canRequestTeleport("player");
-        assertTrue(checks.contains("source:server_waypoint.command.remote.list:3"));
+        checks.clear();
+        permissions.canTeleportOnArrival(player);
         assertTrue(checks.contains("player:server_waypoint.command.tp:1"));
         assertTrue(checks.contains("player:server_waypoint.command.remote.tp:4"));
+    }
+
+    @Test void survivalCanInitiateCreativeTeleportButCannotAcceptReturnTeleport() {
+        PermissionManager<String, String, String> manager = new PermissionManager<>(new PermissionStringKeys()) {
+            @Override public boolean hasPermission(String source, PermissionKeys<String>.PermissionKey key, int level) {
+                return checkPlayerPermission(source, key, level);
+            }
+            @Override public boolean checkPlayerPermission(String player, PermissionKeys<String>.PermissionKey key, int level) {
+                return switch (key.getKey()) {
+                    case "server_waypoint.command.remote.tp" -> true;
+                    case "server_waypoint.command.tp" -> player.equals("creative");
+                    default -> false;
+                };
+            }
+        };
+        var permissions = new RemotePermissions<>(manager, CommandPermission::new, source -> source);
+        var survivalId = new RemoteServerId("survival");
+        var creativeId = new RemoteServerId("creative");
+        var survival = new DestinationAuthorization<String>(survivalId, target -> true, permissions::canTeleportOnArrival);
+        var creative = new DestinationAuthorization<String>(creativeId, target -> true, permissions::canTeleportOnArrival);
+
+        assertTrue(permissions.canRequestTeleport("survival"));
+        assertEquals(ALLOWED, creative.arrive(new RemoteWaypointKey(creativeId, "world", "Public", "Spawn"), "creative"));
+        assertTrue(permissions.canRequestTeleport("creative"));
+        assertEquals(PERMISSION_DENIED, survival.arrive(new RemoteWaypointKey(survivalId, "world", "Public", "Spawn"), "survival"));
     }
 }

@@ -13,7 +13,7 @@ public final class SourceHandoffService<S> implements RemoteTeleportInitiator<S>
         boolean ownsThread(S source);
         UUID playerId(S source);
         boolean isCurrentPlayer(S source, UUID playerId);
-        /** Recheck both local tp and remote tp permissions using the actual source player. */
+        /** Recheck remote tp permission using the actual source player. */
         boolean canTeleport(S source);
         /** Queue once on the player owner; invoke retired on disappearance. Never block. */
         boolean execute(S source, Runnable task, Runnable retired);

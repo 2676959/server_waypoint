@@ -54,10 +54,11 @@ See [query behavior and limits](cross-server-catalog-queries.md).
 | Remote server/list browsing | `server_waypoint.command.remote.list` | 0 |
 | Remote teleport | `server_waypoint.command.remote.tp` | 2 |
 
-Teleport also MUST require the existing local teleport permission at the source and a final
-local teleport permission check at the destination. Catalog visibility does not grant teleport
-permission. Deployments SHOULD assign explicit Paper nodes because its existing unspecified-node
-fallback uses `isOp()`. Registering these nodes and enforcing them is a later step.
+Teleport MUST require `remote.tp` at the source, independently of local `tp`, and both `tp` and
+`remote.tp` at the destination before transfer and again on arrival. Catalog visibility
+does not grant teleport permission. Deployments SHOULD assign explicit Paper nodes to express
+server-specific policy; unset live nodes use the configured vanilla command level. Destination
+preparation uses the offline permission lookup described in [authorization](cross-server-authorization.md).
 
 ## Catalog states and export
 

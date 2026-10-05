@@ -31,6 +31,7 @@ java {
 tasks.test {
     // Contract tests compile the production adapters against small platform API doubles.
     inputs.files(
+        rootProject.file("mods/src/main/java/_959/server_waypoint/common/server/handoff/ModOfflineTeleportPermission.java"),
         rootProject.file("paper/src/main/java/_959/server_waypoint/server/command/permission/PaperPermissionManager.java"),
         *listOf("fabric", "forge", "neoforge").map { loader ->
             rootProject.file("mods/src/main/java/_959/server_waypoint/$loader/permission/" +

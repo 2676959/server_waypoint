@@ -89,7 +89,8 @@ Example coordinator configuration (Velocity `plugins/server_waypoint/cross-serve
 ```
 
 `proxyPermission` is optional; omission or an empty string disables this additional proxy check.
-The source's two backend teleport permissions and destination local permission remain mandatory.
+The source's backend `remote.tp` permission and both destination `tp` and `remote.tp` permissions
+remain mandatory; source local `tp` permission is independent.
 Mappings must be unique and refer to actual Velocity registered servers. Disabled registry entries
 are excluded from admission. Use normal Velocity authenticated player forwarding for deployment;
 source and destination UUIDs must match the proxy UUID. The test-only offline configuration in the

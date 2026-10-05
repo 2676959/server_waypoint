@@ -9,20 +9,26 @@ platform startup and transfer integration remain Step 16. See [source initiation
 | Operation | Required node | Configured vanilla fallback |
 | --- | --- | --- |
 | Remote servers/list and their catalog identity suggestions | `server_waypoint.command.remote.list` | `CommandPermission.remoteList`: 0 |
-| Initiate a remote teleport | `server_waypoint.command.tp` **and** `server_waypoint.command.remote.tp` | `CommandPermission.tp`: 2 and `CommandPermission.remoteTp`: 2 |
-| Final destination teleport | Destination `server_waypoint.command.tp` | Destination `CommandPermission.tp`: 2 |
+| Initiate a remote teleport | Source `server_waypoint.command.remote.tp` | Source `CommandPermission.remoteTp`: 2 |
+| Prepare a destination teleport | Destination `server_waypoint.command.tp` **and** `server_waypoint.command.remote.tp` | Destination offline permission lookup described below |
+| Final destination teleport | Destination `server_waypoint.command.tp` **and** `server_waypoint.command.remote.tp` | Destination `CommandPermission.tp`: 2 and `CommandPermission.remoteTp`: 2 |
 
 `PermissionKeys` and `PermissionStringKeys` expose the two new nodes to every existing backend
 permission manager. `RemotePermissions` reads the supplied current configuration and permission
 provider on every invocation; no permission result is cached. Browsing checks the command source.
-Teleport initiation resolves the actual source player and checks both nodes on that player, so a
+Teleport initiation resolves the actual source player and checks only `remote.tp` on that player, so a
 console or command-source permission cannot stand in for the player's permissions. A missing
 player denies initiation/arrival. Console browsing follows the platform's normal permission rules.
+Source local `tp` permission is independent: a player denied local waypoint teleportation can still
+initiate a remote teleport. The destination must authorize both its own `tp` and `remote.tp`
+permissions before transfer and again on arrival; a source grant cannot authorize arrival at a
+destination denying either node. Ordinary local waypoint teleportation still requires only `tp`.
 
 `CoreWaypointCommand` gates browsing and teleport separately. The remote branch/help topic is
 available with either permission; help shows only allowed operations. Teleport suggestions require
-both teleport nodes, independently of browsing permission. Execution and cache-backed suggestions check again, including when a
-Brigadier parse was created before revocation. Denied readers do not touch the catalog store.
+`remote.tp`, independently of local teleport and browsing permissions. Execution and cache-backed
+suggestions check again, including when a Brigadier parse was created before revocation. Denied
+readers do not touch the catalog store.
 Brigadier may still suggest static grammar words from an already parsed command; no catalog
 identities are returned. Existing local list commands retain their behavior.
 
@@ -33,12 +39,12 @@ identities are returned. Existing local list commands retain their behavior.
 - Forge and NeoForge currently use vanilla permission levels. They do not implement arbitrary
   permission-node assignments; installing a permission provider does not change these adapters.
 - Paper checks `isPermissionSet(node)` first and honors `hasPermission(node)`, including explicit
-  denials for operators. If unset, it uses `isOp()` and ignores the configured fallback level.
-  This existing behavior is preserved. For example, an ordinary Paper player with an unset remote
-  list node is denied even though `remoteList` is 0. Grant
-  `server_waypoint.command.remote.list` explicitly for intended browsers. Grant both teleport nodes
-  at the source and the local teleport node at the destination for intended teleport users; use
-  explicit denials where required. Do not rely on vanilla levels to express Paper policy.
+  denials for operators. If unset, it checks the actual vanilla command-source level against the
+  configured fallback. Grant `server_waypoint.command.remote.list` for intended browsers and
+  `server_waypoint.command.remote.tp` at the source for intended remote teleport users. Grant
+  both `server_waypoint.command.tp` and `server_waypoint.command.remote.tp` at the destination,
+  and use explicit denials where required.
+  Destination preparation uses the separate offline lookup described below.
 
 ## Permission check before transfer
 
@@ -48,10 +54,12 @@ destination permission lookup and authoritative waypoint resolution produce `Han
 Denied, failed, timed-out or disconnected lookups cannot authorize a proxy transfer. A late permission
 response cannot revive an expired or cancelled record. The final live-player check still runs on arrival.
 
-- Fabric queries the Fabric Permissions API offline UUID lookup, with the destination operator level
-  and configured `tp` level as its fallback. Forge/NeoForge use that operator-level check directly.
+- Fabric queries the Fabric Permissions API offline UUID lookup for both nodes, with the destination
+  operator level and each node's configured `tp`/`remoteTp` level as its separate fallback.
+  Forge/NeoForge use those operator-level checks directly. Both checks must allow preparation.
 - Paper optionally loads LuckPerms user data asynchronously and checks `server_waypoint.command.tp`
-  in the destination's static server context; explicit denial overrides operator status. Without
+  and `server_waypoint.command.remote.tp` in the destination's static server context. Each undefined
+  node falls back to operator status; explicit denial of either node overrides operator status. Without
   LuckPerms, only the native operator fallback is available. Other plugins' player attachments and
   dynamic player contexts cannot be evaluated while the player is absent; their live result is
   checked on arrival. Deployments needing offline node grants should use LuckPerms.
@@ -81,6 +89,19 @@ separate handoff responsibilities. Neither callback changes the KK versus truste
 boundary; plaintext is not cryptographically authenticated.
 
 ## Verification
+
+On 2026-10-05, source initiation was changed to require only `remote.tp`, while destination
+preparation and arrival require both `tp` and `remote.tp`. Arrival, Paper offline lookup and mod
+offline adapter regressions failed against the previous destination rule, then passed after the
+change. The Survival/Creative case verifies allowed initiation with source `tp` denied and denied
+arrival back on Survival. The mod contract also verifies separate configured fallback levels,
+explicit denials, delayed provider responses and provider failure. No native server transfer or
+live permission-provider validation was run.
+
+`./gradlew :common:test :proxy-common:test :paper:26.2-paper:test
+:mods:26.1.2-fabric:compileJava --max-workers=2 --console=plain` passed 625 common, 161 proxy and
+30 Paper tests with no failures, errors or skips, and compiled Fabric 26.1.2. The active Stonecutter
+projects were not switched.
 
 On 2026-09-08, `./gradlew :common:test :proxy-common:test :velocity:build --max-workers=2 --console=plain`
 passes 460 common tests and 67 proxy tests with no failures/errors/skips. The eight new cases cover:

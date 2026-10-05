@@ -24,18 +24,19 @@ public final class RemotePermissions<S, K, P> {
         return permissions.hasPermission(source, permissions.keys.remoteList(), configuration.get().remoteList());
     }
 
-    /** A console cannot initiate a player handoff. Both checks use the actual source player. */
+    /** A console cannot initiate a handoff. Check only remote tp on the actual source player. */
     public boolean canRequestTeleport(S source) {
         P player = sourcePlayer.apply(source);
         if (player == null) return false;
         CommandPermission levels = configuration.get();
-        return permissions.checkPlayerPermission(player, permissions.keys.tp(), levels.tp())
-                && permissions.checkPlayerPermission(player, permissions.keys.remoteTp(), levels.remoteTp());
+        return permissions.checkPlayerPermission(player, permissions.keys.remoteTp(), levels.remoteTp());
     }
 
-    /** Recheck the arrived player's local teleport permission, never a source assertion or UUID lookup. */
+    /** Recheck both destination permissions on the arrived player, never a source assertion or UUID lookup. */
     public boolean canTeleportOnArrival(P player) {
-        return player != null && permissions.checkPlayerPermission(
-                player, permissions.keys.tp(), configuration.get().tp());
+        if (player == null) return false;
+        CommandPermission levels = configuration.get();
+        return permissions.checkPlayerPermission(player, permissions.keys.tp(), levels.tp())
+                && permissions.checkPlayerPermission(player, permissions.keys.remoteTp(), levels.remoteTp());
     }
 }

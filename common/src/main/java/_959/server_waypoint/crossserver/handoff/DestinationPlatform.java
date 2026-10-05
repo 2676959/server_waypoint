@@ -13,7 +13,7 @@ public interface DestinationPlatform<P> {
     /** These reads and teleport are invoked only after ownsThread succeeds. */
     UUID playerId(P player);
     boolean isCurrentPlayer(P player);
-    /** Check the destination's current local teleport permission, not a forwarded source permission. */
+    /** Check the destination's current tp and remote tp permissions, not forwarded source permissions. */
     boolean canTeleport(P player);
     /** Initiate once on the owner and complete true only if the teleport actually succeeds. */
     CompletionStage<Boolean> teleport(P player, DestinationResolver.Target target);

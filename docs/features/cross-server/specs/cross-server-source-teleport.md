@@ -14,9 +14,10 @@ coordinator. Stale names may remain suggested, but execution rejects stale catal
 an available cached target. Missing dimensions/lists/waypoints return NOT_FOUND. Missing servers
 or unavailable catalogs return UNAVAILABLE; unauthorized views return UNAUTHORIZED.
 
-Source initiation requires the actual player's local `tp` and `remote.tp` permissions. Browsing
-permission is independent. The remote root/help topic is visible with either permission and shows
-only allowed operations. Execution and dynamic suggestions recheck permission after parsing.
+Source initiation requires only the actual player's `remote.tp` permission. Local `tp` and browsing
+permissions are independent; the destination requires its own `tp` and `remote.tp` permissions before transfer
+and on arrival. The remote root/help topic is visible with browsing or remote teleport permission
+and shows only allowed operations. Execution and dynamic suggestions recheck permission after parsing.
 Console sources cannot initiate teleportation. Existing local list behavior, remote browsing and
 pagination actions remain unchanged. Help and feedback are translated in all six server locales.
 
@@ -40,7 +41,7 @@ an otherwise valid cached selection. The lifecycle owner must close the old serv
 it, including reconnects to the same coordinator. There is no migration of pending requests.
 
 `SourceHandoffService.Platform` supplies source-owner scheduling, current player/UUID validation
-and fresh local/remote teleport permission checks. Initiation runs on that owner. Network futures
+and fresh remote teleport permission checks. Initiation runs on that owner. Network futures
 queue work back to the owner before reading any player state or initiating transfer. Delayed owner
 work rechecks player identity, presence, permissions and deadline. Rejected/retired scheduling clears
 the pending slot; feedback is delivered at most once and only to the same current source player.

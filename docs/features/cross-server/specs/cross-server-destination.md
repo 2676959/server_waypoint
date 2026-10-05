@@ -15,8 +15,9 @@ payloads and arbitrary backend assertions are not authenticated coordinator mess
 application contract applies to KK and explicitly trusted-loopback plaintext.
 
 `prepare(requestId, request)` checks the local destination ID, reserves the player/request slot,
-and resolves the exact current waypoint and PUBLIC selection. It returns `HandoffPrepared` only
-after successful resolution. Missing identity returns NOT_FOUND, a non-exported list UNAUTHORIZED,
+and checks both destination `tp` and `remote.tp` permissions through an offline UUID lookup before
+resolving the exact current waypoint and PUBLIC selection. It returns `HandoffPrepared` only after
+both permissions allow and resolution succeeds. Missing identity returns NOT_FOUND, a non-exported list UNAUTHORIZED,
 and unavailable data UNAVAILABLE. Failed attempts retain their request IDs for replay rejection.
 The reservation includes the request/player/source/destination/waypoint/action/expiry binding but
 stores no coordinates. Observed source revisions do not provide coordinate authority.
@@ -35,7 +36,7 @@ explicit object budget. This is an atomic detached capture of local data, not th
 catalog cache. It reads the current `CatalogSelection` supplier on every lookup and preserves exact
 server, dimension, list and waypoint names. It returns only the resolved key, position and yaw.
 Unavailable manager state or budget failure is not converted to an empty catalog. Preparation can
-run as model work without a player; no offline permission lookup is attempted.
+run as model work without a player; permission preparation uses the separate platform offline lookup.
 
 Arrival performs a new lookup on the player's owner after the coordinator grants the claim.
 Deletion or renaming denies; movement under the same identity uses the newly resolved position/yaw.
@@ -52,12 +53,13 @@ The service calls no player API until `ownsThread` confirms ownership.
 The first owner task checks the player and sends `ClaimHandoff`. The response must be
 `HandoffClaimed` with the same handoff/player/source/target/action and an expiry no later than the
 local reservation. The coordinator may shorten expiry, as specified in step 13. A fresh owner task
-then rechecks the current player, destination local teleport permission, PUBLIC selection and exact
+then rechecks the current player, both destination teleport permissions, PUBLIC selection and exact
 waypoint. It checks the monotonic deadline immediately before initiating teleport. Claimed expiry
 can only shorten the local monotonic deadline; wall-clock rollback cannot extend it.
 
 Pass the step-12 `RemotePermissions::canTeleportOnArrival` callback to either platform adapter.
-This uses the destination's current `server_waypoint.command.tp` permission and configuration.
+This uses the destination's current `server_waypoint.command.tp` and
+`server_waypoint.command.remote.tp` permissions and their configured levels.
 Do not pass a cached permission result or the source's remote permission assertion.
 
 The service moves through CHECKING, PREPARED, SCHEDULED, CLAIMING, READY, VERIFYING, TELEPORTING and
