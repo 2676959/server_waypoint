@@ -1,58 +1,49 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * The settings screen and its theme editor pause singleplayer exactly when the screen that opened
- * them does, so opening them from the pause menu's mod list doesn't let the game run.
- */
+/** Only the waypoint manager keeps singleplayer running while open. */
 class MovementAllowedScreenPauseTest {
     @Test
-    void aScreenOpenedFromAPausingScreenPausesToo() {
-        assertTrue(MovementAllowedScreen.pausesWith(ParentScreen.create(true)));
+    void waypointManagerDoesNotPause() {
+        assertFalse(create(WaypointManagerScreen.class).isPauseScreen());
     }
 
     @Test
-    void aScreenOpenedFromOneThatLetsTheGameRunLetsItRunToo() {
-        assertFalse(MovementAllowedScreen.pausesWith(ParentScreen.create(false)));
+    void waypointAddPauses() {
+        assertTrue(create(WaypointAddScreen.class).isPauseScreen());
     }
 
     @Test
-    void aScreenWithoutAParentLetsTheGameRun() {
-        assertFalse(MovementAllowedScreen.pausesWith(null));
+    void waypointEditPauses() {
+        assertTrue(create(WaypointEditScreen.class).isPauseScreen());
     }
 
-    private static final class ParentScreen extends Screen {
-        private boolean pauses;
+    @Test
+    void clientConfigPauses() {
+        assertTrue(create(ClientConfigScreen.class).isPauseScreen());
+    }
 
-        // Never runs: create() skips constructors, which read the Minecraft instance absent in unit tests.
-        private ParentScreen() {
-            super(Component.empty());
-        }
+    @Test
+    void widgetThemeConfigPauses() {
+        assertTrue(create(WidgetThemeConfigScreen.class).isPauseScreen());
+    }
 
-        private static ParentScreen create(boolean pauses) {
-            try {
-                Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
-                var unsafeField = unsafeClass.getDeclaredField("theUnsafe");
-                unsafeField.setAccessible(true);
-                ParentScreen screen = (ParentScreen) unsafeClass
-                        .getMethod("allocateInstance", Class.class)
-                        .invoke(unsafeField.get(null), ParentScreen.class);
-                screen.pauses = pauses;
-                return screen;
-            } catch (ReflectiveOperationException e) {
-                throw new AssertionError("Failed to create a screen test double", e);
-            }
-        }
-
-        @Override
-        public boolean isPauseScreen() {
-            return this.pauses;
+    // Skip constructors, which read the Minecraft instance absent in unit tests.
+    private static <T extends Screen> T create(Class<T> screenClass) {
+        try {
+            Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+            var unsafeField = unsafeClass.getDeclaredField("theUnsafe");
+            unsafeField.setAccessible(true);
+            return screenClass.cast(unsafeClass
+                    .getMethod("allocateInstance", Class.class)
+                    .invoke(unsafeField.get(null), screenClass));
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError("Failed to create a screen for pause testing", e);
         }
     }
 }

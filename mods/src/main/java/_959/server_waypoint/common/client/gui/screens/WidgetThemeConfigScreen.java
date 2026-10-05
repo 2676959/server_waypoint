@@ -489,11 +489,6 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         super.removed();
     }
 
-    @Override
-    public boolean isPauseScreen() {
-        return pausesWith(this.parentScreen);
-    }
-
     //? if >= 1.21.9 {
     @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClicked) {

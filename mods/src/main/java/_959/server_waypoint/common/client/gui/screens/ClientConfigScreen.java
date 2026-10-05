@@ -343,11 +343,6 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         MinecraftClientHelper.setScreen(this.minecraft, this.parentScreen);
     }
 
-    @Override
-    public boolean isPauseScreen() {
-        return pausesWith(this.parentScreen);
-    }
-
     /** An open dialog keeps its Cancel button focused through a resize; {@link #init} focuses it. */
     @Override
     protected boolean hasOpenModal() {

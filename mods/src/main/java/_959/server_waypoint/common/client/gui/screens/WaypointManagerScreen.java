@@ -835,6 +835,11 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     }
 
     @Override
+    public boolean isPauseScreen() {
+        return false;
+    }
+
+    @Override
     public void onClose() {
         isRendering = false;
         if (activeScreen == this) {
