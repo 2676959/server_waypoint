@@ -673,8 +673,8 @@ their resting fill; `WaypointManagerScreen.resolveIconControlFill` makes that ch
 
 The manager's sidebar `HOME_ICON` / `LAN_SERVERS_ICON` toggle switches its middle list and right
 details panel between current-server and remote waypoints without opening another screen. Its
-tooltip shows `Current server: <server name>` using the connected server's multiplayer-list name
-in both toggle states. The toggle is shown only while `RemoteWaypointPanel.servers()` is non-empty
+tooltip shows `Waypoints in current server` in local mode and `Waypoints in remote servers`
+in remote mode. The toggle is shown only while `RemoteWaypointPanel.servers()` is non-empty
 or the remote view is open, so singleplayer and servers without cross-server never show it.
 `RemoteWaypointPanel` is a package-private screen composition helper: the manager registers its
 widgets once, supplies layout and visibility, forwards ticks, and owns its manual render pass.
