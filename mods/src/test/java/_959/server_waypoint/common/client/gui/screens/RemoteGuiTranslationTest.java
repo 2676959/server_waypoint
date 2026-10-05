@@ -60,8 +60,8 @@ class RemoteGuiTranslationTest {
         }
     }
 
-    @Test void localToggleTooltipNamesTheView() throws Exception {
-        assertEquals("Local waypoints", read("en_us").get("waypoint.remote.gui.local").getAsString());
+    @Test void serverToggleTooltipNamesTheCurrentServer() throws Exception {
+        assertEquals("Current server: %s", read("en_us").get("waypoint.remote.gui.current_server").getAsString());
     }
 
     private JsonObject read(String locale) throws Exception {

@@ -22,6 +22,7 @@ import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.waypoint.WaypointQueryEngine;
 import _959.server_waypoint.core.waypoint.WaypointSorting;
 import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.screens.Screen;
@@ -115,9 +116,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         this.waypointClientMod = waypointClientMod;
         this.remotePanel = new RemoteWaypointPanel(waypointClientMod, this.font);
         this.statusMessage = new ScalableText(0, 0, Component.empty(), WidgetThemeVariable.TEXT_PRIMARY, this.font);
+        var currentServer = Minecraft.getInstance().getCurrentServer();
+        Component serverScopeTooltip = Component.translatable("waypoint.remote.gui.current_server",
+                currentServer == null ? "" : currentServer.name);
         this.serverScopeToggle = new IconToggleButton(
-                Component.translatable("waypoint.remote.gui.local"),
-                Component.translatable("waypoint.remote.title"),
+                serverScopeTooltip,
+                serverScopeTooltip,
                 WidgetTextures.HOME_ICON,
                 WidgetTextures.LAN_SERVERS_ICON,
                 this::setShowingRemote

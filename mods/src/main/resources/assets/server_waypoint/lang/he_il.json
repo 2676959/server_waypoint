@@ -140,6 +140,7 @@
   "server_waypoint.config.map_mod.not_installed.tooltip": "התקינו את %s כדי לסנכרן אליו את נקודות הציון של השרת הזה.",
   "server_waypoint.config.theme.tooltip": "הצבעים של המסכים של Server Waypoint.",
   "waypoint.remote.gui.local": "נקודות ציון מקומיות",
+  "waypoint.remote.gui.current_server": "השרת הנוכחי: %s",
   "waypoint.remote.gui.read_only": "נתונים מרוחקים לקריאה בלבד. הוספה, עריכה, מחיקה והצגה בעולם המקומי אינן זמינות.",
   "waypoint.remote.gui.status": "מצב: %s",
   "waypoint.remote.gui.server_status": "%s · %s",

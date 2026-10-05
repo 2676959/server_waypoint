@@ -229,6 +229,7 @@
   "waypoint.edit.error.response_timeout": "The server did not confirm the edit in time. Verify the waypoint before retrying.",
   "waypoint.network.encoding_failed": "The waypoint message is too large or could not be encoded.",
   "waypoint.remote.gui.local": "Local waypoints",
+  "waypoint.remote.gui.current_server": "Current server: %s",
   "waypoint.remote.gui.read_only": "Read-only remote data. Add, edit, remove and local rendering are unavailable.",
   "waypoint.remote.gui.status": "Status: %s",
   "waypoint.remote.gui.server_status": "%s · %s",

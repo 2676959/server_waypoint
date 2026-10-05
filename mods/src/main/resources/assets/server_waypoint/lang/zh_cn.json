@@ -229,6 +229,7 @@
   "waypoint.edit.error.response_timeout": "服务器未能及时确认编辑，请检查路径点后再重试。",
   "waypoint.network.encoding_failed": "路径点消息过大或无法编码。",
   "waypoint.remote.gui.local": "本地路径点",
+  "waypoint.remote.gui.current_server": "当前服务器：%s",
   "waypoint.remote.gui.read_only": "远程数据只读，无法添加、编辑、删除或在本地渲染。",
   "waypoint.remote.gui.status": "状态：%s",
   "waypoint.remote.gui.server_status": "%s · %s",

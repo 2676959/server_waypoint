@@ -672,9 +672,10 @@ look and a selected control still fill. The sort dropdown's popup rows float ove
 their resting fill; `WaypointManagerScreen.resolveIconControlFill` makes that choice.
 
 The manager's sidebar `HOME_ICON` / `LAN_SERVERS_ICON` toggle switches its middle list and right
-details panel between current-server and remote waypoints without opening another screen. The
-toggle is shown only while `RemoteWaypointPanel.servers()` is non-empty or the remote view is open,
-so singleplayer and servers without cross-server never show it.
+details panel between current-server and remote waypoints without opening another screen. Its
+tooltip shows `Current server: <server name>` using the connected server's multiplayer-list name
+in both toggle states. The toggle is shown only while `RemoteWaypointPanel.servers()` is non-empty
+or the remote view is open, so singleplayer and servers without cross-server never show it.
 `RemoteWaypointPanel` is a package-private screen composition helper: the manager registers its
 widgets once, supplies layout and visibility, forwards ticks, and owns its manual render pass.
 Search, list/flat mode, name/color/default sorting, and sort direction control both views. Remote
