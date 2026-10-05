@@ -84,7 +84,7 @@ public final class NavigationDisplayText {
         return lines;
     }
 
-    /** The dimension ID in its colour; item lore and live displays show the ID as it is. */
+    /** The dimension ID in its colour for item lore. */
     private static Component dimensionName(NavigationTarget target) {
         return text(target.dimensionName()).color(DimensionStyle.colorOf(target.dimensionName()));
     }
@@ -98,7 +98,8 @@ public final class NavigationDisplayText {
                     .append(text(" — "))
                     .append(translatable(
                             "waypoint.navigation.wrong_dimension",
-                            text(target.dimensionName())
+                            DimensionStyle.displayName(target.dimensionName())
+                                    .color(DimensionStyle.colorOf(target.dimensionName()))
                     ));
         }
 
@@ -125,7 +126,8 @@ public final class NavigationDisplayText {
                     .append(newline())
                     .append(translatable(
                             "waypoint.navigation.wrong_dimension",
-                            text(target.dimensionName())
+                            DimensionStyle.displayName(target.dimensionName())
+                                    .color(DimensionStyle.colorOf(target.dimensionName()))
                     ));
         }
 

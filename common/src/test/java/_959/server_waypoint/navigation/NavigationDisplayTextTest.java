@@ -11,11 +11,15 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import static _959.server_waypoint.text.chat.ChatAssert.colorOf;
+import static _959.server_waypoint.text.chat.ChatAssert.render;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class NavigationDisplayTextTest {
@@ -161,6 +165,30 @@ class NavigationDisplayTextTest {
                 "waypoint.navigation.wrong_dimension",
                 ((TranslatableComponent) travelMessage).key()
         );
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "minecraft:overworld, Overworld, green",
+            "minecraft:the_nether, Nether, red",
+            "minecraft:the_end, End, light_purple",
+            "twilightforest:twilight_forest, Twilight Forest, yellow"
+    })
+    void wrongDimensionMessagesUsePrettifiedColoredNames(String dimensionId, String name, String color) {
+        NavigationTarget target = new NavigationTarget(dimensionId,
+                new WaypointList("villages", "Village list", 0, List.of()),
+                new SimpleWaypoint("Village", "Village", "V", new WaypointPos(10, 64, 20),
+                        0x55FF55, 0, true, List.of(), ""));
+        NavigationSession session = new NavigationSession(UUID.randomUUID(), target,
+                Set.of(NavigationMethod.ACTIONBAR), TextDisplayTransformation.defaultValue());
+
+        Component actionBar = NavigationDisplayText.build(session, NavigationSnapshot.wrongDimension());
+        Component textDisplay = NavigationDisplayText.buildTextDisplay(session, NavigationSnapshot.wrongDimension());
+
+        assertEquals("Village — Travel to " + name, render(actionBar));
+        assertEquals("Village\nTravel to " + name, render(textDisplay));
+        assertEquals(NamedTextColor.NAMES.value(color), colorOf(actionBar, name));
+        assertEquals(NamedTextColor.NAMES.value(color), colorOf(textDisplay, name));
     }
 
     @Test
