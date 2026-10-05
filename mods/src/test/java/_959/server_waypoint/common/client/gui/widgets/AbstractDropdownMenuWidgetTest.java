@@ -89,6 +89,39 @@ class AbstractDropdownMenuWidgetTest {
     }
 
     @Test
+    void onlyVisiblePopupRowsAndScrollbarBlockUnderlyingHover() {
+        TestDropdown dropdown = new TestDropdown(10, 20, 40, 10,
+                LayoutFlow.Orientation.VERTICAL, LayoutFlow.Direction.FORWARD, 0);
+        for (int i = 0; i < 5; i++) {
+            dropdown.addItem(40, 10, () -> {
+            });
+        }
+        dropdown.setMaxPopupHeight(20);
+        assertFalse(dropdown.isMouseOverPopup(15, 35));
+
+        dropdown.setExpanded(true);
+        assertFalse(dropdown.isMouseOverPopup(15, 25), "the trigger is ordinary content");
+        assertTrue(dropdown.isMouseOverPopup(15, 30), "first visible row");
+        assertTrue(dropdown.isMouseOverPopup(48, 49), "scrollbar inside the popup");
+        assertFalse(dropdown.isMouseOverPopup(15, 50), "hidden rows do not cover content");
+        assertFalse(dropdown.isMouseOverPopup(50, 35), "outside the right edge");
+
+        dropdown.mouseScrolled(15, 35, 0, -2);
+        assertTrue(dropdown.isMouseOverPopup(15, 35));
+        assertFalse(dropdown.isMouseOverPopup(15, 50));
+
+        dropdown.setExpansionDirection(LayoutFlow.Direction.REVERSE);
+        assertTrue(dropdown.isMouseOverPopup(15, 0));
+        assertTrue(dropdown.isMouseOverPopup(15, 19));
+        assertFalse(dropdown.isMouseOverPopup(15, 20));
+        dropdown.active = false;
+        assertFalse(dropdown.isMouseOverPopup(15, 10));
+        dropdown.active = true;
+        dropdown.visible = false;
+        assertFalse(dropdown.isMouseOverPopup(15, 10));
+    }
+
+    @Test
     void triggerTogglesAndSelectingAnItemClosesTheMenu() {
         AtomicInteger selections = new AtomicInteger();
         TestDropdown dropdown = new TestDropdown(

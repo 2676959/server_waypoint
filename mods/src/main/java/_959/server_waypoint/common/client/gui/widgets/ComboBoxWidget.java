@@ -138,10 +138,11 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget {
         }
     }
 
+    /** Covers either the choice list or typed suggestions, without covering the input itself. */
     @Override
-    public boolean isMouseOver(double mouseX, double mouseY) {
-        return super.isMouseOver(mouseX, mouseY) || (this.isActive() && this.input != null
-                && this.input.isMouseOverSuggestion(mouseX, mouseY));
+    public boolean isMouseOverPopup(double mouseX, double mouseY) {
+        return super.isMouseOverPopup(mouseX, mouseY) || (this.isActive() && !this.isExpanded()
+                && this.input != null && this.input.isMouseOverSuggestion(mouseX, mouseY));
     }
 
     @Override

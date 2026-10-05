@@ -267,7 +267,13 @@ Up/Down selects a suggestion and Tab/Shift-Tab accepts/cycles completions, and t
 scrolls a longer list while the pointer is over it. Clicking a suggestion
 also accepts it through the normal user-change callback. The full choice popup suppresses
 suggestions while open. `renderPopup(...)` draws whichever popup is active, including when rendered
-separately. Route popup clicks before overlapping controls using `isMouseOver(...)`. Its
+separately. Route popup clicks before overlapping controls using `isMouseOver(...)`.
+`isMouseOverPopup(...)` tests only the visible choice rows/scrollbar or suggestion list, excluding
+the input and arrow. The shared waypoint form lays out popups before this hit test and renders
+ordinary content with `DrawContextHelper.NO_MOUSE` while the pointer is over a popup; popup
+rendering keeps the real pointer so row hover still works. Standalone field suggestions use
+`isMouseOverSuggestion(...)` for the same isolation. A modal swatch suppresses both layers.
+The base dropdown also exposes `isMouseOverPopup(...)` for its visible menu alone.
 `closePopupIfOpen()` closes the choice list, or the suggestions when the list is closed, so
 Escape dismisses whichever is showing.
 

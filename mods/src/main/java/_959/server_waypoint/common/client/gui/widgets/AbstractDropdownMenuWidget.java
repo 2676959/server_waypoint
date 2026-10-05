@@ -251,10 +251,12 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         if (!this.isActive()) {
             return false;
         }
-        if (contains(this, mouseX, mouseY)) {
-            return true;
-        }
-        if (!this.expanded) {
+        return contains(this, mouseX, mouseY) || this.isMouseOverPopup(mouseX, mouseY);
+    }
+
+    /** Whether a visible popup covers the pointer, excluding the collapsed control. */
+    public boolean isMouseOverPopup(double mouseX, double mouseY) {
+        if (!this.isActive() || !this.expanded) {
             return false;
         }
         if (this.isOverScrollIndicator(mouseX, mouseY)) {

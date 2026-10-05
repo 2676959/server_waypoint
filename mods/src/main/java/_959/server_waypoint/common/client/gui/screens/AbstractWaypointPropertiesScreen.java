@@ -1137,9 +1137,16 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         if (layout == null) {
             return;
         }
-        // Disabled controls still calculate hover and request cursors during rendering.
-        int contentMouseX = this.swatchWidget.visible ? NO_MOUSE : mouseX;
-        int contentMouseY = this.swatchWidget.visible ? NO_MOUSE : mouseY;
+        // Popup placement must be current before deciding which layer owns hover.
+        for (ComboBoxWidget dropdown : this.dropdowns) {
+            dropdown.layoutPopup(this.height, 8);
+        }
+        // Covered controls still calculate hover and request cursors during rendering.
+        boolean blockContentHover = this.swatchWidget.visible || this.isMouseOverPopup(mouseX, mouseY);
+        int contentMouseX = blockContentHover ? NO_MOUSE : mouseX;
+        int contentMouseY = blockContentHover ? NO_MOUSE : mouseY;
+        int popupMouseX = this.swatchWidget.visible ? NO_MOUSE : mouseX;
+        int popupMouseY = this.swatchWidget.visible ? NO_MOUSE : mouseY;
         context.fill(layout.panelX(), layout.panelY(), layout.panelX() + layout.panelWidth(),
                 layout.panelY() + layout.panelHeight(), getColor(PANEL_BACKGROUND));
         renderOutline(context, layout.panelX(), layout.panelY(), layout.panelWidth(), layout.panelHeight(), getColor(BORDER));
@@ -1164,12 +1171,11 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         this.drawIconPreview(context);
         nextLayer(context);
         for (TranslucentTextField field : this.suggestionFields) {
-            field.renderSuggestions(context, contentMouseX, contentMouseY);
+            field.renderSuggestions(context, popupMouseX, popupMouseY);
         }
         previousLayer(context);
         for (ComboBoxWidget dropdown : this.dropdowns) {
-            dropdown.layoutPopup(this.height, 8);
-            dropdown.renderPopup(context, contentMouseX, contentMouseY, delta);
+            dropdown.renderPopup(context, popupMouseX, popupMouseY, delta);
         }
         this.renderFieldTooltip(context, contentMouseX, contentMouseY);
         nextLayer(context);
@@ -1178,6 +1184,20 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         extractWidgetRenderState
                 (context, mouseX, mouseY, delta);
         previousLayer(context);
+    }
+
+    private boolean isMouseOverPopup(double mouseX, double mouseY) {
+        for (ComboBoxWidget dropdown : this.dropdowns) {
+            if (dropdown.isMouseOverPopup(mouseX, mouseY)) {
+                return true;
+            }
+        }
+        for (TranslucentTextField field : this.suggestionFields) {
+            if (field.isMouseOverSuggestion(mouseX, mouseY)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void drawIconPreview(GuiGraphicsExtractor context) {
