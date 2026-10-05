@@ -187,6 +187,18 @@ class HandoffStateMachineTest {
         assertEquals(REPLAY, send(destination, requestId, completion(binding, SUCCESS)).result());
     }
 
+    @Test void destinationPermissionDetailsAreForwardedOnlyFromTheAdmittedDestination() {
+        setup(TransportMode.NOISE_KK);
+        send(source, requestId, prepare());
+        var denial = new HandoffRejected(UNAUTHORIZED,
+                new _959.server_waypoint.crossserver.TeleportPermissionCheck(false, true));
+        assertEquals(WRONG_DESTINATION, send(source, requestId, denial).result());
+        var rejected = send(destination, requestId, denial);
+        assertEquals(source, rejected.deliveries().get(0).peer());
+        assertEquals(denial, rejected.deliveries().get(0).message());
+        assertEquals(0, registry.stats().active());
+    }
+
     @Test void destinationRejectionReleasesPlayerAndRejectsLateConfirmation() {
         setup(TransportMode.NOISE_KK);
         send(source, requestId, prepare());

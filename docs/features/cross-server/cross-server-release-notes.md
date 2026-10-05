@@ -38,6 +38,9 @@ covers the rest of that release.
   the source, independently of its local teleport permission. The destination requires both
   `server_waypoint.command.tp` and `server_waypoint.command.remote.tp` (`tp` and `remoteTp`, each
   default level 2) before transfer and on arrival. Local waypoint teleportation requires only `tp`.
+- When a destination rejects the server connection, Velocity shows its rejection message to the
+  player when available, including whitelist and ban reasons. Standard handoff failure feedback
+  remains; the cross-server protocol is unchanged.
 
 ## Compatibility
 
@@ -49,3 +52,6 @@ protocol 1 between the backends and the coordinator.
 See the [administrator guide](cross-server-admin.md) for setup, permissions, rotation and recovery.
 The [release verification record](validation/cross-server-release-readiness.md) and the later
 [validation records](validation/) show what was tested before release and what those runs don't cover.
+
+Cross-server teleport permission denials now name the server and show independent colored
+`tp` and `remote.tp` statuses. Deploy matching backends and coordinator builds; the application protocol version remains 1.

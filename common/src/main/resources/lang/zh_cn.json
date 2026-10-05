@@ -563,6 +563,7 @@
   "wp.remote.try_again": "重试",
   "wp.remote.try_again.tooltip": "再次请求切换",
   "wp.remote.tp.unavailable": "{0}现在无法连接。",
+  "wp.remote.tp.permission_check_failed": "跨服传送失败：在{0}的权限检查失败",
   "wp.remote.tp.unauthorized": "你没有切换到{0}的权限。",
   "wp.remote.tp.not_found": "那个路径点已不在{0}上。",
   "wp.remote.tp.stale_catalog": "{0}的数据已过期，请等待刷新。",

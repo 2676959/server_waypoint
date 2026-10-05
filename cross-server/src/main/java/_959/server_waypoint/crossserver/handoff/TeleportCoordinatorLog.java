@@ -1,6 +1,7 @@
 package _959.server_waypoint.crossserver.handoff;
 
 import _959.server_waypoint.crossserver.RemoteServerId;
+import _959.server_waypoint.crossserver.TeleportPermissionCheck;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage.*;
 import org.slf4j.Logger;
@@ -22,6 +23,13 @@ public final class TeleportCoordinatorLog {
         return result.toString();
     }
 
+    /** Plain log context for an actual node-check denial; server identities remain stable IDs. */
+    public static String permissionFailure(RemoteServerId server, TeleportPermissionCheck permissions) {
+        return "Remote teleport failed: permission check failed in " + safe(server.value())
+                + ": tp " + (permissions.tp() ? "✔" : "✘")
+                + " · remote.tp " + (permissions.remoteTp() ? "✔" : "✘");
+    }
+
     public static void activity(Logger logger, String direction, RemoteServerId peer, UUID requestId, ApplicationMessage message) {
         UUID player = null;
         Object target = "-";
@@ -35,7 +43,13 @@ public final class TeleportCoordinatorLog {
         else if (message instanceof HandoffRejected rejected) result = rejected.reason();
         else if (message instanceof ApplicationMessage.Error error) result = error.reason();
         else return;
-        logger.info("handoff direction={} peer={} request={} player={} phase={} target={} result={}",
-                direction, safe(peer.value()), requestId, player, message.getClass().getSimpleName(), safe(target), result);
+        if (message instanceof HandoffRejected rejected && rejected.permissions() != null) {
+            logger.info("handoff direction={} peer={} request={} player={} phase={} target={} result={} tp={} remote.tp={}",
+                    direction, safe(peer.value()), requestId, player, message.getClass().getSimpleName(), safe(target), result,
+                    rejected.permissions().tp(), rejected.permissions().remoteTp());
+        } else {
+            logger.info("handoff direction={} peer={} request={} player={} phase={} target={} result={}",
+                    direction, safe(peer.value()), requestId, player, message.getClass().getSimpleName(), safe(target), result);
+        }
     }
 }

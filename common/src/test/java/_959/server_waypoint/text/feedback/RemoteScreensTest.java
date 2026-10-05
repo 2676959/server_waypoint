@@ -55,6 +55,27 @@ class RemoteScreensTest {
     }
 
     @Test
+    void deniedTeleportShowsBothPermissionResultsInTheirStatusColors() {
+        Component feedback = RemoteScreens.permissionCheckFailed(Component.text("Survival"),
+                new _959.server_waypoint.crossserver.TeleportPermissionCheck(false, true));
+        assertEquals("✘ Remote teleport failed: permission check failed in Survival: tp ✘ · remote.tp ✔", render(feedback));
+        assertEquals(NamedTextColor.RED, colorOf(feedback, "tp ✘"));
+        assertEquals(NamedTextColor.GREEN, colorOf(feedback, "remote.tp ✔"));
+    }
+
+    @Test
+    void denialCanShowRemoteFailureOrBothFailures() {
+        Component remote = RemoteScreens.permissionCheckFailed(Component.text("Survival"),
+                new _959.server_waypoint.crossserver.TeleportPermissionCheck(true, false));
+        assertEquals("✘ Remote teleport failed: permission check failed in Survival: tp ✔ · remote.tp ✘", render(remote));
+        assertEquals(NamedTextColor.GREEN, colorOf(remote, "tp ✔"));
+        assertEquals(NamedTextColor.RED, colorOf(remote, "remote.tp ✘"));
+        Component both = RemoteScreens.permissionCheckFailed(Component.text("Survival"),
+                new _959.server_waypoint.crossserver.TeleportPermissionCheck(false, false));
+        assertEquals("✘ Remote teleport failed: permission check failed in Survival: tp ✘ · remote.tp ✘", render(both));
+    }
+
+    @Test
     void thePickerShowsServersWithWaypointsFirstAndTheirStates() {
         Component picker = RemoteScreens.picker(Fixtures.player(), SERVERS, 1, 10);
 

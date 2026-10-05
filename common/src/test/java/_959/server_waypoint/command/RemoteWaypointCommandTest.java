@@ -15,6 +15,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.kyori.adventure.text.*;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
+import _959.server_waypoint.crossserver.TeleportPermissionCheck;
 import org.junit.jupiter.api.*;
 import java.time.Instant;
 import java.util.*;
@@ -33,7 +34,7 @@ class RemoteWaypointCommandTest {
         public boolean ownsThread(String source) { return true; }
         public UUID playerId(String source) { return playerId; }
         public boolean isCurrentPlayer(String source, UUID id) { return playerId.equals(id); }
-        public boolean canTeleport(String source) { return tpAllowed; }
+        public TeleportPermissionCheck checkTeleportPermissions(String source) { return new TeleportPermissionCheck(true, tpAllowed); }
         public boolean execute(String source, Runnable task, Runnable retired) { task.run(); return true; }
     }, new SourceHandoffService.Link() {
         public CompletionStage<ApplicationMessage> prepare(UUID id, ApplicationMessage.PrepareHandoff request) {
@@ -312,6 +313,18 @@ class RemoteWaypointCommandTest {
         assertEquals("Switching you to Server search for [B] Display 0…", ChatAssert.render(last()));
         assertTrue(errors.isEmpty());
     }
+    @Test void destinationPermissionFailureReachesPlayerWithServerNameAndIndependentStatuses() throws Exception {
+        tpAllowed = true;
+        dispatcher.execute(tpTarget(), "player");
+        prepareReply.complete(new ApplicationMessage.HandoffRejected(ApplicationMessage.Result.UNAUTHORIZED,
+                new TeleportPermissionCheck(false, true)));
+        assertEquals(0, transfers);
+        assertEquals("✘ Remote teleport failed: permission check failed in Server search: tp ✘ · remote.tp ✔", ChatAssert.render(errors.get(0)));
+        assertEquals(net.kyori.adventure.text.format.NamedTextColor.RED, ChatAssert.colorOf(errors.get(0), "tp ✘"));
+        assertEquals(net.kyori.adventure.text.format.NamedTextColor.GREEN, ChatAssert.colorOf(errors.get(0), "remote.tp ✔"));
+        assertEquals(1, errors.size());
+    }
+
     @Test void teleportPreparationRejectionReportsExactReasonWithoutTransfer() throws Exception {
         tpAllowed = true; dispatcher.execute(tpTarget(), "player");
         prepareReply.complete(new ApplicationMessage.HandoffRejected(ApplicationMessage.Result.UNSUPPORTED));

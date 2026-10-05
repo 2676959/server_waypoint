@@ -162,6 +162,8 @@ public final class ApplicationCodec {
         }
         else if (message instanceof HandoffRejected m) {
             w.result(m.reason());
+            var permissions = m.permissions();
+            w.i(permissions == null ? 0 : 4 | (permissions.tp() ? 1 : 0) | (permissions.remoteTp() ? 2 : 0));
         }
         else if (message instanceof ClaimHandoff m) {
             w.uuid(m.handoffId());
@@ -200,7 +202,7 @@ public final class ApplicationCodec {
             case 13 -> new CatalogInvalidate(r.server(), r.revision(), r.state());
             case 20 -> new PrepareHandoff(r.uuid(), r.server(), r.key(), r.action(), r.revision(), r.revision());
             case 21 -> new HandoffPrepared(r.binding());
-            case 22 -> new HandoffRejected(r.result());
+            case 22 -> new HandoffRejected(r.result(), r.permissions());
             case 23 -> new ClaimHandoff(r.uuid(), r.uuid(), r.server());
             case 24 -> new HandoffClaimed(r.binding());
             case 25 -> new CompleteHandoff(r.uuid(), r.uuid(), r.server(), r.result());
@@ -525,6 +527,13 @@ public final class ApplicationCodec {
         }
 
         private RemoteWaypointKey key() { object(); return new RemoteWaypointKey(server(), string(), string(), string()); }
+
+        private TeleportPermissionCheck permissions() {
+            int flags = i();
+            if (flags == 0) return null;
+            if (flags < 4 || flags > 6) throw invalid();
+            return new TeleportPermissionCheck((flags & 1) != 0, (flags & 2) != 0);
+        }
 
         private HandoffBinding binding() {
             object();

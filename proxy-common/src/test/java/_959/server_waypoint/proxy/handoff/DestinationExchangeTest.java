@@ -30,7 +30,7 @@ class DestinationExchangeTest {
                 id -> Optional.of(new ProxyPlayerSnapshot(player, Optional.of(route.get()))), ignored -> Result.SUCCESS);
         AtomicBoolean owned = new AtomicBoolean(); AtomicInteger teleports = new AtomicInteger();
         DestinationPlatform<UUID> platform = new DestinationPlatform<>() {
-            public CompletionStage<Boolean> canPrepare(UUID id) { return CompletableFuture.completedFuture(true); }
+            public CompletionStage<TeleportPermissionCheck> canPrepare(UUID id) { return CompletableFuture.completedFuture(new TeleportPermissionCheck(true, true)); }
             public boolean execute(UUID p, Runnable task, Runnable retired) {
                 boolean previous = owned.getAndSet(true);
                 try { task.run(); } finally { owned.set(previous); } return true;
@@ -38,7 +38,7 @@ class DestinationExchangeTest {
             public boolean ownsThread(UUID p) { return owned.get(); }
             public UUID playerId(UUID p) { assertTrue(owned.get()); return p; }
             public boolean isCurrentPlayer(UUID p) { return p.equals(player); }
-            public boolean canTeleport(UUID p) { assertTrue(owned.get()); return true; }
+            public TeleportPermissionCheck checkTeleportPermissions(UUID p) { assertTrue(owned.get()); return new TeleportPermissionCheck(true, true); }
             public CompletionStage<Boolean> teleport(UUID p, DestinationResolver.Target target) {
                 assertTrue(owned.get()); assertEquals(new WaypointPos(50, 64, 2), target.position());
                 teleports.incrementAndGet(); return CompletableFuture.completedFuture(true);
@@ -68,7 +68,7 @@ class DestinationExchangeTest {
                 public boolean ownsThread(UUID p) { return true; }
                 public UUID playerId(UUID p) { return p; }
                 public boolean isCurrentPlayer(UUID p, UUID id) { return p.equals(id) && route.get().equals(a); }
-                public boolean canTeleport(UUID p) { return true; }
+                public TeleportPermissionCheck checkTeleportPermissions(UUID p) { return new TeleportPermissionCheck(true, true); }
                 public boolean execute(UUID p, Runnable task, Runnable retired) { task.run(); return true; }
             };
             SourceHandoffService.Link sourceLink = new SourceHandoffService.Link() {

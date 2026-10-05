@@ -10,6 +10,7 @@ import _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result;
 import _959.server_waypoint.crossserver.transport.*;
 import _959.server_waypoint.proxy.*;
 import _959.server_waypoint.proxy.transport.CoordinatorAgent;
+import _959.server_waypoint.crossserver.TeleportPermissionCheck;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -34,7 +35,8 @@ class LiveHandoffRuntimeTest {
         AtomicBoolean physicallyArrived = new AtomicBoolean();
         var route = new AtomicReference<>(scenario == Scenario.WRONG_SOURCE ? b : a);
         AtomicInteger switches = new AtomicInteger(), teleports = new AtomicInteger();
-        CompletableFuture<Result> feedback = new CompletableFuture<>(), arrived = new CompletableFuture<>();
+        CompletableFuture<RemoteTeleportInitiator.Feedback> feedback = new CompletableFuture<>();
+        CompletableFuture<Result> arrived = new CompletableFuture<>();
         byte[] ap = CanonicalKey.generatePrivate(), bp = CanonicalKey.generatePrivate(), cp = CanonicalKey.generatePrivate();
         boolean noise = mode == TransportMode.NOISE_KK;
         var tcp = new TcpLimits(4, 2000, 5000, 64, 4194304, 10000);
@@ -49,7 +51,7 @@ class LiveHandoffRuntimeTest {
             public boolean ownsThread(UUID p) { return owns.get(); }
             public UUID playerId(UUID p) { assertTrue(owns.get()); return p; }
             public boolean isCurrentPlayer(UUID p, UUID id) { assertTrue(owns.get()); return p.equals(id); }
-            public boolean canTeleport(UUID p) { assertTrue(owns.get()); return true; }
+            public TeleportPermissionCheck checkTeleportPermissions(UUID p) { assertTrue(owns.get()); return new TeleportPermissionCheck(true, true); }
             public boolean execute(UUID p, Runnable task, Runnable retired) {
                 if (scenario == Scenario.CLAIM_BEFORE_READY && !readiness.isDone()) readiness.complete(task);
                 else schedule.accept(task);
@@ -57,11 +59,11 @@ class LiveHandoffRuntimeTest {
             }
         };
         DestinationPlatform<UUID> destinationPlatform = new DestinationPlatform<>() {
-            public CompletionStage<Boolean> canPrepare(UUID id) { return CompletableFuture.completedFuture(scenario != Scenario.DESTINATION_PERMISSION_DENIED); }
+            public CompletionStage<TeleportPermissionCheck> canPrepare(UUID id) { return CompletableFuture.completedFuture(new TeleportPermissionCheck(scenario != Scenario.DESTINATION_PERMISSION_DENIED, true)); }
             public boolean ownsThread(UUID p) { return owns.get(); }
             public UUID playerId(UUID p) { assertTrue(owns.get()); return p; }
             public boolean isCurrentPlayer(UUID p) { assertTrue(owns.get()); return physicallyArrived.get() || route.get().equals(b); }
-            public boolean canTeleport(UUID p) { assertTrue(owns.get()); return scenario != Scenario.DESTINATION_PERMISSION_REVOKED; }
+            public TeleportPermissionCheck checkTeleportPermissions(UUID p) { assertTrue(owns.get()); return new TeleportPermissionCheck(scenario != Scenario.DESTINATION_PERMISSION_REVOKED, true); }
             public boolean execute(UUID p, Runnable task, Runnable retired) { schedule.accept(task); return true; }
             public CompletionStage<Boolean> teleport(UUID p, DestinationResolver.Target target) {
                 assertTrue(owns.get()); assertEquals(new WaypointPos(50, 70, 60), target.position());
@@ -144,7 +146,14 @@ class LiveHandoffRuntimeTest {
                     case DESTINATION_PERMISSION_DENIED, PROXY_DENIED, DESTINATION_PERMISSION_REVOKED -> Result.UNAUTHORIZED;
                     case DISCONNECT, DELAYED_DISCONNECT, DELAYED_WRONG_ROUTE -> Result.UNAVAILABLE;
                 };
-                assertEquals(expected, feedback.get(8, TimeUnit.SECONDS));
+                var reported = feedback.get(8, TimeUnit.SECONDS);
+                assertEquals(expected, reported.result());
+                if (scenario == Scenario.DESTINATION_PERMISSION_DENIED) {
+                    assertEquals(b, reported.permissionServer());
+                    assertEquals(new TeleportPermissionCheck(false, true), reported.permissions());
+                } else {
+                    assertNull(reported.permissions());
+                }
                 if (scenario == Scenario.SUCCESS || scenario == Scenario.DELAYED_ROUTE) {
                     assertEquals(Result.SUCCESS, arrived.get(5, TimeUnit.SECONDS));
                     assertEquals(1, switches.get()); assertEquals(1, teleports.get());

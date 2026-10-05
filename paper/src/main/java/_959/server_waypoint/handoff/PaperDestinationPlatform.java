@@ -13,21 +13,22 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Predicate;
+import _959.server_waypoint.crossserver.TeleportPermissionCheck;
+import java.util.function.Function;
 
 /** Paper/Folia player ownership and asynchronous teleport adapter; never waits for chunk loading. */
 public final class PaperDestinationPlatform implements DestinationPlatform<Player> {
     private final JavaPlugin plugin;
-    private final Predicate<Player> permission;
-    private final java.util.function.Function<UUID, CompletionStage<Boolean>> preflight;
+    private final Function<Player, TeleportPermissionCheck> permission;
+    private final java.util.function.Function<UUID, CompletionStage<TeleportPermissionCheck>> preflight;
 
-    public PaperDestinationPlatform(JavaPlugin plugin, Predicate<Player> permission,
-            java.util.function.Function<UUID, CompletionStage<Boolean>> preflight) {
+    public PaperDestinationPlatform(JavaPlugin plugin, Function<Player, TeleportPermissionCheck> permission,
+            java.util.function.Function<UUID, CompletionStage<TeleportPermissionCheck>> preflight) {
         this.plugin = Objects.requireNonNull(plugin);
         this.permission = Objects.requireNonNull(permission);
         this.preflight = Objects.requireNonNull(preflight);
     }
-    @Override public CompletionStage<Boolean> canPrepare(UUID playerId) { return preflight.apply(playerId); }
+    @Override public CompletionStage<TeleportPermissionCheck> canPrepare(UUID playerId) { return preflight.apply(playerId); }
     @Override public boolean execute(Player player, Runnable task, Runnable retired) {
         if (!plugin.isEnabled()) return false;
         // Join events can precede installation in the live player lookup. Check on the next owner tick.
@@ -40,7 +41,7 @@ public final class PaperDestinationPlatform implements DestinationPlatform<Playe
     @Override public boolean isCurrentPlayer(Player player) {
         return plugin.isEnabled() && player.isOnline() && plugin.getServer().getPlayer(player.getUniqueId()) == player;
     }
-    @Override public boolean canTeleport(Player player) { return permission.test(player); }
+    @Override public TeleportPermissionCheck checkTeleportPermissions(Player player) { return permission.apply(player); }
     @Override public CompletionStage<Boolean> teleport(Player player, DestinationResolver.Target target) {
         PlayerActionLog.Actor actor = new PlayerActionLog.Actor(player.getUniqueId(), player.getName());
         var key = target.key();

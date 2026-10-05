@@ -4,6 +4,7 @@ import _959.server_waypoint.text.chat.ChatIcons;
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.crossserver.authorization.RemotePermissions;
 import _959.server_waypoint.crossserver.handoff.RemoteTeleportInitiator;
+import _959.server_waypoint.crossserver.handoff.TeleportCoordinatorLog;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result;
 import _959.server_waypoint.crossserver.pairing.StaticKeyGenerator;
 
@@ -125,7 +126,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
     private final WaypointServerCore waypointServer;
     private final WaypointQueryEngine waypointQueryEngine;
     private final RemoteWaypointCommand<S> remoteCommand;
-    private volatile RemoteTeleportInitiator<S> remoteTeleport = (source, selection, feedback) -> feedback.accept(Result.UNSUPPORTED);
+    private volatile RemoteTeleportInitiator<S> remoteTeleport = (source, selection, feedback) -> feedback.accept(new RemoteTeleportInitiator.Feedback(Result.UNSUPPORTED));
 
     private final PermissionKeys<K> permissionKeys;
     private final PermissionManager<S, K, P> permissionManager;
@@ -228,9 +229,11 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                     PlayerActionLog.log(actor, "remote_tp", "requested", "server", key.serverId().value(),
                             "dimension", key.dimensionName(), "list", key.listName(), "waypoint", key.waypointName());
                     remoteTeleport.initiate(source, selection, result -> {
-                        PlayerActionLog.log(actor, "remote_tp", result.name().toLowerCase(Locale.ROOT),
+                        PlayerActionLog.log(actor, "remote_tp", result.result().name().toLowerCase(Locale.ROOT),
                                 "server", key.serverId().value(), "dimension", key.dimensionName(),
-                                "list", key.listName(), "waypoint", key.waypointName());
+                                "list", key.listName(), "waypoint", key.waypointName(),
+                                "reason", result.permissions() == null ? null :
+                                        TeleportCoordinatorLog.permissionFailure(result.permissionServer(), result.permissions()));
                         feedback.accept(result);
                     });
                 },

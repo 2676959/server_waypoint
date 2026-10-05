@@ -38,8 +38,8 @@ class DestinationHandoffServiceTest {
         final Deque<Runnable> work = new ArrayDeque<>(), retired = new ArrayDeque<>();
         final List<DestinationResolver.Target> teleports = new ArrayList<>();
         final CompletableFuture<Boolean> teleported = new CompletableFuture<>();
-        CompletionStage<Boolean> preflight = CompletableFuture.completedFuture(true);
-        public CompletionStage<Boolean> canPrepare(UUID id) { assertEquals(playerId, id); return preflight; }
+        CompletionStage<TeleportPermissionCheck> preflight = CompletableFuture.completedFuture(new TeleportPermissionCheck(true, true));
+        public CompletionStage<TeleportPermissionCheck> canPrepare(UUID id) { assertEquals(playerId, id); return preflight; }
         boolean owned, reject, lieAboutOwnership;
         int reads;
         public boolean execute(Player player, Runnable task, Runnable retirement) {
@@ -50,7 +50,7 @@ class DestinationHandoffServiceTest {
         private void assertOwner() { assertTrue(owned, "Player API called off owner"); reads++; }
         public UUID playerId(Player player) { assertOwner(); return player.id; }
         public boolean isCurrentPlayer(Player player) { assertOwner(); return player.current; }
-        public boolean canTeleport(Player player) { assertOwner(); return player.allowed; }
+        public TeleportPermissionCheck checkTeleportPermissions(Player player) { assertOwner(); return new TeleportPermissionCheck(player.allowed, true); }
         public CompletionStage<Boolean> teleport(Player player, DestinationResolver.Target target) {
             assertOwner(); teleports.add(target); return teleported;
         }
@@ -101,15 +101,21 @@ class DestinationHandoffServiceTest {
     }
 
     @Test void deniedPermissionNeverPreparesOrClaims() {
-        platform.preflight = CompletableFuture.completedFuture(false);
-        assertEquals(new HandoffRejected(UNAUTHORIZED), service.prepare(request, prepareMessage()).toCompletableFuture().join());
+        org.slf4j.impl.StaticLoggerBinder.clear();
+        platform.preflight = CompletableFuture.completedFuture(new TeleportPermissionCheck(false, true));
+        assertEquals(new HandoffRejected(UNAUTHORIZED, new TeleportPermissionCheck(false, true)), service.prepare(request, prepareMessage()).toCompletableFuture().join());
+        var logs = org.slf4j.impl.StaticLoggerBinder.events().stream()
+                .filter(value -> value.contains("arrival_finished")).toList();
+        assertEquals(1, logs.size());
+        assertTrue(logs.get(0).contains("player=" + playerId));
+        assertTrue(logs.get(0).contains("Remote teleport failed: permission check failed in destination: tp ✘ · remote.tp ✔"));
         assertEquals(NOT_FOUND, arrive().join().result());
         assertEquals(0, link.claims);
         assertTrue(platform.teleports.isEmpty());
     }
 
     @Test void pendingPermissionCannotAdmitArrivalAndLateGrantCannotReviveExpiredRequest() {
-        CompletableFuture<Boolean> permission = new CompletableFuture<>();
+        CompletableFuture<TeleportPermissionCheck> permission = new CompletableFuture<>();
         platform.preflight = permission;
         var preparation = service.prepare(request, prepareMessage()).toCompletableFuture();
         assertFalse(preparation.isDone());
@@ -117,18 +123,18 @@ class DestinationHandoffServiceTest {
         nanos.addAndGet(16_000_000_000L);
         service.maintain();
         assertEquals(new HandoffRejected(EXPIRED), preparation.join());
-        permission.complete(true);
+        permission.complete(new TeleportPermissionCheck(true, true));
         assertEquals(NOT_FOUND, arrive().join().result());
         assertEquals(0, link.claims);
     }
 
     @Test void disconnectCompletesPendingPreparationAndLateGrantCannotReviveIt() {
-        CompletableFuture<Boolean> permission = new CompletableFuture<>();
+        CompletableFuture<TeleportPermissionCheck> permission = new CompletableFuture<>();
         platform.preflight = permission;
         var preparation = service.prepare(request, prepareMessage()).toCompletableFuture();
         service.close();
         assertEquals(new HandoffRejected(UNAVAILABLE), preparation.join());
-        permission.complete(true);
+        permission.complete(new TeleportPermissionCheck(true, true));
         assertEquals(0, service.stats().active());
         assertEquals(0, link.claims);
     }
@@ -171,6 +177,7 @@ class DestinationHandoffServiceTest {
     @Test void permissionRevokedAfterClaimBeforeScheduledWorkDenies() {
         HandoffBinding binding = prepare(); var arrival = arrive(); platform.run(); grant(binding);
         player.allowed = false; platform.run(); assertFailure(arrival, UNAUTHORIZED);
+        assertEquals(new TeleportPermissionCheck(false, true), arrival.join().permissions());
     }
     @Test void disconnectedOrDifferentPlayerCannotUseReservation() {
         prepare(); var arrival = service.arrive(playerId, new Player(UUID.randomUUID())).toCompletableFuture();

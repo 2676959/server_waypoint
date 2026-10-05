@@ -21,7 +21,7 @@ class PaperOfflineTeleportPermissionTest {
         assertFalse(result.isDone());
         permission = Tristate.FALSE;
         loaded.complete(api(User.class));
-        assertFalse(result.join());
+        assertFalse(result.join().allowed());
     }
 
     @Test void grantsNonOperatorAndUsesOperatorFallbackOnlyForUndefined() {
@@ -33,6 +33,15 @@ class PaperOfflineTeleportPermissionTest {
         remotePermission = Tristate.UNDEFINED;
         assertFalse(check(false));
         assertTrue(check(true));
+    }
+
+    @Test void teleportDenialStillReportsRemoteGrant() {
+        permission = Tristate.FALSE;
+        remotePermission = Tristate.TRUE;
+        loaded.complete(api(User.class));
+        assertEquals(new _959.server_waypoint.crossserver.TeleportPermissionCheck(false, true),
+                PaperOfflineTeleportPermission.LuckPermsLookup.check(api(LuckPerms.class), player, true)
+                        .toCompletableFuture().join());
     }
 
     @Test void localTeleportGrantCannotOverrideRemoteTeleportDenial() {
@@ -61,7 +70,7 @@ class PaperOfflineTeleportPermissionTest {
     }
 
     private boolean check(boolean operator) {
-        return PaperOfflineTeleportPermission.LuckPermsLookup.check(api(LuckPerms.class), player, operator).toCompletableFuture().join();
+        return PaperOfflineTeleportPermission.LuckPermsLookup.check(api(LuckPerms.class), player, operator).toCompletableFuture().join().allowed();
     }
 
     @SuppressWarnings("unchecked")

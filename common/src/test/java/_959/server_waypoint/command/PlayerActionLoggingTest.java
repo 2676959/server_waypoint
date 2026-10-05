@@ -1,6 +1,24 @@
 package _959.server_waypoint.command;
 
 import _959.server_waypoint.core.logging.PlayerActionLog;
+import _959.server_waypoint.crossserver.RemoteServerId;
+import _959.server_waypoint.crossserver.RemoteRevision;
+import _959.server_waypoint.crossserver.RemoteWaypointSnapshot;
+import _959.server_waypoint.crossserver.RemoteCatalogSnapshot;
+import _959.server_waypoint.crossserver.RemoteListSnapshot;
+import _959.server_waypoint.crossserver.CatalogExportPolicy;
+import _959.server_waypoint.crossserver.TeleportPermissionCheck;
+import _959.server_waypoint.crossserver.catalog.CatalogIndex;
+import _959.server_waypoint.crossserver.catalog.CatalogCacheLimits;
+import _959.server_waypoint.crossserver.catalog.RemoteCatalogStore;
+import _959.server_waypoint.crossserver.protocol.ApplicationCodec;
+import _959.server_waypoint.crossserver.protocol.ApplicationEnvelope;
+import _959.server_waypoint.crossserver.protocol.ApplicationMessage;
+import _959.server_waypoint.crossserver.protocol.ProtocolLimits;
+import _959.server_waypoint.crossserver.transport.TransportMode;
+import _959.server_waypoint.crossserver.transport.TcpChannel;
+import _959.server_waypoint.crossserver.handoff.RemoteTeleportInitiator;
+import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.config.Config;
 import _959.server_waypoint.core.WaypointServerCore;
 import org.junit.jupiter.api.AfterEach;
@@ -136,6 +154,57 @@ class PlayerActionLoggingTest {
         var event = actions().get(0);
         assertTrue(event.contains("player=Alex"));
         assertTrue(event.contains("sender=Server sender_id=non-player"));
+    }
+
+    @Test
+    void remotePermissionFailureLogsBothStatusesAndRetainsOriginalSender() throws Exception {
+        var id = new RemoteServerId("survival");
+        var revision = new RemoteRevision(1);
+        var index = new CatalogIndex(
+                CatalogCacheLimits.DEFAULT);
+        Object owner = new Object();
+        index.connected(id, owner, TransportMode.NOISE_KK,
+                ProtocolLimits.DEFAULT);
+        var waypoint = new RemoteWaypointSnapshot("Home", "H",
+                new WaypointPos(0, 64, 0), 0, 0, false,
+                java.util.List.of(), "", null);
+        var snapshot = new RemoteCatalogSnapshot(id, revision,
+                java.util.Map.of("minecraft:overworld", java.util.Map.of("Public",
+                        new RemoteListSnapshot("Public", revision,
+                                java.util.Map.of("Home", waypoint)))), java.time.Instant.EPOCH);
+        var codec = new ApplicationCodec(
+                ProtocolLimits.DEFAULT);
+        byte[] bytes = codec.encodeCatalog(snapshot);
+        var request = java.util.UUID.randomUUID();
+        index.receive(id, owner, new TcpChannel.Received(
+                new ApplicationEnvelope(0, request,
+                        new ApplicationMessage.CatalogMetadata(
+                                id, "Survival", revision, CatalogExportPolicy.PUBLIC,
+                                "minecraft:compass")), null));
+        index.receive(id, owner, new TcpChannel.Received(
+                new ApplicationEnvelope(1, request,
+                        new ApplicationMessage.CatalogSnapshot(
+                                id, revision, java.util.UUID.randomUUID(), 0, bytes.length,
+                                new ApplicationMessage.Bytes(bytes))), snapshot));
+        harness.server.setRemoteCatalogStore(new RemoteCatalogStore(index));
+        java.util.concurrent.atomic.AtomicReference<java.util.function.Consumer<
+                RemoteTeleportInitiator.Feedback>> callback = new java.util.concurrent.atomic.AtomicReference<>();
+        harness.command.setRemoteTeleportInitiator((source, selection, feedback) -> callback.set(feedback));
+        var executor = CommandHarness.player();
+        harness.sender.commandSenders.put(executor, CommandHarness.console());
+        harness.dispatcher.execute("wp remote tp survival \"minecraft:overworld\" Public Home", executor);
+        harness.sender.commandSenders.clear();
+        StaticLoggerBinder.clear();
+        callback.get().accept(new RemoteTeleportInitiator.Feedback(
+                ApplicationMessage.Result.UNAUTHORIZED, id,
+                new TeleportPermissionCheck(false, true)));
+        assertEquals(1, actions().size());
+        String event = actions().get(0);
+        assertTrue(event.contains("action=remote_tp"));
+        assertTrue(event.contains("outcome=unauthorized"));
+        assertTrue(event.contains("player=Alex player_id=00000000-0000-0000-0000-000000000000"));
+        assertTrue(event.contains("sender=Server sender_id=non-player"));
+        assertTrue(event.contains("Remote teleport failed: permission check failed in survival: tp ✘ · remote.tp ✔"));
     }
 
     private java.util.List<String> actions() {

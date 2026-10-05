@@ -129,8 +129,14 @@ public sealed interface ApplicationMessage {
         public HandoffPrepared { Objects.requireNonNull(binding, "binding"); }
     }
 
-    record HandoffRejected(Result reason) implements ApplicationMessage {
-        public HandoffRejected { requireFailure(reason); }
+    record HandoffRejected(Result reason, TeleportPermissionCheck permissions) implements ApplicationMessage {
+        public HandoffRejected {
+            requireFailure(reason);
+            if (permissions != null && (reason != Result.UNAUTHORIZED || permissions.allowed())) {
+                throw new IllegalArgumentException("Permission details require a denied permission check");
+            }
+        }
+        public HandoffRejected(Result reason) { this(reason, null); }
     }
 
     record ClaimHandoff(UUID handoffId, UUID playerId, RemoteServerId destination) implements ApplicationMessage {

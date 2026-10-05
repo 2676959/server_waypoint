@@ -8,28 +8,39 @@ import com.velocitypowered.api.event.connection.PluginMessageEvent;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import java.nio.file.Path;
 import java.lang.reflect.Proxy;
 import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 class VelocityPlayerRouterTest {
     final UUID id = UUID.randomUUID();
     final RemoteServerId a = new RemoteServerId("a"), b = new RemoteServerId("b");
-    boolean online = true, permission = true;
+    boolean online = true, permission = true, deliveryFails;
     String route = "alpha";
     int connections;
+    final List<Component> messages = new ArrayList<>();
     final CompletableFuture<ConnectionRequestBuilder.Result> result = new CompletableFuture<>();
     final RegisteredServer destination = fake(RegisteredServer.class, Map.of("getServerInfo", args -> new ServerInfo("beta", new InetSocketAddress("127.0.0.1", 25566))));
     final ServerConnection source = fake(ServerConnection.class, Map.of("getServerInfo", args -> new ServerInfo(route, new InetSocketAddress("127.0.0.1", 25565))));
     final Player player = fake(Player.class, Map.of("getUniqueId", args -> id, "isActive", args -> online,
             "hasPermission", args -> permission, "getCurrentServer", args -> Optional.of(source),
+            "sendMessage", args -> {
+                if (deliveryFails) throw new IllegalStateException("message delivery unavailable");
+                messages.add((Component) args[0]); return null;
+            },
             "createConnectionRequest", args -> { assertSame(destination, args[0]); connections++;
                 return fake(ConnectionRequestBuilder.class, Map.of("connect", ignored -> result)); }));
-    final ProxyServer proxy = fake(ProxyServer.class, Map.of("getPlayer", args -> online && id.equals(args[0]) ? Optional.of(player) : Optional.empty(),
+    Player connectedPlayer = player;
+    final ProxyServer proxy = fake(ProxyServer.class, Map.of("getPlayer", args -> online && id.equals(args[0]) ? Optional.of(connectedPlayer) : Optional.empty(),
             "getServer", args -> Set.of("alpha", "beta").contains(args[0]) ? Optional.of(destination) : Optional.empty()));
     final VelocityPlayerRouter router = new VelocityPlayerRouter(proxy, Map.of(a, "alpha", b, "beta"), "server_waypoint.remote");
     @Test void currentProxyUuidAndSourceAreCheckedAndTransferIsAsynchronous() {
@@ -38,6 +49,68 @@ class VelocityPlayerRouterTest {
         assertEquals(1, connections); assertFalse(pending.isDone());
         result.complete(fake(ConnectionRequestBuilder.Result.class, Map.of("isSuccessful", args -> true)));
         assertEquals(TransferResult.SUCCESS, pending.join());
+        assertTrue(messages.isEmpty());
+    }
+
+    static Stream<Component> rejectionReasons() {
+        return Stream.of(Component.translatable("multiplayer.disconnect.not_whitelisted"),
+                Component.translatable("multiplayer.disconnect.banned.reason", Component.text("Server rules violation"))
+                        .color(NamedTextColor.RED));
+    }
+
+    @ParameterizedTest
+    @MethodSource("rejectionReasons")
+    void destinationRejectionReasonIsShownToPlayer(Component reason) {
+        var pending = router.transfer(id, a, b).toCompletableFuture();
+        result.complete(rejected(Optional.of(reason)));
+        assertEquals(TransferResult.CONNECTION_FAILED, pending.join());
+        assertEquals(List.of(reason), messages);
+    }
+
+    @Test void missingRejectionReasonKeepsGenericFailureWithoutExtraMessage() {
+        var pending = router.transfer(id, a, b).toCompletableFuture();
+        result.complete(rejected(Optional.empty()));
+        assertEquals(TransferResult.CONNECTION_FAILED, pending.join());
+        assertTrue(messages.isEmpty());
+    }
+
+    @Test void delayedRejectionIsNotSentAfterDisconnect() {
+        var pending = router.transfer(id, a, b).toCompletableFuture();
+        online = false;
+        result.complete(rejected(Optional.of(Component.text("not whitelisted"))));
+        assertEquals(TransferResult.CONNECTION_FAILED, pending.join());
+        assertTrue(messages.isEmpty());
+    }
+
+    @Test void delayedRejectionIsNotSentToReplacementPlayerWithSameUuid() {
+        var pending = router.transfer(id, a, b).toCompletableFuture();
+        connectedPlayer = fake(Player.class, Map.of("isActive", args -> true, "getUniqueId", args -> id,
+                "getCurrentServer", args -> Optional.of(source), "sendMessage", args -> {
+                    messages.add((Component) args[0]); return null;
+                }));
+        result.complete(rejected(Optional.of(Component.text("not whitelisted"))));
+        assertEquals(TransferResult.CONNECTION_FAILED, pending.join());
+        assertTrue(messages.isEmpty());
+    }
+
+    @Test void delayedRejectionIsNotSentAfterMovingToAnotherServer() {
+        var pending = router.transfer(id, a, b).toCompletableFuture();
+        route = "beta";
+        result.complete(rejected(Optional.of(Component.text("not whitelisted"))));
+        assertEquals(TransferResult.CONNECTION_FAILED, pending.join());
+        assertTrue(messages.isEmpty());
+    }
+
+    @Test void rejectionMessageDeliveryFailureKeepsStableTransferFailure() {
+        var pending = router.transfer(id, a, b).toCompletableFuture();
+        deliveryFails = true;
+        result.complete(rejected(Optional.of(Component.text("not whitelisted"))));
+        assertEquals(TransferResult.CONNECTION_FAILED, pending.join());
+    }
+
+    private ConnectionRequestBuilder.Result rejected(Optional<Component> reason) {
+        return fake(ConnectionRequestBuilder.Result.class, Map.of("isSuccessful", args -> false,
+                "getReasonComponent", args -> reason));
     }
     @Test void wrongSourceOfflineAndPermissionDenialNeverConnect() {
         route = "beta"; assertEquals(TransferResult.SOURCE_MISMATCH, router.transfer(id, a, b).toCompletableFuture().join());

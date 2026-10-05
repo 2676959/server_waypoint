@@ -553,6 +553,7 @@
   "wp.remote.try_again": "Reintentar",
   "wp.remote.try_again.tooltip": "Volver a pedir el cambio",
   "wp.remote.tp.unavailable": "No se puede conectar con {0} ahora mismo.",
+  "wp.remote.tp.permission_check_failed": "El teletransporte remoto falló: la comprobación de permisos falló en {0}",
   "wp.remote.tp.unauthorized": "No tienes permiso para cambiar a {0}.",
   "wp.remote.tp.not_found": "Ese punto ya no está en {0}.",
   "wp.remote.tp.stale_catalog": "{0} está desactualizado; espera a que se actualice.",

@@ -1,6 +1,7 @@
 package _959.server_waypoint.crossserver.handoff;
 
 import _959.server_waypoint.crossserver.RemoteServerId;
+import _959.server_waypoint.crossserver.TeleportPermissionCheck;
 import _959.server_waypoint.crossserver.RemoteWaypointKey;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage.*;
@@ -26,7 +27,12 @@ public final class DestinationHandoffService<P> implements AutoCloseable {
         }
     }
     /** How an arrival ended, and the waypoint it was for when the handoff was known. */
-    public record ArrivalResult(Result result, boolean notificationQueued, @org.jetbrains.annotations.Nullable RemoteWaypointKey target) { }
+    public record ArrivalResult(Result result, boolean notificationQueued, @org.jetbrains.annotations.Nullable RemoteWaypointKey target,
+                                @org.jetbrains.annotations.Nullable TeleportPermissionCheck permissions) {
+        public ArrivalResult(Result result, boolean notificationQueued, RemoteWaypointKey target) {
+            this(result, notificationQueued, target, null);
+        }
+    }
     public record Stats(int records, int active, long retainedBytes, boolean closed) { }
     private enum State { CHECKING, PREPARED, SCHEDULED, CLAIMING, READY, VERIFYING, TELEPORTING, TERMINAL }
     private final class Entry {
@@ -38,6 +44,7 @@ public final class DestinationHandoffService<P> implements AutoCloseable {
         long deadline, terminalAt;
         State state = State.CHECKING;
         Result result = Result.SUCCESS;
+        TeleportPermissionCheck deniedPermissions;
         boolean claimed;
         P player;
         Entry(UUID requestId, HandoffBinding binding, long bytes, long deadline) {
@@ -91,8 +98,11 @@ public final class DestinationHandoffService<P> implements AutoCloseable {
         }
         try {
             Objects.requireNonNull(platform.canPrepare(request.playerId())).whenComplete((allowed, failure) -> {
-                Result result = failure != null ? Result.UNAVAILABLE
-                        : Boolean.TRUE.equals(allowed) ? Result.SUCCESS : Result.UNAUTHORIZED;
+                Result result = failure != null || allowed == null ? Result.UNAVAILABLE
+                        : allowed.allowed() ? Result.SUCCESS : Result.UNAUTHORIZED;
+                synchronized (lock) {
+                    if (entry.state == State.CHECKING && result == Result.UNAUTHORIZED) entry.deniedPermissions = allowed;
+                }
                 prepared(entry, result);
             });
         } catch (RuntimeException unavailable) {
@@ -199,7 +209,14 @@ public final class DestinationHandoffService<P> implements AutoCloseable {
         Result status = playerStatus(entry);
         if (status != Result.SUCCESS) { finish(entry, status, true); return; }
         try {
-            if (!platform.canTeleport(entry.player)) { finish(entry, Result.UNAUTHORIZED, true); return; }
+            var permissions = Objects.requireNonNull(platform.checkTeleportPermissions(entry.player));
+            if (!permissions.allowed()) {
+                synchronized (lock) {
+                    if (entry.state == State.VERIFYING) entry.deniedPermissions = permissions;
+                }
+                finish(entry, Result.UNAUTHORIZED, true);
+                return;
+            }
         } catch (RuntimeException unavailable) { finish(entry, Result.UNAVAILABLE, true); return; }
         var resolution = resolve(entry);
         if (resolution.result() != Result.SUCCESS) { finish(entry, resolution.result(), true); return; }
@@ -284,10 +301,13 @@ public final class DestinationHandoffService<P> implements AutoCloseable {
                     : new CancelHandoff(entry.binding.handoffId(), result == Result.SUCCESS ? Result.CANCELLED : result);
             try { queued = link.send(entry.requestId, message); } catch (RuntimeException unavailable) { /* No retry of player work. */ }
         }
-        TeleportCoordinatorLog.BACKEND.info("arrival_finished server={} request={} player={} result={}",
-                TeleportCoordinatorLog.safe(localId.value()), entry.requestId, entry.binding.playerId(), result);
-        if (!entry.preparation.isDone()) entry.preparation.complete(new HandoffRejected(result));
-        entry.arrival.complete(new ArrivalResult(result, queued, entry.binding.target()));
+        String reason = result == Result.UNAUTHORIZED && entry.deniedPermissions != null
+                ? TeleportCoordinatorLog.permissionFailure(localId, entry.deniedPermissions) : "-";
+        TeleportCoordinatorLog.BACKEND.info("arrival_finished server={} request={} player={} result={} reason={}",
+                TeleportCoordinatorLog.safe(localId.value()), entry.requestId, entry.binding.playerId(), result, reason);
+        if (!entry.preparation.isDone()) entry.preparation.complete(new HandoffRejected(result, result == Result.UNAUTHORIZED ? entry.deniedPermissions : null));
+        entry.arrival.complete(new ArrivalResult(result, queued, entry.binding.target(),
+                result == Result.UNAUTHORIZED ? entry.deniedPermissions : null));
     }
     private boolean expired(Entry entry) { return nanos.getAsLong() - entry.deadline >= 0; }
     private static boolean matches(HandoffBinding local, HandoffBinding claimed) {

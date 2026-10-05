@@ -130,7 +130,8 @@ not reload configuration. Use the startup log and the reported error to diagnose
 | Repeated reconnects | Check key mismatch/revocation, duplicate stable IDs, stalled peers, resource limits and destination availability. Do not relax authentication. |
 | Plaintext endpoint rejected | Use a literal loopback address at both ends and remove all crypto fields. |
 | Stale/changed selection | Wait for republish, refresh and select the target again. Never copy cached coordinates into a teleport workaround. |
-| Permission denied | Check both source nodes, optional proxy node, actual destination player permission and PUBLIC export. |
+| Permission denied | Check source `remote.tp`, optional proxy node, both destination `tp` and `remote.tp` permissions and PUBLIC export. |
+| Server switch rejected | Velocity shows the destination's rejection message when available, including whitelist or ban messages. The normal transfer-failed feedback still reports the handoff outcome; without a reason, only that generic feedback is available. |
 | Switched but arrival failed | Check destination world/waypoint removal, permissions, deadline and player identity. Re-select after recovery; do not replay the old handoff. |
 | Coordinator restarted | Old sessions/handoffs are invalid. Backends reconnect and republish; wait for fresh available catalogs before retrying. |
 
@@ -168,7 +169,7 @@ namespaced item identifier, at most 256 ASCII characters; malformed identifiers 
 startup. A valid item unavailable on a client's registry (or air) renders as a compass.
 This setting applies to both modded and Paper backends and is not a coordinator setting.
 
-Server icon metadata keeps application protocol **1**; modded clients use Minecraft custom-payload
+Teleport permission feedback keeps application protocol **1**; modded clients use Minecraft custom-payload
 protocol **2**. Update the coordinator, all backends, and modded clients together; if `protocolVersion`
-is explicitly set in `cross-server.json`, keep it at `1`. Coordinators and backends built before the
-selector change advertise the same application protocol but do not understand the new icon field.
+is explicitly set in `cross-server.json`, keep it at `1`. Older builds with the same application
+version do not understand the added permission flags; deploy matching coordinator and backend builds.

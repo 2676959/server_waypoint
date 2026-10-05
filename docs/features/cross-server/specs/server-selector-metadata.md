@@ -1,14 +1,14 @@
 # Server selector metadata
 
-The application protocol retains version 1, and the server-selector change extends its version-1
-wire format with the fields below. A pre-selector coordinator or backend may not decode a new build
-even though both advertise version 1; deploy matching builds of the client, backends, and
-coordinator together. The Minecraft remote-catalog message carries the icon as well; the 4.0.0
+The server-selector change originally extended application protocol version 1. The current
+[permission-feedback contract](2026-10-05-permission-check-feedback.md) retains application version 1.
+The selector fields remain part of the wire format below. Deploy matching builds of the client,
+backends, and coordinator together. The Minecraft remote-catalog message carries the icon as well; the 4.0.0
 release sends it under custom-payload protocol 2.
 
 - `CatalogMetadata` (type 10) appends `iconItem` after export policy, encoded as a canonical UTF-8
   string. It must match `[a-z0-9_.-]+:[a-z0-9/._-]+` and be at most 256 characters.
-- Canonical catalog headers and application envelopes continue to carry version 1. Registration
+- Canonical catalog headers and application envelopes carry version 1. Registration
   uses the shared `CrossServerProtocol.PROTOCOL_VERSION`, including coordinator validation.
 - The receiver installs the icon together with display name when its correlated complete snapshot
   is accepted. Delta updates retain that metadata. Coordinator metadata byte budgets count both

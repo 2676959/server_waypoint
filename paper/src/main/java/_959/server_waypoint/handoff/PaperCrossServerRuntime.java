@@ -24,7 +24,7 @@ public final class PaperCrossServerRuntime implements Listener {
                                    PaperPermissionManager permissions, PaperMessageSender sender) {
         this.sender = sender;
         var authorization = new RemotePermissions<>(permissions, () -> CONFIG.CommandPermission(), PaperCrossServerRuntime::player);
-        destination = new PaperDestinationPlatform(plugin, authorization::canTeleportOnArrival,
+        destination = new PaperDestinationPlatform(plugin, authorization::checkTeleportPermissions,
                 id -> PaperOfflineTeleportPermission.check(plugin, id));
         runtime = new BackendRuntime<>(plugin.getDataFolder().toPath(), manager, new SourceHandoffService.Platform<>() {
             public boolean ownsThread(CommandSourceStack source) { return player(source) != null && destination.ownsThread(player(source)); }
@@ -32,7 +32,9 @@ public final class PaperCrossServerRuntime implements Listener {
             public boolean isCurrentPlayer(CommandSourceStack source, UUID id) {
                 var player = player(source); return player != null && id.equals(player.getUniqueId()) && destination.isCurrentPlayer(player);
             }
-            public boolean canTeleport(CommandSourceStack source) { return authorization.canRequestTeleport(source); }
+            public _959.server_waypoint.crossserver.TeleportPermissionCheck checkTeleportPermissions(CommandSourceStack source) {
+                return authorization.checkTeleportPermissions(player(source));
+            }
             public boolean execute(CommandSourceStack source, Runnable task, Runnable retired) {
                 var player = player(source); return player != null && destination.execute(player, task, retired);
             }

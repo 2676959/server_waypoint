@@ -1,6 +1,8 @@
 package _959.server_waypoint.crossserver.handoff;
 
 import _959.server_waypoint.crossserver.RemoteRevision;
+import _959.server_waypoint.crossserver.RemoteServerId;
+import _959.server_waypoint.crossserver.TeleportPermissionCheck;
 import _959.server_waypoint.crossserver.RemoteWaypointKey;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result;
 import java.util.Objects;
@@ -14,6 +16,16 @@ public interface RemoteTeleportInitiator<S> {
             Objects.requireNonNull(key); Objects.requireNonNull(catalogRevision); Objects.requireNonNull(listRevision);
         }
     }
+    record Feedback(Result result, RemoteServerId permissionServer, TeleportPermissionCheck permissions) {
+        public Feedback {
+            Objects.requireNonNull(result);
+            if ((permissionServer == null) != (permissions == null)
+                    || permissions != null && (result != Result.UNAUTHORIZED || permissions.allowed())) {
+                throw new IllegalArgumentException("Invalid permission feedback");
+            }
+        }
+        public Feedback(Result result) { this(result, null, null); }
+    }
     /** Called on the source owner. Deliver feedback at most once, on that same live player's owner. */
-    void initiate(S source, Selection selection, Consumer<Result> feedback);
+    void initiate(S source, Selection selection, Consumer<Feedback> feedback);
 }

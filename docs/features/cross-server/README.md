@@ -12,10 +12,10 @@ backend/proxy boundary.
 | Document | Scope |
 | --- | --- |
 | [Server selector metadata](specs/server-selector-metadata.md) | Icon fields in the application protocol 1 and remote-catalog wire formats |
-| [Protocol v1](specs/cross-server-protocol-v1.md) | Normative feature contract (step 1) |
+| [Protocol contract](specs/cross-server-protocol-v1.md) | Normative feature contract (step 1) |
 | [Module contracts](specs/cross-server-proxy-module-contracts.md) | Module boundaries and packaging (step 3) |
 | [Catalog models](specs/cross-server-catalog-models.md) | Shared catalog domain types (step 4) |
-| [Application codec v1](specs/cross-server-application-codec-v1.md) | Backend/coordinator wire format (step 5) |
+| [Application codec](specs/cross-server-application-codec-v1.md) | Backend/coordinator wire format (step 5) |
 | [TCP transport v1](specs/cross-server-tcp-transport-v1.md) | Reusable TCP channels (step 6) |
 | [Pairing v1](specs/cross-server-pairing-v1.md) | Credentials, pairing and rotation (step 7) |
 | [Connection lifecycle](specs/cross-server-connection-lifecycle.md) | Presence, registration and reconnect (step 8) |
@@ -27,6 +27,8 @@ backend/proxy boundary.
 - [Backend catalog publication](specs/cross-server-catalog-publication.md) (step 9)
 - [Aggregation and distribution](specs/cross-server-catalog-distribution.md) (step 10)
 - [Remote queries and suggestions](specs/cross-server-catalog-queries.md) (step 11)
+
+- [Permission check feedback](specs/2026-10-05-permission-check-feedback.md) — independent colored teleport statuses
 
 **Permission and handoff** — who may teleport, and how the switch happens
 
@@ -42,6 +44,8 @@ backend/proxy boundary.
 - [Remote waypoint manager GUI](specs/cross-server-gui.md) (step 18)
 
 ## Release
+
+- [Permission feedback validation](validation/2026-10-05-permission-check-feedback.md) — 2026-10-05
 
 - [Server selector validation](validation/2026-09-22-server-selector.md) — 2026-09-22
 
@@ -68,11 +72,11 @@ The documents cross-reference each other by step number. Use this table to resol
 
 | Step | Document |
 | --- | --- |
-| 1 | [Protocol v1](specs/cross-server-protocol-v1.md) |
+| 1 | [Protocol contract](specs/cross-server-protocol-v1.md) |
 | 2 | [Noise dependency decision](specs/cross-server-noise-dependency-decision.md) |
 | 3 | [Module contracts](specs/cross-server-proxy-module-contracts.md) · [validation](validation/cross-server-step3-validation.md) |
 | 4 | [Catalog models](specs/cross-server-catalog-models.md) |
-| 5 | [Application codec v1](specs/cross-server-application-codec-v1.md) |
+| 5 | [Application codec](specs/cross-server-application-codec-v1.md) |
 | 6 | [TCP transport v1](specs/cross-server-tcp-transport-v1.md) |
 | 7 | [Pairing v1](specs/cross-server-pairing-v1.md) |
 | 8 | [Connection lifecycle](specs/cross-server-connection-lifecycle.md) |

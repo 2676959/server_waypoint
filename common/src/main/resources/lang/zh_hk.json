@@ -553,6 +553,7 @@
   "wp.remote.try_again": "重試",
   "wp.remote.try_again.tooltip": "再次請求切換",
   "wp.remote.tp.unavailable": "{0}現在無法連線。",
+  "wp.remote.tp.permission_check_failed": "跨服傳送失敗：在{0}的權限檢查失敗",
   "wp.remote.tp.unauthorized": "你沒有切換到{0}的權限。",
   "wp.remote.tp.not_found": "那個路徑點已不在{0}上。",
   "wp.remote.tp.stale_catalog": "{0}的資料已過期，請等待重新整理。",

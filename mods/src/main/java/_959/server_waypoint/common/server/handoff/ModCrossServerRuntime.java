@@ -31,7 +31,7 @@ public final class ModCrossServerRuntime {
     }
     public void start(MinecraftServer server) {
         if (!server.isDedicatedServer()) return;
-        destination = new ModDestinationPlatform(server, authorization::canTeleportOnArrival,
+        destination = new ModDestinationPlatform(server, authorization::checkTeleportPermissions,
                 new ModOfflineTeleportPermission(server, permissions)::check);
         runtime = new BackendRuntime<>(directory, manager, new SourceHandoffService.Platform<>() {
             public boolean ownsThread(CommandSourceStack source) { return server.isSameThread(); }
@@ -39,7 +39,9 @@ public final class ModCrossServerRuntime {
             public boolean isCurrentPlayer(CommandSourceStack source, UUID id) {
                 var player = source.getPlayer(); return player != null && id.equals(player.getUUID()) && destination.isCurrentPlayer(player);
             }
-            public boolean canTeleport(CommandSourceStack source) { return authorization.canRequestTeleport(source); }
+            public _959.server_waypoint.crossserver.TeleportPermissionCheck checkTeleportPermissions(CommandSourceStack source) {
+                return authorization.checkTeleportPermissions(source.getPlayer());
+            }
             public boolean execute(CommandSourceStack source, Runnable task, Runnable retired) {
                 var player = source.getPlayer(); return player != null && destination.execute(player, task, retired);
             }

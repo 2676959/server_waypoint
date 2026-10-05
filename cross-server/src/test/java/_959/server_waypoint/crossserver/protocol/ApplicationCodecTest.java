@@ -85,6 +85,28 @@ class ApplicationCodecTest {
         assertThrows(IllegalArgumentException.class, () -> CODEC.decode(trailingPayload));
     }
 
+    static Stream<TeleportPermissionCheck> deniedChecks() {
+        return Stream.of(new TeleportPermissionCheck(false, true), new TeleportPermissionCheck(true, false),
+                new TeleportPermissionCheck(false, false));
+    }
+
+    @ParameterizedTest @MethodSource("deniedChecks")
+    void rejectedPermissionsRoundTripAndRequireCompleteCanonicalDetails(TeleportPermissionCheck permissions) {
+        var rejected = envelope(new HandoffRejected(Result.UNAUTHORIZED, permissions));
+        byte[] bytes = CODEC.encode(rejected);
+        assertEquals(rejected, CODEC.decode(bytes));
+        for (int size = 0; size < bytes.length; size++) {
+            byte[] truncated = Arrays.copyOf(bytes, size);
+            assertThrows(IllegalArgumentException.class, () -> CODEC.decode(truncated));
+        }
+        for (int flags : new int[]{-1, 1, 2, 3, 7, 8}) {
+            byte[] invalid = bytes.clone();
+            ByteBuffer.wrap(invalid).putInt(invalid.length - 4, flags);
+            assertThrows(IllegalArgumentException.class, () -> CODEC.decode(invalid));
+        }
+        assertThrows(IllegalArgumentException.class, () -> new HandoffRejected(Result.NOT_FOUND, permissions));
+    }
+
     @Test
     void heartbeatHasStableKnownBytesAndMessageIds() {
         assertEquals("000000010000000300000000000000070000000000000001000000000000000200000000",

@@ -33,7 +33,11 @@ The complete flow is:
 6. Coordinator requires the exact source session and PREPARED reservation, rechecks route,
    destination session, catalog revisions and proxy permission, then invokes the real Velocity
    transfer adapter at most once. Failed connections cancel the destination reservation and return
-   a stable failure to the source. The source player stays put if connection establishment fails.
+   a stable failure to the source. Velocity also sends the destination's rejection component directly
+   to the same active player if still connected to the source, preserving its formatting and
+   translations. Missing reasons, connection exceptions and message-delivery failures retain the
+   generic transfer-failed feedback. The reason is not sent through the cross-server protocol or
+   written to coordinator logs. The source player stays put if connection establishment fails.
 7. The destination's join event claims once through the coordinator, resolves current local
    coordinates again, rechecks the live player's permission and performs the owning-thread teleport.
    `COMPLETE_HANDOFF` closes the source's pending operation. A switch by itself is not teleport success.

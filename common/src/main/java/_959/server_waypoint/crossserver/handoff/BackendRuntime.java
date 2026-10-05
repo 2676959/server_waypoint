@@ -93,9 +93,9 @@ public final class BackendRuntime<S, P> extends AsyncTransportLifecycle implemen
         startupFailureDetails = failure.getMessage();
     }
     public String startupFailureDetails() { return startupFailureDetails; }
-    @Override public void initiate(S source, Selection selection, Consumer<Result> feedback) {
+    @Override public void initiate(S source, Selection selection, Consumer<Feedback> feedback) {
         var current = session;
-        if (stopping || current == null) feedback.accept(Result.UNAVAILABLE);
+        if (stopping || current == null) feedback.accept(new Feedback(Result.UNAVAILABLE));
         else current.source().initiate(source, selection, feedback);
     }
     public CompletionStage<DestinationHandoffService.ArrivalResult> arrive(UUID playerId, P player) {
@@ -112,6 +112,10 @@ public final class BackendRuntime<S, P> extends AsyncTransportLifecycle implemen
             WaypointFileManager fileManager = manager.getWaypointFileManager(target.dimensionName());
             WaypointList list = fileManager == null ? null : fileManager.getWaypointListByName(target.listName());
             waypoint = list == null ? null : list.getWaypointByName(target.waypointName());
+        }
+        if (result.permissions() != null) {
+            return RemoteScreens.permissionCheckFailed(net.kyori.adventure.text.Component.text(
+                    id == null ? "" : id.value()), result.permissions());
         }
         return RemoteScreens.arrival(result.result(), id == null ? "" : id.value(),
                 target == null ? null : target.waypointName(), waypoint);

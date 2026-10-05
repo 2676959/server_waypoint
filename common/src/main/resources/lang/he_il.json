@@ -553,6 +553,7 @@
   "wp.remote.try_again": "ניסיון חוזר",
   "wp.remote.try_again.tooltip": "בקשת המעבר שוב",
   "wp.remote.tp.unavailable": "אי אפשר להתחבר ל-{0} כרגע.",
+  "wp.remote.tp.permission_check_failed": "השיגור המרוחק נכשל: בדיקת ההרשאות נכשלה ב-{0}",
   "wp.remote.tp.unauthorized": "אין לכם הרשאה לעבור ל-{0}.",
   "wp.remote.tp.not_found": "הנקודה הזו כבר לא נמצאת ב-{0}.",
   "wp.remote.tp.stale_catalog": "{0} לא עדכני; המתינו שיתעדכן.",

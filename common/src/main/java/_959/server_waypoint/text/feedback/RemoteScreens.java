@@ -40,6 +40,8 @@ import static net.kyori.adventure.text.format.NamedTextColor.AQUA;
 import static net.kyori.adventure.text.format.NamedTextColor.DARK_GRAY;
 import static net.kyori.adventure.text.format.NamedTextColor.GOLD;
 import static net.kyori.adventure.text.format.NamedTextColor.GRAY;
+import static net.kyori.adventure.text.format.NamedTextColor.RED;
+import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
 import static net.kyori.adventure.text.format.NamedTextColor.LIGHT_PURPLE;
 import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 
@@ -355,6 +357,18 @@ public final class RemoteScreens {
                 Chat.control(viewer, translatable("wp.open", name), AQUA,
                         Click.run(ListTarget.remote(server.id().value(), dimension, list.name()).command(ListQuery.DEFAULT)),
                         RemoteRefs.listTooltip(list, "wp.hint.open")));
+    }
+
+    /** Independent permission statuses; labels and glyphs are literal components. */
+    public static Component permissionCheckFailed(Component serverName,
+            _959.server_waypoint.crossserver.TeleportPermissionCheck permissions) {
+        return Chat.error(Chat.concat(translatable("wp.remote.tp.permission_check_failed", Chat.colored(serverName, WHITE)),
+                text(": "), Chat.join(permissionStatus("tp", permissions.tp()),
+                        permissionStatus("remote.tp", permissions.remoteTp()))));
+    }
+
+    private static Component permissionStatus(String permission, boolean allowed) {
+        return text(permission + " " + (allowed ? Chat.CHECK : Chat.CROSS), allowed ? GREEN : RED);
     }
 
     public static Component distanceUnavailable() {

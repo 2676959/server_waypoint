@@ -563,6 +563,7 @@
   "wp.remote.try_again": "Try again",
   "wp.remote.try_again.tooltip": "Ask for the switch again",
   "wp.remote.tp.unavailable": "{0} can''t be reached right now.",
+  "wp.remote.tp.permission_check_failed": "Remote teleport failed: permission check failed in {0}",
   "wp.remote.tp.unauthorized": "You don''t have permission to switch to {0}.",
   "wp.remote.tp.not_found": "That waypoint is no longer on {0}.",
   "wp.remote.tp.stale_catalog": "{0} is out of date; wait for it to refresh.",

@@ -1,4 +1,4 @@
-# Cross-server application wire format v1 (step 5)
+# Cross-server application wire format (application v1)
 
 `common/.../crossserver/protocol` supplies immutable `ApplicationMessage` values,
 `ApplicationEnvelope`, `ProtocolLimits`, and `ApplicationCodec`. This is a backend/coordinator
@@ -71,7 +71,7 @@ coordinates. Expiry validity against the current clock and maximum lifetime is a
 | 13 | CATALOG_INVALIDATE | server ID, catalog revision, state (int, must not be AVAILABLE) |
 | 20 | PREPARE_HANDOFF | player UUID, source server ID, exact target key, action (int), observed catalog revision, observed list revision |
 | 21 | HANDOFF_PREPARED | binding |
-| 22 | HANDOFF_REJECTED | failure result (int) |
+| 22 | HANDOFF_REJECTED | failure result (int), permission flags (int) |
 | 23 | CLAIM_HANDOFF | handoff UUID, player UUID, destination server ID |
 | 24 | HANDOFF_CLAIMED | binding |
 | 25 | COMPLETE_HANDOFF | handoff UUID, player UUID, destination server ID, result (int) |
@@ -83,6 +83,15 @@ not accepted feature support. The registration step must assign/interpret suppor
 Unknown message IDs reject instead of being skipped or interpreted as a compatibility mode.
 
 ## Catalog encoding and chunk boundary
+
+`HANDOFF_REJECTED` permission flags are `0` when no node check was reported, otherwise
+`4 | (tp ? 1 : 0) | (remote.tp ? 2 : 0)`. Only `4`, `5`, and `6` are valid detailed
+failures, and they require the `UNAUTHORIZED` result. Flags `7` would claim that both nodes
+passed and MUST be rejected. The proxy forwards the admitted destination's rejection unchanged;
+the source derives the server identity from its correlated request. No provider error text or
+permission-provider internals cross the wire. The application version remains 1. Deploy matching coordinator and backend builds: older
+builds with the same version do not understand the added permission flags. Keep an explicit
+`protocolVersion` at `1`.
 
 `encodeCatalog` produces a complete canonical byte sequence: application version, server ID,
 catalog revision, then a dimension map. Each dimension value is a list map; each list value is:

@@ -11,21 +11,22 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Predicate;
+import _959.server_waypoint.crossserver.TeleportPermissionCheck;
+import java.util.function.Function;
 
 /** Server-bound adapter shared by Fabric, Forge and NeoForge. Lifecycle wiring remains separate. */
 public final class ModDestinationPlatform implements DestinationPlatform<ServerPlayer> {
     private final MinecraftServer server;
-    private final Predicate<ServerPlayer> permission;
-    private final java.util.function.Function<UUID, CompletionStage<Boolean>> preflight;
+    private final Function<ServerPlayer, TeleportPermissionCheck> permission;
+    private final java.util.function.Function<UUID, CompletionStage<TeleportPermissionCheck>> preflight;
 
-    public ModDestinationPlatform(MinecraftServer server, Predicate<ServerPlayer> permission,
-            java.util.function.Function<UUID, CompletionStage<Boolean>> preflight) {
+    public ModDestinationPlatform(MinecraftServer server, Function<ServerPlayer, TeleportPermissionCheck> permission,
+            java.util.function.Function<UUID, CompletionStage<TeleportPermissionCheck>> preflight) {
         this.server = Objects.requireNonNull(server);
         this.permission = Objects.requireNonNull(permission);
         this.preflight = Objects.requireNonNull(preflight);
     }
-    @Override public CompletionStage<Boolean> canPrepare(UUID playerId) { return preflight.apply(playerId); }
+    @Override public CompletionStage<TeleportPermissionCheck> canPrepare(UUID playerId) { return preflight.apply(playerId); }
     @Override public boolean execute(ServerPlayer player, Runnable task, Runnable retired) {
         if (server.isStopped()) return false;
         // Join hooks may run before PlayerList installs the player. Always enqueue the owner check.
@@ -45,7 +46,7 @@ public final class ModDestinationPlatform implements DestinationPlatform<ServerP
     @Override public boolean isCurrentPlayer(ServerPlayer player) {
         return !server.isStopped() && !player.hasDisconnected() && server.getPlayerList().getPlayer(player.getUUID()) == player;
     }
-    @Override public boolean canTeleport(ServerPlayer player) { return permission.test(player); }
+    @Override public TeleportPermissionCheck checkTeleportPermissions(ServerPlayer player) { return permission.apply(player); }
     @Override public CompletionStage<Boolean> teleport(ServerPlayer player, DestinationResolver.Target target) {
         PlayerActionLog.Actor actor = new PlayerActionLog.Actor(player.getUUID(), player.getName().getString());
         var key = target.key();

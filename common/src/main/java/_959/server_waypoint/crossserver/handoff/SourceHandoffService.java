@@ -1,6 +1,7 @@
 package _959.server_waypoint.crossserver.handoff;
 
 import _959.server_waypoint.crossserver.RemoteServerId;
+import _959.server_waypoint.crossserver.TeleportPermissionCheck;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage.*;
 import java.util.*;
@@ -14,7 +15,7 @@ public final class SourceHandoffService<S> implements RemoteTeleportInitiator<S>
         UUID playerId(S source);
         boolean isCurrentPlayer(S source, UUID playerId);
         /** Recheck remote tp permission using the actual source player. */
-        boolean canTeleport(S source);
+        TeleportPermissionCheck checkTeleportPermissions(S source);
         /** Queue once on the player owner; invoke retired on disappearance. Never block. */
         boolean execute(S source, Runnable task, Runnable retired);
     }
@@ -31,12 +32,13 @@ public final class SourceHandoffService<S> implements RemoteTeleportInitiator<S>
         final UUID requestId = UUID.randomUUID();
         final PrepareHandoff request;
         final S source;
-        final Consumer<Result> feedback;
+        final Consumer<Feedback> feedback;
         final long bytes;
         long deadline;
         State state = State.PREPARING;
         HandoffBinding binding;
-        Entry(S source, PrepareHandoff request, Consumer<Result> feedback, long bytes) {
+        Feedback permissionFeedback;
+        Entry(S source, PrepareHandoff request, Consumer<Feedback> feedback, long bytes) {
             this.source = source; this.request = request; this.feedback = feedback; this.bytes = bytes;
             deadline = nanos.getAsLong() + 15_000_000_000L;
         }
@@ -57,7 +59,7 @@ public final class SourceHandoffService<S> implements RemoteTeleportInitiator<S>
         this.localId = Objects.requireNonNull(localId); this.platform = Objects.requireNonNull(platform);
         this.link = Objects.requireNonNull(link); this.nanos = Objects.requireNonNull(nanos); this.epoch = Objects.requireNonNull(epoch);
     }
-    @Override public void initiate(S source, Selection selection, Consumer<Result> feedback) {
+    @Override public void initiate(S source, Selection selection, Consumer<Feedback> feedback) {
         Objects.requireNonNull(selection); Objects.requireNonNull(feedback);
         // Entry is called on the owner; never read a live player from a network completion.
         if (!platform.ownsThread(source)) throw new IllegalStateException("Source owner required");
@@ -65,18 +67,22 @@ public final class SourceHandoffService<S> implements RemoteTeleportInitiator<S>
         UUID playerId;
         try {
             playerId = platform.playerId(source);
-            if (playerId == null || playerId.equals(new UUID(0, 0)) || !platform.isCurrentPlayer(source, playerId) || !platform.canTeleport(source)) {
-                feedback.accept(Result.UNAUTHORIZED); return;
+            if (playerId == null || playerId.equals(new UUID(0, 0)) || !platform.isCurrentPlayer(source, playerId)) {
+                feedback.accept(new Feedback(Result.UNAUTHORIZED)); return;
             }
-        } catch (RuntimeException unavailable) { feedback.accept(Result.UNAVAILABLE); return; }
-        if (localId.equals(selection.key().serverId())) { feedback.accept(Result.WRONG_DESTINATION); return; }
+            var permissions = Objects.requireNonNull(platform.checkTeleportPermissions(source));
+            if (!permissions.remoteTp()) {
+                feedback.accept(new Feedback(Result.UNAUTHORIZED, localId, permissions)); return;
+            }
+        } catch (RuntimeException unavailable) { feedback.accept(new Feedback(Result.UNAVAILABLE)); return; }
+        if (localId.equals(selection.key().serverId())) { feedback.accept(new Feedback(Result.WRONG_DESTINATION)); return; }
         Entry entry;
         synchronized (this) {
-            if (closed) { feedback.accept(Result.UNAVAILABLE); return; }
+            if (closed) { feedback.accept(new Feedback(Result.UNAVAILABLE)); return; }
             long bytes = 2048L + 2L * ((long) selection.key().dimensionName().length()
                     + selection.key().listName().length() + selection.key().waypointName().length());
             if (players.containsKey(playerId) || players.size() >= 64 || bytes > 1024 * 1024L - retained) {
-                feedback.accept(Result.BUSY); return;
+                feedback.accept(new Feedback(Result.BUSY)); return;
             }
             var request = new PrepareHandoff(playerId, localId, selection.key(), Action.TELEPORT,
                     selection.catalogRevision(), selection.listRevision());
@@ -102,7 +108,11 @@ public final class SourceHandoffService<S> implements RemoteTeleportInitiator<S>
                     entry.deadline = now + Math.min(entry.deadline - now, Math.min(remaining, 15_000) * 1_000_000L);
                     entry.state = State.READY;
                 }
-            } else if (reply instanceof HandoffRejected rejected) denied = rejected.reason();
+            } else if (reply instanceof HandoffRejected rejected) {
+                denied = rejected.reason();
+                if (rejected.permissions() != null) entry.permissionFeedback = new Feedback(denied,
+                        entry.request.target().serverId(), rejected.permissions());
+            }
             else if (reply instanceof ApplicationMessage.Error error) denied = error.reason();
             else denied = Result.INVALID_REQUEST;
         }
@@ -131,7 +141,12 @@ public final class SourceHandoffService<S> implements RemoteTeleportInitiator<S>
         try {
             if (!platform.ownsThread(entry.source)) return Result.UNAVAILABLE;
             if (!platform.isCurrentPlayer(entry.source, entry.request.playerId())
-                    || !entry.request.playerId().equals(platform.playerId(entry.source)) || !platform.canTeleport(entry.source)) return Result.UNAUTHORIZED;
+                    || !entry.request.playerId().equals(platform.playerId(entry.source))) return Result.UNAUTHORIZED;
+            var permissions = Objects.requireNonNull(platform.checkTeleportPermissions(entry.source));
+            if (!permissions.remoteTp()) {
+                entry.permissionFeedback = new Feedback(Result.UNAUTHORIZED, localId, permissions);
+                return Result.UNAUTHORIZED;
+            }
             return Result.SUCCESS;
         } catch (RuntimeException unavailable) { return Result.UNAVAILABLE; }
     }
@@ -148,8 +163,11 @@ public final class SourceHandoffService<S> implements RemoteTeleportInitiator<S>
             entry.state = State.TERMINAL; binding = entry.binding;
             players.remove(entry.request.playerId(), entry); retained -= entry.bytes;
         }
-        TeleportCoordinatorLog.BACKEND.info("source_finished server={} request={} player={} result={}",
-                TeleportCoordinatorLog.safe(localId.value()), entry.requestId, entry.request.playerId(), result);
+        String reason = result == Result.UNAUTHORIZED && entry.permissionFeedback != null
+                ? TeleportCoordinatorLog.permissionFailure(entry.permissionFeedback.permissionServer(), entry.permissionFeedback.permissions())
+                : "-";
+        TeleportCoordinatorLog.BACKEND.info("source_finished server={} request={} player={} result={} reason={}",
+                TeleportCoordinatorLog.safe(localId.value()), entry.requestId, entry.request.playerId(), result, reason);
         if (notify && binding != null && result != Result.SUCCESS) {
             try { link.cancel(entry.requestId, new CancelHandoff(binding.handoffId(), result)); }
             catch (RuntimeException unavailable) { /* Connection-scoped expiry is the fallback. */ }
@@ -157,7 +175,8 @@ public final class SourceHandoffService<S> implements RemoteTeleportInitiator<S>
         try {
             platform.execute(entry.source, () -> {
                 if (platform.ownsThread(entry.source) && platform.isCurrentPlayer(entry.source, entry.request.playerId())) {
-                    entry.feedback.accept(result);
+                    entry.feedback.accept(result == Result.UNAUTHORIZED && entry.permissionFeedback != null
+                            ? entry.permissionFeedback : new Feedback(result));
                 }
             }, () -> { });
         } catch (RuntimeException unavailable) { /* Never send feedback to a replacement player. */ }
@@ -172,7 +191,11 @@ public final class SourceHandoffService<S> implements RemoteTeleportInitiator<S>
             if (message instanceof CancelHandoff cancel && entry.binding != null
                     && entry.binding.handoffId().equals(cancel.handoffId())) reason = cancel.reason();
             else if (message instanceof ApplicationMessage.Error error) reason = error.reason();
-            else if (message instanceof HandoffRejected rejected) reason = rejected.reason();
+            else if (message instanceof HandoffRejected rejected) {
+                reason = rejected.reason();
+                entry.permissionFeedback = rejected.permissions() == null ? null : new Feedback(reason,
+                        entry.request.target().serverId(), rejected.permissions());
+            }
             else return false;
             // Keep cancellation atomic with transfer initiation.
             finish(entry, reason, false);

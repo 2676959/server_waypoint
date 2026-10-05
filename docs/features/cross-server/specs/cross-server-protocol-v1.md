@@ -1,4 +1,4 @@
-# Cross-server protocol v1 contract
+# Cross-server protocol contract (application v1)
 
 This is the normative feature contract for implementation-plan step 1. MUST, MUST NOT,
 and SHOULD express requirements for subsequent implementation steps. The constants and
@@ -12,7 +12,7 @@ networking, register commands or permissions, or transfer players.
   application protocol independently of the Minecraft custom-payload `ProtocolVersion`.
   An unsupported application version MUST fail closed; v1 defines no compatibility fallback.
   Numeric message IDs and canonical payloads are defined in the
-  [v1 application wire format](cross-server-application-codec-v1.md). Transport framing remains
+  [application wire format](cross-server-application-codec-v1.md). Transport framing remains
   a later implementation step.
 - `RemoteServerId` MUST be an explicitly configured, stable, 1–64 character ASCII string
   matching `[a-z0-9][a-z0-9_-]{0,63}`. No trimming, case conversion, or Unicode normalization
@@ -56,7 +56,10 @@ See [query behavior and limits](cross-server-catalog-queries.md).
 
 Teleport MUST require `remote.tp` at the source, independently of local `tp`, and both `tp` and
 `remote.tp` at the destination before transfer and again on arrival. Catalog visibility
-does not grant teleport permission. Deployments SHOULD assign explicit Paper nodes to express
+does not grant teleport permission. A failed destination check returns both independent results:
+`Remote teleport failed: permission check failed in <server_name>: tp ✘ · remote.tp ✔`, with green checks and red crosses.
+Destination rejection details come only from the admitted destination; authorization failures in
+routing or catalog selection do not invent permission results. Deployments SHOULD assign explicit Paper nodes to express
 server-specific policy; unset live nodes use the configured vanilla command level. Destination
 preparation uses the offline permission lookup described in [authorization](cross-server-authorization.md).
 

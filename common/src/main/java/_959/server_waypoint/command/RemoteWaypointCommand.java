@@ -11,6 +11,7 @@ import _959.server_waypoint.text.chat.ListQuery;
 import _959.server_waypoint.text.chat.ListView;
 import _959.server_waypoint.text.chat.Viewer;
 import _959.server_waypoint.text.feedback.RemoteScreens;
+import _959.server_waypoint.text.feedback.RemoteRefs;
 import _959.server_waypoint.util.StringCommandBuilder;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.*;
@@ -126,7 +127,13 @@ final class RemoteWaypointCommand<S> {
                 view.snapshot().catalogRevision(), list.listRevision());
         send.accept(source, RemoteScreens.switching(reader, server, dimension, shown, target));
         teleport.initiate(source, selection, result -> {
-            if (result != Result.SUCCESS) fail(source, reader, server, id, dimension, listName, name, result);
+            if (result.permissions() != null) {
+                Component failedServer = result.permissionServer().equals(server.id())
+                        ? RemoteRefs.serverName(reader, server) : Component.text(result.permissionServer().value());
+                error.accept(source, RemoteScreens.permissionCheckFailed(failedServer, result.permissions()));
+            } else if (result.result() != Result.SUCCESS) {
+                fail(source, reader, server, id, dimension, listName, name, result.result());
+            }
         });
         return Command.SINGLE_SUCCESS;
     }

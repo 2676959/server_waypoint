@@ -5,6 +5,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import _959.server_waypoint.crossserver.TeleportPermissionCheck;
 import java.util.concurrent.CompletionStage;
 
 /** Reads the destination operator list on its server thread before querying an offline provider. */
@@ -16,12 +17,12 @@ final class ModOfflineTeleportPermission {
         this.server = server;
         this.permissions = permissions;
     }
-    public CompletionStage<Boolean> check(UUID playerId) {
-        CompletableFuture<Boolean> result = new CompletableFuture<>();
-        if (server.isStopped()) return CompletableFuture.completedFuture(false);
+    public CompletionStage<TeleportPermissionCheck> check(UUID playerId) {
+        CompletableFuture<TeleportPermissionCheck> result = new CompletableFuture<>();
+        if (server.isStopped()) return CompletableFuture.failedFuture(new IllegalStateException("Destination stopped"));
         server.execute(() -> {
             try {
-                if (server.isStopped()) { result.complete(false); return; }
+                if (server.isStopped()) { result.completeExceptionally(new IllegalStateException("Destination stopped")); return; }
                 var required = _959.server_waypoint.core.WaypointServerCore.CONFIG.CommandPermission();
                 // Operator lists are keyed by UUID; the placeholder name is never used for authorization.
                 //? if >=1.21.11 {
@@ -35,12 +36,12 @@ final class ModOfflineTeleportPermission {
                 int level = entry == null ? 0 : entry.getLevel();
                 *///?}
                 permissions.checkOfflinePermission(playerId, permissions.keys.tp(), level >= required.tp())
-                        .thenCompose(allowed -> Boolean.TRUE.equals(allowed)
-                                ? permissions.checkOfflinePermission(playerId, permissions.keys.remoteTp(), level >= required.remoteTp())
-                                : CompletableFuture.completedFuture(false))
+                        .thenCombine(permissions.checkOfflinePermission(playerId, permissions.keys.remoteTp(), level >= required.remoteTp()),
+                                (tp, remoteTp) -> new TeleportPermissionCheck(
+                                        Boolean.TRUE.equals(tp), Boolean.TRUE.equals(remoteTp)))
                         .whenComplete((allowed, failure) -> {
                             if (failure != null) result.completeExceptionally(failure);
-                            else result.complete(Boolean.TRUE.equals(allowed));
+                            else result.complete(allowed);
                         });
             } catch (RuntimeException failure) { result.completeExceptionally(failure); }
         });

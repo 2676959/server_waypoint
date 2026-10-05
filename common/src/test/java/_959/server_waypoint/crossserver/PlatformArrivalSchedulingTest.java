@@ -8,7 +8,6 @@ import javax.tools.ToolProvider;
 import java.net.URLClassLoader;
 import java.nio.file.*;
 import java.util.*;
-import java.util.function.Predicate;
 import static org.junit.jupiter.api.Assertions.*;
 
 /** Actual adapter scheduling against API doubles: join precedes player lookup installation. */
@@ -132,10 +131,10 @@ class PlatformArrivalSchedulingTest {
             Class<?> owner = loader.loadClass(project.equals("mods") ? "net.minecraft.server.MinecraftServer" : "org.bukkit.plugin.java.JavaPlugin");
             Class<?> playerClass = loader.loadClass(project.equals("mods") ? "net.minecraft.server.level.ServerPlayer" : "org.bukkit.entity.Player");
             Object player = playerClass.getConstructor().newInstance();
-            var adapter = (DestinationPlatform<Object>) loader.loadClass(name).getConstructor(owner, Predicate.class, java.util.function.Function.class)
-                    .newInstance(owner.getConstructor().newInstance(), (Predicate<Object>) ignored -> true,
-                            (java.util.function.Function<java.util.UUID, java.util.concurrent.CompletionStage<Boolean>>)
-                                    ignored -> java.util.concurrent.CompletableFuture.completedFuture(true));
+            var adapter = (DestinationPlatform<Object>) loader.loadClass(name).getConstructor(owner, java.util.function.Function.class, java.util.function.Function.class)
+                    .newInstance(owner.getConstructor().newInstance(), (java.util.function.Function<Object, _959.server_waypoint.crossserver.TeleportPermissionCheck>) ignored -> new _959.server_waypoint.crossserver.TeleportPermissionCheck(true, true),
+                            (java.util.function.Function<java.util.UUID, java.util.concurrent.CompletionStage<_959.server_waypoint.crossserver.TeleportPermissionCheck>>)
+                                    ignored -> java.util.concurrent.CompletableFuture.completedFuture(new _959.server_waypoint.crossserver.TeleportPermissionCheck(true, true)));
             int[] ran = {0}, retired = {0};
             Runnable action = () -> ran[0]++, retirement = () -> retired[0]++;
             assertTrue(adapter.execute(player, action, retirement));

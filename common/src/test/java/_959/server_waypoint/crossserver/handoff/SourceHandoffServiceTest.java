@@ -20,7 +20,7 @@ class SourceHandoffServiceTest {
     final Queue<Runnable> owner = new ArrayDeque<>();
     final List<Result> feedback = new ArrayList<>();
     final List<CancelHandoff> cancellations = new ArrayList<>();
-    boolean authorized = true, current = true, owns = true, scheduled = true;
+    boolean authorized = true, localTpAuthorized = true, current = true, owns = true, scheduled = true;
     boolean throwPrepare, throwTransfer;
     long now, wall = 1000;
     int preparations, transfers;
@@ -30,7 +30,7 @@ class SourceHandoffServiceTest {
         public boolean ownsThread(String source) { return owns; }
         public UUID playerId(String source) { assertTrue(owns); return player; }
         public boolean isCurrentPlayer(String source, UUID id) { assertTrue(owns); return current && player.equals(id); }
-        public boolean canTeleport(String source) { assertTrue(owns); return authorized; }
+        public TeleportPermissionCheck checkTeleportPermissions(String source) { assertTrue(owns); return new TeleportPermissionCheck(localTpAuthorized, authorized); }
         public boolean execute(String source, Runnable task, Runnable retired) {
             if (!scheduled) { retired.run(); return false; }
             owner.add(task); return true;
@@ -49,7 +49,7 @@ class SourceHandoffServiceTest {
         }
         public void cancel(UUID id, CancelHandoff cancel) { assertEquals(requestId, id); cancellations.add(cancel); }
     }, () -> now, () -> wall);
-    void initiate() { service.initiate("player", selection, feedback::add); }
+    void initiate() { service.initiate("player", selection, value -> feedback.add(value.result())); }
     HandoffBinding binding() { return new HandoffBinding(UUID.randomUUID(), player, a, selection.key(), Action.TELEPORT, 16000); }
     void prepared(HandoffBinding binding) {
         owns = false; reply.complete(new HandoffPrepared(binding)); owns = true;
@@ -73,6 +73,40 @@ class SourceHandoffServiceTest {
         initiate(); reply.complete(new HandoffRejected(reason)); drain();
         assertEquals(0, transfers); assertEquals(List.of(reason), feedback); assertEquals(0, service.pendingCount());
     }
+    @Test void sourceLocalTeleportDenialDoesNotBlockRemoteTeleportGrant() {
+        localTpAuthorized = false;
+        initiate();
+        assertEquals(1, preparations);
+        prepared(binding());
+        drain();
+        assertEquals(1, transfers);
+        switched.complete(Result.SUCCESS);
+        drain();
+        assertEquals(List.of(Result.SUCCESS), feedback);
+    }
+
+    @Test void destinationPermissionDenialIsLoggedWithFailureContextAndBothStatuses() {
+        org.slf4j.impl.StaticLoggerBinder.clear();
+        initiate();
+        reply.complete(new HandoffRejected(Result.UNAUTHORIZED, new TeleportPermissionCheck(false, true)));
+        drain();
+        var logs = org.slf4j.impl.StaticLoggerBinder.events().stream()
+                .filter(value -> value.contains("source_finished")).toList();
+        assertEquals(1, logs.size());
+        assertTrue(logs.get(0).contains("player=" + player));
+        assertTrue(logs.get(0).contains("request=" + requestId));
+        assertTrue(logs.get(0).contains("Remote teleport failed: permission check failed in b: tp ✘ · remote.tp ✔"));
+    }
+
+    @Test void deniedSourceRemotePermissionReportsSourceAndBothStatuses() {
+        authorized = false;
+        List<RemoteTeleportInitiator.Feedback> details = new ArrayList<>();
+        service.initiate("player", selection, details::add);
+        assertEquals(List.of(new RemoteTeleportInitiator.Feedback(Result.UNAUTHORIZED, a,
+                new TeleportPermissionCheck(true, false))), details);
+        assertEquals(0, preparations);
+    }
+
     @Test void initialPermissionDenialAndBusyDoNotSendAnotherPrepare() {
         authorized = false; initiate(); assertEquals(List.of(Result.UNAUTHORIZED), feedback); assertEquals(0, preparations);
         authorized = true; feedback.clear(); initiate(); initiate();

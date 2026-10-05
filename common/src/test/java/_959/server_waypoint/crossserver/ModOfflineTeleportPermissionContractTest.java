@@ -57,7 +57,9 @@ class ModOfflineTeleportPermissionContractTest {
                 }
                 """);
         List<String> arguments = new ArrayList<>(List.of("--release", "17", "-d", temporary.toString(),
-                "-classpath", Path.of(PermissionManager.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toString()));
+                "-classpath", Path.of(PermissionManager.class.getProtectionDomain().getCodeSource().getLocation().toURI())
+                        + java.io.File.pathSeparator
+                        + Path.of(TeleportPermissionCheck.class.getProtectionDomain().getCodeSource().getLocation().toURI())));
         for (var source : sources.entrySet()) {
             Path path = temporary.resolve(source.getKey().replace('.', '/') + ".java");
             Files.createDirectories(path.getParent());
@@ -93,30 +95,30 @@ class ModOfflineTeleportPermissionContractTest {
             Object lookup = constructor.newInstance(server, permissions);
             var check = adapter.getMethod("check", UUID.class);
             check.setAccessible(true);
-            java.util.function.Supplier<CompletableFuture<?>> result = () -> {
-                try { return ((CompletionStage<?>) check.invoke(lookup, player)).toCompletableFuture(); }
+            java.util.function.Supplier<CompletableFuture<_959.server_waypoint.crossserver.TeleportPermissionCheck>> result = () -> {
+                try { return ((CompletionStage<_959.server_waypoint.crossserver.TeleportPermissionCheck>) check.invoke(lookup, player)).toCompletableFuture(); }
                 catch (ReflectiveOperationException failure) { throw new AssertionError(failure); }
             };
             serverClass.getField("level").setInt(server, 1);
-            assertEquals(false, result.get().join());
+            assertEquals(false, result.get().join().allowed());
             serverClass.getField("level").setInt(server, 3);
-            assertEquals(true, result.get().join());
+            assertEquals(true, result.get().join().allowed());
             assignments.put("server_waypoint.command.remote.tp", false);
-            assertEquals(false, result.get().join());
+            assertEquals(false, result.get().join().allowed());
             assignments.put("server_waypoint.command.remote.tp", true);
             assignments.put("server_waypoint.command.tp", false);
-            assertEquals(false, result.get().join());
+            assertEquals(new TeleportPermissionCheck(false, true), result.get().join());
             assignments.put("server_waypoint.command.tp", true);
             serverClass.getField("level").setInt(server, 0);
-            assertEquals(true, result.get().join());
+            assertEquals(true, result.get().join().allowed());
             var remote = new CompletableFuture<Boolean>();
             pending.put("server_waypoint.command.remote.tp", remote);
             var waiting = result.get();
             assertFalse(waiting.isDone());
             remote.complete(false);
-            assertEquals(false, waiting.join());
+            assertEquals(false, waiting.join().allowed());
             pending.put("server_waypoint.command.remote.tp", CompletableFuture.failedFuture(new IllegalStateException("unavailable")));
-            assertThrows(CompletionException.class, () -> result.get().join());
+            assertThrows(CompletionException.class, () -> result.get().join().allowed());
         } finally {
             WaypointServerCore.CONFIG = original;
         }

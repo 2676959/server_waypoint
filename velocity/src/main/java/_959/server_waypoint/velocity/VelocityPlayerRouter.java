@@ -39,8 +39,22 @@ public final class VelocityPlayerRouter implements ProxyPlayerRouter<RemoteServe
         if (!player.getCurrentServer().map(connection -> connection.getServerInfo().getName()).filter(mappings.getOrDefault(source, "")::equals).isPresent()) {
             return completed(TransferResult.SOURCE_MISMATCH);
         }
-        return player.createConnectionRequest(destination).connect().handle((result, failure) ->
-                failure == null && result != null && result.isSuccessful() ? TransferResult.SUCCESS : TransferResult.CONNECTION_FAILED);
+        return player.createConnectionRequest(destination).connect().handle((result, failure) -> {
+            if (failure == null && result != null && result.isSuccessful()) return TransferResult.SUCCESS;
+            if (failure == null && result != null) {
+                try {
+                    if (player.isActive() && id.equals(player.getUniqueId())
+                            && proxy.getPlayer(id).filter(current -> current == player).isPresent()
+                            && player.getCurrentServer().map(connection -> connection.getServerInfo().getName())
+                                    .filter(mappings.getOrDefault(source, "")::equals).isPresent()) {
+                        result.getReasonComponent().ifPresent(player::sendMessage);
+                    }
+                } catch (RuntimeException unavailable) {
+                    // Message delivery must not replace the coordinator's stable transfer failure.
+                }
+            }
+            return TransferResult.CONNECTION_FAILED;
+        });
     }
     private static CompletionStage<TransferResult> completed(TransferResult result) { return CompletableFuture.completedFuture(result); }
 }
