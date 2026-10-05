@@ -21,6 +21,7 @@ Manage waypoints on the server and sync them to players' clients automatically. 
 See the [changelog](CHANGELOG.md) for what's new in 4.0.0.
 
 ## Features
+
 - Syncing waypoints from the server automatically, including to Xaero's Minimap and VoxelMap (Fabric).
 - Customizable waypoint rendering, with initials or an item or VoxelMap icon on each marker.
 - Allow players to manage waypoints by both GUI (need client installation) and clickable chat commands (only need server installation).
@@ -33,6 +34,7 @@ See the [changelog](CHANGELOG.md) for what's new in 4.0.0.
 - Server-side translations that follow each player's language.
 
 ## Dependencies
+
 Required:
   - [Fabric API](https://modrinth.com/mod/fabric-api) (Fabric)
   
@@ -44,15 +46,45 @@ Optional:
   - [Mod Menu](https://modrinth.com/mod/modmenu) (Fabric): opens the client settings from the mod list
   - [Velocity](https://papermc.io/software/velocity): only for [cross-server teleport](#cross-server-teleport-setup)
 
+## Installation and updating
+
+Choose the Server Waypoint JAR for your Minecraft version and platform. Put the Fabric, Forge or NeoForge mod in `mods/`, or the Paper plugin in `plugins/` on Paper, Folia or Purpur. Fabric also requires Fabric API.
+
+The client mod is optional for commands, clickable chat, server-side navigation and remote teleportation. Install it on the client to use the waypoint manager, in-world markers, map-mod synchronization, downloads and uploads. Install the corresponding map mod for its integration features.
+
+Paper builds cover these Minecraft versions; choose the JAR whose `mc` range matches your server:
+
+| Paper JAR range | Minecraft versions |
+| --- | --- |
+| `mc1.21-1.21.8` | 1.21–1.21.8 |
+| `mc1.21.9-1.21.10` | 1.21.9–1.21.10 |
+| `mc1.21.11-26.1.2` | 1.21.11 and 26.1–26.1.2 |
+| `mc26.2-26.3` | 26.2–26.3 |
+
+**Update installed clients and servers together.** 4.0.0 changes the network protocol and cannot sync with 3.x clients. For cross-server waypoints, use matching builds on Velocity and every participating backend too. Read the [upgrade notes](CHANGELOG.md#before-you-update) for changes to `/wp edit`, Paper permissions, old Xaero sets and custom translation files.
+
 ## Keybinds
+
 - Press `Right Shift` (default keybind) or use `/wp_gui` to open the waypoint manager screen in game.
-- In the waypoint manager screen, hover over a waypoint and press `T` to teleport (requires `/wp tp` command permission). 
+- In the waypoint manager's current-server view, hover over a waypoint and press `T` to teleport (requires `/wp tp` command permission).
 - In the waypoint manager screen, press `C` to open the client settings. The config button in Mod Menu (Fabric) or the Mods screen (NeoForge and Forge) opens them too.
 - The add and edit waypoint screens also set keywords, a description and an icon.
 - In Xaero's World Map, right-click the map to add a waypoint to the server at that spot, or right-click a waypoint to add it to the server or edit its server copy.
 
+## Waypoint manager
+
+Choose a dimension, browse its waypoints and select one to see its details. Search, sort by name, distance or colour in either direction, group by list, or show all dimensions at once. Distances account for Nether and Overworld coordinate scaling. The manager remembers its sorting, grouping and dimension view.
+
+Once remote catalogs are available, the scope control switches between **Current server waypoints** and **Remote server waypoints**. Hover it to see the current server's name. The remote view adds a server selector and status indicators; remote waypoints are read-only, with a teleport button that uses the [remote permissions](#command-permission). Distance sorting is unavailable across servers.
+
+Shortcuts are inactive while you type in a field. Escape dismisses an open popup or leaves text entry before closing the screen; Enter and Space activate the focused button. In singleplayer, the waypoint manager keeps the world running. The add, edit, client settings and theme screens pause it.
+
 ## Commands
+
 Run `/wp` for a menu: most features are a click away, and every screen offers its next steps as links. The console, RCON and command blocks get the same information as plain text, with identifiers and coordinates written out.
+
+On Minecraft 1.21.9 and later, player chat can show supported vanilla item icons and player heads without the client mod. Older versions and unsupported icons use text or initials. When a command runs through `/execute as <player> run wp ...`, that player receives the feedback and the original sender receives a copy labelled **Viewed as**.
+
 - `/wp add` opens a picker of the current dimension's lists to add a waypoint where you stand. Identifiers must be unique within their list.
   - `/wp add <dimension> <list-identifier>` adds a waypoint list.
   - `/wp add <x y z> <list-identifier> <name>` adds a waypoint in your current dimension with generated initials, a random colour and your facing. Put a dimension first, `/wp add <dimension> <list-identifier> <x y z> <name>`, to add it elsewhere. The full form continues with initials, colour, yaw, visibility, keywords, description and `icon <namespace:path>`.
@@ -66,13 +98,14 @@ Run `/wp` for a menu: most features are a click away, and every screen offers it
   - Pages hold whole lists: the tree view and the one-line-per-list view hold the page limit plus five lines; flat views and single lists hold the page limit in rows.
   - `/wp list dimensions [page <number>]` lists every dimension with its waypoint count.
 - `/wp navigate` shows the navigation panel. `/wp navigate <dimension> <list> <waypoint> [<method>|default|all]` starts navigating, `/wp navigate use|disable <method>` turns one method on or off, `/wp navigate disable` stops, and `/wp navigate config text_display` adjusts the floating text.
+  - Method IDs are `compass`, `map`, `bossbar`, `actionbar` and `text_display`. Use `default` to select the server's `defaultNavigationMethods`, or `all` for every supported method.
 - `/wp remote` shows the remote servers and their state; `/wp remote page <number>` pages it.
 - `/wp remote list [<server> [<dimension> [<list>]]]` browses cached remote waypoints with the same options as `/wp list`. Quote exact identities, including names matching option words. Distance sorting reports that cross-server distances are unavailable.
   - Results are read-only and work through ordinary server chat. A coloured dot shows each server's state: available, stale, unreachable or no access. `/wp remote details <server> <dimension> <list> <waypoint>` shows one waypoint. Run `/wp help remote` for help.
   - Catalog synchronization starts when cross-server configuration is enabled. See [Velocity runtime setup](docs/features/cross-server/specs/cross-server-velocity-runtime.md) and [remote catalog queries](docs/features/cross-server/specs/cross-server-catalog-queries.md).
 - `/wp remote tp <server> <dimension> <list> <waypoint>` requests a teleport using exact cached identities (quote names with spaces). Stale or missing targets fail before preparation; the player stays on the source until destination preparation and fresh permission checks succeed, and the destination confirms the arrival. See [remote teleport initiation](docs/features/cross-server/specs/cross-server-source-teleport.md).
   - Velocity and dedicated backend runtime integration is implemented and disabled by default. Suggestions use only the local cache. Quote dimension identities such as `"minecraft:overworld"`. See [configuration and validation](docs/features/cross-server/specs/cross-server-velocity-runtime.md).
-- `/wp reload` reloads `config.json` and the translation files in `/config/server_waypoint/lang`. `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `addWaypointFromChatSharing` and `compressChunkedMessages` apply at once; `serverId`, `cross-server.json` and turning on `sendXaerosWorldId` need a restart. Waypoint files are not reloaded, so edit them while the server is stopped.
+- `/wp reload` reloads `config.json` and the translation files in the `lang/` directory beside it (see [configuration paths](#server-configurations)). `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `addWaypointFromChatSharing` and `compressChunkedMessages` apply at once; `serverId`, `cross-server.json` and turning on `sendXaerosWorldId` need a restart. Waypoint files are not reloaded, so edit them while the server is stopped.
 - `/wp remove` removes a waypoint by identifier and answers with a temporary, single-use Restore link.
   - `/wp remove <dimension> <list-identifier>` removes an empty waypoint list.
 - `/wp restore <token>` restores a waypoint removed in the last 10 minutes. Each token works once.
@@ -182,6 +215,8 @@ Use `NOISE_KK` when backends run on different hosts or when you want authenticat
 
 Remote browsing uses `server_waypoint.command.remote.list` (default level 0). Remote teleport requires `server_waypoint.command.remote.tp` at the source, plus both `server_waypoint.command.tp` and `server_waypoint.command.remote.tp` at the destination (each defaults to level 2). The source's local teleport permission is independent. See the [administrator guide](docs/features/cross-server/cross-server-admin.md) for permissions, key rotation, and troubleshooting.
 
+If destination preparation is denied by permissions, the failure message names the destination and shows the separate `tp` and `remote.tp` results. Both permissions are checked again when the player arrives. See [permission feedback](docs/features/cross-server/specs/2026-10-05-permission-check-feedback.md).
+
 ### Cross-server administration
 
 - On the Velocity console, `/serverwaypoint status` shows whether the coordinator is running, its transport mode and which backends are online. Players need `server_waypoint.command.cross_server.status` to use it. Velocity can't grant permissions by itself, so give it to them with a permissions plugin such as LuckPerms.
@@ -237,10 +272,13 @@ List and waypoint identifiers are exact lookup keys. Commands preserve them verb
 Display names are optional presentation overrides edited separately with `/wp edit ... set display-name`. Clearing a display name restores the identifier fallback; setting it to an empty string creates an intentionally empty override. Command suggestions insert identifiers, while a display name may appear only as tooltip context.
 
 ## Server-side Translations
+
 Messages and command feedbacks sent by this mod will be automatically translated based on the language setting on the receiver's client. This works entirely on the server-side; players can see the translated message without client-side installation of this mod. Right now, the mod comes with translations for English, Simplified Chinese, Traditional Chinese, Traditional Chinese (Hong Kong), Spanish and Hebrew. If you’re interested, you can help out by adding translations on [Crowdin](https://crowdin.com/project/server-waypoint)!
 
+English and Simplified Chinese include every current server and client translation key. The other bundled languages fall back to English for some client controls and server messages. Key coverage does not establish translation quality; see the [translation credits and human review status](#translation-credits).
+
 - ### Add translations
-  Place the lang files under the directory: `<config-path>/server_waypoint/lang/`. This mod will load them on server starting, use `/wp reload` if the server is already running.
+  Place the lang files in the `lang/` directory beside the server's [`config.json`](#server-configurations), for example `config/server_waypoint/lang/` on Fabric or `plugins/ServerWaypoint/lang/` on Paper. The server loads them at startup; use `/wp reload` if it is already running.
   
 - ### Create a lang file
   Follow the format used in [`en_us.json`](./common/src/main/resources/lang/en_us.json), [`zh_cn.json`](./common/src/main/resources/lang/zh_cn.json).
@@ -248,6 +286,8 @@ Messages and command feedbacks sent by this mod will be automatically translated
   Name the lang file with a [valid language code](https://minecraft.wiki/w/Language#Languages).
 
   Version 4.0.0 renamed most translation keys, so lang files made for 3.x need to be rebuilt from the current `en_us.json`.
+
+  Server translations use Java `MessageFormat`: keep zero-based placeholders such as `{0}` and `{1}`, preserve their indices, and write a literal apostrophe as `''`. Do not use printf placeholders such as `%s`.
 
 - ### Translation order
   If the translation you’ve added uses the same language code as the built-in language, this mod will try to find the translation key in the file you added first. If that key isn’t there, it’ll fall back to the built-in translation. So, if you’d like to use your own translation version, you can easily do that by adding your own file and overriding the built-in translation.
@@ -273,10 +313,11 @@ See the [human verification checklist for 4.0.0](./TRANSLATOR_CREDITS.md#human-v
   Ymaomi
 
 ## Waypoints
+
 - #### Location
   For a dedicated server:
   
-  `<config-path>/server_waypoint/waypoints/`
+  The `waypoints/` directory beside [`config.json`](#server-configurations), for example `config/server_waypoint/waypoints/` on Fabric or `plugins/ServerWaypoint/waypoints/` on Paper.
 
   For a single player world:
 
@@ -285,7 +326,10 @@ See the [human verification checklist for 4.0.0](./TRANSLATOR_CREDITS.md#human-v
   All waypoints are saved in json files. Each json file contains all waypoints in one dimension and the filename is the converted full registry name of that dimension.
   For example, all waypoints in the overworld is stored in `minecraft$overworld.json`.
 
+  Stop the server before editing waypoint files. `/wp reload` does not reload them.
+
 ## Server Configurations
+
 Fabric, Quilt:
 
 `<minecraft-root>/config/server_waypoint/config.json` 
@@ -309,7 +353,7 @@ Paper, Folia, Purpur:
   }
   ```
 - ### Default Navigation Methods
-  Sets one or more methods enabled when `/wp navigate <dimension> <list> <waypoint>` starts a new session without `using`. The value must be a non-empty array containing `compass`, `map`, `bossbar`, `actionbar`, or `text_display`. The default is `actionbar`.
+  Sets one or more methods enabled when `/wp navigate <dimension> <list> <waypoint>` starts a new session without a method argument, or when you explicitly select `default`. The value must be a non-empty array containing `compass`, `map`, `bossbar`, `actionbar`, or `text_display`. The default is `actionbar`.
 
   ```json5
   {
@@ -334,6 +378,8 @@ Paper, Folia, Purpur:
   take precedence. Fabric's permissions API supports node overrides; the current Forge/NeoForge
   adapters use vanilla levels.
   See [remote authorization](docs/features/cross-server/specs/cross-server-authorization.md) for the integration boundary.
+
+  Before a remote transfer, the destination checks the absent player's permissions. Paper uses LuckPerms when installed; unset nodes fall back to the destination's configured level for each node. Without LuckPerms, those level checks apply directly. Setting both destination levels to `0` allows non-operators unless a node is explicitly denied. Other permission plugins' live player attachments are checked after arrival.
 
   Default value:
   ```json5
@@ -405,6 +451,12 @@ Paper, Folia, Purpur:
      }
      ```
 
+## Action logging
+
+The server logs player actions at INFO level under `server_waypoint.actions`, including waypoint and list changes, restore, teleport, navigation, uploads, downloads, chat sharing and reload. Entries record the acting player and UUID, the original command sender and UUID, and the outcome. Under `/execute as`, the player and original sender remain distinct; GUI actions use the player for both.
+
+Save completion, teleport results and upload summaries report success, failure or partial completion. Uploads summarize affected counts rather than logging each waypoint. Read-only browsing and routine synchronization do not produce action entries. See [player action logging](docs/features/action-logging/README.md) for fields and persistence outcomes.
+
 ## Client Configurations
 
 Open the client settings with `C` in the waypoint manager, or with the config button in Mod Menu
@@ -426,9 +478,11 @@ it, and **Reset to defaults…** resets them all.
 
   Server Waypoint marks what it adds: Xaero's Minimap sets and VoxelMap waypoint names carry an internal `sw␟` prefix. Sync only touches these, so your own waypoints and lists are never changed, even ones named like a server list. Changes you made to synced waypoints, waypoints you put in Server Waypoint's lists, and lists removed on the server are lost. Upload maps the managed names back to their server list and waypoint names.
 - #### Appearance
-  - **Color theme**: opens the theme editor.
+  - **Color theme**: opens the theme editor. Choose Translucent Dark (default), Modern Dark, High Contrast or Classic, or edit individual colours and opacity.
 
 Remote catalog synchronization and the remote GUI require matching client and backend versions.
 Remote snapshots are kept separately from local waypoint files. See
 [client synchronization](docs/features/cross-server/specs/cross-server-client-sync.md) and the
 [cross-server teleport setup](#cross-server-teleport-setup).
+
+Developer guides, feature specifications and validation records are indexed in [`docs/README.md`](docs/README.md).
