@@ -74,6 +74,9 @@ class NavigationModelTest {
         assertEquals("Village", target.waypointName());
         assertEquals("{\"text\":\"Village\",\"color\":\"gold\"}", target.waypointDisplayName());
         assertEquals("Original description", target.waypointDescription());
+        assertEquals(List.of("town"), target.waypointKeywords());
+        assertThrows(UnsupportedOperationException.class, () -> target.waypointKeywords().add("other"));
+        assertEquals(List.of("town"), target.withListIdentity("renamed", "Renamed").waypointKeywords());
         assertEquals(new WaypointPos(1, 2, 3), target.position());
         assertEquals(0x123456, target.rgb());
     }
@@ -207,6 +210,7 @@ class NavigationModelTest {
                 "Village",
                 "Village",
                 "",
+                List.of(),
                 new WaypointPos(1, 2, 3),
                 0x123456
         );

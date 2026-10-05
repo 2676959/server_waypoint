@@ -1086,7 +1086,7 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
             list = new WaypointList(target.listName(), target.listDisplayName(), 0, List.of());
             waypoint = new SimpleWaypoint(target.waypointName(), target.waypointDisplayName(),
                     WaypointInitials.getDefaultInitials(plainText(target.waypointDisplayName())), target.position(),
-                    target.rgb(), 0, true, List.of(), target.waypointDescription());
+                    target.rgb(), 0, true, target.waypointKeywords(), target.waypointDescription());
         }
         return new PlacedWaypoint(target.dimensionName(), list, waypoint);
     }

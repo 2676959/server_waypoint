@@ -4,6 +4,7 @@ import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -16,6 +17,7 @@ public record NavigationTarget(
         String waypointName,
         String waypointDisplayName,
         String waypointDescription,
+        List<String> waypointKeywords,
         WaypointPos position,
         int rgb
 ) {
@@ -26,6 +28,7 @@ public record NavigationTarget(
         Objects.requireNonNull(waypointName, "waypointName");
         Objects.requireNonNull(waypointDisplayName, "waypointDisplayName");
         Objects.requireNonNull(waypointDescription, "waypointDescription");
+        waypointKeywords = List.copyOf(waypointKeywords);
         Objects.requireNonNull(position, "position");
     }
 
@@ -45,6 +48,7 @@ public record NavigationTarget(
                 this.waypointName,
                 this.waypointDisplayName,
                 this.waypointDescription,
+                this.waypointKeywords,
                 this.position,
                 this.rgb
         );
@@ -63,6 +67,7 @@ public record NavigationTarget(
                 waypointSnapshot.name(),
                 waypointSnapshot.displayName(),
                 waypointSnapshot.description(),
+                waypointSnapshot.keywords(),
                 waypointSnapshot.position(),
                 waypointSnapshot.rgb()
         );
@@ -74,6 +79,7 @@ public record NavigationTarget(
                 snapshot.name(),
                 snapshot.displayName(),
                 snapshot.description(),
+                snapshot.keywords(),
                 snapshot.pos(),
                 snapshot.rgb()
         );
@@ -83,6 +89,7 @@ public record NavigationTarget(
             String name,
             String displayName,
             String description,
+            List<String> keywords,
             WaypointPos position,
             int rgb
     ) {

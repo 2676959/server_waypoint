@@ -115,7 +115,7 @@ public final class PaperMapNavigationHandler implements
         ItemStack item = new ItemStack(Material.FILLED_MAP, 1);
         MapMeta meta = (MapMeta) item.getItemMeta();
         meta.setMapView(lease.view());
-        meta.displayName(NavigationDisplayText.buildItemName(target));
+        meta.displayName(NavigationDisplayText.buildItemTooltipName(target));
         meta.lore(NavigationDisplayText.buildItemLore(target));
         item.setItemMeta(meta);
         return this.itemManager.tag(item);
