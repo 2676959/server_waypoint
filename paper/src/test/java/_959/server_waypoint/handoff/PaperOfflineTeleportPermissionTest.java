@@ -1,5 +1,6 @@
 package _959.server_waypoint.handoff;
 
+import _959.server_waypoint.crossserver.TeleportPermissionCheck;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.util.Tristate;
@@ -17,7 +18,7 @@ class PaperOfflineTeleportPermissionTest {
     private Object options;
 
     @Test void waitsForDestinationUserAndExplicitDenialOverridesOperator() {
-        var result = PaperOfflineTeleportPermission.LuckPermsLookup.check(api(LuckPerms.class), player, true).toCompletableFuture();
+        var result = PaperOfflineTeleportPermission.LuckPermsLookup.check(api(LuckPerms.class), player, fallback(true)).toCompletableFuture();
         assertFalse(result.isDone());
         permission = Tristate.FALSE;
         loaded.complete(api(User.class));
@@ -40,7 +41,7 @@ class PaperOfflineTeleportPermissionTest {
         remotePermission = Tristate.TRUE;
         loaded.complete(api(User.class));
         assertEquals(new _959.server_waypoint.crossserver.TeleportPermissionCheck(false, true),
-                PaperOfflineTeleportPermission.LuckPermsLookup.check(api(LuckPerms.class), player, true)
+                PaperOfflineTeleportPermission.LuckPermsLookup.check(api(LuckPerms.class), player, fallback(true))
                         .toCompletableFuture().join());
     }
 
@@ -64,13 +65,17 @@ class PaperOfflineTeleportPermissionTest {
     }
 
     @Test void providerFailureCannotGrantAnOperator() {
-        var result = PaperOfflineTeleportPermission.LuckPermsLookup.check(api(LuckPerms.class), player, true).toCompletableFuture();
+        var result = PaperOfflineTeleportPermission.LuckPermsLookup.check(api(LuckPerms.class), player, fallback(true)).toCompletableFuture();
         loaded.completeExceptionally(new IllegalStateException("unavailable"));
         assertThrows(java.util.concurrent.CompletionException.class, result::join);
     }
 
     private boolean check(boolean operator) {
-        return PaperOfflineTeleportPermission.LuckPermsLookup.check(api(LuckPerms.class), player, operator).toCompletableFuture().join().allowed();
+        return PaperOfflineTeleportPermission.LuckPermsLookup.check(api(LuckPerms.class), player, fallback(operator)).toCompletableFuture().join().allowed();
+    }
+
+    private static TeleportPermissionCheck fallback(boolean allowed) {
+        return new TeleportPermissionCheck(allowed, allowed);
     }
 
     @SuppressWarnings("unchecked")

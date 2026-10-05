@@ -3,6 +3,7 @@ package _959.server_waypoint.crossserver;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.config.CommandPermission;
 import _959.server_waypoint.crossserver.authorization.RemotePermissions;
+import com.google.gson.Gson;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -193,6 +194,23 @@ class PlatformRemotePermissionContractTest {
             Object console = source;
             Object subject = platform.equals("paper") ? source.getClass().getField("sender").get(source) : source;
             var permissions = new RemotePermissions<>(manager, CommandPermission::new, actual -> actual == player ? player : null);
+            var zeroLevels = new Gson().fromJson("{\"tp\":0,\"remoteTp\":0}", CommandPermission.class);
+            var unrestricted = new RemotePermissions<>(manager, () -> zeroLevels, actual -> actual == player ? player : null);
+            assertTrue(unrestricted.canRequestTeleport(player));
+            assertEquals(new TeleportPermissionCheck(true, true), unrestricted.checkTeleportPermissions(player));
+            if (!platform.equals("paper")) {
+                UUID playerId = new UUID(23, 47);
+                assertTrue(manager.checkOfflinePermission(playerId, manager.keys.tp(), true).toCompletableFuture().join());
+                assertFalse(manager.checkOfflinePermission(playerId, manager.keys.remoteTp(), false).toCompletableFuture().join());
+                if (platform.equals("fabric")) {
+                    adapterClass.getMethod("setFabricPermissionAPILoaded", boolean.class).invoke(null, true);
+                    assertTrue(unrestricted.canRequestTeleport(player));
+                    assertEquals(new TeleportPermissionCheck(true, true), unrestricted.checkTeleportPermissions(player));
+                    assertTrue(manager.checkOfflinePermission(playerId, manager.keys.tp(), true).toCompletableFuture().join());
+                    assertFalse(manager.checkOfflinePermission(playerId, manager.keys.remoteTp(), false).toCompletableFuture().join());
+                    adapterClass.getMethod("setFabricPermissionAPILoaded", boolean.class).invoke(null, false);
+                }
+            }
             assertFalse(permissions.canRequestTeleport(console));
             assertTrue(permissions.canList(source));
             assertFalse(permissions.canTeleportOnArrival(player));

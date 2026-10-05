@@ -99,6 +99,12 @@ class ModOfflineTeleportPermissionContractTest {
                 try { return ((CompletionStage<_959.server_waypoint.crossserver.TeleportPermissionCheck>) check.invoke(lookup, player)).toCompletableFuture(); }
                 catch (ReflectiveOperationException failure) { throw new AssertionError(failure); }
             };
+            WaypointServerCore.CONFIG = new Gson().fromJson("{\"CommandPermission\":{\"tp\":0,\"remoteTp\":0}}", Config.class);
+            assertEquals(new TeleportPermissionCheck(true, true), result.get().join());
+            assignments.put("server_waypoint.command.remote.tp", false);
+            assertEquals(new TeleportPermissionCheck(true, false), result.get().join());
+            assignments.clear();
+            WaypointServerCore.CONFIG = new Gson().fromJson("{\"CommandPermission\":{\"tp\":1,\"remoteTp\":3}}", Config.class);
             serverClass.getField("level").setInt(server, 1);
             assertEquals(false, result.get().join().allowed());
             serverClass.getField("level").setInt(server, 3);

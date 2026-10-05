@@ -59,8 +59,10 @@ response cannot revive an expired or cancelled record. The final live-player che
   Forge/NeoForge use those operator-level checks directly. Both checks must allow preparation.
 - Paper optionally loads LuckPerms user data asynchronously and checks `server_waypoint.command.tp`
   and `server_waypoint.command.remote.tp` in the destination's static server context. Each undefined
-  node falls back to operator status; explicit denial of either node overrides operator status. Without
-  LuckPerms, only the native operator fallback is available. Other plugins' player attachments and
+  node falls back to the destination's vanilla permission level compared with that node's configured
+  `tp` or `remoteTp` level; explicit denial of either node overrides this fallback. Setting both levels
+  to `0` allows non-operators with no explicit denial. Without LuckPerms, the same configured vanilla
+  level checks apply directly. Other plugins' player attachments and
   dynamic player contexts cannot be evaluated while the player is absent; their live result is
   checked on arrival. Deployments needing offline node grants should use LuckPerms.
 - All permission-provider exceptions fail closed. No source-side grant is forwarded as a destination grant.
