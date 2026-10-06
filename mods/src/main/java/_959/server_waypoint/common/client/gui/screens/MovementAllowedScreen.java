@@ -160,6 +160,14 @@ public abstract class MovementAllowedScreen extends Screen {
         this.movementAllowed = bool;
     }
 
+    /** Reassigning the same control after a click must not briefly unfocus it and close its popup. */
+    @Override
+    public void setFocused(GuiEventListener focused) {
+        if (this.getFocused() != focused) {
+            super.setFocused(focused);
+        }
+    }
+
     /**
      * Vanilla closes the screen on Escape before the focused widget receives the key. Dismiss
      * an open popup or leave text entry first, even when no suggestions or choices are showing.
