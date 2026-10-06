@@ -30,7 +30,7 @@ class WaypointManagerScreenIconControlTest {
     @Test
     void railControlsPaintNoFillAtRestButKeepTheirStateFills() {
         // The panel under a rail control already paints a translucent fill, so a second fill at rest
-        // would stack on it. Hover, selection and the disabled look still need their own fill.
+        // would stack on it. Hover and selection keep their fills; disabled icons use a tint instead.
         assertNull(WaypointManagerScreen.resolveIconControlFill(true, false, false, false));
         assertEquals(
                 WidgetThemeVariable.CONTROL_HOVER_BACKGROUND,
@@ -40,10 +40,7 @@ class WaypointManagerScreenIconControlTest {
                 WidgetThemeVariable.SELECTION_BACKGROUND,
                 WaypointManagerScreen.resolveIconControlFill(true, true, false, false)
         );
-        assertEquals(
-                WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND,
-                WaypointManagerScreen.resolveIconControlFill(false, false, false, false)
-        );
+        assertNull(WaypointManagerScreen.resolveIconControlFill(false, false, false, false));
     }
 
     @Test

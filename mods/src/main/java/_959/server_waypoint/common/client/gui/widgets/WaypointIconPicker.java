@@ -46,7 +46,10 @@ public final class WaypointIconPicker {
         this.menu.setPlaceholder(() -> Component.translatable("waypoint.form.no_icon"));
         Component clearLabel = Component.translatable("waypoint.icon.clear");
         this.clearButton = new IconButton(0, 0, CLEAR_BUTTON_SIZE, CLEAR_BUTTON_SIZE, clearLabel,
-                WidgetTextures.CLEAR_ICON, () -> select(null, true));
+                WidgetTextures.CLEAR_ICON, () -> select(null, true))
+                .withoutBackground()
+                .withIconPadding(3)
+                .withIconRegion(10, 9, 28, 29, 48, 48);
         this.clearButton.setTooltip(Tooltip.create(clearLabel));
         this.clearButton.active = false;
     }

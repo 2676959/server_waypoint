@@ -19,6 +19,9 @@ class IconButtonTest {
         WidgetThemeManager.setTheme(WidgetThemes.CLASSIC);
 
         assertEquals(0x88000000, button(false).surfaceColor());
+        IconButton inactive = button(true);
+        inactive.active = false;
+        assertEquals(0x88000000, inactive.surfaceColor());
     }
 
     @Test
@@ -27,6 +30,9 @@ class IconButtonTest {
 
         assertEquals(0, button(false).withoutRestingFill().surfaceColor());
         assertEquals(0x66FFFFFF, button(true).withoutRestingFill().surfaceColor());
+        IconButton inactive = button(true).withoutRestingFill();
+        inactive.active = false;
+        assertEquals(0, inactive.surfaceColor());
     }
 
     private static IconButton button(boolean hovered) {

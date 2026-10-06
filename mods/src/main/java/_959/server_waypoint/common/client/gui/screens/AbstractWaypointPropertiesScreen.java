@@ -560,7 +560,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         for (int i = 0; i < items.size(); i++) {
             if (sizes.get(i).isDivider()) {
                 parts.add(new SeparatorWidget(layout.labelX(), layout.itemTops().get(i), dividerWidth,
-                        WaypointFormLayout.DIVIDER_HEIGHT, BORDER));
+                        WaypointFormLayout.DIVIDER_HEIGHT));
             }
         }
         this.staticParts = List.copyOf(parts);

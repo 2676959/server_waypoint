@@ -8,6 +8,11 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pop;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.push;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scale;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
+
 public class IntegerSlider extends ShiftableClickableWidget {
     private static final int padding = 5;
     private final Consumer<Integer> onChange;
@@ -20,7 +25,14 @@ public class IntegerSlider extends ShiftableClickableWidget {
     }
 
     public IntegerSlider(int x, int y, int sliderWidth, int fieldWidth, int min, int max, int defaultValue, Consumer<Integer> onChange, Font textRenderer) {
-        this(x, y, sliderWidth, numberField(x + sliderWidth + padding, y, fieldWidth, min, max, defaultValue, textRenderer), onChange);
+        this(x, y, sliderWidth, fieldWidth, min, max, defaultValue, onChange, textRenderer, 1.0F);
+    }
+
+    /** Scales the number field and track height while retaining the requested track width. */
+    public IntegerSlider(int x, int y, int sliderWidth, int fieldWidth, int min, int max, int defaultValue,
+                         Consumer<Integer> onChange, Font textRenderer, float controlScale) {
+        this(x, y, sliderWidth, numberField(x + sliderWidth + padding, y, fieldWidth, min, max, defaultValue,
+                textRenderer, controlScale), onChange);
         this.setValue(defaultValue);
     }
 
@@ -48,8 +60,9 @@ public class IntegerSlider extends ShiftableClickableWidget {
         this.focused = this.integerField;
     }
 
-    private static IntegerField numberField(int x, int y, int width, int min, int max, int defaultValue, Font textRenderer) {
-        IntegerField field = new IntegerField(x, y, width, min, max, defaultValue, Component.empty(), textRenderer);
+    private static IntegerField numberField(int x, int y, int width, int min, int max, int defaultValue,
+                                             Font textRenderer, float controlScale) {
+        IntegerField field = new ScaledIntegerField(x, y, width, min, max, defaultValue, textRenderer, controlScale);
         field.setYOffset(2);
         return field;
     }
@@ -188,6 +201,93 @@ public class IntegerSlider extends ShiftableClickableWidget {
     @Override
     protected void updateWidgetNarration(NarrationElementOutput builder) {
         this.integerField.updateNarration(builder);
+    }
+
+    /** The field's geometry and pointer coordinates follow the same transform as its rendering. */
+    static class ScaledIntegerField extends IntegerField {
+        private float controlScale = 1.0F;
+        private boolean nativeCoordinates;
+
+        ScaledIntegerField(int x, int y, int width, int min, int max, int defaultValue, Font font, float controlScale) {
+            super(x, y, width, min, max, defaultValue, Component.empty(), font);
+            if (!Float.isFinite(controlScale) || controlScale <= 0) {
+                throw new IllegalArgumentException("controlScale must be finite and positive");
+            }
+            this.controlScale = controlScale;
+        }
+
+        @Override
+        public int getWidth() {
+            return this.nativeCoordinates ? super.getWidth() : Math.round(super.getWidth() * this.controlScale);
+        }
+
+        @Override
+        public int getHeight() {
+            return this.nativeCoordinates ? super.getHeight() : Math.round(super.getHeight() * this.controlScale);
+        }
+
+        @Override
+        public int getVisualWidth() {
+            return Math.round(super.getVisualWidth() * this.controlScale);
+        }
+
+        @Override
+        public int getVisualHeight() {
+            return Math.round(super.getVisualHeight() * this.controlScale);
+        }
+
+        @Override
+        public boolean isMouseOver(double mouseX, double mouseY) {
+            if (this.nativeCoordinates) {
+                return super.isMouseOver(mouseX, mouseY);
+            }
+            return this.visible && mouseX >= this.getVisualX() && mouseY >= this.getVisualY()
+                    && mouseX < this.getVisualX() + this.getVisualWidth()
+                    && mouseY < this.getVisualY() + this.getVisualHeight();
+        }
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if (!this.isMouseOver(mouseX, mouseY)) {
+                return false;
+            }
+            this.nativeCoordinates = true;
+            try {
+                return this.clickUnscaled(this.getVisualX() + (mouseX - this.getVisualX()) / this.controlScale,
+                        this.getVisualY() + (mouseY - this.getVisualY()) / this.controlScale, button);
+            } finally {
+                this.nativeCoordinates = false;
+            }
+        }
+
+        /** Vanilla click dispatch, separate from the coordinate transform for sound-free probes. */
+        protected boolean clickUnscaled(double mouseX, double mouseY, int button) {
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        @Override
+        public void
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+                (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+            int x = this.getVisualX();
+            int y = this.getVisualY();
+            push(context);
+            translate(context, x, y);
+            scale(context, this.controlScale, this.controlScale);
+            translate(context, -x, -y);
+            this.nativeCoordinates = true;
+            try {
+                super.
+                //$ render_widget_method_swap
+                extractWidgetRenderState
+                        (context, x + Math.round((mouseX - x) / this.controlScale),
+                                y + Math.round((mouseY - y) / this.controlScale), deltaTicks);
+            } finally {
+                this.nativeCoordinates = false;
+                pop(context);
+            }
+        }
     }
 
     public static class Slider extends AbstractColorBgSlider {

@@ -3,8 +3,10 @@ package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
 import _959.server_waypoint.common.client.gui.layout.WidgetStack;
+import _959.server_waypoint.common.client.gui.TestFont;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
@@ -23,6 +25,41 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * off-screen.
  */
 class SettingsListWidgetTest {
+    @Test
+    void conditionalActionTracksValuesAndStaysHiddenAfterRelayoutAndScrolling() {
+        AtomicBoolean differsFromDefault = new AtomicBoolean(false);
+        IconButton reset = button(true);
+        SettingsListWidget.Row row = row(button(false), null)
+                .action(reset, differsFromDefault::get);
+        SettingsListWidget list = new SettingsListWidget(new TestFont());
+        list.setWidth(200);
+        list.setHeight(80);
+        list.setEntries(List.of(row));
+
+        assertFalse(reset.visible);
+        assertFalse(row.isInteractive());
+        assertFalse(row.isOverAction(reset.getX(), reset.getY()));
+
+        differsFromDefault.set(true);
+        list.refreshWidgetVisibility();
+        assertTrue(reset.visible);
+        assertTrue(row.isInteractive());
+        int controlX = reset.getX();
+
+        differsFromDefault.set(false);
+        list.refreshWidgetVisibility();
+        list.relayout();
+        list.setScrollY(0);
+        assertFalse(reset.visible);
+        assertFalse(row.isInteractive());
+        assertEquals(controlX, reset.getX());
+
+        differsFromDefault.set(true);
+        list.refreshWidgetVisibility();
+        assertTrue(reset.visible);
+        assertEquals(controlX, reset.getX());
+    }
+
     @Test
     void aRowWithAnActiveControlCanTakeFocus() {
         assertTrue(row(button(true), null).isInteractive());

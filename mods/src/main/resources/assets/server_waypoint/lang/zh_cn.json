@@ -197,6 +197,7 @@
   "server_waypoint.theme.variable.control.disabledBackground": "禁用控件背景",
   "server_waypoint.theme.variable.control.selectedBackground": "选中控件背景",
   "server_waypoint.theme.variable.border.default": "默认边框",
+  "server_waypoint.theme.variable.decor.line": "装饰线",
   "server_waypoint.theme.variable.border.focusRing": "焦点边框",
   "server_waypoint.theme.variable.accent.default": "强调色",
   "server_waypoint.theme.variable.accent.hover": "悬停强调色",

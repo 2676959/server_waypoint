@@ -361,6 +361,11 @@ controls alone does not suppress hover or cursor requests during rendering.
 `DrawContextHelper.texture` has an overload with a trailing ARGB color that multiplies every pixel
 of the texture, as `IconButton` does to tint an inactive icon. It uses the colored blit on 1.21.2
 and later, and a shader color around the blit before that.
+Its source-region overload takes separate source and destination dimensions for scaling a cropped
+region while preserving the same tint behavior.
+The manager's sidebar icon controls use `TEXT_DISABLED` for inactive icons and leave the panel
+background visible, including the sort-order toggle when default sorting is selected. Popup rows
+keep their own disabled fill because they float over other controls.
 
 Use the other render classes as follows:
 
@@ -383,6 +388,7 @@ Theme colors are semantic ARGB roles, not widget-specific constants. Choose the 
 - Surfaces use `SCREEN_BACKGROUND`, `PANEL_BACKGROUND`, `POPUP_BACKGROUND`, `DIALOG_BACKGROUND`,
   and the control background roles.
 - Interaction states use `FOCUS_RING`, `SELECTION_BACKGROUND`, `ROW_HOVER_BACKGROUND`, and the scrollbar roles.
+- Divider and settings-header lines use `DECOR_LINE` (`decor.line`), independently of `BORDER` (`border.default`).
 - Feedback uses `SUCCESS`, `WARNING`, `DANGER`, and their background variants.
 
 These roles apply to GUI chrome and state. A waypoint's user-selected color is domain data, and RGB/HSV picker gradients visualize a color space; those values can remain direct colors rather than theme roles.
@@ -557,15 +563,23 @@ plus 5 pixels on each side, and at least 50 pixels wide, so short labels line up
 translations still fit. Dialog and footer buttons use it.
 
 `IconButton` keeps its full configured hitbox while drawing its texture with a 2-pixel inner inset.
+Use `withIconPadding(int)` to choose a smaller non-negative inset, and
+`withIconRegion(x, y, width, height, textureWidth, textureHeight)` to fit and center the visible
+source region while preserving its proportions. The reset and clear buttons both use a 3-pixel
+inset and exclude their textures' unequal transparent margins, matching the add button's visible
+inset (its 2-pixel drawing inset plus transparent texture margin).
 Screen-local icon controls should use the same inset so adjacent icon actions remain visually consistent.
 An inactive `IconButton` multiplies its icon by the theme's `TEXT_DISABLED`, the color a disabled
 button's label takes, so an unavailable action, such as resetting a setting that's already at its
 default, doesn't look pressable. Draw icons in a light gray or white so the tint shows.
 
-An `IconButton` fills like other controls: the control background at rest, and the hover and disabled
-fills in those states. On a panel that already paints a translucent fill, call `withoutRestingFill()` so
+An `IconButton` uses the control background at rest and the hover fill while active and hovered.
+Disabled buttons keep their resting background and dim only their icon. On a panel that already
+paints a translucent fill, call `withoutRestingFill()` so
 the button paints none of its own while idle and the panel shows through (the manager's add button does).
 The fill painted for the current state is `surfaceColor()`.
+Use `withoutBackground()` to remove the fill in every state, including hover and disabled,
+as the reset and clear buttons do. Their outlines and icon tints still follow the theme.
 
 `ToggleButton` takes each state's fill either as a `WidgetThemeVariable`, which follows the theme (as
 `OnOffToggleButton` does with `SUCCESS_BACKGROUND` and `DANGER_BACKGROUND`), or as an int ARGB, which is
@@ -691,10 +705,15 @@ In remote mode, `ServerListWidget` appears immediately above the scope toggle an
 is hidden, releasing its layout slot. The dimension rail shows dimensions from the selected remote
 server's catalog (including exported empty dimensions); `RemoteBrowserModel.dimensionNames` leaves
 it empty for an unavailable server, whose retained snapshot the tree also hides. The all-dimensions
-toggle applies within that server. One-pixel themed border lines separate the dimension and server rails, and the server
+toggle applies within that server. One-pixel themed separator lines separate the dimension and server rails, and the server
 rail from the control buttons, when each adjacent pair is visible. `SeparatorWidget` owns these
 non-interactive lines; the manager positions each midway in its gap and renders it explicitly.
-The reusable widget accepts a theme color or color supplier,
+The four-argument `SeparatorWidget(x, y, width, height)` constructor resolves `DECOR_LINE`
+at render time. All manager and waypoint-form dividers and the lines beside
+`SettingsListWidget.Header` titles use this role, which is editable as
+`decor.line` in the theme editor and JSON. Built-in palettes give dividers their own
+visible color even when default borders are transparent. The reusable widget also accepts
+an explicit theme color or color supplier,
 and its width and height allow either horizontal or vertical separators. Returning to local mode
 restores the local dimension selection.
 
@@ -788,6 +807,24 @@ lines instead of being clipped. The unit and action columns are as wide as their
 every control's right edge lines up. A control can be one widget, a non-interactive element such as
 a `ScalableText`, or a composite such as a `WidgetStack` of buttons: the row owns every widget the
 control's `visitWidgets` reports, and it can take focus while any of them is active.
+Row labels use 85% text scale and a 6-pixel indent beneath full-size section headers. Label wrapping
+and preferred width account for both the scale and indent. `ClientConfigScreen` keeps numeric units
+in hover text rather than adding suffixes, leaving a 4-pixel gap between controls and reset buttons.
+`SettingsListWidget.ROW_TEXT_SCALE` also sets its row buttons, toggles, status text and numeric fields
+to 85% scale, with smaller control
+heights and reset icons. The screen leaves slider track widths unchanged for pointer precision.
+Per-row reset buttons are 9 pixels square with a 2-pixel icon inset, shrinking the arrow along
+with the button bounds and matching the toggle height.
+`TranslucentButton.setTextScale` and `ToggleButton.setTextScale` scale their centered text; callers
+size the controls separately. `DrawContextHelper.drawScaledText` draws at a screen-space anchor.
+The `IntegerSlider` overload with `controlScale` scales its number field, track height and field
+hit bounds together, transforming pointer coordinates for cursor placement. Its internal field
+keeps native dimensions during drawing and input so vanilla text selection matches the visual scale.
+`Row.action(widget, BooleanSupplier)` conditionally shows an action while reserving its column,
+so controls do not shift when it disappears. Hidden actions are excluded from rendering, input,
+tooltips and Tab navigation. Call `refreshWidgetVisibility()` after the condition changes; scrolling
+and relayout also recheck it. `ClientConfigScreen` uses this for reset buttons, which appear only
+when their setting differs from its default and disappear immediately after a reset.
 
 - **Layout:** `setEntries` copies the entries and lays them out. Call `relayout()` after a label,
   unit or control size changes. `getPreferredWidth()` is the width at which nothing wraps, including

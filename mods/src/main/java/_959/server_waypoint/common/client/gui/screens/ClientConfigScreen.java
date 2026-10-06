@@ -61,12 +61,13 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     private static final int SCREEN_MARGIN = 10;
     private static final int SECTION_SPACING = 6;
     private static final float TITLE_SCALE = 1.2F;
+    private static final float ROW_CONTROL_SCALE = SettingsListWidget.ROW_TEXT_SCALE;
     private static final int FOOTER_BUTTON_GAP = 6;
     private static final int STATUS_GAP = 8;
     // Below this width beside the buttons, the status moves to its own line above them.
     private static final int MIN_STATUS_WIDTH = 100;
     private static final int STATUS_LINE_GAP = 4;
-    private static final int RESET_BUTTON_SIZE = 13;
+    private static final int RESET_BUTTON_SIZE = 11;
     private static final int SLIDER_TRACK_WIDTH = 100;
     private static final int SLIDER_FIELD_WIDTH = 30;
     private static final int DIALOG_TEXT_WIDTH = 220;
@@ -102,6 +103,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         this.settingsList = new SettingsListWidget(this.font);
         this.themeButton = TranslucentButton.fitted(Component.translatable("server_waypoint.config.theme.open"),
                 this::openThemeConfigScreen);
+        scaleRowButton(this.themeButton);
         this.resetAllButton = TranslucentButton.fitted(Component.translatable("server_waypoint.config.reset_all"),
                 this::openResetAllDialog);
         this.doneButton = TranslucentButton.fitted(CommonComponents.GUI_DONE, this::onClose);
@@ -351,32 +353,33 @@ public class ClientConfigScreen extends MovementAllowedScreen {
 
     private SettingsListWidget.Row createSettingRow(ClientConfigSettings.Setting setting) {
         AbstractWidget widget;
-        Component unit = null;
         if (setting instanceof ClientConfigSettings.IntSetting intSetting) {
             widget = new IntegerSlider(0, 0, SLIDER_TRACK_WIDTH, SLIDER_FIELD_WIDTH, intSetting.min(), intSetting.max(),
-                    intSetting.get(this.config), value -> this.onIntChanged(intSetting, value), this.font);
-            unit = intSetting.format().unit();
+                    intSetting.get(this.config), value -> this.onIntChanged(intSetting, value), this.font, ROW_CONTROL_SCALE);
         } else {
             ClientConfigSettings.BooleanSetting booleanSetting = (ClientConfigSettings.BooleanSetting) setting;
             OnOffToggleButton toggle = new OnOffToggleButton(0, 0, value -> this.onBooleanChanged(booleanSetting, value));
+            toggle.setTextScale(ROW_CONTROL_SCALE);
+            toggle.setWidth(Math.round(toggle.getWidth() * ROW_CONTROL_SCALE));
+            toggle.setHeight(Math.round(toggle.getHeight() * ROW_CONTROL_SCALE));
             toggle.setState(booleanSetting.get(this.config));
             widget = toggle;
         }
         Component resetLabel = Component.translatable("server_waypoint.config.reset", setting.defaultText());
-        IconButton resetButton = new IconButton(0, 0, RESET_BUTTON_SIZE, RESET_BUTTON_SIZE, resetLabel,
-                WidgetTextures.RESET_ICON, () -> this.resetSetting(setting, widget));
+        int resetSize = Math.round(RESET_BUTTON_SIZE * ROW_CONTROL_SCALE);
+        IconButton resetButton = new IconButton(0, 0, resetSize, resetSize, resetLabel,
+                WidgetTextures.RESET_ICON, () -> this.resetSetting(setting, widget))
+                .withoutBackground()
+                .withIconPadding(2)
+                .withIconRegion(7, 7, 34, 32, 48, 48);
         resetButton.setTooltip(Tooltip.create(resetLabel));
         this.settingControls.add(new SettingControl(setting, widget, resetButton));
-        SettingsListWidget.Row row = new SettingsListWidget.Row(setting.text().label(), widget)
-                .action(resetButton)
+        return new SettingsListWidget.Row(setting.text().label(), widget)
+                .action(resetButton, () -> !setting.isDefault(this.config))
                 .tooltip(() -> Component.empty()
                         .append(setting.text().description())
                         .append("\n")
                         .append(Component.translatable("server_waypoint.config.default", setting.defaultText())));
-        if (unit != null) {
-            row.suffix(unit);
-        }
-        return row;
     }
 
     /** Adds the rows of one map mod and reports whether it's installed. */
@@ -390,7 +393,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         }
         if (state == ClientConfigSync.MapModRowState.NOT_INSTALLED) {
             ScalableText notInstalled = new ScalableText(0, 0,
-                    Component.translatable("server_waypoint.config.map_mod.not_installed"), TEXT_MUTED, this.font);
+                    Component.translatable("server_waypoint.config.map_mod.not_installed"), ROW_CONTROL_SCALE, TEXT_MUTED, this.font);
             entries.add(new SettingsListWidget.Row(name, notInstalled)
                     .labelColor(TEXT_MUTED)
                     .tooltip(() -> Component.translatable("server_waypoint.config.map_mod.not_installed.tooltip", name)));
@@ -423,9 +426,16 @@ public class ClientConfigScreen extends MovementAllowedScreen {
         );
         TranslucentButton syncButton = TranslucentButton.fitted(
                 Component.translatable("server_waypoint.config.map_mod.sync_button"), () -> this.openSyncDialog(target));
+        scaleRowButton(syncButton);
         MapModControls controls = new MapModControls(target, name, integration, syncButton, dialog);
         this.mapModControls.add(controls);
         return controls;
+    }
+
+    private static void scaleRowButton(TranslucentButton button) {
+        button.setTextScale(ROW_CONTROL_SCALE);
+        button.setWidth(Math.round(button.getWidth() * ROW_CONTROL_SCALE));
+        button.setHeight(Math.round(button.getHeight() * ROW_CONTROL_SCALE));
     }
 
     private WidgetStack dialogText(List<DialogLine> lines) {
@@ -513,6 +523,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
             control.widget().active = !modal;
             control.resetButton().active = !modal && !control.setting().isDefault(this.config);
         }
+        this.settingsList.refreshWidgetVisibility();
         for (MapModControls controls : this.mapModControls) {
             controls.syncButton().active = !modal && this.syncBlocker(controls) == null;
         }

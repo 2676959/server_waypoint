@@ -123,8 +123,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 this::setShowingRemote
         );
         this.serverListWidget = new ServerListWidget(DIMENSION_ICON_SIZE, DIMENSION_ICON_GAP, server -> refreshRemoteSelectors(true));
-        this.selectorSeparator = new SeparatorWidget(0, 0, LEFT_PART_WIDTH, 1, WidgetThemeVariable.BORDER);
-        this.serverControlSeparator = new SeparatorWidget(0, 0, LEFT_PART_WIDTH, 1, WidgetThemeVariable.BORDER);
+        this.selectorSeparator = new SeparatorWidget(0, 0, LEFT_PART_WIDTH, 1);
+        this.serverControlSeparator = new SeparatorWidget(0, 0, LEFT_PART_WIDTH, 1);
         dimensionListWidget = new DimensionListWidget(
                 0,
                 0,
@@ -1336,7 +1336,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                     iconWidth,
                     iconHeight,
                     iconWidth,
-                    iconHeight
+                    iconHeight,
+                    widget.active ? 0xFFFFFFFF : WidgetThemeManager.getColor(WidgetThemeVariable.TEXT_DISABLED)
             );
         }
     }
@@ -1344,7 +1345,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
     /**
      * The fill behind an icon control, or null for none. Controls on a panel pass {@code fillAtRest} false:
      * the panel already paints a translucent fill, so a second one at rest would stack on it. A popup row
-     * floats over other widgets and keeps its fill.
+     * floats over other widgets and keeps its fill. Disabled panel controls dim their icon and keep
+     * the panel visible instead of adding a disabled fill.
      */
     static @Nullable WidgetThemeVariable resolveIconControlFill(
             boolean active,
@@ -1353,7 +1355,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             boolean fillAtRest
     ) {
         if (!active) {
-            return WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND;
+            return fillAtRest ? WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND : null;
         }
         if (selected) {
             return WidgetThemeVariable.SELECTION_BACKGROUND;

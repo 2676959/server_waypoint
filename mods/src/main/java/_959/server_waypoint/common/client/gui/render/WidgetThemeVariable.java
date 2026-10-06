@@ -23,6 +23,7 @@ public enum WidgetThemeVariable {
     CONTROL_DISABLED_BACKGROUND("control.disabledBackground"),
     CONTROL_SELECTED_BACKGROUND("control.selectedBackground"),
     BORDER("border.default"),
+    DECOR_LINE("decor.line"),
     FOCUS_RING("border.focusRing"),
     ACCENT("accent.default"),
     ACCENT_HOVER("accent.hover"),

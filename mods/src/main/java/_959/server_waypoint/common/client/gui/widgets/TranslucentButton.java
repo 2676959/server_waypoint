@@ -7,7 +7,7 @@ import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.layout.VisualBounds;
 
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawScaledText;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 
@@ -33,6 +33,12 @@ public class TranslucentButton extends ShiftableButtonWidget implements Expandab
     protected Component text;
     protected final Font textRenderer = Minecraft.getInstance().font;
     protected int textWidth;
+    private float textScale = 1.0F;
+
+    /** Changes the label scale; the caller owns the button's dimensions. */
+    public void setTextScale(float textScale) {
+        this.textScale = textScale;
+    }
 
     public TranslucentButton(int x, int y, int width, int height, Component text, ButtonClickCallback callback) {
         this(x, y, width, height, text, callback, AnchorMode.CONTENT);
@@ -160,9 +166,10 @@ public class TranslucentButton extends ShiftableButtonWidget implements Expandab
         int bgColor = WidgetThemeState.controlBackground(this.active, isHovered());
         int fixedY = y - 1;
         context.fill(x, fixedY, x + width, fixedY + height, bgColor);
-        int centerX = centered(this.width, textWidth);
-        int centerY = centered(this.height, textRenderer.lineHeight);
-        drawText(context, textRenderer, this.text, x + centerX, y + centerY, WidgetThemeState.text(this.active), true);
+        int centerX = centered(this.width, Math.round(textWidth * this.textScale));
+        int centerY = centered(this.height, Math.round(textRenderer.lineHeight * this.textScale));
+        drawScaledText(context, textRenderer, this.text, x + centerX, y + centerY,
+                WidgetThemeState.text(this.active), this.textScale);
     }
 
     @Override

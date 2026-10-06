@@ -197,6 +197,7 @@
   "server_waypoint.theme.variable.control.disabledBackground": "Disabled control",
   "server_waypoint.theme.variable.control.selectedBackground": "Selected control",
   "server_waypoint.theme.variable.border.default": "Default border",
+  "server_waypoint.theme.variable.decor.line": "Decorative line",
   "server_waypoint.theme.variable.border.focusRing": "Focus ring",
   "server_waypoint.theme.variable.accent.default": "Accent",
   "server_waypoint.theme.variable.accent.hover": "Hovered accent",

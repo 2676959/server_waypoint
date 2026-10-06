@@ -12,6 +12,10 @@ public final class SeparatorWidget extends ShiftableWidget {
     private final IntSupplier color;
     private boolean visible = true;
 
+    public SeparatorWidget(int x, int y, int width, int height) {
+        this(x, y, width, height, WidgetThemeVariable.DECOR_LINE);
+    }
+
     public SeparatorWidget(int x, int y, int width, int height, WidgetThemeVariable color) {
         this(x, y, width, height, WidgetThemeColors.getColorSupplier(color));
     }

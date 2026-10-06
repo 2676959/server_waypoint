@@ -9,7 +9,7 @@ import _959.server_waypoint.common.client.gui.layout.VisualBounds;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawScaledText;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.screens.MovementAllowedScreen.centered;
 
@@ -33,6 +33,12 @@ public class ToggleButton extends ShiftableButtonWidget implements Expandable, P
     private int anchorX;
     private int anchorY;
     private boolean state;
+    private float textScale = 1.0F;
+
+    /** Changes the label scale; the caller owns the toggle's dimensions. */
+    public void setTextScale(float textScale) {
+        this.textScale = textScale;
+    }
     private final Component state0Text;
     private final Component state1Text;
     private final IntSupplier state0Color;
@@ -192,9 +198,10 @@ public class ToggleButton extends ShiftableButtonWidget implements Expandable, P
         renderOutline(context, x, fixedY, width, height, WidgetThemeState.border(this.active, isFocused(), isHovered()));
         Component text = this.state ? state1Text : state0Text;
         int textWidth = textRenderer.width(text);
-        int centerX = centered(this.width, textWidth);
-        int centerY = centered(this.height, textRenderer.lineHeight);
-        drawText(context, textRenderer, text, x + centerX, y + centerY, WidgetThemeState.textOnAccent(this.active), true);
+        int centerX = centered(this.width, Math.round(textWidth * this.textScale));
+        int centerY = centered(this.height, Math.round(textRenderer.lineHeight * this.textScale));
+        drawScaledText(context, textRenderer, text, x + centerX, y + centerY,
+                WidgetThemeState.textOnAccent(this.active), this.textScale);
     }
 
     @Override

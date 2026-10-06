@@ -1,6 +1,11 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.TestFont;
 import com.mojang.blaze3d.platform.InputConstants;
+//? if >= 1.21.9 {
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
+//?}
 import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.Test;
 
@@ -13,6 +18,41 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * {@link SettingsListWidget} hides must ignore input itself.
  */
 class IntegerSliderTest {
+    //? if >= 1.21.9 {
+    @Test
+    void scaledNumberFieldMatchesItsVisibleBoundsAndPlacesTheCursorAtTheClickedDigit() {
+        IntegerSlider.ScaledIntegerField field = new IntegerSlider.ScaledIntegerField(
+                20, 30, 30, 0, 9999, 1000, new TestFont(), 0.85F) {
+            // Focus normally starts the game's text input, which is unavailable in a unit test.
+            @Override
+            public void setFocused(boolean focused) {
+            }
+
+            @Override
+            protected boolean clickUnscaled(double mouseX, double mouseY, int button) {
+                // Exercise vanilla cursor placement without dispatch's global sound-manager lookup.
+                if (!this.isMouseOver(mouseX, mouseY)) {
+                    return false;
+                }
+                this.onClick(new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(button, 0)), false);
+                return true;
+            }
+        };
+        field.setValue("1000");
+        assertEquals(26, field.getVisualWidth());
+        assertEquals(9, field.getVisualHeight());
+        double x = field.getVisualX() + (2 + TestFont.CHARACTER_WIDTH + 0.25) * 0.85;
+        double y = field.getVisualY() + 4;
+
+        assertTrue(field.mouseClicked(x, y, InputConstants.MOUSE_BUTTON_LEFT));
+        assertEquals(1, field.getCursorPosition());
+        assertEquals(26, field.getWidth());
+        assertFalse(field.mouseClicked(field.getVisualX() + field.getVisualWidth(), y,
+                InputConstants.MOUSE_BUTTON_LEFT));
+        assertEquals(1, field.getCursorPosition());
+    }
+    //?}
+
     @Test
     void aVisibleSliderPassesInputToItsNumberField() {
         InputRecordingField field = allocate(InputRecordingField.class);

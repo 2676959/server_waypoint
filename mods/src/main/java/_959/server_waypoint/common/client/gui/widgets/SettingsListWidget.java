@@ -15,6 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
@@ -36,6 +37,7 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.NO
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scheduleTooltipAtPointer;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DECOR_LINE;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.PANEL_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.ROW_HOVER_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_MUTED;
@@ -54,6 +56,9 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
     private static final long TOOLTIP_DELAY_NANOS = 500_000_000L;
     private static final int HEADER_LINE_GAP = 4;
     private static final int MIN_HEADER_LINE = 8;
+    /** Shared text scale for config labels and the controls beside them. */
+    public static final float ROW_TEXT_SCALE = 0.85F;
+    private static final int ROW_LABEL_INDENT = 6;
 
     private final Font font;
     private final PaddingBackground panel;
@@ -99,6 +104,11 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         this.entryTops = SettingsListLayout.entryTops(this.entryHeights, headers);
         this.contentHeight = this.entryTops[this.entries.size()];
         this.refreshScroll();
+    }
+
+    /** Rechecks conditional actions and viewport visibility after a row's state changes. */
+    public void refreshWidgetVisibility() {
+        this.positionEntries();
     }
 
     /** The width at which no entry wraps, including the always-reserved scrollbar column. */
@@ -158,8 +168,10 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         FocusNavigationEvent.TabNavigation tab = new FocusNavigationEvent.TabNavigation(forward);
         for (int step = 1; step <= size; step++) {
             GuiEventListener candidate = order.get(Math.floorMod(start + (forward ? step : -step), size));
-            if (candidate instanceof AbstractWidget widget && this.rowIndexOf(widget) >= 0) {
-                if (widget.active) {
+            int rowIndex = this.rowIndexOf(candidate);
+            if (candidate instanceof AbstractWidget widget && rowIndex >= 0) {
+                Row row = (Row) this.entries.get(rowIndex);
+                if (widget.active && row.showsWidget(widget)) {
                     if (!widget.visible) {
                         this.reveal(widget);
                     }
@@ -455,7 +467,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             int lineEnd = this.x + this.width;
             if (this.titleText.getHeight() <= list.font.lineHeight && lineEnd - lineStart >= MIN_HEADER_LINE) {
                 int lineY = this.y + list.font.lineHeight / 2;
-                context.fill(lineStart, lineY, lineEnd, lineY + 1, getColor(BORDER));
+                context.fill(lineStart, lineY, lineEnd, lineY + 1, getColor(DECOR_LINE));
             }
         }
 
@@ -472,6 +484,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         private final Renderable controlRenderer;
         private @Nullable Component suffix;
         private @Nullable AbstractWidget action;
+        private BooleanSupplier actionShown = () -> true;
         private @Nullable Supplier<Component> tooltip;
         private WidgetThemeVariable labelColor = TEXT_PRIMARY;
         private @Nullable ScalableText labelText;
@@ -492,7 +505,13 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
 
         /** A widget in the last column, such as a reset button. */
         public Row action(AbstractWidget action) {
+            return this.action(action, () -> true);
+        }
+
+        /** A conditional action whose column stays reserved while the widget is hidden. */
+        public Row action(AbstractWidget action, BooleanSupplier shown) {
             this.action = Objects.requireNonNull(action, "action");
+            this.actionShown = Objects.requireNonNull(shown, "shown");
             return this;
         }
 
@@ -521,7 +540,11 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
 
         /** Whether Tab can stop in this row now: it has an active widget, and vanilla skips inactive ones. */
         boolean isInteractive() {
-            return this.widgets().stream().anyMatch(widget -> widget.active);
+            return this.widgets().stream().anyMatch(widget -> widget.active && this.showsWidget(widget));
+        }
+
+        private boolean showsWidget(AbstractWidget widget) {
+            return widget != this.action || this.actionShown.getAsBoolean();
         }
 
         /** The control's widgets, several for a composite control, then the action. */
@@ -532,7 +555,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         }
 
         boolean isOverAction(int mouseX, int mouseY) {
-            if (this.action == null) {
+            if (this.action == null || !this.action.visible || !this.actionShown.getAsBoolean()) {
                 return false;
             }
             int x = VisualPositioning.getVisualX(this.action);
@@ -549,13 +572,14 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         int layout(SettingsListWidget list, int rowWidth) {
             int suffixColumn = list.suffixColumnWidth;
             int actionColumn = list.actionColumnWidth;
-            int labelWidth = SettingsListLayout.labelWidth(rowWidth, VisualPositioning.getVisualWidth(this.control), suffixColumn, actionColumn);
+            int labelWidth = SettingsListLayout.labelWidth(rowWidth - ROW_LABEL_INDENT,
+                    VisualPositioning.getVisualWidth(this.control), suffixColumn, actionColumn);
             if (this.labelText == null) {
-                this.labelText = new ScalableText(0, 0, this.label, 1.0F, this.labelColor, labelWidth, list.font);
+                this.labelText = new ScalableText(0, 0, this.label, ROW_TEXT_SCALE, this.labelColor, list.font);
             } else {
-                this.labelText.setMaxWidth(labelWidth);
                 this.labelText.setColor(this.labelColor);
             }
+            this.labelText.setWidth(labelWidth);
             if (this.suffix != null) {
                 if (this.suffixText == null) {
                     this.suffixText = new ScalableText(0, 0, this.suffix, 1.0F, TEXT_MUTED, suffixColumn, list.font);
@@ -569,6 +593,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
 
             WidgetPack pack = new WidgetPack(0, 0, rowWidth, height, Orientation.HORIZONTAL);
             pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+            pack.addChild(SpacerElement.width(ROW_LABEL_INDENT), Direction.FORWARD);
             pack.addChild(this.labelText, Direction.FORWARD);
             if (actionColumn > 0) {
                 int actionWidth = this.actionWidth();
@@ -598,7 +623,8 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             this.pack.setPosition(x, y);
             this.visitWidgets(widget -> {
                 int top = VisualPositioning.getVisualY(widget);
-                widget.visible = SettingsListLayout.fullyVisible(top, top + VisualPositioning.getVisualHeight(widget), viewportTop, viewportBottom);
+                widget.visible = this.showsWidget(widget)
+                        && SettingsListLayout.fullyVisible(top, top + VisualPositioning.getVisualHeight(widget), viewportTop, viewportBottom);
             });
         }
 
@@ -613,14 +639,15 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
                 renderPart(context, this.suffixText, mouseX, mouseY, deltaTicks);
             }
             renderPart(context, this.controlRenderer, mouseX, mouseY, deltaTicks);
-            if (this.action != null) {
+            if (this.action != null && this.actionShown.getAsBoolean()) {
                 renderPart(context, this.action, mouseX, mouseY, deltaTicks);
             }
         }
 
         @Override
         int preferredWidth(SettingsListWidget list) {
-            return SettingsListLayout.rowPreferredWidth(list.font.width(this.label), VisualPositioning.getVisualWidth(this.control),
+            return ROW_LABEL_INDENT + SettingsListLayout.rowPreferredWidth(
+                    Math.round(list.font.width(this.label) * ROW_TEXT_SCALE), VisualPositioning.getVisualWidth(this.control),
                     list.suffixColumnWidth, list.actionColumnWidth);
         }
 

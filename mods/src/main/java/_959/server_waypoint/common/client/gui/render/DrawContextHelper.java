@@ -59,17 +59,26 @@ public final class DrawContextHelper {
     //$ resource_location_type_swap
     Identifier
     texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color) {
+        texture(context, texture, x, y, u, v, width, height, width, height, textureWidth, textureHeight, color);
+    }
+
+    /** Draws a tinted source region scaled to the supplied destination dimensions. */
+    public static void texture(GuiGraphicsExtractor context,
+    //$ resource_location_type_swap
+    Identifier
+    texture, int x, int y, float u, float v, int width, int height,
+    int sourceWidth, int sourceHeight, int textureWidth, int textureHeight, int color) {
         //? if >= 1.21.6 {
-        context.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, textureWidth, textureHeight, color);
+        context.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, u, v, width, height, sourceWidth, sourceHeight, textureWidth, textureHeight, color);
         //?} elif > 1.21 {
-        /*context.blit(RenderType::guiTextured, texture, x, y, u, v, width, height, textureWidth, textureHeight, color);
+        /*context.blit(RenderType::guiTextured, texture, x, y, u, v, width, height, sourceWidth, sourceHeight, textureWidth, textureHeight, color);
         *///?} else {
         /*context.flush();
         float[] previous = RenderSystem.getShaderColor().clone();
         RenderSystem.setShaderColor(((color >> 16) & 0xFF) / 255.0F, ((color >> 8) & 0xFF) / 255.0F,
                 (color & 0xFF) / 255.0F, ((color >>> 24) & 0xFF) / 255.0F);
         try {
-            context.blit(texture, x, y, u, v, width, height, textureWidth, textureHeight);
+            context.blit(texture, x, y, width, height, u, v, sourceWidth, sourceHeight, textureWidth, textureHeight);
             context.flush();
         } finally {
             RenderSystem.setShaderColor(previous[0], previous[1], previous[2], previous[3]);
@@ -119,6 +128,16 @@ public final class DrawContextHelper {
         //?} else {
         /*context.drawString(font, text, x, y, color, shadow);
         *///?}
+    }
+
+    /** Draws text at a screen-space anchor with a smaller or larger font scale. */
+    public static void drawScaledText(GuiGraphicsExtractor context, Font font, Component text,
+                                      int x, int y, int color, float textScale) {
+        push(context);
+        translate(context, x, y);
+        scale(context, textScale, textScale);
+        drawText(context, font, text, 0, 0, color, true);
+        pop(context);
     }
 
     public static void push(GuiGraphicsExtractor context) {
