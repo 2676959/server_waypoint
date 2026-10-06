@@ -84,6 +84,21 @@ class XaeroMinimapHelperTest {
         assertNotNull(syncedSet);
         assertEquals(1, syncedSet.size());
         assertEquals("Spawn", syncedSet.get(0).getName());
+        assertEquals(0x7F0D47A1, SyncedWaypointHighlight.xaerosWaypointBackground(syncedSet, syncedSet.get(0)));
+        assertEquals(0, SyncedWaypointHighlight.xaerosWaypointBackground(localSet, localSet.get(0)));
+    }
+
+    @Test
+    void doesNotHighlightUnrelatedRowsDisplayedAlongsideManagedSetWaypoints() {
+        SimpleWaypoint waypoint = new SimpleWaypoint("Spawn", "S", 1, 2, 3, 0, 0, false);
+        Waypoint managed = createWaypoint(waypoint, "Spawn");
+        Waypoint unrelated = createWaypoint(waypoint, "Spawn");
+        WaypointSet syncedSet = WaypointSet.Builder.begin().setName("sw\u241Ftest").build();
+        syncedSet.add(managed);
+
+        assertEquals(0, SyncedWaypointHighlight.xaerosWaypointBackground(syncedSet, unrelated));
+        assertEquals(0, SyncedWaypointHighlight.xaerosWaypointBackground(syncedSet, null));
+        assertEquals(0x7F0D47A1, SyncedWaypointHighlight.xaerosWaypointBackground(syncedSet, managed));
     }
 
     @Test
