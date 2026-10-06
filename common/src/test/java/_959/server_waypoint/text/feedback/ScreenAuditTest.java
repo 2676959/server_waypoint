@@ -182,7 +182,8 @@ class ScreenAuditTest {
                         "Farms", "Iron Farm", result));
             }
         }
-        screens.put("arrival", RemoteScreens.arrival(Result.SUCCESS, "survival", "Iron Farm", iron));
+        screens.put("arrival", RemoteScreens.arrival(viewer.icons(),
+                Result.SUCCESS, "survival", "Iron Farm", iron));
         return screens;
     }
 

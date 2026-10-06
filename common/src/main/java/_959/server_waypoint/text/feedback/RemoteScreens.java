@@ -9,6 +9,7 @@ import _959.server_waypoint.crossserver.RemoteCatalogState;
 import _959.server_waypoint.crossserver.catalog.RemoteCatalogQuery.Server;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result;
 import _959.server_waypoint.text.chat.Chat;
+import _959.server_waypoint.text.chat.ChatIcons;
 import _959.server_waypoint.text.chat.ChatLines;
 import _959.server_waypoint.text.chat.Click;
 import _959.server_waypoint.text.chat.DimensionStyle;
@@ -48,8 +49,6 @@ import static net.kyori.adventure.text.format.NamedTextColor.WHITE;
 /** Remote browsing (spec 14): the server picker, all servers, a server, a dimension, a list and details. */
 public final class RemoteScreens {
     private static final List<SortMode> SORTS = List.of(SortMode.DEFAULT, SortMode.NAME, SortMode.COLOR);
-    /** Whoever arrives at this server is a player reading chat. */
-    private static final Viewer ARRIVING = new Viewer(Set.of(), true, false, null, null, 0F);
 
     /** Servers with waypoints first, then the rest, each group A–Z by name. */
     static final Comparator<Server> ORDER = Comparator
@@ -410,13 +409,14 @@ public final class RemoteScreens {
      * At the destination: ✔ Arrived at [IF] Iron Farm on survival, naming this server by its ID,
      * or why the arrival failed. The waypoint is this server's own, when it still exists.
      */
-    public static Component arrival(Result result, String server, @Nullable String waypointName,
+    public static Component arrival(ChatIcons icons, Result result, String server, @Nullable String waypointName,
                                     @Nullable SimpleWaypoint waypoint) {
         Component serverName = Chat.colored(text(RemoteRefs.truncate(server)), WHITE);
         if (result != Result.SUCCESS) {
             return Chat.error(translatable("wp.remote.tp." + result.name().toLowerCase(Locale.ROOT), serverName));
         }
-        Component target = waypoint != null ? WaypointRefs.plain(ARRIVING, waypoint)
+        Viewer arriving = new Viewer(Set.of(), true, false, null, null, 0F, icons);
+        Component target = waypoint != null ? WaypointRefs.plain(arriving, waypoint)
                 : Chat.colored(text(RemoteRefs.truncate(Objects.requireNonNullElse(waypointName, ""))), WHITE);
         return Chat.ok(translatable("wp.remote.arrived", target, serverName));
     }

@@ -6,6 +6,7 @@ import _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.network.PaperMessageSender;
 import _959.server_waypoint.server.command.WaypointCommand;
+import _959.server_waypoint.server.command.CommandChatIcons;
 import _959.server_waypoint.server.command.permission.PaperPermissionManager;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.entity.Player;
@@ -52,7 +53,8 @@ public final class PaperCrossServerRuntime implements Listener {
         Player player = event.getPlayer();
         runtime.arrive(player.getUniqueId(), player).whenComplete((result, failure) -> {
             if (failure != null || result.result() == Result.NOT_FOUND || result.result() == Result.UNAVAILABLE) return;
-            destination.execute(player, () -> sender.sendPlayerMessage(player, runtime.arrivalMessage(result)), () -> { });
+            destination.execute(player, () -> sender.sendPlayerMessage(player,
+                    runtime.arrivalMessage(CommandChatIcons.INSTANCE, result)), () -> { });
         });
     }
 }

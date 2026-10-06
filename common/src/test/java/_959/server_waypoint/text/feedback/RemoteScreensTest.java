@@ -6,6 +6,7 @@ import _959.server_waypoint.crossserver.RemoteCatalogState;
 import _959.server_waypoint.crossserver.RemoteServerId;
 import _959.server_waypoint.crossserver.catalog.RemoteCatalogQuery.Server;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result;
+import _959.server_waypoint.text.chat.ChatIcons;
 import _959.server_waypoint.text.chat.ListQuery;
 import _959.server_waypoint.text.chat.ListView;
 import net.kyori.adventure.text.Component;
@@ -351,10 +352,10 @@ class RemoteScreensTest {
         SimpleWaypoint iron = Fixtures.farms().getWaypointByName("Iron Farm");
 
         assertEquals("✔ Arrived at [IF] Iron Farm on survival",
-                render(RemoteScreens.arrival(Result.SUCCESS, "survival", "Iron Farm", iron)));
+                render(RemoteScreens.arrival(ChatIcons.NONE, Result.SUCCESS, "survival", "Iron Farm", iron)));
         assertEquals("✔ Arrived at Iron Farm on survival",
-                render(RemoteScreens.arrival(Result.SUCCESS, "survival", "Iron Farm", null)));
-        assertEquals("✘ The switch to survival timed out.", render(RemoteScreens.arrival(Result.EXPIRED, "survival", null, null)));
+                render(RemoteScreens.arrival(ChatIcons.NONE, Result.SUCCESS, "survival", "Iron Farm", null)));
+        assertEquals("✘ The switch to survival timed out.", render(RemoteScreens.arrival(ChatIcons.NONE, Result.EXPIRED, "survival", null, null)));
     }
 
     @Test

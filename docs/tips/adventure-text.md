@@ -62,6 +62,8 @@ Waypoint references keep their initials and teleport/details actions and prepend
 broadcasts and teleport confirmations prepend UUID-based player heads; broadcasts name the player
 by account name on every build, and teleport confirmations by display name. The space after a
 sprite or head is the object's child, so leaving the object out takes the space with it.
+Cross-server arrival feedback passes the destination platform's `ChatIcons` through
+`BackendRuntime.arrivalMessage` to `RemoteScreens.arrival`, so it uses the same waypoint sprites.
 
 Chat sprites are flat textures, not rendered item models.
 `assets/server_waypoint/chat-sprites.json` contains 1,383 representative vanilla textures derived

@@ -4,6 +4,7 @@ import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
+import _959.server_waypoint.text.chat.ChatIcons;
 import _959.server_waypoint.text.feedback.RemoteScreens;
 import net.kyori.adventure.text.Component;
 import _959.server_waypoint.crossserver.*;
@@ -104,7 +105,7 @@ public final class BackendRuntime<S, P> extends AsyncTransportLifecycle implemen
         return current.destination().arrive(playerId, player);
     }
     /** What the arriving player reads (spec 14.4): the waypoint is this server's own copy, when it still exists. */
-    public Component arrivalMessage(DestinationHandoffService.ArrivalResult result) {
+    public Component arrivalMessage(ChatIcons icons, DestinationHandoffService.ArrivalResult result) {
         RemoteServerId id = localId;
         RemoteWaypointKey target = result.target();
         SimpleWaypoint waypoint = null;
@@ -117,7 +118,7 @@ public final class BackendRuntime<S, P> extends AsyncTransportLifecycle implemen
             return RemoteScreens.permissionCheckFailed(net.kyori.adventure.text.Component.text(
                     id == null ? "" : id.value()), result.permissions());
         }
-        return RemoteScreens.arrival(result.result(), id == null ? "" : id.value(),
+        return RemoteScreens.arrival(icons, result.result(), id == null ? "" : id.value(),
                 target == null ? null : target.waypointName(), waypoint);
     }
     @Override protected void stopResources() throws Exception {

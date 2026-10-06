@@ -7,6 +7,7 @@ import _959.server_waypoint.core.WaypointServerCore;
 import _959.server_waypoint.command.permission.PermissionManager;
 import _959.server_waypoint.common.network.ModMessageSender;
 import _959.server_waypoint.common.server.command.WaypointCommand;
+import _959.server_waypoint.common.server.command.CommandChatIcons;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -59,7 +60,7 @@ public final class ModCrossServerRuntime {
         runtime.arrive(player.getUUID(), player).whenComplete((result, failure) -> {
             if (failure != null || result.result() == Result.NOT_FOUND || result.result() == Result.UNAVAILABLE) return;
             destination.execute(player, () -> ModMessageSender.getInstance().sendPlayerMessage(player,
-                    runtime.arrivalMessage(result)), () -> { });
+                    runtime.arrivalMessage(CommandChatIcons.INSTANCE, result)), () -> { });
         });
     }
 }

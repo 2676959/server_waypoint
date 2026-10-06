@@ -5,6 +5,7 @@ import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.crossserver.RemoteCatalogState;
 import _959.server_waypoint.crossserver.RemoteServerId;
 import _959.server_waypoint.crossserver.catalog.RemoteCatalogQuery.Server;
+import _959.server_waypoint.crossserver.protocol.ApplicationMessage.Result;
 import _959.server_waypoint.text.chat.ChatIcons;
 import _959.server_waypoint.text.chat.ListQuery;
 import _959.server_waypoint.text.chat.VanillaChatSprites;
@@ -60,6 +61,15 @@ class ChatIconsTest {
 
         assertEquals("sprite:minecraft:diamond [MH] Main Home",
                 lines(RemoteScreens.list(viewer, survival, Fixtures.OVERWORLD, homes, ListQuery.DEFAULT, 10)).get(1));
+    }
+
+    @Test
+    void arrivalIncludesTheWaypointSpriteWithoutTintingIt() {
+        Component arrival = RemoteScreens.arrival(ICONS, Result.SUCCESS, "survival", "Main Home", diamondHome());
+
+        assertEquals("✔ Arrived at sprite:minecraft:diamond [MH] Main Home on survival", render(arrival));
+        assertEquals(NamedTextColor.WHITE, colorOf(arrival, "sprite:minecraft:diamond"));
+        assertNull(clickOf(arrival, "sprite:minecraft:diamond"));
     }
 
     @Test
