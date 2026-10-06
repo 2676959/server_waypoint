@@ -13,6 +13,9 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.g
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.POPUP_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SELECTION_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SCROLLBAR_TRACK;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SCROLLBAR_THUMB;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SCROLLBAR_THUMB_ACTIVE;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_DISABLED;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_MUTED;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PLACEHOLDER;
@@ -29,6 +32,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiPredicate;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -47,6 +52,7 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     static final int OUTLINE_PADDING = 2;
     private static final int SUGGESTION_LINE_HEIGHT = 12;
     private static final int MAX_VISIBLE_SUGGESTIONS = 5;
+    private static final int SCROLLBAR_WIDTH = 3;
 
     private final Font textRenderer;
     private final AnchorMode anchorMode;
@@ -56,6 +62,8 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     private int yOffset;
     protected final int backgroundHeight;
     private Supplier<List<String>> suggestionsProvider = List::of;
+    private @Nullable BiPredicate<String, String> suggestionsMatcher;
+    private @Nullable IntSupplier textColorProvider;
     private List<String> suggestions = List.of();
     private int selectedSuggestion;
     private int suggestionOffset;
@@ -70,6 +78,8 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     private String inlineSuggestion;
     private boolean suggestionsEnabled = true;
     private boolean suggestionsDismissed;
+    private boolean draggingSuggestionScrollbar;
+    private double suggestionThumbGrabOffset;
     private @Nullable Supplier<Component> placeholder;
     private @Nullable Component shownPlaceholder;
     private int shownPlaceholderColor;
@@ -135,7 +145,9 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
         int offset = Math.max(0, Math.min(maxOffset, this.suggestionOffset + (verticalAmount < 0 ? rows : -rows)));
         if (offset != this.suggestionOffset) {
             this.suggestionOffset = offset;
-            this.selectedSuggestion = this.suggestionIndexAt(mouseY);
+            this.selectedSuggestion = this.isOverSuggestionScrollbar(mouseX, mouseY)
+                    ? this.clampSuggestionToViewport(this.selectedSuggestion)
+                    : this.suggestionIndexAt(mouseY);
             this.updateInlineSuggestion();
         }
         return true;
@@ -178,6 +190,30 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     public void setSuggestionsProvider(Supplier<List<String>> suggestionsProvider) {
         this.suggestionsProvider = suggestionsProvider == null ? List::of : suggestionsProvider;
         this.refreshSuggestions();
+    }
+
+    /** Overrides matching with a predicate receiving the candidate and current input text. */
+    public void setSuggestionsMatcher(BiPredicate<String, String> matcher) {
+        this.suggestionsMatcher = Objects.requireNonNull(matcher);
+        this.refreshSuggestions();
+    }
+
+    /** Supplies the active input text color; disabled text and the placeholder retain theme colors. */
+    public void setTextColorProvider(IntSupplier provider) {
+        this.textColorProvider = Objects.requireNonNull(provider);
+        this.updateThemeTextColors();
+    }
+
+    /** Returns the visible suggestion under the pointer without accepting it or changing selection. */
+    public @Nullable String getHoveredSuggestion(double mouseX, double mouseY) {
+        if (!this.isSuggestionListVisible()) {
+            return null;
+        }
+        this.updateSuggestionBounds();
+        if (!this.isOverSuggestionBounds(mouseX, mouseY) || this.isOverSuggestionScrollbar(mouseX, mouseY)) {
+            return null;
+        }
+        return this.suggestions.get(this.suggestionIndexAt(mouseY));
     }
 
     /** Invalidates a completion cycle after the provider's catalog changes. */
@@ -225,6 +261,8 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
                 this.suggestionsHeight,
                 getColor(BORDER)
         );
+        int textRight = this.suggestionsX + this.suggestionsWidth - 1
+                - (this.hasSuggestionScrollbar() ? SCROLLBAR_WIDTH + 1 : 0);
         for (int i = 0; i < visibleSuggestions; i++) {
             int suggestionIndex = i + this.suggestionOffset;
             String suggestion = this.suggestions.get(suggestionIndex);
@@ -234,7 +272,7 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
                 context.fill(
                         this.suggestionsX + 1,
                         Math.max(y, this.suggestionsY + 1),
-                        this.suggestionsX + this.suggestionsWidth - 1,
+                        textRight,
                         Math.min(y + SUGGESTION_LINE_HEIGHT, this.suggestionsY + this.suggestionsHeight - 1),
                         getColor(SELECTION_BACKGROUND)
                 );
@@ -244,13 +282,14 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
                     context,
                     this.textRenderer,
                     this.textRenderer.plainSubstrByWidth(suggestion,
-                            Math.max(0, this.suggestionsX + this.suggestionsWidth - 1 - this.getTextAnchorX())),
+                            Math.max(0, textRight - this.getTextAnchorX())),
                     this.getTextAnchorX(),
                     y + 2,
                     color,
                     true
             );
         }
+        this.renderSuggestionScrollbar(context);
     }
 
     /** Positions a visible list and selects the row under the pointer if it has moved; false when hidden. */
@@ -373,6 +412,40 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
         return handled;
     }
 
+    /** Whether this input captured a scrollbar click; used by composite event routing. */
+    boolean isDraggingSuggestionScrollbar() {
+        return this.draggingSuggestionScrollbar;
+    }
+
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (this.draggingSuggestionScrollbar && button == MOUSE_BUTTON_LEFT) {
+            if (!this.isSuggestionListVisible() || !this.hasSuggestionScrollbar()) {
+                this.draggingSuggestionScrollbar = false;
+                return false;
+            }
+            this.updateSuggestionBounds();
+            this.scrollSuggestionThumbTo(mouseY);
+            return true;
+        }
+        //? if >=1.21.9 {
+        return super.mouseDragged(new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(button, 0)), deltaX, deltaY);
+        //?} else {
+        /*return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        *///?}
+    }
+
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == MOUSE_BUTTON_LEFT && this.draggingSuggestionScrollbar) {
+            this.draggingSuggestionScrollbar = false;
+            return true;
+        }
+        //? if >=1.21.9 {
+        return super.mouseReleased(new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(button, 0)));
+        //?} else {
+        /*return super.mouseReleased(mouseX, mouseY, button);
+        *///?}
+    }
+
     @Override
     public void setValue(String value) {
         super.setValue(value);
@@ -407,6 +480,21 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     }
 
     //? if >= 1.21.9 {
+    @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        return this.mouseClicked(event.x(), event.y(), event.button());
+    }
+
+    @Override
+    public boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
+        return this.mouseDragged(event.x(), event.y(), event.button(), deltaX, deltaY);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        return this.mouseReleased(event.x(), event.y(), event.button());
+    }
+
     @Override
     public boolean keyPressed(KeyEvent keyEvent) {
         return this.keyPressed(keyEvent.key(), /*? if <26.3 {*/ keyEvent.scancode() /*?} else {*//* keyEvent.keycode() *//*?}*/, keyEvent.modifiers());
@@ -506,6 +594,15 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
         if (!this.isMouseOverSuggestion(mouseX, mouseY)) {
             return false;
         }
+        if (this.isOverSuggestionScrollbar(mouseX, mouseY)) {
+            int thumbY = this.suggestionThumbY();
+            int thumbHeight = this.suggestionThumbHeight();
+            this.suggestionThumbGrabOffset = mouseY >= thumbY && mouseY < thumbY + thumbHeight
+                    ? mouseY - thumbY : thumbHeight / 2.0;
+            this.draggingSuggestionScrollbar = true;
+            this.scrollSuggestionThumbTo(mouseY);
+            return true;
+        }
         int suggestionIndex = this.suggestionIndexAt(mouseY);
         if (suggestionIndex >= 0 && suggestionIndex < this.suggestions.size()) {
             this.selectedSuggestion = suggestionIndex;
@@ -523,7 +620,8 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
         }
         this.lastSuggestionMouseX = mouseX;
         this.lastSuggestionMouseY = mouseY;
-        if (!this.isOverSuggestionBounds(mouseX, mouseY)) {
+        if (this.draggingSuggestionScrollbar || !this.isOverSuggestionBounds(mouseX, mouseY)
+                || this.isOverSuggestionScrollbar(mouseX, mouseY)) {
             return;
         }
         int suggestionIndex = this.suggestionIndexAt(mouseY);
@@ -541,6 +639,51 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     /** The index of the suggestion in the row at this height, which must be inside the list. */
     private int suggestionIndexAt(double mouseY) {
         return this.suggestionOffset + (int) ((mouseY - this.suggestionsY) / SUGGESTION_LINE_HEIGHT);
+    }
+
+    private boolean hasSuggestionScrollbar() {
+        return this.suggestions.size() > MAX_VISIBLE_SUGGESTIONS;
+    }
+
+    private boolean isOverSuggestionScrollbar(double mouseX, double mouseY) {
+        return this.hasSuggestionScrollbar() && this.isOverSuggestionBounds(mouseX, mouseY)
+                && mouseX >= this.suggestionsX + this.suggestionsWidth - 1 - SCROLLBAR_WIDTH;
+    }
+
+    private int suggestionThumbHeight() {
+        return Math.max(4, (this.suggestionsHeight - 2) * MAX_VISIBLE_SUGGESTIONS / this.suggestions.size());
+    }
+
+    private int suggestionThumbY() {
+        int travel = this.suggestionsHeight - 2 - this.suggestionThumbHeight();
+        return this.suggestionsY + 1 + travel * this.suggestionOffset
+                / (this.suggestions.size() - MAX_VISIBLE_SUGGESTIONS);
+    }
+
+    private int clampSuggestionToViewport(int index) {
+        return Math.max(this.suggestionOffset, Math.min(index,
+                this.suggestionOffset + MAX_VISIBLE_SUGGESTIONS - 1));
+    }
+
+    private void scrollSuggestionThumbTo(double mouseY) {
+        int travel = this.suggestionsHeight - 2 - this.suggestionThumbHeight();
+        double fraction = (mouseY - this.suggestionsY - 1 - this.suggestionThumbGrabOffset) / Math.max(1, travel);
+        this.suggestionOffset = (int) Math.round(Math.max(0, Math.min(1, fraction))
+                * (this.suggestions.size() - MAX_VISIBLE_SUGGESTIONS));
+        this.selectedSuggestion = this.clampSuggestionToViewport(this.selectedSuggestion);
+        this.updateInlineSuggestion();
+    }
+
+    private void renderSuggestionScrollbar(GuiGraphicsExtractor context) {
+        if (!this.hasSuggestionScrollbar()) {
+            return;
+        }
+        int right = this.suggestionsX + this.suggestionsWidth - 1;
+        int thumbY = this.suggestionThumbY();
+        context.fill(right - SCROLLBAR_WIDTH, this.suggestionsY + 1,
+                right, this.suggestionsY + this.suggestionsHeight - 1, getColor(SCROLLBAR_TRACK));
+        context.fill(right - SCROLLBAR_WIDTH, thumbY, right, thumbY + this.suggestionThumbHeight(),
+                getColor(this.draggingSuggestionScrollbar ? SCROLLBAR_THUMB_ACTIVE : SCROLLBAR_THUMB));
     }
 
     private void updateSuggestions() {
@@ -577,6 +720,9 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     }
 
     protected boolean shouldShowSuggestion(String suggestion, String value, String lowerValue) {
+        if (this.suggestionsMatcher != null) {
+            return this.suggestionsMatcher.test(suggestion, value);
+        }
         return lowerValue.isEmpty() || suggestion.toLowerCase(Locale.ROOT).startsWith(lowerValue);
     }
 
@@ -588,7 +734,8 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
         this.suggestionsX = this.getSuggestionsX();
         this.suggestionsHeight = Math.min(this.suggestions.size(), MAX_VISIBLE_SUGGESTIONS) * SUGGESTION_LINE_HEIGHT;
         this.suggestionsY = this.getSuggestionsY(this.suggestionsHeight);
-        this.suggestionsWidth = this.getSuggestionsWidth(maxTextWidth);
+        this.suggestionsWidth = this.getSuggestionsWidth(maxTextWidth
+                + (this.hasSuggestionScrollbar() ? SCROLLBAR_WIDTH + 1 : 0));
     }
 
     private boolean isSuggestionListVisible() {
@@ -661,7 +808,8 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     }
 
     protected void updateThemeTextColors() {
-        this.setTextColor(WidgetThemeState.text(this.active));
+        this.setTextColor(this.active && this.textColorProvider != null
+                ? this.textColorProvider.getAsInt() : WidgetThemeState.text(this.active));
         this.setTextColorUneditable(getColor(TEXT_DISABLED));
         this.updatePlaceholder();
     }
@@ -692,6 +840,7 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     }
 
     private void hideSuggestions() {
+        this.draggingSuggestionScrollbar = false;
         this.suggestions = List.of();
         this.selectedSuggestion = 0;
         this.suggestionOffset = 0;

@@ -1007,7 +1007,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         if (this.clickDropdown(mouseButtonEvent.x(), mouseButtonEvent.y(), mouseButtonEvent.button())) {
             return true;
         }
-        if (this.mouseClickedTextFieldSuggestion(mouseButtonEvent.x(), mouseButtonEvent.y())) {
+        if (this.mouseClickedTextFieldSuggestion(mouseButtonEvent.x(), mouseButtonEvent.y(), mouseButtonEvent.button())) {
             return true;
         }
         return super.mouseClicked(mouseButtonEvent, doubleClicked);
@@ -1018,7 +1018,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         if (this.clickDropdown(mouseX, mouseY, button)) {
             return true;
         }
-        if (this.mouseClickedTextFieldSuggestion(mouseX, mouseY)) {
+        if (this.mouseClickedTextFieldSuggestion(mouseX, mouseY, button)) {
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -1124,9 +1124,14 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         return false;
     }
 
-    private boolean mouseClickedTextFieldSuggestion(double mouseX, double mouseY) {
+    private boolean mouseClickedTextFieldSuggestion(double mouseX, double mouseY, int button) {
         GuiEventListener focused = this.getFocused();
-        return focused instanceof TranslucentTextField textField && textField.mouseClickedSuggestion(mouseX, mouseY);
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && focused instanceof TranslucentTextField textField
+                && textField.mouseClickedSuggestion(mouseX, mouseY)) {
+            this.setDragging(true);
+            return true;
+        }
+        return false;
     }
 
     // ------------------------------------------------------------------ drawing
@@ -1168,7 +1173,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             extractRenderState
                     (context, contentMouseX, contentMouseY, delta);
         }
-        this.drawIconPreview(context);
+        this.drawIconPreview(context, popupMouseX, popupMouseY);
         nextLayer(context);
         for (TranslucentTextField field : this.suggestionFields) {
             field.renderSuggestions(context, popupMouseX, popupMouseY);
@@ -1200,8 +1205,8 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         return false;
     }
 
-    private void drawIconPreview(GuiGraphicsExtractor context) {
-        var resolvedIcon = this.iconPicker.preview();
+    private void drawIconPreview(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+        var resolvedIcon = this.iconPicker.preview(mouseX, mouseY);
         int previewX = this.iconPreview.getX();
         int previewY = this.iconPreview.getY();
         if (resolvedIcon.kind() == WaypointIconRenderer.Kind.INITIALS) {

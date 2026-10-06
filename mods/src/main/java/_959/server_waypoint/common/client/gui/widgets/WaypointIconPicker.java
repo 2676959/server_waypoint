@@ -6,6 +6,7 @@ import _959.server_waypoint.common.client.integrations.VoxelMapIconIds;
 import _959.server_waypoint.util.NamespacedId;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
@@ -36,12 +37,12 @@ public final class WaypointIconPicker {
                 available.add(new NamespacedId(key.getNamespace(), key.getPath()));
             }
         });
-        this.catalog = filter(available, "");
+        this.catalog = available.stream().distinct().sorted(Comparator.comparing(NamespacedId::toString)).toList();
         this.menu = new ComboBoxWidget(0, 0, width,
                 Component.translatable("waypoint.icon.label"), Minecraft.getInstance().font,
                 this.catalog.stream().map(NamespacedId::toString).toList(), "", this::onTextChanged);
-        this.menu.setSuggestionsProvider(() -> filter(this.catalog, this.menu.getValue()).stream()
-                .limit(64).map(NamespacedId::toString).toList());
+        this.menu.setSuggestionsMatcher(WaypointIconPicker::matchesSuggestion);
+        this.menu.setTextColorProvider(() -> inputColor(this.catalog, this.menu.getValue(), this.menu.isFocused()));
         this.menu.setRenderPopupSeparately(true);
         this.menu.setPlaceholder(() -> Component.translatable("waypoint.form.no_icon"));
         Component clearLabel = Component.translatable("waypoint.icon.clear");
@@ -55,13 +56,12 @@ public final class WaypointIconPicker {
     }
 
     private void onTextChanged(String value) {
-        try {
-            NamespacedId id = NamespacedId.parse(value);
-            if (this.catalog.contains(id)) {
-                select(id, true);
-            }
-        } catch (IllegalArgumentException ignored) {
-            // A partial search query does not change the saved selection.
+        NamespacedId id = resolveInput(this.catalog, value);
+        if (id != null) {
+            this.selectedIcon = id;
+            this.clearButton.active = true;
+            // Keep the typed text so entering "diamond_sword" is not interrupted at "diamond".
+            this.callback.accept(id);
         }
     }
 
@@ -81,8 +81,9 @@ public final class WaypointIconPicker {
         select(icon, false);
     }
 
-    public WaypointIconRenderer.ResolvedIcon preview() {
-        return WaypointIconRenderer.resolve(this.selectedIcon);
+    public WaypointIconRenderer.ResolvedIcon preview(int mouseX, int mouseY) {
+        return WaypointIconRenderer.resolve(previewId(this.catalog, this.menu.getValue(),
+                this.menu.getHoveredValue(mouseX, mouseY)));
     }
 
     public ComboBoxWidget menu() {
@@ -96,6 +97,32 @@ public final class WaypointIconPicker {
     public static List<NamespacedId> filter(List<NamespacedId> ids, String query) {
         String needle = query.toLowerCase(Locale.ROOT);
         return ids.stream().distinct().sorted(Comparator.comparing(NamespacedId::toString))
-                .filter(id -> id.toString().contains(needle)).toList();
+                .filter(id -> matches(id, needle)).toList();
+    }
+
+    static boolean matchesSuggestion(String suggestion, String query) {
+        return matches(NamespacedId.parse(suggestion), query.toLowerCase(Locale.ROOT));
+    }
+
+    private static boolean matches(NamespacedId id, String query) {
+        if (id.namespace().equals("voxelmap")) {
+            return !query.isEmpty() && (query.indexOf(':') >= 0
+                    ? SharedSuggestionProvider.matchesSubStr(query, id.toString())
+                    : SharedSuggestionProvider.matchesSubStr(query, id.namespace()));
+        }
+        return ResourceIdSuggestions.matches(id, query);
+    }
+
+    static @Nullable NamespacedId resolveInput(List<NamespacedId> catalog, String value) {
+        NamespacedId id = ResourceIdSuggestions.parseInput(value);
+        return id != null && catalog.contains(id) ? id : null;
+    }
+
+    static int inputColor(List<NamespacedId> catalog, String value, boolean focused) {
+        return WidgetThemeState.matchingInputText(value, resolveInput(catalog, value) != null, focused);
+    }
+
+    static @Nullable NamespacedId previewId(List<NamespacedId> catalog, String value, @Nullable String hovered) {
+        return resolveInput(catalog, hovered == null ? value : hovered);
     }
 }

@@ -21,7 +21,7 @@ public class TranslucentButton extends ShiftableButtonWidget implements Expandab
     private static final int DEFAULT_Y_OFFSET = -1;
     static final int OUTLINE_LEFT_PADDING = 1;
     static final int OUTLINE_TOP_PADDING = 2;
-    private static final VisualBounds VISUAL_BOUNDS = new VisualBounds(OUTLINE_LEFT_PADDING, OUTLINE_TOP_PADDING, OUTLINE_LEFT_PADDING, 0);
+    private static final VisualBounds VISUAL_BOUNDS = new VisualBounds(0, 1, 0, -1);
     private static final int FITTED_MIN_WIDTH = 50;
     private static final int FITTED_TEXT_PADDING = 10;
     private static final int FITTED_HEIGHT = 11;
@@ -161,11 +161,10 @@ public class TranslucentButton extends ShiftableButtonWidget implements Expandab
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int x = getX();
         int y = getY();
-        int bdColor = WidgetThemeState.border(this.active, isFocused(), isHovered());
-        renderOutline(context, x - 1, y - 2, width + 2, height + 2, bdColor);
         int bgColor = WidgetThemeState.controlBackground(this.active, isHovered());
-        int fixedY = y - 1;
+        int fixedY = VISUAL_BOUNDS.y(y);
         context.fill(x, fixedY, x + width, fixedY + height, bgColor);
+        renderOutline(context, x, fixedY, width, height, WidgetThemeState.border(this.active, isFocused(), isHovered()));
         int centerX = centered(this.width, Math.round(textWidth * this.textScale));
         int centerY = centered(this.height, Math.round(textRenderer.lineHeight * this.textScale));
         drawScaledText(context, textRenderer, this.text, x + centerX, y + centerY,

@@ -81,7 +81,7 @@ public class ColorHexCodeField extends TranslucentTextField implements Colorable
         int bottom = y - 1 + this.backgroundHeight;
         this.updateThemeTextColors();
         this.isHovered = mouseX >= x1 && mouseY >= y && mouseX <= right && mouseY <= bottom;
-        context.fill(x1 + 1, y + 1, right, bottom, WidgetThemeState.controlBackground(this.active, isHovered()));
+        context.fill(x1, y, x1 + this.width + 6, y + this.backgroundHeight, this.surfaceColor());
         drawText(context, textRenderer, "#", x - 4, y + 2, WidgetThemeState.text(this.active), true);
         int bdColor = WidgetThemeState.border(this.active, isFocused(), isHovered());
         renderOutline(context, x1, y, this.width + 6, this.backgroundHeight, bdColor);

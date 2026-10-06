@@ -44,13 +44,16 @@ public class ColorSquareButton extends ShiftableClickableWidget implements Color
         int x = getX();
         int y = getY();
         boolean focusedOrHovered = this.active && (isFocused() || isHovered());
-        int bdColor = this.renderBorder || focusedOrHovered
-                ? WidgetThemeState.border(this.active, isFocused(), isHovered())
-                : 0;
-        renderOutline(context, x - 1, y - 1, width + 2, width + 2, bdColor);
         context.fill(x, y, x + width, y + width, color);
         if (!this.active) {
             context.fill(x, y, x + width, y + width, WidgetThemeState.disabledOverlay());
+        }
+        if (this.renderBorder || focusedOrHovered) {
+            // Back the themed outline with a translucent color ring without enlarging the opaque swatch.
+            int borderBackground = 0x80000000 | (this.color & 0xFFFFFF);
+            renderOutline(context, x - 1, y - 1, width + 2, width + 2, borderBackground);
+            renderOutline(context, x - 1, y - 1, width + 2, width + 2,
+                    WidgetThemeState.border(this.active, isFocused(), isHovered()));
         }
     }
 

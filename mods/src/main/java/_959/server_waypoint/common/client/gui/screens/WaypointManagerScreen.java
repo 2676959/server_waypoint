@@ -678,7 +678,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             return true;
         }
         this.closeDropdownsOutside(mouseButtonEvent.x(), mouseButtonEvent.y());
-        if (this.mouseClickedSearchSuggestion(mouseButtonEvent.x(), mouseButtonEvent.y())) {
+        if (this.mouseClickedSearchSuggestion(mouseButtonEvent.x(), mouseButtonEvent.y(), mouseButtonEvent.button())) {
             return true;
         }
         return super.mouseClicked(mouseButtonEvent, doubleClicked);
@@ -690,7 +690,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             return true;
         }
         this.closeDropdownsOutside(mouseX, mouseY);
-        if (this.mouseClickedSearchSuggestion(mouseX, mouseY)) {
+        if (this.mouseClickedSearchSuggestion(mouseX, mouseY, button)) {
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -992,9 +992,14 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         this.waypointClientMod.saveConfig();
     }
 
-    private boolean mouseClickedSearchSuggestion(double mouseX, double mouseY) {
+    private boolean mouseClickedSearchSuggestion(double mouseX, double mouseY, int button) {
         GuiEventListener focused = this.getFocused();
-        return focused == searchField && searchField.mouseClickedSuggestion(mouseX, mouseY);
+        if (button == InputConstants.MOUSE_BUTTON_LEFT && focused == searchField
+                && searchField.mouseClickedSuggestion(mouseX, mouseY)) {
+            this.setDragging(true);
+            return true;
+        }
+        return false;
     }
 
     private boolean mouseClickedOpenDropdown(double mouseX, double mouseY, int button) {

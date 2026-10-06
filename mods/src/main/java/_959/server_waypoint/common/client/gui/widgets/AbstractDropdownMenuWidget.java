@@ -14,9 +14,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.NO_MOUSE;
 
 /**
  * Base for a clickable control that expands a sequence of custom-rendered menu choices.
@@ -108,6 +110,13 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
                 ? this.selectedMenuItemIndex
                 : this.resolveSelectedMenuItemIndex();
         return this.visibleMenuItemIndexes(selectedMenuItemIndex).size();
+    }
+
+    /** The row area left of a visible scrollbar, including the row's own outline. */
+    protected final int getPopupContentWidth() {
+        boolean scrollbar = this.expanded && this.expansionOrientation == LayoutFlow.Orientation.VERTICAL
+                && this.countDisplayedMenuItems(this.selectedMenuItemIndex) > this.getPopupItemCount();
+        return Math.max(0, this.getWidth() - (scrollbar ? 4 : 0));
     }
 
     /** Caps the popup's vertical extent; wheel and arrow keys can reach the remaining choices. */
@@ -271,6 +280,20 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         return false;
     }
 
+    /** Returns an active visible choice under the pointer, excluding the scrollbar and trigger. */
+    protected final @Nullable AbstractMenuItem getHoveredMenuItem(double mouseX, double mouseY) {
+        if (!this.isActive() || !this.expanded || this.isOverScrollIndicator(mouseX, mouseY)) {
+            return null;
+        }
+        for (int i : this.visibleMenuItemIndexes(this.selectedMenuItemIndex)) {
+            AbstractMenuItem item = this.menuItems.get(i);
+            if (item.isActive() && contains(item, mouseX, mouseY)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (!this.draggingScrollIndicator || button != InputConstants.MOUSE_BUTTON_LEFT) {
@@ -392,12 +415,15 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         }
         nextLayer(context);
         try {
+            boolean overScrollbar = this.isOverScrollIndicator(mouseX, mouseY);
+            int itemMouseX = overScrollbar ? NO_MOUSE : mouseX;
+            int itemMouseY = overScrollbar ? NO_MOUSE : mouseY;
             for (int i : this.visibleMenuItemIndexes(this.selectedMenuItemIndex)) {
                 AbstractMenuItem menuItem = this.menuItems.get(i);
                 menuItem.
                 //$ render_method_swap
                 extractRenderState
-                        (context, mouseX, mouseY, deltaTicks);
+                        (context, itemMouseX, itemMouseY, deltaTicks);
             }
             this.renderScrollIndicator(context);
         } finally {

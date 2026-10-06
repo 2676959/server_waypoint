@@ -22,7 +22,7 @@ public class TranslucentTextField extends SuggestingTextInput {
         super(x, y, width, text, textRenderer, anchorMode);
     }
 
-    /** The fill painted inside the outline, for the field's current state. */
+    /** The fill painted beneath the outline, for the field's current state. */
     protected int surfaceColor() {
         return WidgetThemeState.controlBackground(this.active, isHovered());
     }
@@ -43,7 +43,7 @@ public class TranslucentTextField extends SuggestingTextInput {
         int bottom = y - 1 + this.backgroundHeight;
         this.updateThemeTextColors();
         this.isHovered = mouseX >= x && mouseY >= y && mouseX <= right && mouseY <= bottom;
-        context.fill(x + 1, y + 1, right, bottom, this.surfaceColor());
+        context.fill(x, y, x + this.width, y + this.backgroundHeight, this.surfaceColor());
         int bdColor = this.invalid ? getColor(DANGER) : WidgetThemeState.border(this.active, isFocused(), isHovered());
         renderOutline(context, x, y, this.width, this.backgroundHeight, bdColor);
         this.renderTextField(context, mouseX, mouseY, deltaTicks);

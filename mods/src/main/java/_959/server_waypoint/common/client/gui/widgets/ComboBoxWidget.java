@@ -8,11 +8,14 @@ import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutlineWithoutBottom;
@@ -30,6 +33,7 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget {
     private final ScalableText arrow;
     private final Font font;
     private boolean settingValue;
+    private boolean resourceIdMatching;
     private int popupScreenHeight = -1;
 
     static boolean shouldOpenUp(int y, int controlHeight, int popupHeight, int screenHeight) {
@@ -88,6 +92,53 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget {
     /** Overrides the suggestion source; popup choices remain independently configurable. */
     public void setSuggestionsProvider(Supplier<List<String>> provider) {
         this.input.setSuggestionsProvider(provider);
+    }
+
+    /** Overrides suggestion matching; popup choices and completion acceptance stay unchanged. */
+    public void setSuggestionsMatcher(BiPredicate<String, String> matcher) {
+        this.input.setSuggestionsMatcher(matcher);
+    }
+
+    /** Supplies the active input text color, leaving disabled and placeholder colors to the theme. */
+    public void setTextColorProvider(IntSupplier provider) {
+        this.input.setTextColorProvider(provider);
+    }
+
+    /** Colors input according to exact membership in the current choice catalog and focus. */
+    public void useMatchingValueColors() {
+        this.setTextColorProvider(() -> WidgetThemeState.matchingInputText(
+                this.getValue(), this.resourceIdMatching ? this.getMatchedResourceId() != null
+                        : this.values.contains(this.getValue()), this.isFocused()));
+    }
+
+    /** Uses vanilla namespaced-ID suggestions and validation colors for the current choice catalog. */
+    public void useResourceIdMatching() {
+        this.resourceIdMatching = true;
+        this.setSuggestionsMatcher(ResourceIdSuggestions::matches);
+        this.useMatchingValueColors();
+    }
+
+    /** The value for catalog lookup and submission; the editing text remains available via getValue. */
+    public String getResolvedValue() {
+        String matched = this.resourceIdMatching ? this.getMatchedResourceId() : null;
+        return matched == null ? this.getValue() : matched;
+    }
+
+    private @Nullable String getMatchedResourceId() {
+        var id = ResourceIdSuggestions.parseInput(this.getValue());
+        return id != null && this.values.contains(id.toString()) ? id.toString() : null;
+    }
+
+    /** Returns a hovered popup choice or suggestion without changing the input or firing callbacks. */
+    public @Nullable String getHoveredValue(double mouseX, double mouseY) {
+        if (!this.isActive()) {
+            return null;
+        }
+        if (this.isExpanded()) {
+            AbstractMenuItem item = this.getHoveredMenuItem(mouseX, mouseY);
+            return item instanceof TextMenuItem textItem ? textItem.option : null;
+        }
+        return this.input.getHoveredSuggestion(mouseX, mouseY);
     }
 
     /** Shows themed text while the field is empty and unfocused; see {@link SuggestingTextInput#setPlaceholder}. */
@@ -174,7 +225,7 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget {
 
     @Override
     protected int getSelectedMenuItemIndex() {
-        return this.values.indexOf(this.getValue());
+        return this.values.indexOf(this.getResolvedValue());
     }
 
     @Override
@@ -202,6 +253,20 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget {
         }
         return super.keyPressed(keyCode, scanCode, modifiers)
                 || this.input.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+                || (this.input.isDraggingSuggestionScrollbar()
+                        && this.input.mouseDragged(mouseX, mouseY, button, deltaX, deltaY));
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        return super.mouseReleased(mouseX, mouseY, button)
+                || (this.input.isDraggingSuggestionScrollbar()
+                        && this.input.mouseReleased(mouseX, mouseY, button));
     }
 
     @Override
@@ -287,19 +352,25 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget {
                 : WidgetThemeState.controlBackground(widget.active, widget.isHovered() || widget.isFocused());
         int x = widget.getX();
         int y = widget.getY();
-        int right = x + widget.getWidth();
+        int surfaceWidth = popup ? Math.min(widget.getWidth(), this.getPopupContentWidth()) : widget.getWidth();
+        int right = x + surfaceWidth;
         int bottom = y + widget.getHeight();
         int border = WidgetThemeState.border(widget.active, widget.isFocused(), widget.isHovered());
         context.fill(x, y, right, bottom, color);
-        if (popup) {
+        if (popup && surfaceWidth < widget.getWidth()) {
+            // The scrollbar column has the resting popup surface, never the row highlight.
+            context.fill(right, y, x + widget.getWidth(), bottom,
+                    WidgetThemeManager.getColor(WidgetThemeVariable.POPUP_BACKGROUND));
+        }
+        if (popup && !widget.isHovered() && !widget.isFocused()) {
             if (this.getExpansionDirection() == LayoutFlow.Direction.REVERSE) {
-                renderOutlineWithoutBottom(context, x, y, widget.getWidth(), widget.getHeight(), border);
+                renderOutlineWithoutBottom(context, x, y, surfaceWidth, widget.getHeight(), border);
             } else {
                 // The preceding control/row owns the shared horizontal border.
-                renderOutlineWithoutTop(context, x, y, widget.getWidth(), widget.getHeight(), border);
+                renderOutlineWithoutTop(context, x, y, surfaceWidth, widget.getHeight(), border);
             }
         } else {
-            renderOutline(context, x, y, widget.getWidth(), widget.getHeight(), border);
+            renderOutline(context, x, y, surfaceWidth, widget.getHeight(), border);
         }
     }
 
@@ -368,7 +439,8 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget {
         protected void renderMenuItem(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
             drawSurface(context, this, true);
             renderLabel(context, this.text, this.getX() + TEXT_INSET, this.getY(),
-                    Math.max(0, this.width - 2 * TEXT_INSET), this.height, mouseX, mouseY, deltaTicks);
+                    Math.max(0, ComboBoxWidget.this.getPopupContentWidth() - 2 * TEXT_INSET),
+                    this.height, mouseX, mouseY, deltaTicks);
         }
     }
 }

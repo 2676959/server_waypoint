@@ -41,6 +41,17 @@ final class WidgetThemeState {
         return getColor(active ? TEXT_PRIMARY : TEXT_DISABLED);
     }
 
+    /** Active input colors shared by catalog-backed fields; empty text keeps the normal theme. */
+    static int matchingInputText(String value, boolean matched, boolean focused) {
+        if (value.isEmpty()) {
+            return text(true);
+        }
+        if (!matched) {
+            return 0xFFFF5555;
+        }
+        return focused ? 0xFFFFFF55 : text(true);
+    }
+
     static int textOnAccent(boolean active) {
         return getColor(active ? TEXT_ON_ACCENT : TEXT_DISABLED);
     }

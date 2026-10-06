@@ -263,6 +263,43 @@ popup, and preserves the current text without invoking the callback. User edits 
 Suggestions default to the current choices; `setSuggestionsProvider(Supplier<List<String>>)` can
 supply a separate dynamic catalog, and `null` disables suggestions. Matching is case-insensitive
 prefix matching, deduplicated and sorted, with an inline suffix and up to five popup rows.
+`setSuggestionsMatcher(BiPredicate<String, String>)` on either `ComboBoxWidget` or
+`SuggestingTextInput` overrides matching for that input only. Its arguments are the candidate and
+current input text; changing it refreshes completion state. Exact matches remain omitted, and
+accepting a match replaces the entire input with the candidate. Inline suffixes appear only when
+the candidate starts with the current text.
+`setTextColorProvider(IntSupplier)` on either input or combobox supplies the active input's text
+color on every render; disabled text and placeholder colors remain theme-owned. Use it for input
+validation feedback instead of calling vanilla `setTextColor` once, which a theme refresh replaces.
+`ComboBoxWidget.useMatchingValueColors()` opts into colors based on exact, case-sensitive membership
+in the current popup choice catalog: yellow (`#FFFF55`) for a matched value while focused,
+normal `TEXT_PRIMARY` when matched and unfocused, and red (`#FF5555`) for a non-empty unmatched
+value regardless of focus. Empty text keeps its normal theme color, and disabled text keeps
+`TEXT_DISABLED`. Replacing choices with `setValues` automatically changes the color on the next
+render without altering the entered text. The waypoint-add list-name combobox uses standard
+themed text colors.
+
+`ComboBoxWidget.useResourceIdMatching()` opts into vanilla resource-ID suggestions and the same
+focus-dependent validation colors. Without a colon, a query matches either the namespace or path,
+including words after underscores; with a colon it matches the full ID. This works for vanilla
+and custom dimensions alike: `over` suggests `minecraft:overworld`, while `moon` and `base` can
+suggest `examplemod:moon_base`. Suggestion matching ignores case, but a complete valid ID must use
+its exact canonical spelling. Bare complete IDs default to `minecraft`, so `overworld` matches
+`minecraft:overworld`; a custom ID requires its explicit namespace for validation. The full choice
+popup includes both vanilla and custom dimension IDs.
+
+`getValue()` retains the entered text. `getResolvedValue()` returns the canonical full ID for a
+complete known resource match, and the entered text otherwise; ordinary comboboxes return their
+entered text. Use the resolved value for catalog lookups, form checks and submission. The waypoint-add
+dimension field uses this mode and refreshes list choices after an asynchronous dimension-catalog
+update, so a newly resolved bare vanilla name uses the correct dimension's lists.
+
+`ComboBoxWidget.getHoveredValue(mouseX, mouseY)` returns the current visible popup choice or
+suggestion under the pointer, excluding the trigger and scrollbar. It is available before popup
+rendering, observes the current scroll position, and does not edit text, accept a choice, or move
+keyboard selection. `SuggestingTextInput.getHoveredSuggestion` provides the suggestion-only query;
+`AbstractDropdownMenuWidget.getHoveredMenuItem` is the protected choice-only counterpart. Hidden,
+disabled, closed or dismissed popups return no hovered value.
 Up/Down selects a suggestion and Tab/Shift-Tab accepts/cycles completions, and the mouse wheel
 scrolls a longer list while the pointer is over it. Clicking a suggestion
 also accepts it through the normal user-change callback. The full choice popup suppresses
@@ -320,8 +357,13 @@ gives Enter this meaning while a list is open, as the waypoint form does, calls 
 Enter for anything else.
 
 An exact matching choice is omitted from the popup. Resizing also resizes the field and choice rows.
-Combobox popup rows draw side and bottom borders; the preceding control or row supplies the
-shared top edge, keeping separators one pixel thick without overlapping row hit areas.
+Resting combobox popup rows draw side and bottom borders; the preceding control or row supplies
+the shared top edge, keeping separators one pixel thick without overlapping row hit areas.
+Hovered and keyboard-highlighted rows draw their own complete four-sided outline. Their surface,
+outline, and label reserve the scrollbar column when the popup overflows.
+`AbstractDropdownMenuWidget.getPopupContentWidth()` reports this row area, excluding the visible
+three-pixel scrollbar and its right inset. Popup rendering passes `NO_MOUSE` to the choice rows
+while the pointer is over the scrollbar, so it does not highlight a row underneath the thumb.
 `DrawContextHelper.renderOutlineWithoutTop(...)` provides this three-sided outline for both
 combobox and theme-selector popup rows; use it when the preceding row owns the top separator.
 The constructor and position setters anchor the text, matching standalone text inputs and labels.
@@ -561,6 +603,16 @@ Those cases do not justify duplicating standalone message rendering elsewhere.
 `TranslucentButton.fitted(label, callback)` makes an 11-pixel-high text button as wide as its label
 plus 5 pixels on each side, and at least 50 pixels wide, so short labels line up and long
 translations still fit. Dialog and footer buttons use it.
+
+`TranslucentButton`, `TranslucentTextField`, `ColorHexCodeField`, and `ToggleButton` paint the full background first,
+then overlay their outline on the same rectangle. Button and toggle visual bounds are
+`getX()`, `getY() - 1`, `width`, and `height`; the text field retains its two-pixel text inset
+and paints its full `width` by `backgroundHeight` surface beneath the border.
+
+`ColorHexCodeField` includes its `#` prefix in that full background. `ColorSquareButton` keeps
+its opaque swatch at the configured size and backs its outline with a same-RGB ring at 50% opacity.
+The themed outline is drawn last over that ring; borderless swatches add the ring only while
+active and hovered or focused.
 
 `IconButton` keeps its full configured hitbox while drawing its texture with a 2-pixel inner inset.
 Use `withIconPadding(int)` to choose a smaller non-negative inset, and
@@ -1175,7 +1227,9 @@ Calling `setSuggestionsProvider` is only the data step. A suggestion-enabled fie
 
 1. A provider that returns the current suggestions.
 2. `renderSuggestions` called after the field, usually on a later layer.
-3. `mouseClickedSuggestion` checked before normal screen click dispatch while that field is focused.
+3. `mouseClickedSuggestion` checked for the left mouse button before normal screen click dispatch
+   while that field is focused. A consumed click must establish screen drag state with
+   `setDragging(true)`, so subsequent drag and release events reach the focused field.
 
 `AbstractWaypointPropertiesScreen` is the reference for several fields, while `WaypointManagerScreen` shows the same pattern for a single search field. If any one of the three pieces is missing, suggestions may exist internally but fail to appear or accept clicks. Escape needs no fourth piece on a `MovementAllowedScreen`: the focused field closes its list before the screen closes. Nor does the mouse wheel: the screen offers it to the focused field through `scrollPopupIfOver`, so a list of more than five suggestions scrolls while the pointer is over it.
 
@@ -1183,13 +1237,46 @@ The wheel moves the list at least one row per event, like the choice dropdown, a
 
 `SuggestingTextInput.getSuggestionsY(int suggestionHeight)` positions a popup after its visible height is known. A `ComboBoxWidget` uses its expansion direction for both its choice list and typed suggestions: upward suggestions end at the top of the field, and downward suggestions begin below it. Keep render, hover, and click bounds on that same computed rectangle.
 
+Lists with more than five matches show a three-pixel themed scrollbar inside their right border.
+Labels and selection fills reserve space for it; standalone lists widen when needed to keep the
+longest label readable. Clicking the track or dragging the thumb scrolls without accepting a match.
+Dragging keeps the thumb's grab position, clamps at both ends, and stops on release, dismissal,
+or focus loss. Hovering the scrollbar does not select a row; wheel and thumb scrolling keep the
+keyboard selection within the visible window. `ComboBoxWidget` forwards drag and release events
+to its input only while that input has captured a scrollbar click, after offering them to its
+choice dropdown. Other comboboxes must leave the focused field's release event alone.
+
 ## Waypoint icon picker and renderer
+
+The icon combobox uses vanilla `/give` item-ID matching through
+`SharedSuggestionProvider.matchesSubStr`: a query without a colon matches the namespace or item
+path, including word starts after underscores; a query with a colon matches the full ID. Matching
+is case-insensitive. VoxelMap IDs require a non-empty namespace match: `vox` and `voxelmap:st`
+can suggest `voxelmap:star`, while bare `star` and an empty query cannot. The full choice popup
+still includes VoxelMap icons. Typing `diam` suggests
+`minecraft:diamond`, and `sword` suggests `minecraft:diamond_sword`; acceptance inserts the full
+ID. All matches stay reachable through the suggestion list without a result cap.
+
+Complete known icon IDs use yellow input text (`#FFFF55`) while focused and the normal field text
+color (`TEXT_PRIMARY`, white in the default theme) when unfocused. Invalid and partial non-empty
+inputs remain red (`#FF5555`) regardless of focus. Bare item IDs use the `minecraft` namespace,
+so `diamond` is valid while
+bare `star` does not select a VoxelMap icon. Empty input retains the normal themed placeholder.
+Valid typed text updates the selection without replacing the text, so entering `diamond_sword`
+is not interrupted when the intermediate text reaches `diamond`. Partial input keeps the saved
+selection, as before.
+
+`WaypointIconPicker.preview(mouseX, mouseY)` resolves a hovered menu/suggestion value first, then
+the current input. Invalid, partial and empty inputs fall back to initials when no candidate is
+hovered. Hover previews never change the saved selection or fire an edit callback. The shared
+add/edit screen passes real popup coordinates to the preview even while the popup suppresses
+underlying hover, and `NO_MOUSE` while the color modal covers the form.
 
 `WaypointIconPicker` owns a searchable `ComboBoxWidget` whose placeholder reads "None — shows the initials", a 13×13 `IconButton` that removes the icon, and the selected nullable `NamespacedId`. The button draws `WidgetTextures.CLEAR_ICON`, is inactive while no icon is selected, which tints its icon with `TEXT_DISABLED`, and has vanilla's "Remove icon" tooltip. Add and edit screens register the menu and button once for input, render the menu's popup after the main form, and read `getSelectedIcon()` when submitting. `setSelectedIcon()` restores a saved choice, including an ID missing from the current client registry; it does not send an edit. The picker lists the current item registry and known VoxelMap image IDs. Search filters the catalog while a partial query leaves the saved choice intact.
 
 The icon combobox keeps the full catalog in its popup. `AbstractDropdownMenuWidget.setMaxPopupHeight()` limits the visible vertical rows; the remaining choices stay reachable with the wheel, arrow keys, or draggable scrollbar. `setExpansionDirection()` lets the owning screen place the popup above or below its control. The add/edit screen chooses the roomier side, caps the popup to eight rows and the available screen space, and routes wheel input to the open popup before other controls. When it handles a popup click before vanilla dispatch, the screen must establish drag focus and forward release events so scrollbar dragging works. Popup click and hover handling must use only the visible rows so covered form buttons cannot accidentally receive a click intended for the popup.
 
-Vertical popup choices retain their logical top-to-bottom order when opening upward; Up and Down follow that visual order. Upward combobox rows draw their top border and share the bottom border with the next row or trigger via `renderOutlineWithoutBottom`; downward rows use `renderOutlineWithoutTop`. In the waypoint form, the icon row is the 11-pixel preview, 4 pixels, the stretched dropdown, 4 pixels and the remove button, starting at the control column.
+Vertical popup choices retain their logical top-to-bottom order when opening upward; Up and Down follow that visual order. Resting upward combobox rows draw their top border and share the bottom border with the next row or trigger via `renderOutlineWithoutBottom`; resting downward rows use `renderOutlineWithoutTop`. Hovered or keyboard-highlighted rows draw all four edges within the row area to the left of any scrollbar. In the waypoint form, the icon row is the 11-pixel preview, 4 pixels, the stretched dropdown, 4 pixels and the remove button, starting at the control column.
 
 `WaypointIconRenderer.resolve()` converts a stored ID to an item stack, a packaged VoxelMap texture, or the initials fallback on the client thread. Use `drawForWaypoint()` for saved waypoint icons in local and remote rows, details, and the add/edit preview; pass the waypoint RGB or the form's selected color. It leaves item icons unchanged and multiplies VoxelMap texture pixels by that color. The picker catalog lists icon IDs and has no waypoint color to apply. Use `drawScaledWorldItem()` for an in-world item and `drawScaledVoxelMap()` for an in-world VoxelMap texture. Both use the waypoint background alpha setting and become opaque for the waypoint whose hover details are shown; GUI icons remain opaque. The VoxelMap tint matches its in-world rendering. Before Minecraft 1.21.6, the immediate draw uses a scoped shader color and alpha; on newer versions, item render states carry a scoped premultiplied tint to their atlas or oversized-item blits while VoxelMap textures use a colored GUI blit. The world marker stacks either icon above its colored initials badge, with both centered horizontally; the original badge stays at its projected position. The 16×16 icon background is temporarily disabled with `DRAW_ICON_BACKGROUND` for comparison testing; the initials badge keeps its colored background. Neither part has an outline. Use the full stacked bounds for projection culling, and let either visible part of the stack trigger the existing name and distance hover without making the gap hoverable. Expand the name at the colored badge's position and put the distance below it, leaving the icon above. Keep the stored ID when resolution falls back to initials. World rendering caches the resolved handle in per-waypoint state and clears it when the waypoint or scene is removed. Re-resolve after resource or scene rebuild so resource-pack changes are reflected.
 

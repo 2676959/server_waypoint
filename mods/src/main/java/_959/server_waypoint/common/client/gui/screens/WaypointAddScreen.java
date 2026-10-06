@@ -46,6 +46,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
         this.dimensionField = new ComboBoxWidget(0, 0, 155, Component.translatable("waypoint.form.dimension"), this.font,
                 dimensions, dimensionName, value -> this.onDimensionEdited());
         this.dimensionField.setRenderPopupSeparately(true);
+        this.dimensionField.useResourceIdMatching();
         this.listNameField = new ComboBoxWidget(0, 0, 90, Component.translatable("waypoint.form.list"), this.font,
                 WaypointClientMod.getAllWaypointListNames(dimensionName), listName, value -> this.onFormEdited());
         this.listNameField.setRenderPopupSeparately(true);
@@ -83,19 +84,20 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     }
 
     private void refreshDimensionChoices() {
-        getAvailableDimensionNames().thenAccept(dimensions -> this.dimensionField.setValues(
-                mergeDimensionNames(dimensions, List.of(this.dimensionName))
-        ));
+        getAvailableDimensionNames().thenAccept(dimensions -> {
+            this.dimensionField.setValues(mergeDimensionNames(dimensions, List.of(this.dimensionName)));
+            this.onDimensionEdited();
+        });
     }
 
     /** The list choices belong to the chosen dimension, so they follow it; the list name already typed stays. */
     private void onDimensionEdited() {
-        this.listNameField.setValues(WaypointClientMod.getAllWaypointListNames(this.dimensionField.getValue()));
+        this.listNameField.setValues(WaypointClientMod.getAllWaypointListNames(this.dimensionField.getResolvedValue()));
         this.onFormEdited();
     }
 
     private void configureSuggestions() {
-        this.nameEditBox.setSuggestionsProvider(() -> WaypointClientMod.getAllWaypointNames(this.dimensionField.getValue(), this.listNameField.getValue()));
+        this.nameEditBox.setSuggestionsProvider(() -> WaypointClientMod.getAllWaypointNames(this.dimensionField.getResolvedValue(), this.listNameField.getValue()));
     }
 
     @Override
@@ -136,7 +138,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     protected WaypointFormCheck.Input checkInput() {
         return new WaypointFormCheck.Input(
                 true,
-                this.dimensionField.getValue(),
+                this.dimensionField.getResolvedValue(),
                 this.listNameField.getValue(),
                 this.nameEditBox.getValue(),
                 "",
@@ -148,7 +150,7 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
 
     @Override
     protected void submit() {
-        String dimension = this.dimensionField.getValue();
+        String dimension = this.dimensionField.getResolvedValue();
         String list = this.listNameField.getValue();
         String name = this.nameEditBox.getValue();
         if (!sendCommand(addCmd(dimension, list, this.toWaypoint(), false))) {

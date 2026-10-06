@@ -4,10 +4,15 @@ import _959.server_waypoint.common.client.gui.TestFont;
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.List;
 import net.minecraft.network.chat.Component;
+//? if >=1.21.9 {
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
+//?}
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -18,6 +23,110 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SuggestingTextInputTest {
     /** A column inside the list, which is at least 60 pixels wide. */
     private static final int LIST_COLUMN = 20;
+
+    @Test
+    void hoveredSuggestionCanBeQueriedBeforeRenderingWithoutAcceptingIt() {
+        TranslucentTextField field = fieldSuggesting("alpha", "beta");
+
+        assertEquals("beta", field.getHoveredSuggestion(LIST_COLUMN, rowY(1)));
+        assertEquals("", field.getValue());
+        assertTrue(field.acceptHighlightedSuggestion());
+        assertEquals("alpha", field.getValue(), "querying hover must not move the keyboard selection");
+    }
+
+    @Test
+    void hoveredSuggestionUsesTheScrolledViewportAndExcludesTheScrollbar() {
+        TranslucentTextField field = eightSuggestions();
+        field.scrollPopupIfOver(LIST_COLUMN, rowY(0), -1.0);
+
+        assertEquals("s2", field.getHoveredSuggestion(LIST_COLUMN, rowY(0)));
+        assertNull(field.getHoveredSuggestion(65, rowY(0)));
+        assertNull(field.getHoveredSuggestion(LIST_COLUMN, 28));
+        assertNull(field.getHoveredSuggestion(LIST_COLUMN, 89));
+        field.closeSuggestionsIfOpen();
+        assertNull(field.getHoveredSuggestion(LIST_COLUMN, rowY(0)));
+    }
+
+    @Test
+    void validationColorSurvivesThemeRefreshAndDisabledTextUsesTheTheme() {
+        ColorRecordingInput field = new ColorRecordingInput();
+        field.setTextColorProvider(() -> field.getValue().equals("valid") ? 0xFFFFFF55 : 0xFFFF5555);
+        field.setValue("partial");
+        field.updateThemeTextColors();
+        assertEquals(0xFFFF5555, field.color);
+        field.setValue("valid");
+        field.updateThemeTextColors();
+        assertEquals(0xFFFFFF55, field.color);
+        field.active = false;
+        field.updateThemeTextColors();
+        assertEquals(WidgetThemeState.text(false), field.color);
+    }
+
+    private static final class ColorRecordingInput extends SuggestingTextInput {
+        private int color;
+
+        private ColorRecordingInput() {
+            super(10, 20, 60, Component.empty(), new TestFont());
+        }
+
+        @Override
+        public void setTextColor(int color) {
+            super.setTextColor(color);
+            this.color = color;
+        }
+    }
+
+    @Test
+    void dimensionSuggestionsMatchVanillaAndCustomPathsAndNamespaces() {
+        String[] queries = {"over", "MOON", "base", "example", "examplemod:mo"};
+        String[] expected = {"minecraft:overworld", "examplemod:moon_base", "examplemod:moon_base",
+                "examplemod:moon_base", "examplemod:moon_base"};
+        for (int index = 0; index < queries.length; index++) {
+            TranslucentTextField field = fieldSuggesting("minecraft:overworld", "examplemod:moon_base");
+            field.setSuggestionsMatcher(ResourceIdSuggestions::matches);
+            field.setValue(queries[index]);
+            assertTrue(field.keyPressed(InputConstants.KEY_TAB, 0, 0));
+            assertEquals(expected[index], field.getValue());
+        }
+    }
+
+    @Test
+    void dimensionSuggestionsRejectMidwordMatchesAndMismatchedNamespaces() {
+        for (String query : List.of("world", "minecraft:moon", "mod:moon")) {
+            TranslucentTextField field = fieldSuggesting("minecraft:overworld", "examplemod:moon_base");
+            field.setSuggestionsMatcher(ResourceIdSuggestions::matches);
+            field.setValue(query);
+            assertFalse(field.isSuggestionListOpen());
+        }
+    }
+
+    @Test
+    void itemMatchingAcceptsABareNameAndCompletesTheFullNamespacedId() {
+        TranslucentTextField field = fieldSuggesting("minecraft:diamond", "minecraft:stone");
+        field.setSuggestionsMatcher(WaypointIconPicker::matchesSuggestion);
+        field.setValue("diam");
+
+        assertTrue(field.keyPressed(InputConstants.KEY_TAB, 0, 0));
+        assertEquals("minecraft:diamond", field.getValue());
+    }
+
+    @Test
+    void itemMatchingAcceptsAnUnderscoreWordFromThePopup() {
+        TranslucentTextField field = fieldSuggesting("minecraft:diamond_sword", "minecraft:stone");
+        field.setSuggestionsMatcher(WaypointIconPicker::matchesSuggestion);
+        field.setValue("sword");
+
+        assertTrue(field.acceptHighlightedSuggestion());
+        assertEquals("minecraft:diamond_sword", field.getValue());
+    }
+
+    @Test
+    void ordinaryFieldsStillRequireAPrefixOfTheWholeSuggestion() {
+        TranslucentTextField field = fieldSuggesting("minecraft:diamond");
+        field.setValue("diam");
+
+        assertFalse(field.isSuggestionListOpen());
+    }
 
     @Test
     void listFillsTheWidthOfTheFieldOutlineDirectlyBelowIt() {
@@ -197,6 +306,64 @@ class SuggestingTextInputTest {
     void theListIsOpenOnlyWhileThereAreSuggestions() {
         assertTrue(fieldSuggesting("alpha").isSuggestionListOpen());
         assertFalse(fieldSuggesting().isSuggestionListOpen());
+    }
+
+    @Test
+    void clickingTheScrollbarScrollsWithoutAcceptingASuggestion() {
+        TranslucentTextField field = eightSuggestions();
+        assertTrue(field.mouseClickedSuggestion(65, 87));
+        assertEquals("", field.getValue());
+        assertEquals("s4", suggestionAtRow(field, 0));
+    }
+
+    @Test
+    void draggingTheThumbClampsAtBothEnds() {
+        TranslucentTextField field = eightSuggestions();
+        assertTrue(field.mouseClickedSuggestion(65, 33));
+        assertEquals("", field.getValue());
+        assertTrue(drag(field, 33));
+        assertTrue(drag(field, 120));
+        assertTrue(drag(field, 0));
+        assertEquals("s1", suggestionAtRow(field, 0));
+    }
+
+    @Test
+    void releasingTheThumbStopsScrolling() {
+        TranslucentTextField field = eightSuggestions();
+        assertTrue(field.mouseClickedSuggestion(65, 33));
+        assertTrue(drag(field, 120));
+        //? if >=1.21.9 {
+        assertTrue(field.mouseReleased(new MouseButtonEvent(65, 120,
+                new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0))));
+        //?} else {
+        /*assertTrue(field.mouseReleased(65, 120, InputConstants.MOUSE_BUTTON_LEFT));
+        *///?}
+        drag(field, 0);
+        assertEquals("s4", suggestionAtRow(field, 0));
+    }
+
+    @Test
+    void hoveringTheScrollbarDoesNotSelectARow() {
+        TranslucentTextField field = eightSuggestions();
+        assertTrue(field.layoutSuggestions(65, rowY(4)));
+        assertTrue(field.acceptHighlightedSuggestion());
+        assertEquals("s1", field.getValue());
+    }
+
+    @Test
+    void aListThatFitsHasNoScrollbarAndItsRightEdgeStillAcceptsRows() {
+        TranslucentTextField field = fieldSuggesting("s1", "s2", "s3");
+        assertTrue(field.mouseClickedSuggestion(65, rowY(2)));
+        assertEquals("s3", field.getValue());
+    }
+
+    private static boolean drag(SuggestingTextInput field, double y) {
+        //? if >=1.21.9 {
+        return field.mouseDragged(new MouseButtonEvent(65, y,
+                new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0)), 0, 0);
+        //?} else {
+        /*return field.mouseDragged(65, y, InputConstants.MOUSE_BUTTON_LEFT, 0, 0);
+        *///?}
     }
 
     /**
