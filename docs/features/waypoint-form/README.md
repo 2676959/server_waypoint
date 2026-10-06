@@ -6,3 +6,4 @@ The add and edit waypoint screens (`WaypointAddScreen`, `WaypointEditScreen` and
 - [Form design](specs/2026-09-29-waypoint-form-design.md)
 - [Implementation plan](plans/2026-09-29-waypoint-form.md)
 - [Validation record](validation/2026-09-29-waypoint-form-validation.md)
+- [VoxelMap tracked waypoint editing](validation/2026-10-06-voxelmap-edit.md)

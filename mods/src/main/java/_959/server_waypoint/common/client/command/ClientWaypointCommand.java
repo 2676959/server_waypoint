@@ -24,11 +24,12 @@ public class ClientWaypointCommand {
 
     private static int executeOpenGui() {
         Minecraft mc = Minecraft.getInstance();
+        // Always queue the screen change: submitting chat closes its screen after the command runs.
         mc.
                 //? if > 1.21 {
                 schedule
                 //?} else {
-                /*execute
+                /*tell
                 *///?}
                 (() -> MinecraftClientHelper.setScreen(mc, new WaypointManagerScreen(WaypointClientMod.getInstance())));
         return Command.SINGLE_SUCCESS;

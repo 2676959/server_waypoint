@@ -2,7 +2,8 @@
 package _959.server_waypoint.mixin.voxelmap;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
-import _959.server_waypoint.common.client.gui.screens.WaypointManagerScreen;
+import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
+import _959.server_waypoint.common.client.integrations.VoxelMapWaypointHelper;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.common.util.SyncedWaypointName;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
@@ -30,16 +31,20 @@ public class VoxelMapGuiWaypointsMixin {
 
     @Inject(
             method = "editWaypoint",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lcom/mamiyaotaru/voxelmap/VoxelConstants;getMinecraft()Lnet/minecraft/client/Minecraft;"
-            ),
+            at = @At("HEAD"),
             cancellable = true, remap = false)
     private void sw$redirectEditGui(Waypoint waypoint, CallbackInfo ci) {
         if (isVoxelMapSyncedWaypointName(waypoint.name)) {
-            MinecraftClientHelper.setScreen(new WaypointManagerScreen(
-                    WaypointClientMod.getInstance() , (Screen) (Object) this
-            ));
+            var target = VoxelMapWaypointHelper.resolveSyncedEditTarget(waypoint, WaypointClientMod.getInstance());
+            if (target != null) {
+                MinecraftClientHelper.setScreen(new WaypointEditScreen(
+                        (Screen) (Object) this,
+                        target.dimensionName(),
+                        target.listName(),
+                        target.listDisplayName(),
+                        target.waypoint()
+                ));
+            }
             ci.cancel();
         }
     }

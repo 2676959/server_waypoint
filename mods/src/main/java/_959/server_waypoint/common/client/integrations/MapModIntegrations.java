@@ -2,6 +2,7 @@ package _959.server_waypoint.common.client.integrations;
 
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.core.network.upload.UploadTarget;
 
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
@@ -22,6 +23,10 @@ public final class MapModIntegrations {
     }
 
     public static void onClientWaypointSync(ClientWaypointSyncEvent event, WaypointClientMod waypointClientMod) {
+        // Integrated worlds retain their map mod waypoints between sessions.
+        if (event.type() == ClientWaypointSyncEvent.Type.ALL_SYNCED && WaypointServerMod.runsWithClient()) {
+            return;
+        }
         ClientConfig clientConfig = WaypointClientMod.getClientConfig();
         if (clientConfig == null) {
             return;

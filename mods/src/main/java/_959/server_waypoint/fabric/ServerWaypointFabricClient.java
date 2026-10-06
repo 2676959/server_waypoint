@@ -37,7 +37,7 @@ public class ServerWaypointFabricClient implements ClientModInitializer {
                 //? if >= 1.21.9 {
                 KeyMapping.Category.register(modId("mod_name"))
                 //?} else {
-                /*"key.categories.server_waypoint.mod_name"
+                /*"key.category.server_waypoint.mod_name"
                 *///?}
         ));
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->

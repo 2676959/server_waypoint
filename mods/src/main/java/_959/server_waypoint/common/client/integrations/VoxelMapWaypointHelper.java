@@ -3,6 +3,7 @@ package _959.server_waypoint.common.client.integrations;
 
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.network.buffer.UploadRequestBuffer;
 import _959.server_waypoint.core.network.data.DimensionWaypointData;
 import _959.server_waypoint.core.network.data.WaypointData;
@@ -21,6 +22,7 @@ import com.mamiyaotaru.voxelmap.util.Waypoint;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -40,6 +42,38 @@ import static _959.server_waypoint.common.util.TextHelper.getDimensionColor;
 
 public final class VoxelMapWaypointHelper {
     private VoxelMapWaypointHelper() {
+    }
+
+    /** Resolves a tracked marker to its complete server snapshot, including its owning dimension. */
+    public static @Nullable SyncedEditTarget resolveSyncedEditTarget(
+            Waypoint waypoint, WaypointFilesManagerCore waypointFiles
+    ) {
+        SyncedWaypointName.ParsedName parsedName = SyncedWaypointName.parse(waypoint.name);
+        if (parsedName == null) {
+            return null;
+        }
+        SyncedEditTarget target = null;
+        for (var entry : waypointFiles.getSortedMap()) {
+            String dimensionName = entry.getKey();
+            if (!waypointInDimension(waypoint, dimensionName)) {
+                continue;
+            }
+            WaypointList list = entry.getValue().getWaypointListByName(parsedName.listName());
+            SimpleWaypoint saved = list == null ? null : list.getWaypointByName(parsedName.waypointName());
+            if (saved == null) {
+                continue;
+            }
+            if (target != null) {
+                return null;
+            }
+            target = new SyncedEditTarget(dimensionName, list.name(), list.displayName(), new SimpleWaypoint(saved));
+        }
+        return target;
+    }
+
+    public record SyncedEditTarget(
+            String dimensionName, String listName, String listDisplayName, SimpleWaypoint waypoint
+    ) {
     }
 
     public static WaypointData collectUpload(UploadRequestBuffer request) {

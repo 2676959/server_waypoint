@@ -55,7 +55,7 @@ public abstract class VoxelMapGuiListWaypointsItemMixin extends AbstractSelectio
             int y,
             int color
     ) {
-        sw$drawSyncedWaypointIcon(context, waypointName, x, y);
+        sw$drawSyncedWaypointIcon(context, waypointName, this.getX() - iconSize, this.getY() + 3);
         context.drawCenteredString(font, SyncedWaypointName.toDisplayVoxelMapWaypointName(waypointName), x, y, color);
     }
     *///?} else {
@@ -70,9 +70,19 @@ public abstract class VoxelMapGuiListWaypointsItemMixin extends AbstractSelectio
             String waypointName,
             int x,
             int y,
-            int color
+            int color,
+            GuiGraphicsExtractor rowContext,
+            int index,
+            int rowY,
+            int rowX,
+            int rowWidth,
+            int rowHeight,
+            int mouseX,
+            int mouseY,
+            boolean hovered,
+            float delta
     ) {
-        sw$drawSyncedWaypointIcon(context, waypointName, x, y);
+        sw$drawSyncedWaypointIcon(context, waypointName, rowX - iconSize, rowY + 3);
         context.drawCenteredString(font, SyncedWaypointName.toDisplayVoxelMapWaypointName(waypointName), x, y, color);
     }
     *///?}
