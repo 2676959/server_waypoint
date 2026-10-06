@@ -116,13 +116,15 @@ public final class WaypointIconRenderer {
             WaypointItemAlpha.restoreTint(previous);
         }
         //?} else {
-        /*float[] previous = RenderSystem.getShaderColor().clone();
+        /*int previousTint = WaypointItemAlpha.pushWorldItemTint(alpha);
+        float[] previous = RenderSystem.getShaderColor().clone();
         RenderSystem.setShaderColor(previous[0], previous[1], previous[2],
                 previous[3] * (alpha / 255.0F));
         try {
             drawScaled(context, icon, left, top, scale);
         } finally {
             RenderSystem.setShaderColor(previous[0], previous[1], previous[2], previous[3]);
+            WaypointItemAlpha.restoreTint(previousTint);
         }
         *///?}
     }
