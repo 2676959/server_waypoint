@@ -12,6 +12,7 @@ import _959.server_waypoint.core.waypoint.WaypointList;
 import _959.server_waypoint.core.waypoint.WaypointModificationType;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.common.util.SyncedWaypointName;
+import _959.server_waypoint.util.WaypointInitials;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.WaypointManager;
@@ -128,7 +129,7 @@ public final class VoxelMapWaypointHelper {
             SimpleWaypoint uploaded = new SimpleWaypoint(
                     waypointName,
                     waypointName,
-                    "",
+                    WaypointInitials.getDefaultInitials(waypointName),
                     new WaypointPos(
                             (int) Math.round(waypoint.x / coordinateScale),
                             waypoint.y,

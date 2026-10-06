@@ -38,9 +38,9 @@ class VoxelMapUploadTest {
     }
     @Test
     void collectsSyncedAndLocalWaypointsWithScaleAndColorConversion() {
-        Waypoint local = waypoint("Local", 16, 70, -24, true, 0.5F, 0.25F, 1.0F);
+        Waypoint local = waypoint("Local Mine", 16, 70, -24, true, 0.5F, 0.25F, 1.0F);
         Waypoint synced = waypoint(
-                SyncedWaypointName.format("Bases", "Home"),
+                SyncedWaypointName.format("Bases", "Home Base"),
                 80,
                 64,
                 24,
@@ -60,17 +60,18 @@ class VoxelMapUploadTest {
 
         assertEquals("minecraft:the_nether", result.dimensionName());
         SimpleWaypoint localResult = list(result, "VoxelMap").simpleWaypoints().get(0);
-        assertEquals("Local", localResult.name());
+        assertEquals("Local Mine", localResult.name());
         assertEquals(2, localResult.x());
         assertEquals(70, localResult.y());
         assertEquals(-3, localResult.z());
         assertEquals(0x8040FF, localResult.rgb());
-        assertEquals("", localResult.initials());
+        assertEquals("LM", localResult.initials());
         assertEquals(0, localResult.yaw());
         assertFalse(localResult.global());
 
         SimpleWaypoint syncedResult = list(result, "Bases").simpleWaypoints().get(0);
-        assertEquals("Home", syncedResult.name());
+        assertEquals("Home Base", syncedResult.name());
+        assertEquals("HB", syncedResult.initials());
         assertEquals(10, syncedResult.x());
         assertEquals(3, syncedResult.z());
         assertEquals(0xFF0080, syncedResult.rgb());
