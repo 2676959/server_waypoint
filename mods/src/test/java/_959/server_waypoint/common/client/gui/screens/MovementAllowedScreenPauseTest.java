@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Only the waypoint manager keeps singleplayer running while open. */
+/** The manager and a pending waypoint edit keep singleplayer running. */
 class MovementAllowedScreenPauseTest {
     @Test
     void waypointManagerDoesNotPause() {
@@ -19,8 +19,35 @@ class MovementAllowedScreenPauseTest {
     }
 
     @Test
-    void waypointEditPauses() {
-        assertTrue(create(WaypointEditScreen.class).isPauseScreen());
+    void waypointEditPausesWhileEditing() throws ReflectiveOperationException {
+        assertTrue(createEditScreen().isPauseScreen());
+    }
+
+    @Test
+    void waypointEditRunsSingleplayerUntilTheSaveResultArrives() throws ReflectiveOperationException {
+        WaypointEditScreen screen = createEditScreen();
+        EditResponseDeadline deadline = editDeadline(screen);
+
+        deadline.begin(7, 0);
+        assertFalse(screen.isPauseScreen(), "The integrated server must tick to send the save result");
+
+        assertFalse(deadline.clearIfMatches(6));
+        assertFalse(screen.isPauseScreen(), "An unrelated result must not pause a pending save");
+
+        assertTrue(deadline.clearIfMatches(7));
+        assertTrue(screen.isPauseScreen(), "Editing pauses again after the matching result");
+    }
+
+    @Test
+    void waypointEditPausesAgainAfterTheSaveTimesOut() throws ReflectiveOperationException {
+        WaypointEditScreen screen = createEditScreen();
+        EditResponseDeadline deadline = editDeadline(screen);
+
+        deadline.begin(7, 0);
+        assertFalse(screen.isPauseScreen());
+
+        assertTrue(deadline.expire(EditResponseDeadline.TIMEOUT_NANOS));
+        assertTrue(screen.isPauseScreen());
     }
 
     @Test
@@ -31,6 +58,20 @@ class MovementAllowedScreenPauseTest {
     @Test
     void widgetThemeConfigPauses() {
         assertTrue(create(WidgetThemeConfigScreen.class).isPauseScreen());
+    }
+
+    private static WaypointEditScreen createEditScreen() throws ReflectiveOperationException {
+        WaypointEditScreen screen = create(WaypointEditScreen.class);
+        var field = WaypointEditScreen.class.getDeclaredField("responseDeadline");
+        field.setAccessible(true);
+        field.set(screen, new EditResponseDeadline());
+        return screen;
+    }
+
+    private static EditResponseDeadline editDeadline(WaypointEditScreen screen) throws ReflectiveOperationException {
+        var field = WaypointEditScreen.class.getDeclaredField("responseDeadline");
+        field.setAccessible(true);
+        return (EditResponseDeadline) field.get(screen);
     }
 
     // Skip constructors, which read the Minecraft instance absent in unit tests.

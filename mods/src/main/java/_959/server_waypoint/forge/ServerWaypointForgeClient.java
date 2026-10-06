@@ -20,7 +20,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.FriendlyByteBuf;
 //? if >= 1.20.5
 import net.minecraft.network.codec.StreamCodec;
-//? if = 1.20.2
+//? if <= 1.20.2
 /*import net.minecraftforge.client.ConfigScreenHandler;*/
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
@@ -31,7 +31,7 @@ import net.minecraftforge.event.TickEvent;
 //? if < 1.21.6
 /*import net.minecraftforge.eventbus.api.IEventBus;*/
 import net.minecraftforge.fml.ModList;
-//? if = 1.20.2
+//? if <= 1.20.2
 /*import net.minecraftforge.fml.ModLoadingContext;*/
 //? if >= 1.21.6 && < 1.21.9
 /*import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;*/
@@ -126,7 +126,7 @@ public class ServerWaypointForgeClient {
 
     /** The Mods screen's config button opens the client settings. */
     private static void registerConfigScreen() {
-        //? if = 1.20.2 {
+        //? if <= 1.20.2 {
         /*ModLoadingContext.get().registerExtensionPoint(
                 ConfigScreenHandler.ConfigScreenFactory.class,
                 () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> createConfigScreen(parent))

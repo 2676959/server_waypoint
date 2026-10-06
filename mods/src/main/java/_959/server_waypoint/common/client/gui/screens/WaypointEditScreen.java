@@ -184,6 +184,12 @@ public class WaypointEditScreen extends AbstractWaypointPropertiesScreen {
         return this.responseDeadline.pending() ? Component.translatable("waypoint.form.status.saving") : null;
     }
 
+    /** Lets the integrated server tick and deliver its queued reply while saving. */
+    @Override
+    public boolean isPauseScreen() {
+        return !this.responseDeadline.pending();
+    }
+
     @Override
     protected void refreshButtons(boolean modal, boolean locked, boolean canSubmit, boolean changed) {
         this.cancelButton.active = !modal;

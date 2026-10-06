@@ -356,7 +356,9 @@ and reports whether a list was showing. Text fields don't handle Enter themselve
 gives Enter this meaning while a list is open, as the waypoint form does, calls it before using
 Enter for anything else.
 
-An exact matching choice is omitted from the popup. Resizing also resizes the field and choice rows.
+An exact matching choice is omitted from the popup when other choices exist. A sole choice remains
+in the popup even when it matches the current text or resolved resource ID, so the arrow still opens
+the list. Resizing also resizes the field and choice rows.
 Resting combobox popup rows draw side and bottom borders; the preceding control or row supplies
 the shared top edge, keeping separators one pixel thick without overlapping row hit areas.
 Hovered and keyboard-highlighted rows draw their own complete four-sided outline. Their surface,
@@ -1014,7 +1016,7 @@ If this widget draws outside `x/y/width/height`, add a `VisualBounds` constant a
 
 ### Choosing a base screen
 
-- Extend `MovementAllowedScreen` for the normal in-world GUI behavior used by this project. It provides the themed `SCREEN_BACKGROUND`, centering helpers, and optional movement-key forwarding. When no world is loaded, as when a screen opens from a mod list, it draws vanilla's background for screens outside a world (the panorama on 1.20.5 and later) under the themed overlay. It inherits vanilla's singleplayer pause behavior. Only `WaypointManagerScreen` overrides `isPauseScreen()` to return `false`; add/edit, client settings, and theme settings screens pause regardless of their parent.
+- Extend `MovementAllowedScreen` for the normal in-world GUI behavior used by this project. It provides the themed `SCREEN_BACKGROUND`, centering helpers, and optional movement-key forwarding. When no world is loaded, as when a screen opens from a mod list, it draws vanilla's background for screens outside a world (the panorama on 1.20.5 and later) under the themed overlay. It inherits vanilla's singleplayer pause behavior. `WaypointManagerScreen` always returns `false` from `isPauseScreen()`. `WaypointEditScreen` pauses while editing, but returns `false` while an edit request is pending so the integrated server can tick and send its queued result. A result, send failure, or timeout clears that pending state and restores pausing if the edit form remains open. Add, client settings, and theme settings screens pause regardless of their parent.
 - Extend `AbstractWaypointPropertiesScreen` for a new add/edit-style waypoint properties flow. Shared fields, coordinate rules, suggestions, color selection, checks, layout, and overlay behavior belong in this base. A subclass supplies what differs through methods the base calls from `init()`, after both constructors have finished, so the constructors call none of them: `leadingRows()` (Add's Dimension and List rows above Name), `subtitle()`, `hasDisplayNameRow()`, `footerButtons()` and `primaryButton()`, `checkInput()`, `submit()`, `pendingMessage()` and `refreshButtons(...)`, and optionally `hasChanges()`, `initialFocus()` and `onTick()`. `refreshControlStates()` sets every control's `active` flag and the footer message from the color picker, a pending request, the check result and whether Edit's form differs from the saved waypoint, so no screen keeps a list of controls to disable. `setControlActive(...)` also locks and restores text editability when activation changes, because older vanilla text fields accept typing even with `active = false`. Text length limits are set before saved values are loaded, preserving long names, keywords and descriptions.
 - Extend vanilla `Screen` directly only if movement forwarding and the shared centering contract are deliberately not wanted.
 

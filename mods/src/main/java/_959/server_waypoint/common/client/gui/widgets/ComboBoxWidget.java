@@ -225,7 +225,8 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget {
 
     @Override
     protected int getSelectedMenuItemIndex() {
-        return this.values.indexOf(this.getResolvedValue());
+        // Keep a sole choice available so its arrow can still open the dropdown.
+        return this.values.size() == 1 ? -1 : this.values.indexOf(this.getResolvedValue());
     }
 
     @Override
