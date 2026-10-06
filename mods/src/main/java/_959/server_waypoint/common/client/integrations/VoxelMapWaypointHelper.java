@@ -252,7 +252,7 @@ public final class VoxelMapWaypointHelper {
         }
 
         int rgb = simpleWaypoint.rgb();
-        return new Waypoint(
+        Waypoint waypoint = new Waypoint(
                 voxelMapName,
                 x,
                 z,
@@ -265,6 +265,9 @@ public final class VoxelMapWaypointHelper {
                 manager.getCurrentSubworldDescriptor(false),
                 dimensions
         );
+        // VoxelMap only recalculates this flag on dimension changes, not when adding a waypoint.
+        waypoint.inDimension = dimensionName.equals(WaypointClientMod.getCurrentDimensionName());
+        return waypoint;
     }
 
     private static void removeSyncedWaypoint(WaypointManager manager, String dimensionName, String listName, String waypointName) {

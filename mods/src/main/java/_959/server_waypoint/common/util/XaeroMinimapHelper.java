@@ -40,11 +40,14 @@ public class XaeroMinimapHelper {
         MinimapWorldManager manager = session.getWorldManager();
         // Xaero can change the automatic world path after receiving a server level
         // id or after an Auto connection. For the current dimension, its active
-        // automatic world is authoritative; rebuilding the path can create a
-        // second, unconnected sub-world and duplicate waypoint sets.
+        // automatic world is authoritative once it matches the requested dimension;
+        // rebuilding the path can create a second, unconnected sub-world and
+        // duplicate waypoint sets. During a dimension change Minecraft can already
+        // report the destination while Xaero's automatic world still points to the
+        // previous dimension.
         if (Minecraft.getInstance().level != null && dimKey.equals(Minecraft.getInstance().level.dimension())) {
             MinimapWorld autoWorld = manager.getAutoWorld();
-            if (autoWorld != null) {
+            if (autoWorld != null && dimKey.equals(autoWorld.getDimId())) {
                 return autoWorld;
             }
         }
