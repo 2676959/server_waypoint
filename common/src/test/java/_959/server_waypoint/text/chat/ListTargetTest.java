@@ -25,7 +25,7 @@ class ListTargetTest {
         assertEquals("/wp list minecraft:overworld \"Farm \\\"North\\\"\"",
                 ListTarget.list("minecraft:overworld", "Farm \"North\"").command(ListQuery.DEFAULT));
         assertEquals("/wp list minecraft:overworld \"\"", ListTarget.list("minecraft:overworld", "").command(ListQuery.DEFAULT));
-        assertEquals("/wp remote list survival \"minecraft:overworld\" Farms",
+        assertEquals("/wp remote list survival minecraft:overworld Farms",
                 ListTarget.remote("survival", "minecraft:overworld", "Farms").command(ListQuery.DEFAULT));
         assertEquals("/wp remote list", ListTarget.remote(null, null, null).command(ListQuery.DEFAULT));
     }

@@ -14,6 +14,7 @@ import _959.server_waypoint.text.feedback.RemoteScreens;
 import _959.server_waypoint.text.feedback.RemoteRefs;
 import _959.server_waypoint.util.StringCommandBuilder;
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.*;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -31,7 +32,8 @@ import static net.kyori.adventure.text.Component.*;
 
 /** Vanilla-safe remote commands. Suggestions and target resolution use only the bounded local replica. */
 final class RemoteWaypointCommand<S> {
-    private static final String SERVER = "remote server", DIMENSION = "remote dimension", LIST = "remote list", WAYPOINT = "remote waypoint";
+    static final String DIMENSION = "remote dimension";
+    private static final String SERVER = "remote server", LIST = "remote list", WAYPOINT = "remote waypoint";
     private final Supplier<RemoteCatalogStore> store;
     private final BiConsumer<S, Component> send, error;
     private final IntSupplier defaultLimit;
@@ -39,11 +41,16 @@ final class RemoteWaypointCommand<S> {
     private final RemoteTeleportInitiator<S> teleport;
     private final Function<S, Component> helpScreen;
     private final Function<S, Viewer> viewer;
+    private final Supplier<? extends ArgumentType<?>> dimensionArgument;
+    private final Function<CommandContext<S>, String> dimensionName;
 
     RemoteWaypointCommand(Supplier<RemoteCatalogStore> store, BiConsumer<S, Component> send,
                           BiConsumer<S, Component> error, IntSupplier defaultLimit, Predicate<S> canList,
                           Predicate<S> canTeleport, RemoteTeleportInitiator<S> teleport,
-                          Function<S, Component> helpScreen, Function<S, Viewer> viewer) {
+                          Function<S, Component> helpScreen, Function<S, Viewer> viewer,
+                          Supplier<? extends ArgumentType<?>> dimensionArgument, Function<CommandContext<S>, String> dimensionName) {
+        this.dimensionArgument = Objects.requireNonNull(dimensionArgument, "dimensionArgument");
+        this.dimensionName = Objects.requireNonNull(dimensionName, "dimensionName");
         this.canList = Objects.requireNonNull(canList, "canList");
         this.canTeleport = Objects.requireNonNull(canTeleport, "canTeleport");
         this.teleport = Objects.requireNonNull(teleport, "teleport");
@@ -60,13 +67,13 @@ final class RemoteWaypointCommand<S> {
         LiteralArgumentBuilder<S> lists = LiteralArgumentBuilder.<S>literal("list").requires(canList); configure(lists, 0);
         RequiredArgumentBuilder<S, String> server = argument(SERVER, string()); configure(server, 1);
         server.suggests((context, builder) -> suggest(context, builder, 0));
-        RequiredArgumentBuilder<S, String> dimension = argument(DIMENSION, string()); configure(dimension, 2);
+        RequiredArgumentBuilder<S, ?> dimension = argument(DIMENSION, dimensionArgument.get()); configure(dimension, 2);
         dimension.suggests((context, builder) -> suggest(context, builder, 1));
         RequiredArgumentBuilder<S, String> list = argument(LIST, string()); configure(list, 3);
         list.suggests((context, builder) -> suggest(context, builder, 2));
         root.then(lists.then(server.then(dimension.then(list))));
         RequiredArgumentBuilder<S, String> detailsServer = argument(SERVER, string());
-        RequiredArgumentBuilder<S, String> detailsDimension = argument(DIMENSION, string());
+        RequiredArgumentBuilder<S, ?> detailsDimension = argument(DIMENSION, dimensionArgument.get());
         RequiredArgumentBuilder<S, String> detailsList = argument(LIST, string());
         RequiredArgumentBuilder<S, String> detailsWaypoint = argument(WAYPOINT, string());
         detailsServer.suggests((context, builder) -> suggest(context, builder, 0));
@@ -76,7 +83,7 @@ final class RemoteWaypointCommand<S> {
         root.then(LiteralArgumentBuilder.<S>literal("details").requires(canList)
                 .then(detailsServer.then(detailsDimension.then(detailsList.then(detailsWaypoint)))));
         RequiredArgumentBuilder<S, String> tpServer = argument(SERVER, string());
-        RequiredArgumentBuilder<S, String> tpDimension = argument(DIMENSION, string());
+        RequiredArgumentBuilder<S, ?> tpDimension = argument(DIMENSION, dimensionArgument.get());
         RequiredArgumentBuilder<S, String> tpList = argument(LIST, string());
         RequiredArgumentBuilder<S, String> tpWaypoint = argument(WAYPOINT, string());
         tpServer.suggests((context, builder) -> suggest(context, builder, 0, true));
@@ -103,7 +110,7 @@ final class RemoteWaypointCommand<S> {
     }
     private int teleport(CommandContext<S> context) {
         S source = context.getSource();
-        String id = getString(context, SERVER), dimension = getString(context, DIMENSION),
+        String id = getString(context, SERVER), dimension = dimensionName.apply(context),
                 listName = getString(context, LIST), name = getString(context, WAYPOINT);
         Viewer reader = viewer.apply(source);
         if (!canTeleport.test(source)) return fail(source, reader, null, id, dimension, listName, name, Result.UNAUTHORIZED);
@@ -164,7 +171,7 @@ final class RemoteWaypointCommand<S> {
             if (view != null && view.snapshot() != null && view.state() != RemoteCatalogState.UNAUTHORIZED && view.state() != RemoteCatalogState.UNAVAILABLE) {
                 if (depth == 1) candidates = view.snapshot().dimensions().keySet();
                 else {
-                    var lists = view.snapshot().dimensions().getOrDefault(getString(context, DIMENSION), Map.of());
+                    var lists = view.snapshot().dimensions().getOrDefault(dimensionName.apply(context), Map.of());
                     if (depth == 2) candidates = lists.keySet();
                     else {
                         var selected = lists.get(getString(context, LIST));
@@ -172,6 +179,12 @@ final class RemoteWaypointCommand<S> {
                     }
                 }
             }
+        }
+        if (depth == 1) {
+            String query = builder.getRemainingLowerCase();
+            candidates.stream().sorted().filter(value -> matchesDimension(query, value))
+                    .filter(value -> value.length() <= 256).limit(100).forEach(builder::suggest);
+            return builder.buildFuture();
         }
         String remaining = builder.getRemaining();
         String prefix;
@@ -185,6 +198,23 @@ final class RemoteWaypointCommand<S> {
                 .filter(value -> value.length() <= 256).limit(100).forEach(builder::suggest);
         return builder.buildFuture();
     }
+    /** Match identifier namespaces and paths, including words after underscores, like native resource suggestions. */
+    private static boolean matchesDimension(String query, String id) {
+        if (query.contains(":")) return matchesWord(query, id);
+        int colon = id.indexOf(':');
+        return colon > 0 && (matchesWord(query, id.substring(0, colon)) || matchesWord(query, id.substring(colon + 1)));
+    }
+
+    private static boolean matchesWord(String query, String value) {
+        int start = 0;
+        while (!value.startsWith(query, start)) {
+            int separator = value.indexOf('_', start);
+            if (separator < 0) return false;
+            start = separator + 1;
+        }
+        return true;
+    }
+
     /** /wp remote list [<server> [<dimension> [<list>]]] with the list options. */
     private int execute(CommandContext<S> context, int depth, WaypointSorting.SortMode mode, boolean reversed, ListView view) {
         S source = context.getSource();
@@ -216,7 +246,7 @@ final class RemoteWaypointCommand<S> {
                     : RemoteScreens.server(reader, server, query, pageLimit));
             return Command.SINGLE_SUCCESS;
         }
-        String dimension = getString(context, DIMENSION);
+        String dimension = dimensionName.apply(context);
         if (server.lists(dimension) == null) {
             error.accept(source, RemoteScreens.noDimension(reader, server, dimension));
             return 0;
@@ -239,7 +269,7 @@ final class RemoteWaypointCommand<S> {
         S source = context.getSource();
         if (!canList.test(source)) return 0;
         Viewer reader = viewer.apply(source);
-        String id = getString(context, SERVER), dimension = getString(context, DIMENSION),
+        String id = getString(context, SERVER), dimension = dimensionName.apply(context),
                 listName = getString(context, LIST), name = getString(context, WAYPOINT);
         RemoteCatalogQuery.Server server = RemoteCatalogQuery.server(store.get().snapshot(), id).orElse(null);
         if (server == null) {

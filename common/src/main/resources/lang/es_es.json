@@ -213,6 +213,7 @@
   "wp.help.remote.servers": "Los servidores conectados",
   "wp.help.remote.list": "Explora un servidor, una dimensión o una lista",
   "wp.help.remote.list.note": "Admite las mismas opciones que /wp list, sin ordenar por distancia",
+  "wp.help.remote.dimension": "{0}: namespace:path, sin comillas; por defecto: minecraft",
   "wp.help.remote.details": "Muestra todas las propiedades de un punto de ruta de otro servidor",
   "wp.help.remote.tp": "Teletranspórtate a un punto de ruta de otro servidor",
   "wp.help.remote.example": "Explora el servidor survival",

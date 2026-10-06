@@ -213,6 +213,7 @@
   "wp.help.remote.servers": "השרתים המחוברים",
   "wp.help.remote.list": "עיון בשרת, בממד או ברשימה",
   "wp.help.remote.list.note": "מקבל את אותן אפשרויות כמו /wp list, בלי מיון לפי מרחק",
+  "wp.help.remote.dimension": "{0}: namespace:path, ללא מרכאות; ברירת מחדל: minecraft",
   "wp.help.remote.details": "הצגת כל המאפיינים של נקודת ציון בשרת אחר",
   "wp.help.remote.tp": "שיגור אל נקודת ציון בשרת אחר",
   "wp.help.remote.example": "עיון בשרת survival",

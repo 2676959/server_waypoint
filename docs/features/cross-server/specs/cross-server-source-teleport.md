@@ -7,8 +7,9 @@ coordinator TCP dispatch and platform lifecycle startup remain Step 16.
 
 ## Command and permission behavior
 
-Each argument is an exact identity, independent of display labels. Brigadier quoted strings retain
-spaces, quotes, backslashes and empty names. Suggestions read one bounded `RemoteCatalogStore`
+Each argument is an exact identity, independent of display labels. Server, list and waypoint arguments use Brigadier quoted strings to
+retain spaces, quotes, backslashes and empty names. Dimensions use native namespaced identifiers,
+without quotes; omitting the namespace defaults to `minecraft`. Suggestions read one bounded `RemoteCatalogStore`
 snapshot, including waypoint names; they never query a server, resolve a world or contact the
 coordinator. Stale names may remain suggested, but execution rejects stale catalogs and requires
 an available cached target. Missing dimensions/lists/waypoints return NOT_FOUND. Missing servers

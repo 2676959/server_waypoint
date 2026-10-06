@@ -3,7 +3,7 @@
 Suggestion providers must handle redirected commands, such as:
 
 ```text
-/execute as 7c00 run wp remote tp creative "minecraft:overworld"
+/execute as 7c00 run wp remote tp creative minecraft:overworld
 ```
 
 Brigadier can pass the outer command context to a suggestion provider even though

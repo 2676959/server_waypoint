@@ -38,7 +38,7 @@ See the [release verification record](validation/cross-server-release-readiness.
 5. Restart Velocity, then both backends. Join through Velocity with a test player and run
    `/wp remote`. Each healthy exported backend should show a green dot. Run
    `/wp remote list survival`, then teleport to a real exported target, for example
-   `/wp remote tp creative "minecraft:overworld" "Public list" "Home"`.
+   `/wp remote tp creative minecraft:overworld "Public list" "Home"`.
 6. Verify arrival coordinates and success feedback on the destination. A server switch alone does
    not prove waypoint arrival. Test both directions and a denied player before admitting users.
 

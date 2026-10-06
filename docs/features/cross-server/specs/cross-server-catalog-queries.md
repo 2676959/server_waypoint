@@ -40,9 +40,11 @@ fuzzy matching. There is no destination-world lookup.
 ```
 
 Omitted scopes select all cached entries within the supplied hierarchy. A dimension requires a
-server and a list requires both. All three selectors use exact quoted/escaped string arguments;
-remote dimensions need not exist on the executing backend. Names equal to option words, such as
-`search`, must be quoted. Empty dimension/list identities are expressed as `""`.
+server and a list requires both. Server and list selectors use exact quoted/escaped string arguments.
+Dimension selectors use the same native namespaced identifier parser as waypoint item icons: `namespace:path` without quotes,
+with `minecraft` as the default namespace. Remote dimensions need not exist on the executing backend.
+Dimension suggestions match namespaces and paths from the selected server's bounded local catalog.
+String names equal to option words, such as `search`, must be quoted; an empty list identity is `""`.
 
 `ListCommandOptions` is the shared local/remote Brigadier option builder. It preserves the existing
 local grammar, including its reserved-list handling. Remote options are:
@@ -72,7 +74,7 @@ option-like identities at every scope level.
 For example:
 
 ```text
-/wp remote list survival "minecraft:overworld" "search" search village sort name limit 10 view flat page 2
+/wp remote list survival minecraft:overworld "search" search village sort name limit 10 view flat page 2
 ```
 
 ## Availability, suggestions and feedback
@@ -157,8 +159,9 @@ The `⋯` buttons open read-only cached details:
 /wp remote details <server> <dimension> <list> [<waypoint>]
 ```
 
-These selectors share the list command's exact, quoted cache-only suggestions and remote list
-permission. List details include the identifier, display name, dimension, and waypoint count.
+These selectors share the list command's cache-only suggestions, native dimension identifiers,
+quoted string identities and remote list permission. List details include the identifier, display name,
+dimension, and waypoint count.
 Waypoint details additionally show the source list, initials, coordinates, color, yaw, visibility,
 keywords, and description. Both provide an Open List action. AVAILABLE waypoint details offer remote
 teleport when permitted. Stale details remain visibly advisory and cannot teleport; unavailable or

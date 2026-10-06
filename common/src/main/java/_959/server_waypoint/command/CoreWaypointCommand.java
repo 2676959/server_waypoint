@@ -237,7 +237,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
                         feedback.accept(result);
                     });
                 },
-                source -> HelpScreen.topic(this.viewer(source), HelpTopics.Topic.REMOTE, false), this::viewer);
+                source -> HelpScreen.topic(this.viewer(source), HelpTopics.Topic.REMOTE, false), this::viewer, iconArgument,
+                context -> getArgument(context, RemoteWaypointCommand.DIMENSION).toString());
         this.permissionManager = permissionManager;
         this.navigationService = Objects.requireNonNull(navigationService, "navigationService");
         this.restoreRegistry = new WaypointRestoreRegistry<>();

@@ -32,11 +32,12 @@ public record ListTarget(String base) {
     /** /wp remote list with as many of server, dimension and list as are given, in that order. */
     public static ListTarget remote(@Nullable String server, @Nullable String dimension, @Nullable String list) {
         StringBuilder base = new StringBuilder("/wp remote list");
-        for (String identity : new String[]{server, dimension, list}) {
-            if (identity == null) {
-                break;
+        if (server != null) {
+            base.append(' ').append(escapeListName(server));
+            if (dimension != null) {
+                base.append(' ').append(dimension);
+                if (list != null) base.append(' ').append(escapeListName(list));
             }
-            base.append(' ').append(escapeListName(identity));
         }
         return new ListTarget(base.toString());
     }

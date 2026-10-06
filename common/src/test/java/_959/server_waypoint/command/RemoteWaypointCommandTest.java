@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RemoteWaypointCommandTest {
     private static final RemoteServerId A = new RemoteServerId("search"), B = new RemoteServerId("other");
-    private static final String DIMENSION = "world \"quoted\"\\zone";
+    private static final String DIMENSION = "minecraft:overworld";
     private boolean allowed = true, tpAllowed;
     private final UUID playerId = UUID.randomUUID();
     private final CompletableFuture<ApplicationMessage> prepareReply = new CompletableFuture<>();
@@ -56,7 +56,16 @@ class RemoteWaypointCommandTest {
     @BeforeEach void setup() throws Exception {
         var commands = new RemoteWaypointCommand<String>(() -> { assertTrue(allowed || tpAllowed, "Denied readers must not access the catalog"); return new RemoteCatalogStore(index); }, (source, text) -> messages.add(text),
                 (source, text) -> errors.add(text), () -> 5, source -> allowed, source -> tpAllowed, handoffs,
-                source -> Component.text("Remote help"), this::viewer);
+                source -> Component.text("Remote help"), this::viewer, () -> reader -> {
+                    int start = reader.getCursor();
+                    while (reader.canRead() && !Character.isWhitespace(reader.peek())) reader.skip();
+                    String id = reader.getString().substring(start, reader.getCursor());
+                    try {
+                        return _959.server_waypoint.util.NamespacedId.parse(id.contains(":") ? id : "minecraft:" + id);
+                    } catch (IllegalArgumentException invalid) {
+                        throw new com.mojang.brigadier.exceptions.SimpleCommandExceptionType(() -> "Invalid identifier").createWithContext(reader);
+                    }
+                }, context -> context.getArgument(RemoteWaypointCommand.DIMENSION, _959.server_waypoint.util.NamespacedId.class).toString());
         dispatcher.register(LiteralArgumentBuilder.<String>literal("wp").then(commands.build()));
         Map<String, RemoteWaypointSnapshot> waypoints = new HashMap<>();
         for (int i = 0; i < 12; i++) waypoints.put("base " + i, waypoint("Display " + i, i));
@@ -88,7 +97,7 @@ class RemoteWaypointCommandTest {
         return new TcpChannel.Received(new ApplicationEnvelope(0, request, message), catalog);
     }
     private static String quote(String value) { return StringCommandBuilder.escapeListName(value); }
-    private String target() { return "wp remote list " + quote(A.value()) + " " + quote(DIMENSION) + " \"search\""; }
+    private String target() { return "wp remote list " + quote(A.value()) + " " + DIMENSION + " \"search\""; }
     private String tpTarget() { return target().replace("remote list", "remote tp") + " " + quote("base 0"); }
     private String detailsTarget() { return target().replace("remote list", "remote details") + " " + quote("base 0"); }
     private Component last() { return messages.get(messages.size() - 1); }
@@ -108,13 +117,48 @@ class RemoteWaypointCommandTest {
     private static List<String> clicks(Component root) {
         return components(root).stream().map(Component::clickEvent).filter(Objects::nonNull).map(ClickEvent::value).toList();
     }
-    @Test void suggestionsUseOnlyLocalCacheAndRoundTripReservedQuotedAndEmptyIdentities() throws Exception {
+    @Test void nativeDimensionValuesAreNotRevalidatedAsIconIds(@org.junit.jupiter.api.io.TempDir java.nio.file.Path directory) {
+        CommandHarness harness = new CommandHarness(directory);
+        harness.server.setRemoteCatalogStore(new RemoteCatalogStore(index));
+        assertEquals(0, assertDoesNotThrow(() -> harness.dispatcher.execute(
+                "wp remote list other minecraft:", CommandHarness.console())));
+        assertTrue(ChatAssert.render(harness.sender.errors.get(0)).contains("has no dimension minecraft:"));
+        var suggestions = assertDoesNotThrow(() -> harness.dispatcher.getCompletionSuggestions(harness.dispatcher.parse(
+                "wp remote list other minecraft: ", CommandHarness.console())).join()).getList();
+        assertTrue(suggestions.stream().anyMatch(value -> value.getText().equals("search")));
+        assertTrue(suggestions.stream().noneMatch(value -> value.getText().equals("\"search\"")));
+    }
+
+    @Test void remoteDimensionIdentifiersParseWithoutQuotesAndDefaultToMinecraft() throws Exception {
+        tpAllowed = true;
+        publish(new RemoteServerId("native"), Map.of(
+                "minecraft:the_nether", Map.of("list", new RemoteListSnapshot("list", new RemoteRevision(1),
+                        Map.of("point", waypoint("point", 0)))),
+                "custom:cave_world", Map.of("list", new RemoteListSnapshot("list", new RemoteRevision(1),
+                        Map.of("point", waypoint("point", 0))))));
+        for (String dimension : List.of("minecraft:the_nether", "the_nether", "custom:cave_world")) {
+            for (String action : List.of("list", "details", "tp")) {
+                String command = "wp remote " + action + " native " + dimension + " list";
+                if (!action.equals("list")) command += " point";
+                assertEquals(1, dispatcher.execute(command, "player"), command);
+            }
+        }
+        assertEquals("minecraft:the_nether", preparation.target().dimensionName());
+        assertEquals(List.of("minecraft:the_nether"), suggestions("wp remote list native the_"));
+        assertEquals(List.of("minecraft:the_nether"), suggestions("wp remote details native nether"));
+        assertEquals(List.of("minecraft:the_nether"), suggestions("wp remote tp native minecraft:the_"));
+        assertEquals(List.of("custom:cave_world"), suggestions("wp remote list native cave"));
+        assertThrows(com.mojang.brigadier.exceptions.CommandSyntaxException.class,
+                () -> dispatcher.execute("wp remote list native \"minecraft:the_nether\" list", "player"));
+    }
+
+    @Test void suggestionsUseOnlyLocalCacheAndRoundTripIdentifiersAndQuotedStringIdentities() throws Exception {
         assertTrue(suggestions("wp remote list ").contains("\"search\""));
-        assertTrue(suggestions("wp remote list \"search\" ").contains(quote(DIMENSION)));
-        assertTrue(suggestions("wp remote list \"search\" " + quote(DIMENSION) + " ").containsAll(List.of("\"search\"", "\"\"")));
+        assertTrue(suggestions("wp remote list \"search\" ").contains(DIMENSION));
+        assertTrue(suggestions("wp remote list \"search\" " + DIMENSION + " ").containsAll(List.of("\"search\"", "\"\"")));
         assertTrue(suggestions("wp remote list \"se").contains("\"search\""));
         assertEquals(1, dispatcher.execute(target(), "console"));
-        assertEquals(1, dispatcher.execute("wp remote list \"search\" " + quote(DIMENSION) + " \"\"", "console"));
+        assertEquals(1, dispatcher.execute("wp remote list \"search\" " + DIMENSION + " \"\"", "console"));
         assertTrue(ChatAssert.render(last()).endsWith("No waypoints yet."));
     }
     @Test void redirectedSuggestionsResolveArgumentsAtEveryRemoteDepth() {
@@ -130,9 +174,9 @@ class RemoteWaypointCommandTest {
                 String input = "wp remote " + command + " ";
                 assertEquals(suggestions(input), suggestions(prefix + input));
                 input += quote(A.value()) + " ";
-                assertTrue(suggestions(input).contains(quote(DIMENSION)));
+                assertTrue(suggestions(input).contains(DIMENSION));
                 assertEquals(suggestions(input), suggestions(prefix + input));
-                input += quote(DIMENSION) + " ";
+                input += DIMENSION + " ";
                 assertTrue(suggestions(input).contains("\"search\""));
                 assertEquals(suggestions(input), suggestions(prefix + input));
                 if (!command.equals("list")) {
@@ -171,8 +215,8 @@ class RemoteWaypointCommandTest {
     @Test void remoteDimensionsAreNamedAndColouredByTheirIds() throws Exception {
         publish(new RemoteServerId("colored"), Map.of("minecraft:the_nether", Map.of("list",
                 new RemoteListSnapshot("list", new RemoteRevision(1), Map.of("point", waypoint("point", 0))))));
-        for (String command : List.of("wp remote list colored", "wp remote list colored " + quote("minecraft:the_nether"),
-                "wp remote details colored " + quote("minecraft:the_nether") + " list point")) {
+        for (String command : List.of("wp remote list colored", "wp remote list colored " + "minecraft:the_nether",
+                "wp remote details colored " + "minecraft:the_nether" + " list point")) {
             assertEquals(1, dispatcher.execute(command, "console"));
             assertEquals(NamedTextColor.RED, ChatAssert.colorOf(last(), "Nether"), command);
         }
@@ -226,7 +270,7 @@ class RemoteWaypointCommandTest {
         publish(new RemoteServerId("long"), Map.of(DIMENSION, Map.of(longList,
                 new RemoteListSnapshot("Long list", new RemoteRevision(1), Map.of("waypoint", waypoint("Long waypoint", 0))))));
         tpAllowed = true;
-        dispatcher.execute("wp remote list long " + quote(DIMENSION) + " " + quote(longList), "player");
+        dispatcher.execute("wp remote list long " + DIMENSION + " " + quote(longList), "player");
         assertTrue(ChatAssert.render(last()).contains("Long waypoint"));
         assertTrue(clicks(last()).stream().allMatch(value -> value.length() <= 256));
         assertTrue(clicks(last()).stream().noneMatch(value -> value.startsWith("/wp remote tp ") || value.startsWith("/wp remote details ")));
@@ -239,7 +283,7 @@ class RemoteWaypointCommandTest {
         time.set(11_000_000); index.maintain();
         dispatcher.execute(target(), "console");
         assertEquals(List.of("● Server search ⏷", "Server search can't be reached right now. Servers"), ChatAssert.lines(last()));
-        assertTrue(suggestions("wp remote list \"search\" ").stream().noneMatch(value -> value.equals(quote(DIMENSION))));
+        assertTrue(suggestions("wp remote list \"search\" ").stream().noneMatch(value -> value.equals(DIMENSION)));
         publish(new RemoteServerId("empty"), Map.of());
         dispatcher.execute("wp remote list empty", "console");
         assertEquals(List.of("● Server empty ⏷", "Nothing published yet."), ChatAssert.lines(last()));
@@ -249,8 +293,8 @@ class RemoteWaypointCommandTest {
         assertEquals(0, dispatcher.execute("wp remote list missing", "console"));
         assertEquals("✘ No server called missing. Servers", ChatAssert.render(errors.get(0)));
         assertEquals(0, dispatcher.execute("wp remote list other missing", "console"));
-        assertEquals("✘ Server other has no dimension missing. Browse", ChatAssert.render(errors.get(1)));
-        assertEquals(0, dispatcher.execute("wp remote list other " + quote(DIMENSION) + " missing", "console"));
+        assertEquals("✘ Server other has no dimension minecraft:missing. Browse", ChatAssert.render(errors.get(1)));
+        assertEquals(0, dispatcher.execute("wp remote list other " + DIMENSION + " missing", "console"));
         assertTrue(ChatAssert.render(errors.get(2)).startsWith("✘ Server other has no list missing in "));
         assertEquals(0, dispatcher.execute(target() + " sort distance", "console"));
         assertEquals("✘ Remote waypoints can't be sorted by distance.", ChatAssert.render(errors.get(3)));
@@ -280,7 +324,7 @@ class RemoteWaypointCommandTest {
         assertNull(remote.getChild("servers"));
         assertNotNull(remote.getChild("tp"));
         assertThrows(com.mojang.brigadier.exceptions.CommandSyntaxException.class, () -> dispatcher.execute(
-                "wp remote details \"search\" " + quote(DIMENSION) + " \"search\"", "console"));
+                "wp remote details \"search\" " + DIMENSION + " \"search\"", "console"));
         allowed = false; tpAllowed = true;
         dispatcher.execute("wp remote", "player");
         assertEquals("Remote help", text(last()));

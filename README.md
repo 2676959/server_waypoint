@@ -104,7 +104,7 @@ On Minecraft 1.21.9 and later, player chat can show supported vanilla item icons
   - Results are read-only and work through ordinary server chat. A coloured dot shows each server's state: available, stale, unreachable or no access. `/wp remote details <server> <dimension> <list> <waypoint>` shows one waypoint. Run `/wp help remote` for help.
   - Catalog synchronization starts when cross-server configuration is enabled. See [Velocity runtime setup](docs/features/cross-server/specs/cross-server-velocity-runtime.md) and [remote catalog queries](docs/features/cross-server/specs/cross-server-catalog-queries.md).
 - `/wp remote tp <server> <dimension> <list> <waypoint>` requests a teleport using exact cached identities (quote names with spaces). Stale or missing targets fail before preparation; the player stays on the source until destination preparation and fresh permission checks succeed, and the destination confirms the arrival. See [remote teleport initiation](docs/features/cross-server/specs/cross-server-source-teleport.md).
-  - Velocity and dedicated backend runtime integration is implemented and disabled by default. Suggestions use only the local cache. Quote dimension identities such as `"minecraft:overworld"`. See [configuration and validation](docs/features/cross-server/specs/cross-server-velocity-runtime.md).
+  - Velocity and dedicated backend runtime integration is implemented and disabled by default. Suggestions use only the local cache. Use unquoted dimension identifiers such as `minecraft:overworld` or `overworld` (default namespace: `minecraft`). See [configuration and validation](docs/features/cross-server/specs/cross-server-velocity-runtime.md).
 - `/wp reload` reloads `config.json` and the translation files in the `lang/` directory beside it (see [configuration paths](#server-configurations)). `defaultPageLimit`, `defaultNavigationMethods`, `CommandPermission`, `addWaypointFromChatSharing` and `compressChunkedMessages` apply at once; `serverId`, `cross-server.json` and turning on `sendXaerosWorldId` need a restart. Waypoint files are not reloaded, so edit them while the server is stopped.
 - `/wp remove` removes a waypoint by identifier and answers with a temporary, single-use Restore link.
   - `/wp remove <dimension> <list-identifier>` removes an empty waypoint list.
@@ -156,7 +156,7 @@ This setup is for servers on the **same host**. It has no encryption or cryptogr
 
    Use the same file on `creative`, changing `serverId` to `creative`. `PUBLIC` shares each backend's waypoint lists with the coordinator and authorized readers on participating servers.
 4. Remove `credentialsDirectory`, `coordinatorPublicKey`, and `requiredSuite` from plaintext configurations, and remove `publicKey` from Velocity's backend entries. Use a literal loopback IP at both ends: `localhost`, wildcard addresses, and non-loopback addresses are rejected. Restart Velocity and both backends after editing the files. Configure normal Velocity player forwarding so player UUIDs agree across servers.
-5. Join through Velocity and run `/wp remote`, then `/wp remote list survival`. Teleport to an existing exported waypoint, for example `/wp remote tp creative "minecraft:overworld" "Public list" "Home"`. Check the destination coordinates and feedback, then test the other direction. A server switch alone does not confirm waypoint arrival.
+5. Join through Velocity and run `/wp remote`, then `/wp remote list survival`. Teleport to an existing exported waypoint, for example `/wp remote tp creative minecraft:overworld "Public list" "Home"`. Check the destination coordinates and feedback, then test the other direction. A server switch alone does not confirm waypoint arrival.
 
 ### Encryption: NOISE_KK
 
@@ -211,7 +211,7 @@ Use `NOISE_KK` when backends run on different hosts or when you want authenticat
    ```
 
    Replace the placeholders with the full Base64 public keys. Keep each component's `credentials/static.key` private; never copy it to another component. No pairing command is needed.
-6. Restart Velocity, then both backends. Configure authenticated Velocity player forwarding so player UUIDs agree across servers. Run `/wp remote` and `/wp remote list survival`, then test `/wp remote tp creative "minecraft:overworld" "Public list" "Home"` with an existing exported waypoint. Verify destination coordinates and feedback in both directions.
+6. Restart Velocity, then both backends. Configure authenticated Velocity player forwarding so player UUIDs agree across servers. Run `/wp remote` and `/wp remote list survival`, then test `/wp remote tp creative minecraft:overworld "Public list" "Home"` with an existing exported waypoint. Verify destination coordinates and feedback in both directions.
 
 Remote browsing uses `server_waypoint.command.remote.list` (default level 0). Remote teleport requires `server_waypoint.command.remote.tp` at the source, plus both `server_waypoint.command.tp` and `server_waypoint.command.remote.tp` at the destination (each defaults to level 2). The source's local teleport permission is independent. See the [administrator guide](docs/features/cross-server/cross-server-admin.md) for permissions, key rotation, and troubleshooting.
 

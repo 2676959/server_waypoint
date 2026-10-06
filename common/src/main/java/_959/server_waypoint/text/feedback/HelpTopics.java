@@ -191,10 +191,11 @@ public final class HelpTopics {
             case REMOTE -> new Content(List.of(
                     usage("/wp remote", "/wp remote", "wp.help.remote.servers"),
                     usage("/wp remote list [<server> [<dimension> [<list>]]]", "/wp remote list ", "wp.help.remote.list",
-                            note("wp.help.remote.list.note")),
+                            note("wp.help.remote.list.note"), param("dimension", "wp.help.remote.dimension")),
                     usage("/wp remote details <server> <dimension> <list> <waypoint>", "/wp remote details ",
-                            "wp.help.remote.details"),
-                    usage("/wp remote tp <server> <dimension> <list> <waypoint>", "/wp remote tp ", "wp.help.remote.tp")),
+                            "wp.help.remote.details", param("dimension", "wp.help.remote.dimension")),
+                    usage("/wp remote tp <server> <dimension> <list> <waypoint>", "/wp remote tp ",
+                            "wp.help.remote.tp", param("dimension", "wp.help.remote.dimension"))),
                     List.of(new Example("/wp remote list {server survival}", "wp.help.remote.example")));
             case RELOAD -> new Content(List.of(usage("/wp reload", "/wp reload", "wp.help.reload.run",
                     note("wp.help.reload.applies"), note("wp.help.reload.restart"), note("wp.help.reload.waypoints"))),

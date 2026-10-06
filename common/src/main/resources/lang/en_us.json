@@ -223,6 +223,7 @@
   "wp.help.remote.servers": "The connected servers",
   "wp.help.remote.list": "Browse a server, dimension or list",
   "wp.help.remote.list.note": "Takes the same options as /wp list, without distance sorting",
+  "wp.help.remote.dimension": "{0}: namespace:path, without quotes; default: minecraft",
   "wp.help.remote.details": "Show every property of a waypoint on another server",
   "wp.help.remote.tp": "Teleport to a waypoint on another server",
   "wp.help.remote.example": "Browse the survival server",

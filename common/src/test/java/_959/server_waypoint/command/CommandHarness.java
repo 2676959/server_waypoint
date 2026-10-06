@@ -228,7 +228,7 @@ final class CommandHarness {
         }
     }
 
-    static final class TestCommand extends CoreWaypointCommand<Source, String, Object, String, String, NamespacedId> {
+    static final class TestCommand extends CoreWaypointCommand<Source, String, Object, String, String, String> {
         private final CommandHarness harness;
 
         @Override
@@ -241,7 +241,7 @@ final class CommandHarness {
                     new UploadCoordinator<>(harness.server, (player, message) -> {
                     }, packet -> {
                     }, player -> true, player -> true, navigation(), harness.sender::playerActor),
-                    () -> word(), CommandHarness::position, () -> reader -> NamespacedId.parse(readWord(reader)));
+                    () -> word(), CommandHarness::position, TestCommand::word);
             this.harness = harness;
         }
 
@@ -255,8 +255,8 @@ final class CommandHarness {
         }
 
         @Override
-        protected NamespacedId toIconId(NamespacedId iconArgument) {
-            return iconArgument;
+        protected NamespacedId toIconId(String iconArgument) {
+            return NamespacedId.parse(iconArgument);
         }
 
         @Override

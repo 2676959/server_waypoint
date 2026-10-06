@@ -156,7 +156,7 @@ final class RemoteBrowserModel {
         var waypoint = view.snapshot().find(key).orElse(null);
         if (waypoint == null) return null;
         String command = "wp remote tp " + StringCommandBuilder.escapeArgument(key.serverId().value()) + " "
-                + StringCommandBuilder.escapeArgument(key.dimensionName()) + " "
+                + key.dimensionName() + " "
                 + StringCommandBuilder.escapeArgument(key.listName()) + " "
                 + StringCommandBuilder.escapeArgument(key.waypointName());
         // The oldest supported Minecraft command packet has a 256-character bound. Never truncate identities.

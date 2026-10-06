@@ -137,7 +137,7 @@ fallback. All application/session/player/permission/claim checks still apply.
 Use quoted identity arguments, including dimension IDs containing a colon:
 
 ```text
-/wp remote tp survival "minecraft:overworld" "Public list" "Home"
+/wp remote tp survival minecraft:overworld "Public list" "Home"
 ```
 
 ## Verification and limits

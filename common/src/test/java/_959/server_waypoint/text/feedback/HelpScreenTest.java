@@ -96,6 +96,16 @@ class HelpScreenTest {
     }
 
     @Test
+    void remoteDimensionHelpExplainsIdentifierSyntaxAndDefaultNamespace() {
+        Component remote = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.REMOTE, false);
+        String tooltip = tooltipOf(remote, "/wp remote details <server> <dimension> <list>");
+        assertTrue(tooltip.contains("namespace:path"), tooltip);
+        assertTrue(tooltip.contains("minecraft"), tooltip);
+        assertTrue(tooltip.contains("without quotes"), tooltip);
+        assertEquals(NamedTextColor.GREEN, colorOf(remote, "<dimension>"));
+    }
+
+    @Test
     void argumentsAreColouredByTheirType() {
         Component add = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.ADD, false);
         Component list = HelpScreen.topic(Fixtures.player(), HelpTopics.Topic.LIST, false);

@@ -399,7 +399,7 @@ public final class RemoteScreens {
                     Tooltip.of("wp.remote.browse.tooltip"));
             case UNAUTHORIZED, WRONG_SOURCE, WRONG_DESTINATION, UNSUPPORTED, SUCCESS -> null;
             default -> Chat.control(viewer, translatable("wp.remote.try_again"), AQUA,
-                    Click.run("/wp remote tp " + escapeListName(serverId) + " " + escapeListName(dimension) + " "
+                    Click.run("/wp remote tp " + escapeListName(serverId) + " " + dimension + " "
                             + escapeListName(list) + " " + escapeListName(waypoint)),
                     Tooltip.of("wp.remote.try_again.tooltip"));
         };

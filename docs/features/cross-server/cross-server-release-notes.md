@@ -55,3 +55,8 @@ The [release verification record](validation/cross-server-release-readiness.md) 
 
 Cross-server teleport permission denials now name the server and show independent colored
 `tp` and `remote.tp` statuses. Deploy matching backends and coordinator builds; the application protocol version remains 1.
+
+Remote command dimensions accept native unquoted identifiers such as `minecraft:the_nether` or
+`the_nether` (default namespace: `minecraft`). Completion uses the selected remote server's cached
+dimensions, including dimensions absent on the current backend. `/wp help remote` explains this
+argument syntax. Server, list and waypoint names still support quoted strings.

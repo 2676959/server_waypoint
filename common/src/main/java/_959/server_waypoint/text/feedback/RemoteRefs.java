@@ -217,9 +217,9 @@ public final class RemoteRefs {
         return hint == null ? tooltip : tooltip.hint(hint);
     }
 
-    /** /wp remote <action> <server> <dimension> <list> <waypoint>, every identity quoted as needed. */
+    /** /wp remote <action> <server> <dimension> <list> <waypoint>, string identities quoted as needed. */
     public static String command(String action, Server server, String dimension, WaypointList list, SimpleWaypoint waypoint) {
-        return "/wp remote " + action + " " + escapeListName(server.id().value()) + " " + escapeListName(dimension)
+        return "/wp remote " + action + " " + escapeListName(server.id().value()) + " " + dimension
                 + " " + escapeListName(list.name()) + " " + escapeListName(waypoint.name());
     }
 }

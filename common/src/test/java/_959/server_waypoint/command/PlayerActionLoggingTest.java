@@ -192,7 +192,7 @@ class PlayerActionLoggingTest {
         harness.command.setRemoteTeleportInitiator((source, selection, feedback) -> callback.set(feedback));
         var executor = CommandHarness.player();
         harness.sender.commandSenders.put(executor, CommandHarness.console());
-        harness.dispatcher.execute("wp remote tp survival \"minecraft:overworld\" Public Home", executor);
+        harness.dispatcher.execute("wp remote tp survival minecraft:overworld Public Home", executor);
         harness.sender.commandSenders.clear();
         StaticLoggerBinder.clear();
         callback.get().accept(new RemoteTeleportInitiator.Feedback(

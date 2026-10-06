@@ -213,6 +213,7 @@
   "wp.help.remote.servers": "已連線的伺服器",
   "wp.help.remote.list": "瀏覽伺服器、維度或列表",
   "wp.help.remote.list.note": "選項與 /wp list 相同，但不能按距離排序",
+  "wp.help.remote.dimension": "{0}：命名空間:路徑，無需引號；預設命名空間為 minecraft",
   "wp.help.remote.details": "查看另一台伺服器上路徑點的所有屬性",
   "wp.help.remote.tp": "傳送到另一台伺服器上的路徑點",
   "wp.help.remote.example": "瀏覽 survival 伺服器",

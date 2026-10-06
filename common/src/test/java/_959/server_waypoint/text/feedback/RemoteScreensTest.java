@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RemoteScreensTest {
-    private static final String OW = "\"minecraft:overworld\"";
+    private static final String OW = "minecraft:overworld";
     private static final Server SURVIVAL = server("survival", "Survival", RemoteCatalogState.AVAILABLE, Map.of(
             OVERWORLD, Fixtures.overworldLists(),
             NETHER, List.of(new WaypointList("Nether Hub", 1, List.of(
@@ -137,7 +137,7 @@ class RemoteScreensTest {
                 "Skyblock ● · nothing published",
                 "Search"), lines(all));
         assertEquals("/wp remote", clickOf(all, "All servers ⏷"));
-        assertEquals("/wp remote list survival \"minecraft:the_nether\"", clickOf(all, "Nether"));
+        assertEquals("/wp remote list survival minecraft:the_nether", clickOf(all, "Nether"));
         assertEquals(NamedTextColor.RED, colorOf(all, "Nether"));
         assertEquals("/wp remote list search ", suggestions(all).get(0));
     }
