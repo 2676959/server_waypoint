@@ -62,7 +62,7 @@ class WidgetThemeTest {
                 assertContrastAtLeast(theme.getColor(WidgetThemeVariable.TEXT_PRIMARY), background, 4.5D);
                 assertContrastAtLeast(theme.getColor(WidgetThemeVariable.TEXT_PLACEHOLDER), background, 4.5D);
                 assertContrastAtLeast(theme.getColor(WidgetThemeVariable.FOCUS_RING), background, 3.0D);
-                assertContrastAtLeast(theme.getColor(WidgetThemeVariable.BORDER), background, 3.0D);
+                assertEquals(0, alpha(theme.getColor(WidgetThemeVariable.BORDER)));
             }
             assertContrastAtLeast(theme.getColor(WidgetThemeVariable.TEXT_DISABLED),
                     theme.getColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND), panel, 3.0D);
@@ -105,16 +105,17 @@ class WidgetThemeTest {
     }
 
     @Test
-    void classicSurfacesComposeToThePixelsOfThePreviousRelease() {
+    void classicSurfacesKeepPreviousReleasePixelsWithTransparentBorders() {
         // The previous release (3.0.4) drew a panel of 60% black straight over the world, a control fill of
-        // 53% black on the panel, a border of 50% white on the panel, a scrollbar thumb of 50% white on a
+        // 53% black on the panel, a scrollbar thumb of 50% white on a
         // track of 60% black on the panel, and a list-row hover of 19% white on the panel. These pixels are
         // those layers composed by hand over each world, rounding after every layer as the framebuffer does.
+        // Default borders are now transparent, so their pixels match the panel beneath them.
         int[][] expected = {
                 // world       panel       control     border      thumb       row hover
-                {0xFF000000, 0xFF000000, 0xFF000000, 0xFF7F7F7F, 0xFF7F7F7F, 0xFF303030},
-                {0xFFFFFFFF, 0xFF666666, 0xFF303030, 0xFFB2B2B2, 0xFF949494, 0xFF838383},
-                {0xFF87B9F0, 0xFF364A60, 0xFF19232D, 0xFF9AA4AF, 0xFF8A8E92, 0xFF5C6C7E}
+                {0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF7F7F7F, 0xFF303030},
+                {0xFFFFFFFF, 0xFF666666, 0xFF303030, 0xFF666666, 0xFF949494, 0xFF838383},
+                {0xFF87B9F0, 0xFF364A60, 0xFF19232D, 0xFF364A60, 0xFF8A8E92, 0xFF5C6C7E}
         };
         WidgetTheme classic = WidgetThemes.CLASSIC;
         for (int[] row : expected) {

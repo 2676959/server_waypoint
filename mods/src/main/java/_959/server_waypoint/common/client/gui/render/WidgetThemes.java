@@ -21,7 +21,7 @@ public final class WidgetThemes {
             .setColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND, 0xE6324353)
             .setColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND, 0xB31D2732)
             .setColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND, 0xE61F4C60)
-            .setColor(WidgetThemeVariable.BORDER, 0xFF90A5B5)
+            .setColor(WidgetThemeVariable.BORDER, 0x0090A5B5)
             .setColor(WidgetThemeVariable.FOCUS_RING, 0xFF5BC3DF)
             .setColor(WidgetThemeVariable.ACCENT, 0xFF20526A)
             .setColor(WidgetThemeVariable.ACCENT_HOVER, 0xFF28627A)
@@ -58,7 +58,7 @@ public final class WidgetThemes {
             .setColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND, 0xE6383838)
             .setColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND, 0xB3202020)
             .setColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND, 0xE6444444)
-            .setColor(WidgetThemeVariable.BORDER, 0xFFA0A0A0)
+            .setColor(WidgetThemeVariable.BORDER, 0x00A0A0A0)
             .setColor(WidgetThemeVariable.FOCUS_RING, 0xFFE0E0E0)
             .setColor(WidgetThemeVariable.ACCENT, 0xFF484848)
             .setColor(WidgetThemeVariable.ACCENT_HOVER, 0xFF606060)
@@ -114,8 +114,8 @@ public final class WidgetThemes {
             .build();
 
     /**
-     * The look of the previous release: a panel of 60% black, controls of 53% black and borders of 50%
-     * white, with no dimming of the screen, so the world shows through every surface. Popups and dialogs
+     * The surfaces of the previous release: a panel of 60% black and controls of 53% black, with
+     * transparent default borders and no screen dimming, so the world shows through every surface. Popups and dialogs
      * are as translucent as the panels, so labels under them show through. The toggle and status fills
      * are the old green, blue and red toggle colors laid over the old control fill, flattened into one
      * layer. Contrast is as low as it was on a bright world, where muted text and hovered controls fade.
@@ -134,7 +134,7 @@ public final class WidgetThemes {
             .setColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND, 0x66FFFFFF)
             .setColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND, 0x55000000)
             .setColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND, 0xCF0043A9)
-            .setColor(WidgetThemeVariable.BORDER, 0x7FFFFFFF)
+            .setColor(WidgetThemeVariable.BORDER, 0x00FFFFFF)
             .setColor(WidgetThemeVariable.FOCUS_RING, 0xFFFFFFFF)
             .setColor(WidgetThemeVariable.ACCENT, 0xFF808080)
             .setColor(WidgetThemeVariable.ACCENT_HOVER, 0xFF959595)

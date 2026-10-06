@@ -394,15 +394,15 @@ These roles apply to GUI chrome and state. A waypoint's user-selected color is d
 `WidgetThemes.DEFAULT` points to `WidgetThemes.TRANSLUCENT_DARK`, the built-in neutral grayscale
 glass palette. The screen overlay is 65% opaque and panels are 70% opaque, preserving a
 view of the world while limiting bright-scene washout. Controls use 85–90% opacity and
-lighter charcoal fills so their shape remains visible at night. Opaque gray borders and a
-brighter focus ring distinguish control boundaries, hover, and keyboard focus. Popups are
+lighter charcoal fills so their shape remains visible at night. Default borders are transparent;
+a brighter focus ring identifies keyboard focus. Popups are
 98% opaque and dialogs 99% opaque to suppress underlying labels showing through. Accent
 fills are dark gray with light text; selected rows have a stronger neutral fill. Success,
 warning, and danger use muted sage, amber, and dusty red foregrounds and backgrounds.
 Validate text and control contrast after compositing the screen, panel, and control over
 both black and white world backgrounds; checking raw RGB against black misses daylight failures.
 `WidgetThemes.MODERN_DARK` follows the same opacity progression with blue-gray surfaces,
-slate borders, and cyan focus highlights. Its accent and selected fills use dark teal to keep
+transparent default borders, and cyan focus highlights. Its accent and selected fills use dark teal to keep
 light labels readable, including the hovered accent state. Green, amber, and rose status text
 sits on darker matching fills. Both palettes are checked over black, white, and sky-blue
 world backgrounds, including status text on its matching background. Glassmorphism remains
@@ -416,8 +416,8 @@ translucent; contrast varies with the world behind the glass. Selected controls 
 preset through the editor dropdown or `WidgetThemeManager.setTheme(WidgetThemes.HIGH_CONTRAST)`;
 it does not change the default theme.
 
-`WidgetThemes.CLASSIC` reproduces the previous release (3.0.4), whose key trait is translucence:
-panels are 60% black, controls 53% black and borders 50% white, and it is more translucent than
+`WidgetThemes.CLASSIC` retains the previous release's (3.0.4) translucent surfaces:
+panels are 60% black and controls 53% black, with transparent default borders, and it is more translucent than
 Translucent Dark and Modern Dark on every surface. Nothing dims the world behind a screen. Popups, dialogs
 and scrollbar tracks are as translucent as the panels, so labels beneath a popup show through.
 Hovering and selecting are white washes (`ROW_HOVER_BACKGROUND` 19%, `SELECTION_BACKGROUND` 35%,
@@ -426,8 +426,8 @@ colors laid over the old control fill and flattened into one layer, because a to
 fill. Status text uses Minecraft's own light green, yellow and red, and the accent is a neutral gray
 that keeps white `TEXT_ON_ACCENT` readable. Contrast is as low as it was on a bright world, where muted
 text and hovered controls fade, so only the main text and the toggle labels are tested for
-readability. The `WidgetThemeTest` pixel check pins its panel, control, border, scrollbar and row-hover
-layers to the previous release's pixels. Apply it through the editor dropdown; it does not change the
+readability. The `WidgetThemeTest` pixel check pins its panel, control, scrollbar and row-hover
+layers to the previous release's pixels and checks that default borders leave panel pixels unchanged. Apply it through the editor dropdown; it does not change the
 default theme.
 
 `DIALOG_BACKGROUND` is darker and more opaque than `POPUP_BACKGROUND` because `DialogWidget`
@@ -588,7 +588,9 @@ The main base classes have distinct roles:
   click sound and run it. `onClick` is final so the two paths cannot diverge, and
   `activatesOn(keyCode)` reports whether a key would press the button. Screens route those keys
   as described in [Input](#4-input-preserve-focus-and-text-entry).
-- Extend `ShiftableScrollableWidget` when the widget has a vertically scrollable viewport.
+- Extend `ShiftableScrollableWidget` when the widget has a vertically scrollable viewport. Its
+  scrollbar track, thumb, click area, and reserved content column are 3 GUI pixels wide. Combobox,
+  dropdown-menu, and input-suggestion scrollbars use their own geometry.
 - Extend `TreeViewWidget<T>` when the content is a flattened visible view of expandable hierarchical data. Implement child lookup, expansion state, empty rendering, and row rendering; the base class handles scroll bounds, hit testing, visible-row calculation, clipping, and scrollbar drawing. A tree paints its own `PANEL_BACKGROUND` fill, which is right when nothing else paints under it, as in the theme editor's variable list. A tree on a panel that already paints that fill overrides `backgroundColor()` to return 0, as the waypoint list and the remote browser tree do on the manager's list panel: a translucent layer composited twice (60% black twice is 84%) makes the tree look darker than the panels beside it.
 
 `WaypointListWidget` supports both one-dimension and all-dimensions query scopes. Call
@@ -639,13 +641,15 @@ control even while the mouse hovers over a waypoint.
 `WaypointDetailsWidget` consumes that selection and presents every stored waypoint field plus its
 dimension/list context in a separately scrollable viewport. Keep formatted display names and
 descriptions parsed only at this render boundary, and reserve scrollbar width while wrapping so
-content does not relayout when overflow begins. Local and remote descriptions start below their
+content does not relayout when overflow begins. Empty keywords and descriptions retain their labels
+with blank values, without a placeholder. Local and remote descriptions start below their
 label. Parse their JSON before decoding literal `\n` and actual line separators through
 `TextHelper.parseDescription`, keeping styles on nested text; the same wrapped component determines
 both rendering and scroll height. Its content ignores clicks without playing a button
 sound; only the visible scrollbar accepts clicks for dragging, while the mouse wheel scrolls the
 viewport. Local and remote selections share a color row with a bordered swatch beside the saved
-hex value, reserving the swatch width during wrapping and content-height calculation.
+hex value. Its fill and outline start one GUI pixel above the text origin, matching the inline icon's
+alignment. Reserve the swatch width during wrapping and content-height calculation.
 Remote status values use `RemoteRefs.stateColor`, matching `/wp remote`: green for available,
 yellow for stale, red for unavailable, and dark gray for unauthorized; the status label stays muted.
 Its optional icon row uses the same `Icon:` label

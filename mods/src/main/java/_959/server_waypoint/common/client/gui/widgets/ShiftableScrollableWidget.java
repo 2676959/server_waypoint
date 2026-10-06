@@ -13,7 +13,7 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SCROLLBAR_TRACK;
 
 public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget {
-    public final int SCROLLBAR_WIDTH = 6;
+    public final int SCROLLBAR_WIDTH = 3;
     private double scrollY;
     private boolean scrolling;
 

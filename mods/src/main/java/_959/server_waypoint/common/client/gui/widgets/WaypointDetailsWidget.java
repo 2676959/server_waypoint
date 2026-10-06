@@ -187,14 +187,15 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
             if (swatchValue != null) {
                 drawText(context, this.textRenderer, row.text(), 0, y, row.color().getAsInt(), true);
                 int swatchX = this.textRenderer.width(row.text());
+                int swatchY = y - 1;
                 context.fill(
                         swatchX,
-                        y,
+                        swatchY,
                         swatchX + SWATCH_SIZE,
-                        y + SWATCH_SIZE,
+                        swatchY + SWATCH_SIZE,
                         0xFF000000 | swatchValue.color()
                 );
-                renderOutline(context, swatchX, y, SWATCH_SIZE, SWATCH_SIZE, getColor(BORDER));
+                renderOutline(context, swatchX, swatchY, SWATCH_SIZE, SWATCH_SIZE, getColor(BORDER));
                 textX = swatchX + SWATCH_SIZE + SWATCH_GAP;
             }
             if (iconValue != null) {
@@ -275,10 +276,7 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
         }
 
         SimpleWaypoint waypoint = new SimpleWaypoint(this.selection.waypoint());
-        Component none = Component.translatable("waypoint.details.none");
-        Component keywords = waypoint.keywords().isEmpty()
-                ? none
-                : Component.literal(String.join(", ", waypoint.keywords()));
+        Component keywords = Component.literal(String.join(", ", waypoint.keywords()));
 
         rows.add(new DetailRow(
                 parseFormattedText(waypoint.displayName()),
@@ -316,7 +314,7 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
 
     private static DetailRow descriptionDetail(String rawText) {
         Component description = rawText.isEmpty()
-                ? Component.translatable("waypoint.details.none")
+                ? Component.empty()
                 : parseDescription(rawText);
         return detail("waypoint.details.description", Component.literal("\n").append(description));
     }
