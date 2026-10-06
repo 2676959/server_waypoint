@@ -11,18 +11,8 @@ import com.mamiyaotaru.voxelmap.util.WaypointContainer;
 
 @Mixin(value = WaypointContainer.class, remap = false)
 public class VoxelMapWaypointContainerMixin {
-//    @Redirect(
-//            method = "renderWaypoints",
-//            at = @At(value = "FIELD", target = "Lcom/mamiyaotaru/voxelmap/util/Waypoint;name:Ljava/lang/String;"),
-//            remap = false,
-//            require = 0
-//    )
-//    private String sw$toUnformattedWaypointName1(Waypoint waypoint) {
-//        return SyncedWaypointName.toDisplayVoxelMapWaypointName(waypoint.name);
-//    }
-
     @Redirect(
-            method = "renderSign",
+            method = /*? if >=1.21.11 {*/ "renderSign" /*?} else {*//* "renderWaypoints" *//*?}*/,
             at = @At(value = "FIELD", target = "Lcom/mamiyaotaru/voxelmap/util/Waypoint;name:Ljava/lang/String;", opcode = Opcodes.GETFIELD),
             remap = false,
             require = 0
