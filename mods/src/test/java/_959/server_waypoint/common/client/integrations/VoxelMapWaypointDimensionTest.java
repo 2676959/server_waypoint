@@ -3,6 +3,7 @@ package _959.server_waypoint.common.client.integrations;
 
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
+import _959.server_waypoint.core.waypoint.WaypointList;
 import com.mamiyaotaru.voxelmap.VoxelConstants;
 import com.mamiyaotaru.voxelmap.VoxelMap;
 import com.mamiyaotaru.voxelmap.WaypointManager;
@@ -10,6 +11,8 @@ import com.mamiyaotaru.voxelmap.util.DimensionManager;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,6 +46,67 @@ class VoxelMapWaypointDimensionTest {
     @Test
     void waypointIsInactiveWithoutACurrentDimension() throws ReflectiveOperationException {
         assertVisibility(null, "minecraft:overworld", "overworld", false);
+    }
+
+    @Test
+    void partialSyncContinuesPastSkippedWaypointsAndListsWithoutReportingFullSuccess()
+            throws ReflectiveOperationException {
+        VoxelMap voxelMap = VoxelConstants.getVoxelMapInstance();
+        Field dimensionManager = accessibleField(VoxelMap.class, "dimensionManager");
+        Object previous = dimensionManager.get(voxelMap);
+        dimensionManager.set(voxelMap, new DimensionManager());
+        try {
+            TestWaypointManager manager = allocate(TestWaypointManager.class);
+            manager.waypoints = new ArrayList<>();
+            Method addLists = VoxelMapWaypointHelper.class.getDeclaredMethod("addLists",
+                    WaypointManager.class, String.class, List.class);
+            addLists.setAccessible(true);
+
+            assertEquals(false, addLists.invoke(null, manager, "minecraft:overworld", List.of(
+                    new WaypointList("Bases", 1, List.of(simpleWaypoint("ambiguous\u241Fname"), simpleWaypoint("Home"))),
+                    new WaypointList("ambiguous\u241Flist", 1, List.of()),
+                    new WaypointList("Mines", 1, List.of(simpleWaypoint("Mine"))))));
+            assertEquals(List.of("sw\u241FBases\u241FHome", "sw\u241FMines\u241FMine"),
+                    manager.waypoints.stream().map(waypoint -> waypoint.name).toList());
+
+            Method remove = VoxelMapWaypointHelper.class.getDeclaredMethod("removeSyncedWaypoint",
+                    WaypointManager.class, String.class, String.class, String.class);
+            remove.setAccessible(true);
+            assertEquals(false, remove.invoke(null, manager, "minecraft:the_nether", "Bases", "Home"));
+            assertEquals(true, remove.invoke(null, manager, "minecraft:overworld", "Bases", "Home"));
+            assertEquals(false, remove.invoke(null, manager, "minecraft:overworld", "Bases", "Home"));
+            assertEquals("sw\u241FMines\u241FMine", manager.waypoints.get(0).name);
+        } finally {
+            dimensionManager.set(voxelMap, previous);
+        }
+    }
+
+    private static SimpleWaypoint simpleWaypoint(String name) {
+        return new SimpleWaypoint(name, "H", 10, 64, 20, 0x123456, 0, false);
+    }
+
+    private static final class TestWaypointManager extends WaypointManager {
+        private ArrayList<Waypoint> waypoints;
+
+        @Override
+        public ArrayList<Waypoint> getWaypoints() {
+            return waypoints;
+        }
+
+        @Override
+        public void addWaypoint(Waypoint waypoint) {
+            waypoints.add(waypoint);
+        }
+
+        @Override
+        public void deleteWaypoint(Waypoint waypoint) {
+            waypoints.remove(waypoint);
+        }
+
+        @Override
+        public String getCurrentSubworldDescriptor(boolean withCodes) {
+            return "test";
+        }
     }
 
     private static void assertVisibility(String currentDimension, String waypointDimension,

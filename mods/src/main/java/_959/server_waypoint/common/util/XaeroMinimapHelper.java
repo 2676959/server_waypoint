@@ -88,21 +88,22 @@ public class XaeroMinimapHelper {
         waypointSet.add(XaerosWaypointHelper.simpleWaypointToXaerosWaypoint(simpleWaypoint, simpleWaypoint.name()));
     }
 
-    public static void replaceWaypointList(MinimapWorld minimapWorld, WaypointList waypointList) {
-        replaceWaypointList(
+    public static boolean replaceWaypointList(MinimapWorld minimapWorld, WaypointList waypointList) {
+        return replaceWaypointList(
                 minimapWorld,
                 waypointList,
                 XaerosWaypointHelper::simpleWaypointToXaerosWaypoint
         );
     }
 
-    static void replaceWaypointList(MinimapWorld minimapWorld, WaypointList waypointList,
+    static boolean replaceWaypointList(MinimapWorld minimapWorld, WaypointList waypointList,
                                     BiFunction<SimpleWaypoint, String, Waypoint> waypointFactory) {
         WaypointSet waypointSet = getOrCreateSyncedWaypointSet(minimapWorld, waypointList.name());
         if (waypointSet == null) {
-            return;
+            return false;
         }
         syncWaypointSetByWaypoints(waypointSet, waypointList, waypointFactory);
+        return true;
     }
 
     private static WaypointSet getOrCreateSyncedWaypointSet(MinimapWorld minimapWorld, String listName) {
@@ -132,12 +133,14 @@ public class XaeroMinimapHelper {
         addUniqueSyncedWaypoints(waypointSet, waypointList, waypointFactory);
     }
 
-    public static void replaceWaypointLists(MinimapWorld minimapWorld, List<WaypointList> waypointLists) {
+    public static boolean replaceWaypointLists(MinimapWorld minimapWorld, List<WaypointList> waypointLists) {
+        boolean synced = true;
         Map<String, WaypointList> waypointListsBySyncedName = new LinkedHashMap<>();
         for (WaypointList waypointList : waypointLists) {
             String syncedListName = SyncedWaypointName.formatSyncedName(waypointList.name());
             if (syncedListName == null) {
                 WaypointClientMod.LOGGER.warn("Skipping Xaero's Minimap sync for list {} because its generated name would be ambiguous.", waypointList.name());
+                synced = false;
                 continue;
             }
             waypointListsBySyncedName.putIfAbsent(syncedListName, waypointList);
@@ -161,6 +164,7 @@ public class XaeroMinimapHelper {
                 syncWaypointSetByWaypoints(waypointSet, entry.getValue());
             }
         }
+        return synced;
     }
 
     public static void removeSyncedWaypointSet(MinimapWorld minimapWorld, String waypointSetName) {
@@ -200,12 +204,14 @@ public class XaeroMinimapHelper {
         }
     }
 
-    public static void removeSyncedWaypoint(WaypointSet waypointSet, String waypointName) {
+    public static boolean removeSyncedWaypoint(WaypointSet waypointSet, String waypointName) {
+        int previousSize = waypointSet.size();
         removeWaypointsByName(waypointSet, waypointName);
         String legacySyncedName = SyncedWaypointName.formatSyncedName(waypointName);
         if (legacySyncedName != null) {
             removeWaypointsByName(waypointSet, legacySyncedName);
         }
+        return waypointSet.size() < previousSize;
     }
 
     private static List<WaypointSet> getSyncedWaypointSets(MinimapWorld minimapWorld) {

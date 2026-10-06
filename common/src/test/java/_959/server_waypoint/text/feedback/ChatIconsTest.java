@@ -84,6 +84,21 @@ class ChatIconsTest {
     }
 
     @Test
+    void staticSpecialItemsHaveRepresentativeSprites() {
+        for (String colour : List.of("white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray",
+                "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black")) {
+            assertEquals("minecraft:block/" + colour + "_wool",
+                    VanillaChatSprites.sprite(NamespacedId.parse("minecraft:" + colour + "_bed")));
+            assertEquals("minecraft:block/" + colour + "_shulker_box",
+                    VanillaChatSprites.sprite(NamespacedId.parse("minecraft:" + colour + "_shulker_box")));
+        }
+        assertEquals("minecraft:block/oak_planks", VanillaChatSprites.sprite(NamespacedId.parse("minecraft:chest")));
+        assertEquals("minecraft:block/conduit", VanillaChatSprites.sprite(NamespacedId.parse("minecraft:conduit")));
+        assertNull(VanillaChatSprites.sprite(NamespacedId.parse("minecraft:white_banner")));
+        assertNull(VanillaChatSprites.sprite(NamespacedId.parse("minecraft:player_head")));
+    }
+
+    @Test
     void tintedTexturesAndTexturesMissingFromANewerClientKeepText() {
         assertNull(VanillaChatSprites.sprite(NamespacedId.parse("minecraft:potion")));
         assertNull(VanillaChatSprites.sprite(NamespacedId.parse("minecraft:oak_leaves")));

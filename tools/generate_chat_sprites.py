@@ -2,7 +2,8 @@
 
 Usage: python3 tools/generate_chat_sprites.py oldest-client.jar [newer-client.jar ...] output.json
 The first jar's item definitions choose each texture, and every jar must contain it. Tinted
-textures, special entity models and unknown/custom items deliberately retain text-only feedback.
+textures, dynamic special models and unknown/custom items deliberately retain text-only feedback.
+Static special models use their base model's representative texture, not a rendered inventory icon.
 """
 import json
 import sys
@@ -30,6 +31,11 @@ def generate(jar, shared_names):
         kind = node.get("type", "").removeprefix("minecraft:")
         if kind == "model":
             return node
+        if kind == "special" and node.get("model", {}).get("type", "").removeprefix("minecraft:") in (
+                "bed", "chest", "shulker_box", "conduit", "shield", "copper_golem_statue"):
+            # These renderers have a static base texture. Heads and banners have dynamic skin/
+            # colour data; their template particles are unrelated to their visible appearance.
+            return {"model": node["base"]}
         if kind == "condition":
             return model(node["on_false"])
         if kind == "select" and node.get("property", "").removeprefix("minecraft:") == "display_context":

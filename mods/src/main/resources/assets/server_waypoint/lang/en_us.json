@@ -12,9 +12,17 @@
   "server_waypoint.all.added.xaeros": "All waypoints on this server have been added to Xaero's minimap successfully",
 
   "server_waypoint.modification.add.xaeros": "Waypoint %1$s has been added to Xaero's minimap",
+  "server_waypoint.modification.add.voxelmap": "Waypoint %1$s has been added to VoxelMap",
   "server_waypoint.modification.remove.xaeros": "Waypoint %1$s has been removed from Xaero's minimap",
   "server_waypoint.modification.update.xaeros": "Waypoint %1$s has been updated on Xaero's minimap",
   "server_waypoint.modification.update.voxelmap": "Waypoint %1$s has been updated on VoxelMap",
+  "server_waypoint.list.added.voxelmap": "Waypoint list \"%1$s\" has been added to VoxelMap successfully",
+  "server_waypoint.dimension.waypoint.added.voxelmap": "Waypoints in dimension %1$s have been added to VoxelMap successfully",
+  "server_waypoint.all.added.voxelmap": "All waypoints on this server have been added to VoxelMap successfully",
+  "server_waypoint.modification.remove.voxelmap": "Waypoint %1$s has been removed from VoxelMap",
+  "server_waypoint.list.removed.xaeros": "Waypoint list \"%1$s\" has been removed from Xaero's minimap",
+  "server_waypoint.list.removed.voxelmap": "Waypoint list \"%1$s\" has been removed from VoxelMap",
+  "server_waypoint.sync.incomplete": "Some waypoints could not be synced to %1$s",
   "server_waypoint.dimension.decode.fail": "Failed to decode dimension %1$s",
 
   "waypoint.empty.no_matches": "No waypoints match \"%s\".",

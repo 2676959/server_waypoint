@@ -66,11 +66,15 @@ Cross-server arrival feedback passes the destination platform's `ChatIcons` thro
 `BackendRuntime.arrivalMessage` to `RemoteScreens.arrival`, so it uses the same waypoint sprites.
 
 Chat sprites are flat textures, not rendered item models.
-`assets/server_waypoint/chat-sprites.json` contains 1,383 representative vanilla textures derived
+`assets/server_waypoint/chat-sprites.json` contains 1,437 representative vanilla textures derived
 from the 1.21.9 client item/model definitions and present in every supported newer client. Dynamic
 items use a representative frame; blocks use a face; display-context items use their GUI model.
-Textures an item tints (potions, leaves, grass, dyed leather), entity-rendered items, unmapped
-newer items, custom items, and VoxelMap icons retain initials/text. No resource pack is required.
+Static special models (beds, chests, shulker boxes, conduits, shields and copper golem statues)
+use their base model's representative texture: beds show their wool colour, chests their material,
+and shulker boxes their shell. These are flat textures, not the full inventory model silhouette.
+Textures an item tints (potions, leaves, grass, dyed leather), dynamic special models (heads and
+banners), special models without a supported flat texture, unmapped newer items, custom items,
+and VoxelMap icons retain initials/text. No resource pack is required.
 The platform factories use the blocks atlas through 1.21.10 and the separate items atlas from
 1.21.11 onward. Regenerate the mapping with `python3 tools/generate_chat_sprites.py
 <1.21.9 client.jar> <every newer supported client.jar...>

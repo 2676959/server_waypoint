@@ -13,13 +13,50 @@ import java.lang.reflect.Constructor;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class XaeroMinimapHelperTest {
     private static final String DEFAULT_SET = "gui.xaero_default";
     private static final String SYNCED_SET = "sw\u241Ftest";
     private static final String SYNCED_WAYPOINT = "sw\u241Fserver waypoint";
+
+    @Test
+    void skippedListDoesNotReportSuccessfulSync() throws ReflectiveOperationException {
+        MinimapWorld world = createMinimapWorld();
+
+        assertFalse(XaeroMinimapHelper.replaceWaypointList(world,
+                new WaypointList("ambiguous\u241Flist", 1, List.of()),
+                XaeroMinimapHelperTest::createWaypoint));
+        assertNull(world.getWaypointSet("sw\u241Fambiguous\u241Flist"));
+    }
+
+    @Test
+    void partiallySyncedDimensionDoesNotReportFullSuccess() throws ReflectiveOperationException {
+        MinimapWorld world = createMinimapWorld();
+
+        assertFalse(XaeroMinimapHelper.replaceWaypointLists(world, List.of(
+                new WaypointList("ambiguous\u241Flist", 1, List.of()),
+                new WaypointList("valid", 1, List.of()))));
+        assertNotNull(world.getWaypointSet("sw\u241Fvalid"));
+        assertTrue(XaeroMinimapHelper.replaceWaypointLists(world,
+                List.of(new WaypointList("valid", 1, List.of()))));
+    }
+
+    @Test
+    void removalReportsChangesOnceAndPreservesOtherWaypoints() throws ReflectiveOperationException {
+        WaypointSet set = WaypointSet.Builder.begin().setName(SYNCED_SET).build();
+        set.add(createWaypoint("server waypoint"));
+        set.add(createWaypoint(SYNCED_WAYPOINT));
+        set.add(createWaypoint("other"));
+
+        assertTrue(XaeroMinimapHelper.removeSyncedWaypoint(set, "server waypoint"));
+        assertFalse(XaeroMinimapHelper.removeSyncedWaypoint(set, "server waypoint"));
+        assertEquals(1, set.size());
+        assertEquals("other", set.get(0).getName());
+    }
 
     @Test
     void removingSyncedWaypointSetRemovesPlainAndLegacyWaypoints() throws ReflectiveOperationException {
