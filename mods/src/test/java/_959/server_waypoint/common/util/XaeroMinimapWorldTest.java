@@ -1,13 +1,9 @@
 package _959.server_waypoint.common.util;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import net.minecraft.SharedConstants;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.Bootstrap;
 import net.minecraft.world.level.Level;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import xaero.hud.minimap.module.MinimapSession;
 import xaero.hud.minimap.world.MinimapDimensionHelper;
@@ -18,38 +14,34 @@ import xaero.hud.minimap.world.container.MinimapWorldRootContainer;
 import xaero.hud.minimap.world.state.MinimapWorldStateUpdater;
 import xaero.hud.path.XaeroPath;
 
+import static _959.server_waypoint.common.util.TestDimensions.NETHER;
+import static _959.server_waypoint.common.util.TestDimensions.OVERWORLD;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 class XaeroMinimapWorldTest {
-    @BeforeAll
-    static void bootstrapRegistries() {
-        SharedConstants.tryDetectVersion();
-        Bootstrap.bootStrap();
-    }
-
     @Test
     void enteringNetherDoesNotResolveToStaleOverworld() throws ReflectiveOperationException {
-        assertResolvedWorld(Level.NETHER, Level.OVERWORLD, Level.NETHER, false);
+        assertResolvedWorld(NETHER, OVERWORLD, NETHER, false);
     }
 
     @Test
     void returningToOverworldDoesNotResolveToStaleNether() throws ReflectiveOperationException {
-        assertResolvedWorld(Level.OVERWORLD, Level.NETHER, Level.OVERWORLD, false);
+        assertResolvedWorld(OVERWORLD, NETHER, OVERWORLD, false);
     }
 
     @Test
     void matchingAutomaticWorldPreservesXaerosConnectedSubworld() throws ReflectiveOperationException {
-        assertResolvedWorld(Level.NETHER, Level.NETHER, Level.NETHER, true);
+        assertResolvedWorld(NETHER, NETHER, NETHER, true);
     }
 
     @Test
     void nonCurrentDimensionResolvesItsOwnWorld() throws ReflectiveOperationException {
-        assertResolvedWorld(Level.OVERWORLD, Level.OVERWORLD, Level.NETHER, false);
+        assertResolvedWorld(OVERWORLD, OVERWORLD, NETHER, false);
     }
 
     @Test
     void missingAutomaticWorldResolvesRequestedDimension() throws ReflectiveOperationException {
-        assertResolvedWorld(Level.NETHER, null, Level.NETHER, false);
+        assertResolvedWorld(NETHER, null, NETHER, false);
     }
 
     private static void assertResolvedWorld(ResourceKey<Level> clientDimension,
@@ -58,10 +50,17 @@ class XaeroMinimapWorldTest {
                                             boolean expectAutomaticWorld) throws ReflectiveOperationException {
         MinimapWorld automatic = autoDimension == null ? null : createWorld(autoDimension, "connected");
         MinimapWorld fallback = createWorld(requestedDimension, "mw$123");
-        MinimapSession session = allocate(MinimapSession.class);
+        MinimapSession session = createSession();
         MinimapWorldRootContainer root = allocate(MinimapWorldRootContainer.class);
         setField(MinimapWorldContainer.class, root, "path", XaeroPath.root("Multiplayer_test"));
-        MinimapDimensionHelper dimensionHelper = new MinimapDimensionHelper();
+        // Xaero's helper reads Level's constants, which NeoForge 1.21.9+ cannot initialize without its loader.
+        // These are the directory names it gives both dimensions.
+        MinimapDimensionHelper dimensionHelper = new MinimapDimensionHelper() {
+            @Override
+            public String getDimensionDirectoryName(ResourceKey<Level> dimension) {
+                return NETHER.equals(dimension) ? "dim%-1" : "dim%0";
+            }
+        };
         XaeroPath expectedPath = XaeroPath.root("Multiplayer_test")
                 .resolve(dimensionHelper.getDimensionDirectoryName(requestedDimension)).resolve("mw$123");
         MinimapWorldManager manager = new MinimapWorldManager(null, session) {
@@ -90,29 +89,33 @@ class XaeroMinimapWorldTest {
         setField(MinimapSession.class, session, "dimensionHelper", dimensionHelper);
         setField(MinimapSession.class, session, "worldStateUpdater", updater);
 
-        // Reproduce the interval after Minecraft changes level but before Xaero updates its path.
-        Minecraft client = allocate(Minecraft.class);
-        ClientLevel level = allocate(ClientLevel.class);
-        setField(Level.class, level, "dimension", clientDimension);
-        client.level = level;
-        Field instance = Minecraft.class.getDeclaredField("instance");
-        instance.setAccessible(true);
-        Object previous = instance.get(null);
-        instance.set(null, client);
-        try {
-            assertSame(expectAutomaticWorld ? automatic : fallback,
-                    XaeroMinimapHelper.getMinimapWorld(session, requestedDimension));
-        } finally {
-            instance.set(null, previous);
-        }
+        // The client dimension reproduces the interval after Minecraft changes level but before Xaero updates its path.
+        assertSame(expectAutomaticWorld ? automatic : fallback,
+                XaeroMinimapHelper.getMinimapWorld(session, requestedDimension, clientDimension));
     }
 
     private static MinimapWorld createWorld(ResourceKey<Level> dimension, String node)
             throws ReflectiveOperationException {
-        MinimapWorld world = allocate(MinimapWorld.class);
-        world.setDimId(dimension);
-        world.setNode(node);
-        return world;
+        //? if >= 1.21.5 {
+        Constructor<MinimapWorld> constructor = MinimapWorld.class.getDeclaredConstructor(
+                MinimapWorldContainer.class,
+                String.class,
+                ResourceKey.class
+        );
+        constructor.setAccessible(true);
+        return constructor.newInstance(null, node, dimension);
+        //?} else {
+        /*return new MinimapWorld(null, node, dimension) {
+        };
+        *///?}
+    }
+
+    private static MinimapSession createSession() throws ReflectiveOperationException {
+        //? if >= 1.21.5 {
+        return allocate(MinimapSession.class);
+        //?} else {
+        /*return allocate(TestMinimapSession.class);
+        *///?}
     }
 
     private static void setField(Class<?> owner, Object target, String name, Object value)
@@ -128,4 +131,14 @@ class XaeroMinimapWorldTest {
         field.setAccessible(true);
         return type.cast(unsafeClass.getMethod("allocateInstance", Class.class).invoke(field.get(null), type));
     }
+
+    // Xaero declares MinimapSession abstract before 1.21.5. Allocating this subclass skips the
+    // session constructor, which needs a running client.
+    //? if < 1.21.5 {
+    /*private static final class TestMinimapSession extends MinimapSession {
+        private TestMinimapSession() {
+            super(null, null, null);
+        }
+    }
+    *///?}
 }

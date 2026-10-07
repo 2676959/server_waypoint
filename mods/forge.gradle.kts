@@ -293,7 +293,13 @@ dependencies {
     val xaeros_world_map_forge: String by project
     if (project.hasProperty("xaerolib_forge")) {
         val xaerolibMinecraft = findProperty("xaerolib_forge_minecraft")?.toString() ?: minecraftVersion
-        compileOnly("xaero.lib:xaerolib-forge-$xaerolibMinecraft:${property("xaerolib_forge")}")
+        val xaerolibDependency = "xaero.lib:xaerolib-forge-$xaerolibMinecraft:${property("xaerolib_forge")}"
+        compileOnly(xaerolibDependency)
+        // Xaero's Minimap 25.3+ links its session class against XaeroLib, so tests that load it need the library.
+        // XaeroLib's runtime metadata names a newer Forge build, which would replace this target's Forge there.
+        testRuntimeOnly(xaerolibDependency) {
+            exclude("net.minecraftforge")
+        }
     }
     compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
     compileOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_forge")

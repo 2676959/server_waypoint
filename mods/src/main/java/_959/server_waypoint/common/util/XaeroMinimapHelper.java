@@ -24,6 +24,7 @@ import java.util.function.BiFunction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 import static _959.server_waypoint.common.util.DimensionKeyParser.getDimensionKey;
 
@@ -37,6 +38,12 @@ public class XaeroMinimapHelper {
     }
 
     public static MinimapWorld getMinimapWorld(MinimapSession session, ResourceKey<Level> dimKey) {
+        Level level = Minecraft.getInstance().level;
+        return getMinimapWorld(session, dimKey, level == null ? null : level.dimension());
+    }
+
+    static MinimapWorld getMinimapWorld(MinimapSession session, ResourceKey<Level> dimKey,
+                                        @Nullable ResourceKey<Level> clientDimension) {
         MinimapWorldManager manager = session.getWorldManager();
         // Xaero can change the automatic world path after receiving a server level
         // id or after an Auto connection. For the current dimension, its active
@@ -45,7 +52,7 @@ public class XaeroMinimapHelper {
         // duplicate waypoint sets. During a dimension change Minecraft can already
         // report the destination while Xaero's automatic world still points to the
         // previous dimension.
-        if (Minecraft.getInstance().level != null && dimKey.equals(Minecraft.getInstance().level.dimension())) {
+        if (dimKey.equals(clientDimension)) {
             MinimapWorld autoWorld = manager.getAutoWorld();
             if (autoWorld != null && dimKey.equals(autoWorld.getDimId())) {
                 return autoWorld;
