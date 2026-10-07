@@ -19,11 +19,6 @@ public class XaerosWorldMapWaypointMixin implements XaerosWorldMapWaypointAccess
         cir.setReturnValue(SyncedWaypointName.toDisplayXaerosWorldMapName(cir.getReturnValue()));
     }
 
-    @Inject(method = "getSetName", at = @At("RETURN"), cancellable = true, remap = false)
-    private void sw$displaySyncedWaypointSetName(CallbackInfoReturnable<String> cir) {
-        cir.setReturnValue(SyncedWaypointName.toDisplayXaerosWorldMapName(cir.getReturnValue()));
-    }
-
     @Override
     public String sw$getRawName() {
         Object original = ((Waypoint) (Object) this).getOriginal();
