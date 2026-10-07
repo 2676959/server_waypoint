@@ -81,8 +81,18 @@ public final class WaypointIconRenderer {
             push(context);
             translate(context, x, y);
             scale(context, size / 32.0F, size / 32.0F);
-            texture(context, icon.texture(), 0, 0, 0, 0, 32, 32, 32, 32);
-            pop(context);
+            //? if <= 1.21 {
+            /*// The immediate texture blit does not enable blending for texture or shader alpha.
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            *///?}
+            try {
+                texture(context, icon.texture(), 0, 0, 0, 0, 32, 32, 32, 32);
+            } finally {
+                //? if <= 1.21
+                /*RenderSystem.disableBlend();*/
+                pop(context);
+            }
         }
     }
 
