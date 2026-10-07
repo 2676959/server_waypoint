@@ -67,7 +67,9 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.NO_MOUSE;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextItemOverlayLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousItemOverlayLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scheduleTooltipAtPointer;
@@ -1183,12 +1185,12 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
             dropdown.renderPopup(context, popupMouseX, popupMouseY, delta);
         }
         this.renderFieldTooltip(context, contentMouseX, contentMouseY);
-        nextLayer(context);
+        nextItemOverlayLayer(context);
         this.swatchWidget.
         //$ render_widget_method_swap
         extractWidgetRenderState
                 (context, mouseX, mouseY, delta);
-        previousLayer(context);
+        previousItemOverlayLayer(context);
     }
 
     private boolean isMouseOverPopup(double mouseX, double mouseY) {

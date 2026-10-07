@@ -1457,3 +1457,5 @@ After a GUI change:
 - Translation keys, textures, and theme roles use their shared resource locations.
 - Stonecutter markers are balanced and replacement tokens remain in valid positions.
 - The exact active target and a relevant compatibility target compile or test successfully.
+The waypoint form's modal `SwatchWidget` uses this item-overlay pair so its background and
+controls cover the item preview on versions before 1.21.6.
