@@ -9,6 +9,7 @@ exits 0 silently when it is clean, and exits 2 on bad arguments.
 """
 from __future__ import annotations
 
+import json
 import re
 import struct
 import sys
@@ -32,6 +33,8 @@ VELOCITY_FORBIDDEN_PREFIXES = ("lang/", "assets/") + tuple(
     PREFIX + package + "/" for package in ("command", "config", "navigation", "text", "translation"))
 VELOCITY_FORBIDDEN_ENTRIES = ("SERVER_WAYPOINT_CREDITS.txt", "_959/server_waypoint/core/WaypointServerCore.class")
 BACKEND_REQUIRED_ENTRIES = ("lang/en_us.json", "SERVER_WAYPOINT_CREDITS.txt")
+MIXIN_CONFIG_SUFFIX = ".mixins.json"
+MIXIN_CLASS_LISTS = ("mixins", "client", "server")
 
 # Constant-pool entry sizes after the tag byte, except Utf8 (tag 1), whose size is in its first two bytes.
 FIXED_SIZES = {7: 2, 8: 2, 16: 2, 19: 2, 20: 2, 3: 4, 4: 4, 9: 4, 10: 4, 11: 4, 12: 4, 17: 4, 18: 4,
@@ -107,6 +110,26 @@ def class_references(data: bytes) -> set[str]:
     return {name for name in references if name.startswith(PREFIX)}
 
 
+def mixin_classes(config: bytes) -> list[str]:
+    """Class file paths a mixin config names in its `mixins`, `client` and `server` arrays."""
+    try:
+        document = json.loads(config.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"not JSON: {error}") from None
+    if not isinstance(document, dict):
+        raise ValueError("not a JSON object")
+    package = document.get("package", "")
+    if not isinstance(package, str):
+        raise ValueError("package is not a string")
+    paths = []
+    for key in MIXIN_CLASS_LISTS:
+        names = document.get(key) or []
+        if not isinstance(names, list) or not all(isinstance(name, str) for name in names):
+            raise ValueError(f"{key} is not a list of class names")
+        paths += [(f"{package}.{name}" if package else name).replace(".", "/") + ".class" for name in names]
+    return paths
+
+
 def multi_release(manifest: bytes) -> bool:
     """True when the manifest's main section declares `Multi-Release: true`, as the JVM requires."""
     attributes = []
@@ -142,6 +165,8 @@ def check_jar(path: Path, loader: str, minecraft_version: str) -> list[str]:
         entries = sorted(name for name in jar.namelist() if not name.endswith("/"))
         classes = {name: jar.read(name) for name in entries if name.endswith(".class")}
         manifest = jar.read(MANIFEST) if MANIFEST in entries else b""
+        mixin_configs = {name: jar.read(name) for name in entries
+                         if "/" not in name and name.endswith(MIXIN_CONFIG_SUFFIX)}
     present = set(entries)
     # Content rules judge each entry by its logical path, so a META-INF/versions/<n>/ copy is judged too.
     logical = {name: MULTI_RELEASE_PREFIX.sub("", name) for name in entries}
@@ -178,6 +203,12 @@ def check_jar(path: Path, loader: str, minecraft_version: str) -> list[str]:
 
     violations = [f"forbidden-entry: {name}" for name in sorted(set(forbidden))]
     violations += [f"missing-entry: {name}" for name in required if name not in present]
+    for config, data in mixin_configs.items():
+        try:
+            violations += [f"missing-mixin-class: {name} (named by {config})"
+                           for name in mixin_classes(data) if name not in present]
+        except ValueError as error:
+            violations.append(f"unreadable-mixin-config: {config} ({error})")
     reported = set()
     for entry, data in classes.items():
         try:

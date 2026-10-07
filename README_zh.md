@@ -22,7 +22,7 @@
 4.0.0 的更新内容见[更新日志（英文）](CHANGELOG.md)。
 
 ## 主要功能
-- 从服务端自动同步路径点，包括同步到 Xaero 小地图和 VoxelMap（Fabric）。
+- 从服务端自动同步路径点，包括同步到 Xaero 小地图和 VoxelMap（支持的版本见下文）。
 - 自定义路径点渲染，标记可显示缩写、物品图标或 VoxelMap 图标。
 - 允许玩家通过图形界面（需要安装客户端）和可点击的聊天命令（只需安装服务器）管理路径点。
 - 服务端导航：用指南针、地图、Boss 栏、动作栏或悬浮文字引导玩家前往路径点，无需在客户端安装本模组。
@@ -41,7 +41,7 @@
   - [LuckPerms](https://modrinth.com/plugin/luckperms)
   - [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap)
   - [Xaero's World Map](https://modrinth.com/mod/xaeros-world-map)：在其右键菜单中加入本模组的选项
-  - [VoxelMap](https://modrinth.com/mod/voxelmap-updated)（Fabric）
+  - [VoxelMap](https://modrinth.com/mod/voxelmap-updated)（Fabric；Forge 1.21.11、26.1-26.1.2 和 26.2；NeoForge 1.21.2-1.21.4、1.21.11、26.1-26.1.2、26.2 和 26.3）
   - [Mod Menu](https://modrinth.com/mod/modmenu)（Fabric）：从模组列表打开客户端设置
   - [Velocity](https://papermc.io/software/velocity)：仅[跨服务器传送](#跨服务器传送配置)需要
 
@@ -447,7 +447,7 @@ Paper、Folia、Purpur：
   - **背景不透明度**：标记背景和图标的不透明度，从 `0`（透明）到 `255`（不透明）。默认值：`128`。
   - **局部路径点范围**：可见范围为局部的路径点只在此区块数范围内绘制，范围 `0` 到 `1024`；全局路径点始终绘制。默认值：`12` 区块。
 - #### 地图模组
-  所有加载器都支持Xaero的小地图，Fabric 还支持 VoxelMap。受支持但未安装的地图模组会显示为未安装。
+  所有加载器都支持Xaero的小地图。VoxelMap 支持 Fabric、Forge 1.21.11、26.1-26.1.2 和 26.2，以及 NeoForge 1.21.2-1.21.4、1.21.11、26.1-26.1.2、26.2 和 26.3。受支持但未安装的地图模组会显示为未安装。
   - **自动同步**：随服务器上的变化，保持本模组添加到地图模组的路径点为最新。默认值：`开`。
   - **立即同步**：确认后，用服务器当前的路径点替换本模组添加的路径点。进入世界且路径点同步完成后可用。
 

@@ -1,4 +1,4 @@
-//? if fabric {
+//? if voxelmap {
 package _959.server_waypoint.mixin.voxelmap;
 
 import _959.server_waypoint.common.util.SyncedWaypointName;

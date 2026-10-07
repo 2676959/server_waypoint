@@ -74,6 +74,8 @@ allprojects {
                 else -> error("Cannot determine the Modrinth loader for ${project.path}")
             }
 
+            // VoxelMap-Updated publishes builds only for some loaders and Minecraft versions; each is pinned per target.
+            val voxelMapPinned = project.hasProperty("voxelmap_$targetLoader")
             val modName = property("mod_name") as String
             val modVersion = property("mod_version") as String
             val modrinthProjectId = property("modrinth_project_id") as String
@@ -113,13 +115,12 @@ allprojects {
                     "paper" -> listOf("paper", "purpur", "folia")
                     else -> listOf(targetLoader)
                 })
-                dependencies.set(when (targetLoader) {
+                val loaderDependencies = when (targetLoader) {
                     "fabric" -> listOf(
                         ModDependency("P7dR8mSH", "required"),
                         ModDependency("Vebnzrzj", "optional"),
                         ModDependency("1bokaNcj", "optional"),
                         ModDependency("NcUtCpym", "optional"),
-                        ModDependency("wkzK5379", "optional"),
                     )
                     "forge", "neoforge" -> listOf(
                         ModDependency("1bokaNcj", "optional"),
@@ -127,7 +128,10 @@ allprojects {
                     )
                     "paper", "velocity" -> listOf(ModDependency("Vebnzrzj", "optional"))
                     else -> emptyList()
-                })
+                }
+                // VoxelMap-Updated
+                val voxelMapDependency = if (voxelMapPinned) listOf(ModDependency("wkzK5379", "optional")) else emptyList()
+                dependencies.set(loaderDependencies + voxelMapDependency)
                 detectLoaders.set(false)
                 autoAddDependsOn.set(false)
                 debugMode.set(providers.gradleProperty("modrinthDebug").map { it.toBoolean() }.orElse(false))

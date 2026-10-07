@@ -1,6 +1,7 @@
-//? if fabric {
+//? if voxelmap {
 package _959.server_waypoint.common.client.integrations;
 
+import _959.server_waypoint.common.MinecraftTestRuntime;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
@@ -15,7 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.Bootstrap;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,8 +27,18 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class VoxelMapWaypointDimensionTest {
     @BeforeAll
     static void bootstrapRegistries() {
-        SharedConstants.tryDetectVersion();
-        Bootstrap.bootStrap();
+        try {
+            SharedConstants.tryDetectVersion();
+            Bootstrap.bootStrap();
+        } catch (Throwable bootstrapFailure) {
+            // Forge-family runtimes cannot bootstrap Minecraft from a plain JUnit run; see ModMessageSenderTest.
+            Assumptions.abort("Minecraft could not be bootstrapped in this test runtime: " + bootstrapFailure);
+        }
+    }
+
+    @BeforeEach
+    void requireRegistries() {
+        MinecraftTestRuntime.assumeEntityTypesAreRegistered();
     }
 
     @Test

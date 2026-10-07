@@ -1,5 +1,5 @@
 //~ resource_location_import
-//? if fabric {
+//? if voxelmap {
 package _959.server_waypoint.common.client.gui.render;
 
 import _959.server_waypoint.common.client.integrations.VoxelMapIconIds;

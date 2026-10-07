@@ -43,7 +43,7 @@ A major release: navigation that works without the client mod, waypoint icons, u
 
 ### Map mods
 
-- **VoxelMap** (Fabric): server waypoints sync to VoxelMap. Its waypoint list marks them with a sync icon, and editing one opens Server Waypoint's manager.
+- **VoxelMap** (Fabric; Forge 1.21.11, 26.1-26.1.2 and 26.2; NeoForge 1.21.2-1.21.4, 1.21.11, 26.1-26.1.2, 26.2 and 26.3): server waypoints sync to VoxelMap. Its waypoint list marks them with a sync icon, and editing one opens Server Waypoint's manager.
 - **Upload:** `/wp upload <xaero|voxelmap>` imports waypoints from the map mod on your client. Add `force local` to overwrite conflicts with your copy, or `force local delete` to also remove what your map doesn't have. It also works in singleplayer and for the host of a LAN world. Uploading needs level 2 (`upload`) and deleting needs level 4 (`uploadDelete`).
 - **Xaero's World Map:** right-click the map to add a waypoint to the server at that spot, or right-click a waypoint to add it to the server or edit its server copy.
 - Xaero's Minimap and VoxelMap show synced sets and waypoints under their server names.
