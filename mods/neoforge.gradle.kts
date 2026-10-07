@@ -176,6 +176,13 @@ dependencies {
         runtimeOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_neoforge")
     }
 
+    if (project.hasProperty("voxelmap_neoforge")) {
+        val voxelmap_neoforge: String by project
+        // Use Modrinth version IDs because VoxelMap version numbers can collide across loaders.
+        compileOnly("maven.modrinth:voxelmap-updated:$voxelmap_neoforge")
+        runtimeOnly("maven.modrinth:voxelmap-updated:$voxelmap_neoforge")
+    }
+
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

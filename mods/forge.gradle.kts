@@ -305,6 +305,13 @@ dependencies {
     compileOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_forge")
     testImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
 
+    if (project.hasProperty("voxelmap_forge")) {
+        val voxelmap_forge: String by project
+        // Use Modrinth version IDs because VoxelMap version numbers can collide across loaders.
+        compileOnly("maven.modrinth:voxelmap-updated:$voxelmap_forge")
+        runtimeOnly("maven.modrinth:voxelmap-updated:$voxelmap_forge")
+    }
+
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
