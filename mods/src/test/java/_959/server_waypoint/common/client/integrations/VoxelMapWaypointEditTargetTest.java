@@ -2,6 +2,7 @@
 package _959.server_waypoint.common.client.integrations;
 
 import _959.server_waypoint.common.util.SyncedWaypointName;
+import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
@@ -11,6 +12,8 @@ import _959.server_waypoint.util.NamespacedId;
 import com.mamiyaotaru.voxelmap.util.DimensionContainer;
 import com.mamiyaotaru.voxelmap.util.Waypoint;
 import java.nio.file.Path;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.TreeSet;
 import org.junit.jupiter.api.Test;
@@ -37,6 +40,48 @@ class VoxelMapWaypointEditTargetTest {
         handler.invoke(new VoxelMapGuiWaypointsMixin(), waypoint("Local home", "overworld"), callback);
 
         assertFalse(callback.isCancelled());
+    }
+
+    @Test
+    void staleSyncedEditContinuesThroughVoxelMapsOwnEditor() throws ReflectiveOperationException {
+        assertNativeEditContinues(waypoint("sw\u241FBases\u241FMissing", "the_nether"));
+    }
+
+    @Test
+    void ambiguousSyncedEditContinuesThroughVoxelMapsOwnEditor() throws ReflectiveOperationException {
+        assertNativeEditContinues(waypoint("sw\u241FBases\u241FHome", "overworld", "the_nether"));
+    }
+
+    private void assertNativeEditContinues(Waypoint selected) throws ReflectiveOperationException {
+        // Skip the client's renderer/network constructor, but use a fully initialized real waypoint store.
+        Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+        Field unsafeField = unsafeClass.getDeclaredField("theUnsafe");
+        unsafeField.setAccessible(true);
+        WaypointClientMod client = (WaypointClientMod) unsafeClass.getMethod("allocateInstance", Class.class)
+                .invoke(unsafeField.get(null), WaypointClientMod.class);
+        WaypointFilesManagerCore files = files();
+        for (Field field : WaypointFilesManagerCore.class.getDeclaredFields()) {
+            if (!Modifier.isStatic(field.getModifiers())) {
+                field.setAccessible(true);
+                field.set(client, field.get(files));
+            }
+        }
+        Field instance = WaypointClientMod.class.getDeclaredField("INSTANCE");
+        instance.setAccessible(true);
+        Object previous = instance.get(null);
+        try {
+            instance.set(null, client);
+            var handler = VoxelMapGuiWaypointsMixin.class.getDeclaredMethod(
+                    "sw$redirectEditGui", Waypoint.class, CallbackInfo.class);
+            handler.setAccessible(true);
+            CallbackInfo callback = new CallbackInfo("editWaypoint", true);
+
+            handler.invoke(new VoxelMapGuiWaypointsMixin(), selected, callback);
+
+            assertFalse(callback.isCancelled(), "An unresolved marker must not silently swallow the native Edit action");
+        } finally {
+            instance.set(null, previous);
+        }
     }
 
     @Test

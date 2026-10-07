@@ -44,8 +44,8 @@ public class VoxelMapGuiWaypointsMixin {
                         target.listDisplayName(),
                         target.waypoint()
                 ));
+                ci.cancel();
             }
-            ci.cancel();
         }
     }
 }
