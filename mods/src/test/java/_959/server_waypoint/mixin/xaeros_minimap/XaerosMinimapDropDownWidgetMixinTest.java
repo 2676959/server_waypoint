@@ -4,11 +4,66 @@ import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
+import java.io.InputStream;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AnnotationNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodInsnNode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class XaerosMinimapDropDownWidgetMixinTest {
+    @Test
+    void configuredTargetCanApplyTheBackgroundHookToThePinnedXaeroBuild() throws Exception {
+        ClassNode mixin = new ClassNode();
+        try (InputStream bytes = XaerosMinimapDropDownWidgetMixin.class.getResourceAsStream(
+                "XaerosMinimapDropDownWidgetMixin.class")) {
+            assertNotNull(bytes);
+            new ClassReader(bytes).accept(mixin, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+        }
+        AnnotationNode annotation = mixin.invisibleAnnotations.stream()
+                .filter(value -> value.desc.equals("Lorg/spongepowered/asm/mixin/Mixin;"))
+                .findFirst().orElseThrow();
+        String target = null;
+        for (int i = 0; i < annotation.values.size(); i += 2) {
+            if (annotation.values.get(i).equals("targets")) {
+                target = (String) ((java.util.List<?>) annotation.values.get(i + 1)).get(0);
+            }
+        }
+        assertNotNull(target);
+        ClassNode dropdown = new ClassNode();
+        try (InputStream bytes = getClass().getClassLoader().getResourceAsStream(target.replace('.', '/') + ".class")) {
+            assertNotNull(bytes, "The configured Xaero dropdown target is absent: " + target);
+            new ClassReader(bytes).accept(dropdown, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+        }
+        String optionType = Type.getDescriptor(String.class);
+        String componentType = Type.getDescriptor(Component.class);
+        boolean capturesOption = false;
+        boolean fillsBackground = false;
+        for (var method : dropdown.methods) {
+            if (!method.name.equals("drawSlot")) {
+                continue;
+            }
+            for (Type argument : Type.getArgumentTypes(method.desc)) {
+                capturesOption |= argument.getDescriptor().equals(optionType)
+                        || argument.getDescriptor().equals(componentType);
+            }
+            for (var instruction : method.instructions) {
+                if (instruction instanceof MethodInsnNode call
+                        && call.owner.startsWith("net/minecraft/client/gui/GuiGraphics")
+                        && call.desc.equals("(IIIII)V")) {
+                    fillsBackground = true;
+                }
+            }
+        }
+        assertTrue(capturesOption, "drawSlot has no supported option argument for the name hook");
+        assertTrue(fillsBackground, "drawSlot no longer fills the background targeted by the color hook");
+    }
+
     @Test
     void stringOptionsCaptureOwnershipBeforeRemovingMarkerAndResetForPersonalOptions() throws Exception {
         XaerosMinimapDropDownWidgetMixin mixin = new XaerosMinimapDropDownWidgetMixin();

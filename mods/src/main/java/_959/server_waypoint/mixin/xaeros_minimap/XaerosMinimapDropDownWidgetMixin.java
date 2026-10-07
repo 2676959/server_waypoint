@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-//? if >= 1.21.11 || (forge && = 1.20.1) || (neoforge && = 1.21.3) {
+//? if >= 1.21.11 || (forge && (= 1.20.1 || (>= 1.21.3 && <= 1.21.5))) || (neoforge && (= 1.20.4 || (>= 1.21 && <= 1.21.5))) {
 @Pseudo
 @Mixin(targets = "xaero.lib.client.gui.widget.dropdown.DropDownWidget", remap = false)
 //?} else {

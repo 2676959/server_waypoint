@@ -311,6 +311,7 @@ dependencies {
     compileOnly("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
     compileOnly("maven.modrinth:xaeros-world-map:$xaeros_world_map_forge")
     testImplementation("maven.modrinth:xaeros-minimap:$xaeros_minimap_forge")
+    testImplementation("maven.modrinth:xaeros-world-map:$xaeros_world_map_forge")
 
     if (project.hasProperty("voxelmap_forge")) {
         val voxelmap_forge: String by project
@@ -476,6 +477,7 @@ artifacts {
 }
 
 tasks.test {
+    systemProperty("server_waypoint.test.forge_loader", forge_loader)
     useJUnitPlatform()
 }
 
