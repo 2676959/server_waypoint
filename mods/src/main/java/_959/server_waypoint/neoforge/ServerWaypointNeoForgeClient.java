@@ -138,6 +138,9 @@ public class ServerWaypointNeoForgeClient {
         }
         clientInitialized = true;
         ClientConfig.isXaerosMinimapLoaded = ModList.get().isLoaded("xaerominimap");
+        //? if voxelmap {
+        ClientConfig.isVoxelMapLoaded = ModList.get().isLoaded("voxelmap");
+        //?}
         WaypointClientMod.createInstance(net.minecraft.client.Minecraft.getInstance(), FMLPaths.GAMEDIR.get(), FMLPaths.CONFIGDIR.get());
         OptimizedWaypointRenderer.init();
     }

@@ -58,7 +58,7 @@ class IntegratedWorldMapModSyncTest {
                 ClientWaypointSyncEvent.allSynced(), null));
     }
 
-    //? if fabric {
+    //? if voxelmap {
     @Test
     void initialSyncEventDoesNotStartVoxelMapFullSync() throws ReflectiveOperationException {
         setStatic(ClientConfig.class, "isXaerosMinimapLoaded", false);

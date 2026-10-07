@@ -1,5 +1,5 @@
 //~ gui_graphics_26
-//? if fabric {
+//? if voxelmap {
 package _959.server_waypoint.mixin.voxelmap;
 
 import _959.server_waypoint.common.client.gui.render.DrawContextHelper;

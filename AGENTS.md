@@ -52,6 +52,11 @@ Projects "paper" and "mods" are independent projects to each other.
 
 Configured in the `stonecutter { ... }` blocks under `mods/*.gradle.kts`.
 
+## Constants
+
+- `fabric`, `neoforge`, `forge`: the target's loader, from `constants.match(loader, "fabric", "neoforge", "forge")`.
+- `voxelmap`: true when the target's `gradle.properties` pins a VoxelMap-Updated build (`voxelmap_<loader>`). It gates the VoxelMap integration, its mixins and tests, and the build scripts use the same property for loader metadata and packaging.
+
 ## Swaps
 
 - `render_widget_method_swap`: `extractWidgetRenderState` when `current.version >=26`; otherwise `renderWidget`.
