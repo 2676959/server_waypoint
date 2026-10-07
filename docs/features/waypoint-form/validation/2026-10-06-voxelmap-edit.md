@@ -15,9 +15,10 @@ The list display name is also passed to the form.
 The injection now runs at `editWaypoint` HEAD, before VoxelMap marks its native
 edit flow active. The `editWaypoint(Waypoint)` target was verified using `javap`
 against all 14 configured Fabric VoxelMap dependency versions. Local waypoints
-continue through the native VoxelMap editor. Tracked markers with missing or
-ambiguous cached server targets stay on the VoxelMap list and cannot open a
-local editor for the marker.
+continue through the native VoxelMap editor. The October 6 implementation kept
+tracked markers with missing or ambiguous cached server targets on the list.
+The [October 7 mixin fixes](2026-10-07-map-mixin-fixes.md) let those unresolved
+markers continue through VoxelMap's native editor instead of swallowing Edit.
 
 ## Verification
 
