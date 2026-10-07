@@ -1066,6 +1066,8 @@ Use `nextItemOverlayLayer`/`previousItemOverlayLayer` for marks drawn over GUI i
 server rail badges. On 1.21.6 and later both pairs start a new render stratum, but before 1.21.6
 `nextLayer` moves drawing up by only 1 in z while vanilla draws GUI item models near z 150;
 `nextItemOverlayLayer` translates 200, the depth vanilla uses for item stack counts.
+The waypoint form's modal `SwatchWidget` uses this item-overlay pair so its background and
+controls cover the item preview on versions before 1.21.6.
 
 #### 4. Input: preserve focus and text entry
 
@@ -1286,6 +1288,18 @@ Vertical popup choices retain their logical top-to-bottom order when opening upw
 
 `WaypointIconRenderer.resolve()` converts a stored ID to an item stack, a packaged VoxelMap texture, or the initials fallback on the client thread. Use `drawForWaypoint()` for saved waypoint icons in local and remote rows, details, and the add/edit preview; pass the waypoint RGB or the form's selected color. It leaves item icons unchanged and multiplies VoxelMap texture pixels by that color. The picker catalog lists icon IDs and has no waypoint color to apply. Use `drawScaledWorldItem()` for an in-world item and `drawScaledVoxelMap()` for an in-world VoxelMap texture. Both use the waypoint background alpha setting and become opaque for the waypoint whose hover details are shown; GUI icons remain opaque. The VoxelMap tint matches its in-world rendering. Before Minecraft 1.21.6, the immediate draw uses a scoped shader color and alpha; on Fabric through Minecraft 1.21, `WaypointBlockItemAlphaMixin` also replaces the vanilla cutout block sheet with the translucent block sheet within that draw scope when alpha is below 255, because the cutout sheet disables blending. Ordinary GUI icons and fully opaque world icons retain their original render types; on newer versions, item render states carry a scoped premultiplied tint to their atlas or oversized-item blits while VoxelMap textures use a colored GUI blit. The world marker stacks either icon above its colored initials badge, with both centered horizontally; the original badge stays at its projected position. The 16×16 icon background is temporarily disabled with `DRAW_ICON_BACKGROUND` for comparison testing; the initials badge keeps its colored background. Neither part has an outline. Use the full stacked bounds for projection culling, and let either visible part of the stack trigger the existing name and distance hover without making the gap hoverable. Expand the name at the colored badge's position and put the distance below it, leaving the icon above. Keep the stored ID when resolution falls back to initials. World rendering caches the resolved handle in per-waypoint state and clears it when the waypoint or scene is removed. Re-resolve after resource or scene rebuild so resource-pack changes are reflected.
 
+Through Minecraft 1.21, VoxelMap texture draws explicitly enable standard alpha blending and
+disable it after the immediate blit. The vanilla uncolored texture blit does not configure blending,
+so shader alpha and transparent image pixels otherwise depend on the previous draw's blend state.
+This applies to world markers and GUI previews; later GUI texture pipelines configure blending.
+
+VoxelMap resource paths follow the configured dependency's layout: before Minecraft 1.21.11,
+`voxelmap:star` resolves to `voxelmap:images/waypoints/waypointstar.png`; from 1.21.11 onward,
+it resolves to `voxelmap:images/waypoints/selectable/star.png`. Both `voxelmap:waypoint` and
+`voxelmap:point` use the default image (`waypoint.png` in the earlier layout, `selectable/point.png`
+in the newer layout). Keep this version selection in the shared resolver so the picker, forms,
+lists, details, and world markers all use the same resource handle.
+
 ## Widget render entry points
 
 Minecraft `AbstractWidget` has two render layers. Their names differ by Minecraft version, but their responsibilities are consistent.
@@ -1457,5 +1471,3 @@ After a GUI change:
 - Translation keys, textures, and theme roles use their shared resource locations.
 - Stonecutter markers are balanced and replacement tokens remain in valid positions.
 - The exact active target and a relevant compatibility target compile or test successfully.
-The waypoint form's modal `SwatchWidget` uses this item-overlay pair so its background and
-controls cover the item preview on versions before 1.21.6.

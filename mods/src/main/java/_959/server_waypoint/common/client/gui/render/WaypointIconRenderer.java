@@ -52,11 +52,16 @@ public final class WaypointIconRenderer {
             if (!WaypointIconPolicy.isKnownVoxelMapIcon(id)) {
                 return new ResolvedIcon(Kind.INITIALS, id, null, null);
             }
-            String suffix = id.path().equals("waypoint") ? "point" : id.path();
+            String suffix = id.path();
+            //? if >=1.21.11 {
+            String path = "images/waypoints/selectable/" + (suffix.equals("waypoint") ? "point" : suffix) + ".png";
+            //?} else {
+            /*String path = "images/waypoints/waypoint"
+                    + (suffix.equals("waypoint") || suffix.equals("point") ? "" : suffix) + ".png";
+            *///?}
             //$ resource_location_type_swap
             Identifier
-            texture = ResourceLocationHelper.mcId("voxelmap",
-                    "images/waypoints/selectable/" + suffix + ".png");
+            texture = ResourceLocationHelper.mcId("voxelmap", path);
             return Minecraft.getInstance().getResourceManager().getResource(texture).isPresent()
                     ? new ResolvedIcon(Kind.VOXELMAP, id, null, texture)
                     : new ResolvedIcon(Kind.INITIALS, id, null, null);
