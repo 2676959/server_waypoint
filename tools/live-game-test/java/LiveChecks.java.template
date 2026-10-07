@@ -1,0 +1,1160 @@
+import _959.server_waypoint.common.client.WaypointClientMod;
+import _959.server_waypoint.common.server.WaypointServerMod;
+import _959.server_waypoint.core.waypoint.*;
+import _959.server_waypoint.util.NamespacedId;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.*;
+import net.minecraft.world.level.*;
+import net.minecraft.world.level.levelgen.*;
+
+import java.lang.reflect.*;
+import java.nio.file.*;
+import java.util.*;
+import java.util.concurrent.*;
+
+public class LiveChecks {
+    static Path home;
+    static Path result;
+    static Minecraft mc;
+
+    public static void start(String dir, String op, String resultFile) {
+        home = Path.of(dir);
+        result = Path.of(resultFile);
+        mc = Minecraft.getInstance();
+        Thread t =
+                new Thread(
+                        () -> {
+                            try {
+                                run(op);
+                                log("PASS " + op);
+                            } catch (Throwable e) {
+                                try {
+                                    java.io.StringWriter s = new java.io.StringWriter();
+                                    e.printStackTrace(new java.io.PrintWriter(s));
+                                    writeResult("FAIL\n" + s);
+                                } catch (Exception ignored) {
+                                }
+                            }
+                        },
+                        "SW live verification");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    public static void quit() {
+        Minecraft client = Minecraft.getInstance();
+        client.execute(client::stop);
+    }
+
+    static void writeResult(String state) throws Exception {
+        Path temp = result.resolveSibling(result.getFileName() + ".writing");
+        Files.writeString(temp, state);
+        Files.move(temp, result, StandardCopyOption.ATOMIC_MOVE);
+    }
+
+    static Screen screen() {
+        return GameApi.screen(mc);
+    }
+
+    static void log(String s) throws Exception {
+        Files.writeString(
+                home.resolve("events.log"),
+                s + "\n",
+                StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND);
+        System.out.println("SW_LIVE " + s);
+    }
+
+    interface Task {
+        void run() throws Exception;
+    }
+
+    static void client(Task task) throws Exception {
+        CompletableFuture<Void> f = new CompletableFuture<>();
+        mc.execute(
+                () -> {
+                    try {
+                        task.run();
+                        f.complete(null);
+                    } catch (Throwable e) {
+                        f.completeExceptionally(e);
+                    }
+                });
+        f.get(120, TimeUnit.SECONDS);
+    }
+
+    static void server(Task task) throws Exception {
+        CompletableFuture<Void> f = new CompletableFuture<>();
+        mc.getSingleplayerServer()
+                .execute(
+                        () -> {
+                            try {
+                                task.run();
+                                f.complete(null);
+                            } catch (Throwable e) {
+                                f.completeExceptionally(e);
+                            }
+                        });
+        f.get(120, TimeUnit.SECONDS);
+    }
+
+    static void require(boolean b, String s) {
+        if (!b) throw new AssertionError(s);
+    }
+
+    static Object get(Object o, String n) throws Exception {
+        for (Class<?> c = o.getClass(); c != null; c = c.getSuperclass()) {
+            try {
+                Field f = c.getDeclaredField(n);
+                f.setAccessible(true);
+                return f.get(o);
+            } catch (NoSuchFieldException e) {
+            }
+        }
+        throw new NoSuchFieldException(n);
+    }
+
+    static void set(Object o, String n, Object v) throws Exception {
+        for (Class<?> c = o.getClass(); c != null; c = c.getSuperclass()) {
+            try {
+                Field f = c.getDeclaredField(n);
+                f.setAccessible(true);
+                f.set(o, v);
+                return;
+            } catch (NoSuchFieldException e) {
+            }
+        }
+        throw new NoSuchFieldException(n);
+    }
+
+    static Object call(Object o, String name, Object... args) throws Exception {
+        for (Class<?> c = o.getClass(); c != null; c = c.getSuperclass())
+            for (Method m : c.getDeclaredMethods())
+                if (m.getName().equals(name) && m.getParameterCount() == args.length) {
+                    m.setAccessible(true);
+                    return m.invoke(o, args);
+                }
+        throw new NoSuchMethodException(name);
+    }
+
+    static SimpleWaypoint wp(String name) {
+        return new SimpleWaypoint(
+                name,
+                "Fancy " + name,
+                "FX",
+                new WaypointPos(31, 75, -42),
+                0x33AA55,
+                135,
+                true,
+                List.of("alpha", "beta"),
+                "Preserve full metadata",
+                NamespacedId.parse("minecraft:diamond"));
+    }
+
+    static String value(Object screen, String field) throws Exception {
+        return ((net.minecraft.client.gui.components.EditBox) get(screen, field)).getValue();
+    }
+
+    static void text(Object screen, String field, String v) throws Exception {
+        ((net.minecraft.client.gui.components.EditBox) get(screen, field)).setValue(v);
+    }
+
+    static void click(Screen screen, Object obj) throws Exception {
+        net.minecraft.client.gui.components.AbstractWidget b =
+                (net.minecraft.client.gui.components.AbstractWidget) obj;
+        require(b.active && b.visible, "button inactive " + b.getMessage().getString());
+        require(GameApi.click(screen, b), "click not handled " + b.getMessage().getString());
+    }
+
+    static void assertForm(Screen screen, String dim, String name) throws Exception {
+        require(
+                screen instanceof _959.server_waypoint.common.client.gui.screens.WaypointEditScreen,
+                "wrong screen " + screen);
+        require(get(screen, "dimensionName").equals(dim), "wrong edit dimension");
+        require(get(screen, "listName").equals("Bases"), "wrong list identity");
+        require(get(screen, "listDisplayName").equals("Display Bases"), "wrong list label");
+        require(value(screen, "nameEditBox").equals(name), "name not preserved");
+        require(
+                value(screen, "displayNameEditBox").equals("Fancy " + name),
+                "display name not preserved");
+        require(value(screen, "initialsEditBox").equals("FX"), "initials not preserved");
+        require(
+                value(screen, "descriptionEditBox").equals("Preserve full metadata"),
+                "description not preserved");
+        require(
+                value(screen, "keywordsEditBox").contains("alpha")
+                        && value(screen, "keywordsEditBox").contains("beta"),
+                "keywords not preserved");
+        require(
+                call(get(screen, "iconPicker"), "getSelectedIcon")
+                        .equals(NamespacedId.parse("minecraft:diamond")),
+                "icon not preserved");
+        require(screen.isPauseScreen(), "idle editor not pausing");
+    }
+
+    static SimpleWaypoint saved(String dim, String name) {
+        return WaypointServerMod.getInstance()
+                .getWaypointFileManager(dim)
+                .getWaypointListByName("Bases")
+                .getWaypointByName(name);
+    }
+
+    static void waitCached(String dimension, String name, boolean present) throws Exception {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(20);
+        boolean[] matched = new boolean[1];
+        while (System.nanoTime() < deadline) {
+            client(
+                    () ->
+                            matched[0] =
+                                    (_959.server_waypoint.common.client.integrations
+                                                            .XaerosWorldMapWaypointHelper
+                                                            .resolveSyncedEditTarget(
+                                                                    dimension,
+                                                                    _959.server_waypoint.common.util
+                                                                            .SyncedWaypointName
+                                                                            .formatSyncedName(
+                                                                                    "Bases"),
+                                                                    name,
+                                                                    WaypointClientMod.getInstance())
+                                                    != null)
+                                            == present);
+            if (matched[0]) {
+                return;
+            }
+            Thread.sleep(50);
+        }
+        throw new AssertionError("Client cache did not receive " + dimension + "/Bases/" + name);
+    }
+
+    static void waitScreen(Screen prev) throws Exception {
+        long end = System.currentTimeMillis() + 12000;
+        while (screen() != prev && System.currentTimeMillis() < end) Thread.sleep(50);
+        require(screen() == prev, "save did not receive successful response; screen=" + screen());
+    }
+
+    static void waitXaeroWorld() throws Exception {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+        boolean[] ready = new boolean[1];
+        while (System.nanoTime() < deadline) {
+            client(
+                    () -> {
+                        var session =
+                                _959.server_waypoint.common.util.XaeroMinimapHelper
+                                        .getMinimapSession();
+                        ready[0] =
+                                session != null
+                                        && session.getWorldManager().getCurrentWorld() != null;
+                    });
+            if (ready[0]) {
+                return;
+            }
+            Thread.sleep(50);
+        }
+        throw new AssertionError("Xaero did not establish the active waypoint world");
+    }
+
+    static void run(String op) throws Exception {
+        if (op.equals("create")) {
+            client(() -> GameApi.create(mc, screen()));
+            long end = System.currentTimeMillis() + 120000;
+            while ((mc.player == null
+                            || mc.level == null
+                            || WaypointClientMod.getNetworkState()
+                                    != WaypointClientMod.ClientNetworkState.SYNC_FINISHED)
+                    && System.currentTimeMillis() < end) Thread.sleep(250);
+            require(
+                    mc.player != null
+                            && mc.level != null
+                            && WaypointClientMod.getNetworkState()
+                                    == WaypointClientMod.ClientNetworkState.SYNC_FINISHED,
+                    "integrated world did not finish sync");
+            client(
+                    () ->
+                            _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                    mc, null));
+            waitXaeroWorld();
+            log(
+                    "WORLD playerDim="
+                            + mc.level.dimension()
+                            + " transport="
+                            + WaypointClientMod.getNetworkState());
+        } else if (op.equals("seed")) {
+            client(
+                    () ->
+                            _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                    mc, null));
+            server(
+                    () -> {
+                        WaypointServerMod s = WaypointServerMod.getInstance();
+                        for (String dim : List.of("minecraft:overworld", "minecraft:the_nether"))
+                            for (String name : List.of("map-fixture", "voxel-fixture"))
+                                require(
+                                        s.addWaypoint(
+                                                        dim,
+                                                        "Bases",
+                                                        "Display Bases",
+                                                        wp(name),
+                                                        r -> {})
+                                                .status()
+                                                .name()
+                                                .equals("ADDED"),
+                                        "seed failed");
+                        s.saveAllWaypointFiles();
+                        log("SERVER_STORE " + s.getWaypointFilesDir());
+                    });
+            for (String dimension : List.of("minecraft:overworld", "minecraft:the_nether")) {
+                for (String name : List.of("map-fixture", "voxel-fixture")) {
+                    waitCached(dimension, name, true);
+                }
+            }
+            client(
+                    () -> {
+                        _959.server_waypoint.common.client.integrations.MapModIntegrations.syncNow(
+                                _959.server_waypoint.core.network.upload.UploadTarget.XAERO,
+                                WaypointClientMod.getInstance());
+                    });
+        } else if (op.equals("load")) {
+            client(() -> GameApi.load(mc));
+            long end = System.currentTimeMillis() + 120000;
+            while ((mc.player == null
+                            || WaypointClientMod.getNetworkState()
+                                    != WaypointClientMod.ClientNetworkState.SYNC_FINISHED)
+                    && System.currentTimeMillis() < end) Thread.sleep(250);
+            require(mc.player != null, "world not loaded");
+            client(
+                    () ->
+                            _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                    mc, null));
+        } else if (op.equals("close")) {
+            client(
+                    () ->
+                            _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                    mc, null));
+            server(() -> WaypointServerMod.getInstance().saveAllWaypointFiles());
+            client(() -> GameApi.disconnect(mc));
+        } else if (op.equals("map-save")) {
+            final Screen[] previous = new Screen[1];
+            client(
+                    () -> {
+                        _959.server_waypoint.common.client.integrations.XaerosMinimapWaypointHelper
+                                .replaceAll(WaypointClientMod.getInstance());
+                        var world =
+                                _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapWorld(
+                                        _959.server_waypoint.common.util.XaeroMinimapHelper
+                                                .getMinimapSession(),
+                                        Level.OVERWORLD);
+                        String raw =
+                                _959.server_waypoint.common.util.SyncedWaypointName
+                                        .formatSyncedName("Bases");
+                        world.setCurrentWaypointSetId(raw);
+                        var original = world.getWaypointSet(raw).get(0);
+                        var marker =
+                                xaero.map.mods.SupportMods.xaeroMinimap.convertWaypoint(
+                                        original, true, raw, 1.0);
+                        Screen map =
+                                screen() instanceof xaero.map.gui.GuiMap
+                                        ? screen()
+                                        : new xaero.map.gui.GuiMap(
+                                                null,
+                                                null,
+                                                xaero.map.WorldMapSession.getCurrentSession()
+                                                        .getMapProcessor(),
+                                                mc.player);
+                        _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                mc, map);
+                        previous[0] = map;
+                        var options =
+                                new xaero.map.mods.gui.WaypointReader()
+                                        .getRightClickOptions(
+                                                marker, (xaero.map.gui.IRightClickableElement) map);
+                        var edit =
+                                options.stream()
+                                        .filter(o -> GameApi.label(o).endsWith("Edit on server"))
+                                        .findFirst()
+                                        .orElseThrow();
+                        require(edit.isActive(), "edit disabled");
+                        edit.onSelected(map);
+                        assertForm(screen(), "minecraft:overworld", "map-fixture");
+                        text(screen(), "yEditBox", "76");
+                        screen().tick();
+                        click(screen(), get(screen(), "saveButton"));
+                        require(!screen().isPauseScreen(), "pending save did not unpause");
+                        log("MAP save submitted via screen mouse click; pending unpaused");
+                    });
+            waitScreen(previous[0]);
+            client(
+                    () -> {
+                        var w = saved("minecraft:overworld", "map-fixture");
+                        require(w.y() == 76, "changed y missing");
+                        require(
+                                w.displayName().equals("Fancy map-fixture")
+                                        && w.description().equals("Preserve full metadata")
+                                        && w.keywords().equals(List.of("alpha", "beta"))
+                                        && w.icon().equals(NamespacedId.parse("minecraft:diamond"))
+                                        && w.yaw() == 135
+                                        && w.global(),
+                                "metadata lost on save");
+                        require(
+                                saved("minecraft:the_nether", "map-fixture").y() == 75,
+                                "wrong dimension modified");
+                        log(
+                                "MAP save acknowledged; Overworld y=76; Nether unchanged; metadata"
+                                        + " intact");
+                    });
+        } else if (op.equals("select-nether")) {
+            client(
+                    () -> {
+                        _959.server_waypoint.common.client.integrations.XaerosMinimapWaypointHelper
+                                .replaceAll(WaypointClientMod.getInstance());
+                        var session =
+                                _959.server_waypoint.common.util.XaeroMinimapHelper
+                                        .getMinimapSession();
+                        var world =
+                                _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapWorld(
+                                        session, Level.NETHER);
+                        world.setCurrentWaypointSetId(
+                                _959.server_waypoint.common.util.SyncedWaypointName
+                                        .formatSyncedName("Bases"));
+                        session.getWorldState().setCustomWorldPath(world.getFullPath());
+                        xaero.map.mods.SupportMods.xaeroMinimap.requestWaypointsRefresh();
+                        log("SELECTED minimap Nether " + world.getFullPath());
+                    });
+            Thread.sleep(1500);
+            client(
+                    () -> {
+                        var support = xaero.map.mods.SupportMods.xaeroMinimap;
+                        log(
+                                "DIMENSIONS player="
+                                        + mc.level.dimension()
+                                        + " owner="
+                                        + support.getWaypointWorld().getDimId()
+                                        + " viewed="
+                                        + support.getMapWaypointWorld().getDimId());
+                    });
+        } else if (op.equals("map-nether-save")) {
+            final Screen[] prev = new Screen[1];
+            client(
+                    () -> {
+                        var support = xaero.map.mods.SupportMods.xaeroMinimap;
+                        require(
+                                support.getWaypointWorld().getDimId().equals(Level.NETHER),
+                                "owner not Nether");
+                        require(
+                                mc.level.dimension().equals(Level.OVERWORLD),
+                                "player not Overworld");
+                        String raw =
+                                _959.server_waypoint.common.util.SyncedWaypointName
+                                        .formatSyncedName("Bases");
+                        var nativeWp = support.getWaypointWorld().getWaypointSet(raw).get(0);
+                        var marker = support.convertWaypoint(nativeWp, true, raw, 8.0);
+                        prev[0] = screen();
+                        var options =
+                                new xaero.map.mods.gui.WaypointReader()
+                                        .getRightClickOptions(
+                                                marker,
+                                                (xaero.map.gui.IRightClickableElement) screen());
+                        var edit =
+                                options.stream()
+                                        .filter(o -> GameApi.label(o).endsWith("Edit on server"))
+                                        .findFirst()
+                                        .orElseThrow();
+                        require(edit.isActive(), "Nether edit disabled");
+                        edit.onSelected(prev[0]);
+                        assertForm(screen(), "minecraft:the_nether", "map-fixture");
+                        text(screen(), "yEditBox", "77");
+                        screen().tick();
+                        click(screen(), get(screen(), "saveButton"));
+                        require(!screen().isPauseScreen(), "pending pause");
+                    });
+            waitScreen(prev[0]);
+            client(
+                    () -> {
+                        require(
+                                saved("minecraft:the_nether", "map-fixture").y() == 77,
+                                "Nether edit missing");
+                        require(
+                                saved("minecraft:overworld", "map-fixture").y() == 76,
+                                "Overworld touched");
+                        log(
+                                "MAP cross-dimension Save acknowledged; player Overworld; owner"
+                                        + " Nether; OW untouched");
+                    });
+            // @voxel-start
+        } else if (op.equals("voxel-save") || op.equals("voxel-cancel")) {
+            final Screen[] prev = new Screen[1];
+            client(
+                    () -> {
+                        _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                mc, null);
+                        _959.server_waypoint.common.client.integrations.VoxelMapWaypointHelper
+                                .replaceAll(WaypointClientMod.getInstance());
+                        var manager =
+                                com.mamiyaotaru.voxelmap.VoxelConstants.getVoxelMapInstance()
+                                        .getWaypointManager();
+                        String raw =
+                                _959.server_waypoint.common.util.SyncedWaypointName.format(
+                                        "Bases", "voxel-fixture");
+                        var wp =
+                                manager.getWaypoints().stream()
+                                        .filter(
+                                                w ->
+                                                        w.name.equals(raw)
+                                                                && w.dimensions.stream()
+                                                                        .anyMatch(
+                                                                                d ->
+                                                                                        d.getStorageName()
+                                                                                                .equals(
+                                                                                                        "the_nether")))
+                                        .findFirst()
+                                        .orElseThrow();
+                        var gui = new com.mamiyaotaru.voxelmap.gui.GuiWaypoints(null);
+                        _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                mc, gui);
+                        prev[0] = gui;
+                        call(gui, "setSelectedWaypoint", wp);
+                        click(gui, get(gui, "buttonEdit"));
+                        assertForm(screen(), "minecraft:the_nether", "voxel-fixture");
+                        text(screen(), "descriptionEditBox", "Discarded");
+                        screen().tick();
+                        click(screen(), get(screen(), "cancelButton"));
+                        require(screen() == gui, "Cancel wrong parent");
+                        require(
+                                saved("minecraft:the_nether", "voxel-fixture")
+                                        .description()
+                                        .equals("Preserve full metadata"),
+                                "cancel mutated store");
+                        if (op.equals("voxel-save")) {
+                            call(gui, "setSelectedWaypoint", wp);
+                            click(gui, get(gui, "buttonEdit"));
+                            assertForm(screen(), "minecraft:the_nether", "voxel-fixture");
+                            text(screen(), "yawEditBox", "90");
+                            screen().tick();
+                            click(screen(), get(screen(), "saveButton"));
+                            require(!screen().isPauseScreen(), "Voxel pending paused");
+                        }
+                    });
+            if (op.equals("voxel-save")) {
+                waitScreen(prev[0]);
+                client(
+                        () -> {
+                            var w = saved("minecraft:the_nether", "voxel-fixture");
+                            require(w.yaw() == 90, "yaw not saved");
+                            require(
+                                    w.description().equals("Preserve full metadata")
+                                            && w.displayName().equals("Fancy voxel-fixture")
+                                            && w.icon()
+                                                    .equals(NamespacedId.parse("minecraft:diamond"))
+                                            && w.keywords().equals(List.of("alpha", "beta"))
+                                            && w.global(),
+                                    "Voxel metadata lost");
+                            require(
+                                    saved("minecraft:overworld", "voxel-fixture").yaw() == 135,
+                                    "Voxel wrong dimension");
+                            log(
+                                    "VOXEL cross-dimension save acknowledged; metadata preserved;"
+                                            + " Cancel preserved store and parent");
+                        });
+            }
+        } else if (op.equals("voxel-fallback")) {
+            client(
+                    () -> {
+                        _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                mc, null);
+                        var manager =
+                                com.mamiyaotaru.voxelmap.VoxelConstants.getVoxelMapInstance()
+                                        .getWaypointManager();
+                        var template =
+                                manager.getWaypoints().stream()
+                                        .filter(
+                                                w ->
+                                                        w.name.equals(
+                                                                _959.server_waypoint.common.util
+                                                                        .SyncedWaypointName.format(
+                                                                        "Bases", "voxel-fixture")))
+                                        .findFirst()
+                                        .orElseThrow();
+                        for (String kind : List.of("stale", "ambiguous", "personal")) {
+                            var dims =
+                                    new TreeSet<com.mamiyaotaru.voxelmap.util.DimensionContainer>();
+                            dims.addAll(template.dimensions);
+                            if (kind.equals("ambiguous")) {
+                                var dm =
+                                        com.mamiyaotaru.voxelmap.VoxelConstants
+                                                .getVoxelMapInstance()
+                                                .getDimensionManager();
+                                dims.add(
+                                        dm.getDimensionContainerByIdentifier(
+                                                "minecraft:overworld"));
+                                dims.add(
+                                        dm.getDimensionContainerByIdentifier(
+                                                "minecraft:the_nether"));
+                            }
+                            String name =
+                                    kind.equals("stale")
+                                            ? _959.server_waypoint.common.util.SyncedWaypointName
+                                                    .format("Bases", "missing-waypoint")
+                                            : kind.equals("personal")
+                                                    ? "Personal marker"
+                                                    : template.name;
+                            var wp =
+                                    new com.mamiyaotaru.voxelmap.util.Waypoint(
+                                            name,
+                                            31,
+                                            -42,
+                                            75,
+                                            true,
+                                            1,
+                                            0,
+                                            0,
+                                            "",
+                                            template.world,
+                                            dims);
+                            manager.addWaypoint(wp);
+                            var gui = new com.mamiyaotaru.voxelmap.gui.GuiWaypoints(null);
+                            _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                    mc, gui);
+                            call(gui, "setSelectedWaypoint", wp);
+                            click(gui, get(gui, "buttonEdit"));
+                            require(
+                                    screen() instanceof com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint,
+                                    "native fallback failed " + kind + " " + screen());
+                            call(screen(), "cancelWaypoint");
+                            require(screen() == gui, "native cancel wrong parent");
+                            manager.deleteWaypoint(wp);
+                            log("VOXEL native editor and Cancel passed " + kind);
+                        }
+                    });
+            // @voxel-end
+        } else if (op.equals("native-xaero")) {
+            client(
+                    () -> {
+                        _959.server_waypoint.common.client.integrations.XaerosMinimapWaypointHelper
+                                .replaceAll(WaypointClientMod.getInstance());
+                        var session =
+                                _959.server_waypoint.common.util.XaeroMinimapHelper
+                                        .getMinimapSession();
+                        var world =
+                                _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapWorld(
+                                        session, Level.NETHER);
+                        session.getWorldState().setCustomWorldPath(world.getFullPath());
+                        _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                mc,
+                                new xaero.map.gui.GuiMap(
+                                        null,
+                                        null,
+                                        xaero.map.WorldMapSession.getCurrentSession()
+                                                .getMapProcessor(),
+                                        mc.player));
+                        xaero.map.mods.SupportMods.xaeroMinimap.requestWaypointsRefresh();
+                    });
+            Thread.sleep(1000);
+            client(
+                    () -> {
+                        var support = xaero.map.mods.SupportMods.xaeroMinimap;
+                        var world = support.getWaypointWorld();
+                        require(world.getDimId().equals(Level.NETHER), "native owner wrong");
+                        String raw =
+                                _959.server_waypoint.common.util.SyncedWaypointName
+                                        .formatSyncedName("Bases");
+                        world.removeWaypointSet("Bases");
+                        world.addWaypointSet("Bases");
+                        var personal =
+                                new xaero.common.minimap.waypoints.Waypoint(
+                                        13, 81, 25, "personal", "P", 1);
+                        world.getWaypointSet("Bases").add(personal);
+                        var owned = world.getWaypointSet(raw);
+                        var nativeWp = owned.get(0);
+                        var marker = support.convertWaypoint(nativeWp, true, raw, 8.0);
+                        var map = (xaero.map.gui.GuiMap) screen();
+                        require(
+                                marker.getSetName().equals(raw),
+                                "native ownership getter stripped");
+                        support.openWaypoint(map, marker);
+                        require(
+                                screen() instanceof xaero.common.gui.GuiAddWaypoint,
+                                "native editor missing");
+                        require(
+                                get(screen(), "fromSet").equals(raw),
+                                "native editor wrong source set");
+                        screen().setFocused(
+                                        (net.minecraft.client.gui.components.EditBox)
+                                                get(screen(), "yTextField"));
+                        text(screen(), "yTextField", "78");
+                        call(screen(), "checkFields", get(screen(), "yTextField"));
+                        log(
+                                "NATIVE before Save y="
+                                        + value(screen(), "yTextField")
+                                        + " formY="
+                                        + get(call(screen(), "getCurrent"), "yText")
+                                        + " originalY="
+                                        + nativeWp.getY());
+                        screen().tick();
+                        click(screen(), get(screen(), "confirmButton"));
+                        require(screen() == map, "native Save wrong parent");
+                        require(
+                                owned.size() == 2
+                                        && java.util.stream.StreamSupport.stream(
+                                                        owned.getWaypoints().spliterator(), false)
+                                                .anyMatch(x -> x == nativeWp)
+                                        && nativeWp.getY() == 78,
+                                "native edited wrong set");
+                        require(
+                                world.getWaypointSet("Bases").size() == 1 && personal.getY() == 81,
+                                "personal same-label set modified");
+                        require(
+                                saved("minecraft:the_nether", "map-fixture").y() == 77,
+                                "native changed server store");
+                        world.removeWaypointSet("Bases");
+                        support.openWaypoint(map, marker);
+                        require(
+                                screen() instanceof xaero.common.gui.GuiAddWaypoint,
+                                "native absent-personal-set path failed");
+                        require(
+                                get(screen(), "fromSet").equals(raw),
+                                "native missing-personal-set wrong source");
+                        screen().onClose();
+                        _959.server_waypoint.common.client.integrations.XaerosMinimapWaypointHelper
+                                .replaceAll(WaypointClientMod.getInstance());
+                        log(
+                                "XAERO native edit and Save preserved raw set ownership with"
+                                        + " same-label personal set; opening without personal set"
+                                        + " passed");
+                    });
+            // @voxel-start
+        } else if (op.equals("voxel-clear")) {
+            final Screen[] prev = new Screen[1];
+            client(
+                    () -> {
+                        _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                mc, null);
+                        var manager =
+                                com.mamiyaotaru.voxelmap.VoxelConstants.getVoxelMapInstance()
+                                        .getWaypointManager();
+                        String raw =
+                                _959.server_waypoint.common.util.SyncedWaypointName.format(
+                                        "Bases", "voxel-fixture");
+                        var wp =
+                                manager.getWaypoints().stream()
+                                        .filter(
+                                                w ->
+                                                        w.name.equals(raw)
+                                                                && w.dimensions.stream()
+                                                                        .anyMatch(
+                                                                                d ->
+                                                                                        d.getStorageName()
+                                                                                                .equals(
+                                                                                                        "the_nether")))
+                                        .findFirst()
+                                        .orElseThrow();
+                        var gui = new com.mamiyaotaru.voxelmap.gui.GuiWaypoints(null);
+                        _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                mc, gui);
+                        prev[0] = gui;
+                        call(gui, "setSelectedWaypoint", wp);
+                        click(gui, get(gui, "buttonEdit"));
+                        text(screen(), "displayNameEditBox", "");
+                        text(screen(), "keywordsEditBox", "");
+                        text(screen(), "descriptionEditBox", "");
+                        screen().tick();
+                        click(screen(), call(get(screen(), "iconPicker"), "clearButton"));
+                        screen().tick();
+                        click(screen(), get(screen(), "saveButton"));
+                        require(!screen().isPauseScreen(), "clear save paused");
+                    });
+            waitScreen(prev[0]);
+            client(
+                    () -> {
+                        var w = saved("minecraft:the_nether", "voxel-fixture");
+                        require(
+                                w.displayNameOverride() == null
+                                        && w.keywords().isEmpty()
+                                        && w.description().isEmpty()
+                                        && w.icon() == null,
+                                "clear fields not saved");
+                        require(
+                                w.x() == 31
+                                        && w.z() == -42
+                                        && w.y() == 75
+                                        && w.rgb() == 0x33AA55
+                                        && w.yaw() == 90
+                                        && w.global()
+                                        && w.initials().equals("FX"),
+                                "unrelated fields changed");
+                        require(
+                                saved("minecraft:overworld", "voxel-fixture").icon() != null,
+                                "clear affected wrong dimension");
+                        log(
+                                "VOXEL explicit clear Save acknowledged;"
+                                        + " display/keywords/description/icon cleared; other fields"
+                                        + " preserved");
+                    });
+            // @voxel-end
+        } else if (op.equals("native-dump")) {
+            client(
+                    () -> {
+                        var w =
+                                _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapWorld(
+                                        _959.server_waypoint.common.util.XaeroMinimapHelper
+                                                .getMinimapSession(),
+                                        Level.NETHER);
+                        for (var set : w.getIterableWaypointSets()) {
+                            log("NATIVE set=" + set.getName() + " size=" + set.size());
+                            for (var x : set.getWaypoints())
+                                log("NATIVE member=" + x.getName() + " y=" + x.getY());
+                        }
+                    });
+        } else if (op.equals("persisted")) {
+            client(
+                    () -> {
+                        require(
+                                saved("minecraft:overworld", "map-fixture").y() == 76,
+                                "OW map reload mismatch");
+                        require(
+                                saved("minecraft:the_nether", "map-fixture").y() == 77,
+                                "Nether map reload mismatch");
+                        require(
+                                saved("minecraft:the_nether", "voxel-fixture").yaw()
+                                                == (GameApi.VOXELMAP ? 90 : 135)
+                                        && (saved("minecraft:the_nether", "voxel-fixture").icon()
+                                                        == null)
+                                                == GameApi.VOXELMAP,
+                                "Nether Voxel reload mismatch");
+                        require(
+                                saved("minecraft:overworld", "voxel-fixture").yaw() == 135
+                                        && saved("minecraft:overworld", "voxel-fixture").icon()
+                                                != null,
+                                "OW Voxel reload mismatch");
+                        log(
+                                "PERSISTENCE actual world reopen loaded both edited dimensions with"
+                                        + " cleared metadata and untouched OW Voxel fixture");
+                    });
+        } else if (op.equals("map-cancel-add")) {
+            client(
+                    () -> {
+                        _959.server_waypoint.common.client.integrations.XaerosMinimapWaypointHelper
+                                .replaceAll(WaypointClientMod.getInstance());
+                        var session =
+                                _959.server_waypoint.common.util.XaeroMinimapHelper
+                                        .getMinimapSession();
+                        var world =
+                                _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapWorld(
+                                        session, Level.NETHER);
+                        session.getWorldState().setCustomWorldPath(world.getFullPath());
+                        _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                mc,
+                                new xaero.map.gui.GuiMap(
+                                        null,
+                                        null,
+                                        xaero.map.WorldMapSession.getCurrentSession()
+                                                .getMapProcessor(),
+                                        mc.player));
+                        xaero.map.mods.SupportMods.xaeroMinimap.requestWaypointsRefresh();
+                    });
+            Thread.sleep(1000);
+            client(
+                    () -> {
+                        var support = xaero.map.mods.SupportMods.xaeroMinimap;
+                        var world = support.getWaypointWorld();
+                        require(world.getDimId().equals(Level.NETHER), "cancel/add owner wrong");
+                        var map = (xaero.map.gui.GuiMap) screen();
+                        String raw =
+                                _959.server_waypoint.common.util.SyncedWaypointName
+                                        .formatSyncedName("Bases");
+                        var original = world.getWaypointSet(raw).get(0);
+                        var marker = support.convertWaypoint(original, true, raw, 8.0);
+                        var reader = new xaero.map.mods.gui.WaypointReader();
+                        reader.getRightClickOptions(marker, map).stream()
+                                .filter(o -> GameApi.label(o).endsWith("Edit on server"))
+                                .findFirst()
+                                .orElseThrow()
+                                .onSelected(map);
+                        text(screen(), "descriptionEditBox", "Discard me");
+                        screen().tick();
+                        click(screen(), get(screen(), "cancelButton"));
+                        require(screen() == map, "Map Cancel wrong parent");
+                        require(
+                                saved("minecraft:the_nether", "map-fixture")
+                                        .description()
+                                        .equals("Preserve full metadata"),
+                                "Map cancel mutated store");
+                        var personal =
+                                new xaero.common.minimap.waypoints.Waypoint(
+                                        17, 85, -19, "personal-add", "PA", 1);
+                        var local = support.convertWaypoint(personal, true, "Personal", 8.0);
+                        reader.getRightClickOptions(local, map).stream()
+                                .filter(o -> GameApi.label(o).equals("Add to server"))
+                                .findFirst()
+                                .orElseThrow()
+                                .onSelected(map);
+                        require(
+                                screen()
+                                        instanceof
+                                        _959.server_waypoint.common.client.gui.screens
+                                                .WaypointAddScreen,
+                                "Add screen wrong");
+                        require(
+                                call(get(screen(), "dimensionField"), "getResolvedValue")
+                                        .equals("minecraft:the_nether"),
+                                "Add default wrong dimension");
+                        require(
+                                value(screen(), "xEditBox").equals("17")
+                                        && value(screen(), "yEditBox").equals("85")
+                                        && value(screen(), "zEditBox").equals("-19"),
+                                "Add default wrong position");
+                        click(screen(), get(screen(), "cancelButton"));
+                        require(screen() == map, "Add Cancel wrong parent");
+                        log(
+                                "MAP Edit Cancel discarded changes; personal Add used owning Nether"
+                                        + " and native coordinates; Cancel returned to map");
+                    });
+        } else if (op.equals("map-stale")) {
+            client(
+                    () ->
+                            _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                    mc, null));
+            server(
+                    () -> {
+                        var r =
+                                WaypointServerMod.getInstance()
+                                        .addWaypoint(
+                                                "minecraft:the_nether",
+                                                "Bases",
+                                                wp("stale-target"),
+                                                x -> {});
+                        require(r.status().name().equals("ADDED"), "stale seed failed");
+                    });
+            client(
+                    () -> {
+                        var session =
+                                _959.server_waypoint.common.util.XaeroMinimapHelper
+                                        .getMinimapSession();
+                        _959.server_waypoint.common.client.integrations.XaerosMinimapWaypointHelper
+                                .replaceAll(WaypointClientMod.getInstance());
+                        var world =
+                                _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapWorld(
+                                        session, Level.NETHER);
+                        world.setCurrentWaypointSetId(
+                                _959.server_waypoint.common.util.SyncedWaypointName
+                                        .formatSyncedName("Bases"));
+                        session.getWorldState().setCustomWorldPath(world.getFullPath());
+                        _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                mc,
+                                new xaero.map.gui.GuiMap(
+                                        null,
+                                        null,
+                                        xaero.map.WorldMapSession.getCurrentSession()
+                                                .getMapProcessor(),
+                                        mc.player));
+                        xaero.map.mods.SupportMods.xaeroMinimap.requestWaypointsRefresh();
+                    });
+            Thread.sleep(1000);
+            final Screen[] map = new Screen[1];
+            final xaero.map.mods.gui.Waypoint[] marker = new xaero.map.mods.gui.Waypoint[1];
+            final xaero.map.gui.dropdown.rightclick.RightClickOption[] edit =
+                    new xaero.map.gui.dropdown.rightclick.RightClickOption[1];
+            client(
+                    () -> {
+                        var support = xaero.map.mods.SupportMods.xaeroMinimap;
+                        String raw =
+                                _959.server_waypoint.common.util.SyncedWaypointName
+                                        .formatSyncedName("Bases");
+                        var owned = support.getWaypointWorld().getWaypointSet(raw);
+                        xaero.common.minimap.waypoints.Waypoint nativeWp = null;
+                        for (var w : owned.getWaypoints())
+                            if (w.getName().equals("stale-target")) nativeWp = w;
+                        require(nativeWp != null, "stale marker absent");
+                        marker[0] = support.convertWaypoint(nativeWp, true, raw, 8.0);
+                        map[0] = screen();
+                        edit[0] =
+                                new xaero.map.mods.gui.WaypointReader()
+                                                .getRightClickOptions(
+                                                        marker[0],
+                                                        (xaero.map.gui.IRightClickableElement)
+                                                                map[0])
+                                                .stream()
+                                                .filter(
+                                                        o ->
+                                                                GameApi.label(o)
+                                                                        .endsWith("Edit on server"))
+                                                .findFirst()
+                                                .orElseThrow();
+                        require(edit[0].isActive(), "fresh stale option inactive");
+                        _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                mc, null);
+                    });
+            server(
+                    () -> {
+                        require(
+                                WaypointServerMod.getInstance()
+                                        .removeWaypoint(
+                                                "minecraft:the_nether",
+                                                "Bases",
+                                                "stale-target",
+                                                x -> {})
+                                        .status()
+                                        .name()
+                                        .equals("REMOVED"),
+                                "stale remove failed");
+                    });
+            client(
+                    () ->
+                            _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                    mc, map[0]));
+            Thread.sleep(1000);
+            client(
+                    () -> {
+                        var newEdit =
+                                new xaero.map.mods.gui.WaypointReader()
+                                                .getRightClickOptions(
+                                                        marker[0],
+                                                        (xaero.map.gui.IRightClickableElement)
+                                                                map[0])
+                                                .stream()
+                                                .filter(
+                                                        o ->
+                                                                GameApi.label(o)
+                                                                        .endsWith("Edit on server"))
+                                                .findFirst()
+                                                .orElseThrow();
+                        require(!newEdit.isActive(), "missing target option remained enabled");
+                        edit[0].onSelected(map[0]);
+                        require(
+                                screen() instanceof AlertScreen,
+                                "disappeared target did not show AlertScreen");
+                        log(
+                                "ALERT children="
+                                        + screen().children().stream()
+                                                .map(x -> x.getClass().getName())
+                                                .toList());
+                        var button =
+                                screen().children().stream()
+                                        .filter(
+                                                x ->
+                                                        x
+                                                                instanceof
+                                                                net.minecraft.client.gui.components
+                                                                        .AbstractWidget)
+                                        .findFirst()
+                                        .orElseThrow();
+                        click(screen(), button);
+                        require(screen() == map[0], "stale alert wrong return screen");
+                        log(
+                                "MAP stale target disabled; previously-open option showed not-found"
+                                        + " AlertScreen and returned to map");
+                    });
+        } else if (op.equals("map-add-save")) {
+            client(
+                    () -> {
+                        _959.server_waypoint.common.client.integrations.XaerosMinimapWaypointHelper
+                                .replaceAll(WaypointClientMod.getInstance());
+                        var session =
+                                _959.server_waypoint.common.util.XaeroMinimapHelper
+                                        .getMinimapSession();
+                        var world =
+                                _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapWorld(
+                                        session, Level.NETHER);
+                        session.getWorldState().setCustomWorldPath(world.getFullPath());
+                        _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                mc,
+                                new xaero.map.gui.GuiMap(
+                                        null,
+                                        null,
+                                        xaero.map.WorldMapSession.getCurrentSession()
+                                                .getMapProcessor(),
+                                        mc.player));
+                        xaero.map.mods.SupportMods.xaeroMinimap.requestWaypointsRefresh();
+                    });
+            Thread.sleep(1000);
+            final Screen[] prev = new Screen[1];
+            client(
+                    () -> {
+                        var support = xaero.map.mods.SupportMods.xaeroMinimap;
+                        require(
+                                support.getWaypointWorld().getDimId().equals(Level.NETHER),
+                                "Add owner wrong");
+                        var personal =
+                                new xaero.common.minimap.waypoints.Waypoint(
+                                        17, 85, -19, "personal-add", "LA", 1);
+                        var marker = support.convertWaypoint(personal, true, "Bases", 8.0);
+                        prev[0] = screen();
+                        new xaero.map.mods.gui.WaypointReader()
+                                        .getRightClickOptions(
+                                                marker,
+                                                (xaero.map.gui.IRightClickableElement) prev[0])
+                                        .stream()
+                                        .filter(o -> GameApi.label(o).equals("Add to server"))
+                                        .findFirst()
+                                        .orElseThrow()
+                                        .onSelected(prev[0]);
+                        require(
+                                call(get(screen(), "dimensionField"), "getResolvedValue")
+                                        .equals("minecraft:the_nether"),
+                                "Add wrong dimension");
+                        text(screen(), "nameEditBox", "live-added");
+                        text(screen(), "initialsEditBox", "LA");
+                        screen().tick();
+                        click(screen(), get(screen(), "addButton"));
+                        log("MAP Add-to-server submitted; idle pause=" + screen().isPauseScreen());
+                    });
+            waitScreen(prev[0]);
+            client(
+                    () -> {
+                        var w = saved("minecraft:the_nether", "live-added");
+                        require(
+                                w != null && w.x() == 17 && w.y() == 85 && w.z() == -19,
+                                "added coordinates wrong");
+                        require(
+                                saved("minecraft:overworld", "live-added") == null,
+                                "added to player dimension");
+                        log(
+                                "MAP Add-to-server completed through real command and synced-data"
+                                        + " return; owner Nether, coordinates preserved");
+                    });
+        } else if (op.equals("map")) {
+            client(
+                    () -> {
+                        GameApi.syncVoxel();
+                        _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(
+                                mc,
+                                new xaero.map.gui.GuiMap(
+                                        null,
+                                        null,
+                                        xaero.map.WorldMapSession.getCurrentSession()
+                                                .getMapProcessor(),
+                                        mc.player));
+                    });
+            Thread.sleep(1000);
+            client(
+                    () -> {
+                        var support = xaero.map.mods.SupportMods.xaeroMinimap;
+                        log(
+                                "MAP owner="
+                                        + support.getWaypointWorld()
+                                        + " viewed="
+                                        + support.getMapWaypointWorld());
+                        for (var w : support.getWaypoints())
+                            log(
+                                    "MARKER name="
+                                            + ((_959.server_waypoint.access
+                                                                    .XaerosWorldMapWaypointAccess)
+                                                            w)
+                                                    .sw$getRawName()
+                                            + " set="
+                                            + w.getSetName());
+                    });
+        } else if (op.equals("dump")) {
+            client(
+                    () -> {
+                        log(
+                                "SCREEN "
+                                        + (screen() == null
+                                                ? "null"
+                                                : screen().getClass().getName()));
+                        log("CLIENT " + WaypointClientMod.getInstance().snapshotWaypointData(100));
+                        log("XAERO_SUPPORT " + xaero.map.mods.SupportMods.xaeroMinimap);
+                    });
+        } else throw new IllegalArgumentException(op);
+        writeResult("PASS\n");
+    }
+}

@@ -1,0 +1,77 @@
+[
+    {
+        "name": "26.2-Fabric",
+        "target": "26.2-fabric",
+        "minecraft": "26.2"
+    },
+    {
+        "name": "1.21.1-Fabric",
+        "target": "1.21-fabric",
+        "minecraft": "1.21.1"
+    },
+    {
+        "name": "1.21-Fabric",
+        "target": "1.21-fabric",
+        "minecraft": "1.21"
+    },
+    {
+        "name": "1.21.11-Fabric",
+        "target": "1.21.11-fabric",
+        "minecraft": "1.21.11"
+    },
+    {
+        "name": "1.21.5-Fabric",
+        "target": "1.21.5-fabric",
+        "minecraft": "1.21.5"
+    },
+    {
+        "name": "1.20.1-Forge",
+        "target": "1.20.1-forge",
+        "minecraft": "1.20.1"
+    },
+    {
+        "name": "1.20-Forge",
+        "target": "1.20.1-forge",
+        "minecraft": "1.20"
+    },
+    {
+        "name": "26.2-Forge",
+        "target": "26.2-forge",
+        "minecraft": "26.2"
+    },
+    {
+        "name": "1.21.11-Forge",
+        "target": "1.21.11-forge",
+        "minecraft": "1.21.11"
+    },
+    {
+        "name": "26.1.2-Forge",
+        "target": "26.1.2-forge",
+        "minecraft": "26.1.2"
+    },
+    {
+        "name": "1.21.1-NeoForge",
+        "target": "1.21-neoforge",
+        "minecraft": "1.21.1"
+    },
+    {
+        "name": "1.21-NeoForge",
+        "target": "1.21-neoforge",
+        "minecraft": "1.21"
+    },
+    {
+        "name": "26.2-NeoForge",
+        "target": "26.2-neoforge",
+        "minecraft": "26.2"
+    },
+    {
+        "name": "1.21.11-NeoForge",
+        "target": "1.21.11-neoforge",
+        "minecraft": "1.21.11"
+    },
+    {
+        "name": "1.21.5-NeoForge",
+        "target": "1.21.5-neoforge",
+        "minecraft": "1.21.5"
+    }
+]
