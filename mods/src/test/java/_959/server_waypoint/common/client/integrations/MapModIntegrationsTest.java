@@ -21,8 +21,8 @@ class MapModIntegrationsTest {
     }
 
     @Test
-    void voxelMapIsSupportedOnlyOnFabric() {
-        //? if fabric {
+    void voxelMapIsSupportedOnlyWhereVoxelMapIsPinned() {
+        //? if voxelmap {
         assertTrue(MapModIntegrations.find(UploadTarget.VOXELMAP).isPresent());
         //?} else {
         /*assertTrue(MapModIntegrations.find(UploadTarget.VOXELMAP).isEmpty());

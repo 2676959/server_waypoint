@@ -1,7 +1,7 @@
 # VoxelMap Sync on Forge and NeoForge Design
 
-Status: design agreed on 2026-10-07; implementation not started. The implementation plan will live in
-[plans](../plans/) and the evidence in [validation](../validation/).
+Status: design agreed on 2026-10-07; implemented on 2026-10-07. The evidence is in
+[validation](../validation/2026-10-07-voxelmap-forge-neoforge.md).
 
 VoxelMap sync works only on Fabric today, although VoxelMap-Updated publishes Forge and NeoForge builds
 for most recent Minecraft versions and commit `e88a02b6` already added them as dependencies. This change

@@ -27,6 +27,17 @@ type="optional"
 versionRange="[5.2.6,)"
 ordering="NONE"
 side="CLIENT"
-
+<% if (voxelmap) { %>
+# VoxelMap
+[[dependencies.${id}]]
+modId="voxelmap"
+type="optional"
+ordering="NONE"
+side="CLIENT"
+<% } %>
 [[mixins]]
 config = "server_waypoint-common.mixins.json"
+<% if (voxelmap) { %>
+[[mixins]]
+config = "server_waypoint-voxelmap.mixins.json"
+<% } %>

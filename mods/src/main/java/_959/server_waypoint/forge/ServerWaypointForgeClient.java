@@ -120,6 +120,11 @@ public class ServerWaypointForgeClient {
         }
         clientInitialized = true;
         ClientConfig.isXaerosMinimapLoaded = ModList/*? if < 26 {*//*.get()*//*?}*/.isLoaded("xaerominimap");
+        //? if voxelmap && <26 {
+        /*ClientConfig.isVoxelMapLoaded = ModList.get().isLoaded("voxelmap");
+        *///?} elif voxelmap {
+        ClientConfig.isVoxelMapLoaded = ModList.isLoaded("voxelmap");
+        //?}
         WaypointClientMod.createInstance(net.minecraft.client.Minecraft.getInstance(), FMLPaths.GAMEDIR.get(), FMLPaths.CONFIGDIR.get());
         OptimizedWaypointRenderer.init();
     }

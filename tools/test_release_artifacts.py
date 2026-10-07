@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Negative release-gate tests using synthetic ZIPs, never runtime/release evidence."""
+import json
 import re
 import struct
 import subprocess
@@ -214,6 +215,40 @@ class CheckReleaseJarTest(unittest.TestCase):
         self.assertIn(f"forbidden-entry: {backend_entry}", self.violations(
             {**BACKEND, **MULTI_RELEASE, backend_entry: minimal_class(TRANSPORT + "TcpCoordinator")},
             "fabric", "1.21.11"))
+
+    def mixin_jar(self, config, classes):
+        entries = {**BACKEND, "server_waypoint-voxelmap.mixins.json": json.dumps(config).encode()}
+        for name in classes:
+            entries[f"_959/server_waypoint/mixin/voxelmap/{name}.class"] = minimal_class(
+                f"_959/server_waypoint/mixin/voxelmap/{name}")
+        return entries
+
+    def test_mixin_config_with_all_classes_passes(self):
+        config = {"package": "_959.server_waypoint.mixin.voxelmap", "client": ["ClientMixin"],
+                  "server": ["ServerMixin"], "mixins": ["CommonMixin"]}
+        self.assertEqual([], self.violations(
+            self.mixin_jar(config, ["ClientMixin", "ServerMixin", "CommonMixin"]), "neoforge", "1.21.11"))
+
+    def test_mixin_config_naming_an_absent_class_fails(self):
+        config = {"package": "_959.server_waypoint.mixin.voxelmap", "client": ["ClientMixin", "AbsentMixin"]}
+        self.assertEqual(["missing-mixin-class: _959/server_waypoint/mixin/voxelmap/AbsentMixin.class "
+                          "(named by server_waypoint-voxelmap.mixins.json)"],
+                         self.violations(self.mixin_jar(config, ["ClientMixin"]), "forge", "1.21.11"))
+
+    def test_mixin_config_client_and_server_arrays_are_read(self):
+        for side in ("client", "server", "mixins"):
+            with self.subTest(side=side):
+                config = {"package": "_959.server_waypoint.mixin.voxelmap", side: ["SideMixin"]}
+                self.assertEqual(["missing-mixin-class"], [violation.split(":")[0] for violation in
+                                                           self.violations(self.mixin_jar(config, []),
+                                                                           "fabric", "1.21.11")])
+
+    def test_unreadable_mixin_config(self):
+        entries = {**BACKEND, "server_waypoint-voxelmap.mixins.json": b"{"}
+        result = self.violations(entries, "fabric", "1.21.11")
+        self.assertEqual(1, len(result), result)
+        self.assertTrue(result[0].startswith("unreadable-mixin-config: server_waypoint-voxelmap.mixins.json"),
+                        result)
 
     def test_unreadable_class(self):
         result = self.violations({**VELOCITY, "_959/server_waypoint/Broken.class": b"fixture"}, "velocity", "-")

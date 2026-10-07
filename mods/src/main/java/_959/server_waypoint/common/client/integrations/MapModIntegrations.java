@@ -58,7 +58,7 @@ public final class MapModIntegrations {
     private static List<MapModIntegration> createIntegrations() {
         List<MapModIntegration> integrations = new ArrayList<>();
         integrations.add(new XaerosMinimapIntegration());
-        //? if fabric
+        //? if voxelmap
         integrations.add(new VoxelMapIntegration());
         return List.copyOf(integrations);
     }

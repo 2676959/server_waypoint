@@ -22,7 +22,7 @@ See the [changelog](CHANGELOG.md) for what's new in 4.0.0.
 
 ## Features
 
-- Syncing waypoints from the server automatically, including to Xaero's Minimap and VoxelMap (Fabric).
+- Syncing waypoints from the server automatically, including to Xaero's Minimap and VoxelMap (see below for supported versions).
 - Customizable waypoint rendering, with initials or an item or VoxelMap icon on each marker.
 - Allow players to manage waypoints by both GUI (need client installation) and clickable chat commands (only need server installation).
 - Server-side navigation with a compass, a map, the boss bar, the action bar or a floating label, without client installation.
@@ -42,7 +42,7 @@ Optional:
   - [LuckPerms](https://modrinth.com/plugin/luckperms)
   - [Xaero's Minimap](https://modrinth.com/mod/xaeros-minimap)
   - [Xaero's World Map](https://modrinth.com/mod/xaeros-world-map): adds Server Waypoint options to its right-click menus
-  - [VoxelMap](https://modrinth.com/mod/voxelmap-updated) (Fabric)
+  - [VoxelMap](https://modrinth.com/mod/voxelmap-updated) (Fabric; Forge 1.21.11, 26.1-26.1.2 and 26.2; NeoForge 1.21.2-1.21.4, 1.21.11, 26.1-26.1.2, 26.2 and 26.3)
   - [Mod Menu](https://modrinth.com/mod/modmenu) (Fabric): opens the client settings from the mod list
   - [Velocity](https://papermc.io/software/velocity): only for [cross-server teleport](#cross-server-teleport-setup)
 
@@ -472,7 +472,7 @@ it, and **Reset to defaults…** resets them all.
   - **Background opacity**: opacity of marker backgrounds and icons, from `0` (clear) to `255` (solid). Default: `128`.
   - **Local waypoint range**: waypoints with local visibility are drawn only within this many chunks, from `0` to `1024`; global waypoints are always drawn. Default: `12` chunks.
 - #### Map mods
-  Xaero's Minimap is supported on every loader and VoxelMap on Fabric. A supported map mod that isn't installed is listed as not installed.
+  Xaero's Minimap is supported on every loader. VoxelMap is supported on Fabric, on Forge 1.21.11, 26.1-26.1.2 and 26.2, and on NeoForge 1.21.2-1.21.4, 1.21.11, 26.1-26.1.2, 26.2 and 26.3. A supported map mod that isn't installed is listed as not installed.
   - **Auto sync**: keeps the waypoints Server Waypoint adds to the map mod up to date as they change on the server. Default: `On`.
   - **Sync now**: after a confirmation, replaces the waypoints Server Waypoint added with the server's current waypoints. Available once you're in a world whose waypoints have synced.
 

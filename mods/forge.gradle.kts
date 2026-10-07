@@ -30,6 +30,10 @@ val mod_version: String by project
 val maven_group: String by project
 val forge_loader: String by project
 val mixinConfig = "server_waypoint-common.mixins.json"
+val voxelMapMixinConfig = "server_waypoint-voxelmap.mixins.json"
+// VoxelMap-Updated publishes Forge builds only for some Minecraft versions; a pinned build enables the integration.
+val voxelmapSupported = project.hasProperty("voxelmap_forge")
+val mixinConfigs = if (voxelmapSupported) listOf(mixinConfig, voxelMapMixinConfig) else listOf(mixinConfig)
 val mixinRefmap = "server_waypoint-common.refmap.json"
 val needsSrgReobf = stonecutter.eval(minecraftVersion, "<1.20.6")
 
@@ -117,6 +121,7 @@ val unpackMixinMappings = if (needsSrgReobf) {
 
 stonecutter {
     constants.match(loader, "fabric", "neoforge", "forge")
+    constants.put("voxelmap", voxelmapSupported)
     val usesTwentySixApi = eval(current.version, ">=26")
     val usesResourceLocation = eval(current.version, "<1.21.11")
 
@@ -156,8 +161,10 @@ sourceSets.main {
         srcDir("src/generated/resources")
         exclude("fabric.mod.json")
         exclude("META-INF/neoforge.mods.toml")
-        exclude("server_waypoint-fabric.mixins.json")
         exclude("server_waypoint-official.accesswidener")
+        if (!voxelmapSupported) {
+            exclude(voxelMapMixinConfig)
+        }
     }
 }
 
@@ -212,7 +219,7 @@ minecraft {
             workingDir.set(project.layout.projectDirectory.dir("run"))
             systemProperty("forge.logging.markers", "REGISTRIES")
             systemProperty("forge.logging.console.level", "debug")
-            args("-mixin.config=$mixinConfig")
+            mixinConfigs.forEach { args("-mixin.config=$it") }
             mods {
                 create(mod_id) {
                     source(sourceSets.main.get())
@@ -310,6 +317,7 @@ dependencies {
         // Use Modrinth version IDs because VoxelMap version numbers can collide across loaders.
         compileOnly("maven.modrinth:voxelmap-updated:$voxelmap_forge")
         runtimeOnly("maven.modrinth:voxelmap-updated:$voxelmap_forge")
+        testImplementation("maven.modrinth:voxelmap-updated:$voxelmap_forge")
     }
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
@@ -326,6 +334,7 @@ tasks.processResources {
         "java_version" to targetJavaVersion,
         "minecraft_dependency" to mcVersionForge,
         "forge_dependency" to loaderVersion,
+        "voxelmap" to voxelmapSupported,
     )
 
     inputs.properties(replaceProperties)
@@ -381,7 +390,7 @@ tasks.withType<Jar>().configureEach {
             "Implementation-Title" to mod_name,
             "Implementation-Version" to mod_version,
             "Implementation-Vendor" to "2676959",
-            "MixinConfigs" to mixinConfig,
+            "MixinConfigs" to mixinConfigs.joinToString(","),
         ))
     }
     from(rootProject.file("LICENSE")) {
