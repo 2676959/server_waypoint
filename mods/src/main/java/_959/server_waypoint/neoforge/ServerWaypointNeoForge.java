@@ -196,7 +196,7 @@ public class ServerWaypointNeoForge implements IPlatformConfigPath {
                 context.enqueueWork(() -> ServerWaypointNeoForgeClient.handleMessageChunk(payload));
             }
         };
-        //? if >=1.21.9 {
+        //? if >=1.21.7 {
         registrar.playBidirectional(MessageChunkPayload.ID, MessageChunkPayload.PACKET_CODEC, serverChunkHandler, clientChunkHandler);
         //?} else {
         /^registrar.playBidirectional(MessageChunkPayload.ID, MessageChunkPayload.PACKET_CODEC, (payload, context) -> {
