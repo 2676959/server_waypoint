@@ -6,6 +6,7 @@
 - [Cross-server waypoints](cross-server/) — discovery and teleportation over Velocity.
 - [Jar packaging](jar-packaging/) — what each release jar ships, the `cross-server` module boundary and the release gate's content checks.
 - [Upload transport](upload/) — chunked upload/download transport and startup fixes.
+- [VoxelMap sync](voxelmap-sync/) — VoxelMap waypoint sync on Fabric, Forge and NeoForge: target matrix, gating, mixin registration and checks.
 - [Waypoint form](waypoint-form/) — add and edit screens: layout, checks, feedback and keyboard use.
 - [Waypoint icons](waypoint-icons/) — item and VoxelMap icon selection and display plan.
 - [Waypoint manager](waypoint-manager/) — manager screen states, layout and empty states.
