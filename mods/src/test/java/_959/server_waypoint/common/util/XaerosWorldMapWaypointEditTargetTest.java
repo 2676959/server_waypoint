@@ -91,6 +91,23 @@ class XaerosWorldMapWaypointEditTargetTest {
         assertEquals("Mine home", target.waypoint().displayName());
     }
 
+    @Test
+    void markedDefaultWaypointResolvesToDefaultServerListAndPersonalEntryDoesNot() {
+        WaypointFilesManagerCore files = files();
+        files.putWaypointList("minecraft:the_nether",
+                new WaypointList("gui.xaero_default", 1, List.of(saved("Default home"))));
+
+        var target = XaerosWorldMapWaypointHelper.resolveSyncedEditTarget(
+                "minecraft:the_nether", "gui.xaero_default", "sw\u241FHome", files);
+
+        assertNotNull(target);
+        assertEquals("gui.xaero_default", target.listName());
+        assertEquals("Home", target.waypoint().name());
+        assertEquals("Default home", target.waypoint().displayName());
+        assertNull(XaerosWorldMapWaypointHelper.resolveSyncedEditTarget(
+                "minecraft:the_nether", "gui.xaero_default", "Home", files));
+    }
+
     private WaypointFilesManagerCore files() {
         WaypointFilesManagerCore files = new WaypointFilesManagerCore(this.directory);
         files.putWaypointList("minecraft:overworld", new WaypointList("Bases", 7, List.of(saved("Overworld home"))));

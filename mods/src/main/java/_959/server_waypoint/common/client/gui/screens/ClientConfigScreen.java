@@ -400,6 +400,9 @@ public class ClientConfigScreen extends MovementAllowedScreen {
             return false;
         }
         entries.add(this.createSettingRow(ClientConfigSettings.autoSync(target)));
+        if (target == UploadTarget.XAERO) {
+            entries.add(this.createSettingRow(ClientConfigSettings.XAERO_DEFAULT_LIST_DIRECT_SYNC));
+        }
         MapModControls controls = this.createMapModControls(target, name, integration.orElseThrow());
         entries.add(new SettingsListWidget.Row(
                 Component.translatable("server_waypoint.config.map_mod.sync_now", name), controls.syncButton())
@@ -415,7 +418,9 @@ public class ClientConfigScreen extends MovementAllowedScreen {
                 this.dialogText(List.of(
                         new DialogLine(Component.translatable("server_waypoint.config.sync.body", name), TEXT_PRIMARY),
                         new DialogLine(Component.translatable("server_waypoint.config.sync.stays"), SUCCESS),
-                        new DialogLine(Component.translatable("server_waypoint.config.sync.stays.detail"), TEXT_PRIMARY),
+                        new DialogLine(Component.translatable(target == UploadTarget.XAERO
+                                ? "server_waypoint.config.sync.default_set_warning"
+                                : "server_waypoint.config.sync.stays.detail"), TEXT_PRIMARY),
                         new DialogLine(Component.translatable("server_waypoint.config.sync.lost"), DANGER),
                         new DialogLine(Component.translatable("server_waypoint.config.sync.lost.detail"), TEXT_PRIMARY)
                 )),

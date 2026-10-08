@@ -67,6 +67,12 @@ final class ClientConfigSettings {
             ClientConfig::getViewDistance,
             ClientConfig::setViewDistance
     );
+    static final BooleanSetting XAERO_DEFAULT_LIST_DIRECT_SYNC = new BooleanSetting(
+            SettingText.of("xaero_default_list_direct_sync"),
+            ClientConfig.DEFAULT_XAERO_DEFAULT_LIST_DIRECT_SYNC,
+            ClientConfig::isXaeroDefaultListDirectSync,
+            ClientConfig::setXaeroDefaultListDirectSync
+    );
     /** The Waypoint rendering section, in screen order. */
     static final List<Setting> RENDERING = List.of(
             SHOW_WAYPOINTS, RENDER_UNDER_F1, SCALE, VERTICAL_OFFSET, BACKGROUND_OPACITY, LOCAL_WAYPOINT_RANGE);
@@ -93,12 +99,15 @@ final class ClientConfigSettings {
         };
     }
 
-    /** The rendering settings, then auto sync for each installed map mod in {@link #MAP_MODS} order. */
+    /** Rendering settings, then the settings for each installed map mod in {@link #MAP_MODS} order. */
     static List<Setting> forScreen(Set<UploadTarget> installedMapMods) {
         List<Setting> settings = new ArrayList<>(RENDERING);
         for (UploadTarget target : MAP_MODS) {
             if (installedMapMods.contains(target)) {
                 settings.add(autoSync(target));
+                if (target == UploadTarget.XAERO) {
+                    settings.add(XAERO_DEFAULT_LIST_DIRECT_SYNC);
+                }
             }
         }
         return List.copyOf(settings);

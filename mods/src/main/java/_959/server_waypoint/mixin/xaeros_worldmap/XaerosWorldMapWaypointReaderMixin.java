@@ -8,6 +8,7 @@ import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import _959.server_waypoint.core.waypoint.WaypointPos;
 import _959.server_waypoint.common.util.SyncedWaypointName;
+import _959.server_waypoint.common.util.XaeroMinimapHelper;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -37,7 +38,8 @@ public class XaerosWorldMapWaypointReaderMixin {
         XaerosWorldMapWaypointAccess waypointAccess = (XaerosWorldMapWaypointAccess) element;
         String rawWaypointName = waypointAccess.sw$getRawName();
         String legacySyncedWaypointName = SyncedWaypointName.parseSyncedName(rawWaypointName);
-        String syncedListName = SyncedWaypointName.parseSyncedName(waypointAccess.sw$getRawSetName());
+        String syncedListName = XaeroMinimapHelper.getSyncedWaypointListName(
+                waypointAccess.sw$getRawSetName(), rawWaypointName);
         boolean syncedWaypoint = syncedListName != null;
         String syncedWaypointName = legacySyncedWaypointName == null
                 ? rawWaypointName
@@ -48,7 +50,7 @@ public class XaerosWorldMapWaypointReaderMixin {
             return;
         }
         var editTarget = syncedWaypoint ? XaerosWorldMapWaypointHelper.resolveSyncedEditTarget(
-                dimensionName, waypointAccess.sw$getRawSetName(), syncedWaypointName, WaypointClientMod.getInstance()
+                dimensionName, waypointAccess.sw$getRawSetName(), rawWaypointName, WaypointClientMod.getInstance()
         ) : null;
         rightClickOptions.add(new RightClickOption(Component.translatable(syncedWaypoint ? "server_waypoint.map.edit_on_server" : "server_waypoint.map.add_to_server").getString(), rightClickOptions.size(), target) {
                         {
@@ -59,7 +61,7 @@ public class XaerosWorldMapWaypointReaderMixin {
                             Minecraft minecraft = Minecraft.getInstance();
                             if (syncedWaypoint) {
                                 var currentTarget = XaerosWorldMapWaypointHelper.resolveSyncedEditTarget(
-                                        dimensionName, waypointAccess.sw$getRawSetName(), syncedWaypointName,
+                                        dimensionName, waypointAccess.sw$getRawSetName(), rawWaypointName,
                                         WaypointClientMod.getInstance());
                                 if (currentTarget == null) {
                                     MinecraftClientHelper.setScreen(minecraft, new AlertScreen(

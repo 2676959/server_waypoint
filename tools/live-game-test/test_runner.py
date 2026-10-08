@@ -81,6 +81,19 @@ class RunnerTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tool.isolated_launch(args, self.root, 1024, trusted)
 
+    def test_test_clients_are_muted_with_fresh_or_existing_options(self):
+        source = self.root / "source-options.txt"
+        original = "soundCategory_master:1.0\nsoundCategory_master:0.8\nsoundCategory_music:0.6\n"
+        source.write_text(original)
+        for existing in (None, source):
+            with self.subTest(existing=existing):
+                output = self.root / "test-options.txt"
+                self.tool.write_options(output, existing)
+                lines = output.read_text().splitlines()
+                self.assertEqual([line for line in lines if line.startswith("soundCategory_master:")],
+                                 ["soundCategory_master:0.0"])
+        self.assertEqual(source.read_text(), original)
+
     def test_duplicate_options_are_written_once(self):
         source = self.root / "options.txt"
         source.write_text("maxFps:120\nmaxFps:60\nrenderDistance:32\n")
@@ -117,6 +130,19 @@ class RunnerTests(unittest.TestCase):
             with self.assertRaises(InterruptedError):
                 self.tool.wait_result(process, self.root / "absent.result", 30)
         self.assertIsNotNone(process.poll())
+
+    def test_complete_probe_success_is_accepted(self):
+        result = self.root / "step.result"
+        result.write_text("PASS\n")
+        with self.tool.OwnedProcess([sys.executable, "-c", "import time; time.sleep(60)"], self.root) as process:
+            self.assertEqual(self.tool.wait_result(process, result, 1), "PASS\n")
+
+    def test_incomplete_probe_success_record_is_not_accepted(self):
+        result = self.root / "step.result"
+        result.write_text("PASS")
+        with self.tool.OwnedProcess([sys.executable, "-c", "import time; time.sleep(60)"], self.root) as process:
+            with self.assertRaises(TimeoutError):
+                self.tool.wait_result(process, result, 0.1)
 
     def test_explicit_probe_failure_is_not_a_pass(self):
         result = self.root / "step.result"

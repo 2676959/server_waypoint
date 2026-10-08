@@ -110,9 +110,29 @@ class ClientConfigSettingsTest {
 
         List<ClientConfigSettings.Setting> withXaero = ClientConfigSettings.forScreen(Set.of(UploadTarget.XAERO));
 
-        assertEquals(ClientConfigSettings.RENDERING.size() + 1, withXaero.size());
+        assertEquals(ClientConfigSettings.RENDERING.size() + 2, withXaero.size());
         assertEquals("server_waypoint.map_mod.xaeros_minimap",
-                withXaero.get(withXaero.size() - 1).text().argumentKey());
+                withXaero.get(ClientConfigSettings.RENDERING.size()).text().argumentKey());
+    }
+
+    @Test
+    void defaultSetPreferencePersistsAndResetsWithoutChangingAutoSync() {
+        ClientConfig config = GSON.fromJson("{\"autoSyncToXaerosMinimap\":false}", ClientConfig.class);
+        var setting = ClientConfigSettings.XAERO_DEFAULT_LIST_DIRECT_SYNC;
+        assertTrue(ClientConfigSettings.forScreen(Set.of(UploadTarget.XAERO)).contains(setting));
+        assertFalse(ClientConfigSettings.forScreen(Set.of(UploadTarget.VOXELMAP)).contains(setting));
+        setting.set(config, true);
+        ClientConfig restored = GSON.fromJson(GSON.toJson(config), ClientConfig.class);
+        assertTrue(setting.get(restored));
+        assertFalse(setting.isDefault(restored));
+
+        setting.reset(restored);
+        assertTranslation(setting.defaultText(), "server_waypoint.config.off");
+
+        assertFalse(setting.get(restored));
+        assertTrue(setting.isDefault(restored));
+        ClientConfig.isXaerosMinimapLoaded = true;
+        assertFalse(restored.isAutoSyncToXaerosMinimap());
     }
 
     @Test

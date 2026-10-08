@@ -174,19 +174,21 @@ public final class XaerosMinimapWaypointHelper {
 
         MinimapSession session = getMinimapSession();
         MinimapWorld minimapWorld = getMinimapWorld(session, dimKey);
-        String syncedListName = SyncedWaypointName.formatSyncedName(listName);
+        String syncedListName = getSyncedWaypointSetName(listName);
         if (syncedListName == null) {
             LOGGER.warn("Skipping Xaero's Minimap sync for list {} because its generated name would be ambiguous.", listName);
+            return;
+        }
+        if (DEFAULT_WAYPOINT_SET.equals(syncedListName) && waypoint != null
+                && SyncedWaypointName.formatSyncedName(waypoint.name()) == null) {
+            LOGGER.warn("Skipping Xaero's Minimap sync for waypoint {} because its generated name would be ambiguous.", waypoint.name());
             return;
         }
         WaypointSet waypointSet = minimapWorld.getWaypointSet(syncedListName);
 
         if (waypointSet == null && (type == WaypointModificationType.ADD || type == WaypointModificationType.UPDATE || type == WaypointModificationType.ADD_LIST)) {
-            waypointSet = WaypointSet.Builder.begin()
-                    .setName(syncedListName)
-                    .build();
+            waypointSet = getOrCreateSyncedWaypointSet(minimapWorld, listName);
             LOGGER.info("Waypoint set {} not found in dimension {}, creating new one.", listName, dimKey);
-            minimapWorld.addWaypointSet(waypointSet);
         }
 
         Component feedback = null;
@@ -220,7 +222,7 @@ public final class XaerosMinimapWaypointHelper {
             case ADD_LIST -> {
             }
             case REMOVE_LIST -> {
-                if (waypointSet != null) {
+                if (waypointSet != null || DEFAULT_WAYPOINT_SET.equals(listName)) {
                     removeSyncedWaypointSet(minimapWorld, syncedListName);
                     feedback = Component.translatable("server_waypoint.list.removed.xaeros", listName);
                 }

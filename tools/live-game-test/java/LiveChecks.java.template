@@ -270,8 +270,187 @@ public class LiveChecks {
         throw new AssertionError("Xaero did not establish the active waypoint world");
     }
 
+    static final String DEFAULT_SET = "gui.xaero_default";
+
+    static xaero.hud.minimap.world.MinimapWorld defaultWorld() {
+        return _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapWorld(
+                _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapSession(), Level.OVERWORLD);
+    }
+
+    static xaero.common.minimap.waypoints.Waypoint named(
+            xaero.hud.minimap.waypoint.set.WaypointSet set, String name) {
+        for (var waypoint : set.getWaypoints()) {
+            if (waypoint.getName().equals(name)) return waypoint;
+        }
+        throw new AssertionError("Missing native waypoint " + name);
+    }
+
+    static void configSync(boolean direct) throws Exception {
+        var config = WaypointClientMod.getClientConfig();
+        var settings = new _959.server_waypoint.common.client.gui.screens.ClientConfigScreen(null);
+        _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(mc, settings);
+        var list = (_959.server_waypoint.common.client.gui.widgets.SettingsListWidget) get(settings, "settingsList");
+        Object directControl = null;
+        for (Object control : (List<?>) get(settings, "settingControls")) {
+            Object text = call(call(control, "setting"), "text");
+            if (call(text, "labelKey").equals("server_waypoint.config.xaero_default_list_direct_sync")) {
+                directControl = control;
+            }
+        }
+        require(directControl != null, "Default-set option missing from live settings screen");
+        var toggle = (net.minecraft.client.gui.components.AbstractWidget) call(directControl, "widget");
+        list.reveal(toggle);
+        require(toggle.active && toggle.visible, "Default-set toggle unavailable");
+        if (config.isXaeroDefaultListDirectSync() != direct) click(settings, toggle);
+        require(config.isXaeroDefaultListDirectSync() == direct, "Settings click did not change mode");
+        Object xaero = null;
+        for (Object control : (List<?>) get(settings, "mapModControls")) {
+            if (call(control, "target") == _959.server_waypoint.core.network.upload.UploadTarget.XAERO) xaero = control;
+        }
+        require(xaero != null, "Missing Xaero Sync now control");
+        var sync = (net.minecraft.client.gui.components.AbstractWidget) call(xaero, "syncButton");
+        list.reveal(sync);
+        click(settings, sync);
+        require(get(settings, "openDialog") != null, "Sync confirmation missing");
+        clickLabel("server_waypoint.config.confirm_sync");
+        require(get(settings, "openDialog") == null, "Sync dialog stayed open");
+        settings.onClose();
+        log("DEFAULT_SET UI toggle=" + direct + " and Sync now confirmation handled native clicks");
+    }
+
+    static void defaultSetChecks() throws Exception {
+        client(() -> {
+            var config = WaypointClientMod.getClientConfig();
+            require(!config.isXaeroDefaultListDirectSync(), "Fresh config should default to separate-set mode");
+            var world = defaultWorld();
+            world.setCurrentWaypointSetId(DEFAULT_SET);
+            world.getCurrentWaypointSet().add(new xaero.common.minimap.waypoints.Waypoint(7, 64, 8, "personal-before", "P", 12));
+            world.addWaypointSet("Default-test-personal");
+            world.getWaypointSet("Default-test-personal").add(new xaero.common.minimap.waypoints.Waypoint(9, 64, 10, "other-personal", "O", 12));
+            var session = _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapSession();
+            session.getWorldState().setCustomWorldPath(world.getFullPath());
+            _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(mc,
+                    new xaero.map.gui.GuiMap(null, null, xaero.map.WorldMapSession.getCurrentSession().getMapProcessor(), mc.player));
+            xaero.map.mods.SupportMods.xaeroMinimap.requestWaypointsRefresh();
+        });
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+        boolean[] ownerReady = new boolean[1];
+        while (System.nanoTime() < deadline) {
+            client(() -> {
+                var owner = xaero.map.mods.SupportMods.xaeroMinimap.getWaypointWorld();
+                ownerReady[0] = owner != null && owner.getDimId().equals(Level.OVERWORLD);
+            });
+            if (ownerReady[0]) break;
+            Thread.sleep(50);
+        }
+        require(ownerReady[0], "World Map did not refresh from prior Nether fixture to default Overworld owner");
+        server(() -> require(WaypointServerMod.getInstance().addWaypoint(
+                "minecraft:overworld", DEFAULT_SET, wp("default-live"), r -> {}).status().name().equals("ADDED"), "Default fixture seed failed"));
+        client(() -> {
+            configSync(false);
+            var world = defaultWorld();
+            require(world.getWaypointSet(DEFAULT_SET).size() == 1, "Off mode touched personal default contents");
+            named(world.getWaypointSet(DEFAULT_SET), "personal-before");
+            named(world.getWaypointSet("sw␟" + DEFAULT_SET), "default-live");
+            configSync(true);
+            var direct = world.getWaypointSet(DEFAULT_SET);
+            require(direct.size() == 1, "On mode did not replace default contents");
+            var waypoint = named(direct, "sw␟default-live");
+            require(world.getWaypointSet("sw␟" + DEFAULT_SET) == null, "On mode left old owned copy");
+            require(world.getCurrentWaypointSet() == direct, "Default selection lost");
+            require(_959.server_waypoint.common.util.SyncedWaypointHighlight.xaerosWaypointBackground(direct, waypoint) != 0, "Default server waypoint not highlighted");
+            require(_959.server_waypoint.common.util.SyncedWaypointName.toDisplayWaypointName(waypoint.getName()).equals("default-live"), "Owned default name not readable");
+            named(world.getWaypointSet("Default-test-personal"), "other-personal");
+            _959.server_waypoint.common.client.integrations.XaerosMinimapWaypointHelper.replaceList(
+                    "minecraft:overworld", new WaypointList(DEFAULT_SET, 1, List.of(wp("ambiguous␟name"))));
+            require(direct.size() == 1 && direct.get(0) == waypoint,
+                    "Ambiguous full-list replacement destroyed the existing default waypoint");
+            var session = _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapSession();
+            session.getWorldState().setCustomWorldPath(world.getFullPath());
+            var menu = new xaero.common.gui.GuiWaypoints(xaero.common.HudMod.INSTANCE, session, null, null);
+            _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(mc, menu);
+            ((Set<Integer>) get(menu, "selectedListSet")).add(0);
+            call(menu, "updateButtons");
+            click(menu, get(menu, "editButton"));
+            require(screen() instanceof _959.server_waypoint.common.client.gui.screens.WaypointEditScreen, "Default Minimap did not route to server edit");
+            require(get(screen(), "dimensionName").equals("minecraft:overworld") && value(screen(), "nameEditBox").equals("default-live"), "Default Minimap edit target wrong");
+            click(screen(), get(screen(), "cancelButton"));
+            var marker = xaero.map.mods.SupportMods.xaeroMinimap.convertWaypoint(waypoint, true, DEFAULT_SET, 1.0);
+            Screen map = new xaero.map.gui.GuiMap(null, null, xaero.map.WorldMapSession.getCurrentSession().getMapProcessor(), mc.player);
+            _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(mc, map);
+            var edit = new xaero.map.mods.gui.WaypointReader().getRightClickOptions(marker, (xaero.map.gui.IRightClickableElement) map)
+                    .stream().filter(o -> GameApi.label(o).endsWith("Edit on server")).findFirst().orElseThrow();
+            require(edit.isActive(), "Default World Map server edit disabled");
+            edit.onSelected(map);
+            require(screen() instanceof _959.server_waypoint.common.client.gui.screens.WaypointEditScreen, "Default World Map edit route wrong");
+            require(get(screen(), "dimensionName").equals("minecraft:overworld") && value(screen(), "nameEditBox").equals("default-live"), "Default World Map edit target wrong");
+            click(screen(), get(screen(), "cancelButton"));
+            var exported = _959.server_waypoint.common.client.integrations.XaerosMinimapWaypointHelper.collectUpload(
+                    new _959.server_waypoint.core.network.buffer.UploadRequestBuffer(UUID.randomUUID(), List.of("minecraft:overworld"), DEFAULT_SET, null,
+                            _959.server_waypoint.core.network.upload.UploadTarget.XAERO));
+            require(exported.uploadData().status() == _959.server_waypoint.core.network.upload.UploadStatus.SUCCESS, "Live default export failed");
+            var lists = exported.dimensions().get(0).waypointLists();
+            require(lists.size() == 1 && lists.get(0).name().equals(DEFAULT_SET)
+                    && lists.get(0).simpleWaypoints().size() == 1 && lists.get(0).simpleWaypoints().get(0).name().equals("default-live"), "Upload did not decode default identity");
+            log("DEFAULT_SET Off preserves personal entries; On replaces default; both native map editors route to server; highlighting and export identity pass");
+            var personalDuplicate = new xaero.common.minimap.waypoints.Waypoint(1, 65, 2, "default-live", "P", 12);
+            direct.add(personalDuplicate);
+            require(_959.server_waypoint.common.util.SyncedWaypointHighlight.xaerosWaypointBackground(direct, personalDuplicate) == 0,
+                    "Personal duplicate in default set received server highlighting");
+            _959.server_waypoint.common.client.integrations.XaerosMinimapWaypointHelper.applyModification("minecraft:overworld", DEFAULT_SET, WaypointModificationType.ADD, wp("incremental"), null);
+            named(direct, "sw␟incremental");
+            _959.server_waypoint.common.client.integrations.XaerosMinimapWaypointHelper.applyModification("minecraft:overworld", DEFAULT_SET, WaypointModificationType.UPDATE, wp("renamed"), "incremental");
+            require(direct.size() == 3, "Incremental rename left old entry or removed personal duplicate");
+            named(direct, "sw␟renamed");
+            _959.server_waypoint.common.client.integrations.XaerosMinimapWaypointHelper.applyModification("minecraft:overworld", DEFAULT_SET, WaypointModificationType.REMOVE, null, "renamed");
+            require(direct.size() == 2, "Incremental remove failed");
+            named(direct, "default-live");
+            configSync(false);
+            require(world.getWaypointSet(DEFAULT_SET).size() == 1, "Mode cleanup removed personal duplicate or left owned marker");
+            named(world.getWaypointSet(DEFAULT_SET), "default-live");
+            named(world.getWaypointSet("sw␟" + DEFAULT_SET), "default-live");
+            configSync(true);
+            require(world.getWaypointSet(DEFAULT_SET).size() == 1 && world.getWaypointSet("sw␟" + DEFAULT_SET) == null, "Return to direct mode failed");
+            world.getWaypointSet(DEFAULT_SET).add(new xaero.common.minimap.waypoints.Waypoint(12, 64, 13, "personal-after", "P", 12));
+            session.getWorldState().setCustomWorldPath(null);
+        });
+        server(() -> {
+            require(WaypointServerMod.getInstance().removeWaypoint("minecraft:overworld", DEFAULT_SET, "default-live", r -> {}).status().name().equals("REMOVED"), "Default fixture remove failed");
+            var removal = WaypointServerMod.getInstance().removeWaypointList("minecraft:overworld", DEFAULT_SET, r -> {});
+            require(removal.status().name().equals("REMOVED"), "Default empty list removal failed: " + removal.status());
+        });
+        // Drain the client queue that receives the integrated-server mutation.
+        client(() -> {});
+        client(() -> {
+            var world = defaultWorld();
+            var direct = world.getWaypointSet(DEFAULT_SET);
+            require(direct != null && direct.size() == 1, "List removal deleted default set or left server markers");
+            named(direct, "personal-after");
+            named(world.getWaypointSet("Default-test-personal"), "other-personal");
+            _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapSession().getWorldManagerIO().saveAllWorlds(
+                    _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapSession());
+            WaypointClientMod.getInstance().saveConfig();
+            log("DEFAULT_SET incremental add/rename/remove, both mode transitions, list deletion and personal-set preservation pass");
+        });
+    }
+
     static void run(String op) throws Exception {
-        if (op.equals("create")) {
+        if (op.equals("default-set")) {
+            defaultSetChecks();
+        } else if (op.equals("default-persisted")) {
+            waitXaeroWorld();
+            client(() -> {
+                var world = defaultWorld();
+                require(world.getWaypointSet(DEFAULT_SET) != null && world.getWaypointSet(DEFAULT_SET).size() == 1, "Reload lost personal default state");
+                named(world.getWaypointSet(DEFAULT_SET), "personal-after");
+                named(world.getWaypointSet("Default-test-personal"), "other-personal");
+                require(world.getWaypointSet("sw␟" + DEFAULT_SET) == null, "Reload resurrected owned default copy");
+                WaypointClientMod.getInstance().loadConfig();
+                require(WaypointClientMod.getClientConfig().isXaeroDefaultListDirectSync(),
+                        "Reload lost the saved direct-sync setting");
+                log("DEFAULT_SET world reload retained personal default contents, other personal set, mode cleanup, and saved setting");
+            });
+        } else if (op.equals("create")) {
             client(() -> GameApi.create(mc, screen()));
             long end = System.currentTimeMillis() + 120000;
             while ((mc.player == null

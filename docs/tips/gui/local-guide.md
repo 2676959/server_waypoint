@@ -1476,3 +1476,12 @@ After a GUI change:
 - Translation keys, textures, and theme roles use their shared resource locations.
 - Stonecutter markers are balanced and replacement tokens remain in valid positions.
 - The exact active target and a relevant compatibility target compile or test successfully.
+
+### Xaero default-list client setting
+
+`ClientConfigSettings.XAERO_DEFAULT_LIST_DIRECT_SYNC` defines the persisted toggle for the exact
+`gui.xaero_default` list. Off (the default) uses a separate owned set; On syncs directly into
+Xaero's default set. `forScreen(...)` includes it only for installed Xaero Minimap, immediately
+after its auto-sync setting. Use `createSettingRow(...)` for its toggle, tooltip and reset button.
+The Xaero Sync now dialog explains that direct mode replaces default-set contents, including
+personal waypoints. The choice changes the next synchronization rather than starting one itself.

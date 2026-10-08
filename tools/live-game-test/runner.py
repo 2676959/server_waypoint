@@ -121,7 +121,8 @@ def write_options(output, source=None):
     if source:
         options.update(line.split(":", 1) for line in Path(source).read_text().splitlines() if ":" in line)
     options.update(renderDistance="2", simulationDistance="5", maxFps="20",
-                   pauseOnLostFocus="false", lang="en_us", onboardAccessibility="false")
+                   pauseOnLostFocus="false", lang="en_us", onboardAccessibility="false",
+                   soundCategory_master="0.0")
     Path(output).write_text("\n".join(key + ":" + value for key, value in options.items()) + "\n")
 
 
@@ -279,7 +280,7 @@ def run_profile(prepared, row, output, suite="editor", heap=1024, startup_timeou
                 steps += ["native-xaero"]
                 if row["voxelmap"]:
                     steps += ["voxel-clear"]
-                steps += ["map-cancel-add", "map-add-save", "map-stale", "close", "load", "persisted", "close"]
+                steps += ["map-cancel-add", "map-add-save", "map-stale", "default-set", "close", "load", "persisted", "default-persisted", "close"]
                 if suite == "core":
                     steps = ["create", "core-form", "close"]
                 for index, name in enumerate(steps, 1):
@@ -296,6 +297,9 @@ def run_profile(prepared, row, output, suite="editor", heap=1024, startup_timeou
                 if suite == "editor":
                     store = game / "saves/live-editor-verification/server_waypoint/waypoints"
                     verify_store(store, row["voxelmap"])
+                    from persistence import verify_default_set
+                    verify_default_set(game)
+                    result["default_set_disk"] = "PASS"
                     shutil.copytree(store, home / "persisted-waypoints")
                     result["persisted_json"] = "PASS"
             result["stage"] = "quit"

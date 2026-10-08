@@ -4,6 +4,12 @@ import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 import net.minecraft.resources.ResourceKey;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import _959.server_waypoint.common.client.ClientConfig;
+import _959.server_waypoint.common.client.WaypointClientMod;
+import com.google.gson.Gson;
+import java.lang.reflect.Field;
 import xaero.common.minimap.waypoints.Waypoint;
 import xaero.hud.minimap.waypoint.set.WaypointSet;
 import xaero.hud.minimap.world.MinimapWorld;
@@ -22,6 +28,212 @@ class XaeroMinimapHelperTest {
     private static final String DEFAULT_SET = "gui.xaero_default";
     private static final String SYNCED_SET = "sw\u241Ftest";
     private static final String SYNCED_WAYPOINT = "sw\u241Fserver waypoint";
+
+    private ClientConfig previousConfig;
+    private final Gson gson = new Gson();
+
+    @BeforeEach
+    void installConfig() throws Exception {
+        previousConfig = WaypointClientMod.getClientConfig();
+        configField().set(null, gson.fromJson("{}", ClientConfig.class));
+    }
+
+    @AfterEach
+    void restoreConfig() throws Exception {
+        configField().set(null, previousConfig);
+    }
+
+    private static Field configField() throws Exception {
+        Field field = WaypointClientMod.class.getDeclaredField("clientConfig");
+        field.setAccessible(true);
+        return field;
+    }
+
+    private void setConfig(boolean directSync) throws Exception {
+        ClientConfig config = gson.fromJson("{\"xaeroDefaultListDirectSync\":" + directSync + "}", ClientConfig.class);
+        configField().set(null, gson.fromJson(gson.toJson(config), ClientConfig.class));
+    }
+
+    @Test
+    void defaultSetHighlightsOwnedMarkerButNotPersonalDuplicate() throws Exception {
+        WaypointSet set = WaypointSet.Builder.begin().setName(DEFAULT_SET).build();
+        Waypoint owned = createWaypoint("sw\u241FSpawn");
+        Waypoint personal = createWaypoint("Spawn");
+        set.add(owned);
+        set.add(personal);
+
+        assertEquals(0x7F0D47A1, SyncedWaypointHighlight.xaerosWaypointBackground(set, owned));
+        assertEquals(0, SyncedWaypointHighlight.xaerosWaypointBackground(set, personal));
+    }
+
+    @Test
+    void detachedSameNameMarkerCannotBorrowDefaultSetHighlight() throws Exception {
+        WaypointSet set = WaypointSet.Builder.begin().setName(DEFAULT_SET).build();
+        set.add(createWaypoint("sw\u241FSpawn"));
+        Waypoint detached = createWaypoint("sw\u241FSpawn");
+
+        assertEquals(0, SyncedWaypointHighlight.xaerosWaypointBackground(set, detached));
+    }
+
+    @Test
+    void markedNameInAnotherPersonalSetDoesNotReceiveDefaultOwnership() throws Exception {
+        WaypointSet set = WaypointSet.Builder.begin().setName("Personal").build();
+        Waypoint marked = createWaypoint("sw\u241FSpawn");
+        set.add(marked);
+
+        assertEquals(0, SyncedWaypointHighlight.xaerosWaypointBackground(set, marked));
+    }
+
+    @Test
+    void directDefaultSyncReplacesContentsAndKeepsOtherPersonalSets() throws Exception {
+        setConfig(true);
+        MinimapWorld world = createMinimapWorld();
+        world.addWaypointSet(DEFAULT_SET);
+        world.getWaypointSet(DEFAULT_SET).add(createWaypoint("Personal"));
+        world.addWaypointSet("Other personal set");
+        world.getWaypointSet("Other personal set").add(createWaypoint("Keep"));
+        world.setCurrentWaypointSetId(DEFAULT_SET);
+        SimpleWaypoint server = new SimpleWaypoint("Spawn", "S", 1, 2, 3, 0, 0, false);
+
+        assertTrue(XaeroMinimapHelper.replaceWaypointList(world,
+                new WaypointList(DEFAULT_SET, 1, List.of(server)), XaeroMinimapHelperTest::createWaypoint));
+
+        assertNull(world.getWaypointSet("sw\u241Fgui.xaero_default"));
+        assertEquals(1, world.getWaypointSet(DEFAULT_SET).size());
+        assertEquals("sw\u241FSpawn", world.getWaypointSet(DEFAULT_SET).get(0).getName());
+        assertEquals(1, world.getWaypointSet(DEFAULT_SET).get(0).getX());
+        assertEquals(1, world.getWaypointSet("Other personal set").size());
+        assertEquals(DEFAULT_SET, world.getCurrentWaypointSetId());
+        assertEquals(0x7F0D47A1, SyncedWaypointHighlight.xaerosWaypointBackground(
+                world.getWaypointSet(DEFAULT_SET), world.getWaypointSet(DEFAULT_SET).get(0)));
+    }
+
+    @Test
+    void separateDefaultSyncPreservesPersonalDefaultContents() throws Exception {
+        MinimapWorld world = createMinimapWorld();
+        world.addWaypointSet(DEFAULT_SET);
+        world.getWaypointSet(DEFAULT_SET).add(createWaypoint("Personal"));
+
+        assertTrue(XaeroMinimapHelper.replaceWaypointList(world,
+                new WaypointList(DEFAULT_SET, 1, List.of()), XaeroMinimapHelperTest::createWaypoint));
+
+        assertNotNull(world.getWaypointSet("sw\u241Fgui.xaero_default"));
+        assertEquals("Personal", world.getWaypointSet(DEFAULT_SET).get(0).getName());
+    }
+
+    @Test
+    void fullSyncUsesDefaultSetAndRemovesStaleSeparateCopy() throws Exception {
+        setConfig(true);
+        MinimapWorld world = createMinimapWorld();
+        world.addWaypointSet(DEFAULT_SET);
+        world.addWaypointSet("sw\u241Fgui.xaero_default");
+        world.setCurrentWaypointSetId("sw\u241Fgui.xaero_default");
+        world.getWaypointSet(DEFAULT_SET).add(createWaypoint("Personal"));
+
+        assertTrue(XaeroMinimapHelper.replaceWaypointLists(world,
+                List.of(new WaypointList(DEFAULT_SET, 1, List.of()))));
+
+        assertNull(world.getWaypointSet("sw\u241Fgui.xaero_default"));
+        assertEquals(0, world.getWaypointSet(DEFAULT_SET).size());
+        assertEquals(DEFAULT_SET, world.getCurrentWaypointSetId());
+    }
+
+    @Test
+    void fullSyncWithoutDefaultListOnlyRemovesMarkedDefaultWaypoints() throws Exception {
+        setConfig(true);
+        MinimapWorld world = createMinimapWorld();
+        world.addWaypointSet(DEFAULT_SET);
+        world.getWaypointSet(DEFAULT_SET).add(createWaypoint("Personal"));
+        world.getWaypointSet(DEFAULT_SET).add(createWaypoint("sw\u241FSpawn"));
+        world.setCurrentWaypointSetId(DEFAULT_SET);
+
+        assertTrue(XaeroMinimapHelper.replaceWaypointLists(world, List.of()));
+
+        assertEquals(1, world.getWaypointSet(DEFAULT_SET).size());
+        assertEquals("Personal", world.getWaypointSet(DEFAULT_SET).get(0).getName());
+        assertEquals(DEFAULT_SET, world.getCurrentWaypointSetId());
+    }
+
+    @Test
+    void switchingBackToSeparateSetCleansMarkedEntriesOnly() throws Exception {
+        MinimapWorld world = createMinimapWorld();
+        world.addWaypointSet(DEFAULT_SET);
+        world.getWaypointSet(DEFAULT_SET).add(createWaypoint("Personal"));
+        world.getWaypointSet(DEFAULT_SET).add(createWaypoint("sw\u241FSpawn"));
+
+        XaeroMinimapHelper.replaceWaypointList(world,
+                new WaypointList(DEFAULT_SET, 1, List.of()), XaeroMinimapHelperTest::createWaypoint);
+
+        assertEquals(1, world.getWaypointSet(DEFAULT_SET).size());
+        assertEquals("Personal", world.getWaypointSet(DEFAULT_SET).get(0).getName());
+        assertNotNull(world.getWaypointSet("sw\u241Fgui.xaero_default"));
+    }
+
+    @Test
+    void incrementalDefaultUpdateDoesNotDeduplicatePersonalEntries() throws Exception {
+        setConfig(true);
+        MinimapWorld world = createMinimapWorld();
+        world.addWaypointSet(DEFAULT_SET);
+        WaypointSet set = world.getWaypointSet(DEFAULT_SET);
+        set.add(createWaypoint("Personal"));
+        set.add(createWaypoint("Personal"));
+        set.add(createWaypoint("sw\u241FSpawn"));
+
+        XaeroMinimapHelper.replaceSyncedWaypoint(set,
+                new SimpleWaypoint("Spawn", "S", 9, 2, 3, 0, 0, false), XaeroMinimapHelperTest::createWaypoint);
+
+        assertEquals(3, set.size());
+        assertEquals("sw\u241FSpawn", set.get(2).getName());
+        assertEquals(9, set.get(2).getX());
+        assertTrue(XaeroMinimapHelper.removeSyncedWaypoint(set, "Spawn"));
+        assertEquals(2, set.size());
+        assertFalse(XaeroMinimapHelper.removeSyncedWaypoint(set, "Personal"));
+    }
+
+    @Test
+    void deletingDirectDefaultListRetainsDefaultSetAndPersonalEntries() throws Exception {
+        MinimapWorld world = createMinimapWorld();
+        world.addWaypointSet(DEFAULT_SET);
+        world.setCurrentWaypointSetId(DEFAULT_SET);
+        world.getWaypointSet(DEFAULT_SET).add(createWaypoint("Personal"));
+        world.getWaypointSet(DEFAULT_SET).add(createWaypoint("sw\u241FSpawn"));
+
+        XaeroMinimapHelper.removeSyncedWaypointSet(world, DEFAULT_SET);
+
+        assertEquals(1, world.getWaypointSet(DEFAULT_SET).size());
+        assertEquals("Personal", world.getWaypointSet(DEFAULT_SET).get(0).getName());
+        assertNotNull(world.getCurrentWaypointSet());
+    }
+
+    @Test
+    void deletingDefaultListAfterChangingModeCleansBothOwnedCopies() throws Exception {
+        MinimapWorld world = createMinimapWorld();
+        world.addWaypointSet(DEFAULT_SET);
+        world.addWaypointSet("sw\u241Fgui.xaero_default");
+        world.setCurrentWaypointSetId("sw\u241Fgui.xaero_default");
+        world.getWaypointSet(DEFAULT_SET).add(createWaypoint("Personal"));
+        world.getWaypointSet(DEFAULT_SET).add(createWaypoint("sw\u241FSpawn"));
+
+        XaeroMinimapHelper.removeSyncedWaypointSet(world, "sw\u241Fgui.xaero_default");
+
+        assertNull(world.getWaypointSet("sw\u241Fgui.xaero_default"));
+        assertEquals(1, world.getWaypointSet(DEFAULT_SET).size());
+        assertEquals(DEFAULT_SET, world.getCurrentWaypointSetId());
+    }
+
+    @Test
+    void unrepresentableDefaultWaypointDoesNotClearPersonalContents() throws Exception {
+        setConfig(true);
+        MinimapWorld world = createMinimapWorld();
+        world.addWaypointSet(DEFAULT_SET);
+        world.getWaypointSet(DEFAULT_SET).add(createWaypoint("Personal"));
+        SimpleWaypoint waypoint = new SimpleWaypoint("A\u241FB", "A", 1, 2, 3, 0, 0, false);
+
+        assertFalse(XaeroMinimapHelper.replaceWaypointList(world,
+                new WaypointList(DEFAULT_SET, 1, List.of(waypoint)), XaeroMinimapHelperTest::createWaypoint));
+
+        assertEquals("Personal", world.getWaypointSet(DEFAULT_SET).get(0).getName());
+    }
 
     @Test
     void skippedListDoesNotReportSuccessfulSync() throws ReflectiveOperationException {

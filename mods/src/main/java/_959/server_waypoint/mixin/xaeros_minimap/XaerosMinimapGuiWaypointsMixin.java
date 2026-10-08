@@ -4,7 +4,6 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.screens.WaypointEditScreen;
 import _959.server_waypoint.common.client.integrations.XaerosWorldMapWaypointHelper;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
-import _959.server_waypoint.common.util.SyncedWaypointName;
 import _959.server_waypoint.mixin.ButtonOnPressAccessor;
 import java.util.ArrayList;
 import net.minecraft.client.gui.components.Button;
@@ -42,10 +41,9 @@ public abstract class XaerosMinimapGuiWaypointsMixin extends Screen {
             ArrayList<Waypoint> selected = this.getSelectedWaypointsList();
             if (selected.size() == 1 && this.displayedWorld != null) {
                 String name = selected.get(0).getName();
-                String decoded = SyncedWaypointName.parseSyncedName(name);
                 var target = XaerosWorldMapWaypointHelper.resolveSyncedEditTarget(
                         XaerosWorldMapWaypointHelper.getWaypointDimensionName(this.displayedWorld),
-                        this.displayedWorld.getCurrentWaypointSetId(), decoded == null ? name : decoded,
+                        this.displayedWorld.getCurrentWaypointSetId(), name,
                         WaypointClientMod.getInstance());
                 if (target != null) {
                     MinecraftClientHelper.setScreen(new WaypointEditScreen((Screen) (Object) this,

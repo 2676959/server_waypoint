@@ -1,6 +1,7 @@
 package _959.server_waypoint.common.client.integrations;
 
 import _959.server_waypoint.common.util.SyncedWaypointName;
+import _959.server_waypoint.common.util.XaeroMinimapHelper;
 import _959.server_waypoint.core.WaypointFileManager;
 import _959.server_waypoint.core.WaypointFilesManagerCore;
 import _959.server_waypoint.core.waypoint.SimpleWaypoint;
@@ -30,7 +31,12 @@ public final class XaerosWorldMapWaypointHelper {
             String waypointName,
             WaypointFilesManagerCore files
     ) {
-        String listName = SyncedWaypointName.parseSyncedName(rawSetName);
+        String listName = XaeroMinimapHelper.getSyncedWaypointListName(
+                rawSetName, waypointName);
+        String decoded = SyncedWaypointName.parseSyncedName(waypointName);
+        if (decoded != null) {
+            waypointName = decoded;
+        }
         if (dimensionName == null || listName == null) {
             return null;
         }

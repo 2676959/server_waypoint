@@ -10,8 +10,8 @@ public final class SyncedWaypointHighlight {
     }
 
     public static int xaerosWaypointBackground(WaypointSet waypointSet, Waypoint waypoint) {
-        // Current synchronized waypoints have plain names; the set owns the marker.
-        if (waypoint == null || waypointSet == null || !SyncedWaypointName.isSinglePartSyncedName(waypointSet.getName())) {
+        if (waypoint == null || waypointSet == null
+                || XaeroMinimapHelper.getSyncedWaypointListName(waypointSet.getName(), waypoint.getName()) == null) {
             return 0;
         }
         // Xaero appends its own server waypoint rows after the selected set's entries.
