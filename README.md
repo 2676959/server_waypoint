@@ -23,23 +23,20 @@ This guide covers **4.0.0**. Read the [changelog](CHANGELOG.md) for new features
 - Use Xaero's World Map menus to add or edit server waypoints.
 - Browse and teleport to waypoints on other servers when the administrator enables Velocity support.
 
-## Install
+## Feature availability by Minecraft version
 
-Download a JAR that matches **both your Minecraft version and your platform** from [Modrinth](https://modrinth.com/plugin/server_waypoint/versions), [CurseForge](https://www.curseforge.com/minecraft/mc-mods/server-waypoint) (mods only) or [GitHub releases](https://github.com/2676959/server_waypoint/releases).
+These ranges apply to the supported **4.0.0** builds. Always use the JAR for your Minecraft version and platform; a feature's range does not add support for versions without a matching build.
 
-| Where you play | What to install | Where the JAR goes |
-| --- | --- | --- |
-| Fabric server or client | Fabric build and [Fabric API](https://modrinth.com/mod/fabric-api) | `mods/` |
-| Forge server or client | Forge build | `mods/` |
-| NeoForge server or client | NeoForge build | `mods/` |
-| Paper, Folia or Purpur server | Paper build | `plugins/` |
-| Velocity proxy, for cross-server waypoints | Velocity build and Server Waypoint on each backend | `plugins/` |
+| Feature | Platform | Available Minecraft versions | Unavailable versions or limitations |
+| --- | --- | --- | --- |
+| Waypoint item icons in chat | Fabric, Forge, NeoForge, Paper/Folia/Purpur | 1.21.9 and later, within each platform's supported versions | Before 1.21.9, waypoints use text or initials. Only mapped vanilla item/block textures appear as chat icons; custom and VoxelMap icons use text or initials. |
+| Player heads in chat feedback | Fabric, Forge, NeoForge, Paper/Folia/Purpur | 1.21.9 and later, within each platform's supported versions | Before 1.21.9, feedback uses text without player heads. |
+| Text-display entity navigation (`text_display`, the floating label) | Fabric, Forge, NeoForge, Paper/Folia/Purpur | Every supported target: Fabric 1.20–26.3, Forge 1.20–26.2, NeoForge 1.20.2–26.3, Paper/Folia/Purpur 1.21–26.3 | No version exclusions within the supported targets. |
+| VoxelMap sync, upload and editing | Fabric client | Every supported Fabric version, 1.20–26.3 | Requires a matching VoxelMap-Updated build and the Server Waypoint client mod. |
+| VoxelMap sync, upload and editing | Forge client | 1.21.11, 26.1–26.1.2, 26.2 | Unavailable on supported Forge versions before 1.21.11. Requires VoxelMap-Updated and the Server Waypoint client mod. |
+| VoxelMap sync, upload and editing | NeoForge client | 1.21.2–1.21.4, 1.21.11, 26.1–26.1.2, 26.2, 26.3 | Unavailable on 1.20.2–1.21.1 and 1.21.5–1.21.10. Requires VoxelMap-Updated and the Server Waypoint client mod. |
 
-Restart after installing. For singleplayer, install the mod in your Minecraft client. To use the client features on a multiplayer server, that server must also have Server Waypoint installed.
-
-The 4.0.0 branch includes Minecraft 26.3 builds for Fabric, NeoForge and Paper; its newest Forge target is 26.2. Older Minecraft versions have their own downloads. Check the version list rather than using a JAR for a different version.
-
-**Updating from 3.x:** back up your waypoint data and update installed clients and servers together. Use matching builds on Velocity and its participating servers too. Read [Before you update](CHANGELOG.md#before-you-update), especially if you use command scripts or custom permissions.
+Chat icons, player heads and text-display navigation do not require the client mod. The waypoint manager, in-world client markers and Xaero integrations are available on every supported client-mod target; Xaero's World Map actions also require Xaero's Minimap. These client features can connect to a server running any supported backend, including Paper, Folia or Purpur.
 
 ## Your first waypoint
 
@@ -81,6 +78,8 @@ Map mods are optional and go on your client alongside Server Waypoint:
 | NeoForge | 1.21.2–1.21.4, 1.21.11, 26.1–26.1.2, 26.2, 26.3 |
 
 On multiplayer servers, automatic sync keeps shared waypoints up to date. Your personal map waypoints are kept separately. In singleplayer, opening a world does not automatically replace the map's saved waypoints; use **Sync now** in client settings when you want a full refresh. Synced waypoints can be edited through Server Waypoint's screens.
+
+**Xaero's default waypoint set:** `gui.xaero_default` is the translation key and internal name of Xaero's Minimap's **Default** set. Uploading that set creates a Server Waypoint list named `gui.xaero_default`. In 4.0.0, syncing this list back creates a separate server-owned set; it does not merge into your personal Default set.
 
 To copy your map waypoints to the server, run `/wp upload xaero` or `/wp upload voxelmap`. Upload needs permission from the administrator. A normal upload adds missing waypoints and keeps the server's version when there is a conflict. See the [upload guide](docs/tips/server-guide.md#uploading-from-client-map-mods) before using overwrite or delete options.
 
