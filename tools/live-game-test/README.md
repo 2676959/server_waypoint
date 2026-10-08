@@ -12,7 +12,64 @@ The test agent is external to the mod. It does not register bytecode transformer
 
 The tool does not install Minecraft or loader profiles. Each manifest names an existing launch export. Exports are parsed as data and never executed as shell scripts. Keep account-bearing exports private; the runner substitutes an offline test identity and removes account tokens and identifiers.
 
-## Run
+## Unattended batch (recommended)
+
+```sh
+rtk proxy python3 tools/live-game-test/run.py batch \
+    --versions 1.20.1-Forge 1.21.5-Fabric 26.2-NeoForge \
+    --clients /path/to/minecraft/versions \
+    --hmcl /path/to/HMCL.jar \
+    --logs /absolute/path/to/live-game-logs
+```
+
+This single command selects installed clients, exports offline launch scripts through HMCL, discovers
+compatible JDKs, builds fresh production JARs and probes, runs the tests, closes clients, and reports
+failures. No launcher interaction or manual command export is required. Preparation runs once per
+target/suite, and a failed profile or build does not prevent the remaining profiles from running.
+
+Configure the reusable installed-client store with `--clients` or `LIVE_GAME_TEST_CLIENTS`;
+the fallback is `~/.minecraft/versions`. Keep all installed test clients in the configured store
+for future runs. Local paths belong in your environment, not in repository files.
+For repeated unattended runs, set the environment once:
+
+```sh
+export LIVE_GAME_TEST_CLIENTS=/path/to/minecraft/versions
+export LIVE_GAME_TEST_HMCL=/path/to/HMCL.jar
+```
+
+Directories matching exactly
+`<minecraft-version>-<mod-loader>` (Fabric, Forge or NeoForge, case insensitive) are dedicated test
+clients and may receive permanent testing setup changes. Batch exports are refreshed and saved as
+`<client>/.live-game-test/launch.sh`; HMCL may maintain the installed version's native/library metadata.
+Runtime test worlds and logs remain in the requested evidence directory. Other named modpacks and
+launcher-suffix directories are excluded from automatic selection.
+
+`--versions 1.21.5` selects all matching installed test loaders for that Minecraft version.
+`--versions 1.21.5-fabric` selects only that loader. Repeated selections are deduplicated.
+Exact repository targets take precedence; runtimes such as 1.21.1 resolve through the supported
+`mcVersionRange`. When Fabric's runtime differs from its build target, the installed client's single
+Fabric API JAR is automatically used as a hash-checked override.
+
+Optional flags: `--clients /path/to/versions`, `--hmcl /path/to/HMCL.jar`, `--jdk /path/to/jdk-25`,
+`--exports /path/to/existing/exports`, `--jobs 1..4` (default 1), `--heap 512|1024|2048` (default 1024),
+`--suite audit|editor|core` (default editor), `--startup-timeout SECONDS`, and `--step-timeout SECONDS`.
+HMCL uses `--hmcl` or `LIVE_GAME_TEST_HMCL`; JDKs are discovered from `JAVA_HOME`, `JDK_HOME`,
+macOS JDK installations, Homebrew, Linux system JDKs and Gradle toolchain installations.
+Missing clients or dependencies are recorded as failed setup runs; batch does not install Minecraft.
+
+Each invocation creates a new timestamped directory under `--logs`, so the same log root can be reused.
+It contains full build/export logs, per-profile stdout/stderr and Minecraft logs, crash reports,
+step evidence, `diagnostics.json`, `result.json`, `summary.json` and `report.md`.
+Warnings and errors are deduplicated with source file/line references and full exception causes.
+Console output is limited to one outcome and at most three diagnostics per profile, then totals and
+the evidence path. All actionable diagnostics remain available in JSON even when the preview is capped.
+Runtime ERROR/FATAL records or crash reports fail a run even if its assertions passed. Two exact
+non-actionable service messages (offline Realms feature-flag fetch and expired optional map update
+data) are retained with an exclusion reason and do not fail tests. Other warnings remain visible and
+do not fail a run. Exit codes: 0 pass, 1 failure, 130 interruption. A store lock prevents overlapping
+batch invocations; interruption stops owned clients and records unfinished profiles.
+
+## Individual stages
 
 From the repository root:
 

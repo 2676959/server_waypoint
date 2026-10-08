@@ -9,6 +9,7 @@ import sys
 import threading
 
 from prepare import prepare
+from clients import default_clients
 from runner import fresh_directory, run_profile, select_profiles, sha256, write_json
 
 
@@ -99,6 +100,20 @@ def run(args):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
+    batch = commands.add_parser("batch", help="Unattended build and live tests using reusable installed clients")
+    batch.add_argument("--versions", nargs="+", required=True, metavar="VERSION[-LOADER]")
+    batch.add_argument("--clients", type=Path, default=default_clients(),
+                       help="Installed versions directory; LIVE_GAME_TEST_CLIENTS or ~/.minecraft/versions")
+    batch.add_argument("--logs", type=Path, required=True, help="Full evidence root; each invocation creates a fresh subdirectory")
+    batch.add_argument("--repo", type=Path, default=REPO)
+    batch.add_argument("--jdk", type=Path, help="Compile JDK 25+ home; automatically discovered by default")
+    batch.add_argument("--hmcl", type=Path, help="HMCL JAR; defaults to LIVE_GAME_TEST_HMCL")
+    batch.add_argument("--exports", type=Path, action="append", default=[], help="Optional pre-exported launch directory")
+    batch.add_argument("--suite", choices=["audit", "editor", "core"], default="editor")
+    batch.add_argument("--jobs", type=int, choices=range(1, 5), default=1)
+    batch.add_argument("--heap", type=int, choices=[512, 1024, 2048], default=1024)
+    batch.add_argument("--startup-timeout", type=int, default=300)
+    batch.add_argument("--step-timeout", type=int, default=180)
     manifest = commands.add_parser("manifest", help="Create a private manifest from literal HMCL launch exports")
     manifest.add_argument("--matrix", type=Path, default=TOOL / "top-downloads.json")
     manifest.add_argument("--exports", type=Path, action="append", required=True)
@@ -132,6 +147,9 @@ def main():
         else:
             if args.startup_timeout <= 0 or args.step_timeout <= 0:
                 parser.error("Timeouts must be positive")
+            if args.command == "batch":
+                from batch import run_batch
+                return run_batch(args)
             return run(args)
     except KeyboardInterrupt:
         print("Interrupted; owned clients are being stopped and results retained.", file=sys.stderr)

@@ -204,11 +204,12 @@ def attach(java, tools, process, agent, payload, output):
         raise RuntimeError("Java attach failed; see " + str(output))
 
 
-def run_profile(prepared, row, output, suite="editor", heap=1024, startup_timeout=300, step_timeout=180, cancelled=None):
+def run_profile(prepared, row, output, suite="editor", heap=1024, startup_timeout=300, step_timeout=180,
+                cancelled=None, quiet=False, existing_home=False):
     import shutil
     from persistence import verify_store
     suite = row.get("suite", suite)
-    home = fresh_directory(output / row["name"])
+    home = (output / row["name"]) if existing_home else fresh_directory(output / row["name"])
     game = fresh_directory(home / "game")
     mods = fresh_directory(game / "mods")
     result = {"profile": row["name"], "target": row["target"], "minecraft": row["minecraft"],
@@ -241,7 +242,6 @@ def run_profile(prepared, row, output, suite="editor", heap=1024, startup_timeou
         with OwnedProcess(args, game, environment, cancelled) as process:
             result["pid"] = process.pid
             write_json(home / "result.json", result)
-            print("START", row["name"], f"pid={process.pid}", flush=True)
             since = None
             deadline = time.monotonic() + startup_timeout
             count = 0
@@ -293,7 +293,6 @@ def run_profile(prepared, row, output, suite="editor", heap=1024, startup_timeou
                     state = wait_result(process, proof, max(step_timeout, 240) if name in ("create", "load") else step_timeout)
                     result["steps"].append({"name": name, "result": proof.name, "state": state})
                     write_json(home / "result.json", result)
-                    print(row["name"], name, "PASS", flush=True)
                 if suite == "editor":
                     store = game / "saves/live-editor-verification/server_waypoint/waypoints"
                     verify_store(store, row["voxelmap"])
@@ -313,10 +312,13 @@ def run_profile(prepared, row, output, suite="editor", heap=1024, startup_timeou
     except Exception as failure:
         result["status"] = "FAIL"
         result["failure"] = str(failure)
-        print("FAIL", row["name"], type(failure).__name__, flush=True)
     finally:
         result["exit_code"] = process.poll() if process else None
         result["finished_at"] = time.time()
+        from diagnostics import record_diagnostics
+        record_diagnostics(home, result)
         write_json(home / "result.json", result)
-    print(result["status"], row["name"], flush=True)
+    if not quiet:
+        from diagnostics import print_result
+        print_result(result)
     return result
