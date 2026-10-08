@@ -20,6 +20,7 @@
     "MapItemSavedDataAccessor"
   ],
   "client": [
+    "ButtonOnPressAccessor",
     "BoundKeyAccessor",
     "ClientPlayNetworkHandlerMixin",
     "GameHudMixin",
@@ -42,7 +43,8 @@
     "xaeros_minimap.XaerosMinimapWaypointMixin",
     "xaeros_worldmap.XaerosWorldMapWaypointReaderMixin",
     "xaeros_worldmap.XaerosWorldMapWaypointMixin",
-    "xaeros_worldmap.XaeroWorldMapGuiMapMixin"
+    "xaeros_worldmap.XaeroWorldMapGuiMapMixin",
+    "xaeros_minimap.XaerosMinimapGuiWaypointsMixin"
   ],
   "server": [
     "PlayerManagerMixin",

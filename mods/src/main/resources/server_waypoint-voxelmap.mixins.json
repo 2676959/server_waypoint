@@ -10,7 +10,8 @@
     "VoxelMapGuiListWaypointsItemMixin",
     "VoxelMapGuiWaypointsMixin",
     "VoxelMapPersistentMapMixin",
-    "VoxelMapWaypointContainerMixin"
+    "VoxelMapWaypointContainerMixin",
+    "VoxelMapGuiPersistentMapMixin"
   ],
   "injectors": {
     "defaultRequire": 1

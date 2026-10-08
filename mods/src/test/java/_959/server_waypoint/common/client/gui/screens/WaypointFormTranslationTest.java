@@ -60,6 +60,9 @@ class WaypointFormTranslationTest {
     );
     // The keys the screens use that other screens define too.
     private static final List<String> SHARED_KEYS = List.of(
+            "server_waypoint.map.add_to_server",
+            "server_waypoint.map.edit_on_server",
+            "server_waypoint.map.share.add_prompt",
             "waypoint.add.screen.title",
             "waypoint.edit.screen.title",
             "waypoint.edit.screen.location",

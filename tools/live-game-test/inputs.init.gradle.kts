@@ -1,4 +1,5 @@
 import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.api.plugins.BasePluginExtension
 
 // Explicit test preparation only. No source set or probe is added to production artifacts.
 gradle.beforeProject {
@@ -49,12 +50,14 @@ gradle.beforeProject {
                     paths("compile.paths", (main.get().output + main.get().compileClasspath).files)
                     paths("mods.paths", mods.files)
                     paths("tools.paths", tools.files.sortedBy { if (it.name.startsWith("tiny-remapper")) 1 else 0 })
+                    val archiveName = target.extensions.getByType<BasePluginExtension>().archivesName.get()
+                    paths("production.paths", listOf(target.layout.buildDirectory.file("libs/$archiveName.jar").get().asFile))
                     if (loader == "fabric" && minecraft.substringBefore('.').toInt() < 26) {
                         val loom = target.extensions.getByName("loom")
                         val mappings = loom.javaClass.getMethod("getMappingsFile").invoke(loom) as java.io.File
                         paths("mappings.paths", listOf(mappings))
                     } else if (loader == "forge" && minecraft.split('.').map(String::toInt).let {
-                            it[0] == 1 && (it[1] < 21 || (it[1] == 21 && it.getOrElse(2) { 0 } < 11))
+                            it[0] == 1 && it[1] == 20 && it.getOrElse(2) { 0 } < 6
                         }) {
                         paths("mappings.paths", listOf(target.layout.buildDirectory.file("mixin/official-to-srg.tsrg").get().asFile))
                     }

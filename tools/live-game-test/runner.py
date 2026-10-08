@@ -206,6 +206,7 @@ def attach(java, tools, process, agent, payload, output):
 def run_profile(prepared, row, output, suite="editor", heap=1024, startup_timeout=300, step_timeout=180, cancelled=None):
     import shutil
     from persistence import verify_store
+    suite = row.get("suite", suite)
     home = fresh_directory(output / row["name"])
     game = fresh_directory(home / "game")
     mods = fresh_directory(game / "mods")
@@ -249,6 +250,8 @@ def run_profile(prepared, row, output, suite="editor", heap=1024, startup_timeou
                 attach(java, tools, process, agent, f"screen|{screen}", home / f"screen-{count}.attach.log")
                 if screen.exists():
                     state = screen.read_text()
+                    if "LoadingErrorScreen" in state:
+                        raise RuntimeError("Loader error screen; see game logs")
                     if "title=true" in state and "overlay=null" in state:
                         since = since or time.monotonic()
                         if time.monotonic() - since >= 15:
@@ -269,14 +272,16 @@ def run_profile(prepared, row, output, suite="editor", heap=1024, startup_timeou
             result["stage"] = "audit"
             attach(java, tools, process, agent, f"audit|{audit}|{targets}", home / "mixin-audit.attach.log")
             result["mixin_audit"] = wait_result(process, audit, step_timeout)
-            if suite == "editor":
-                steps = ["create", "seed", "map", "map-save", "select-nether", "map-nether-save"]
+            if suite in {"editor", "core"}:
+                steps = ["create", "seed", "entrypoints", "map", "map-save", "select-nether", "map-nether-save"]
                 if row["voxelmap"]:
                     steps += ["voxel-save", "voxel-fallback"]
                 steps += ["native-xaero"]
                 if row["voxelmap"]:
                     steps += ["voxel-clear"]
                 steps += ["map-cancel-add", "map-add-save", "map-stale", "close", "load", "persisted", "close"]
+                if suite == "core":
+                    steps = ["create", "core-form", "close"]
                 for index, name in enumerate(steps, 1):
                     key = f"{index:02}-{name}"
                     proof = home / (key + ".result")
@@ -288,10 +293,11 @@ def run_profile(prepared, row, output, suite="editor", heap=1024, startup_timeou
                     result["steps"].append({"name": name, "result": proof.name, "state": state})
                     write_json(home / "result.json", result)
                     print(row["name"], name, "PASS", flush=True)
-                store = game / "saves/live-editor-verification/server_waypoint/waypoints"
-                verify_store(store, row["voxelmap"])
-                shutil.copytree(store, home / "persisted-waypoints")
-                result["persisted_json"] = "PASS"
+                if suite == "editor":
+                    store = game / "saves/live-editor-verification/server_waypoint/waypoints"
+                    verify_store(store, row["voxelmap"])
+                    shutil.copytree(store, home / "persisted-waypoints")
+                    result["persisted_json"] = "PASS"
             result["stage"] = "quit"
             quit_result = home / "quit.result"
             attach(java, tools, process, agent, f"quit|{quit_result}|{helper}", home / "quit.attach.log")

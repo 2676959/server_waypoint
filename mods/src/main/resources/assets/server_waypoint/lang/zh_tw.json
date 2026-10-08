@@ -174,5 +174,8 @@
   "server_waypoint.theme.preset.translucent_dark": "半透明深色",
   "server_waypoint.theme.preset.modern_dark": "現代深色",
   "server_waypoint.theme.preset.high_contrast": "高對比",
-  "server_waypoint.theme.preset.classic": "經典"
+  "server_waypoint.theme.preset.classic": "經典",
+  "server_waypoint.map.add_to_server": "新增至伺服器",
+  "server_waypoint.map.edit_on_server": "在伺服器上編輯",
+  "server_waypoint.map.share.add_prompt": "將分享的路徑點 %s 新增至伺服器？"
 }

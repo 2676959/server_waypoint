@@ -174,5 +174,8 @@
   "server_waypoint.theme.preset.translucent_dark": "כהה שקוף למחצה",
   "server_waypoint.theme.preset.modern_dark": "כהה מודרני",
   "server_waypoint.theme.preset.high_contrast": "ניגודיות גבוהה",
-  "server_waypoint.theme.preset.classic": "קלאסי"
+  "server_waypoint.theme.preset.classic": "קלאסי",
+  "server_waypoint.map.add_to_server": "הוסף לשרת",
+  "server_waypoint.map.edit_on_server": "ערוך בשרת",
+  "server_waypoint.map.share.add_prompt": "להוסיף את נקודת הציון המשותפת %s לשרת?"
 }

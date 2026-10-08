@@ -50,7 +50,7 @@ public class XaerosWorldMapWaypointReaderMixin {
         var editTarget = syncedWaypoint ? XaerosWorldMapWaypointHelper.resolveSyncedEditTarget(
                 dimensionName, waypointAccess.sw$getRawSetName(), syncedWaypointName, WaypointClientMod.getInstance()
         ) : null;
-        rightClickOptions.add(new RightClickOption(syncedWaypoint ? "Edit on server" : "Add to server", rightClickOptions.size(), target) {
+        rightClickOptions.add(new RightClickOption(Component.translatable(syncedWaypoint ? "server_waypoint.map.edit_on_server" : "server_waypoint.map.add_to_server").getString(), rightClickOptions.size(), target) {
                         {
                             Objects.requireNonNull(pointer);
                         }

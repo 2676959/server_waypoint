@@ -38,7 +38,18 @@ public class WaypointAddScreen extends AbstractWaypointPropertiesScreen {
     }
 
     public WaypointAddScreen(Screen previousScreen, String dimensionName, String listName, WaypointPos defaultPos) {
-        super(previousScreen, Component.translatable("waypoint.add.screen.title"), dimensionName, listName, null);
+        this(previousScreen, dimensionName, listName, defaultPos, null);
+    }
+
+    /** Opens an add form with a detached map-share draft; no server mutation happens until Add. */
+    public static WaypointAddScreen fromWaypoint(Screen previousScreen, String dimensionName, String listName,
+            SimpleWaypoint defaults) {
+        return new WaypointAddScreen(previousScreen, dimensionName, listName, defaults.pos(), defaults);
+    }
+
+    private WaypointAddScreen(Screen previousScreen, String dimensionName, String listName, WaypointPos defaultPos,
+            @Nullable SimpleWaypoint defaults) {
+        super(previousScreen, Component.translatable("waypoint.add.screen.title"), dimensionName, listName, defaults);
         List<String> dimensions = mergeDimensionNames(
                 WaypointClientMod.getAllAvailableDimensionNames(),
                 List.of(dimensionName)

@@ -8,6 +8,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
@@ -40,7 +41,7 @@ public abstract class XaeroWorldMapGuiMapMixin {
     @Inject(method = "getRightClickOptions", at = @At(value = "TAIL"), remap = false)
     private void sw$addDropDownOption(CallbackInfoReturnable<ArrayList<RightClickOption>> cir, @Local(name = "options") ArrayList<RightClickOption> options) {
         GuiMap pointer = (GuiMap) (Object) this;
-        options.add(new RightClickOption("Add waypoint to server", options.size(), pointer) {
+        options.add(new RightClickOption(Component.translatable("server_waypoint.map.add_to_server").getString(), options.size(), pointer) {
                         {
                             Objects.requireNonNull(pointer);
                         }

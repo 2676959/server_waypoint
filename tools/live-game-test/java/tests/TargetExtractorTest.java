@@ -16,11 +16,12 @@ public class TargetExtractorTest {
         try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(fixture))) {
             zip.putNextEntry(new ZipEntry("server_waypoint-test.mixins.json"));
             zip.write(
-                    "{\"package\":\"test\",\"mixins\":[\"Required\",\"Optional\"]}"
+                    "{\"package\":\"test\",\"mixins\":[\"Required\",\"Optional\",\"Map\"]}"
                             .getBytes(StandardCharsets.UTF_8));
             zip.closeEntry();
             addMixin(zip, "Required", "com/example/Required", false);
             addMixin(zip, "Optional", "net.minecraft.OptionalAbsent", true);
+            addMixin(zip, "Map", "xaero.common.gui.GuiWaypoints", false);
         }
         PrintStream previous = System.out;
         ByteArrayOutputStream captured = new ByteArrayOutputStream();
@@ -31,11 +32,25 @@ public class TargetExtractorTest {
             System.setOut(previous);
         }
         String targets = captured.toString(StandardCharsets.UTF_8);
-        if (!targets.contains("com.example.Required\n")
-                || !targets.contains("OPTIONAL net.minecraft.OptionalAbsent\n")) {
+        if (!targets.lines().anyMatch(line -> line.equals("com.example.Required"))
+                || !targets.lines().anyMatch(line -> line.equals("OPTIONAL net.minecraft.OptionalAbsent"))
+                || !targets.lines().anyMatch(line -> line.equals("xaero.common.gui.GuiWaypoints"))) {
             throw new AssertionError("Incorrect runtime target extraction: " + targets);
         }
-        System.out.println("PASS target normalization and @Pseudo classification");
+        captured.reset();
+        try {
+            System.setOut(new PrintStream(captured, true, StandardCharsets.UTF_8));
+            ListMixinTargets.main(new String[] {fixture.toString(), "--optional-map-mods"});
+        } finally {
+            System.setOut(previous);
+        }
+        String coreTargets = captured.toString(StandardCharsets.UTF_8);
+        if (!coreTargets.lines().anyMatch(line -> line.equals("com.example.Required"))
+                || !coreTargets.lines().anyMatch(line -> line.equals("OPTIONAL xaero.common.gui.GuiWaypoints"))
+                || coreTargets.lines().anyMatch(line -> line.equals("xaero.common.gui.GuiWaypoints"))) {
+            throw new AssertionError("Incorrect core-only map classification: " + coreTargets);
+        }
+        System.out.println("PASS target normalization, @Pseudo and core-only map classification");
     }
 
     private static void addMixin(ZipOutputStream zip, String name, String target, boolean optional)

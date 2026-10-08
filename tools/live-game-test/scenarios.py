@@ -6,8 +6,9 @@ def version(value):
     return tuple(int(part) for part in value.split("."))
 
 
-def source_for(target, voxelmap):
-    source = Path(__file__).with_name("java").joinpath("LiveChecks.java.template").read_text()
+def source_for(target, voxelmap, core=False):
+    name = "CoreChecks.java.template" if core else "LiveChecks.java.template"
+    source = Path(__file__).with_name("java").joinpath(name).read_text()
     output, skip = [], False
     for line in source.splitlines(keepends=True):
         if "// @voxel-start" in line:
@@ -24,24 +25,33 @@ def api_for(target, voxelmap):
     current = version(minecraft)
     screen = "mc.gui.screen()" if current >= (26, 2) else "mc.screen"
     version_name = "name" if current >= (1, 21, 6) else "getName"
-    click = "screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(x, y, new net.minecraft.client.input.MouseButtonInfo(0, 0)), false)"
+    click = "screen.mouseClicked(new net.minecraft.client.input.MouseButtonEvent(x, y, new net.minecraft.client.input.MouseButtonInfo(com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT, 0)), false)"
     if current < (1, 21, 9):
-        click = "screen.mouseClicked(x, y, 0)"
+        click = "screen.mouseClicked(x, y, com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_LEFT)"
     settings = "new LevelSettings.DifficultySettings(Difficulty.PEACEFUL, false, false), true, WorldDataConfiguration.DEFAULT"
     if current < (26,):
         rules = "new GameRules()" if current <= (1, 21) else "new " + (
             "net.minecraft.world.level.gamerules." if current >= (1, 21, 11) else "") + "GameRules(net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS)"
         settings = "false, Difficulty.PEACEFUL, true, " + rules + ", WorldDataConfiguration.DEFAULT"
-    parent = ", parent" if current >= (1, 21) else ""
+    parent = ", parent" if current >= (1, 20, 4) else ""
     load = 'mc.createWorldOpenFlows().openWorld("live-editor-verification", () -> {});'
     if current >= (1, 21, 11):
         disconnect = "mc.disconnectFromWorld(net.minecraft.client.multiplayer.ClientLevel.DEFAULT_QUIT_MESSAGE);"
+    elif current >= (1, 21, 6):
+        disconnect = "mc.level.disconnect(net.minecraft.network.chat.Component.translatable(\"menu.disconnect\"));\n        mc.disconnect(new TitleScreen(), false);"
     elif current >= (1, 21):
         disconnect = "mc.level.disconnect();\n        mc.disconnect(new TitleScreen(), false);"
+    elif current >= (1, 20, 2):
+        disconnect = "mc.level.disconnect();\n        mc.disconnect(new TitleScreen());"
+        load = 'mc.createWorldOpenFlows().loadLevel(new TitleScreen(), "live-editor-verification");'
     else:
         disconnect = "mc.level.disconnect();\n        mc.clearLevel(new TitleScreen());"
         load = 'mc.createWorldOpenFlows().loadLevel(new TitleScreen(), "live-editor-verification");'
-    label = "option.getDisplayName()" + (".getString()" if loader == "forge" and current >= (26,) else "")
+    if (1, 20, 4) <= current < (1, 20, 6):
+        load = 'mc.createWorldOpenFlows().checkForBackupAndLoad("live-editor-verification", () -> {});'
+    elif current >= (1, 20, 6):
+        load = 'mc.createWorldOpenFlows().openWorld("live-editor-verification", () -> {});'
+    label = "((RightClickOption) option).getDisplayName()" + (".getString()" if current >= (26, 3) or loader == "forge" and current >= (26,) else "")
     voxel = "_959.server_waypoint.common.client.integrations.MapModIntegrations.syncNow(_959.server_waypoint.core.network.upload.UploadTarget.VOXELMAP, _959.server_waypoint.common.client.WaypointClientMod.getInstance());" if voxelmap else ""
     return f'''import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -85,7 +95,7 @@ public final class GameApi {{
         {disconnect}
     }}
 
-    public static String label(RightClickOption option) {{
+    public static String label(Object option) {{
         return {label};
     }}
 

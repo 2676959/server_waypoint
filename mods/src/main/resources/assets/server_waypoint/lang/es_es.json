@@ -174,5 +174,8 @@
   "server_waypoint.theme.preset.translucent_dark": "Oscuro translúcido",
   "server_waypoint.theme.preset.modern_dark": "Oscuro moderno",
   "server_waypoint.theme.preset.high_contrast": "Alto contraste",
-  "server_waypoint.theme.preset.classic": "Clásico"
+  "server_waypoint.theme.preset.classic": "Clásico",
+  "server_waypoint.map.add_to_server": "Añadir al servidor",
+  "server_waypoint.map.edit_on_server": "Editar en el servidor",
+  "server_waypoint.map.share.add_prompt": "¿Añadir el punto compartido %s al servidor?"
 }

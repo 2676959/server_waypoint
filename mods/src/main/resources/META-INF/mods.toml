@@ -38,12 +38,14 @@ side = "CLIENT"
 [[dependencies.${id}]]
 modId = "xaeroworldmap"
 mandatory = false
+versionRange = "[0,)"
 ordering = "NONE"
 side = "CLIENT"
 <% if (voxelmap) { %>
 [[dependencies.${id}]]
 modId = "voxelmap"
 mandatory = false
+versionRange = "[0,)"
 ordering = "NONE"
 side = "CLIENT"
 <% } %>

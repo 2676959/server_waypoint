@@ -47,6 +47,8 @@ def load_manifest(path, repo):
             raise ValueError("Unknown Stonecutter target: " + row["target"])
         if not re.fullmatch(r"[0-9.]+", row["minecraft"]):
             raise ValueError("Invalid Minecraft version")
+        if row.get("suite", "editor") not in {"editor", "core"}:
+            raise ValueError("Unknown profile suite")
         script = Path(row["launch_script"])
         if not script.is_absolute():
             script = path.parent / script
@@ -96,6 +98,10 @@ def prepare(repo, manifest, output, jdk, selected):
     if not (jdk / "bin/javac").is_file():
         raise ValueError("--jdk must name a JDK, not a Java executable")
     targets = sorted({row["target"] for row in rows})
+    for target in targets:
+        suites = {row.get("suite", "editor") for row in rows if row["target"] == target}
+        if "core" in suites and len(suites) > 1:
+            raise ValueError("Prepare core and editor profiles for the same target separately: " + target)
     command([str(repo / "gradlew"), "-I", str(TOOL / "inputs.init.gradle.kts"),
              "-PliveGameOutput=" + str(output), "--console=plain", "--no-configuration-cache",
              *[":mods:" + target + ":liveGameTestInputs" for target in targets]],
@@ -116,7 +122,6 @@ def prepare(repo, manifest, output, jdk, selected):
     agent_manifest.write_text("Manifest-Version: 1.0\nAgent-Class: Agent\n\n")
     command([jar, "cfm", str(output / "agent.jar"), str(agent_manifest), "-C", str(classes),
              "Agent.class", "-C", str(classes), "MixinAudit.class"], output / "jar-agent.log")
-    version_pin = properties(repo / "gradle.properties")["mod_version"]
     builds = {}
     for target in targets:
         home = fresh_directory(output / "helpers" / target)
@@ -126,13 +131,13 @@ def prepare(repo, manifest, output, jdk, selected):
         props = properties(repo / "mods/versions" / target / "gradle.properties")
         minecraft, loader = target.rsplit("-", 1)
         voxelmap = "voxelmap_" + loader in props
-        candidates = [path for path in (repo / "mods/versions" / target / "build/libs").glob("server_waypoint-" + version_pin + "-*.jar")
-                      if not any(token in path.name for token in ("-sources", "-dev", "-javadoc", "-thin", "-shadow", "-jarjar-input"))]
-        if len(candidates) != 1:
-            raise ValueError("Expected one final production JAR for " + target)
-        production = candidates[0]
+        production = paths(inputs / "production.paths")[0]
         source = home / "LiveChecks.java"
-        source.write_text(source_for(target, voxelmap))
+        core = all(row.get("suite") == "core" for row in rows if row["target"] == target)
+        if core:
+            runtime_mods = [path for path in runtime_mods if not any(
+                mod in path.name for mod in ("xaeros-minimap", "xaeros-world-map", "xaerolib", "voxelmap"))]
+        source.write_text(source_for(target, voxelmap, core))
         api = home / "GameApi.java"
         api.write_text(api_for(target, voxelmap))
         helper_classes = fresh_directory(home / "classes")
@@ -154,7 +159,8 @@ def prepare(repo, manifest, output, jdk, selected):
         else:
             shutil.copy2(named, helper)
         command([java, "-Xmx128M", "-cp", os.pathsep.join([str(output / "tools.jar"), *map(str, tool_cp)]),
-                 "ListMixinTargets", str(production)], home / "runtime.targets")
+                 "ListMixinTargets", str(production),
+                 *(["--optional-map-mods"] if core else [])], home / "runtime.targets")
         builds[target] = {"voxelmap": voxelmap, "helper_sha256": sha256(helper),
                           "targets_sha256": sha256(home / "runtime.targets"), "jars": [
             {"path": str(path.resolve()), "name": path.name, "sha256": sha256(path)}

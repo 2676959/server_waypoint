@@ -34,6 +34,7 @@ side="CLIENT"
 [[dependencies.${id}]]
 modId="xaeroworldmap"
 type="optional"
+versionRange="[0,)"
 ordering="NONE"
 side="CLIENT"
 <% if (voxelmap) { %>
@@ -41,6 +42,7 @@ side="CLIENT"
 [[dependencies.${id}]]
 modId="voxelmap"
 type="optional"
+versionRange="[0,)"
 ordering="NONE"
 side="CLIENT"
 <% } %>

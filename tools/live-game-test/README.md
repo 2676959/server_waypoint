@@ -57,9 +57,12 @@ Exports with a launcher Java helper require explicit `manifest --allow-launcher-
 
 - Production mixin target loading, Mixin environment audit, applied map handlers, native Xaero set identity and the injected access interface. Absent `@Pseudo` targets are recorded as optional.
 - Integrated world startup and client synchronization; full fixture metadata in two dimensions.
+- Minimap Add/Edit routing, VoxelMap popup Edit/Add actions, native outgoing Xaero and VoxelMap share flows, confirmation choices, shared form defaults, and encoded server identity duplicate suppression.
 - World Map edit/save, owning dimension selection, native marker ownership, add/cancel/save, and stale target feedback.
 - VoxelMap edit/save, fallback handling and explicit metadata clearing on targets that include VoxelMap. Other targets skip those operations.
 - Save response completion, returning to the original map screen, world close/reload and persisted JSON contents.
+
+For a target with no matching optional map release, declare `"suite": "core"` on its manifest profile. Preparation omits optional map JARs and uses the independent `java/CoreChecks.java.template`; the run audits available mixins, creates a synchronized integrated world and checks server Edit/Add draft defaults and cancellation. Missing map targets are recorded explicitly. Core and editor profiles for the same target require separate preparations. This suite cannot certify map actions or sharing. Do not use it to bypass failures when matching map releases exist.
 
 `run --suite audit` checks startup and mixins only. Each client normally quits through Minecraft. Timeouts, failures and interruption stop only process groups started by this invocation. `--jobs` accepts 1–4, defaults to 1, and a lock prevents concurrent invocations against the same preparation. `--heap` accepts 512, 1024 or 2048 MB. Startup and step timeouts are configurable.
 

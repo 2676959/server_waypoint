@@ -99,6 +99,22 @@ public class LiveChecks {
         f.get(120, TimeUnit.SECONDS);
     }
 
+    static void clickLabel(String key) {
+        String label = net.minecraft.network.chat.Component.translatable(key).getString();
+        var button = screen().children().stream()
+                .filter(child -> child instanceof net.minecraft.client.gui.components.AbstractWidget widget
+                        && widget.getMessage().getString().equals(label))
+                .map(child -> (net.minecraft.client.gui.components.AbstractWidget) child)
+                .findFirst().orElseThrow();
+        require(GameApi.click(screen(), button), "Button did not handle click: " + label);
+    }
+
+    static void noSharePrompt(String context) {
+        require(!(screen() instanceof ConfirmScreen)
+                && !(screen() instanceof _959.server_waypoint.common.client.gui.screens.WaypointAddScreen),
+                context + ": " + screen());
+    }
+
     static void require(boolean b, String s) {
         if (!b) throw new AssertionError(s);
     }
@@ -314,6 +330,160 @@ public class LiveChecks {
                                 _959.server_waypoint.core.network.upload.UploadTarget.XAERO,
                                 WaypointClientMod.getInstance());
                     });
+        } else if (op.equals("entrypoints")) {
+            client(() -> {
+                var session = _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapSession();
+                var world = _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapWorld(session, Level.NETHER);
+                world.setCurrentWaypointSetId("sw␟Bases");
+                session.getWorldState().setCustomWorldPath(world.getFullPath());
+                var menu = new xaero.common.gui.GuiWaypoints(xaero.common.HudMod.INSTANCE, session, null, null);
+                _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(mc, menu);
+                ((java.util.Set<Integer>) get(menu, "selectedListSet")).add(0);
+                call(menu, "updateButtons");
+                String name = ((xaero.common.minimap.waypoints.Waypoint) call(get(menu, "list"), "getWaypoint", 0)).getName();
+                click(menu, get(menu, "editButton"));
+                assertForm(screen(), "minecraft:the_nether", name);
+                click(screen(), get(screen(), "cancelButton"));
+                require(screen() == menu, "Minimap cancel lost parent");
+                log("ENTRY Minimap Add/Edit opens complete server editor for selected owning dimension");
+                ((java.util.Set<Integer>) get(menu, "selectedListSet")).add(1);
+                call(menu, "updateButtons");
+                click(menu, get(menu, "editButton"));
+                require(screen() instanceof xaero.common.gui.GuiAddWaypoint, "Multiple selection lost native Minimap editor");
+                screen().onClose();
+                world.addWaypointSet("Personal");
+                world.setCurrentWaypointSetId("Personal");
+                world.getCurrentWaypointSet().add(new xaero.common.minimap.waypoints.Waypoint(1, 64, 3, "map-fixture", "MF", 12));
+                var personal = new xaero.common.gui.GuiWaypoints(xaero.common.HudMod.INSTANCE, session, null, null);
+                _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(mc, personal);
+                ((java.util.Set<Integer>) get(personal, "selectedListSet")).add(0);
+                call(personal, "updateButtons");
+                click(personal, get(personal, "editButton"));
+                require(screen() instanceof xaero.common.gui.GuiAddWaypoint, "Personal waypoint with matching name lost native editor");
+                screen().onClose();
+                world.setCurrentWaypointSetId("sw␟Bases");
+                world.removeWaypointSet("Personal");
+                session.getWorldState().setCustomWorldPath(null);
+                log("ENTRY Minimap personal and multiple selection preserve native editor");
+            });
+            // @voxel-start
+            client(() -> {
+                GameApi.syncVoxel();
+                var manager = com.mamiyaotaru.voxelmap.VoxelConstants.getVoxelMapInstance().getWaypointManager();
+                var waypoint = manager.getWaypoints().stream().filter(w -> w.name.equals("sw␟Bases␟voxel-fixture")).findFirst().orElseThrow();
+                var map = new com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap(null);
+                _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(mc, map);
+                set(map, "selectedWaypoint", waypoint);
+                boolean originalDimension = waypoint.inDimension;
+                boolean originalWorld = waypoint.inWorld;
+                waypoint.inDimension = true;
+                waypoint.inWorld = true;
+                set(map, "oldNorth", false);
+                set(map, "mapCenterX", (float) waypoint.getX() + 0.5F);
+                set(map, "mapCenterZ", (float) waypoint.getZ() + 0.5F);
+                set(map, "centerX", 0);
+                set(map, "centerY", 0);
+                set(map, "top", 0);
+                set(map, "guiToDirectMouse", 1.0F);
+                set(map, "mouseDirectToMap", 0.0F);
+                set(map, "guiToMap", 1.0F);
+                call(map, "createPopup", 100, 100, 100, 100);
+                var popup = ((java.util.List<?>) get(map, "popups")).get(0);
+                Object edit = Arrays.stream((Object[]) get(popup, "entries")).filter(e -> {
+                    try { return get(e, "name").equals("Edit on server"); } catch (Exception ex) { throw new RuntimeException(ex); }
+                }).findFirst().orElseThrow();
+                call(map, "popupAction", popup, get(edit, "action"));
+                require(screen() instanceof _959.server_waypoint.common.client.gui.screens.WaypointEditScreen, "Voxel popup missing server editor");
+                click(screen(), get(screen(), "cancelButton"));
+                call(map, "clearPopups");
+                set(map, "selectedWaypoint", null);
+                set(map, "oldNorth", false);
+                set(map, "centerX", 0);
+                set(map, "centerY", 0);
+                set(map, "top", 0);
+                set(map, "guiToDirectMouse", 1.0F);
+                set(map, "mouseDirectToMap", 0.0F);
+                set(map, "guiToMap", 1.0F);
+                set(map, "mapCenterX", 3000.0F);
+                set(map, "mapCenterZ", -3000.0F);
+                call(map, "createPopup", 100, 100, 100, 100);
+                popup = ((java.util.List<?>) get(map, "popups")).get(0);
+                Object add = Arrays.stream((Object[]) get(popup, "entries")).filter(e -> {
+                    try { return get(e, "name").equals("Add to server"); } catch (Exception ex) { throw new RuntimeException(ex); }
+                }).findFirst().orElseThrow();
+                call(map, "popupAction", popup, get(add, "action"));
+                require(screen() instanceof _959.server_waypoint.common.client.gui.screens.WaypointAddScreen, "Voxel popup missing server add");
+                require(value(screen(), "xEditBox").equals("3000") && value(screen(), "zEditBox").equals("-3000"), "Voxel map location scaling changed coordinates");
+                click(screen(), get(screen(), "cancelButton"));
+                waypoint.inDimension = originalDimension;
+                waypoint.inWorld = originalWorld;
+                log("ENTRY Voxel popup Edit and empty-location Add use server forms");
+            });
+            // @voxel-end
+            client(() -> {
+                _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(mc, null);
+                var session = _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapSession();
+                var world = _959.server_waypoint.common.util.XaeroMinimapHelper.getMinimapWorld(session, Level.OVERWORLD);
+                session.getWaypointSession().getSharing().shareWaypoint(null,
+                        new xaero.common.minimap.waypoints.Waypoint(19, 66, -23, "share-test", "ST", 12), world);
+                require(screen() instanceof ConfirmScreen, "Native Xaero share confirmation missing");
+                clickLabel("gui.yes");
+            });
+            Thread.sleep(500);
+            client(() -> {
+                require(screen() instanceof ConfirmScreen, "Outgoing Xaero share did not prompt the sharer");
+                clickLabel("gui.yes");
+                require(screen() instanceof _959.server_waypoint.common.client.gui.screens.WaypointAddScreen, "Share confirmation missing add form");
+                require(value(screen(), "nameEditBox").equals("share-test") && value(screen(), "xEditBox").equals("19"), "Share defaults lost");
+                click(screen(), get(screen(), "cancelButton"));
+            });
+            client(() -> {
+                _959.server_waypoint.common.client.util.MinecraftClientHelper.setScreen(mc, null);
+                String message = "xaero-waypoint:sw␟Bases␟map^min^fixture:MF:999:1:999:12:false:0:Internal";
+                var share = _959.server_waypoint.common.client.integrations.SharedMapWaypoint.parse(message,
+                        WaypointClientMod.getCurrentDimensionName(), 64);
+                require(share != null && share.isOnServer(WaypointClientMod.getInstance()), "Missing encoded Xaero fixture");
+                mc.player.connection.sendChat(message);
+            });
+            Thread.sleep(500);
+            client(() -> noSharePrompt("Encoded existing Xaero share prompted despite stale coordinates"));
+            // @voxel-start
+            client(() -> mc.player.connection.sendChat("[name:sw␟Bases␟voxel-fixture, x:999, y:1, z:999, dim:minecraft:overworld]"));
+            Thread.sleep(500);
+            client(() -> noSharePrompt("Encoded existing Voxel share prompted despite stale coordinates"));
+            client(() -> {
+                var dimensions = new java.util.TreeSet<com.mamiyaotaru.voxelmap.util.DimensionContainer>();
+                dimensions.add(com.mamiyaotaru.voxelmap.VoxelConstants.getVoxelMapInstance()
+                        .getDimensionManager().getDimensionContainerByWorld(mc.player.level()));
+                var draft = new com.mamiyaotaru.voxelmap.util.Waypoint("voxel-share", -19, 23, 67,
+                        true, 1.0F, 0.0F, 0.0F, "star", "", dimensions);
+                com.mamiyaotaru.voxelmap.util.CommandUtils.sendWaypoint(draft);
+                require(screen() instanceof com.mamiyaotaru.voxelmap.gui.GuiSelectPlayer, "Native Voxel share screen missing");
+                set(screen(), "allClicked", true);
+                call(screen(), "accept", true);
+            });
+            Thread.sleep(500);
+            client(() -> {
+                require(screen() instanceof ConfirmScreen, "Outgoing Voxel share did not prompt after native screen close");
+                clickLabel("gui.no");
+                noSharePrompt("Declining a share did not close the prompt");
+                com.mamiyaotaru.voxelmap.util.CommandUtils.sendCoordinate(-19, 67, 23);
+                call(screen(), "sendMessageToPlayer", "SwLiveTest");
+            });
+            Thread.sleep(500);
+            client(() -> {
+                require(screen() instanceof ConfirmScreen, "Private Voxel share did not prompt the sender");
+                clickLabel("gui.yes");
+                require(screen() instanceof _959.server_waypoint.common.client.gui.screens.WaypointAddScreen, "Voxel confirmation missing server add form");
+                require(value(screen(), "nameEditBox").isEmpty()
+                        && value(screen(), "xEditBox").equals("-19")
+                        && value(screen(), "yEditBox").equals("67")
+                        && value(screen(), "zEditBox").equals("23"), "Voxel share defaults lost or scaled");
+                click(screen(), get(screen(), "cancelButton"));
+                log("ENTRY Voxel public/private share prompts, decline, defaults, and encoded identity suppression");
+            });
+            // @voxel-end
+            log("ENTRY Xaero share confirmation, defaults, and encoded identity suppression");
         } else if (op.equals("load")) {
             client(() -> GameApi.load(mc));
             long end = System.currentTimeMillis() + 120000;

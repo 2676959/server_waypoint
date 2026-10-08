@@ -17,6 +17,10 @@ import java.util.zip.ZipFile;
 /** Extracts runtime target names directly from the final production JAR, after remapping. */
 public class ListMixinTargets {
     public static void main(String[] args) throws Exception {
+        boolean optionalMapMods = args.length == 2 && args[1].equals("--optional-map-mods");
+        if (args.length != 1 && !optionalMapMods) {
+            throw new IllegalArgumentException("Use JAR [--optional-map-mods]");
+        }
         Set<String> targets = new TreeSet<>();
         try (ZipFile jar = new ZipFile(args[0])) {
             for (var entry :
@@ -75,9 +79,11 @@ public class ListMixinTargets {
                                                 value instanceof Type type
                                                         ? type.getClassName()
                                                         : (String) value;
-                                        targets.add(
-                                                (optional ? "OPTIONAL " : "")
-                                                        + target.replace('/', '.'));
+                                        target = target.replace('/', '.');
+                                        boolean optionalTarget = optional || optionalMapMods
+                                                && (target.startsWith("xaero.")
+                                                        || target.startsWith("com.mamiyaotaru.voxelmap."));
+                                        targets.add((optionalTarget ? "OPTIONAL " : "") + target);
                                     }
                                 }
                             }

@@ -41,6 +41,11 @@ mods/src/main/resources/assets/server_waypoint/textures/gui
 
 Use translatable `Component` values for player-facing text. Add GUI textures to `textures/gui` and expose shared identifiers through `WaypointTextures` rather than scattering resource identifiers across widgets.
 
+`WaypointAddScreen.fromWaypoint(parent, dimensionName, listName, defaults)` opens the ordinary add
+form populated from a detached `SimpleWaypoint` draft, including its name, initials, position,
+color, yaw and icon. Map-share confirmation uses this API; opening or cancelling the form never
+adds a waypoint. The existing constructors remain suitable for empty forms and map-location adds.
+
 ## How the packages work together
 
 A screen normally composes the packages in this direction:

@@ -9,4 +9,5 @@ The add and edit waypoint screens (`WaypointAddScreen`, `WaypointEditScreen` and
 - [VoxelMap tracked waypoint editing](validation/2026-10-06-voxelmap-edit.md)
 - [Map integration mixin fixes](validation/2026-10-07-map-mixin-fixes.md)
 - [Top-download live mixin verification](validation/2026-10-07-top-download-mixin-verification.md)
+- [Map server actions and chat sharing](validation/2026-10-08-map-server-actions.md)
 - [Reusable live verification tool](../../../tools/live-game-test/README.md)
