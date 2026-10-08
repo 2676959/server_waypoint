@@ -4,8 +4,8 @@ main: _959.server_waypoint.ServerWaypointPaperMC
 api-version: '${mcVersion}'
 folia-supported: true
 author: 2676959
-description: Serverside waypoint manager
-website: https://modrinth.com/mod/server_waypoint
+description: Share and manage waypoints with chat commands and navigation, optional client screens and map mod sync, and cross-server waypoints through Velocity.
+website: https://modrinth.com/plugin/server_waypoint
 prefix: server_waypoint_plugin
 
 dependencies:

@@ -27,6 +27,7 @@ val developmentOnlyProjectPaths = setOf(
     ":mods:1.21.3-fabric",
     ":mods:1.21.3-neoforge",
 )
+val releaseChangelog = providers.fileContents(layout.projectDirectory.file("CHANGELOG.md")).asText
 val modrinthProjectPaths = listOf(project(":mods"), project(":paper"))
     .flatMap { it.subprojects }
     .map { it.path }
@@ -91,22 +92,15 @@ allprojects {
                 token.set(providers.environmentVariable("MODRINTH_TOKEN"))
                 projectId.set(modrinthProjectId)
                 versionNumber.set(modVersion)
-                versionName.set(buildString {
-                    append(modName)
-                    append(' ')
-                    append(modVersion)
-                    when (targetLoader) {
-                        "forge" -> append(" Forge")
-                        "neoforge" -> append(" NeoForge")
-                        "paper" -> append(" Paper")
-                        "velocity" -> append(" Velocity")
-                    }
-                })
+                versionName.set(artifactDisplayName(
+                    modName, modVersion, targetLoader,
+                    if (targetLoader == "velocity") null else property("mcVersionRange") as String,
+                ))
                 versionType.set(providers.gradleProperty("modrinthVersionType").orElse("release"))
                 changelog.set(
                     providers.gradleProperty("modrinthChangelog")
                         .orElse(providers.environmentVariable("MODRINTH_CHANGELOG"))
-                        .orElse(ModrinthExtension.DEFAULT_CHANGELOG)
+                        .orElse(releaseChangelog)
                 )
                 file.set(uploadArtifact)
                 gameVersions.set(minecraftVersions)
@@ -121,6 +115,7 @@ allprojects {
                         ModDependency("Vebnzrzj", "optional"),
                         ModDependency("1bokaNcj", "optional"),
                         ModDependency("NcUtCpym", "optional"),
+                        ModDependency("mOgUt4GM", "optional"),
                     )
                     "forge", "neoforge" -> listOf(
                         ModDependency("1bokaNcj", "optional"),
@@ -155,7 +150,9 @@ allprojects {
             }
             val curseForgeProjectId = project.property("curseforge_project_id") as String
             val minecraftVersionRange = project.property("mcVersionRange") as String
-            val minecraftVersions = expandMinecraftVersionRange(minecraftVersionRange)
+            val minecraftVersions = gameVersions(
+                project.findProperty("modrinthGameVersions")?.toString(), minecraftVersionRange,
+            )
             val archiveName = project.extensions.getByType<BasePluginExtension>().archivesName
             val uploadArtifact = project.layout.buildDirectory.file(archiveName.map { "libs/$it.jar" })
             val isDebug = project.providers.gradleProperty("curseforgeDebug")
@@ -176,9 +173,14 @@ allprojects {
             }
 
             val mainFile = upload(curseForgeProjectId, uploadArtifact)
+            mainFile.displayName = artifactDisplayName(
+                project.property("mod_name") as String,
+                project.property("mod_version") as String,
+                targetLoader, minecraftVersionRange,
+            )
             mainFile.changelog = project.providers.gradleProperty("curseforgeChangelog")
                 .orElse(project.providers.environmentVariable("MODRINTH_CHANGELOG"))
-                .orElse("No changelog was provided.")
+                .orElse(releaseChangelog)
                 .get()
             mainFile.changelogType = "markdown"
             mainFile.releaseType = project.providers.gradleProperty("curseforgeReleaseType")
@@ -190,7 +192,7 @@ allprojects {
                 "fabric" -> {
                     mainFile.addModLoader("Fabric", "Quilt")
                     mainFile.addRequirement("fabric-api")
-                    mainFile.addOptional("luckperms", "xaeros-minimap", "xaeros-world-map")
+                    mainFile.addOptional("luckperms", "xaeros-minimap", "xaeros-world-map", "modmenu")
                 }
                 "forge" -> {
                     mainFile.addModLoader("Forge")
@@ -201,6 +203,8 @@ allprojects {
                     mainFile.addOptional("xaeros-minimap", "xaeros-world-map")
                 }
             }
+            // VoxelMap-Updated is distributed on Modrinth; the original CurseForge VoxelMap
+            // project is a different distribution and must not be advertised as this integration.
         }
     }
 }
@@ -275,6 +279,19 @@ fun gameVersions(explicitVersions: String?, versionRange: String): List<String> 
     ?.map(String::trim)
     ?.filter(String::isNotEmpty)
     ?: expandMinecraftVersionRange(versionRange)
+
+fun artifactDisplayName(modName: String, modVersion: String, loader: String, minecraftVersionRange: String?): String {
+    val platform = when (loader) {
+        "fabric" -> "Fabric"
+        "forge" -> "Forge"
+        "neoforge" -> "NeoForge"
+        "paper" -> "Paper"
+        "velocity" -> "Velocity"
+        else -> error("Unknown publishing platform '$loader'")
+    }
+    return "$modName $modVersion $platform" +
+        if (minecraftVersionRange == null) "" else " (Minecraft $minecraftVersionRange)"
+}
 
 // The Velocity plugin coordinates backends of every published target, so it lists all of their game versions.
 // Each target's gradle.properties is read directly because those projects may not be configured.

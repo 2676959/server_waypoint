@@ -17,7 +17,9 @@ import org.bstats.velocity.Metrics;
 import org.slf4j.Logger;
 
 @Plugin(id = "server_waypoint", name = "Server Waypoint", version = ModInfo.MOD_VERSION,
-        authors = {"2676959"}, description = "Server Waypoint proxy coordinator")
+        authors = {"2676959"},
+        description = "Connect Server Waypoint backends for cross-server waypoint browsing and teleportation.",
+        url = "https://modrinth.com/plugin/server_waypoint")
 public final class ServerWaypointVelocity {
     static final MinecraftChannelIdentifier RESERVED = MinecraftChannelIdentifier.create("server_waypoint", "handoff");
     private final Logger logger;
