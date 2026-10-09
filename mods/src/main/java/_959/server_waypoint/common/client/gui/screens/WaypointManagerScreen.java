@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 //? if >= 1.21.9 {
@@ -1400,13 +1399,13 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                     LayoutFlow.Direction.REVERSE,
                     DROPDOWN_ITEM_GAP
             );
-            this.setTooltip(Tooltip.create(message));
+            this.setTooltip(message);
         }
 
         @Override
         public void setMessage(Component message) {
             super.setMessage(message);
-            this.setTooltip(Tooltip.create(message));
+            this.setTooltip(message);
         }
 
         private IconMenuItem addIconItem(
@@ -1506,7 +1505,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
             super(CONTROL_BUTTON_SIZE, CONTROL_BUTTON_SIZE, message);
             this.icon = icon;
             this.callback = callback;
-            this.setTooltip(Tooltip.create(message));
+            this.setTooltip(message);
         }
 
         @Override
@@ -1573,7 +1572,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         private void updatePresentation() {
             Component message = this.state ? this.state1Message : this.state0Message;
             this.setMessage(message);
-            this.setTooltip(Tooltip.create(message));
+            this.setTooltip(message);
         }
 
         @Override
@@ -1589,10 +1588,12 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                     true,
                     false
             );
+            this.scheduleTooltip(mouseX, mouseY);
         }
 
         @Override
         protected void updateWidgetNarration(NarrationElementOutput builder) {
+            this.narrateTooltip(builder);
         }
     }
 

@@ -58,7 +58,7 @@ public final class ServerListWidget extends IconListWidget<RemoteServerId> {
     protected Component entryLabel(RemoteServerId server) {
         CatalogReceiver.View view = servers.get(server);
         int stateRgb = RemoteRefs.stateColor(view.state()).value();
-        // Vanilla tooltip splitting treats the newline as a line break.
+        // Tooltip wrapping treats the newline as a line break.
         return Component.literal(view.displayName() + " [" + server.value() + "]\n")
                 .append(Component.translatable(stateTranslationKey(view.state()))
                         .withStyle(style -> style.withColor(stateRgb)));

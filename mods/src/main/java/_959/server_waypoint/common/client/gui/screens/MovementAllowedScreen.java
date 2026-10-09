@@ -7,6 +7,7 @@ import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.widgets.ShiftableButtonWidget;
 import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
 import _959.server_waypoint.common.client.gui.widgets.IntegerSlider;
+import _959.server_waypoint.common.client.gui.widgets.TooltipLayer;
 import _959.server_waypoint.mixin.BoundKeyAccessor;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
@@ -69,10 +70,12 @@ public abstract class MovementAllowedScreen extends Screen {
     //$ render_method_swap
     extractRenderState
             (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+        TooltipLayer.clear();
         //? if < 1.21.6 {
         /*this.renderScreenBackground(context, deltaTicks);
         *///?}
         this.renderScreenContents(context, mouseX, mouseY, deltaTicks);
+        TooltipLayer.render(context, this.font, this.width, this.height);
     }
 
     protected abstract void renderScreenContents(

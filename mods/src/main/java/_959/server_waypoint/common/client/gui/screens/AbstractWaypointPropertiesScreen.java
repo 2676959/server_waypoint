@@ -22,6 +22,7 @@ import _959.server_waypoint.common.client.gui.widgets.SeparatorWidget;
 import _959.server_waypoint.common.client.gui.widgets.SuggestingTextInput;
 import _959.server_waypoint.common.client.gui.widgets.SwatchWidget;
 import _959.server_waypoint.common.client.gui.widgets.ToggleButton;
+import _959.server_waypoint.common.client.gui.widgets.TooltipLayer;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
 import _959.server_waypoint.common.client.gui.widgets.WaypointIconPicker;
@@ -46,7 +47,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.layouts.SpacerElement;
@@ -72,7 +72,6 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.ne
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousItemOverlayLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scheduleTooltipAtPointer;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DANGER;
@@ -1184,7 +1183,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         for (ComboBoxWidget dropdown : this.dropdowns) {
             dropdown.renderPopup(context, popupMouseX, popupMouseY, delta);
         }
-        this.renderFieldTooltip(context, contentMouseX, contentMouseY);
+        this.scheduleFieldTooltip(contentMouseX, contentMouseY);
         nextItemOverlayLayer(context);
         this.swatchWidget.
         //$ render_widget_method_swap
@@ -1222,7 +1221,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
     }
 
     /** After the pointer rests on a field's label or controls for 500 ms, shows that field's tooltip at the pointer. */
-    private void renderFieldTooltip(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+    private void scheduleFieldTooltip(int mouseX, int mouseY) {
         FormField field = this.tooltipBlocked() ? null : this.fieldAt(mouseX, mouseY);
         long now = System.nanoTime();
         if (field != this.hoveredField) {
@@ -1233,8 +1232,7 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         if (field == null || now - this.hoveredSince < TOOLTIP_DELAY_NANOS) {
             return;
         }
-        scheduleTooltipAtPointer(context, Tooltip.create(this.tooltipText(field)).toCharSequence(Minecraft.getInstance()),
-                mouseX, mouseY);
+        TooltipLayer.scheduleAtPointer(this.tooltipText(field), mouseX, mouseY);
     }
 
     /** No field tooltip shows while a popup or the color picker is open, or while a request is pending. */

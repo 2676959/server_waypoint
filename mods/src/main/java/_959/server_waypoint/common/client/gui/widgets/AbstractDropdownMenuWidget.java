@@ -402,6 +402,7 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         if (!this.renderPopupSeparately) {
             this.renderPopup(context, mouseX, mouseY, deltaTicks);
         }
+        this.scheduleTooltip(mouseX, mouseY);
     }
 
     /** Lets an owning screen draw the popup after its other controls. */
@@ -460,6 +461,7 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
     @Override
     protected void updateWidgetNarration(NarrationElementOutput builder) {
         this.defaultButtonNarrationText(builder);
+        this.narrateTooltip(builder);
     }
 
     private void layoutMenuItems() {
@@ -784,6 +786,7 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         extractWidgetRenderState
                 (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
             this.renderMenuItem(context, mouseX, mouseY, deltaTicks);
+            this.scheduleTooltip(mouseX, mouseY);
         }
 
         protected abstract void renderMenuItem(
@@ -796,6 +799,7 @@ public abstract class AbstractDropdownMenuWidget extends ShiftableClickableWidge
         @Override
         protected void updateWidgetNarration(NarrationElementOutput builder) {
             this.defaultButtonNarrationText(builder);
+            this.narrateTooltip(builder);
         }
     }
 }

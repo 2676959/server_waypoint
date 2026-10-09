@@ -4,7 +4,6 @@
 package _959.server_waypoint.common.client.gui.render;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -207,18 +206,21 @@ public final class DrawContextHelper {
     }
 
     /**
-     * Schedules a tooltip at the pointer for the current frame, rather than at a widget's bounds. It is
-     * {@code setTooltipForNextFrame} from 1.21.6 and the screen's {@code setTooltipForNextRenderPass}
-     * before.
+     * Moves the tooltip above everything drawn earlier in the frame. Newer versions start a new render
+     * stratum; older versions translate to vanilla's tooltip depth, above GUI item models and the item
+     * overlay layer. Pair each call with {@link #previousTooltipLayer}.
      */
-    public static void scheduleTooltipAtPointer(GuiGraphicsExtractor context, List<FormattedCharSequence> lines, int mouseX, int mouseY) {
+    public static void nextTooltipLayer(GuiGraphicsExtractor context) {
         //? if >= 1.21.6 {
-        context.setTooltipForNextFrame(lines, mouseX, mouseY);
+        context.nextStratum();
         //?} else {
-        /*net.minecraft.client.gui.screens.Screen screen = net.minecraft.client.Minecraft.getInstance().screen;
-        if (screen != null) {
-            screen.setTooltipForNextRenderPass(lines);
-        }
+        /*context.pose().translate(0.0F, 0.0F, 400.0F);
+        *///?}
+    }
+
+    public static void previousTooltipLayer(GuiGraphicsExtractor context) {
+        //? if < 1.21.6 {
+        /*context.pose().translate(0.0F, 0.0F, -400.0F);
         *///?}
     }
 

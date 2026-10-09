@@ -127,6 +127,7 @@ public class IconButton extends ShiftableButtonWidget implements Expandable {
                     WidgetThemeState.iconTint(this.active)
             );
         }
+        this.scheduleTooltip(mouseX, mouseY);
     }
 
     private record IconRegion(int x, int y, int width, int height, int textureWidth, int textureHeight) {
@@ -134,6 +135,6 @@ public class IconButton extends ShiftableButtonWidget implements Expandable {
 
     @Override
     protected void updateWidgetNarration(NarrationElementOutput builder) {
-
+        this.narrateTooltip(builder);
     }
 }

@@ -5,7 +5,6 @@ import _959.server_waypoint.common.client.gui.render.WidgetTextures;
 import _959.server_waypoint.common.client.integrations.VoxelMapIconIds;
 import _959.server_waypoint.util.NamespacedId;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -51,7 +50,7 @@ public final class WaypointIconPicker {
                 .withoutBackground()
                 .withIconPadding(3)
                 .withIconRegion(10, 9, 28, 29, 48, 48);
-        this.clearButton.setTooltip(Tooltip.create(clearLabel));
+        this.clearButton.setTooltip(clearLabel);
         this.clearButton.active = false;
     }
 

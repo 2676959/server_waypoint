@@ -12,7 +12,6 @@ import _959.server_waypoint.common.client.util.ColorHelper;
 import _959.server_waypoint.crossserver.*;
 import _959.server_waypoint.crossserver.catalog.CatalogReceiver;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import _959.server_waypoint.common.client.gui.render.WaypointRowRenderer;
 import _959.server_waypoint.common.client.gui.render.WidgetTextures;
@@ -73,7 +72,7 @@ final class RemoteWaypointPanel {
         this.details = new WaypointDetailsWidget(0, 0, 160, 160, font);
         this.teleportButton = new TranslucentButton(0, 0, 100, 16,
                 Component.translatable("waypoint.remote.gui.teleport"), this::teleport, AnchorMode.OUTLINE);
-        this.teleportButton.setTooltip(Tooltip.create(Component.translatable("waypoint.remote.gui.teleport_hint")));
+        this.teleportButton.setTooltip(Component.translatable("waypoint.remote.gui.teleport_hint"));
         this.footer = new ScalableText(0, 0, Component.empty(), TEXT_MUTED, font);
     }
 
@@ -145,7 +144,7 @@ final class RemoteWaypointPanel {
                 && RemoteBrowserModel.prepare(catalogs, selected) != null;
         String tooltip = failure != null ? failure
                 : teleportButton.active ? "waypoint.remote.gui.feedback" : "waypoint.remote.gui.teleport_hint";
-        teleportButton.setTooltip(Tooltip.create(Component.translatable(tooltip)));
+        teleportButton.setTooltip(Component.translatable(tooltip));
     }
 
     void setVisible(boolean visible) {
@@ -258,7 +257,7 @@ final class RemoteWaypointPanel {
             extractRenderState
                     (context, mouseX, mouseY, deltaTicks);
         }
-        tree.renderHoveredTooltip(context, mouseX, mouseY);
+        tree.scheduleHoveredTooltip(mouseX, mouseY);
     }
 
     // Local WaypointListWidget requires mutable local lists. Share its row presentation while keeping remote snapshots immutable.
@@ -283,7 +282,7 @@ final class RemoteWaypointPanel {
         protected void setExpanded(RemoteBrowserModel.Node node, boolean expanded) {
             if (expanded) collapsed.remove(node.path()); else collapsed.add(node.path());
         }
-        private void renderHoveredTooltip(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+        private void scheduleHoveredTooltip(int mouseX, int mouseY) {
             var entry = getHoveredEntry();
             if (entry == null) return;
             var path = entry.value().path();
@@ -293,14 +292,8 @@ final class RemoteWaypointPanel {
                             style.withColor(displayDimensionColor(path.dimension()) & 0x00FFFFFF)));
             if (path.list() != null) identity = identity.copy().append(" / [" + path.list() + "]");
             if (path.waypoint() != null) identity = identity.copy().append(" / [" + path.waypoint() + "]");
-            var client = net.minecraft.client.Minecraft.getInstance();
-            var lines = Tooltip.create(identity).toCharSequence(client);
             // Use the cursor position, not the bounds of the entire scrollable tree.
-            //? if >=1.21.6 {
-            context.setTooltipForNextFrame(lines, mouseX, mouseY);
-            //?} else {
-            /*if (client.screen != null) client.screen.setTooltipForNextRenderPass(lines);
-            *///?}
+            TooltipLayer.scheduleAtPointer(identity, mouseX, mouseY);
         }
         @Override
         protected void renderEmpty(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {

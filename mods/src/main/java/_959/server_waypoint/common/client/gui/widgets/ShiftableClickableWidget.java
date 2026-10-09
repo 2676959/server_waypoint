@@ -2,22 +2,29 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.layout.Shiftable;
+import _959.server_waypoint.common.client.gui.layout.VisualPositioning;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 //? if >= 1.21.9 {
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 //?}
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class ShiftableClickableWidget extends AbstractWidget implements Shiftable {
     protected int shiftedX;
     protected int shiftedY;
     protected int xOffset;
     protected int yOffset;
+    private @Nullable Component tooltip;
 
     public ShiftableClickableWidget(int x, int y, int width, int height, Component message) {
         super(x, y, width, height, message);
@@ -76,6 +83,54 @@ public abstract class ShiftableClickableWidget extends AbstractWidget implements
     @Override
     public int getShiftedY() {
         return this.shiftedY;
+    }
+
+    /**
+     * Stores the control's tooltip. Remove it with {@code setTooltip((Component) null)}: a bare
+     * {@code null} is ambiguous next to vanilla's {@code setTooltip(Tooltip)}, which would bring back
+     * vanilla's box.
+     * <p>
+     * Only a class that passes the tooltip on shows it: {@link TranslucentButton}, {@link IconButton},
+     * {@link ColorSquareButton} and {@link RandomColorSquareButton}, {@link AbstractDropdownMenuWidget}
+     * with its {@code AbstractMenuItem}s, and the manager screen's {@code IconToggleButton}. A class
+     * does so by calling {@link #scheduleTooltip} at the end of its renderer and {@link #narrateTooltip}
+     * at the end of {@code updateWidgetNarration}. Other classes ignore the tooltip without an error.
+     */
+    public void setTooltip(@Nullable Component tooltip) {
+        this.tooltip = tooltip;
+    }
+
+    /**
+     * The last step of a renderer that supports tooltips. It requests this control's tooltip, anchored to
+     * its visual bounds, from {@link TooltipLayer}. A control without a tooltip returns at once, so it
+     * never reads the game's input state.
+     */
+    protected final void scheduleTooltip(int mouseX, int mouseY) {
+        if (this.tooltip == null) {
+            return;
+        }
+        ScreenRectangle visualBounds = new ScreenRectangle(
+                VisualPositioning.getVisualX(this),
+                VisualPositioning.getVisualY(this),
+                VisualPositioning.getVisualWidth(this),
+                VisualPositioning.getVisualHeight(this));
+        TooltipLayer.scheduleForControl(this.tooltip, visualBounds, this.isHovered(), this.isFocused(),
+                this.isKeyboardNavigating(), mouseX, mouseY);
+    }
+
+    /**
+     * The last step of {@code updateWidgetNarration} in a class that supports tooltips. It adds the
+     * tooltip as a hint, the element vanilla's tooltip adds, and does nothing without one.
+     */
+    protected final void narrateTooltip(NarrationElementOutput output) {
+        if (this.tooltip != null) {
+            output.add(NarratedElementType.HINT, this.tooltip);
+        }
+    }
+
+    /** Whether the player last used the keyboard rather than the mouse. Tests override it. */
+    protected boolean isKeyboardNavigating() {
+        return Minecraft.getInstance().getLastInputType().isKeyboard();
     }
 
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {

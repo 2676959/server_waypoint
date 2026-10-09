@@ -17,13 +17,11 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.LayoutElement;
@@ -34,7 +32,6 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.NO_MOUSE;
-import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scheduleTooltipAtPointer;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DECOR_LINE;
@@ -307,14 +304,14 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         }
         context.disableScissor();
         this.drawScrollbar(context);
-        this.scheduleTooltip(context, hovered, mouseX, mouseY);
+        this.scheduleRowTooltip(hovered, mouseX, mouseY);
     }
 
     @Override
     protected void updateWidgetNarration(NarrationElementOutput output) {
     }
 
-    private void scheduleTooltip(GuiGraphicsExtractor context, @Nullable Row hovered, int mouseX, int mouseY) {
+    private void scheduleRowTooltip(@Nullable Row hovered, int mouseX, int mouseY) {
         if (hovered == null || hovered.isOverAction(mouseX, mouseY)) {
             this.tooltipRow = null;
             return;
@@ -332,9 +329,8 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         if (text == null) {
             return;
         }
-        var lines = Tooltip.create(text).toCharSequence(Minecraft.getInstance());
         // Anchor the row's tooltip to the cursor, not the whole scrollable list.
-        scheduleTooltipAtPointer(context, lines, mouseX, mouseY);
+        TooltipLayer.scheduleAtPointer(text, mouseX, mouseY);
     }
 
     /**

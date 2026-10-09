@@ -55,10 +55,13 @@ public class ColorSquareButton extends ShiftableClickableWidget implements Color
             renderOutline(context, x - 1, y - 1, width + 2, width + 2,
                     WidgetThemeState.border(this.active, isFocused(), isHovered()));
         }
+        this.scheduleTooltip(mouseX, mouseY);
     }
 
     @Override
-    protected void updateWidgetNarration(NarrationElementOutput builder) {}
+    protected void updateWidgetNarration(NarrationElementOutput builder) {
+        this.narrateTooltip(builder);
+    }
 
     @Override
     public int getColor() {

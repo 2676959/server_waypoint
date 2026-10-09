@@ -8,7 +8,6 @@ import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 //? if >= 1.21.9 {
@@ -148,7 +147,7 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable,
 
         RandomColorSquareButton randomColorBtn = new RandomColorSquareButton(0, 0, 10, false, () -> {
         });
-        randomColorBtn.setTooltip(Tooltip.create(Component.nullToEmpty("🎲")));
+        randomColorBtn.setTooltip(Component.nullToEmpty("🎲"));
         colorRow1.addClickable(randomColorBtn);
         randomColorBtn.setCallback(() -> {
             this.setColor(randomColorBtn.getColor());
@@ -157,8 +156,8 @@ public class SwatchWidget extends ShiftableClickableWidget implements Colorable,
 
         this.currentColorButton.setYOffset(-12);
         this.previousColorButton.setYOffset(-12);
-        this.currentColorButton.setTooltip(Tooltip.create(Component.translatable("waypoint.edit.screen.current_color.hover")));
-        this.previousColorButton.setTooltip(Tooltip.create(Component.translatable("waypoint.edit.screen.previous_color.hover")));
+        this.currentColorButton.setTooltip(Component.translatable("waypoint.edit.screen.current_color.hover"));
+        this.previousColorButton.setTooltip(Component.translatable("waypoint.edit.screen.previous_color.hover"));
         this.currentColorButton.setCallback(() -> {
             updateFocused(this.currentColorButton);
             int currentColor = this.currentColorButton.getColor();

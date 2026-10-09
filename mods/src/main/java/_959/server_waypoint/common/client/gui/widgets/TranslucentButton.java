@@ -169,10 +169,11 @@ public class TranslucentButton extends ShiftableButtonWidget implements Expandab
         int centerY = centered(this.height, Math.round(textRenderer.lineHeight * this.textScale));
         drawScaledText(context, textRenderer, this.text, x + centerX, y + centerY,
                 WidgetThemeState.text(this.active), this.textScale);
+        this.scheduleTooltip(mouseX, mouseY);
     }
 
     @Override
     protected void updateWidgetNarration(NarrationElementOutput builder) {
-
+        this.narrateTooltip(builder);
     }
 }

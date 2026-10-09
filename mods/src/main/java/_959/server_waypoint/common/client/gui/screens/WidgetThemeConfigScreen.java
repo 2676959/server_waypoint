@@ -24,7 +24,6 @@ import _959.server_waypoint.common.client.gui.widgets.OnOffToggleButton;
 import _959.server_waypoint.common.client.util.MinecraftClientHelper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 //? if >= 1.21.9 {
@@ -303,8 +302,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         );
         this.variableList.setSelected(this.selectedVariable);
         this.rgbField.setResponder(this::updateRgb);
-        this.colorPickerButton.setTooltip(Tooltip.create(
-                Component.translatable("server_waypoint.theme.color_picker")));
+        this.colorPickerButton.setTooltip(Component.translatable("server_waypoint.theme.color_picker"));
         this.galleryTextField.setHint(Component.translatable("server_waypoint.theme.preview.placeholder"));
         this.galleryDisabledButton.active = false;
         this.gallerySelectionToggle.setState(true);

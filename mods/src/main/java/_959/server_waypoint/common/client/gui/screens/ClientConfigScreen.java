@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.Set;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.SpacerElement;
@@ -372,7 +371,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
                 .withoutBackground()
                 .withIconPadding(2)
                 .withIconRegion(7, 7, 34, 32, 48, 48);
-        resetButton.setTooltip(Tooltip.create(resetLabel));
+        resetButton.setTooltip(resetLabel);
         this.settingControls.add(new SettingControl(setting, widget, resetButton));
         return new SettingsListWidget.Row(setting.text().label(), widget)
                 .action(resetButton, () -> !setting.isDefault(this.config))
