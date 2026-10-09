@@ -76,7 +76,8 @@ the decompiled vanilla positioners of 13 versions, from 1.20.1 to 26.3.
   The toggle is drawn first with the real pointer, so it is hovered and its tooltip wins over the popup item's.
   Vanilla's tooltip rules did the same, so this change doesn't cause it, but it contradicts the design's
   statement that a control under a popup shows no tooltip. A fix would draw the controls before the dropdown
-  with `NO_MOUSE` while the popup is open under the pointer.
+  with `NO_MOUSE` while the popup is open under the pointer. Fixed afterwards that way; see the
+  [manager sort popup record](2026-10-09-manager-sort-popup-hover.md).
 - **Deferred as minor:** an erratum for the design's "at most 3/5 pixels" sentence and its "Not implemented
   yet" status line; `TooltipLayer.render` ignores a different `Font` after the first call; `scheduleTooltip`
   could return early for a control that is neither hovered nor focused; no test covers which placement rule
