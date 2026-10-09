@@ -84,6 +84,7 @@ A major release: navigation that works without the client mod, waypoint icons, u
 - A rebuilt settings screen: hover a row to see what it does and its default, ↺ resets one setting and **Reset to defaults…** resets them all. Mod Menu (Fabric) and the Mods screen (Forge and NeoForge) open it.
 - New setting: **Render waypoints under F1** (off by default). Waypoints are hidden on loading screens.
 - Colour themes: pick Translucent Dark, Modern Dark, High Contrast or the new Classic preset, or edit the colours in game. The default theme is now translucent dark.
+- Tooltips in the mod's screens follow the colour theme.
 
 ### Action logging
 

@@ -27,10 +27,10 @@ Keep new helpers at the narrowest useful scope:
 | Package | Responsibility | Typical contents |
 | --- | --- | --- |
 | `client.gui.api` | Small GUI-facing contracts and callbacks | Button, toggle, color-picker, and dimension-selection callbacks; `Colorable`; `PopupOwner` |
-| `client.gui.layout` | Positioning, sizing, padding, and flow | `WidgetStack`, `WidgetPack`, `ExpandableManager`, `LayoutFlow`, `Padding`, `AnchorMode`, `VisualBounds`, `VisualPositioning` |
+| `client.gui.layout` | Positioning, sizing, padding, and flow | `WidgetStack`, `WidgetPack`, `ExpandableManager`, `LayoutFlow`, `Padding`, `AnchorMode`, `VisualBounds`, `VisualPositioning`, `TooltipPlacement` |
 | `client.gui.render` | Cross-version drawing helpers, semantic theme state, and presentation constants | `DrawContextHelper`, `PaddingBackground`, `WidgetTheme`, `WidgetThemeManager`, `WaypointTextures` |
 | `client.gui.screens` | Screen lifecycle and feature composition | Manager, add/edit, configuration, theme-editor, and movement-aware screens |
-| `client.gui.widgets` | Reusable visible and interactive components | Buttons, fields, sliders, dialogs, color pickers, lists, and tree views |
+| `client.gui.widgets` | Reusable visible and interactive components | Buttons, fields, sliders, dialogs, color pickers, lists, tree views, and tooltips (`TranslucentTooltip`, `TooltipLayer`) |
 
 Related resources live under:
 
@@ -582,6 +582,10 @@ use `ScalableText`; do not add a local `Font.split(...)` loop and repeated `draw
 - Render it once through `render_method_swap` in the owner's coordinate space. It is
   non-interactive and does not require separate input registration.
 
+While wrapping, `getWidth()` is the maximum width and `getTextWidth()` is the width of the widest
+wrapped line, scaled the same way. Without a maximum width `getTextWidth()` is the whole text's width,
+and with no lines it is 0. Use it to size a surface to its text, as `TranslucentTooltip` does.
+
 Direct text drawing remains appropriate inside the text widget itself and for specialized row or
 document renderers whose per-run formatting or geometry cannot be expressed by `ScalableText`.
 Those cases do not justify duplicating standalone message rendering elsewhere.
@@ -606,6 +610,7 @@ Those cases do not justify duplicating standalone message rendering elsewhere.
 | Selectable item icon strip | `IconListWidget<T>`, `DimensionListWidget`, `ServerListWidget` |
 | Directional popup with custom items | Extend `AbstractDropdownMenuWidget` and `AbstractMenuItem` |
 | Confirmation overlay | `ConfirmationDialog` |
+| Tooltip for a control or a hovered item | `setTooltip(Component)`, or `TooltipLayer.scheduleAtPointer` |
 
 `TranslucentButton.fitted(label, callback)` makes an 11-pixel-high text button as wide as its label
 plus 5 pixels on each side, and at least 50 pixels wide, so short labels line up and long
@@ -829,7 +834,7 @@ over the minimum initials badge width so icon centers stay aligned across rows. 
 RGB to tint VoxelMap images in both local and remote rows. The remote tree
 reuses `WidgetTextures` expand/collapse/empty icons,
 formatted display names and the tree's clipping and hit testing; exact identities remain in tooltips.
-Remote identity tooltips use the current hovered entry and vanilla cursor positioning after the
+Remote identity tooltips are scheduled at the pointer with `TooltipLayer.scheduleAtPointer` for the hovered entry after the
 panel render pass, rather than attaching a widget tooltip to the entire tree rectangle.
 Switching
 views preserves separate local and remote selection/scroll state; filtering/removal clears an
@@ -916,7 +921,7 @@ when their setting differs from its default and disappear immediately after a re
   does this after every relayout and every focus request.
 - **Tooltips:** the hovered row gets `ROW_HOVER_BACKGROUND`. After the pointer rests on a row for
   500 ms, the list schedules the row's tooltip at the cursor, except over the row's action, which
-  keeps its own vanilla tooltip.
+  shows its own tooltip.
 - **Limitations:** row controls can't open popups, because the scissor would clip them.
 
 ### Confirmation dialogs
@@ -950,6 +955,53 @@ is the themed `ACCENT`, or `SLIDER_THUMB_DISABLED` while the slider is inactive,
 `ColorGradientSlider` keeps the disabled color. The handle is one pixel wide and stays inside the
 slider on every version.
 
+### Tooltips
+
+`TranslucentTooltip` is the only tooltip surface in the mod's screens. `TooltipLayer` holds the
+frame's request and `MovementAllowedScreen` draws it last, so a screen needs no tooltip drawing of its
+own. A widget drawn outside a `MovementAllowedScreen` shows no tooltip, because nothing draws the layer.
+`TooltipLayer` is static frame state for the render thread, so a test that schedules a tooltip
+clears it before and after.
+
+- **Look:** the `POPUP_BACKGROUND` fill, a one-pixel `BORDER` outline and `TEXT_PRIMARY` text with a
+  shadow, all resolved each time the tooltip is drawn, so a theme change shows in the next frame. The
+  text wraps at 170 pixels like vanilla's tooltip, and the box extends 4 pixels past the text on every
+  side. The two dark themes and Classic have a transparent default border, so their tooltips have no
+  outline.
+- **A control's tooltip:** call `setTooltip(Component)` on the control, and remove it with
+  `setTooltip((Component) null)`: a bare `null` is ambiguous next to vanilla's `setTooltip(Tooltip)` and
+  does not compile. A class shows its tooltip only if it calls `scheduleTooltip(mouseX, mouseY)` at the
+  end of its renderer and `narrateTooltip(output)` at the end of `updateWidgetNarration`. These classes
+  do: `TranslucentButton`, `IconButton`, `ColorSquareButton` (and `RandomColorSquareButton`),
+  `AbstractDropdownMenuWidget` with its `AbstractMenuItem`s, and the manager's `IconToggleButton`. Any
+  other class ignores `setTooltip` without an error. Toggles, sliders, text fields and the swatch widget
+  are such classes today, so add the two calls to a class before giving it a tooltip.
+- **A hovered item's tooltip:** `TooltipLayer.scheduleAtPointer(text, mouseX, mouseY)` takes
+  screen-space coordinates, never coordinates after a render translation. Its owner decides when to call
+  it, as the rails and the remote tree do at once, and settings rows and form fields do after the
+  pointer rests for 500 ms.
+- **One tooltip per frame:** the first request wins, and only a focused control's request replaces it.
+  A control requests its tooltip while hovered, and while focused by keyboard after Tab or an arrow key.
+  A control focused by a mouse click and no longer hovered requests nothing. An inactive control shows its
+  tooltip too, as in vanilla. A control drawn with `NO_MOUSE` is not hovered, so it requests no hover
+  tooltip; one focused by keyboard still requests its tooltip below or above, so move focus off a control
+  that a dialog or popup covers.
+- **Placement:** vanilla's three rules, anchored to the control's visual bounds so distances are
+  measured from the visible outline. At the pointer, the tooltip sits right of it and above it. For a
+  hovered control it sits right of the pointer and below the control, lower the further down the
+  control the pointer is, or above the control near the screen's bottom. For a control focused by
+  keyboard it sits below the control, or above it near the screen's bottom. Each rule flips or shifts
+  left at the right edge. Besides the visual-bounds anchor, the rules change from vanilla in two ways: the
+  box's top stays on the screen, and a control with no height counts as one pixel high.
+- **Layering:** `MovementAllowedScreen` clears the layer when a frame starts and draws it after
+  `renderScreenContents`, through `nextTooltipLayer`/`previousTooltipLayer`, so a tooltip is above
+  popups, the swatch and item icons on every version.
+- **Narration:** `narrateTooltip` adds the tooltip as a hint, as vanilla's tooltip does. Pointer
+  tooltips are not narrated.
+- **Never vanilla's `Tooltip`:** do not use `Tooltip`, `setTooltipForNextFrame` or
+  `setTooltipForNextRenderPass` in the mod's screens. Vanilla's `setTooltip(Tooltip)` still exists on
+  every widget and would bring back the vanilla box.
+
 ### New interactive widget checklist
 
 1. Put it in `client.gui.widgets` unless it is private to a single screen.
@@ -961,7 +1013,8 @@ slider on every version.
 7. Use `DrawContextHelper` and semantic `WidgetThemeVariable` values for shared drawing behavior.
 8. Keep hit testing consistent with the intended interactive bounds.
 9. Implement meaningful narration when practical.
-10. Add focused unit tests for pure geometry, layout, parsing, or state transitions.
+10. If it can show a tooltip, end its renderer with `scheduleTooltip(mouseX, mouseY)` and `updateWidgetNarration` with `narrateTooltip(output)`; without both calls, `setTooltip` does nothing.
+11. Add focused unit tests for pure geometry, layout, parsing, or state transitions.
 
 A minimal interactive widget follows this shape:
 
@@ -1033,7 +1086,7 @@ Use current screens as focused examples:
 - The manager's dimension rail includes empty dimensions that have no synchronized waypoint file. In an integrated world it reads the integrated server's level keys directly. On a remote connection it asynchronously extracts fully namespaced dimension identifiers from the `/wp list ` command suggestions, merges them with the synchronized client cache as a fallback, and ignores the command's literal list/search/sort options.
 - In all-dimensions mode, the waypoint-list scroll position and grouped dimension-node expansion choices are session-scoped static widget state, so both survive closing and reopening the manager as well as ordinary dimension changes. Scroll restoration is deferred until the reconstructed widget has rows and a real maximum scroll range. Selected-dimension mode never remembers scroll and resets to the top when its scope is selected. `WaypointClientMod.onJoinServer()` calls `WaypointManagerScreen.resetSessionWidgetStates()` so connecting to another server or opening another local save also starts at the top with every dimension expanded.
 - `WaypointManagerScreen.resolveViewState(integratedServer, networkState)` picks `LOADING` (`NOT_READY` or `HANDSHAKE_FINISHED`), `UNSUPPORTED`, `INCOMPATIBLE` or `READY` (`SYNC_FINISHED`, or any state in an integrated world). A non-ready build registers no widgets and shows one centered `ScalableText` message. `tick()` calls vanilla `rebuildWidgets()` when the resolved state changes, so a manager opened during sync builds itself in place when sync finishes. In the remote view a catalog session change still closes the screen; in the local view it rebuilds the screen, and the ready build rebinds `RemoteWaypointPanel` to the new session, clearing its selection and the requested dimension catalog. `removed()` clears the static `isRendering`/`activeScreen` registration, so a manager closed by teleport or `setScreen(null)` stops receiving refresh calls; returning from a child screen re-runs `init()`, which re-queries the list. Because the client reports `NO_SERVERSIDE_SUPPORT` until a dedicated server's handshake arrives, a manager open in that window briefly shows the unsupported message.
-- `AbstractWaypointPropertiesScreen`, `WaypointAddScreen`, and `WaypointEditScreen` demonstrate a compact, fixed form. `WaypointFormLayout` is pure and unit-tested: from measured sizes it works out the label and control columns, the gap between rows (9 pixels, down to 5 when the screen is short), the dividers and the footer, and the screen places its widgets from the answers with `placeOutline` and `placeInRow`, which position any widget by its outline whatever its anchor. Layout runs in `init()`, when the footer message changes because a wrapped message changes the footer's height, and on resize through `repositionElements()`, which keeps the widgets, so values, focus, the message and a pending request survive; it never runs every frame. `WaypointFormCheck` runs on every edit and tick and reports the first problem: a hint or an error blocks Add and Save and the footer says why, an error's field gets a `DANGER` outline through `setInvalid`, and a note doesn't block. `WaypointAddScreen` sends `/wp add`, locks the form with a `PendingAdd`, closes when the waypoint appears in the synced data and unlocks with a message after 5 seconds. `WaypointEditScreen` captures the list revision, builds one atomic patch with `WaypointFormPatch`, keeps entered values until a matching server result accepts the edit, and unlocks with that result's message otherwise. Its Display name field holds only the override, and an empty field over a saved override clears it. The add screen treats its name field only as the exact identifier and creates no display-name override. Resting the pointer on a field's label or controls for 500 ms shows that field's tooltip at the pointer through `DrawContextHelper.scheduleTooltipAtPointer`, but not over the remove-icon button, which has its own, nor while a popup, the color picker or a pending request is open.
+- `AbstractWaypointPropertiesScreen`, `WaypointAddScreen`, and `WaypointEditScreen` demonstrate a compact, fixed form. `WaypointFormLayout` is pure and unit-tested: from measured sizes it works out the label and control columns, the gap between rows (9 pixels, down to 5 when the screen is short), the dividers and the footer, and the screen places its widgets from the answers with `placeOutline` and `placeInRow`, which position any widget by its outline whatever its anchor. Layout runs in `init()`, when the footer message changes because a wrapped message changes the footer's height, and on resize through `repositionElements()`, which keeps the widgets, so values, focus, the message and a pending request survive; it never runs every frame. `WaypointFormCheck` runs on every edit and tick and reports the first problem: a hint or an error blocks Add and Save and the footer says why, an error's field gets a `DANGER` outline through `setInvalid`, and a note doesn't block. `WaypointAddScreen` sends `/wp add`, locks the form with a `PendingAdd`, closes when the waypoint appears in the synced data and unlocks with a message after 5 seconds. `WaypointEditScreen` captures the list revision, builds one atomic patch with `WaypointFormPatch`, keeps entered values until a matching server result accepts the edit, and unlocks with that result's message otherwise. Its Display name field holds only the override, and an empty field over a saved override clears it. The add screen treats its name field only as the exact identifier and creates no display-name override. Resting the pointer on a field's label or controls for 500 ms shows that field's tooltip at the pointer through `TooltipLayer.scheduleAtPointer`, but not over the remove-icon button, which has its own, nor while a popup, the color picker or a pending request is open.
 - `ClientConfigScreen` demonstrates `SettingsListWidget` with per-row reset buttons, a footer built with a `WidgetPack`, and confirmation dialogs that disable the underlying controls, close on Escape and return focus to the button that opened them. Its Map mods rows depend on which map mods the loader supports (`MapModIntegrations.find`) and the player installed; the pure rules live in `ClientConfigSync`, and the settings themselves in `ClientConfigSettings`. It saves the config in `removed()`, which every exit reaches.
 - `WidgetThemeConfigScreen` demonstrates a live-preview editing transaction, a two-column theme-variable editor, a screen-local widget gallery, separate RGB/opacity controls, and a modal `SwatchWidget`.
 
@@ -1065,6 +1118,7 @@ Do not both render a widget through a container and render it again explicitly. 
 2. Screen-specific panels and main content.
 3. Text-field suggestion lists.
 4. Modal or color-picker overlays on a later layer.
+5. The tooltip, drawn last by `MovementAllowedScreen`.
 
 Use `nextLayer`/`previousLayer` around suggestions and overlays when they must appear above normal controls.
 Use `nextItemOverlayLayer`/`previousItemOverlayLayer` for marks drawn over GUI item icons, such as the
@@ -1073,6 +1127,9 @@ server rail badges. On 1.21.6 and later both pairs start a new render stratum, b
 `nextItemOverlayLayer` translates 200, the depth vanilla uses for item stack counts.
 The waypoint form's modal `SwatchWidget` uses this item-overlay pair so its background and
 controls cover the item preview on versions before 1.21.6.
+`nextTooltipLayer`/`previousTooltipLayer` are for the tooltip alone: `TooltipLayer` calls them, and screens
+do not. Before 1.21.6 `nextTooltipLayer` translates 400, vanilla's tooltip depth, above the item overlay
+layer; from 1.21.6 it starts a stratum.
 
 #### 4. Input: preserve focus and text entry
 
@@ -1285,7 +1342,7 @@ hovered. Hover previews never change the saved selection or fire an edit callbac
 add/edit screen passes real popup coordinates to the preview even while the popup suppresses
 underlying hover, and `NO_MOUSE` while the color modal covers the form.
 
-`WaypointIconPicker` owns a searchable `ComboBoxWidget` whose placeholder reads "None — shows the initials", a 13×13 `IconButton` that removes the icon, and the selected nullable `NamespacedId`. The button draws `WidgetTextures.CLEAR_ICON`, is inactive while no icon is selected, which tints its icon with `TEXT_DISABLED`, and has vanilla's "Remove icon" tooltip. Add and edit screens register the menu and button once for input, render the menu's popup after the main form, and read `getSelectedIcon()` when submitting. `setSelectedIcon()` restores a saved choice, including an ID missing from the current client registry; it does not send an edit. The picker lists the current item registry and known VoxelMap image IDs. Search filters the catalog while a partial query leaves the saved choice intact.
+`WaypointIconPicker` owns a searchable `ComboBoxWidget` whose placeholder reads "None — shows the initials", a 13×13 `IconButton` that removes the icon, and the selected nullable `NamespacedId`. The button draws `WidgetTextures.CLEAR_ICON`, is inactive while no icon is selected, which tints its icon with `TEXT_DISABLED`, and has a "Remove icon" tooltip. Add and edit screens register the menu and button once for input, render the menu's popup after the main form, and read `getSelectedIcon()` when submitting. `setSelectedIcon()` restores a saved choice, including an ID missing from the current client registry; it does not send an edit. The picker lists the current item registry and known VoxelMap image IDs. Search filters the catalog while a partial query leaves the saved choice intact.
 
 The icon combobox keeps the full catalog in its popup. `AbstractDropdownMenuWidget.setMaxPopupHeight()` limits the visible vertical rows; the remaining choices stay reachable with the wheel, arrow keys, or draggable scrollbar. `setExpansionDirection()` lets the owning screen place the popup above or below its control. The add/edit screen chooses the roomier side, caps the popup to eight rows and the available screen space, and routes wheel input to the open popup before other controls. When it handles a popup click before vanilla dispatch, the screen must establish drag focus and forward release events so scrollbar dragging works. Popup click and hover handling must use only the visible rows so covered form buttons cannot accidentally receive a click intended for the popup.
 
@@ -1368,21 +1425,18 @@ context.fill(x, y, x + width, y + height, backgroundColor);
 
 ### Tooltip position for scrollable widgets
 
-Use a widget's `setTooltip(...)` for a label that describes the whole control. Vanilla positions
-that tooltip using the widget's bounds. For a hovered item inside a tall or scrollable widget,
+`setTooltip(Component)` describes a whole control, and `TooltipLayer` places it beside the control's
+visual bounds (see [Tooltips](#tooltips)). For a hovered item inside a tall or scrollable widget,
 resolve the item from the current mouse coordinates and schedule its tooltip at the cursor instead;
 otherwise the tooltip can appear far from the item, especially after scrolling or resizing.
 
 - Calculate the hovered item using the widget's current viewport and scroll position. Schedule
   nothing when the pointer is outside an item, the widget is inactive, or the item is clipped.
-- Pass the screen-space `mouseX` and `mouseY` to `DrawContextHelper.scheduleTooltipAtPointer(...)`,
-  which calls `GuiGraphicsExtractor.setTooltipForNextFrame(...)` on Minecraft 1.21.6 and newer and the
-  screen's `setTooltipForNextRenderPass(...)` before. Do not pass coordinates after a render
-  translation or the item's local position.
-- Schedule the tooltip during the hovered content's owning render pass, and clear any prior
-  whole-widget tooltip when moving to per-item scheduling. `SettingsListWidget` and the waypoint form
-  schedule through the helper; `IconListWidget` and `RemoteWaypointPanel.BrowserTree` still carry the
-  two version branches inline and show render ownership.
+- Pass the screen-space `mouseX` and `mouseY` to `TooltipLayer.scheduleAtPointer(...)`, which needs
+  no version branch. Do not pass coordinates after a render translation or the item's local position.
+- Schedule the tooltip during the hovered content's owning render pass. `IconListWidget`,
+  `RemoteWaypointPanel.BrowserTree`, `SettingsListWidget` and the waypoint form all schedule through
+  `TooltipLayer`, and each decides for itself when its tooltip shows.
 - Check the result in game with the first and last visible items, a scrolled list, a resized screen,
   and items near screen edges. Compilation cannot confirm tooltip placement.
 
@@ -1468,6 +1522,7 @@ After a GUI change:
 - Suggestion-enabled fields provide data, rendering, and click handling.
 - Screen call sites use `render_method_swap` for ordinary `AbstractWidget` rendering.
 - Widget drawing overrides use `render_widget_method_swap`.
+- Tooltips use `setTooltip(Component)` on a class that makes both calls, or `TooltipLayer.scheduleAtPointer`; nothing imports vanilla's `Tooltip`.
 - Hover-dependent drawing reads state only after the high-level wrapper has run.
 - Normal and hovered backgrounds are both explicit when the widget should not be transparent while idle.
 - Theme-aware drawing resolves semantic roles at render time instead of caching raw colors.
