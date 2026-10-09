@@ -95,6 +95,18 @@ public class ScalableText extends ShiftableWidget implements Expandable {
         return Math.round(lineCount * this.textRenderer.lineHeight * this.scale);
     }
 
+    /** The width of the widest wrapped line, scaled like {@link #getWidth()}; the whole text without a maximum width, and 0 with no lines. */
+    public int getTextWidth() {
+        if (this.maxWidth == -1) {
+            return Math.round(this.textRenderer.width(this.text) * this.scale);
+        }
+        int widest = 0;
+        for (FormattedCharSequence line : this.warpLines) {
+            widest = Math.max(widest, this.textRenderer.width(line));
+        }
+        return Math.round(widest * this.scale);
+    }
+
     public void setText(Component text) {
         this.text = text;
         if (this.maxWidth != -1) {
