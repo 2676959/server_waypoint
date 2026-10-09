@@ -42,6 +42,7 @@ import net.minecraft.resources.Identifier;
 
 import static _959.server_waypoint.common.client.WaypointClientMod.getCurrentDimensionName;
 import static _959.server_waypoint.common.client.WaypointClientMod.getNetworkState;
+import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.NO_MOUSE;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.nextLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
@@ -754,6 +755,13 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                     (context, mouseX, mouseY, delta);
             return;
         }
+        // The sort dropdown's popup can open over the sort-order toggle. A control drawn before the dropdown
+        // would be hovered beneath the popup's choice and request its tooltip first, so while the popup is
+        // under the pointer those controls see none. The dropdown keeps the pointer for its choices, and the
+        // control drawn after it requests later than the choice does.
+        boolean popupUnderPointer = sortingModeDropdown.isMouseOverPopup(mouseX, mouseY);
+        int beneathPopupMouseX = resolveMouseBeneathPopup(mouseX, popupUnderPointer);
+        int beneathPopupMouseY = resolveMouseBeneathPopup(mouseY, popupUnderPointer);
         this.renderPanel(
                 context,
                 this.layoutGeometry.middlePanelX(),
@@ -764,11 +772,11 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         searchField.
         //$ render_method_swap
         extractRenderState
-                (context, mouseX, mouseY, delta);
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         waypointListWidget.
         //$ render_method_swap
         extractRenderState
-                (context, mouseX, mouseY, delta);
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         this.renderPanel(
                 context,
                 this.layoutGeometry.detailsPanelX(),
@@ -779,8 +787,8 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         waypointDetailsWidget.
         //$ render_method_swap
         extractRenderState
-                (context, mouseX, mouseY, delta);
-        if (showingRemote) remotePanel.render(context, mouseX, mouseY, delta);
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
+        if (showingRemote) remotePanel.render(context, beneathPopupMouseX, beneathPopupMouseY, delta);
         this.renderPanel(
                 context,
                 this.layoutGeometry.leftPanelX(),
@@ -791,35 +799,35 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         dimensionListWidget.
         //$ render_method_swap
         extractRenderState
-                (context, mouseX, mouseY, delta);
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         serverListWidget.
         //$ render_method_swap
         extractRenderState
-                (context, mouseX, mouseY, delta);
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         selectorSeparator.
         //$ render_method_swap
         extractRenderState
-                (context, mouseX, mouseY, delta);
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         serverControlSeparator.
         //$ render_method_swap
         extractRenderState
-                (context, mouseX, mouseY, delta);
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         serverScopeToggle.
         //$ render_method_swap
         extractRenderState
-                (context, mouseX, mouseY, delta);
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         addWaypointButton.
         //$ render_method_swap
         extractRenderState
-                (context, mouseX, mouseY, delta);
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         groupModeToggle.
         //$ render_method_swap
         extractRenderState
-                (context, mouseX, mouseY, delta);
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         sortOrderToggle.
         //$ render_method_swap
         extractRenderState
-                (context, mouseX, mouseY, delta);
+                (context, beneathPopupMouseX, beneathPopupMouseY, delta);
         sortingModeDropdown.
         //$ render_method_swap
         extractRenderState
@@ -1379,6 +1387,15 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
         return active && (hovered || (focused && focusVisible))
                 ? WidgetThemeVariable.FOCUS_RING
                 : WidgetThemeVariable.BORDER;
+    }
+
+    /**
+     * The pointer coordinate for the controls drawn before the sort dropdown. Its popup can open over one of
+     * them, as it does over the sort-order toggle on a narrow screen, so while the popup is under the pointer
+     * they get {@code NO_MOUSE}: they stay unhovered and request no tooltip ahead of the hovered choice's.
+     */
+    static int resolveMouseBeneathPopup(int mouse, boolean popupUnderPointer) {
+        return popupUnderPointer ? NO_MOUSE : mouse;
     }
 
     private static final class IconDropdownMenu extends AbstractDropdownMenuWidget {

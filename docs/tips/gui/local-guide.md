@@ -404,8 +404,10 @@ Use `DrawContextHelper` for drawing operations whose Minecraft API changes acros
 To draw widgets with no hover state or tooltip, as under a dialog or for a clipped settings row,
 pass `DrawContextHelper.NO_MOUSE` as both mouse coordinates.
 `AbstractWaypointPropertiesScreen` does this for the form and its popups while its modal
-`SwatchWidget` is visible, and passes the real mouse coordinates only to the swatch. Disabling
-controls alone does not suppress hover or cursor requests during rendering.
+`SwatchWidget` is visible, and passes the real mouse coordinates only to the swatch.
+`WaypointManagerScreen` does it for everything drawn before its sort dropdown while the pointer is
+over the dropdown's popup (see the manager's sort popup below). Disabling controls alone does not
+suppress hover or cursor requests during rendering.
 
 `DrawContextHelper.texture` has an overload with a trailing ARGB color that multiplies every pixel
 of the texture, as `IconButton` does to tint an inactive icon. It uses the colored blit on 1.21.2
@@ -752,6 +754,15 @@ toggles, the sort dropdown's button and the add button) and the search field pai
 their border, so a control isn't a second translucent layer stacked on the panel. Hovering, the disabled
 look and a selected control still fill. The sort dropdown's popup rows float over other widgets, so they keep
 their resting fill; `WaypointManagerScreen.resolveIconControlFill` makes that choice.
+
+On a narrow screen, where the choices don't fit left of the controls, the sort popup shifts right and up one
+row, over the sort-order toggle. That toggle is drawn before the dropdown, so with the real pointer it would be
+hovered under the hovered choice and request its tooltip first, and a hovered choice never replaces an earlier
+request. While `sortingModeDropdown.isMouseOverPopup(...)` holds, the manager therefore draws everything before
+the dropdown (the search field, the lists, the details, the rails and the other controls) with `NO_MOUSE`,
+through the pure `WaypointManagerScreen.resolveMouseBeneathPopup`. The dropdown keeps the real pointer, so its
+popup shows the hovered choice's tooltip. The all-dimensions toggle is drawn after the dropdown, asks later than
+the choice does and needs no such treatment.
 
 The manager's sidebar `HOME_ICON` / `LAN_SERVERS_ICON` toggle switches its middle list and right
 details panel between current-server and remote waypoints without opening another screen. Its
