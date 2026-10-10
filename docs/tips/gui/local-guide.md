@@ -340,6 +340,10 @@ only when a suggestion's text needs more room. Composites can override `getSugge
 `getSuggestionsY()`, and `getSuggestionsWidth(int maxTextWidth)` to anchor suggestions to their outer
 bounds. The combobox uses its full control width, including the arrow area, and clips suggestion text
 inside that outline.
+Suggestion rows share vanilla `EditBox`'s horizontal text viewport through `EditBoxAccessor`, so
+their visible prefixes line up with the scrolled input. The inline completion follows the visible
+input text and is clipped to the input area. Moving the cursor back to the start restores the
+suggestion prefixes; acceptance always uses the complete suggestion value.
 Drawing and hit testing use the same bounds. Use `setSuggestionsEnabled(...)` to temporarily suppress completion without
 losing focus. `refreshSuggestions()` invalidates a completion cycle after catalog changes; replacing
 the provider also refreshes it. `renderSuggestions(...)` remains an explicit overlay pass for standalone inputs.

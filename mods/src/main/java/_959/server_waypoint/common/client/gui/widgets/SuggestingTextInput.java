@@ -6,6 +6,7 @@ import _959.server_waypoint.common.client.gui.layout.AnchorMode;
 import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.layout.Shiftable;
+import _959.server_waypoint.mixin.EditBoxAccessor;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.renderOutline;
@@ -281,7 +282,7 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
             drawText(
                     context,
                     this.textRenderer,
-                    this.textRenderer.plainSubstrByWidth(suggestion,
+                    this.textRenderer.plainSubstrByWidth(this.getSuggestionViewport(suggestion),
                             Math.max(0, textRight - this.getTextAnchorX())),
                     this.getTextAnchorX(),
                     y + 2,
@@ -796,6 +797,8 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
         if (this.inlineSuggestion == null || this.inlineSuggestion.isEmpty() || !this.isFocused() || this.getCursorPosition() != this.getValue().length()) {
             return;
         }
+        context.enableScissor(this.getTextAnchorX(), this.getVisualY(),
+                this.getTextAnchorX() + this.getInnerWidth(), this.getVisualY() + this.getVisualHeight());
         drawText(
                 context,
                 this.textRenderer,
@@ -805,6 +808,7 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
                 getColor(this.active ? TEXT_PLACEHOLDER : TEXT_DISABLED),
                 true
         );
+        context.disableScissor();
     }
 
     protected void updateThemeTextColors() {
@@ -833,10 +837,14 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     }
 
     private int getInlineSuggestionX() {
-        if (this.getValue().isEmpty()) {
-            return this.getTextAnchorX();
-        }
-        return this.getTextAnchorX() + this.textRenderer.width(this.getValue());
+        String visibleValue = this.textRenderer.plainSubstrByWidth(
+                this.getSuggestionViewport(this.getValue()), this.getInnerWidth());
+        return this.getTextAnchorX() + this.textRenderer.width(visibleValue);
+    }
+
+    private String getSuggestionViewport(String suggestion) {
+        int displayPos = ((EditBoxAccessor) this).sw$getDisplayPos();
+        return suggestion.substring(Math.min(displayPos, suggestion.length()));
     }
 
     private void hideSuggestions() {

@@ -23,6 +23,7 @@
     "ButtonOnPressAccessor",
     "BoundKeyAccessor",
     "ClientPlayNetworkHandlerMixin",
+    "EditBoxAccessor",
     "GameHudMixin",
     "GuiItemRenderStateMixin",
     "GuiRendererItemAlphaMixin",
