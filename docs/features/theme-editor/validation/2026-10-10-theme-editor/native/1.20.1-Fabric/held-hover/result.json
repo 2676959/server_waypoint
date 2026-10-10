@@ -1,0 +1,80 @@
+{
+    "profile": "1.20.1-Fabric",
+    "target": "1.20.1-fabric",
+    "minecraft": "1.20.1",
+    "prepared": "/private/tmp/claude-501/-Volumes-ssd-fabric-mods-repo-server-waypoint/44c0b42f-f8ff-4ce2-87c8-d4334802674d/scratchpad/theme-live-8/prepared",
+    "suite": "theme-editor",
+    "status": "PASS",
+    "steps": [
+        {
+            "name": "tooltips",
+            "result": "01-tooltips.result",
+            "state": "PASS\nGUI size 480x270\nnative hover coordinates theme-selector-tooltip\nselector hovered during capture\nnative hover coordinates key-row-no-tooltip\nnative hover coordinates preview-no-tooltip\nhandled colorButton\npicker closes preview popup\npicker remains open while controls underneath are hovered\nnative hover coordinates picker-no-underlying-tooltip\n"
+        },
+        {
+            "name": "close",
+            "result": "02-close.result",
+            "state": "PASS\n\n"
+        }
+    ],
+    "heap_mb": 1024,
+    "stage": "complete",
+    "awt_headless": true,
+    "started_at": 1791672525.2034318,
+    "jars": [
+        {
+            "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-fabric/build/libs/server_waypoint-4.0.0-fabric-mc1.20-1.20.1.jar",
+            "name": "server_waypoint-4.0.0-fabric-mc1.20-1.20.1.jar",
+            "sha256": "51b91c4e68aa5806a8696aec4a97eeaac77e84ebd0f70dd793c456e72d0ad6b2"
+        },
+        {
+            "path": "/Volumes/ssd/gradle_home/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-api/0.92.6+1.20.1/3ec0a88b64f252257df6287e9a1d47ed96331e5d/fabric-api-0.92.6+1.20.1.jar",
+            "name": "fabric-api-0.92.6+1.20.1.jar",
+            "sha256": "0ece50476da3692111ab04b75945c5458e70d98cd069eefc044ab3e57977deeb"
+        }
+    ],
+    "probe_hashes": {
+        "tools": "7aea73cc10295d47de58084b4cc742024748eed681852a6e966fb489db063875",
+        "agent": "fb44cba930abb76a130e8080106b1d73bc5b1ac7b639d2a50d65ab6575e3df50",
+        "scenario": "4ad42b7711aa0166f1ce77e9c2adaa5aa02473232e7b700c9419a6e7de7d71fc",
+        "targets": "0fb5b6257eb73981f8527117ca955bd907e9e1835345ef6faae7aa2a430edca6"
+    },
+    "java": "/opt/homebrew/Cellar/openjdk@17/17.0.19/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "pid": 55232,
+    "actual_minecraft": "1.20.1",
+    "mixin_audit": "PASS\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiSlotWaypoints\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiSlotWaypoints$WaypointItem\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiWaypoints\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.util.WaypointContainer\nTRANSFORMED net.minecraft.class_918\nOPTIONAL_ABSENT net.minecraft.client.gui.render.GuiRenderer\nOPTIONAL_ABSENT net.minecraft.client.gui.render.pip.PictureInPictureRenderer\nOPTIONAL_ABSENT net.minecraft.client.gui.render.state.GuiItemRenderState\nOPTIONAL_ABSENT xaero.common.gui.GuiWaypoints\nOPTIONAL_ABSENT xaero.common.gui.GuiWaypoints$List\nOPTIONAL_ABSENT xaero.common.gui.dropdown.DropDownWidget\nOPTIONAL_ABSENT xaero.common.minimap.waypoints.Waypoint\nOPTIONAL_ABSENT xaero.hud.minimap.waypoint.render.WaypointMapRenderer\nOPTIONAL_ABSENT xaero.hud.minimap.world.state.MinimapWorldStateUpdater\nOPTIONAL_ABSENT xaero.map.gui.GuiMap\nOPTIONAL_ABSENT xaero.map.mods.gui.Waypoint\nOPTIONAL_ABSENT xaero.map.mods.gui.WaypointReader\nTRANSFORMED net.minecraft.class_1531\nTRANSFORMED net.minecraft.class_1533\nTRANSFORMED net.minecraft.class_1542\nTRANSFORMED net.minecraft.class_1661\nTRANSFORMED net.minecraft.class_1703\nTRANSFORMED net.minecraft.class_1714\nTRANSFORMED net.minecraft.class_1759\nTRANSFORMED net.minecraft.class_2168\nTRANSFORMED net.minecraft.class_22\nTRANSFORMED net.minecraft.class_304\nTRANSFORMED net.minecraft.class_310\nTRANSFORMED net.minecraft.class_3222\nTRANSFORMED net.minecraft.class_329\nTRANSFORMED net.minecraft.class_3324\nTRANSFORMED net.minecraft.class_342\nTRANSFORMED net.minecraft.class_3910\nTRANSFORMED net.minecraft.class_4185\nTRANSFORMED net.minecraft.class_634\nTRANSFORMED net.minecraft.class_7298\nTRANSFORMED net.minecraft.class_757\nTRANSFORMED net.minecraft.class_761\nTRANSFORMED net.minecraft.class_7975\nTRANSFORMED net.minecraft.class_8168\nTRANSFORMED net.minecraft.class_8172\nOPTIONAL_ABSENT Xaero native identity checks\nPASS MixinEnvironment.audit\nSUCCESS targets=25\n",
+    "exit_code": 0,
+    "finished_at": 1791672561.060905,
+    "diagnostics": {
+        "errors": 0,
+        "warnings": 134,
+        "ignored": 1
+    },
+    "crash_reports": [],
+    "diagnostic_preview": [
+        {
+            "severity": "WARN",
+            "message": "Compatibility level JAVA_16 specified by fabric-api-lookup-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 65
+            }
+        },
+        {
+            "severity": "WARN",
+            "message": "Compatibility level JAVA_17 specified by fabric-block-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 67
+            }
+        },
+        {
+            "severity": "WARN",
+            "message": "Compatibility level JAVA_16 specified by fabric-blockrenderlayer-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 69
+            }
+        }
+    ]
+}

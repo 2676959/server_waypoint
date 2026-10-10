@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" tests="16" skipped="0" failures="0" errors="0" timestamp="2026-10-10T22:30:09.869Z" hostname="Mac-mini.local" time="0.008">
+  <properties/>
+  <testcase name="modernDarkThemeRetainsReadableContrastAcrossBrightAndDarkWorlds()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.001"/>
+  <testcase name="textHierarchyRemainsReadableOnCoreSurfaces()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.0"/>
+  <testcase name="translucentDarkThemeDefinesEveryVariableAndSurfaceDepth()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.001"/>
+  <testcase name="modernDarkThemeDefinesEveryVariable()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.0"/>
+  <testcase name="incompleteThemesAreRejected()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.001"/>
+  <testcase name="scrollbarThumbRemainsVisibleAgainstTrack()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.0"/>
+  <testcase name="classicKeepsItsLabelsReadableOnTheSurfacesTheyAreDrawnOn()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.0"/>
+  <testcase name="classicSurfacesKeepPreviousReleasePixelsWithTransparentBorders()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.001"/>
+  <testcase name="customColorDoesNotMutateBaseTheme()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.0"/>
+  <testcase name="builderCanOverrideSeveralSemanticVariables()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.0"/>
+  <testcase name="placeholderTextRemainsReadableAcrossControlStates()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.0"/>
+  <testcase name="accentSurfaceTextMeetsNormalTextContrast()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.0"/>
+  <testcase name="focusRingRemainsVisibleOnCoreSurfaces()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.0"/>
+  <testcase name="disabledControlTextRemainsReadable()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.0"/>
+  <testcase name="classicLetsMoreOfTheWorldThroughThanTheGlassPresetsOnEverySurface()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.001"/>
+  <testcase name="translucentDarkThemeRetainsReadableContrastAcrossBrightAndDarkWorlds()" classname="_959.server_waypoint.common.client.gui.render.WidgetThemeTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

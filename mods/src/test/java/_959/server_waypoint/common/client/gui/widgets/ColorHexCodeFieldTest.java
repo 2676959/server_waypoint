@@ -7,10 +7,81 @@ import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ColorHexCodeFieldTest {
     private static ColorHexCodeField argb() {
         return ColorHexCodeField.argb(0, 0, Component.literal("Color"), new TestFont());
+    }
+
+    /**
+     * A field that takes typing, in the ARGB mode when {@code alpha} is true. Focusing an editable box
+     * reports it to the game client, which a test doesn't have, so the field takes input without focus.
+     */
+    private static ColorHexCodeField typingField(boolean alpha) {
+        return new ColorHexCodeField(0, 0, Component.literal("Color"), new TestFont(), alpha) {
+            @Override
+            public boolean canConsumeInput() {
+                return true;
+            }
+        };
+    }
+
+    @Test
+    void typingOverASelectionReplacesItInAFullArgbField() {
+        ColorHexCodeField field = typingField(true);
+        field.setColor(0xB31C1C1C);
+        field.setCursorPosition(0);
+        field.setHighlightPos(8);
+
+        assertTrue(field.charTyped('d', 0), "select all, then type");
+        assertEquals("D", field.getValue());
+
+        field.setColor(0xB31C1C1C);
+        field.setCursorPosition(2);
+        field.setHighlightPos(4);
+
+        assertTrue(field.charTyped('f', 0), "select the red pair, then type over it");
+        assertTrue(field.charTyped('f', 0));
+        assertEquals("B3FF1C1C", field.getValue());
+        assertEquals(0xB3FF1C1C, field.getColor());
+    }
+
+    @Test
+    void typingOverASelectionReplacesItInAFullRgbField() {
+        ColorHexCodeField field = typingField(false);
+        field.setColor(0x123456);
+        field.setCursorPosition(0);
+        field.setHighlightPos(6);
+
+        assertTrue(field.charTyped('a', 0));
+        assertEquals("A", field.getValue());
+    }
+
+    @Test
+    void aFullFieldWithoutASelectionRefusesAnotherDigit() {
+        ColorHexCodeField argb = typingField(true);
+        argb.setColor(0xB31C1C1C);
+        assertFalse(argb.charTyped('0', 0));
+        assertEquals("B31C1C1C", argb.getValue());
+
+        ColorHexCodeField rgb = typingField(false);
+        rgb.setColor(0x123456);
+        assertFalse(rgb.charTyped('0', 0));
+        assertEquals("123456", rgb.getValue());
+    }
+
+    @Test
+    void aPasteLongerThanTheLimitIsCut() {
+        ColorHexCodeField argb = argb();
+        argb.setValue("");
+        argb.insertText("#D9262626FF");
+        assertEquals("D9262626", argb.getValue());
+
+        ColorHexCodeField rgb = new ColorHexCodeField(0, 0, Component.literal("RGB"), new TestFont());
+        rgb.insertText("#FF00FF00");
+        assertEquals("FF00FF", rgb.getValue());
     }
 
     @Test

@@ -149,12 +149,42 @@ class WidgetThemeEditorSessionTest {
     void aFailedSaveLeavesTheSessionOpen() throws IOException {
         Path blocker = this.tempDirectory.resolve("blocker");
         Files.writeString(blocker, "not a directory");
-        WidgetThemeEditorSession session = new WidgetThemeEditorSession(
-                WidgetThemes.MODERN_DARK, blocker.resolve("widget-theme.json"));
+        Path path = blocker.resolve("widget-theme.json");
+        WidgetThemeEditorSession session = new WidgetThemeEditorSession(WidgetThemes.MODERN_DARK, path);
         session.setColor(WidgetThemeVariable.ACCENT, 0xFF123456);
         assertThrows(IOException.class, session::save);
+        assertEquals(0xFF123456, session.getDraftTheme().getColor(WidgetThemeVariable.ACCENT));
         session.setColor(WidgetThemeVariable.PANEL_BACKGROUND, 0xCC112233);
         assertTrue(session.isDirty());
+
+        // Another attempt, once the file can be written, saves the values the failed one kept.
+        Files.delete(blocker);
+        session.save();
+        WidgetThemeJson.Settings saved = WidgetThemeJson.loadSettings(path);
+        assertEquals(WidgetThemeSelection.CUSTOM, saved.selection());
+        assertEquals(session.getDraftTheme(), saved.customTheme());
+        assertEquals(0xFF123456, saved.theme().getColor(WidgetThemeVariable.ACCENT));
+        assertEquals(0xCC112233, saved.theme().getColor(WidgetThemeVariable.PANEL_BACKGROUND));
+    }
+
+    @Test
+    void settingsThatDifferFromTheLiveThemePreviewAtOnceAndCancelRestoresTheLiveTheme() {
+        // widget-theme.json was edited by hand while the game ran: it selects Modern Dark, and Translucent
+        // Dark is still live.
+        WidgetThemeManager.setTheme(WidgetThemes.TRANSLUCENT_DARK);
+        WidgetThemeJson.Settings file = new WidgetThemeJson.Settings(
+                WidgetThemeSelection.MODERN_DARK, WidgetThemes.TRANSLUCENT_DARK);
+
+        WidgetThemeEditorSession session = new WidgetThemeEditorSession(
+                WidgetThemeManager.getTheme(), this.tempDirectory.resolve("widget-theme.json"), file);
+
+        assertEquals(WidgetThemes.MODERN_DARK, WidgetThemeManager.getTheme());
+        assertEquals(session.getDraftTheme(), WidgetThemeManager.getTheme());
+        assertFalse(session.isDirty());
+        assertFalse(session.isChanged(WidgetThemeVariable.ACCENT));
+
+        session.cancel();
+        assertEquals(WidgetThemes.TRANSLUCENT_DARK, WidgetThemeManager.getTheme());
     }
 
     @Test

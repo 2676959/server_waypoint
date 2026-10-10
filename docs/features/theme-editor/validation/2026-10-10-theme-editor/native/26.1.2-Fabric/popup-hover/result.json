@@ -1,0 +1,85 @@
+{
+    "profile": "26.1.2-Fabric",
+    "target": "26.1.2-fabric",
+    "minecraft": "26.1.2",
+    "prepared": "/private/tmp/claude-501/-Volumes-ssd-fabric-mods-repo-server-waypoint/44c0b42f-f8ff-4ce2-87c8-d4334802674d/scratchpad/theme-live-7/prepared",
+    "suite": "theme-editor",
+    "status": "PASS",
+    "steps": [
+        {
+            "name": "popups-modal",
+            "result": "01-popups-modal.result",
+            "state": "PASS\nGUI size 480x270\npreview combobox click handled\ncombobox popup opens\ncombobox popup receives wheel first\npopup wheel leaves preview scroll unchanged\ncombobox popup choice receives click\ncombobox choice changes without clicking underlying control\npreview dropdown click handled\ndropdown popup opens\ndropdown popup receives wheel\ndropdown popup choice receives click\ndropdown choice selected\nGUI size 378x245\nresize closes preview popup\npopup open before preview scroll\npreview wheel outside popup handled\npreview scrolling closes popup\ntheme popup opens\nEscape dismisses focused theme popup\nhandled colorButton\nGUI size 320x240\npicker survives resize after keyboard input\nmodal keeps footer/header inactive\nEscape closes picker without changing theme\npicker dismissal restores color-button focus\n"
+        },
+        {
+            "name": "tooltips",
+            "result": "02-tooltips.result",
+            "state": "PASS\nGUI size 480x270\nhandled colorButton\npicker closes preview popup\npicker remains open while controls underneath are hovered\n"
+        },
+        {
+            "name": "close",
+            "result": "03-close.result",
+            "state": "PASS\n\n"
+        }
+    ],
+    "heap_mb": 1024,
+    "stage": "complete",
+    "awt_headless": true,
+    "started_at": 1791672332.946381,
+    "jars": [
+        {
+            "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/26.1.2-fabric/build/libs/server_waypoint-4.0.0-fabric-mc26.1-26.1.2.jar",
+            "name": "server_waypoint-4.0.0-fabric-mc26.1-26.1.2.jar",
+            "sha256": "0459873732cb38c6fa5a3ff27fe60a2d9bc27c3909d7d64b80ab1c4e71719340"
+        },
+        {
+            "path": "/Volumes/ssd/gradle_home/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-api/0.148.2+26.1.2/2ae5145d7e6e8d6221f3df7855f6f3b020fa89df/fabric-api-0.148.2+26.1.2.jar",
+            "name": "fabric-api-0.148.2+26.1.2.jar",
+            "sha256": "99c5b8fdb6128dd3f2fff25b5357f465226c3c08d0ce4b9d01b37b921c7126ab"
+        }
+    ],
+    "probe_hashes": {
+        "tools": "ee50dfea138e7d472434aceaf7f5867fccf8f1fd196063d0b86edb07e70c9700",
+        "agent": "35287e86a5763af547f16febd26f12d9541ed7fc8a991de616f324e1fb74831f",
+        "scenario": "c17ff758902c24503e4f4971d83f9e4412590ef3044fc10050d8460cff0a91a5",
+        "targets": "742d6d4bf0ff5722edd22b40637eb58f5e66d17794591631f8e5124be6a9ee5f"
+    },
+    "java": "/opt/homebrew/Cellar/openjdk@25/25.0.4.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "pid": 54656,
+    "actual_minecraft": "26.1.2",
+    "mixin_audit": "PASS\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiListWaypoints\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiListWaypoints$WaypointItem\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiWaypoints\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.util.WaypointContainer\nTRANSFORMED net.minecraft.client.gui.render.GuiRenderer\nTRANSFORMED net.minecraft.client.gui.render.pip.PictureInPictureRenderer\nOPTIONAL_ABSENT net.minecraft.client.renderer.entity.ItemRenderer\nTRANSFORMED net.minecraft.client.renderer.state.gui.GuiItemRenderState\nOPTIONAL_ABSENT xaero.common.gui.GuiWaypoints\nOPTIONAL_ABSENT xaero.common.gui.GuiWaypoints$List\nOPTIONAL_ABSENT xaero.common.minimap.waypoints.Waypoint\nOPTIONAL_ABSENT xaero.hud.minimap.waypoint.render.WaypointMapRenderer\nOPTIONAL_ABSENT xaero.hud.minimap.world.state.MinimapWorldStateUpdater\nOPTIONAL_ABSENT xaero.lib.client.gui.widget.dropdown.DropDownWidget\nOPTIONAL_ABSENT xaero.map.gui.GuiMap\nOPTIONAL_ABSENT xaero.map.mods.gui.Waypoint\nOPTIONAL_ABSENT xaero.map.mods.gui.WaypointReader\nTRANSFORMED net.minecraft.client.KeyMapping\nTRANSFORMED net.minecraft.client.Minecraft\nTRANSFORMED net.minecraft.client.gui.Gui\nTRANSFORMED net.minecraft.client.gui.components.Button\nTRANSFORMED net.minecraft.client.gui.components.EditBox\nTRANSFORMED net.minecraft.client.multiplayer.ClientPacketListener\nTRANSFORMED net.minecraft.client.renderer.GameRenderer\nTRANSFORMED net.minecraft.client.renderer.LevelRenderer\nTRANSFORMED net.minecraft.client.telemetry.WorldSessionTelemetryManager\nTRANSFORMED net.minecraft.commands.CommandSourceStack\nTRANSFORMED net.minecraft.server.level.ServerPlayer\nTRANSFORMED net.minecraft.server.players.PlayerList\nTRANSFORMED net.minecraft.world.entity.animal.allay.Allay\nTRANSFORMED net.minecraft.world.entity.decoration.ArmorStand\nTRANSFORMED net.minecraft.world.entity.decoration.ItemFrame\nTRANSFORMED net.minecraft.world.entity.item.ItemEntity\nTRANSFORMED net.minecraft.world.entity.player.Inventory\nTRANSFORMED net.minecraft.world.inventory.AbstractContainerMenu\nTRANSFORMED net.minecraft.world.inventory.CartographyTableMenu\nTRANSFORMED net.minecraft.world.inventory.CraftingMenu\nTRANSFORMED net.minecraft.world.item.CompassItem\nTRANSFORMED net.minecraft.world.level.block.DecoratedPotBlock\nTRANSFORMED net.minecraft.world.level.block.entity.DecoratedPotBlockEntity\nTRANSFORMED net.minecraft.world.level.saveddata.maps.MapItemSavedData\nOPTIONAL_ABSENT Xaero native identity checks\nPASS MixinEnvironment.audit\nSUCCESS targets=27\n",
+    "exit_code": 0,
+    "finished_at": 1791672371.0933208,
+    "diagnostics": {
+        "errors": 0,
+        "warnings": 45,
+        "ignored": 3
+    },
+    "crash_reports": [],
+    "diagnostic_preview": [
+        {
+            "severity": "WARN",
+            "message": "Compatibility level JAVA_25 specified by fabric-api-lookup-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 54
+            }
+        },
+        {
+            "severity": "WARN",
+            "message": "Compatibility level JAVA_17 specified by server_waypoint-common.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 56
+            }
+        },
+        {
+            "severity": "WARN",
+            "message": "Compatibility level JAVA_17 specified by server_waypoint-voxelmap.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 57
+            }
+        }
+    ]
+}

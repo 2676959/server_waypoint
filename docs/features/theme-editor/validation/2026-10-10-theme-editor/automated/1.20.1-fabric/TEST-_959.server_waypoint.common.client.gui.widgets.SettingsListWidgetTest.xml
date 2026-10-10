@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-10-10T22:30:14.097Z" hostname="Mac-mini.local" time="0.001">
+  <properties/>
+  <testcase name="aWideRowIsItsControlPlusPaddingAndHidesWidgetsOutOfView()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTest" time="0.0"/>
+  <testcase name="onlyLabelledRowsHighlightOnHover()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTest" time="0.0"/>
+  <testcase name="conditionalActionTracksValuesAndStaysHiddenAfterRelayoutAndScrolling()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTest" time="0.0"/>
+  <testcase name="aCompositeControlWithAClippedWidgetIsDrawnWholeWithTheMouseOffScreen()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTest" time="0.001"/>
+  <testcase name="aRowWhoseControlAndActionAreInactiveCannotTakeFocus()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTest" time="0.0"/>
+  <testcase name="aWideRowIsAsWideAsItsControl()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTest" time="0.0"/>
+  <testcase name="aRowOwnsEveryWidgetInACompositeControl()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTest" time="0.0"/>
+  <testcase name="aWideRowOwnsEveryWidgetItsControlVisitsAndIsATabStopWhileOneIsActive()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTest" time="0.0"/>
+  <testcase name="anActiveActionLetsARowWithAnInactiveControlTakeFocus()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTest" time="0.0"/>
+  <testcase name="aCompositeControlLetsItsRowTakeFocusWhileOneOfItsWidgetsIsActive()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTest" time="0.0"/>
+  <testcase name="aCompositeControlWithNoClippedWidgetIsDrawnWithTheMouse()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTest" time="0.0"/>
+  <testcase name="aRowWithAnActiveControlCanTakeFocus()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTest" time="0.0"/>
+  <testcase name="aWideRowStartsItsControlAtTheRowsLeftEdgeAndCentersIt()" classname="_959.server_waypoint.common.client.gui.widgets.SettingsListWidgetTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

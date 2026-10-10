@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -55,6 +56,7 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.re
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DANGER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.FOCUS_RING;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.PANEL_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.ROW_HOVER_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SELECTION_BACKGROUND;
@@ -119,6 +121,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     private final WidgetPack footer = new WidgetPack(Orientation.HORIZONTAL);
     private final ScalableText statusText;
     private final SwatchWidget swatchWidget;
+    private final ClickDispatch clickDispatch = new ClickDispatch(this::layoutContent);
     private @Nullable WidgetThemeVariable selectedKey = WidgetThemeVariable.TEXT_PRIMARY;
     // True while the constructor builds the controls and while they're set from the draft, so their
     // change callbacks don't apply the values straight back.
@@ -485,14 +488,32 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
 
     /**
      * Finishes a value being entered in the ARGB or the Alpha field by moving focus off it, while the
-     * selected key is still the one it is for and the session is still open. A click on a key, Save or
-     * Cancel runs its callback first, and vanilla moves focus to the clicked widget only afterwards,
-     * which would otherwise finish the value for another key or into a closed session.
+     * selected key is still the one it is for and the session is still open. Vanilla runs a click's
+     * callback first and moves focus to the clicked widget only afterwards, which would finish the value
+     * for another key or into a closed session, so {@link #finishEditingBeforeClick} calls it before a
+     * click is dispatched; selecting a key, Save and Cancel call it too.
      */
     private void finishEditing() {
         if (this.getFocused() == this.argbField || this.getFocused() == this.alphaSlider) {
             this.setFocused(null);
         }
+    }
+
+    /**
+     * A click outside the focused ARGB field or Alpha slider finishes the value being entered there before
+     * the click goes anywhere, as leaving the control does, and the control states follow it. Six ARGB
+     * digits apply only then, so while such a value is the session's first change Reset and Save are
+     * inactive, and vanilla gives a click on an inactive widget to nothing; finished first, the click that
+     * ends the edit reaches them. Nothing commits while the color picker is open.
+     */
+    private void finishEditingBeforeClick(double mouseX, double mouseY) {
+        GuiEventListener focused = this.getFocused();
+        if (this.swatchWidget.visible || (focused != this.argbField && focused != this.alphaSlider)
+                || focused.isMouseOver(mouseX, mouseY)) {
+            return;
+        }
+        this.finishEditing();
+        this.refreshControlStates();
     }
 
     @Override
@@ -515,7 +536,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         this.hasStatus = true;
         this.statusText.setColor(color);
         this.statusText.setText(message);
-        this.layoutContent();
+        this.clickDispatch.requestLayout();
     }
 
     private void clearStatus() {
@@ -524,7 +545,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         }
         this.hasStatus = false;
         this.statusText.setText(Component.empty());
-        this.layoutContent();
+        this.clickDispatch.requestLayout();
     }
 
     // ------------------------------------------------------------------ the color picker
@@ -551,30 +572,68 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
 
     // ------------------------------------------------------------------ input
 
+    /** Keeps click targets stationary until dispatch finishes, then applies a pending status layout. */
+    static final class ClickDispatch {
+        private final Runnable layout;
+        private int depth;
+        private boolean pending;
+
+        ClickDispatch(Runnable layout) {
+            this.layout = layout;
+        }
+
+        boolean dispatch(BooleanSupplier click) {
+            this.depth++;
+            try {
+                return click.getAsBoolean();
+            } finally {
+                this.depth--;
+                if (this.depth == 0 && this.pending) {
+                    this.pending = false;
+                    this.layout.run();
+                }
+            }
+        }
+
+        void requestLayout() {
+            if (this.depth > 0) {
+                this.pending = true;
+            } else {
+                this.layout.run();
+            }
+        }
+    }
+
     //? if >= 1.21.9 {
     @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClicked) {
-        double mouseX = mouseButtonEvent.x();
-        double mouseY = mouseButtonEvent.y();
-        int button = mouseButtonEvent.button();
-        if (this.handleThemeSelectorClick(mouseX, mouseY, button)
-                || this.handlePreviewPopupClick(mouseX, mouseY, button)) {
-            return true;
-        }
-        boolean handled = super.mouseClicked(mouseButtonEvent, doubleClicked);
-        this.normalizeModalFocus();
-        return handled;
+        return this.clickDispatch.dispatch(() -> {
+            double mouseX = mouseButtonEvent.x();
+            double mouseY = mouseButtonEvent.y();
+            int button = mouseButtonEvent.button();
+            this.finishEditingBeforeClick(mouseX, mouseY);
+            if (this.handleThemeSelectorClick(mouseX, mouseY, button)
+                    || this.handlePreviewPopupClick(mouseX, mouseY, button)) {
+                return true;
+            }
+            boolean handled = super.mouseClicked(mouseButtonEvent, doubleClicked);
+            this.normalizeModalFocus();
+            return handled;
+        });
     }
     //?} else {
     /*@Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (this.handleThemeSelectorClick(mouseX, mouseY, button)
-                || this.handlePreviewPopupClick(mouseX, mouseY, button)) {
-            return true;
-        }
-        boolean handled = super.mouseClicked(mouseX, mouseY, button);
-        this.normalizeModalFocus();
-        return handled;
+        return this.clickDispatch.dispatch(() -> {
+            this.finishEditingBeforeClick(mouseX, mouseY);
+            if (this.handleThemeSelectorClick(mouseX, mouseY, button)
+                    || this.handlePreviewPopupClick(mouseX, mouseY, button)) {
+                return true;
+            }
+            boolean handled = super.mouseClicked(mouseX, mouseY, button);
+            this.normalizeModalFocus();
+            return handled;
+        });
     }
     *///?}
 
@@ -759,29 +818,49 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     }
 
     /**
-     * Marks the panels that draw the selected key around their visual bounds, and the screen's background 2
-     * pixels inside the screen's edge; the preview marks its samples itself. Nothing is marked without a
-     * selection.
+     * Marks the panels that draw the selected key at their current size around their visual bounds, and the
+     * screen's background 2 pixels inside the screen's edge; the preview marks its samples itself. Nothing is
+     * marked without a selection.
      */
     private void renderMarkers(GuiGraphicsExtractor context, Arrangement layout) {
         WidgetThemeVariable key = this.selectedKey;
         if (key == null) {
             return;
         }
-        markPanel(context, PreviewSample.KEY_LIST, key, layout.keyList());
-        markPanel(context, PreviewSample.KEY_EDITOR, key, layout.editor());
-        markPanel(context, PreviewSample.PREVIEW_PANEL, key, layout.preview());
+        markPanel(context, layout.keyList(),
+                panelDraws(PreviewSample.KEY_LIST, key, this.keyList.overflows(), this.keyList.showsValues()));
+        markPanel(context, layout.editor(), panelDraws(PreviewSample.KEY_EDITOR, key, false, false));
+        markPanel(context, layout.preview(),
+                panelDraws(PreviewSample.PREVIEW_PANEL, key, this.preview.list().overflows(), false));
         if (PreviewSample.SCREEN.uses(key)) {
             renderOutline(context, SCREEN_MARKER_INSET, SCREEN_MARKER_INSET, this.width - SCREEN_MARKER_INSET * 2,
                     this.height - SCREEN_MARKER_INSET * 2, WidgetThemePreview.MARKER_COLOR);
         }
     }
 
-    private static void markPanel(GuiGraphicsExtractor context, PreviewSample panel, WidgetThemeVariable key,
-                                  Rect bounds) {
-        if (panel.uses(key)) {
+    private static void markPanel(GuiGraphicsExtractor context, Rect bounds, boolean marked) {
+        if (marked) {
             WidgetThemePreview.drawMarker(context, bounds.x(), bounds.y(), bounds.width(), bounds.height());
         }
+    }
+
+    /**
+     * Whether a panel draws {@code key} at its current size. {@link PreviewSample} lists every key the panel
+     * can draw; it draws its scrollbar only while its content overflows, and the key list draws
+     * {@code text.muted}, its values' color, only while it shows values.
+     *
+     * @param overflows whether the panel's list overflows, so it draws a scrollbar
+     * @param showsValues whether the key list shows values; the other panels ignore it
+     */
+    static boolean panelDraws(PreviewSample panel, WidgetThemeVariable key, boolean overflows, boolean showsValues) {
+        if (!panel.uses(key)) {
+            return false;
+        }
+        return switch (key) {
+            case SCROLLBAR_TRACK, SCROLLBAR_THUMB, SCROLLBAR_THUMB_ACTIVE, SCROLLBAR_THUMB_DISABLED -> overflows;
+            case TEXT_MUTED -> panel != PreviewSample.KEY_LIST || showsValues;
+            default -> true;
+        };
     }
 
     /**
@@ -884,7 +963,8 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
      * The raw theme keys in {@link WidgetThemeVariable#values()} order, on a panel the list paints itself.
      * A row shows the key's color on a checkerboard, so a translucent color shows its opacity, the key and,
      * when the row is wide enough, its {@code #AARRGGBB} value. It reports clicks on a key and Up and Down;
-     * the screen decides the selection.
+     * the screen decides the selection. The list is a Tab stop, so its outline turns into the focus ring
+     * while it has focus, which shows that Up and Down act on it.
      */
     static final class KeyList extends TreeViewWidget<WidgetThemeVariable> {
         private static final int CHIP_X = 2;
@@ -908,8 +988,9 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
          * @param onArrowKey receives true for Down and false for Up, while the list has focus
          */
         KeyList(Font font, Consumer<WidgetThemeVariable> onKeyClicked, Consumer<Boolean> onArrowKey) {
+            // No outline from the tree: the list draws its own, in border.default or, with focus, border.focusRing.
             super(0, 0, 0, 0, KEY_ROW_HEIGHT, Component.translatable("server_waypoint.theme.variables"),
-                    PANEL_PADDING, PANEL_PADDING, PANEL_PADDING, PANEL_PADDING, PANEL_BACKGROUND, BORDER, true);
+                    PANEL_PADDING, PANEL_PADDING, PANEL_PADDING, PANEL_PADDING, PANEL_BACKGROUND, BORDER, false);
             this.font = font;
             this.onKeyClicked = onKeyClicked;
             this.onArrowKey = onArrowKey;
@@ -922,6 +1003,11 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
 
         void setShowValues(boolean showValues) {
             this.showValues = showValues;
+        }
+
+        /** Whether the rows show their values, in {@code text.muted}. */
+        boolean showsValues() {
+            return this.showValues;
         }
 
         /** The width a row has to draw in, left of the scrollbar when the list overflows. */
@@ -1010,6 +1096,21 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
 
         @Override
         protected void setExpanded(WidgetThemeVariable value, boolean expanded) {
+        }
+
+        /** The panel and the rows, then the outline: the focus ring while the list has focus, else the border. */
+        @Override
+        public void
+        //$ render_widget_method_swap
+        extractWidgetRenderState
+                (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+            super.
+            //$ render_widget_method_swap
+            extractWidgetRenderState
+                    (context, mouseX, mouseY, deltaTicks);
+            WidgetThemeVariable outline = this.isActive() && this.isFocused() ? FOCUS_RING : BORDER;
+            renderOutline(context, this.getVisualX(), this.getVisualY(), this.getVisualWidth(), this.getVisualHeight(),
+                    getColor(outline));
         }
 
         @Override

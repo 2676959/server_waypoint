@@ -1,6 +1,16 @@
 # Theme Editor Design
 
-Status: design agreed on 2026-10-09. Not implemented yet.
+Status: implemented; design agreed on 2026-10-09. Verification is recorded in
+[the 2026-10-10 validation record](../validation/2026-10-10-theme-editor.md).
+
+Implementation errata (the approved design below is retained):
+
+- Key-list values appear from a 205-pixel left column, rather than 207: `TreeViewWidget` reserves
+  3 pixels for its scrollbar without the settings list's additional 2-pixel gap. The three-size table
+  below still holds.
+- `PreviewSample` declarations follow the widgets' actual drawing, including reachable hover, focus,
+  popup and toggle states. Panel markers additionally respect overflow and value-column visibility;
+  the key list includes its focus ring and excludes its per-key color chips.
 
 ## Intent
 

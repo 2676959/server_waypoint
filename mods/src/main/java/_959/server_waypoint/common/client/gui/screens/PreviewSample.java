@@ -18,8 +18,9 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
  * A sample lists every key it draws while the color picker is closed, in every state a player can put it
  * in: at rest, hovered, focused, with its popup open and, for a toggle, in both states. The inactive look
  * the open picker gives every sample is left out, except for the samples that always show it. An element
- * lists the keys of its own drawing, not those of the widgets placed on it. A test checks that some
- * constant uses every theme key, so a new key needs a sample or an element that draws it.
+ * lists the keys of its own drawing, not those of the widgets placed on it, at any size; the screen leaves
+ * out the ones it doesn't draw at its current size. A test checks that some constant uses every theme key,
+ * so a new key needs a sample or an element that draws it.
  */
 enum PreviewSample {
     PRIMARY_TEXT(Family.TEXT, TEXT_PRIMARY),
@@ -56,9 +57,12 @@ enum PreviewSample {
     ACTIVE_SCROLLBAR(Family.SCROLLBARS, SCROLLBAR_TRACK, SCROLLBAR_THUMB_ACTIVE),
     DISABLED_SCROLLBAR(Family.SCROLLBARS, SCROLLBAR_TRACK, SCROLLBAR_THUMB_DISABLED),
 
-    /** The key list: its panel, its rows and its scrollbar, but not the chips that show each key's value. */
-    KEY_LIST(PANEL_BACKGROUND, BORDER, TEXT_PRIMARY, TEXT_MUTED, SELECTION_BACKGROUND, ROW_HOVER_BACKGROUND,
-            SCROLLBAR_TRACK, SCROLLBAR_THUMB, SCROLLBAR_THUMB_ACTIVE),
+    /**
+     * The key list: its panel, its outline (the focus ring while it has focus), its rows and its scrollbar,
+     * but not the chips that show each key's value.
+     */
+    KEY_LIST(PANEL_BACKGROUND, BORDER, FOCUS_RING, TEXT_PRIMARY, TEXT_MUTED, SELECTION_BACKGROUND,
+            ROW_HOVER_BACKGROUND, SCROLLBAR_TRACK, SCROLLBAR_THUMB, SCROLLBAR_THUMB_ACTIVE),
     /** The key editor's panel, its key line and its Alpha label, as drawn while a key is selected. */
     KEY_EDITOR(PANEL_BACKGROUND, BORDER, DECOR_LINE, TEXT_PRIMARY),
     /** The preview's panel, its header and its scrollbar. */

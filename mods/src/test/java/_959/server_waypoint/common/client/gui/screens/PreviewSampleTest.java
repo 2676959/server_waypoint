@@ -64,6 +64,8 @@ class PreviewSampleTest {
         assertEquals(PreviewSample.ON_TOGGLE.keys(), PreviewSample.OFF_TOGGLE.keys());
         // The preview can overflow, so its panel draws a scrollbar.
         assertTrue(PreviewSample.PREVIEW_PANEL.uses(WidgetThemeVariable.SCROLLBAR_THUMB_ACTIVE));
+        // The key list is a Tab stop: its outline is the focus ring while it has focus.
+        assertTrue(PreviewSample.KEY_LIST.uses(WidgetThemeVariable.FOCUS_RING));
         assertEquals(Set.of(WidgetThemeVariable.SCREEN_BACKGROUND), PreviewSample.SCREEN.keys());
         assertEquals(List.of(PreviewSample.COMBOBOX, PreviewSample.DROPDOWN),
                 PreviewSample.samplesOf(PreviewSample.Family.CHOICES));

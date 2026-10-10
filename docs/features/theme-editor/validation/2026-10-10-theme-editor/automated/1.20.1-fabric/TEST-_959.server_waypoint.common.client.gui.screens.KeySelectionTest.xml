@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.client.gui.screens.KeySelectionTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-10T22:30:12.717Z" hostname="Mac-mini.local" time="0.0">
+  <properties/>
+  <testcase name="upAndDownMoveOneKeyAndStopAtTheEnds()" classname="_959.server_waypoint.common.client.gui.screens.KeySelectionTest" time="0.0"/>
+  <testcase name="aClickSelectsAKey()" classname="_959.server_waypoint.common.client.gui.screens.KeySelectionTest" time="0.0"/>
+  <testcase name="withNothingSelectedDownStartsAtTheFirstKeyAndUpAtTheLast()" classname="_959.server_waypoint.common.client.gui.screens.KeySelectionTest" time="0.0"/>
+  <testcase name="aClickOnTheSelectedKeyClearsTheSelection()" classname="_959.server_waypoint.common.client.gui.screens.KeySelectionTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

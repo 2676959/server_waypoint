@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-10-10T22:30:12.031Z" hostname="Mac-mini.local" time="0.014">
+  <properties/>
+  <testcase name="editingABuiltInThemeReportsItWhenTheCustomColorsDiffer()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.0"/>
+  <testcase name="editingABuiltInThemeWhoseColorsMatchCustomReportsNothing()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.0"/>
+  <testcase name="colorChangesUpdateTheDraftAndLivePreview()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.001"/>
+  <testcase name="presetSwitchingRetainsCustomEditsAcrossSaveAndReopen()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.001"/>
+  <testcase name="settingsThatDifferFromTheLiveThemePreviewAtOnceAndCancelRestoresTheLiveTheme()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.001"/>
+  <testcase name="revertRestoresOneKeyFromTheOpeningTheme()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.0"/>
+  <testcase name="savePersistsTheDraftAndMakesLaterCancelANoOp()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.002"/>
+  <testcase name="classicPresetPreviewsAtOnceAndSurvivesSaveAndReload()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.001"/>
+  <testcase name="revertAllRestoresTheSelectionAndTheCustomColors()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.0"/>
+  <testcase name="editingPresetCreatesCustomPaletteAndSelectingAnotherThemeKeepsIt()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.001"/>
+  <testcase name="cancelRestoresTheOpeningThemeAndIsIdempotent()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.001"/>
+  <testcase name="settingTheColorTheDraftAlreadyHasChangesNothing()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.0"/>
+  <testcase name="aFailedSaveLeavesTheSessionOpen()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.002"/>
+  <testcase name="editingCustomReportsNothing()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.001"/>
+  <testcase name="failedSaveLeavesTheSessionCancellable()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorSessionTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

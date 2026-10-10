@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.client.gui.screens.WidgetThemePreviewTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-10-10T22:30:14.064Z" hostname="Mac-mini.local" time="0.003">
+  <properties/>
+  <testcase name="anOpenPopupTakesAClickBeforeAnotherOwnerBeneathIt()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemePreviewTest" time="0.001"/>
+  <testcase name="aRowReportsTheWidgetsAmongItsSamplesInOrder()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemePreviewTest" time="0.001"/>
+  <testcase name="theWheelElsewhereOverTheListClosesThePopupAndScrolls()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemePreviewTest" time="0.0"/>
+  <testcase name="aListThatFitsLeavesTheWheelToTheWidgetUnderThePointerAndKeepsThePopup()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemePreviewTest" time="0.0"/>
+  <testcase name="theDropdownSampleKeepsTheChoiceMade()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemePreviewTest" time="0.0"/>
+  <testcase name="aRowPutsItsSamplesWhereThePackingPlacedThemCenteredOnTheTallest()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemePreviewTest" time="0.0"/>
+  <testcase name="theWheelOverAnOpenPopupGoesToThePopupAndLeavesTheListWhereItIs()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemePreviewTest" time="0.0"/>
+  <testcase name="aClickElsewhereClosesThePopupAndGoesOn()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemePreviewTest" time="0.0"/>
+  <testcase name="theDisabledButtonAndTheSecondSliderAreNeverActive()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemePreviewTest" time="0.0"/>
+  <testcase name="aWideRowPadsItsSamplesOnceAndShowsOnlyWidgetsEntirelyInView()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemePreviewTest" time="0.0"/>
+  <testcase name="aSampleIsMarkedWhileAnyOfItIsInView()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemePreviewTest" time="0.0"/>
+  <testcase name="anyScrollOfTheListClosesThePopups()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemePreviewTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

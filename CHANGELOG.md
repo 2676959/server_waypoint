@@ -83,8 +83,7 @@ A major release: navigation that works without the client mod, waypoint icons, u
 
 - A rebuilt settings screen: hover a row to see what it does and its default, ↺ resets one setting and **Reset to defaults…** resets them all. Mod Menu (Fabric) and the Mods screen (Forge and NeoForge) open it.
 - New setting: **Render waypoints under F1** (off by default). Waypoints are hidden on loading screens.
-- Colour themes: pick Translucent Dark, Modern Dark, High Contrast or the new Classic preset, or edit the colours in game. The default theme is now translucent dark.
-- The colour theme editor is a developer tool now: it lists the theme's raw keys with their `#AARRGGBB` values, edits a key in an ARGB field, with the colour picker or with an Alpha slider, and shows a live preview of the mod's widgets that marks where the selected key is used. **Reset** undoes every change since you opened the editor, and **Save** is available only when something changed.
+- Colour themes: pick Translucent Dark, Modern Dark, High Contrast or the new Classic preset, or edit the colours in game. The default theme is now translucent dark. The colour theme editor is a developer tool: it lists the theme's raw keys with their `#AARRGGBB` values, edits a key in an ARGB field, with the colour picker or with an Alpha slider, and shows a live preview of the mod's widgets that marks where the selected key is used. **Reset** undoes every change since you opened the editor, and **Save** is available only when something changed.
 - Tooltips in the mod's screens follow the colour theme.
 
 ### Action logging

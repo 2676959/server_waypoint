@@ -642,9 +642,12 @@ instead of 39, and an ARGB `getColor()` and `setColor(int)`.
   a short value with leading zeros to six digits. `setFocused(false)` calls it, and a screen calls it
   for Enter, since text fields don't handle Enter themselves. The completed text is set with
   `setValue`, so the responder sees it.
-- **Typing and pasting:** `charTyped` stops at the mode's digit count. `insertText` takes hexadecimal
-  digits only and drops one leading `#` in both modes, so a color copied from `widget-theme.json`, such
-  as `#D9262626`, can be pasted; any other text is ignored.
+- **Typing and pasting:** `charTyped` takes a digit while the text, less the selection it replaces
+  (`getHighlighted()`), is shorter than the mode's digit count, so typing over a selection in a full
+  field replaces it, and a full field without a selection refuses the digit. `insertText` takes
+  hexadecimal digits only and drops one leading `#` in both modes, so a color copied from
+  `widget-theme.json`, such as `#D9262626`, can be pasted; any other text is ignored, and vanilla cuts a
+  paste to the room the digit count (`setMaxLength`) and the selection leave.
 
 `TranslucentButton`, `TranslucentTextField`, `ColorHexCodeField`, and `ToggleButton` paint the full background first,
 then overlay their outline on the same rectangle. Button and toggle visual bounds are
@@ -1407,6 +1410,9 @@ owns the selection, which starts on `text.primary`.
   at the first and last; with nothing selected, Down gives the first key and Up the last. The list is a Tab
   stop and reports Up and Down while it is active; the screen then calls `KeyList.reveal(key)`, which scrolls
   the least amount that shows the row.
+- **Focus:** while the list has focus, its outline is `FOCUS_RING` instead of `BORDER`, which shows that Up
+  and Down act on it. The list draws its outline itself, after the rows, so it passes `border` false to
+  `TreeViewWidget`, whose padding background then paints only the fill.
 
 #### Key editor
 
@@ -1424,10 +1430,19 @@ change came from; `updatingControls` stops their callbacks from applying a value
   and the slider only the alpha. `SwatchWidget` is RGB-only, so the screen keeps the key's alpha when it
   confirms. The field applies its value at eight digits; Enter and leaving the field call `commit()` (see
   `ColorHexCodeField` under [Component selection](#component-selection)).
-- **Pending edits:** vanilla runs a click's callback first and focuses the clicked widget afterwards, so a
-  click on a key, Save or Cancel would finish a value typed in the ARGB field or the Alpha slider only after
-  the key changed or the session closed, applying it to the wrong key or throwing on a closed session.
-  `finishEditing()` moves focus off those two controls first.
+- **Pending edits:** a value typed in the ARGB field or the Alpha slider is finished when the control loses
+  focus, and six ARGB digits apply only then. Vanilla runs a click's callback before it focuses the clicked
+  widget, which would finish the value after a clicked key changed the selection or Save or Cancel closed the
+  session, and it gives a click on an inactive widget to nothing, so while a pending value is the session's
+  first change, a click on the still inactive Reset or Save would do nothing. Before it dispatches a click,
+  `mouseClicked` therefore calls `finishEditingBeforeClick`: a click outside the focused field or slider
+  (`isMouseOver`) moves focus off it (`finishEditing()`) and refreshes the control states, so the click then
+  reaches its target, a Reset or Save that the value made active included. Clicks are offered in the same
+  order as before, and nothing is finished while the color picker is open. Selecting a key, Save and Cancel
+  call `finishEditing()` too. Both mouse-click branches run through the screen-local `ClickDispatch`:
+  status changes request a layout, which is deferred until the click finishes. A commit can therefore
+  activate Save or Reset without moving its hit box before that same click reaches it. Outside click
+  dispatch, a status change lays out immediately.
 - **Reset icon:** a 9×9 `IconButton` with `WidgetTextures.RESET_ICON` and the settings screen's icon region.
   It shows only while `session.isChanged(key)`, in a place of its own at the end of the row, and calls
   `session.revert(key)`, which counts as an edit.
@@ -1477,19 +1492,32 @@ not a theme color, so that it shows in every theme. With no key selected, nothin
 - **What is marked:** the preview marks its samples inside a scissor of the rows' area grown by 2 px: a
   sample scrolled out of view has no marker (`partlyInView`), and the marker of a partly visible one is cut
   where the sample is. The screen marks the key list, the key editor and the preview panel, and
-  `background.screen` with an outline 2 px inside the screen's edge.
+  `background.screen` with an outline 2 px inside the screen's edge. It marks a panel only for a key the
+  panel draws at its current size (`WidgetThemeConfigScreen.panelDraws`): the scrollbar keys while the
+  panel's list overflows, so the preview, which fits at 480×270, isn't marked for them there, and the key
+  list's `text.muted` while the list shows values.
 - **The keys of a sample:** each `PreviewSample` constant lists the keys it draws, and `uses(key)` decides
   its marker. A sample lists every key it draws while the color picker is closed, in every state a player can
   put it in: at rest, hovered, focused, with its popup open (typed combobox suggestions included) and, for a
   toggle, in both states. The inactive look the open picker gives every sample is left out, except for the
   two samples that are always inactive. An element (`KEY_LIST`, `KEY_EDITOR`, `PREVIEW_PANEL`, `SCREEN`)
-  lists the keys of its own drawing (fill, outline, header and key text, separator, scrollbar), not those of
-  the widgets placed on it. The key list also leaves out its per-key chips, which draw every key and would
-  mark the list for every selection.
-- **Adding a key or a sample:** add a new key to each constant whose widget draws it, re-deriving the set
-  from the drawing code when that changes. A key that no sample draws needs a new `PreviewSample` constant in
-  a family and its widget, built in `WidgetThemePreview`'s constructor with `put` (the constructor fails fast
-  when a family member has no widget); a sample with a popup also goes in the owners `PreviewList` is given.
+  lists the keys of its own drawing at any size (fill, outline and the key list's focus ring, header and key
+  text, separator, scrollbar), not those of the widgets placed on it. The key list also leaves out its
+  per-key chips, which draw every key and would mark the list for every selection.
+- **Adding a key or a sample:**
+  1. Add a new key to each constant whose widget draws it, re-deriving the sets from the drawing code when
+     that changes.
+  2. A key that no sample draws needs a new `PreviewSample` constant in a family and its widget, built in
+     `WidgetThemePreview`'s constructor with `put`. The constructor fails fast when a family member has no
+     widget.
+  3. A sample with a popup draws it through the screen, as the combobox and the dropdown do (see
+     [Popups in the preview](#popups-in-the-preview)): call `setRenderPopupSeparately(true)` on it, add it
+     to the popup owners the constructor passes to `PreviewList`, and place its popup in `layoutPopups`,
+     with `layoutPopup(screenHeight, rows)` for a combobox or `setExpansionDirection` for a dropdown.
+     Without the first, the popup is drawn twice: clipped inside its row, and again by `renderPopups`.
+     Without the second, nothing draws the popup, gives it clicks and the wheel first or closes it when the
+     list scrolls. Without the third, it isn't placed for the room on the screen and can open past its edge.
+
   `PreviewSampleTest` checks that every `WidgetThemeVariable` is used by some constant, and pins the keys the
   widgets draw beyond the obvious ones.
 
@@ -1558,7 +1586,10 @@ leave the selected choice out of the popup, `getSelectedMenuItemIndex()`.
 
 The package-private `WidgetThemeEditorSession` owns the editing transaction; it is an implementation seam
 for the screen, not a public theme API. It keeps the settings the editor opened with (the selected theme and
-the Custom colors) and the draft:
+the Custom colors) and the draft. The screen opens it with the settings read from `widget-theme.json` and
+the live theme; when their themes differ, as after the file was edited by hand while the game ran, the
+session previews the file's settings at once, so the key list, the preview and the key editor agree from the
+first frame, and `cancel()` still restores the live theme.
 
 - `setColor(variable, color)` updates the immutable draft and previews it through `WidgetThemeManager`.
   Editing a key while a built-in theme is selected copies that theme into Custom with the edit. It returns
@@ -1579,9 +1610,10 @@ the Custom colors) and the draft:
   effective theme for startup and callers. The `colors` object always stores the Custom palette; the optional
   `selection` defaults to `custom`. The session closes only after the write succeeds, so a failed save
   leaves it open and the draft available for another attempt.
-- `cancel()` restores the theme that was active when the editor opened. It is idempotent, so an explicit
-  close and the `removed()` that follows are safe. After a save or a cancel, the methods that change the
-  draft or write the file throw `IllegalStateException`.
+- `cancel()` restores the theme that was live when the editor opened, which isn't the opening settings'
+  theme after such a hand edit. It is idempotent, so an explicit close and the `removed()` that follows are
+  safe. After a save or a cancel, the methods that change the draft or write the file throw
+  `IllegalStateException`.
 
 Keep file I/O and rollback behavior in the session rather than scattering it through button callbacks.
 
@@ -1605,8 +1637,10 @@ Keep file I/O and rollback behavior in the session rather than scattering it thr
   to a preview widget. Escape goes through `dismissFocusedInput()` first, then closes the picker, then
   cancels and closes the screen. Movement keys stay off while the screen is open.
 - **Mouse:** open popups take clicks and the wheel first (see
-  [Popups in the preview](#popups-in-the-preview)). The wheel then goes to the preview while it overflows
-  and the pointer is over it, and otherwise to the widget under the pointer, so the key list scrolls itself.
+  [Popups in the preview](#popups-in-the-preview)), after a click outside a focused ARGB field or Alpha
+  slider has finished its value (see [Key editor](#key-editor)). The wheel then goes to the preview while it
+  overflows and the pointer is over it, and otherwise to the widget under the pointer, so the key list
+  scrolls itself.
   A focused preview widget that a scroll hid loses focus.
 
 The geometry belongs to this screen; it isn't a general layout API. Future changes should preserve the
@@ -1799,7 +1833,9 @@ Good test targets include:
   `IntegerField` to use, so `IntegerSliderTest` and `MovementAllowedScreenPopupEscapeTest` pass a
   number-field double instead of setting private fields by name through reflection, which a rename
   would break only at run time. From 26.1, an editable `EditBox` asks the game to start text input
-  when it takes focus, so a unit test can't focus a real text field. `MovementAllowedScreenPopupEscapeTest`
+  when it takes focus, so a unit test can't focus a real text field. `ColorHexCodeFieldTest` types
+  into a field whose `canConsumeInput()` returns true instead, built through the package-private
+  constructor that also makes ARGB fields. `MovementAllowedScreenPopupEscapeTest`
   stands in for a combo box with a `ComboBoxWidget` subclass that skips the constructor and reports
   no suggestions open, which is why `ComboBoxWidget` isn't `final`.
 - A suggestion list. `SuggestingTextInputTest` builds a real `TranslucentTextField` with `TestFont`
@@ -1818,15 +1854,21 @@ Good test targets include:
   form uses exists in all six locales with the arguments of English.
 - Theme completeness, runtime updates, JSON round trips, invalid input, and file persistence.
 - Theme-editor session transitions: `setColor` and what it reports, `revert`, `revertAll`, `isChanged`,
-  `isDirty`, save, cancel, and idempotent rollback.
+  `isDirty`, save, cancel, idempotent rollback, a failed save that a later attempt completes, and opening on
+  settings whose theme differs from the live one.
 - The theme editor's pure helpers (`WidgetThemeEditorLayout`, `KeySelection`, `PreviewPacking`,
   `PreviewSample`) have their own tests, and `WidgetThemeConfigScreenKeyListTest` and
-  `TextChoiceDropdownTest` drive `KeyList` and `TextChoiceDropdown`. The whole preview can't be built in a
-  unit test, because `TranslucentButton` and `ToggleButton` read the game's font when they are created, so
-  `WidgetThemePreviewTest` drives its package-private parts (`PreviewList`, `SampleRow`, `SampleDropdown` and
-  the `sampleActive` and `partlyInView` rules) instead.
-- The theme editor's text and coverage: `WidgetThemeTranslationTest` checks that its own keys exist in all six
-  locales with the arguments of English and that no locale translates the raw theme keys, and
+  `TextChoiceDropdownTest` drive `KeyList` and `TextChoiceDropdown`. `WidgetThemeConfigScreenMarkerTest`
+  checks which panels the screen marks at their current size (`panelDraws`). The whole preview can't be
+  built in a unit test, because `TranslucentButton` and `ToggleButton` read the game's font when they are
+  created, so `WidgetThemePreviewTest` drives its package-private parts (`PreviewList`, `SampleRow`,
+  `SampleDropdown` and the `sampleActive` and `partlyInView` rules) instead.
+- `WidgetThemeConfigScreenClickTest` checks that committing an edit which wraps the status keeps a
+  button's old hit box until the click completes, then applies the new layout. It also checks immediate
+  layout outside click dispatch and cleanup after an interrupted dispatch.
+- The theme editor's text and coverage: `WidgetThemeTranslationTest` checks that its own keys, the theme
+  dropdown's included, exist in all six locales with the arguments of English and that no locale has a key
+  under `server_waypoint.theme.variable.`, and
   `PreviewSampleTest` checks that every `WidgetThemeVariable` is used by a sample or marked element.
 
 After a GUI change:

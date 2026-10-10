@@ -1,0 +1,56 @@
+Configuration on demand is an incubating feature.
+Running Stonecutter 0.9.7
+
+> Configure project :mods:26.1.2-fabric
+Fabric Loom: 1.15.5
+
+> Configure project :mods:1.20.1-fabric
+Fabric Loom: 1.15.5
+
+> Task :cross-server:updateModInfo UP-TO-DATE
+> Task :cross-server:compileJava UP-TO-DATE
+> Task :common:compileJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:cleanTest
+> Task :common:processResources UP-TO-DATE
+> Task :cross-server:processResources NO-SOURCE
+> Task :common:classes UP-TO-DATE
+> Task :cross-server:classes UP-TO-DATE
+> Task :common:jar UP-TO-DATE
+> Task :cross-server:jar UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterPrepare UP-TO-DATE
+> Task :mods:26.1.2-fabric:stonecutterGenerate UP-TO-DATE
+> Task :mods:26.1.2-fabric:compileJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:processResources UP-TO-DATE
+> Task :mods:26.1.2-fabric:classes UP-TO-DATE
+> Task :mods:26.1.2-fabric:compileTestJava UP-TO-DATE
+> Task :mods:26.1.2-fabric:processTestResources NO-SOURCE
+> Task :mods:26.1.2-fabric:testClasses UP-TO-DATE
+> Task :mods:1.20.1-fabric:cleanTest
+> Task :mods:1.20.1-fabric:stonecutterPrepare
+> Task :mods:1.20.1-fabric:stonecutterGenerate
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by org.joml.MemUtil$MemUtilUnsafe (file:/Volumes/ssd/gradle_home/caches/modules-2/files-2.1/org.joml/joml/1.10.8/fc0a71dad90a2cf41d82a76156a0e700af8e4f8d/joml-1.10.8.jar)
+WARNING: Please consider reporting this to the maintainers of class org.joml.MemUtil$MemUtilUnsafe
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+> Task :mods:1.20.1-fabric:compileJava
+> Task :mods:1.20.1-fabric:processResources UP-TO-DATE
+> Task :mods:1.20.1-fabric:classes
+> Task :mods:1.20.1-fabric:stonecutterPrepareTest
+> Task :mods:1.20.1-fabric:stonecutterGenerateTest
+> Task :mods:1.20.1-fabric:compileTestJava
+> Task :mods:1.20.1-fabric:processTestResources NO-SOURCE
+> Task :mods:1.20.1-fabric:testClasses
+> Task :mods:26.1.2-fabric:test
+> Task :mods:1.20.1-fabric:test
+
+[Incubating] Problems report is available at: file:///Volumes/ssd/fabric_mods_repo/server_waypoint/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.5.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 7s
+22 actionable tasks: 10 executed, 12 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.5.1/userguide/configuration_cache_enabling.html

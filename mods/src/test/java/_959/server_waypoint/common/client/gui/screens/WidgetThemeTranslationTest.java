@@ -1,7 +1,6 @@
 package _959.server_waypoint.common.client.gui.screens;
 
 import _959.server_waypoint.common.client.gui.render.WidgetThemeSelection;
-import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
@@ -14,15 +13,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WidgetThemeTranslationTest {
     private static final List<String> LOCALES = List.of("en_us", "es_es", "he_il", "zh_cn", "zh_hk", "zh_tw");
-    // The editor's own text. The theme keys themselves are shown raw, so none of them is here, and the
-    // dropdown's preset names have a test of their own.
+    // The editor's own text, the theme dropdown's included. The theme keys themselves are shown raw, so
+    // none of them is here, and the dropdown's preset names have a test of their own.
     private static final List<String> EDITOR_KEYS = List.of(
             "server_waypoint.theme.screen.title",
+            "server_waypoint.theme.selector",
+            "server_waypoint.theme.selector.value",
             "server_waypoint.theme.variables",
             "server_waypoint.theme.color_picker",
             "server_waypoint.theme.save",
@@ -57,6 +59,8 @@ class WidgetThemeTranslationTest {
             "server_waypoint.theme.opacity",
             "server_waypoint.theme.reset.preview"
     );
+    /** The theme keys' old translations, one key per theme key, all removed. */
+    private static final String RAW_KEY_PREFIX = "server_waypoint.theme.variable.";
 
     @Test
     void everyEditorKeyExistsInEveryLocaleWithTheArgumentsOfEnglish() throws IOException {
@@ -75,17 +79,21 @@ class WidgetThemeTranslationTest {
         assertTrue(problems.isEmpty(), () -> String.join("\n", problems));
     }
 
+    /** The dropdown reads "Theme: <name>", so its label takes the theme's name, and nothing else, everywhere. */
+    @Test
+    void theDropdownLabelTakesOneArgumentInEveryLocale() throws IOException {
+        for (String locale : LOCALES) {
+            assertEquals(List.of(1), argumentsOf(read(locale), "server_waypoint.theme.selector.value"), locale);
+        }
+    }
+
     @Test
     void noLocaleTranslatesTheRawThemeKeysOrTheRemovedKeys() throws IOException {
-        List<String> untranslated = new ArrayList<>(REMOVED_KEYS);
-        for (WidgetThemeVariable variable : WidgetThemeVariable.values()) {
-            untranslated.add("server_waypoint.theme.variable." + variable.getJsonName());
-        }
         List<String> problems = new ArrayList<>();
         for (String locale : LOCALES) {
             JsonObject translated = read(locale);
-            for (String key : untranslated) {
-                if (translated.has(key)) {
+            for (String key : translated.keySet()) {
+                if (key.startsWith(RAW_KEY_PREFIX) || REMOVED_KEYS.contains(key)) {
                     problems.add(locale + ": still has " + key);
                 }
             }

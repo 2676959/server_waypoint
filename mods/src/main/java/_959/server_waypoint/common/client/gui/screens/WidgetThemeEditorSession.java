@@ -25,11 +25,23 @@ final class WidgetThemeEditorSession {
         this(originalTheme, themePath, new WidgetThemeJson.Settings(WidgetThemeSelection.CUSTOM, originalTheme));
     }
 
+    /**
+     * Opens a session on {@code settings}, the selected theme and Custom colors read from
+     * {@code widget-theme.json}, which every edit, revert and Reset starts from. When their theme isn't
+     * {@code originalTheme}, as after the file was edited by hand while the game ran, it previews them at
+     * once, so the screen shows the theme it edits from the first frame; {@link #cancel()} still restores
+     * {@code originalTheme}.
+     *
+     * @param originalTheme the theme that is live when the editor opens
+     */
     WidgetThemeEditorSession(WidgetTheme originalTheme, Path themePath, WidgetThemeJson.Settings settings) {
         this.originalSettings = Objects.requireNonNull(settings, "settings");
         this.settings = settings;
         this.originalTheme = Objects.requireNonNull(originalTheme, "originalTheme");
         this.themePath = Objects.requireNonNull(themePath, "themePath");
+        if (!settings.theme().equals(originalTheme)) {
+            WidgetThemeManager.setTheme(settings.theme());
+        }
     }
 
     WidgetTheme getDraftTheme() {

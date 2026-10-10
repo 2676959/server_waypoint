@@ -1,0 +1,100 @@
+{
+    "profile": "1.20.1-Fabric",
+    "target": "1.20.1-fabric",
+    "minecraft": "1.20.1",
+    "prepared": "/private/tmp/claude-501/-Volumes-ssd-fabric-mods-repo-server-waypoint/44c0b42f-f8ff-4ce2-87c8-d4334802674d/scratchpad/theme-live-5/prepared",
+    "suite": "theme-editor",
+    "status": "PASS",
+    "steps": [
+        {
+            "name": "layouts",
+            "result": "01-layouts.result",
+            "state": "PASS\nGUI size 480x270\nvalue column 480\nfooter fits 480\nvalue column 480\nfooter fits 480\nvalue column 480\nfooter fits 480\nvalue column 480\nfooter fits 480\nGUI size 378x245\nvalue column 378\nfooter fits 378\nvalue column 378\nfooter fits 378\nvalue column 378\nfooter fits 378\nvalue column 378\nfooter fits 378\nGUI size 320x240\nvalue column 320\nfooter fits 320\nvalue column 320\nfooter fits 320\nvalue column 320\nfooter fits 320\nvalue column 320\nfooter fits 320\n"
+        },
+        {
+            "name": "editing",
+            "result": "02-editing.result",
+            "state": "PASS\nGUI size 378x245\nsix digits leave Save inactive before commit\nbottom-edge Save click handled\nsame click closes after Save\nsix digits saved intact\nGUI size 320x240\nReset inactive before pending commit\nbottom-edge Reset handled\nsame click resets pending edit\nReset clears dirty state\nARGB typing C\nARGB typing C\nARGB typing 1\nARGB typing 1\nARGB typing 2\nARGB typing 2\nARGB typing 3\nARGB typing 3\nARGB responder previews color\nAlpha slider preserves RGB\nhandled colorButton\npicker takes modal focus\npicker disables underlying controls\npicker confirmation preserves alpha\nhandled cancelButton\nCancel restores live opening theme\nhandled saveButton\nfailed Save leaves editor usable\nfailed Save keeps draft\nhandled saveButton\nretry saves retained draft\nopening previews differing file settings\nhandled cancelButton\ndivergent-session Cancel restores original live theme\n"
+        },
+        {
+            "name": "focus-markers",
+            "result": "03-focus-markers.result",
+            "state": "PASS\nGUI size 480x270\nTab reaches key list\nDown selects next raw key\nUp selects previous raw key\nselected key row click handled\nclick selected key clears selection and hides editor\nTab skips hidden ARGB\nTab skips hidden ARGB\nTab skips hidden ARGB\nTab skips hidden ARGB\nTab skips hidden ARGB\nTab skips hidden ARGB\nTab skips hidden ARGB\nTab skips hidden ARGB\nTab skips hidden ARGB\nTab skips hidden ARGB\nTab skips hidden ARGB\nTab skips hidden ARGB\nTab skips hidden ARGB\nTab skips hidden ARGB\nTab skips hidden ARGB\nTab skips hidden ARGB\nGUI size 320x240\nwheel scrolls overflowing preview\nwheel scrolls key list\n"
+        },
+        {
+            "name": "popups-modal",
+            "result": "04-popups-modal.result",
+            "state": "PASS\nGUI size 480x270\npreview combobox click handled\ncombobox popup opens\ncombobox popup receives wheel first\npopup wheel leaves preview scroll unchanged\ncombobox popup choice receives click\ncombobox choice changes without clicking underlying control\npreview dropdown click handled\ndropdown popup opens\ndropdown popup receives wheel\ndropdown popup choice receives click\ndropdown choice selected\nGUI size 378x245\nresize closes preview popup\ntheme popup opens\nEscape dismisses focused theme popup\nhandled colorButton\nGUI size 320x240\npicker survives resize after keyboard input\nmodal keeps footer/header inactive\nEscape closes picker without changing theme\npicker dismissal restores color-button focus\n"
+        },
+        {
+            "name": "tooltips",
+            "result": "05-tooltips.result",
+            "state": "PASS\nGUI size 480x270\nhandled colorButton\npicker closes preview popup\npicker remains open while controls underneath are hovered\n"
+        },
+        {
+            "name": "close",
+            "result": "06-close.result",
+            "state": "PASS\n\n"
+        }
+    ],
+    "heap_mb": 1024,
+    "stage": "complete",
+    "awt_headless": true,
+    "started_at": 1791672041.973923,
+    "jars": [
+        {
+            "path": "/Volumes/ssd/fabric_mods_repo/server_waypoint/mods/versions/1.20.1-fabric/build/libs/server_waypoint-4.0.0-fabric-mc1.20-1.20.1.jar",
+            "name": "server_waypoint-4.0.0-fabric-mc1.20-1.20.1.jar",
+            "sha256": "51b91c4e68aa5806a8696aec4a97eeaac77e84ebd0f70dd793c456e72d0ad6b2"
+        },
+        {
+            "path": "/Volumes/ssd/gradle_home/caches/modules-2/files-2.1/net.fabricmc.fabric-api/fabric-api/0.92.6+1.20.1/3ec0a88b64f252257df6287e9a1d47ed96331e5d/fabric-api-0.92.6+1.20.1.jar",
+            "name": "fabric-api-0.92.6+1.20.1.jar",
+            "sha256": "0ece50476da3692111ab04b75945c5458e70d98cd069eefc044ab3e57977deeb"
+        }
+    ],
+    "probe_hashes": {
+        "tools": "6672e102de9cbc2290a9b8c95f1d27abaef3787e3f5ee88b722a91ae5139c877",
+        "agent": "4734a00887c8150c83c76f82fa42619db005a9dad71a6849966988f7cae2af70",
+        "scenario": "bfc0b3558aeeed801bfd24f0c8bd69addd8645d1aea2e412648a46e28860cc1a",
+        "targets": "0fb5b6257eb73981f8527117ca955bd907e9e1835345ef6faae7aa2a430edca6"
+    },
+    "java": "/opt/homebrew/Cellar/openjdk@17/17.0.19/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "pid": 53916,
+    "actual_minecraft": "1.20.1",
+    "mixin_audit": "PASS\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiSlotWaypoints\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiSlotWaypoints$WaypointItem\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.gui.GuiWaypoints\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap\nOPTIONAL_ABSENT com.mamiyaotaru.voxelmap.util.WaypointContainer\nTRANSFORMED net.minecraft.class_918\nOPTIONAL_ABSENT net.minecraft.client.gui.render.GuiRenderer\nOPTIONAL_ABSENT net.minecraft.client.gui.render.pip.PictureInPictureRenderer\nOPTIONAL_ABSENT net.minecraft.client.gui.render.state.GuiItemRenderState\nOPTIONAL_ABSENT xaero.common.gui.GuiWaypoints\nOPTIONAL_ABSENT xaero.common.gui.GuiWaypoints$List\nOPTIONAL_ABSENT xaero.common.gui.dropdown.DropDownWidget\nOPTIONAL_ABSENT xaero.common.minimap.waypoints.Waypoint\nOPTIONAL_ABSENT xaero.hud.minimap.waypoint.render.WaypointMapRenderer\nOPTIONAL_ABSENT xaero.hud.minimap.world.state.MinimapWorldStateUpdater\nOPTIONAL_ABSENT xaero.map.gui.GuiMap\nOPTIONAL_ABSENT xaero.map.mods.gui.Waypoint\nOPTIONAL_ABSENT xaero.map.mods.gui.WaypointReader\nTRANSFORMED net.minecraft.class_1531\nTRANSFORMED net.minecraft.class_1533\nTRANSFORMED net.minecraft.class_1542\nTRANSFORMED net.minecraft.class_1661\nTRANSFORMED net.minecraft.class_1703\nTRANSFORMED net.minecraft.class_1714\nTRANSFORMED net.minecraft.class_1759\nTRANSFORMED net.minecraft.class_2168\nTRANSFORMED net.minecraft.class_22\nTRANSFORMED net.minecraft.class_304\nTRANSFORMED net.minecraft.class_310\nTRANSFORMED net.minecraft.class_3222\nTRANSFORMED net.minecraft.class_329\nTRANSFORMED net.minecraft.class_3324\nTRANSFORMED net.minecraft.class_342\nTRANSFORMED net.minecraft.class_3910\nTRANSFORMED net.minecraft.class_4185\nTRANSFORMED net.minecraft.class_634\nTRANSFORMED net.minecraft.class_7298\nTRANSFORMED net.minecraft.class_757\nTRANSFORMED net.minecraft.class_761\nTRANSFORMED net.minecraft.class_7975\nTRANSFORMED net.minecraft.class_8168\nTRANSFORMED net.minecraft.class_8172\nOPTIONAL_ABSENT Xaero native identity checks\nPASS MixinEnvironment.audit\nSUCCESS targets=25\n",
+    "exit_code": 0,
+    "finished_at": 1791672092.6648152,
+    "diagnostics": {
+        "errors": 0,
+        "warnings": 134,
+        "ignored": 2
+    },
+    "crash_reports": [],
+    "diagnostic_preview": [
+        {
+            "severity": "WARN",
+            "message": "Compatibility level JAVA_16 specified by fabric-api-lookup-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 65
+            }
+        },
+        {
+            "severity": "WARN",
+            "message": "Compatibility level JAVA_17 specified by fabric-block-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 67
+            }
+        },
+        {
+            "severity": "WARN",
+            "message": "Compatibility level JAVA_16 specified by fabric-blockrenderlayer-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+            "source": {
+                "file": "game/logs/latest.log",
+                "line": 69
+            }
+        }
+    ]
+}

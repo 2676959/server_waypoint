@@ -1,0 +1,10 @@
+PASS
+GUI size 480x270
+native hover coordinates theme-selector-tooltip
+selector hovered during capture
+native hover coordinates key-row-no-tooltip
+native hover coordinates preview-no-tooltip
+handled colorButton
+picker closes preview popup
+picker remains open while controls underneath are hovered
+native hover coordinates picker-no-underlying-tooltip

@@ -990,23 +990,29 @@ Expected: BUILD SUCCESSFUL.
 ### Task 11: Verification and validation record
 
 **Files:**
-- Create: `docs/features/theme-editor/validation/2026-10-09-theme-editor.md` (use the date the checks run; remove
+- Create: `docs/features/theme-editor/validation/2026-10-10-theme-editor.md` (use the date the checks run; remove
   `validation/.gitkeep`)
 - Modify: `docs/features/theme-editor/README.md` (validation link)
 
-- [ ] **Step 1: Whitespace and markers:** `git diff --check`; for untracked files,
+- [x] **Step 1: Whitespace and markers:** `git diff --check`; for untracked files,
   `git diff --no-index --check /dev/null <file>`; count `//? if`/`//?}`/`/*?`/`*///?}` in every touched Java file.
   Expected: no output, balanced markers.
-- [ ] **Step 2: Tests on both Fabric targets:**
+- [x] **Step 2: Tests on both Fabric targets:**
   `zsh /Volumes/ssd/fabric_mods_repo/server_waypoint/.superpowers/gw.sh :mods:26.1.2-fabric:cleanTest :mods:26.1.2-fabric:test :mods:1.20.1-fabric:cleanTest :mods:1.20.1-fabric:test`.
   Expected: BUILD SUCCESSFUL with 0 failures.
-- [ ] **Step 3: Compile every `mods` target:** `compileJava` and `compileTestJava` for each directory in
+- [x] **Step 3: Compile every `mods` target:** `compileJava` and `compileTestJava` for each directory in
   `mods/versions`, with `--continue`. Expected: BUILD SUCCESSFUL for all 40 targets.
-- [ ] **Step 4: In game,** on 26.1.2 Fabric and 1.20.1 Fabric, run the spec's in-game list (layout at the three sizes
+- [x] **Step 4: In game,** on 26.1.2 Fabric and 1.20.1 Fabric, run the spec's in-game list (layout at the three sizes
   and four themes, editing through all three controls, markers including a scrolled-out sample and
   `background.screen`, clearing the selection, the popups including a resize with one open, the picker, Reset /
   Cancel / Save and a failed save, tooltips, Tab and Up/Down, the wheel). The live-game harness under
   `tools/live-game-test` can drive a dev client without OS input; record what ran, with screenshots, and say plainly
   what didn't.
-- [ ] **Step 5: Write the validation record** with the commands, results and in-game outcomes, and link it from the
+- [x] **Step 5: Write the validation record** with the commands, results and in-game outcomes, and link it from the
   feature README.
+
+Completed 2026-10-10 after the remaining M2 click-layout fix. The
+[validation record](../validation/2026-10-10-theme-editor.md) contains fresh 842/842 and 834/834 test
+results, successful production/test compilation for all 40 targets, native client assertions and
+inspected screenshots on both Fabric versions, plus explicit limits on physical input and world/map
+integration coverage. The final fix wave and this verification round are uncommitted.

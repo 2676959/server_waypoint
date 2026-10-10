@@ -1,0 +1,35 @@
+PASS
+GUI size 378x245
+six digits leave Save inactive before commit
+bottom-edge Save click handled
+same click closes after Save
+six digits saved intact
+GUI size 320x240
+Reset inactive before pending commit
+bottom-edge Reset handled
+same click resets pending edit
+Reset clears dirty state
+ARGB typing C
+ARGB typing C
+ARGB typing 1
+ARGB typing 1
+ARGB typing 2
+ARGB typing 2
+ARGB typing 3
+ARGB typing 3
+ARGB responder previews color
+Alpha slider preserves RGB
+handled colorButton
+picker takes modal focus
+picker disables underlying controls
+picker confirmation preserves alpha
+handled cancelButton
+Cancel restores live opening theme
+handled saveButton
+failed Save leaves editor usable
+failed Save keeps draft
+handled saveButton
+retry saves retained draft
+opening previews differing file settings
+handled cancelButton
+divergent-session Cancel restores original live theme

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" tests="17" skipped="0" failures="0" errors="0" timestamp="2026-10-10T22:30:12.028Z" hostname="Mac-mini.local" time="0.003">
+  <properties/>
+  <testcase name="statusSitsBesideTheButtonsWithRoomAndAboveThemOtherwise()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <testcase name="aStatusShorterThanTheButtonsIsCenteredBesideThem()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <testcase name="panelsStopAt230AndTheGroupCentersOnTallScreens()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <testcase name="aDropdownWiderThanTheGroupLeavesTheTitleNoWidth()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <testcase name="theEditorSitsTwoPixelsUnderTheListAndEndsWithThePreview()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <testcase name="noStatusAddsNothingToTheFooterEvenWhereItWouldSitAbove()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <testcase name="everythingStaysInsideTheGroupAndTheGroupInsideTheMargins()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.001"/>
+  <testcase name="leftColumnIsHalfTheGroupBetween152And210()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <testcase name="theLeftColumnRoundsHalfAPixelUp()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <testcase name="theTitleAndTheDropdownFillTheHeaderLineAtTheTopOfTheGroup()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.001"/>
+  <testcase name="valuesShowOnlyWhenTheWidestKeyAndAValueFit()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <testcase name="aStatusTallerThanTheButtonsSetsTheFooterHeightBesideThem()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <testcase name="titleLeavesTheDropdownItsWidthAndAnEightPixelGap()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <testcase name="columnsMatchTheSpecAt378By245And320By240()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <testcase name="aStatusAboveTheButtonsStartsAtTheFootersTopAndTheButtonsEndAtItsBottom()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <testcase name="groupColumnsAndPanelsMatchTheSpecAt480By270()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <testcase name="aShortScreenKeepsTheMinimumsAndStartsAtTheTopMargin()" classname="_959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayoutTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -6,3 +6,4 @@ its Reset, Cancel and Save.
 
 - [Theme editor design](specs/2026-10-09-theme-editor-design.md)
 - [Implementation plan](plans/2026-10-09-theme-editor.md)
+- [Validation: tests, 40-target compilation and native client captures](validation/2026-10-10-theme-editor.md)

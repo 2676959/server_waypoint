@@ -1,0 +1,2179 @@
+[
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-api-lookup-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 65
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 65
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_17 specified by fabric-block-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 67
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 67
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-blockrenderlayer-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 69
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 69
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-command-api-v2.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 70
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 70
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-command-api-v2.client.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 71
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 71
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-containers-v0.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 72
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 72
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-containers-v0.accurate.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 73
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 73
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-content-registries-v0.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 74
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 74
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-crash-report-info-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 75
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 75
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-data-generation-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 76
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 76
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-data-generation-api-v1.client.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 77
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 77
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-dimensions-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 78
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 78
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-entity-events-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 79
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 79
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-entity-events-v1.client.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 80
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 80
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-events-interaction-v0.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 81
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 81
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-events-interaction-v0.client.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 82
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 82
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-game-rule-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 83
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 83
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-game-rule-api-v1.client.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 84
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 84
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-item-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 85
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 85
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-item-api-v1.client.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 86
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 86
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-key-binding-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 87
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 87
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-lifecycle-events-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 88
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 88
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-lifecycle-events-v1.client.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 89
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 89
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-loot-tables-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 90
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 90
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-message-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 91
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 91
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-mining-level-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 92
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 92
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-networking-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 93
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 93
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-networking-api-v1.client.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 94
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 94
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-object-builder-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 95
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 95
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-object-builder-v1.client.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 96
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 96
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-particles-v1.client.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 97
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 97
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-registry-sync-v0.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 98
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 98
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-registry-sync-v0.client.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 99
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 99
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-renderer-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 100
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 100
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-renderer-api-v1.debughud.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 101
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 101
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-renderer-indigo.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 102
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 102
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-rendering-fluids-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 103
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 103
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-rendering-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 104
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 104
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-resource-conditions-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 105
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 105
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-resource-loader-v0.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 106
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 106
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-resource-loader-v0.client.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 107
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 107
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-screen-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 108
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 108
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-screen-handler-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 109
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 109
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_16 specified by fabric-transfer-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 110
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 110
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Reference map 'server_waypoint-common.refmap.json' for server_waypoint-common.mixins.json could not be read. If this is a development environment you can ignore this message",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 172
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 172
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Reference map 'server_waypoint-common.refmap.json' for server_waypoint-voxelmap.mixins.json could not be read. If this is a development environment you can ignore this message",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 174
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 174
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: net/minecraft/client/gui/render/state/GuiItemRenderState (java.lang.ClassNotFoundException: net/minecraft/client/gui/render/state/GuiItemRenderState)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 235
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 235
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: net/minecraft/client/gui/render/GuiRenderer (java.lang.ClassNotFoundException: net/minecraft/client/gui/render/GuiRenderer)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 236
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 236
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: net/minecraft/client/gui/render/pip/PictureInPictureRenderer (java.lang.ClassNotFoundException: net/minecraft/client/gui/render/pip/PictureInPictureRenderer)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 237
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 237
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/common/gui/dropdown/DropDownWidget (java.lang.ClassNotFoundException: xaero/common/gui/dropdown/DropDownWidget)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 238
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 238
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/common/gui/GuiWaypoints (java.lang.ClassNotFoundException: xaero/common/gui/GuiWaypoints)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 239
+            },
+            {
+                "file": "game/logs/latest.log",
+                "line": 255
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 239
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 255
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.common.gui.GuiWaypoints was not found server_waypoint-common.mixins.json:xaeros_minimap.XaerosMinimapGuiWaypointsAccessor from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 240
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 240
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/common/gui/GuiWaypoints$List (java.lang.ClassNotFoundException: xaero/common/gui/GuiWaypoints$List)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 241
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 241
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero/common/gui/GuiWaypoints$List was not found server_waypoint-common.mixins.json:xaeros_minimap.XaerosMinimapGuiWaypointsListMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 242
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 242
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/hud/minimap/world/state/MinimapWorldStateUpdater (java.lang.ClassNotFoundException: xaero/hud/minimap/world/state/MinimapWorldStateUpdater)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 243
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 243
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.hud.minimap.world.state.MinimapWorldStateUpdater was not found server_waypoint-common.mixins.json:xaeros_minimap.MinimapWorldStateUpdaterMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 244
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 244
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/hud/minimap/waypoint/render/WaypointMapRenderer (java.lang.ClassNotFoundException: xaero/hud/minimap/waypoint/render/WaypointMapRenderer)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 245
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 245
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.hud.minimap.waypoint.render.WaypointMapRenderer was not found server_waypoint-common.mixins.json:xaeros_minimap.XaerosMinimapWaypointMapRendererMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 246
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 246
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/common/minimap/waypoints/Waypoint (java.lang.ClassNotFoundException: xaero/common/minimap/waypoints/Waypoint)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 247
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 247
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.common.minimap.waypoints.Waypoint was not found server_waypoint-common.mixins.json:xaeros_minimap.XaerosMinimapWaypointMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 248
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 248
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/map/mods/gui/WaypointReader (java.lang.ClassNotFoundException: xaero/map/mods/gui/WaypointReader)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 249
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 249
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.map.mods.gui.WaypointReader was not found server_waypoint-common.mixins.json:xaeros_worldmap.XaerosWorldMapWaypointReaderMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 250
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 250
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/map/mods/gui/Waypoint (java.lang.ClassNotFoundException: xaero/map/mods/gui/Waypoint)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 251
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 251
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.map.mods.gui.Waypoint was not found server_waypoint-common.mixins.json:xaeros_worldmap.XaerosWorldMapWaypointMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 252
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 252
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/map/gui/GuiMap (java.lang.ClassNotFoundException: xaero/map/gui/GuiMap)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 253
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 253
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.map.gui.GuiMap was not found server_waypoint-common.mixins.json:xaeros_worldmap.XaeroWorldMapGuiMapMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 254
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 254
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: com/mamiyaotaru/voxelmap/gui/GuiAddWaypoint (java.lang.ClassNotFoundException: com/mamiyaotaru/voxelmap/gui/GuiAddWaypoint)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 257
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 257
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint was not found server_waypoint-voxelmap.mixins.json:VoxelMapGuiAddWaypointMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 258
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 258
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: com/mamiyaotaru/voxelmap/gui/GuiSlotWaypoints (java.lang.ClassNotFoundException: com/mamiyaotaru/voxelmap/gui/GuiSlotWaypoints)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 259
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 259
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target com/mamiyaotaru/voxelmap/gui/GuiSlotWaypoints was not found server_waypoint-voxelmap.mixins.json:VoxelMapGuiListWaypointsMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 260
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 260
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: com/mamiyaotaru/voxelmap/gui/GuiSlotWaypoints$WaypointItem (java.lang.ClassNotFoundException: com/mamiyaotaru/voxelmap/gui/GuiSlotWaypoints$WaypointItem)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 261
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 261
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target com/mamiyaotaru/voxelmap/gui/GuiSlotWaypoints$WaypointItem was not found server_waypoint-voxelmap.mixins.json:VoxelMapGuiListWaypointsItemMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 262
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 262
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: com/mamiyaotaru/voxelmap/gui/GuiWaypoints (java.lang.ClassNotFoundException: com/mamiyaotaru/voxelmap/gui/GuiWaypoints)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 263
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 263
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target com.mamiyaotaru.voxelmap.gui.GuiWaypoints was not found server_waypoint-voxelmap.mixins.json:VoxelMapGuiWaypointsMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 264
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 264
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: com/mamiyaotaru/voxelmap/persistent/GuiPersistentMap (java.lang.ClassNotFoundException: com/mamiyaotaru/voxelmap/persistent/GuiPersistentMap)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 265
+            },
+            {
+                "file": "game/logs/latest.log",
+                "line": 269
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 265
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 269
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap was not found server_waypoint-voxelmap.mixins.json:VoxelMapPersistentMapMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 266
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 266
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: com/mamiyaotaru/voxelmap/util/WaypointContainer (java.lang.ClassNotFoundException: com/mamiyaotaru/voxelmap/util/WaypointContainer)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 267
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 267
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target com.mamiyaotaru.voxelmap.util.WaypointContainer was not found server_waypoint-voxelmap.mixins.json:VoxelMapWaypointContainerMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 268
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 268
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-crash-report-info-v1.mixins.json:SystemDetailsMixin from mod fabric-crash-report-info-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 272
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 272
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Failed sysctl call: hw.cpufrequency, Error code: 2",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 275
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 275
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-registry-sync-v0.mixins.json:BootstrapMixin from mod fabric-registry-sync-v0: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 277
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 277
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-transfer-api-v1.mixins.json:FluidMixin from mod fabric-transfer-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 291
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 291
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-object-builder-v1.mixins.json:AbstractBlockAccessor from mod fabric-object-builder-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 294
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 294
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-item-api-v1.mixins.json:ItemMixin from mod fabric-item-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 296
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 296
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-api-lookup-api-v1.mixins.json:BlockEntityTypeAccessor from mod fabric-api-lookup-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 299
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 299
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-command-api-v2.mixins.json:ArgumentTypesAccessor from mod fabric-command-api-v2: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 301
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 301
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-content-registries-v0.mixins.json:FireBlockMixin from mod fabric-content-registries-v0: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 308
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 308
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-lifecycle-events-v1.mixins.json:WorldMixin from mod fabric-lifecycle-events-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 312
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 312
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-dimensions-v1.mixins.json:EntityMixin from mod fabric-dimensions-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 329
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 329
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-entity-events-v1.mixins.json:EntityMixin from mod fabric-entity-events-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 331
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 331
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-events-interaction-v0.mixins.json:BeehiveBlockMixin from mod fabric-events-interaction-v0: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 346
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 346
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-screen-handler-api-v1.mixins.json:NamedScreenHandlerFactoryMixin from mod fabric-screen-handler-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 357
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 357
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Shadow target fabric-transfer-api-v1.mixins.json:ChiseledBookshelfBlockEntityMixin from mod fabric-transfer-api-v1::field_41314 is final but shadow is not decorated with @Final",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 359
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 359
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-item-api-v1.client.mixins.json:ItemStackMixin from mod fabric-item-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 370
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 370
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-mining-level-api-v1.mixins.json:SwordItemMixin from mod fabric-mining-level-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 379
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 379
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-containers-v0.mixins.json:ServerPlayerEntityAccessor from mod fabric-containers-v0: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 403
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 403
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-containers-v0.accurate.mixins.json:ServerPlayerEntityMixin from mod fabric-containers-v0: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 405
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 405
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-lifecycle-events-v1.client.mixins.json:WorldChunkMixin from mod fabric-lifecycle-events-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 414
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 414
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-networking-api-v1.mixins.json:ServerPlayNetworkHandlerMixin from mod fabric-networking-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 422
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 422
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "fabric-biome-api-v1.mixins.json:BiomeSourceMixin from mod fabric-biome-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 432
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 432
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Write access to @Mutable @Final field field_24730:Lcom/mojang/serialization/Codec; in fabric-biome-api-v1.mixins.json:TheEndBiomeSourceMixin from mod fabric-biome-api-v1::handler$zze000$fabric-biome-api-v1$modifyCodec",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 438
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 438
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Write access to @Mutable @Final field field_23730:Ljava/util/Map; in fabric-object-builder-v1.mixins.json:DefaultAttributeRegistryMixin from mod fabric-object-builder-api-v1::handler$zgd000$fabric-object-builder-api-v1$injectAttributes",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 446
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 446
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-data-generation-api-v1.client.mixins.json:MinecraftClientMixin from mod fabric-data-generation-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 448
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 448
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-events-interaction-v0.client.mixins.json:MinecraftClientMixin from mod fabric-events-interaction-v0: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 450
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 450
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-networking-api-v1.client.mixins.json:accessor.MinecraftClientAccessor from mod fabric-networking-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 453
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 453
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-registry-sync-v0.client.mixins.json:MinecraftClientMixin from mod fabric-registry-sync-v0: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 455
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 455
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-screen-api-v1.mixins.json:MinecraftClientMixin from mod fabric-screen-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 457
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 457
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-entity-events-v1.client.mixins.json:elytra.ClientPlayerEntityMixin from mod fabric-entity-events-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 463
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 463
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-resource-conditions-api-v1.mixins.json:SinglePreparationResourceReloaderMixin from mod fabric-resource-conditions-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 466
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 466
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-resource-loader-v0.client.mixins.json:DefaultClientResourcePackProviderMixin from mod fabric-resource-loader-v0: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 468
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 468
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-resource-loader-v0.mixins.json:ResourcePackManagerMixin from mod fabric-resource-loader-v0: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 472
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 472
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Write access to @Mutable @Final field field_14227:Ljava/util/Set; in fabric-resource-loader-v0.mixins.json:ResourcePackManagerMixin from mod fabric-resource-loader-v0::handler$zjo000$fabric-resource-loader-v0$construct",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 473
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 473
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "ERROR",
+        "logger": "Render thread",
+        "message": "Failed to verify authentication\ncom.mojang.authlib.exceptions.InvalidCredentialsException: Status: 401\n\tat com.mojang.authlib.exceptions.MinecraftClientHttpException.toAuthenticationException(MinecraftClientHttpException.java:56) ~[authlib-4.0.43.jar:?]\n\tat com.mojang.authlib.yggdrasil.YggdrasilUserApiService.fetchProperties(YggdrasilUserApiService.java:156) ~[authlib-4.0.43.jar:?]\n\tat com.mojang.authlib.yggdrasil.YggdrasilUserApiService.<init>(YggdrasilUserApiService.java:55) ~[authlib-4.0.43.jar:?]\n\tat com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService.createUserApiService(YggdrasilAuthenticationService.java:124) ~[authlib-4.0.43.jar:?]\n\tat net.minecraft.class_310.method_31382(class_310.java:733) ~[client-intermediary.jar:?]\n\tat net.minecraft.class_310.<init>(class_310.java:442) ~[client-intermediary.jar:?]\n\tat net.minecraft.client.main.Main.main(Main.java:211) ~[1.20.1-Fabric.jar:?]\n\tat net.fabricmc.loader.impl.game.minecraft.MinecraftGameProvider.launch(MinecraftGameProvider.java:514) ~[fabric-loader-0.18.1.jar:?]\n\tat net.fabricmc.loader.impl.launch.knot.Knot.launch(Knot.java:72) ~[fabric-loader-0.18.1.jar:?]\n\tat net.fabricmc.loader.impl.launch.knot.KnotClient.main(KnotClient.java:23) ~[fabric-loader-0.18.1.jar:?]\nCaused by: com.mojang.authlib.exceptions.MinecraftClientHttpException: Status: 401\n\tat com.mojang.authlib.minecraft.client.MinecraftClient.readInputStream(MinecraftClient.java:85) ~[authlib-4.0.43.jar:?]\n\tat com.mojang.authlib.minecraft.client.MinecraftClient.get(MinecraftClient.java:48) ~[authlib-4.0.43.jar:?]\n\tat com.mojang.authlib.yggdrasil.YggdrasilUserApiService.fetchProperties(YggdrasilUserApiService.java:129) ~[authlib-4.0.43.jar:?]\n\t... 8 more",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 475
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 475
+            }
+        ],
+        "ignored": true,
+        "ignore_reason": "Offline identity: inspected InvalidCredentialsException HTTP 401"
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-key-binding-api-v1.mixins.json:KeyBindingAccessor from mod fabric-key-binding-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 495
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 495
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-message-api-v1.mixins.json:MinecraftServerMixin from mod fabric-message-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 502
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 502
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-loot-api-v2.mixins.json:LootTableBuilderMixin from mod fabric-loot-api-v2: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_8 supports class version 52)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 508
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 508
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-loot-tables-v1.mixins.json:LootTableMixin from mod fabric-loot-tables-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 516
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 516
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-command-api-v2.client.mixins.json:ClientPlayNetworkHandlerMixin from mod fabric-command-api-v2: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 526
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 526
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-rendering-v1.mixins.json:shader.GameRendererMixin from mod fabric-rendering-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 535
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 535
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-renderer-api-v1.mixins.json:client.SpriteAtlasTextureMixin from mod fabric-renderer-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 542
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 542
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "@Shadow field fabric-renderer-api-v1.mixins.json:client.SpriteAtlasTextureMixin from mod fabric-renderer-api-v1::field_5280 is decorated with @Final but target is not final",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 543
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 543
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-renderer-indigo.mixins.json:ItemRendererMixin from mod fabric-renderer-indigo: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 545
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 545
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Write access to @Mutable @Final field field_1839:[Lnet/minecraft/class_304; in fabric-key-binding-api-v1.mixins.json:GameOptionsMixin from mod fabric-key-binding-api-v1::handler$zed000$fabric-key-binding-api-v1$loadHook",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 551
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 551
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Failed sysctl call: hw.cpufrequency, Error code: 2",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 557
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 557
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-object-builder-v1.client.mixins.json:TexturedRenderLayersMixin from mod fabric-object-builder-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 574
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 574
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-rendering-fluids-v1.mixins.json:FluidRendererMixin from mod fabric-rendering-fluids-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 583
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 583
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-particles-v1.client.mixins.json:ParticleManagerMixin from mod fabric-particles-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 590
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 590
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "fabric-renderer-api-v1.debughud.mixins.json:DebugHudMixin from mod fabric-renderer-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 598
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 598
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Missing sound for event: minecraft:item.goat_horn.play",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 616
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 616
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Missing sound for event: minecraft:entity.goat.screaming.horn_break",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 617
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 617
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 645
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 645
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Attach Listener",
+        "message": "fabric-data-generation-api-v1.mixins.json:loot.BlockLootTableGeneratorMixin from mod fabric-data-generation-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 659
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 659
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Attach Listener",
+        "message": "fabric-game-rule-api-v1.mixins.json:GameRuleCommandAccessor from mod fabric-game-rule-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 666
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 666
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Attach Listener",
+        "message": "fabric-game-rule-api-v1.client.mixins.json:RuleListWidgetVisitorMixin from mod fabric-game-rule-api-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 673
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 673
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Attach Listener",
+        "message": "fabric-blockrenderlayer-v1.mixins.json:RenderLayersMixin from mod fabric-blockrenderlayer-v1: Class version 61 required is higher than the class version supported by the current version of Mixin (JAVA_16 supports class version 60)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 784
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 784
+            }
+        ],
+        "ignored": false
+    }
+]

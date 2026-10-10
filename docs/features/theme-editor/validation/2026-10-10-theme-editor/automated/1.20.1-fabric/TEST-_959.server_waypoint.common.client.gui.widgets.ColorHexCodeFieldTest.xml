@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2026-10-10T22:30:14.080Z" hostname="Mac-mini.local" time="0.002">
+  <properties/>
+  <testcase name="rgbModeAlsoDropsTheHashOfAPastedValue()" classname="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" time="0.0"/>
+  <testcase name="argbModeShowsAndReturnsAllEightDigits()" classname="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" time="0.0"/>
+  <testcase name="aFullFieldWithoutASelectionRefusesAnotherDigit()" classname="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" time="0.0"/>
+  <testcase name="aPasteLongerThanTheLimitIsCut()" classname="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" time="0.001"/>
+  <testcase name="aResponderReadsTheNewColorOnlyOnceTheEighthDigitIsIn()" classname="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" time="0.0"/>
+  <testcase name="committingSixDigitsKeepsTheCurrentAlpha()" classname="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" time="0.0"/>
+  <testcase name="committingAnIncompleteValueRestoresTheCurrentColor()" classname="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" time="0.0"/>
+  <testcase name="committingSixDigitsKeepsTheAlphaOfTheLastCompleteValue()" classname="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" time="0.0"/>
+  <testcase name="aPastedValueMayStartWithAHash()" classname="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" time="0.0"/>
+  <testcase name="rgbModeStillPadsShortValuesToSixDigits()" classname="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" time="0.0"/>
+  <testcase name="losingFocusCommitsTheValue()" classname="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" time="0.0"/>
+  <testcase name="typingOverASelectionReplacesItInAFullRgbField()" classname="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" time="0.0"/>
+  <testcase name="typingOverASelectionReplacesItInAFullArgbField()" classname="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" time="0.0"/>
+  <testcase name="argbModeReadsAnEightDigitValue()" classname="_959.server_waypoint.common.client.gui.widgets.ColorHexCodeFieldTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

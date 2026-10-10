@@ -40,7 +40,8 @@ public class ColorHexCodeField extends TranslucentTextField implements Colorable
         return new ColorHexCodeField(x, y, text, textRenderer, true);
     }
 
-    private ColorHexCodeField(int x, int y, Component text, Font textRenderer, boolean alpha) {
+    /** An ARGB field when {@code alpha} is true; outside this package, {@link #argb} makes one. */
+    ColorHexCodeField(int x, int y, Component text, Font textRenderer, boolean alpha) {
         super(x, y, alpha ? ARGB_WIDTH : RGB_WIDTH, text, textRenderer);
         this.textRenderer = textRenderer;
         this.alpha = alpha;
@@ -115,12 +116,13 @@ public class ColorHexCodeField extends TranslucentTextField implements Colorable
         }
     }
 
+    /** Takes a hexadecimal digit while it fits; a digit typed over a selection replaces it. */
     @Override
     public boolean charTyped(char chr, int modifiers) {
         if (!this.canConsumeInput()) {
             return false;
         } else if ((chr >= '0' && chr <= '9') || (chr >= 'a' && chr <= 'f') || (chr >= 'A' && chr <= 'F')) {
-            if (this.getValue().length() < this.digitCount()) {
+            if (this.getValue().length() - this.getHighlighted().length() < this.digitCount()) {
                 this.insertText(Character.toString(chr).toUpperCase());
                 return true;
             } else {

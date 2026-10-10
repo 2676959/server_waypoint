@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="_959.server_waypoint.common.client.gui.screens.TextChoiceDropdownTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-10T22:30:12.752Z" hostname="Mac-mini.local" time="0.001">
+  <properties/>
+  <testcase name="aChoiceRunsItsActionAndClosesThePopup()" classname="_959.server_waypoint.common.client.gui.screens.TextChoiceDropdownTest" time="0.001"/>
+  <testcase name="theTriggerAndItsChoicesAreALineOfTextPlusTwoPixelsHigh()" classname="_959.server_waypoint.common.client.gui.screens.TextChoiceDropdownTest" time="0.0"/>
+  <testcase name="aTriggerHasRoomForItsLabelTheTextInsetAndTheArrow()" classname="_959.server_waypoint.common.client.gui.screens.TextChoiceDropdownTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

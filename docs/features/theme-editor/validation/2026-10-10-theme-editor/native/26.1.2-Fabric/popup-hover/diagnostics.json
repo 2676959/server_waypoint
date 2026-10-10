@@ -1,0 +1,773 @@
+[
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_25 specified by fabric-api-lookup-api-v1.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 54
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 55
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_17 specified by server_waypoint-common.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 56
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 57
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Compatibility level JAVA_17 specified by server_waypoint-voxelmap.mixins.json is higher than the maximum level supported by this version of mixin (JAVA_13).",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 57
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 58
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: net/minecraft/client/renderer/entity/ItemRenderer (java.lang.ClassNotFoundException: net/minecraft/client/renderer/entity/ItemRenderer)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 178
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 179
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/lib/client/gui/widget/dropdown/DropDownWidget (java.lang.ClassNotFoundException: xaero/lib/client/gui/widget/dropdown/DropDownWidget)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 179
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 180
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/common/gui/GuiWaypoints (java.lang.ClassNotFoundException: xaero/common/gui/GuiWaypoints)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 180
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 181
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.common.gui.GuiWaypoints was not found server_waypoint-common.mixins.json:xaeros_minimap.XaerosMinimapGuiWaypointsAccessor from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 181
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 182
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/common/gui/GuiWaypoints$List (java.lang.ClassNotFoundException: xaero/common/gui/GuiWaypoints$List)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 182
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 183
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.common.gui.GuiWaypoints$List was not found server_waypoint-common.mixins.json:xaeros_minimap.XaerosMinimapGuiWaypointsListMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 183
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 184
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/hud/minimap/world/state/MinimapWorldStateUpdater (java.lang.ClassNotFoundException: xaero/hud/minimap/world/state/MinimapWorldStateUpdater)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 184
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 185
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.hud.minimap.world.state.MinimapWorldStateUpdater was not found server_waypoint-common.mixins.json:xaeros_minimap.MinimapWorldStateUpdaterMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 185
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 186
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/hud/minimap/waypoint/render/WaypointMapRenderer (java.lang.ClassNotFoundException: xaero/hud/minimap/waypoint/render/WaypointMapRenderer)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 186
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 187
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.hud.minimap.waypoint.render.WaypointMapRenderer was not found server_waypoint-common.mixins.json:xaeros_minimap.XaerosMinimapWaypointMapRendererMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 187
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 188
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/common/minimap/waypoints/Waypoint (java.lang.ClassNotFoundException: xaero/common/minimap/waypoints/Waypoint)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 188
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 189
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.common.minimap.waypoints.Waypoint was not found server_waypoint-common.mixins.json:xaeros_minimap.XaerosMinimapWaypointMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 189
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 190
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/map/mods/gui/WaypointReader (java.lang.ClassNotFoundException: xaero/map/mods/gui/WaypointReader)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 190
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 191
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.map.mods.gui.WaypointReader was not found server_waypoint-common.mixins.json:xaeros_worldmap.XaerosWorldMapWaypointReaderMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 191
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 192
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/map/mods/gui/Waypoint (java.lang.ClassNotFoundException: xaero/map/mods/gui/Waypoint)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 192
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 193
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.map.mods.gui.Waypoint was not found server_waypoint-common.mixins.json:xaeros_worldmap.XaerosWorldMapWaypointMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 193
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 194
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: xaero/map/gui/GuiMap (java.lang.ClassNotFoundException: xaero/map/gui/GuiMap)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 194
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 195
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target xaero.map.gui.GuiMap was not found server_waypoint-common.mixins.json:xaeros_worldmap.XaeroWorldMapGuiMapMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 195
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 196
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: com/mamiyaotaru/voxelmap/gui/GuiAddWaypoint (java.lang.ClassNotFoundException: com/mamiyaotaru/voxelmap/gui/GuiAddWaypoint)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 197
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 198
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target com.mamiyaotaru.voxelmap.gui.GuiAddWaypoint was not found server_waypoint-voxelmap.mixins.json:VoxelMapGuiAddWaypointMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 198
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 199
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: com/mamiyaotaru/voxelmap/gui/GuiListWaypoints (java.lang.ClassNotFoundException: com/mamiyaotaru/voxelmap/gui/GuiListWaypoints)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 199
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 200
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target com.mamiyaotaru.voxelmap.gui.GuiListWaypoints was not found server_waypoint-voxelmap.mixins.json:VoxelMapGuiListWaypointsMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 200
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 201
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: com/mamiyaotaru/voxelmap/gui/GuiListWaypoints$WaypointItem (java.lang.ClassNotFoundException: com/mamiyaotaru/voxelmap/gui/GuiListWaypoints$WaypointItem)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 201
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 202
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target com.mamiyaotaru.voxelmap.gui.GuiListWaypoints$WaypointItem was not found server_waypoint-voxelmap.mixins.json:VoxelMapGuiListWaypointsItemMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 202
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 203
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: com/mamiyaotaru/voxelmap/gui/GuiWaypoints (java.lang.ClassNotFoundException: com/mamiyaotaru/voxelmap/gui/GuiWaypoints)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 203
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 204
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target com.mamiyaotaru.voxelmap.gui.GuiWaypoints was not found server_waypoint-voxelmap.mixins.json:VoxelMapGuiWaypointsMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 204
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 205
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: com/mamiyaotaru/voxelmap/persistent/GuiPersistentMap (java.lang.ClassNotFoundException: com/mamiyaotaru/voxelmap/persistent/GuiPersistentMap)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 205
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 206
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target com.mamiyaotaru.voxelmap.persistent.GuiPersistentMap was not found server_waypoint-voxelmap.mixins.json:VoxelMapPersistentMapMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 206
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 207
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Error loading class: com/mamiyaotaru/voxelmap/util/WaypointContainer (java.lang.ClassNotFoundException: com/mamiyaotaru/voxelmap/util/WaypointContainer)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 207
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 208
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "@Mixin target com.mamiyaotaru.voxelmap.util.WaypointContainer was not found server_waypoint-voxelmap.mixins.json:VoxelMapWaypointContainerMixin from mod server_waypoint",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 208
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 209
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "server_waypoint-common.mixins.json:ItemEntityNavigationMixin from mod server_waypoint: Class version 69 required is higher than the class version supported by the current version of Mixin (JAVA_17 supports class version 61)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 300
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 301
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Write access to @Mutable @Final field validBlocks:Ljava/util/Set; in fabric-object-builder-v1.mixins.json:BlockEntityTypeMixin from mod fabric-object-builder-api-v1::handler$zkf000$fabric-object-builder-api-v1$mutableBlocks",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 331
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 332
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Write access to @Mutable @Final field model:Lnet/minecraft/resources/DependantName; in fabric-item-api-v1.mixins.json:ItemPropertiesMixin from mod fabric-item-api-v1::modelId",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 378
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 379
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Write access to @Mutable @Final field CODEC:Lcom/mojang/serialization/Codec; in fabric-recipe-api-v1.mixins.json:ingredient.IngredientMixin from mod fabric-recipe-api-v1::handler$zlm000$fabric-recipe-api-v1$injectCodec",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 415
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 416
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Write access to @Mutable @Final field CODEC:Lcom/mojang/serialization/MapCodec; in fabric-biome-api-v1.mixins.json:TheEndBiomeSourceMixin from mod fabric-biome-api-v1::handler$zze000$fabric-biome-api-v1$modifyCodec",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 427
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 428
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "main",
+        "message": "Write access to @Mutable @Final field SUPPLIERS:Ljava/util/Map; in fabric-object-builder-v1.mixins.json:DefaultAttributesMixin from mod fabric-object-builder-api-v1::handler$zkg000$fabric-object-builder-api-v1$injectAttributes",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 459
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 460
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Write access to @Mutable @Final field sources:Ljava/util/Set; in fabric-resource-loader-v1.mixins.json:PackRepositoryMixin from mod fabric-resource-loader-v1::handler$bba000$fabric-resource-loader-v1$construct",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 477
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 478
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Write access to @Mutable @Final field keyMappings:[Lnet/minecraft/client/KeyMapping; in fabric-key-mapping-api-v1.mixins.json:OptionsMixin from mod fabric-key-mapping-api-v1::handler$zgo000$fabric-key-mapping-api-v1$loadHook",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 541
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 542
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "ERROR",
+        "logger": "Download-2",
+        "message": "Failed to fetch user properties\ncom.mojang.authlib.exceptions.InvalidCredentialsException: Status: 401\n\tat knot//com.mojang.authlib.exceptions.MinecraftClientHttpException.toAuthenticationException(MinecraftClientHttpException.java:59)\n\tat knot//com.mojang.authlib.yggdrasil.YggdrasilUserApiService.fetchProperties(YggdrasilUserApiService.java:150)\n\tat knot//net.minecraft.client.Minecraft.lambda$new$1(Minecraft.java:459)\n\tat java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)\n\tat java.base/java.lang.Thread.run(Thread.java:1474)\nCaused by: com.mojang.authlib.exceptions.MinecraftClientHttpException: Status: 401\n\tat knot//com.mojang.authlib.minecraft.client.MinecraftClient.readInputStream(MinecraftClient.java:103)\n\tat knot//com.mojang.authlib.minecraft.client.MinecraftClient.get(MinecraftClient.java:56)\n\tat knot//com.mojang.authlib.yggdrasil.YggdrasilUserApiService.fetchProperties(YggdrasilUserApiService.java:121)\n\t... 5 more",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 564
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 565
+            }
+        ],
+        "ignored": true,
+        "ignore_reason": "Offline identity: verified HTTP 401 from user API"
+    },
+    {
+        "severity": "WARN",
+        "logger": "Attach Listener",
+        "message": "Write access to @Mutable @Final field RENDER_ORDER:Ljava/util/List; in fabric-particles-v1.client.mixins.json:ParticleEngineMixin from mod fabric-particles-v1::handler$zlj000$fabric-particles-v1$classInit",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 593
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 594
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Render thread",
+        "message": "Write access to @Mutable @Final field pictureInPictureRenderers:Ljava/util/Map; in fabric-rendering-v1.mixins.json:GuiRendererMixin from mod fabric-rendering-v1::handler$zol000$fabric-rendering-v1$mutableSpecialElementRenderers",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 719
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 720
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "ERROR",
+        "logger": "Download-1",
+        "message": "Failed to fetch Realms feature flags\ncom.mojang.realmsclient.exception.RealmsServiceException: Realms authentication error with message 'java.lang.RuntimeException: Failed to parse into SignedJWT: 0'\n\tat knot//com.mojang.realmsclient.client.RealmsClient.execute(RealmsClient.java:526)\n\tat knot//com.mojang.realmsclient.client.RealmsClient.fetchFeatureFlags(RealmsClient.java:186)\n\tat java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)\n\tat java.base/java.lang.Thread.run(Thread.java:1474)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 728
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 729
+            }
+        ],
+        "ignored": true,
+        "ignore_reason": "Offline test identity cannot use Realms"
+    },
+    {
+        "severity": "ERROR",
+        "logger": "IO-Worker-1",
+        "message": "Couldn't connect to realms\ncom.mojang.realmsclient.exception.RealmsServiceException: Realms authentication error with message 'java.lang.RuntimeException: Failed to parse into SignedJWT: 0'\n\tat knot//com.mojang.realmsclient.client.RealmsClient.execute(RealmsClient.java:526)\n\tat knot//com.mojang.realmsclient.client.RealmsClient.clientCompatible(RealmsClient.java:307)\n\tat knot//com.mojang.realmsclient.RealmsAvailability.lambda$check$0(RealmsAvailability.java:48)\n\tat java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1789)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614)\n\tat java.base/java.lang.Thread.run(Thread.java:1474)",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 847
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 848
+            }
+        ],
+        "ignored": true,
+        "ignore_reason": "Offline identity: Realms cannot parse test token 0"
+    },
+    {
+        "severity": "WARN",
+        "logger": "Attach Listener",
+        "message": "Write access to @Mutable @Final field pools:Lcom/google/common/collect/ImmutableList$Builder; in fabric-loot-api-v3.mixins.json:LootTableBuilderMixin from mod fabric-loot-api-v3::modifyPools",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 942
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 943
+            }
+        ],
+        "ignored": false
+    },
+    {
+        "severity": "WARN",
+        "logger": "Attach Listener",
+        "message": "Write access to @Mutable @Final field GIFTS:Ljava/util/Map; in fabric-content-registries-v0.mixins.json:GiveGiftToHeroMixin from mod fabric-content-registries-v0::handler$zzp000$fabric-content-registries-v0$makeMutable",
+        "sources": [
+            {
+                "file": "game/logs/latest.log",
+                "line": 1021
+            },
+            {
+                "file": "game/stdout.log",
+                "line": 1022
+            }
+        ],
+        "ignored": false
+    }
+]
