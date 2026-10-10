@@ -353,8 +353,9 @@ another popup when the full menu is closed; preserve its separate-rendering cont
 gives text without a color of its own a fixed gray, so the input styles the text with the theme's
 color each frame. The supplier is read every frame too, so the text can follow another field, as the
 waypoint form's Display name follows Name. `ComboBoxWidget.setPlaceholder` passes it to its input,
-and `ColorHexCodeField` uses it for `RRGGBB`. `TranslucentTextField.setInvalid(true)` draws the
-outline in `DANGER` instead of the border color until it is cleared, for a value a form rejects.
+and `ColorHexCodeField` uses it for `RRGGBB`, or `AARRGGBB` in its ARGB mode.
+`TranslucentTextField.setInvalid(true)` draws the outline in `DANGER` instead of the border color
+until it is cleared, for a value a form rejects.
 `isSuggestionListOpen()`, also on `ComboBoxWidget` for its input's list, reports whether a list is
 showing. `acceptHighlightedSuggestion()` takes the highlighted suggestion the way clicking it does
 and reports whether a list was showing. Text fields don't handle Enter themselves; a screen that
@@ -605,7 +606,7 @@ Those cases do not justify duplicating standalone message rendering elsewhere.
 | Bounded integer input | `IntegerField` |
 | Absolute/relative/local coordinate input | `CoordinateField` |
 | Integer slider plus field | `IntegerSlider` |
-| Hex color input | `ColorHexCodeField` |
+| Hex color input | `ColorHexCodeField`, or `ColorHexCodeField.argb` for a color with an alpha |
 | Color selection | `ColorSquareButton`, `SwatchWidget`, `RGBColorPicker`, or `HSVColorPicker` |
 | Scrollable hierarchical rows | Extend `TreeViewWidget<T>` |
 | Scrollable settings rows with section headers | `SettingsListWidget` with `Row`, or `WideRow` for a control without a label |
@@ -617,6 +618,27 @@ Those cases do not justify duplicating standalone message rendering elsewhere.
 `TranslucentButton.fitted(label, callback)` makes an 11-pixel-high text button as wide as its label
 plus 5 pixels on each side, and at least 50 pixels wide, so short labels line up and long
 translations still fit. Dialog and footer buttons use it.
+
+`ColorHexCodeField` edits an opaque RGB color by default: six digits after the `#`, the placeholder
+`RRGGBB`, and `getColor()` and `setColor(int)` use RGB (`setColor` ignores the alpha). The waypoint
+form uses it that way. `ColorHexCodeField.argb(x, y, text, font)` makes an ARGB field for a color
+with an alpha, such as the theme's: eight digits, the placeholder `AARRGGBB`, a content width of 51
+instead of 39, and an ARGB `getColor()` and `setColor(int)`.
+
+- **Current color:** an ARGB field's `getColor()` reads the text only while it has all eight digits.
+  Otherwise it returns the last complete value: the last `setColor(argb)` or the last time the text held
+  eight digits, typed, pasted or set. It changes only when the text becomes complete, not on the way
+  there, so a responder that applies the value at eight digits never applies the color that the first
+  six digits of an unfinished edit would make.
+- **`commit()`** finishes an unfinished value. In an ARGB field, six digits become RGB under the alpha of
+  the current color (`B31C1C1C`, then `FF0000`, gives `B3FF0000`), and any other incomplete value, an
+  empty one included, is replaced by the current color; eight digits are left alone. An RGB field pads
+  a short value with leading zeros to six digits. `setFocused(false)` calls it, and a screen calls it
+  for Enter, since text fields don't handle Enter themselves. The completed text is set with
+  `setValue`, so the responder sees it.
+- **Typing and pasting:** `charTyped` stops at the mode's digit count. `insertText` takes hexadecimal
+  digits only and drops one leading `#` in both modes, so a color copied from `widget-theme.json`, such
+  as `#D9262626`, can be pasted; any other text is ignored.
 
 `TranslucentButton`, `TranslucentTextField`, `ColorHexCodeField`, and `ToggleButton` paint the full background first,
 then overlay their outline on the same rectangle. Button and toggle visual bounds are
