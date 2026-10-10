@@ -118,6 +118,32 @@ class CoreWaypointCommandListTest {
     }
 
     @Test
+    void queuesWaypointUpdatesBeforeBroadcastChat() throws CommandSyntaxException {
+        this.sender.broadcastPlayers = List.of("reader");
+
+        assertEquals(1, this.dispatcher.execute("wp remove overworld bases \"base 1\"", this.source));
+
+        assertEquals(List.of("update", "chat:reader"), this.sender.broadcastEvents);
+    }
+
+    @Test
+    void failedBroadcastChatDoesNotStopOtherReadersOrFollowingCommands() throws CommandSyntaxException {
+        this.sender.broadcastPlayers = List.of("failed", "reader");
+        this.sender.failedChatPlayer = "failed";
+
+        assertEquals(1, this.dispatcher.execute("wp remove overworld bases \"base 1\"", this.source));
+        assertEquals(1, this.dispatcher.execute(
+                "wp add overworld bases position replacement R FFAA00 0 false", this.source));
+
+        WaypointList list = this.server.getWaypointFileManager("overworld").getWaypointListByName("bases");
+        assertNull(list.getWaypointByName("base 1"));
+        assertNotNull(list.getWaypointByName("replacement"));
+        assertEquals(List.of("update", "chat:failed", "chat:reader", "update", "chat:failed", "chat:reader"),
+                this.sender.broadcastEvents);
+        assertEquals(2, this.sender.broadcastUpdates.size());
+    }
+
+    @Test
     void keyGenerationIsStandaloneAndOldCrossServerNodeIsRemoved() {
         assertNotNull(this.dispatcher.getRoot().getChild("sw-cross-server-keygen"));
         assertNull(this.dispatcher.getRoot().getChild("wp").getChild("cross-server"));
@@ -905,6 +931,10 @@ class CoreWaypointCommandListTest {
         private final List<Component> errors = new ArrayList<>();
         private boolean capable = true;
         private int sentPackets;
+        private List<Object> broadcastPlayers = List.of();
+        private Object failedChatPlayer;
+        private final List<String> broadcastEvents = new ArrayList<>();
+        private final List<ChunkedMessage> broadcastUpdates = new ArrayList<>();
 
         @Override
         public boolean canSendChunkedMessage(Object player) {
@@ -921,6 +951,10 @@ class CoreWaypointCommandListTest {
 
         @Override
         public void sendPlayerMessage(Object player, Component component) {
+            this.broadcastEvents.add("chat:" + player);
+            if (player.equals(this.failedChatPlayer)) {
+                throw new IllegalStateException("Simulated chat delivery failure");
+            }
         }
 
         @Override
@@ -956,7 +990,15 @@ class CoreWaypointCommandListTest {
 
         @Override
         public Iterable<?> getBroadcastPlayers(TestSource source) {
-            return List.of();
+            return this.broadcastPlayers;
+        }
+
+        @Override
+        public void broadcastChunkedMessage(Iterable<? extends Object> recipients, ChunkedMessage message) {
+            if (!this.broadcastPlayers.isEmpty()) {
+                this.broadcastEvents.add("update");
+                this.broadcastUpdates.add(message);
+            }
         }
 
         @Override

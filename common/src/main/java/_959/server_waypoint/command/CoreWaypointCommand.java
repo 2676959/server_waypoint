@@ -1174,14 +1174,24 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
      */
     private void broadcast(S source, ChunkedMessage update, Function<DimensionStyle, Component> line) {
         Iterable<? extends P> recipients = this.sender.getBroadcastPlayers(source);
+        this.sender.broadcastChunkedMessage(recipients, update);
         P actor = getPlayer(source);
         Map<String, String> types = getDimensionTypes(source);
         for (P player : recipients) {
             if (!player.equals(actor)) {
-                this.sender.sendPlayerMessage(player, line.apply(DimensionStyle.local(recipientViewer(player), types)));
+                try {
+                    this.sender.sendPlayerMessage(player, line.apply(DimensionStyle.local(recipientViewer(player), types)));
+                } catch (RuntimeException exception) {
+                    PlayerActionLog.Actor recipient = this.sender.playerActor(player);
+                    WaypointServerCore.LOGGER.warn(
+                            "Failed to send waypoint broadcast chat to {} ({})",
+                            recipient.name(),
+                            recipient.playerId(),
+                            exception
+                    );
+                }
             }
         }
-        this.sender.broadcastChunkedMessage(recipients, update);
     }
 
     private boolean validateTextInputs(

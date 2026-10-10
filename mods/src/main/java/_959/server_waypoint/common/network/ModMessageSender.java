@@ -1,7 +1,5 @@
 package _959.server_waypoint.common.network;
 
-//? if <= 1.20.1
-/*import _959.server_waypoint.access.PlayerLocaleAccessor;*/
 import _959.server_waypoint.core.logging.PlayerActionLog;
 import _959.server_waypoint.core.network.PlatformMessageSender;
 import _959.server_waypoint.core.network.ChunkedMessage;
@@ -13,11 +11,11 @@ import _959.server_waypoint.core.network.SinglePacketMessageEncoder;
 import _959.server_waypoint.common.server.WaypointServerMod;
 import _959.server_waypoint.common.server.command.CommandChatIcons;
 import _959.server_waypoint.common.util.TextHelper;
+import _959.server_waypoint.common.util.PlayerLocaleHelper;
 import _959.server_waypoint.mixin.CommandSourceStackAccessor;
 import _959.server_waypoint.text.chat.Chat;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.translation.GlobalTranslator;
-import net.kyori.adventure.translation.Translator;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
@@ -113,18 +111,8 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
         *///?}
     }
 
-    private static Locale getLocale(ServerPlayer player) {
-        //? if <= 1.20.1 {
-        /*String language = ((PlayerLocaleAccessor) player).sw$getLocale();
-        *///?} else {
-        String language = player.clientInformation().language();
-        //?}
-        Locale locale = Translator.parseLocale(language);
-        return locale == null ? Locale.getDefault() : locale;
-    }
-
     public net.minecraft.network.chat.Component getTranslatedText(ServerPlayer player, Component component) {
-        return toVanillaText(GlobalTranslator.render(component, getLocale(player)));
+        return toVanillaText(GlobalTranslator.render(component, PlayerLocaleHelper.forPlayer(player)));
     }
 
     /**
@@ -163,11 +151,11 @@ public class ModMessageSender implements PlatformMessageSender<CommandSourceStac
             @Nullable ServerPlayer commanderPlayer,
             Component component
     ) {
-        Locale commanderLocale = commanderPlayer == null ? Locale.getDefault() : getLocale(commanderPlayer);
+        Locale commanderLocale = commanderPlayer == null ? Locale.getDefault() : PlayerLocaleHelper.forPlayer(commanderPlayer);
         Component line = GlobalTranslator.render(Chat.viewedAs(viewer.getName().getString()), commanderLocale);
         Component view = GlobalTranslator.render(
                 commanderPlayer == null ? component : PlatformMessageSender.forPlayer(component),
-                getLocale(viewer)
+                PlayerLocaleHelper.forPlayer(viewer)
         );
         return toVanillaText(PlatformMessageSender.forCommander(line,
                 commanderPlayer == null ? CommandChatIcons.INSTANCE.withoutIcons(view) : view));

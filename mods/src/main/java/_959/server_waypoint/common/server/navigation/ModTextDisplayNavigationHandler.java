@@ -1,6 +1,7 @@
 package _959.server_waypoint.common.server.navigation;
 
 import _959.server_waypoint.common.network.ModMessageSender;
+import _959.server_waypoint.common.util.PlayerLocaleHelper;
 import _959.server_waypoint.navigation.AbstractTextDisplayNavigationHandler;
 import com.mojang.math.Transformation;
 import com.mojang.serialization.DataResult;
@@ -8,7 +9,6 @@ import io.netty.buffer.Unpooled;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
-import net.kyori.adventure.translation.Translator;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -36,7 +36,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -102,7 +101,7 @@ final class ModTextDisplayNavigationHandler
             Display.TextDisplay display,
             Component text
     ) {
-        Component translated = GlobalTranslator.render(text, playerLocale(player));
+        Component translated = GlobalTranslator.render(text, PlayerLocaleHelper.forPlayer(player));
         CompoundTag tag = saveDisplayData(display);
         //? if <1.21.5 {
         /*tag.putString("text", GsonComponentSerializer.gson().serialize(translated));
@@ -201,17 +200,6 @@ final class ModTextDisplayNavigationHandler
         return result.result().orElseThrow(() -> new IllegalStateException(
                 "Could not encode text display " + field
         ));
-    }
-
-    private static Locale playerLocale(ServerPlayer player) {
-        //? if <=1.20.1 {
-        /*String language = ((_959.server_waypoint.access.PlayerLocaleAccessor) player)
-                .sw$getLocale();
-        *///?} else {
-        String language = player.clientInformation().language();
-        //?}
-        Locale locale = Translator.parseLocale(language);
-        return locale == null ? Locale.getDefault() : locale;
     }
 
     private static EntityType<Display.TextDisplay> textDisplayType() {
