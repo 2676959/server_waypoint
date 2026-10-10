@@ -9,6 +9,7 @@ import _959.server_waypoint.common.client.gui.render.WidgetThemeSelection;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Owns one theme-editing transaction and its live preview lifecycle.
@@ -35,15 +36,51 @@ final class WidgetThemeEditorSession {
         return this.settings.theme();
     }
 
-    void setColor(WidgetThemeVariable variable, int color) {
+    /**
+     * Sets one color of the draft and previews it. Editing a key while a built-in theme is selected copies
+     * that theme into the Custom colors with the edit. Setting the color the draft already has changes nothing,
+     * so committing an unchanged value never turns a built-in theme into Custom.
+     *
+     * @return the built-in theme that was selected before the edit when the Custom colors the copy replaced
+     *         differ from it in any key; empty otherwise
+     */
+    Optional<WidgetThemeSelection> setColor(WidgetThemeVariable variable, int color) {
         this.ensureOpen();
-        this.settings = new WidgetThemeJson.Settings(WidgetThemeSelection.CUSTOM,
-                this.getDraftTheme().withColor(variable, color));
+        WidgetTheme draft = this.getDraftTheme();
+        if (draft.getColor(variable) == color) {
+            return Optional.empty();
+        }
+        WidgetThemeSelection previous = this.settings.selection();
+        boolean replacesDifferingCustom = previous != WidgetThemeSelection.CUSTOM
+                && !draft.equals(this.settings.customTheme());
+        this.settings = new WidgetThemeJson.Settings(WidgetThemeSelection.CUSTOM, draft.withColor(variable, color));
+        WidgetThemeManager.setTheme(this.getDraftTheme());
+        return replacesDifferingCustom ? Optional.of(previous) : Optional.empty();
+    }
+
+    /**
+     * Puts one key back to its color in the theme in effect when the editor opened.
+     *
+     * @return what {@link #setColor} returns for that change
+     */
+    Optional<WidgetThemeSelection> revert(WidgetThemeVariable variable) {
+        return this.setColor(variable, this.originalSettings.theme().getColor(variable));
+    }
+
+    /**
+     * Restores the selection and the Custom colors from when the editor opened, and previews them.
+     */
+    void revertAll() {
+        this.ensureOpen();
+        this.settings = this.originalSettings;
         WidgetThemeManager.setTheme(this.getDraftTheme());
     }
 
-    void reset() {
-        this.select(WidgetThemeSelection.TRANSLUCENT_DARK);
+    /**
+     * Whether the draft's color for the key differs from the theme in effect when the editor opened.
+     */
+    boolean isChanged(WidgetThemeVariable variable) {
+        return this.getDraftTheme().getColor(variable) != this.originalSettings.theme().getColor(variable);
     }
 
     WidgetThemeSelection getSelection() {

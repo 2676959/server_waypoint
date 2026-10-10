@@ -454,7 +454,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     }
 
     private void resetTheme() {
-        this.session.reset();
+        this.session.revertAll();
         this.syncControls();
         this.statusText.setColor(SUCCESS);
         this.statusText.setText(Component.translatable("server_waypoint.theme.reset.preview"));
