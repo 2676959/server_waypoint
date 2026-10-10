@@ -525,7 +525,9 @@ When adding a theme variable, update all of these together:
 
 1. `WidgetThemeVariable`, including its unique JSON name.
 2. Every built-in theme in `WidgetThemes`.
-3. A `PreviewSample` (sample or marked element) that uses it.
+3. A `PreviewSample` (sample or marked element) that draws it: add the key to each constant whose widget
+   draws it, or add a sample when none does (see
+   [Markers and sample keys](#markers-and-sample-keys)).
 4. Theme completeness, JSON, and preview-coverage tests.
 
 ### Theme JSON persistence
@@ -697,7 +699,7 @@ The main base classes have distinct roles:
 - Extend `ShiftableScrollableWidget` when the widget has a vertically scrollable viewport. Its
   scrollbar track, thumb, click area, and reserved content column are 3 GUI pixels wide. Combobox,
   dropdown-menu, and input-suggestion scrollbars use their own geometry.
-- Extend `TreeViewWidget<T>` when the content is a flattened visible view of expandable hierarchical data. Implement child lookup, expansion state, empty rendering, and row rendering; the base class handles scroll bounds, hit testing, visible-row calculation, clipping, and scrollbar drawing. A tree paints its own `PANEL_BACKGROUND` fill, which is right when nothing else paints under it, as in the theme editor's variable list. A tree on a panel that already paints that fill overrides `backgroundColor()` to return 0, as the waypoint list and the remote browser tree do on the manager's list panel: a translucent layer composited twice (60% black twice is 84%) makes the tree look darker than the panels beside it.
+- Extend `TreeViewWidget<T>` when the content is a flattened visible view of expandable hierarchical data. Implement child lookup, expansion state, empty rendering, and row rendering; the base class handles scroll bounds, hit testing, visible-row calculation, clipping, and scrollbar drawing. A tree paints its own `PANEL_BACKGROUND` fill, which is right when nothing else paints under it, as in the theme editor's key list. A tree on a panel that already paints that fill overrides `backgroundColor()` to return 0, as the waypoint list and the remote browser tree do on the manager's list panel: a translucent layer composited twice (60% black twice is 84%) makes the tree look darker than the panels beside it.
 
 `WaypointListWidget` supports both one-dimension and all-dimensions query scopes. Call
 `setShowAllDimensions(true)` to use `WaypointQueryEngine.queryAll`; grouped mode then renders
@@ -901,9 +903,10 @@ The world renderer reads `ClientConfig.isRenderWaypointsUnderF1()` each frame, s
 and a reset apply immediately; the option never bypasses loading-screen suppression.
 
 Use `SettingsListWidget` for a scrollable panel of settings. It holds `SettingsListWidget.Header`
-entries (a title followed by a line) and `SettingsListWidget.Row` entries: a label, a control, an
+entries (a title followed by a line); `SettingsListWidget.Row` entries: a label, a control, an
 optional muted unit (`suffix`), an optional last-column widget (`action`, such as a reset button)
-and an optional `tooltip` supplier. Entries have their own heights, so long labels wrap onto more
+and an optional `tooltip` supplier; and `SettingsListWidget.WideRow` entries: a control with no
+label column, described below. Entries have their own heights, so long labels wrap onto more
 lines instead of being clipped. The unit and action columns are as wide as their widest entry, so
 every control's right edge lines up. A control can be one widget, a non-interactive element such as
 a `ScalableText`, or a composite such as a `WidgetStack` of buttons: the row owns every widget the
@@ -972,7 +975,9 @@ it like a `Row`.
   shows its own tooltip. Headers and wide rows get neither.
 - **Limitations:** row controls can't open popups, because the scissor would clip them, unless the
   screen renders the popup separately (`setRenderPopupSeparately(true)`, then `renderPopup(...)`
-  after the list) and closes it when the list scrolls.
+  after the list) and closes it when the list scrolls. The theme editor's preview does this for its
+  combobox and dropdown: its list subclass closes the popups in `setScrollY`, and the screen gives an
+  open popup the clicks and the wheel first (see [Popups in the preview](#popups-in-the-preview)).
 
 ### Confirmation dialogs
 
@@ -1138,7 +1143,7 @@ Use current screens as focused examples:
 - `WaypointManagerScreen.resolveViewState(integratedServer, networkState)` picks `LOADING` (`NOT_READY` or `HANDSHAKE_FINISHED`), `UNSUPPORTED`, `INCOMPATIBLE` or `READY` (`SYNC_FINISHED`, or any state in an integrated world). A non-ready build registers no widgets and shows one centered `ScalableText` message. `tick()` calls vanilla `rebuildWidgets()` when the resolved state changes, so a manager opened during sync builds itself in place when sync finishes. In the remote view a catalog session change still closes the screen; in the local view it rebuilds the screen, and the ready build rebinds `RemoteWaypointPanel` to the new session, clearing its selection and the requested dimension catalog. `removed()` clears the static `isRendering`/`activeScreen` registration, so a manager closed by teleport or `setScreen(null)` stops receiving refresh calls; returning from a child screen re-runs `init()`, which re-queries the list. Because the client reports `NO_SERVERSIDE_SUPPORT` until a dedicated server's handshake arrives, a manager open in that window briefly shows the unsupported message.
 - `AbstractWaypointPropertiesScreen`, `WaypointAddScreen`, and `WaypointEditScreen` demonstrate a compact, fixed form. `WaypointFormLayout` is pure and unit-tested: from measured sizes it works out the label and control columns, the gap between rows (9 pixels, down to 5 when the screen is short), the dividers and the footer, and the screen places its widgets from the answers with `placeOutline` and `placeInRow`, which position any widget by its outline whatever its anchor. Layout runs in `init()`, when the footer message changes because a wrapped message changes the footer's height, and on resize through `repositionElements()`, which keeps the widgets, so values, focus, the message and a pending request survive; it never runs every frame. `WaypointFormCheck` runs on every edit and tick and reports the first problem: a hint or an error blocks Add and Save and the footer says why, an error's field gets a `DANGER` outline through `setInvalid`, and a note doesn't block. `WaypointAddScreen` sends `/wp add`, locks the form with a `PendingAdd`, closes when the waypoint appears in the synced data and unlocks with a message after 5 seconds. `WaypointEditScreen` captures the list revision, builds one atomic patch with `WaypointFormPatch`, keeps entered values until a matching server result accepts the edit, and unlocks with that result's message otherwise. Its Display name field holds only the override, and an empty field over a saved override clears it. The add screen treats its name field only as the exact identifier and creates no display-name override. Resting the pointer on a field's label or controls for 500 ms shows that field's tooltip at the pointer through `TooltipLayer.scheduleAtPointer`, but not over the remove-icon button, which has its own, nor while a popup, the color picker or a pending request is open.
 - `ClientConfigScreen` demonstrates `SettingsListWidget` with per-row reset buttons, a footer built with a `WidgetPack`, and confirmation dialogs that disable the underlying controls, close on Escape and return focus to the button that opened them. Its Map mods rows depend on which map mods the loader supports (`MapModIntegrations.find`) and the player installed; the pure rules live in `ClientConfigSync`, and the settings themselves in `ClientConfigSettings`. It saves the config in `removed()`, which every exit reaches.
-- `WidgetThemeConfigScreen` demonstrates a live-preview editing transaction, a two-column theme-variable editor, a screen-local widget gallery, separate RGB/opacity controls, and a modal `SwatchWidget`.
+- `WidgetThemeConfigScreen` demonstrates a live-preview editing transaction, pure and unit-tested geometry (`WidgetThemeEditorLayout`), a `TreeViewWidget` key list that paints its own panel, a `SettingsListWidget` of real widgets (`WideRow`s) with usage markers, popups rendered separately from a scrolling list, and a modal `SwatchWidget`.
 
 ### Recommended screen lifecycle
 
@@ -1194,8 +1199,10 @@ Let registered widgets receive ordinary input through the screen. Intercept only
   outside its owner, so `MovementAllowedScreen.mouseScrolled` first offers it to the focused
   `PopupOwner` through `scrollPopupIfOver`. A screen that overrides `mouseScrolled` keeps that
   behavior by calling `super.mouseScrolled` for the events it does not use itself, as
-  `AbstractWaypointPropertiesScreen` and `ClientConfigScreen` do. `mouseScrolled` takes three
-  doubles up to 1.20.1 and four from 1.20.2, so split the override with a Stonecutter predicate.
+  `AbstractWaypointPropertiesScreen`, `ClientConfigScreen` and `WidgetThemeConfigScreen` do. One that
+  routes the wheel before `super`, as `WidgetThemeConfigScreen` does for its preview, calls the protected
+  `scrollFocusedPopup` first, so the focused control's popup still gets the wheel. `mouseScrolled` takes
+  three doubles up to 1.20.1 and four from 1.20.2, so split the override with a Stonecutter predicate.
 - Vanilla closes the screen on Escape before the focused child sees the key. Before that,
   `MovementAllowedScreen.keyPressed` calls `dismissFocusedInput()` to close the focused
   `PopupOwner`'s open menu or suggestion list and clear focus. A focused `EditBox` or
@@ -1228,7 +1235,7 @@ Let registered widgets receive ordinary input through the screen. Intercept only
   focus to the next Tab stop after every rebuild, such as a resize, when the keyboard was used last,
   which would take it from a dialog's Cancel button to its confirm button. The screen skips that
   while a modal is open, so the focus `init()` gives the modal stands. `ClientConfigScreen` shows the
-  pattern.
+  pattern, and `WidgetThemeConfigScreen` follows it for its color picker.
 
 #### 5. `onClose`: return and clean up
 
@@ -1318,28 +1325,293 @@ The example translation keys are placeholders; add real keys to the language fil
 
 ### In-game theme editor
 
-The Configure button in the Appearance section of `ClientConfigScreen` opens `WidgetThemeConfigScreen`. The screen exposes every `WidgetThemeVariable`, previews edits immediately through `WidgetThemeManager`, and keeps opacity separate from the RGB field and swatch. Keep that separation: the existing RGB-oriented color controls normalize their own values to opaque RGB, while many theme surfaces intentionally use translucent ARGB colors.
+The Configure button in the Appearance section of `ClientConfigScreen` opens `WidgetThemeConfigScreen`, a
+developer tool for the runtime theme. It lists the theme's raw keys (`WidgetThemeVariable.getJsonName()`)
+with their `#AARRGGBB` values, as `widget-theme.json` stores them, and draws a live preview of the mod's
+widgets that marks where the selected key is used. Edits preview at once through `WidgetThemeManager` and are
+undone unless the player saves. The keys have no translations; the rest of the screen's text exists in every
+locale.
 
-The editor body follows a two-column layout. The left column keeps the scrollable variable list above the selected variable's RGB and opacity controls; the list's declared rectangle is its complete visual rectangle, including its two-pixel decoration, so it shares the lower panel's left/right edges without narrowing the column gutter. The outer, column, and body-to-footer gutters use the same eight-pixel rhythm, and the two left panels share their adjoining border. The RGB field and `ColorSquareButton` are composed with visual bounds so their outlines stay adjacent and exactly aligned. The right column is a live widget gallery built from the existing text, text-field, button, toggle, and slider implementations, plus small semantic surface/status samples. Gallery controls use deferred theme-variable values, remain interactive so hover/focus/selected states can be inspected, and update immediately with the draft theme. Reset and save-error feedback occupies the otherwise-unused bottom strip inside the gallery rather than reserving a larger empty band above the footer.
+The screen composes the parts below. Apart from the screen they are package-private in `client.gui.screens`,
+and the pure helpers (`WidgetThemeEditorLayout`, `KeySelection`, `PreviewPacking`, `PreviewSample`) have unit
+tests of their own.
 
-The gallery is screen-local rather than a reusable widget API. Its interactive children are registered individually for input, while its `WidgetStack` owns their one manual high-level render pass. When the modal swatch opens, disable the interactive gallery samples along with the editor controls; a deliberately disabled gallery sample must remain disabled when the modal closes.
+| Part | Responsibility |
+| --- | --- |
+| `WidgetThemeConfigScreen` | Builds every widget once, in its constructor, so they survive resizes; owns the selected key, the status and the color picker; routes input. Its nested `KeyList` is the key list |
+| `WidgetThemeEditorLayout` | The geometry, and whether the key list shows values |
+| `KeySelection` | The key list's selection rules |
+| `WidgetThemePreview` | The preview panel, its markers and its popups |
+| `PreviewPacking`, `PreviewSample` | How the samples are packed into rows; the theme keys each sample and marked element draws |
+| `TextChoiceDropdown` | A dropdown of text choices, for the theme dropdown and a preview sample |
+| `WidgetThemeEditorSession` | The editing transaction |
 
-The package-private `WidgetThemeEditorSession` owns the editing transaction; it is an implementation seam for the screen, not a public theme API:
+#### Layout
 
-- `setColor` updates the immutable draft and publishes it for live preview.
-- The theme dropdown selects Custom, Translucent Dark, Modern Dark, High Contrast, or Classic and previews immediately. It reuses `AbstractDropdownMenuWidget`, registers once, routes popup clicks before covered controls, and renders the popup after the body. Escape closes the dropdown first; the swatch modal disables it.
-- Its trigger and choices use `font.lineHeight + 2` height and a two-pixel text inset, matching text fields and comboboxes. The screen positions its full-width outline alongside the body panels. Popup rows share single-pixel separators; labels are clipped within the outline, with the trigger reserving space for a right-aligned open/closed arrow. This selection-only control has no suggestion popup.
-- Switching presets retains the custom palette. Editing a preset copies its colors into Custom; subsequent preset switches retain those edits.
-- Reset selects the default Translucent Dark preset without erasing Custom; it does not write the file by itself.
-- Save atomically writes the selected preset ID and custom palette to `widget-theme.json` and keeps the preview active. `WidgetThemeSelection` resolves presets; `WidgetThemeJson.Settings` contains the selection and custom colors. `loadSettings` reads both, while `load`/`fromJson` resolve the selected effective theme for startup and callers. The `colors` object always stores the custom palette; the optional `selection` defaults to `custom`.
-- Cancel, Escape, or removal before a successful save restores the original snapshot.
-- Cancel is idempotent so explicit close and subsequent `removed()` calls are safe.
+One group, centered on the screen, holds a header line, three panels and a footer:
 
-Keep file I/O and rollback behavior in the session rather than scattering it through button callbacks. If saving fails, leave the editor open, show the translated failure state, and keep the draft available for another attempt.
+```text
+Color theme                                    [Theme: Custom ▾]
+┌─────────────────────────────┐ ┌──────────────────────────────┐
+│ Key list                    │ │ Preview                      │
+│                             │ │                              │
+└─────────────────────────────┘ │                              │
+┌─────────────────────────────┐ │                              │
+│ Key editor                  │ │                              │
+└─────────────────────────────┘ └──────────────────────────────┘
+status                                   [Reset] [Cancel] [Save]
+```
 
-When a modal swatch is open, disable the underlying editor controls, move focus into the modal, and render it on a later layer. Normalize focus after mouse dispatch where necessary because vanilla click handling can replace focus after a callback runs. Escape should close the modal first and only leave the screen when no modal is active.
+| Item | Value |
+| --- | --- |
+| Margin and gaps | 10 px screen margin; 6 px from the header to the panels and from the panels to the footer; 2 px between panels; 6 px of panel padding |
+| Header line | 11 px: the title at 1.2× and the dropdown (`font.lineHeight + 2`), at least 8 px apart |
+| Group width | `min(screen width − 20, 420)` |
+| Left column | `clamp(round(group width × 0.5), 152, 210)`; the key list sits above the key editor, and the preview takes the rest |
+| Panels height | `min(space left after the margins, header, footer and gaps, 230)`, but at least 115: the key editor, a gap and four key rows with their padding |
+| Key editor | 53 px: padding, the 9-px key line, 5 px, two 11-px rows 5 px apart, padding |
+| Key row | 12 px |
+| Footer | `TranslucentButton.fitted` buttons 6 px apart, placed from the right with a `WidgetPack`. The status wraps to the width left of them minus 8 px; under 100 px (`ClientConfigScreen.statusAboveButtons`) it takes its own line, 4 px above them |
 
-The editor uses fixed, visual-bounds-aware geometry sized for the normal in-game GUI viewport. Treat those dimensions as screen-specific rather than a general layout API. Future layout changes should preserve the two-column information hierarchy, editor transaction, dynamic theme resolution, single render ownership, input registration, modal layering, and cross-version render paths.
+- **Geometry:** `WidgetThemeEditorLayout.arrange(...)` is pure. From the screen size, the dropdown's and the
+  buttons' sizes and the wrapped status's height (a function of its width) it returns an `Arrangement` of
+  screen-space `Rect`s, the panels as visual bounds with their outlines. The group starts at the top margin
+  when the screen is too short for the minimum panels height, and the title is cut with an ellipsis when the
+  dropdown leaves it too little room.
+- **Lifecycle:** `layoutContent()` runs in `init()`, which a resize also runs, and when the status changes,
+  because a wrapped status changes the footer's height; it never runs while rendering. Each panel's fill is
+  painted once, by the widget that owns it (the key list, the screen for the key editor, and the preview's
+  `SettingsListWidget`), so the three match at any theme translucence, as the manager's panels do.
+
+#### Key list
+
+`KeyList` extends `TreeViewWidget<WidgetThemeVariable>` with one root per key and no children, in
+`WidgetThemeVariable.values()` order, the order `WidgetThemeJson` writes the file in. It paints its own
+panel, which is right because nothing else paints under it, and reports clicks and Up and Down; the screen
+owns the selection, which starts on `text.primary`.
+
+- **Rows** are 12 px high: an 8×8 chip of the key's color over a 2-pixel checkerboard, so a translucent key
+  shows its opacity (the two grays are fixed colors, a transparency visualization like the color pickers'
+  gradients); the raw key at 85%; and, when the list shows values, the right-aligned `#AARRGGBB` value in
+  `TEXT_MUTED`. Rows have no tooltip.
+- **Values** show when `WidgetThemeEditorLayout.showsValues(...)` holds:
+  `KEY_X (14) + widest key + VALUE_GAP (8) + value + VALUE_INSET (2)` fits the row. With the default font the
+  widest key and a value measure 120 px and 46 px at the rows' scale, so a row needs 190 px. A tree's row is
+  the list's width minus 12 px of padding and a 3-pixel scrollbar with no gap (a `SettingsListWidget` keeps
+  2 px), so values show from a **205-pixel** left column, a GUI width of 429 or more: at 480×270 (210 px)
+  they show, and at 378×245 (179 px) and 320×240 (152 px) they don't. The key editor always shows the
+  selected key's value.
+- **Selection:** `KeySelection.click(selected, clicked)` returns the clicked key, or `null` when it was
+  already selected, so clicking the selected key clears the selection: the preview shows no markers and the
+  key editor its empty state. `KeySelection.move(selected, down)` returns the next or previous key and stops
+  at the first and last; with nothing selected, Down gives the first key and Up the last. The list is a Tab
+  stop and reports Up and Down while it is active; the screen then calls `KeyList.reveal(key)`, which scrolls
+  the least amount that shows the row.
+
+#### Key editor
+
+The key editor shows the selected key under the key list, on a panel that the screen paints once.
+`syncControls(source)` sets the key line and the controls from the draft and leaves alone the control the
+change came from; `updatingControls` stops their callbacks from applying a value that was just set.
+
+- **Rows:** the key in `TEXT_PRIMARY` followed by a `DECOR_LINE` `SeparatorWidget` (made again when the text
+  or the layout changes, since it has no width setter); a color row, with the `ColorSquareButton` that opens
+  the color picker, a `ColorHexCodeField.argb` whose narration label is the literal "ARGB", and the reset
+  icon at the right end; and an Alpha row, with its label at 85% and an `IntegerSlider` from 0 to 255 with
+  `controlScale` 0.85, a 64-pixel track and a 30-pixel field. As in the settings rows, the track has a fixed
+  width, here one that leaves room for every locale's label in the 152-pixel column.
+- **What each control changes:** the ARGB field both the RGB and the alpha, the color picker only the RGB,
+  and the slider only the alpha. `SwatchWidget` is RGB-only, so the screen keeps the key's alpha when it
+  confirms. The field applies its value at eight digits; Enter and leaving the field call `commit()` (see
+  `ColorHexCodeField` under [Component selection](#component-selection)).
+- **Pending edits:** vanilla runs a click's callback first and focuses the clicked widget afterwards, so a
+  click on a key, Save or Cancel would finish a value typed in the ARGB field or the Alpha slider only after
+  the key changed or the session closed, applying it to the wrong key or throwing on a closed session.
+  `finishEditing()` moves focus off those two controls first.
+- **Reset icon:** a 9×9 `IconButton` with `WidgetTextures.RESET_ICON` and the settings screen's icon region.
+  It shows only while `session.isChanged(key)`, in a place of its own at the end of the row, and calls
+  `session.revert(key)`, which counts as an edit.
+- **Empty state:** with no key selected, the key line reads "No key selected" in `TEXT_MUTED`, a hint below
+  it says how to select a key and that selecting it again hides the markers, and the color button, ARGB
+  field, reset icon and slider are hidden, so they take no clicks and aren't Tab stops. The panel keeps its
+  height.
+
+#### Preview
+
+`WidgetThemePreview` is the right column. Its list, `PreviewList`, is a `SettingsListWidget` subclass that
+paints the panel and holds a `Header` titled "Preview" and then `WideRow`s of samples at full size; it
+scrolls real widgets and hides clipped ones from clicks and Tab, as the client settings do. The samples come
+in ten families, shown in this order with 6 px between the samples of a family: text, a text field, a
+combobox and a dropdown, buttons, toggles, sliders, accent chips, a tooltip with the popup and dialog chips,
+status chips, and scrollbars at rest, dragged and inactive.
+
+- **Widgets:** the samples are the mod's own widgets, so they react to the pointer, take focus and show the
+  focus ring. Their callbacks do nothing; the toggles still toggle, and the combobox and the dropdown keep
+  the value chosen. The chips and the scrollbars are private, non-interactive `ShiftableWidget`s that resolve
+  their keys each time they are drawn, and the tooltip is a real `TranslucentTooltip`, drawn in place rather
+  than through `TooltipLayer`. No sample has a tooltip of its own. While the color picker is open,
+  `setActive(false)` makes every sample inactive through `AbstractWaypointPropertiesScreen.setControlActive`,
+  which also stops a text field from taking typing; `sampleActive` keeps the Disabled button and the second
+  slider inactive whatever the picker does.
+- **Packing:** `PreviewPacking.pack(familyWidths, rowWidth, sampleGap, familyGap)` is a pure function from
+  each family's sample widths to rows of `Placement(family, sample, x)`. Families keep their order, 12 px
+  apart on a shared row. A family stays whole on a row when it fits, starts a new row when it doesn't fit the
+  rest of the current one, and wraps sample by sample when it is wider than a row, so nothing is cut off.
+  `setBounds(...)` packs again only when the rows' width changes, and `setEntries` keeps the widgets and
+  their state.
+- **Rows:** each `WideRow` holds a `SampleRow`, a `LayoutElement` and `Renderable` around a `WidgetPack` that
+  centers the samples on the tallest. The `SampleRow` is exactly as tall as its tallest sample, because
+  `WideRow` adds the 3-pixel padding itself; sizing it with `wideRowHeight` too would pad every row twice.
+  `SampleRow.visitWidgets` reports the samples' widgets, so the wide row owns them: each is visible only
+  while entirely in view, and the row is a Tab stop while one is active.
+- **Combobox placement:** `ComboBoxWidget.setX` and `setY` place its text, not its outline, and it isn't a
+  `Padding`, so a `WidgetPack` would draw its outline 2 px up and left of its slot. The preview calls
+  `setOffsets(2, 2)` on it to place it by its outline like the other samples.
+
+#### Markers and sample keys
+
+Every sample and panel that draws the selected key gets a solid outline, 1 px wide and 2 px outside its
+visual bounds (`WidgetThemePreview.drawMarker`). Its color is a fixed magenta, `MARKER_COLOR` (`0xFFFF4FD8`),
+not a theme color, so that it shows in every theme. With no key selected, nothing is marked.
+
+- **What is marked:** the preview marks its samples inside a scissor of the rows' area grown by 2 px: a
+  sample scrolled out of view has no marker (`partlyInView`), and the marker of a partly visible one is cut
+  where the sample is. The screen marks the key list, the key editor and the preview panel, and
+  `background.screen` with an outline 2 px inside the screen's edge.
+- **The keys of a sample:** each `PreviewSample` constant lists the keys it draws, and `uses(key)` decides
+  its marker. A sample lists every key it draws while the color picker is closed, in every state a player can
+  put it in: at rest, hovered, focused, with its popup open (typed combobox suggestions included) and, for a
+  toggle, in both states. The inactive look the open picker gives every sample is left out, except for the
+  two samples that are always inactive. An element (`KEY_LIST`, `KEY_EDITOR`, `PREVIEW_PANEL`, `SCREEN`)
+  lists the keys of its own drawing (fill, outline, header and key text, separator, scrollbar), not those of
+  the widgets placed on it. The key list also leaves out its per-key chips, which draw every key and would
+  mark the list for every selection.
+- **Adding a key or a sample:** add a new key to each constant whose widget draws it, re-deriving the set
+  from the drawing code when that changes. A key that no sample draws needs a new `PreviewSample` constant in
+  a family and its widget, built in `WidgetThemePreview`'s constructor with `put` (the constructor fails fast
+  when a family member has no widget); a sample with a popup also goes in the owners `PreviewList` is given.
+  `PreviewSampleTest` checks that every `WidgetThemeVariable` is used by some constant, and pins the keys the
+  widgets draw beyond the obvious ones.
+
+#### Popups in the preview
+
+`SettingsListWidget` rows can't draw popups, because the list's scissor would clip them. The combobox and the
+dropdown sample therefore call `setRenderPopupSeparately(true)` and draw their popups after the screen's
+content, as the waypoint form does:
+
+- **Drawing:** the screen calls `preview.layoutPopups(height)` at the start of every render, so the pointer
+  and clicks find the popups where they are drawn: it gives the combobox `layoutPopup(height, 6)` and opens
+  the dropdown's popup upward when three rows below it would pass the screen's bottom margin.
+  `preview.renderPopups(...)` draws the open popups after the footer and the theme dropdown's popup, before
+  the color picker. While the pointer is over an open popup, the content beneath it is drawn with `NO_MOUSE`;
+  the popups keep the real pointer.
+- **Input:** an open popup takes clicks and the wheel before anything under it: another owner's control, or,
+  for the theme dropdown's popup, the preview. `PreviewList.clickPopup` gives a click to the open popup under
+  the pointer, then to the owner under the pointer; a click elsewhere closes the popups and goes on to its
+  target. The screen focuses the owner that took the click and, for the left button, starts a drag, so a
+  popup's scrollbar can be dragged. The wheel goes to the focused popup (`scrollFocusedPopup`), then to the
+  theme dropdown's popup under the pointer, then to `PreviewList.scroll`: an open popup under the pointer
+  takes it; otherwise, while the list overflows and the pointer is over it, the popups close and the list
+  scrolls.
+- **Closing:** `PreviewList.setScrollY` closes the popups whenever the scroll position changes. The wheel, a
+  scrollbar drag, `reveal` and a relayout that clamps the position all go through it, so a popup never hangs
+  where its owner was. `init()`, which a resize runs, and opening the color picker close them too, and a
+  dropdown that loses focus closes its own.
+
+#### Text choice dropdowns
+
+`TextChoiceDropdown` extends `AbstractDropdownMenuWidget` for a trigger and choices that are lines of text.
+The trigger shows `triggerLabel()`, read each time it is drawn, and an open/closed arrow; each `TextChoice`
+shows its label and runs a `Runnable` when chosen. The trigger and the choices are `font.lineHeight + 2` high
+with the text 2 px in, like text fields and comboboxes; labels are clipped inside the outline, and the
+trigger reserves a 14-pixel column for the arrow (`triggerWidth(labelWidth)` adds it). Popup rows share
+single-pixel separators: a choice leaves out the edge it shares with the row or trigger before it, which is
+its top, or its bottom after `setExpansionDirection(REVERSE)`. A subclass supplies `triggerLabel()` and, to
+leave the selected choice out of the popup, `getSelectedMenuItemIndex()`.
+
+- **Theme dropdown:** `ThemeSelector`, an inner class of the screen, offers Custom, Translucent Dark, Modern
+  Dark, High Contrast and Classic (`WidgetThemeSelection`) and previews a choice at once. It is as wide as its
+  widest label, so it keeps its width whichever theme is selected. The screen registers it once, routes
+  clicks on its popup before the controls it covers and draws the popup after the footer. Its tooltip is
+  hidden while the popup is open (`onExpandedChanged`), because the tooltip would sit on the popup's first
+  choices.
+- **Preview dropdown:** `WidgetThemePreview.SampleDropdown` shows "Choice 1" to "Choice 3" and keeps the
+  choice made.
+
+#### Footer, editing and status
+
+- **Reset** and **Save** are active while the color picker is closed and `session.isDirty()`, not while a key
+  `isChanged`: editing a built-in theme selects Custom, and putting every key back by hand leaves Custom
+  selected, which still differs from what the editor opened with. Reset calls `session.revertAll()`, clears
+  the status and keeps the editor open. Save calls `session.save()` and returns to the parent screen; if
+  writing fails, the screen stays open, the failure is logged and the status shows "Couldn't save the theme.
+  Your changes are still here." in `DANGER`.
+- **Cancel** puts everything back (`session.cancel()`) and returns to the parent screen without asking.
+  Escape does the same when no popup, text entry or color picker is open, and `removed()` covers every other
+  way out.
+- **Status:** one message at a time, wrapped in the footer; a new message replaces the old one, and editing
+  doesn't clear it. When an edit turns a built-in theme into Custom and replaces Custom colors that differ
+  from it, the status says "Custom now starts from *theme*." in `TEXT_MUTED`. Reset and a choice in the theme
+  dropdown clear it. Showing or clearing a message runs the layout again.
+
+#### Editing session
+
+The package-private `WidgetThemeEditorSession` owns the editing transaction; it is an implementation seam
+for the screen, not a public theme API. It keeps the settings the editor opened with (the selected theme and
+the Custom colors) and the draft:
+
+- `setColor(variable, color)` updates the immutable draft and previews it through `WidgetThemeManager`.
+  Editing a key while a built-in theme is selected copies that theme into Custom with the edit. It returns
+  that theme when the Custom colors the copy replaced differ from it in any key, so the screen can say so,
+  and an empty `Optional` otherwise (Custom was already selected, or the replaced colors equal the theme).
+  Setting the color the draft already has changes nothing, so committing an unchanged value never turns a
+  built-in theme into Custom.
+- `revert(variable)` sets one key back to its color when the editor opened, through `setColor`, and returns
+  what `setColor` returns. `revertAll()` restores the selection and the Custom colors and previews them.
+  `isChanged(variable)` compares a key with the theme in effect when the editor opened, and `isDirty()`
+  compares the selection and the Custom colors.
+- `select(selection)` previews a built-in theme or Custom and retains the Custom colors: switching never
+  erases them, and an edit to a built-in theme copies its colors into Custom, so later switches retain those
+  edits.
+- `save()` atomically writes the selected theme's ID and the Custom palette to `widget-theme.json` and keeps
+  the draft active. `WidgetThemeSelection` resolves presets, and `WidgetThemeJson.Settings` contains the
+  selection and the Custom colors. `loadSettings` reads both, while `load`/`fromJson` resolve the selected
+  effective theme for startup and callers. The `colors` object always stores the Custom palette; the optional
+  `selection` defaults to `custom`. The session closes only after the write succeeds, so a failed save
+  leaves it open and the draft available for another attempt.
+- `cancel()` restores the theme that was active when the editor opened. It is idempotent, so an explicit
+  close and the `removed()` that follows are safe. After a save or a cancel, the methods that change the
+  draft or write the file throw `IllegalStateException`.
+
+Keep file I/O and rollback behavior in the session rather than scattering it through button callbacks.
+
+#### Input, focus and the color picker
+
+- **Control states:** `refreshControlStates()` sets every control's `active` flag, and which key editor
+  controls show, from the color picker, the selected key and `session.isDirty()`, so the screen keeps no
+  list of controls to disable. It runs after every change that affects them: an edit, a theme choice, Reset,
+  selecting or clearing a key, opening and closing the picker, and a failed save.
+- **Color picker:** the `SwatchWidget` opens from the color button, so only while a key is selected.
+  `openSwatch()` closes every popup, makes every other control inactive and focuses the picker, and
+  `hasOpenModal()` reports it, so a resize after keyboard use keeps focus in it. The screen draws it last,
+  on a later layer (`nextLayer` and `previousLayer`). Escape, or confirming a color, closes it and returns
+  focus to the color button. Vanilla focuses the clicked widget after its callback runs, so `mouseClicked`
+  calls `normalizeModalFocus()` after dispatching a click. While the picker is open, everything else is drawn
+  with `DrawContextHelper.NO_MOUSE`, so nothing under it shows a hover state or a tooltip.
+- **Keys:** Tab order follows the screen: the theme dropdown, the key list, the key editor's controls, the
+  preview's samples row by row, then Reset, Cancel and Save. Vanilla Tab skips the preview's hidden widgets,
+  so `keyPressed` calls the preview list's `revealTabTarget` before Tab (the package-private
+  `ClientConfigScreen.isShiftDown` gives the direction), and `reveal(focused)` after a key that moved focus
+  to a preview widget. Escape goes through `dismissFocusedInput()` first, then closes the picker, then
+  cancels and closes the screen. Movement keys stay off while the screen is open.
+- **Mouse:** open popups take clicks and the wheel first (see
+  [Popups in the preview](#popups-in-the-preview)). The wheel then goes to the preview while it overflows
+  and the pointer is over it, and otherwise to the widget under the pointer, so the key list scrolls itself.
+  A focused preview widget that a scroll hid loses focus.
+
+The geometry belongs to this screen; it isn't a general layout API. Future changes should preserve the
+editor transaction, dynamic theme resolution, single render ownership, input registration, modal layering
+and the cross-version render paths.
 
 ## Text-field suggestions
 
@@ -1545,8 +1817,17 @@ Good test targets include:
   `PendingAdd` have their own tests, and `WaypointFormTranslationTest` checks that every key the
   form uses exists in all six locales with the arguments of English.
 - Theme completeness, runtime updates, JSON round trips, invalid input, and file persistence.
-- Theme-editor preview, reset, save, cancel, and idempotent rollback transitions.
-- Translation coverage for every `WidgetThemeVariable` JSON name.
+- Theme-editor session transitions: `setColor` and what it reports, `revert`, `revertAll`, `isChanged`,
+  `isDirty`, save, cancel, and idempotent rollback.
+- The theme editor's pure helpers (`WidgetThemeEditorLayout`, `KeySelection`, `PreviewPacking`,
+  `PreviewSample`) have their own tests, and `WidgetThemeConfigScreenKeyListTest` and
+  `TextChoiceDropdownTest` drive `KeyList` and `TextChoiceDropdown`. The whole preview can't be built in a
+  unit test, because `TranslucentButton` and `ToggleButton` read the game's font when they are created, so
+  `WidgetThemePreviewTest` drives its package-private parts (`PreviewList`, `SampleRow`, `SampleDropdown` and
+  the `sampleActive` and `partlyInView` rules) instead.
+- The theme editor's text and coverage: `WidgetThemeTranslationTest` checks that its own keys exist in all six
+  locales with the arguments of English and that no locale translates the raw theme keys, and
+  `PreviewSampleTest` checks that every `WidgetThemeVariable` is used by a sample or marked element.
 
 After a GUI change:
 
