@@ -154,7 +154,7 @@ class ClientConfigTranslationTest {
      * The positions of the arguments a translation shows, sorted, so {@code %s} and {@code %1$s}
      * compare equal. A literal {@code %%} shows none.
      */
-    private static List<Integer> arguments(String value) {
+    static List<Integer> arguments(String value) {
         List<Integer> arguments = new ArrayList<>();
         int next = 1;
         Matcher matcher = FORMAT_SPECIFIER.matcher(value);

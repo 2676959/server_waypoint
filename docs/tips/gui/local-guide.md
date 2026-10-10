@@ -445,7 +445,7 @@ Theme colors are semantic ARGB roles, not widget-specific constants. Choose the 
 
 These roles apply to GUI chrome and state. A waypoint's user-selected color is domain data, and RGB/HSV picker gradients visualize a color space; those values can remain direct colors rather than theme roles.
 
-`WidgetThemeVariable.getJsonName()` is the stable external name for a role. Use it in JSON and derive the matching translation key as `server_waypoint.theme.variable.<jsonName>`. Do not persist enum names or introduce a raw color constant when an existing semantic role already fits.
+`WidgetThemeVariable.getJsonName()` is the stable external name for a role. Use it in JSON. The theme editor shows it raw, so theme keys have no translations. Do not persist enum names or introduce a raw color constant when an existing semantic role already fits.
 
 `WidgetTheme` is an immutable, complete snapshot. A builder created with `WidgetTheme.builder()` must assign every variable before `build()`. For a partial change, start from an existing theme or use `withColor`:
 
@@ -521,8 +521,8 @@ When adding a theme variable, update all of these together:
 
 1. `WidgetThemeVariable`, including its unique JSON name.
 2. Every built-in theme in `WidgetThemes`.
-3. The English and Chinese `server_waypoint.theme.variable.<jsonName>` translations.
-4. Theme completeness, JSON, and translation-coverage tests.
+3. A `PreviewSample` (sample or marked element) that uses it.
+4. Theme completeness, JSON, and preview-coverage tests.
 
 ### Theme JSON persistence
 
@@ -1572,7 +1572,7 @@ After a GUI change:
 - Hover-dependent drawing reads state only after the high-level wrapper has run.
 - Normal and hovered backgrounds are both explicit when the widget should not be transparent while idle.
 - Theme-aware drawing resolves semantic roles at render time instead of caching raw colors.
-- Built-in themes and translation resources cover every theme variable.
+- Built-in themes cover every theme variable, and every theme variable has a `PreviewSample`.
 - Live-preview screens restore shared state from `removed()` when edits were not committed.
 - Translation keys, textures, and theme roles use their shared resource locations.
 - Stonecutter markers are balanced and replacement tokens remain in valid positions.
