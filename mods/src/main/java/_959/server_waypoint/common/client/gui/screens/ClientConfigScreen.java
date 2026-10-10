@@ -288,7 +288,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
     }
 
     /** Whether Shift is held, which turns Tab around, read the way vanilla reads it for Tab. */
-    private static boolean isShiftDown(int keyCode, int scanCode, int modifiers) {
+    static boolean isShiftDown(int keyCode, int scanCode, int modifiers) {
         //? if >= 1.21.9 {
         return new KeyEvent(keyCode, scanCode, modifiers).hasShiftDown();
         //?} else {

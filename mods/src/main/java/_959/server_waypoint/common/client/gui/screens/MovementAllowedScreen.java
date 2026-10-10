@@ -428,7 +428,7 @@ public abstract class MovementAllowedScreen extends Screen {
      * Offers the wheel to the focused control's popup first. A popup such as a suggestion list hangs
      * outside its owner, so vanilla would otherwise give the wheel to whatever it covers.
      */
-    private boolean scrollFocusedPopup(double mouseX, double mouseY, double verticalAmount) {
+    protected boolean scrollFocusedPopup(double mouseX, double mouseY, double verticalAmount) {
         return this.getFocused() instanceof PopupOwner owner
                 && owner.scrollPopupIfOver(mouseX, mouseY, verticalAmount);
     }

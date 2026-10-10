@@ -12,6 +12,7 @@ import _959.server_waypoint.common.client.gui.render.WidgetThemeSelection;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayout.Arrangement;
 import _959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayout.Rect;
+import _959.server_waypoint.common.client.gui.widgets.AbstractDropdownMenuWidget;
 import _959.server_waypoint.common.client.gui.widgets.ColorHexCodeField;
 import _959.server_waypoint.common.client.gui.widgets.ColorSquareButton;
 import _959.server_waypoint.common.client.gui.widgets.IconButton;
@@ -34,6 +35,7 @@ import java.util.function.Consumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -91,6 +93,8 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     /** A track that leaves room for every locale's Alpha label in the narrowest, 152-pixel column. */
     private static final int ALPHA_TRACK_WIDTH = 64;
     private static final int ALPHA_FIELD_WIDTH = 30;
+    /** The screen's background is marked this far inside the screen's edge. */
+    private static final int SCREEN_MARKER_INSET = 2;
 
     private final Screen parentScreen;
     private final WidgetThemeEditorSession session;
@@ -550,7 +554,11 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     //? if >= 1.21.9 {
     @Override
     public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean doubleClicked) {
-        if (this.handleThemeSelectorClick(mouseButtonEvent.x(), mouseButtonEvent.y(), mouseButtonEvent.button())) {
+        double mouseX = mouseButtonEvent.x();
+        double mouseY = mouseButtonEvent.y();
+        int button = mouseButtonEvent.button();
+        if (this.handleThemeSelectorClick(mouseX, mouseY, button)
+                || this.handlePreviewPopupClick(mouseX, mouseY, button)) {
             return true;
         }
         boolean handled = super.mouseClicked(mouseButtonEvent, doubleClicked);
@@ -560,7 +568,8 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     //?} else {
     /*@Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (this.handleThemeSelectorClick(mouseX, mouseY, button)) {
+        if (this.handleThemeSelectorClick(mouseX, mouseY, button)
+                || this.handlePreviewPopupClick(mouseX, mouseY, button)) {
             return true;
         }
         boolean handled = super.mouseClicked(mouseX, mouseY, button);
@@ -577,6 +586,61 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         }
         this.themeSelector.closeMenuIfOutside(mouseX, mouseY);
         return false;
+    }
+
+    /**
+     * The preview's combobox and dropdown take a click on themselves or their open popup before any other
+     * widget, as the waypoint form's comboboxes do; a click elsewhere closes their popups and goes on.
+     */
+    private boolean handlePreviewPopupClick(double mouseX, double mouseY, int button) {
+        AbstractDropdownMenuWidget owner = this.preview.clickPopup(mouseX, mouseY, button);
+        if (owner == null) {
+            return false;
+        }
+        this.setFocused(owner);
+        if (button == InputConstants.MOUSE_BUTTON_LEFT) {
+            this.setDragging(true);
+        }
+        return true;
+    }
+
+    //? if <= 1.20.1 {
+    /*@Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double verticalAmount) {
+        if (this.scrollFocusedPopup(mouseX, mouseY, verticalAmount)
+                || this.scrollPopupOrPreview(mouseX, mouseY, 0, verticalAmount)) {
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, verticalAmount);
+    }
+    *///?} else {
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (this.scrollFocusedPopup(mouseX, mouseY, verticalAmount)
+                || this.scrollPopupOrPreview(mouseX, mouseY, horizontalAmount, verticalAmount)) {
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+    //?}
+
+    /**
+     * The wheel over an open popup goes to it: the theme dropdown's popup hangs over the preview, and the
+     * preview offers the wheel to its own popups first. Elsewhere over the preview, while it overflows, the
+     * wheel closes the preview's popups and scrolls it, as the client settings' list scrolls, and a focused
+     * widget the scroll hid loses focus.
+     */
+    private boolean scrollPopupOrPreview(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (this.themeSelector.isMouseOverPopup(mouseX, mouseY)) {
+            return this.themeSelector.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        }
+        if (!this.preview.scroll(mouseX, mouseY, horizontalAmount, verticalAmount)) {
+            return false;
+        }
+        if (this.getFocused() instanceof AbstractWidget widget && !widget.visible) {
+            this.setFocused(null);
+        }
+        return true;
     }
 
     /** Vanilla focuses the clicked widget after its callback runs, which can take focus out of the color picker. */
@@ -607,17 +671,28 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
             this.argbField.commit();
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        // Vanilla Tab skips the preview's hidden widgets, so scroll the next one into view first.
+        if (keyCode == InputConstants.KEY_TAB) {
+            this.preview.list().revealTabTarget(this, !ClientConfigScreen.isShiftDown(keyCode, scanCode, modifiers));
+        }
+        GuiEventListener focusedBefore = this.getFocused();
+        boolean handled = super.keyPressed(keyCode, scanCode, modifiers);
+        GuiEventListener focused = this.getFocused();
+        if (focused != null && focused != focusedBefore) {
+            this.preview.list().reveal(focused);
+        }
+        return handled;
     }
 
     /** Closes every open popup, as when the color picker opens or the screen is laid out again. */
     private void closePopups() {
         this.themeSelector.closeMenuIfOpen();
+        this.preview.closePopups();
     }
 
     /** Whether an open popup is under the pointer, so nothing drawn beneath it reacts to the mouse. */
     private boolean isMouseOverPopup(double mouseX, double mouseY) {
-        return this.themeSelector.isMouseOverPopup(mouseX, mouseY);
+        return this.themeSelector.isMouseOverPopup(mouseX, mouseY) || this.preview.isMouseOverPopup(mouseX, mouseY);
     }
 
     // ------------------------------------------------------------------ drawing
@@ -628,6 +703,8 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         if (layout == null) {
             return;
         }
+        // The preview's popups go where they fit before anything asks whether the pointer is over one.
+        this.preview.layoutPopups(this.height);
         // Under the color picker, and under an open popup, nothing reacts to the mouse or shows a tooltip.
         boolean modal = this.swatchWidget.visible;
         boolean covered = modal || this.isMouseOverPopup(mouseX, mouseY);
@@ -641,7 +718,8 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         extractRenderState
                 (context, contentMouseX, contentMouseY, deltaTicks);
         this.renderEditor(context, layout.editor(), contentMouseX, contentMouseY, deltaTicks);
-        this.preview.render(context, contentMouseX, contentMouseY, deltaTicks, null);
+        this.preview.render(context, contentMouseX, contentMouseY, deltaTicks, this.selectedKey);
+        this.renderMarkers(context, layout);
 
         this.titleText.
         //$ render_method_swap
@@ -671,12 +749,39 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
                 (context, contentMouseX, contentMouseY, deltaTicks);
 
         this.themeSelector.renderPopup(context, popupMouseX, popupMouseY, deltaTicks);
+        this.preview.renderPopups(context, popupMouseX, popupMouseY, deltaTicks);
         nextLayer(context);
         this.swatchWidget.
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
         previousLayer(context);
+    }
+
+    /**
+     * Marks the panels that draw the selected key around their visual bounds, and the screen's background 2
+     * pixels inside the screen's edge; the preview marks its samples itself. Nothing is marked without a
+     * selection.
+     */
+    private void renderMarkers(GuiGraphicsExtractor context, Arrangement layout) {
+        WidgetThemeVariable key = this.selectedKey;
+        if (key == null) {
+            return;
+        }
+        markPanel(context, PreviewSample.KEY_LIST, key, layout.keyList());
+        markPanel(context, PreviewSample.KEY_EDITOR, key, layout.editor());
+        markPanel(context, PreviewSample.PREVIEW_PANEL, key, layout.preview());
+        if (PreviewSample.SCREEN.uses(key)) {
+            renderOutline(context, SCREEN_MARKER_INSET, SCREEN_MARKER_INSET, this.width - SCREEN_MARKER_INSET * 2,
+                    this.height - SCREEN_MARKER_INSET * 2, WidgetThemePreview.MARKER_COLOR);
+        }
+    }
+
+    private static void markPanel(GuiGraphicsExtractor context, PreviewSample panel, WidgetThemeVariable key,
+                                  Rect bounds) {
+        if (panel.uses(key)) {
+            WidgetThemePreview.drawMarker(context, bounds.x(), bounds.y(), bounds.width(), bounds.height());
+        }
     }
 
     /**

@@ -13,43 +13,57 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 /**
  * The theme editor's preview samples and the elements that carry markers, each with the theme keys it
  * draws. The screen builds one widget for each sample, keeps the samples of a family together, and marks
- * every sample and element that uses the selected key. A test checks that some constant uses every theme
- * key, so a new key needs a sample or an element that draws it.
+ * every sample and element that uses the selected key.
+ * <p>
+ * A sample lists every key it draws while the color picker is closed, in every state a player can put it
+ * in: at rest, hovered, focused, with its popup open and, for a toggle, in both states. The inactive look
+ * the open picker gives every sample is left out, except for the samples that always show it. An element
+ * lists the keys of its own drawing, not those of the widgets placed on it. A test checks that some
+ * constant uses every theme key, so a new key needs a sample or an element that draws it.
  */
 enum PreviewSample {
     PRIMARY_TEXT(Family.TEXT, TEXT_PRIMARY),
     MUTED_TEXT(Family.TEXT, TEXT_MUTED),
     DISABLED_TEXT(Family.TEXT, TEXT_DISABLED),
-    TEXT_FIELD(Family.FIELD, CONTROL_BACKGROUND, TEXT_PLACEHOLDER, TEXT_PRIMARY, BORDER, FOCUS_RING),
-    COMBOBOX(Family.CHOICES, CONTROL_BACKGROUND, TEXT_PRIMARY, BORDER, FOCUS_RING, POPUP_BACKGROUND,
-            ROW_HOVER_BACKGROUND),
-    DROPDOWN(Family.CHOICES, POPUP_BACKGROUND, TEXT_PRIMARY, BORDER, ROW_HOVER_BACKGROUND),
-    BUTTON(Family.BUTTONS, CONTROL_BACKGROUND, CONTROL_HOVER_BACKGROUND, TEXT_PRIMARY, BORDER, FOCUS_RING),
-    DISABLED_BUTTON(Family.BUTTONS, CONTROL_DISABLED_BACKGROUND, TEXT_DISABLED),
-    SELECTED_TOGGLE(Family.TOGGLES, CONTROL_SELECTED_BACKGROUND, TEXT_ON_ACCENT),
-    ON_TOGGLE(Family.TOGGLES, SUCCESS_BACKGROUND, TEXT_ON_ACCENT),
-    OFF_TOGGLE(Family.TOGGLES, DANGER_BACKGROUND, TEXT_ON_ACCENT),
-    SLIDER(Family.SLIDERS, ACCENT, CONTROL_BACKGROUND),
-    DISABLED_SLIDER(Family.SLIDERS, SLIDER_THUMB_DISABLED, CONTROL_DISABLED_BACKGROUND, TEXT_DISABLED),
-    ACCENT_CHIP(Family.ACCENT, ACCENT, TEXT_ON_ACCENT),
-    HOVERED_ACCENT_CHIP(Family.ACCENT, ACCENT_HOVER, TEXT_ON_ACCENT),
+    /** With its placeholder while it is empty and unfocused. */
+    TEXT_FIELD(Family.FIELD, CONTROL_BACKGROUND, CONTROL_HOVER_BACKGROUND, BORDER, FOCUS_RING, TEXT_PRIMARY,
+            TEXT_PLACEHOLDER),
+    /** With its choices and, for typed text, its suggestions and their inline completion. */
+    COMBOBOX(Family.CHOICES, CONTROL_BACKGROUND, CONTROL_HOVER_BACKGROUND, BORDER, FOCUS_RING, TEXT_PRIMARY,
+            POPUP_BACKGROUND, SELECTION_BACKGROUND, TEXT_MUTED, TEXT_PLACEHOLDER),
+    DROPDOWN(Family.CHOICES, POPUP_BACKGROUND, ROW_HOVER_BACKGROUND, BORDER, FOCUS_RING, TEXT_PRIMARY),
+    BUTTON(Family.BUTTONS, CONTROL_BACKGROUND, CONTROL_HOVER_BACKGROUND, BORDER, FOCUS_RING, TEXT_PRIMARY),
+    DISABLED_BUTTON(Family.BUTTONS, CONTROL_DISABLED_BACKGROUND, BORDER, TEXT_DISABLED),
+    /** Normal and Selected: a click toggles it. */
+    SELECTED_TOGGLE(Family.TOGGLES, CONTROL_SELECTED_BACKGROUND, CONTROL_BACKGROUND, BORDER, FOCUS_RING,
+            TEXT_ON_ACCENT),
+    /** On and Off: a click toggles it. */
+    ON_TOGGLE(Family.TOGGLES, SUCCESS_BACKGROUND, DANGER_BACKGROUND, BORDER, FOCUS_RING, TEXT_ON_ACCENT),
+    /** Off and On: a click toggles it. */
+    OFF_TOGGLE(Family.TOGGLES, DANGER_BACKGROUND, SUCCESS_BACKGROUND, BORDER, FOCUS_RING, TEXT_ON_ACCENT),
+    /** Its track and handle, and its number field. */
+    SLIDER(Family.SLIDERS, ACCENT, CONTROL_BACKGROUND, CONTROL_HOVER_BACKGROUND, BORDER, FOCUS_RING, TEXT_PRIMARY),
+    DISABLED_SLIDER(Family.SLIDERS, SLIDER_THUMB_DISABLED, CONTROL_DISABLED_BACKGROUND, BORDER, TEXT_DISABLED),
+    ACCENT_CHIP(Family.ACCENT, ACCENT, BORDER, TEXT_ON_ACCENT),
+    HOVERED_ACCENT_CHIP(Family.ACCENT, ACCENT_HOVER, BORDER, TEXT_ON_ACCENT),
     TOOLTIP(Family.POPUPS, POPUP_BACKGROUND, BORDER, TEXT_PRIMARY),
-    POPUP_CHIP(Family.POPUPS, POPUP_BACKGROUND),
-    DIALOG_CHIP(Family.POPUPS, DIALOG_BACKGROUND),
-    SUCCESS_CHIP(Family.STATUS, SUCCESS, SUCCESS_BACKGROUND),
-    WARNING_CHIP(Family.STATUS, WARNING, WARNING_BACKGROUND),
-    DANGER_CHIP(Family.STATUS, DANGER, DANGER_BACKGROUND),
+    POPUP_CHIP(Family.POPUPS, POPUP_BACKGROUND, BORDER, TEXT_PRIMARY),
+    DIALOG_CHIP(Family.POPUPS, DIALOG_BACKGROUND, BORDER, TEXT_PRIMARY),
+    SUCCESS_CHIP(Family.STATUS, SUCCESS_BACKGROUND, BORDER, SUCCESS),
+    WARNING_CHIP(Family.STATUS, WARNING_BACKGROUND, BORDER, WARNING),
+    DANGER_CHIP(Family.STATUS, DANGER_BACKGROUND, BORDER, DANGER),
     SCROLLBAR(Family.SCROLLBARS, SCROLLBAR_TRACK, SCROLLBAR_THUMB),
     ACTIVE_SCROLLBAR(Family.SCROLLBARS, SCROLLBAR_TRACK, SCROLLBAR_THUMB_ACTIVE),
     DISABLED_SCROLLBAR(Family.SCROLLBARS, SCROLLBAR_TRACK, SCROLLBAR_THUMB_DISABLED),
 
-    /** The key list: its panel, its rows and its scrollbar. */
+    /** The key list: its panel, its rows and its scrollbar, but not the chips that show each key's value. */
     KEY_LIST(PANEL_BACKGROUND, BORDER, TEXT_PRIMARY, TEXT_MUTED, SELECTION_BACKGROUND, ROW_HOVER_BACKGROUND,
             SCROLLBAR_TRACK, SCROLLBAR_THUMB, SCROLLBAR_THUMB_ACTIVE),
-    /** The key editor's panel and its key line. */
+    /** The key editor's panel, its key line and its Alpha label, as drawn while a key is selected. */
     KEY_EDITOR(PANEL_BACKGROUND, BORDER, DECOR_LINE, TEXT_PRIMARY),
-    /** The preview's panel and its header. */
-    PREVIEW_PANEL(PANEL_BACKGROUND, BORDER, DECOR_LINE, TEXT_PRIMARY),
+    /** The preview's panel, its header and its scrollbar. */
+    PREVIEW_PANEL(PANEL_BACKGROUND, BORDER, DECOR_LINE, TEXT_PRIMARY, SCROLLBAR_TRACK, SCROLLBAR_THUMB,
+            SCROLLBAR_THUMB_ACTIVE),
     /** The screen's background, which is marked inside the screen's edge. */
     SCREEN(SCREEN_BACKGROUND);
 
