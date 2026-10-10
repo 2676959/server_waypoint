@@ -43,6 +43,14 @@ class SettingsListLayoutTest {
     }
 
     @Test
+    void wideRowsKeepThreePixelsAboveAndBelowAndAtLeastSeventeen() {
+        assertEquals(17, SettingsListLayout.wideRowHeight(9));
+        assertEquals(17, SettingsListLayout.wideRowHeight(11));
+        assertEquals(20, SettingsListLayout.wideRowHeight(14));
+        assertEquals(26, SettingsListLayout.wideRowHeight(20));
+    }
+
+    @Test
     void headersAfterTheFirstEntryGetASectionGap() {
         int[] tops = SettingsListLayout.entryTops(
                 new int[]{13, 21, 21, 13, 21},

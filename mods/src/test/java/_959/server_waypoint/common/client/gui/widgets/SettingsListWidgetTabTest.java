@@ -1,6 +1,8 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.TestFont;
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
+import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.ComponentPath;
@@ -20,10 +22,23 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 class SettingsListWidgetTabTest {
     // A row holding a 13-pixel button is 21 pixels high: the button plus 4 above and below, at least 21.
     private static final int ROW_HEIGHT = 21;
+    // A wide row holding a 13-pixel button is 19 pixels high: the button plus 3 above and below, at least 17.
+    private static final int WIDE_ROW_HEIGHT = 19;
 
     @Test
     void tabFromDoneWrapsAroundToTheFirstRowWhileTheListIsScrolledToTheEnd() {
         TestScreen screen = new TestScreen();
+        screen.list.setScrollY(screen.list.getMaxScroll());
+        screen.setFocused(screen.done);
+
+        screen.pressTab(true);
+
+        assertSame(screen.rows[0], screen.getFocused());
+    }
+
+    @Test
+    void tabFromDoneWrapsAroundToTheFirstWideRowWhileTheListIsScrolledToTheEnd() {
+        TestScreen screen = new TestScreen(true);
         screen.list.setScrollY(screen.list.getMaxScroll());
         screen.setFocused(screen.done);
 
@@ -105,7 +120,8 @@ class SettingsListWidgetTabTest {
 
     /**
      * Five rows in a list two rows high, then Reset and Done, registered in that order as
-     * {@code ClientConfigScreen} registers its widgets.
+     * {@code ClientConfigScreen} registers its widgets. With {@code wideRows}, each button sits in a
+     * one-button {@link WidgetStack} in a {@link SettingsListWidget.WideRow} instead of a labelled row.
      */
     private static final class TestScreen extends AbstractContainerEventHandler {
         private final IconButton[] rows = {button(), button(), button(), button(), button()};
@@ -115,13 +131,23 @@ class SettingsListWidgetTabTest {
         private final List<GuiEventListener> children = new ArrayList<>();
 
         private TestScreen() {
+            this(false);
+        }
+
+        private TestScreen(boolean wideRows) {
             List<SettingsListWidget.Entry> entries = new ArrayList<>();
             for (IconButton row : this.rows) {
-                entries.add(new SettingsListWidget.Row(Component.literal("Row"), row));
+                if (wideRows) {
+                    WidgetStack control = new WidgetStack(0, 0, 2, LayoutFlow.Orientation.HORIZONTAL, LayoutFlow.Direction.FORWARD);
+                    control.addClickable(row);
+                    entries.add(new SettingsListWidget.WideRow(control));
+                } else {
+                    entries.add(new SettingsListWidget.Row(Component.literal("Row"), row));
+                }
             }
             this.list.setEntries(entries);
             this.list.setWidth(200);
-            this.list.setHeight(ROW_HEIGHT * 2);
+            this.list.setHeight((wideRows ? WIDE_ROW_HEIGHT : ROW_HEIGHT) * 2);
             this.list.visitWidgets(this.children::add);
             this.children.add(this.reset);
             this.children.add(this.done);

@@ -608,7 +608,7 @@ Those cases do not justify duplicating standalone message rendering elsewhere.
 | Hex color input | `ColorHexCodeField` |
 | Color selection | `ColorSquareButton`, `SwatchWidget`, `RGBColorPicker`, or `HSVColorPicker` |
 | Scrollable hierarchical rows | Extend `TreeViewWidget<T>` |
-| Scrollable settings rows with section headers | `SettingsListWidget` |
+| Scrollable settings rows with section headers | `SettingsListWidget` with `Row`, or `WideRow` for a control without a label |
 | Selectable item icon strip | `IconListWidget<T>`, `DimensionListWidget`, `ServerListWidget` |
 | Directional popup with custom items | Extend `AbstractDropdownMenuWidget` and `AbstractMenuItem` |
 | Confirmation overlay | `ConfirmationDialog` |
@@ -901,6 +901,17 @@ tooltips and Tab navigation. Call `refreshWidgetVisibility()` after the conditio
 and relayout also recheck it. `ClientConfigScreen` uses this for reset buttons, which appear only
 when their setting differs from its default and disappear immediately after a reset.
 
+`SettingsListWidget.WideRow` is a third entry type: a control with no label column, unit, action or
+tooltip, built as `new WideRow(control)`. The control starts at the row's left edge, can use the
+whole row width and is centered vertically. The row is as tall as the control plus 3 pixels above
+and below, and at least 17 pixels (`SettingsListLayout.wideRowHeight`); `getPreferredWidth()` counts
+the control's visual width. A wide row gets no `ROW_HOVER_BACKGROUND` fill and no tooltip
+(`SettingsListWidget.highlightsOnHover` is true only for a `Row`). Otherwise it follows the `Row`
+rules below: it owns every widget its control's `visitWidgets` reports, those widgets are visible
+only while entirely in view, a partly visible control is drawn clipped with the mouse off-screen,
+the row is a Tab stop while any of its widgets is active, and `reveal` and `revealTabTarget` treat
+it like a `Row`.
+
 - **Layout:** `setEntries` copies the entries and lays them out. Call `relayout()` after a label,
   unit or control size changes. `getPreferredWidth()` is the width at which nothing wraps, including
   the always-reserved scrollbar column; `getContentHeight()` is the total entry height. The widget's
@@ -932,8 +943,10 @@ when their setting differs from its default and disappear immediately after a re
   does this after every relayout and every focus request.
 - **Tooltips:** the hovered row gets `ROW_HOVER_BACKGROUND`. After the pointer rests on a row for
   500 ms, the list schedules the row's tooltip at the cursor, except over the row's action, which
-  shows its own tooltip.
-- **Limitations:** row controls can't open popups, because the scissor would clip them.
+  shows its own tooltip. Headers and wide rows get neither.
+- **Limitations:** row controls can't open popups, because the scissor would clip them, unless the
+  screen renders the popup separately (`setRenderPopupSeparately(true)`, then `renderPopup(...)`
+  after the list) and closes it when the list scrolls.
 
 ### Confirmation dialogs
 

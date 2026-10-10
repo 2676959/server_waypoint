@@ -12,6 +12,8 @@ public final class SettingsListLayout {
     public static final int MIN_LABEL_WIDTH = 40;
     public static final int ROW_VERTICAL_PADDING = 4;
     public static final int MIN_ROW_HEIGHT = 21;
+    public static final int WIDE_ROW_VERTICAL_PADDING = 3;
+    public static final int MIN_WIDE_ROW_HEIGHT = 17;
     public static final int HEADER_BOTTOM_PADDING = 4;
 
     private SettingsListLayout() {
@@ -42,6 +44,11 @@ public final class SettingsListLayout {
     /** A row's tallest part plus padding above and below, and at least {@link #MIN_ROW_HEIGHT}. */
     public static int rowHeight(int tallestPartHeight) {
         return Math.max(MIN_ROW_HEIGHT, tallestPartHeight + ROW_VERTICAL_PADDING * 2);
+    }
+
+    /** A wide row's control plus padding above and below, and at least {@link #MIN_WIDE_ROW_HEIGHT}. */
+    public static int wideRowHeight(int controlHeight) {
+        return Math.max(MIN_WIDE_ROW_HEIGHT, controlHeight + WIDE_ROW_VERTICAL_PADDING * 2);
     }
 
     /** A header's title plus the padding below it. */

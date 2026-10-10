@@ -41,9 +41,10 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
 
 /**
- * A scrollable panel of settings: section headers, and rows made of a label, a control, an optional
- * unit and an optional action. Entries have their own heights, so long labels wrap. The row widgets
- * stay registered with the screen; see the GUI guide's "Settings lists" section for the contract.
+ * A scrollable panel of settings: section headers, rows made of a label, a control, an optional
+ * unit and an optional action, and wide rows made of a control alone. Entries have their own
+ * heights, so long labels wrap. The row widgets stay registered with the screen; see the GUI
+ * guide's "Settings lists" section for the contract.
  */
 public class SettingsListWidget extends ShiftableScrollableWidget implements Padding, Expandable {
     /** Space between the panel outline and the rows, on every side. */
@@ -167,8 +168,8 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             GuiEventListener candidate = order.get(Math.floorMod(start + (forward ? step : -step), size));
             int rowIndex = this.rowIndexOf(candidate);
             if (candidate instanceof AbstractWidget widget && rowIndex >= 0) {
-                Row row = (Row) this.entries.get(rowIndex);
-                if (widget.active && row.showsWidget(widget)) {
+                Entry entry = this.entries.get(rowIndex);
+                if (widget.active && entry.showsWidget(widget)) {
                     if (!widget.visible) {
                         this.reveal(widget);
                     }
@@ -296,8 +297,8 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
                 continue;
             }
             Entry entry = this.entries.get(i);
-            if (pointerInside && mouseY >= top && mouseY < entryBottom && entry instanceof Row row) {
-                hovered = row;
+            if (pointerInside && mouseY >= top && mouseY < entryBottom && highlightsOnHover(entry)) {
+                hovered = (Row) entry; // highlightsOnHover holds only for a Row
                 context.fill(x, top, x + rowWidth, entryBottom, getColor(ROW_HOVER_BACKGROUND));
             }
             entry.renderEntry(this, context, mouseX, mouseY, deltaTicks);
@@ -334,6 +335,15 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
     }
 
     /**
+     * Whether the pointer over {@code entry} fills it with the row hover background and, once it rests
+     * there, shows the entry's tooltip: a labelled {@link Row} does, a {@link Header} or {@link WideRow}
+     * doesn't.
+     */
+    static boolean highlightsOnHover(Entry entry) {
+        return entry instanceof Row;
+    }
+
+    /**
      * Draws one part of an entry. A row widget that isn't fully inside the viewport is invisible to
      * input; it's drawn anyway, clipped by the scissor, with the mouse moved off-screen. The hidden
      * widgets a part visits, such as some of a composite control's, are made visible for one draw of
@@ -367,7 +377,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
 
     private int rowIndexOf(GuiEventListener widget) {
         for (int i = 0; i < this.entries.size(); i++) {
-            if (this.entries.get(i) instanceof Row row && row.owns(widget)) {
+            if (this.entries.get(i).owns(widget)) {
                 return i;
             }
         }
@@ -376,7 +386,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
 
     private int interactiveRowBefore(int index) {
         for (int i = index - 1; i >= 0; i--) {
-            if (this.entries.get(i) instanceof Row row && row.isInteractive()) {
+            if (this.entries.get(i).isInteractive()) {
                 return i;
             }
         }
@@ -385,7 +395,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
 
     private int interactiveRowAfter(int index) {
         for (int i = index + 1; i < this.entries.size(); i++) {
-            if (this.entries.get(i) instanceof Row row && row.isInteractive()) {
+            if (this.entries.get(i).isInteractive()) {
                 return i;
             }
         }
@@ -400,8 +410,8 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         return Math.max(0, this.width - this.SCROLLBAR_WIDTH - SCROLLBAR_GAP);
     }
 
-    /** An entry of the list: a {@link Header} or a {@link Row}. */
-    public abstract static sealed class Entry permits Header, Row {
+    /** An entry of the list: a {@link Header}, a {@link Row} or a {@link WideRow}. */
+    public abstract static sealed class Entry permits Header, Row, WideRow {
         private Entry() {
         }
 
@@ -416,6 +426,43 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         abstract int preferredWidth(SettingsListWidget list);
 
         void visitWidgets(Consumer<AbstractWidget> consumer) {
+        }
+
+        /** Whether {@code widget} is one of the widgets this entry visits. */
+        boolean owns(GuiEventListener widget) {
+            return this.widgets().contains(widget);
+        }
+
+        /** Whether Tab can stop in this entry now: it has an active widget, and vanilla skips inactive ones. */
+        boolean isInteractive() {
+            return this.widgets().stream().anyMatch(widget -> widget.active && this.showsWidget(widget));
+        }
+
+        /**
+         * Whether {@code widget}, one of this entry's, is shown now. Always, except for a row's
+         * conditional action while its condition is false.
+         */
+        boolean showsWidget(AbstractWidget widget) {
+            return true;
+        }
+
+        /**
+         * Makes each widget this entry visits visible while the entry shows it and it lies entirely
+         * inside the viewport, and hides it otherwise.
+         */
+        void updateWidgetVisibility(int viewportTop, int viewportBottom) {
+            this.visitWidgets(widget -> {
+                int top = VisualPositioning.getVisualY(widget);
+                widget.visible = this.showsWidget(widget)
+                        && SettingsListLayout.fullyVisible(top, top + VisualPositioning.getVisualHeight(widget), viewportTop, viewportBottom);
+            });
+        }
+
+        /** The widgets {@link #visitWidgets} reports, in that order. */
+        private List<AbstractWidget> widgets() {
+            List<AbstractWidget> widgets = new ArrayList<>();
+            this.visitWidgets(widgets::add);
+            return widgets;
         }
     }
 
@@ -530,24 +577,10 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             return this.action == null ? 0 : VisualPositioning.getVisualWidth(this.action);
         }
 
-        boolean owns(GuiEventListener widget) {
-            return this.widgets().contains(widget);
-        }
-
-        /** Whether Tab can stop in this row now: it has an active widget, and vanilla skips inactive ones. */
-        boolean isInteractive() {
-            return this.widgets().stream().anyMatch(widget -> widget.active && this.showsWidget(widget));
-        }
-
-        private boolean showsWidget(AbstractWidget widget) {
+        /** Every widget is shown except a conditional action that's hidden now. */
+        @Override
+        boolean showsWidget(AbstractWidget widget) {
             return widget != this.action || this.actionShown.getAsBoolean();
-        }
-
-        /** The control's widgets, several for a composite control, then the action. */
-        private List<AbstractWidget> widgets() {
-            List<AbstractWidget> widgets = new ArrayList<>();
-            this.visitWidgets(widgets::add);
-            return widgets;
         }
 
         boolean isOverAction(int mouseX, int mouseY) {
@@ -617,11 +650,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
         @Override
         void position(int x, int y, int viewportTop, int viewportBottom) {
             this.pack.setPosition(x, y);
-            this.visitWidgets(widget -> {
-                int top = VisualPositioning.getVisualY(widget);
-                widget.visible = this.showsWidget(widget)
-                        && SettingsListLayout.fullyVisible(top, top + VisualPositioning.getVisualHeight(widget), viewportTop, viewportBottom);
-            });
+            this.updateWidgetVisibility(viewportTop, viewportBottom);
         }
 
         @Override
@@ -653,6 +682,54 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             if (this.action != null) {
                 this.action.visitWidgets(consumer);
             }
+        }
+    }
+
+    /**
+     * A control alone, with no label, unit or action: it starts at the row's left edge and may use
+     * the whole row width. The row has no hover fill and no tooltip, and otherwise follows the
+     * {@link Row} rules for its widgets.
+     */
+    public static final class WideRow extends Entry {
+        private final LayoutElement control;
+        private final Renderable controlRenderer;
+        private WidgetPack pack = new WidgetPack(Orientation.HORIZONTAL);
+
+        public <C extends LayoutElement & Renderable> WideRow(C control) {
+            this.control = Objects.requireNonNull(control, "control");
+            this.controlRenderer = control;
+        }
+
+        @Override
+        int layout(SettingsListWidget list, int rowWidth) {
+            int height = SettingsListLayout.wideRowHeight(VisualPositioning.getVisualHeight(this.control));
+            WidgetPack pack = new WidgetPack(0, 0, rowWidth, height, Orientation.HORIZONTAL);
+            pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+            pack.addChild(this.control, Direction.FORWARD);
+            this.pack = pack;
+            return height;
+        }
+
+        @Override
+        void position(int x, int y, int viewportTop, int viewportBottom) {
+            this.pack.setPosition(x, y);
+            this.updateWidgetVisibility(viewportTop, viewportBottom);
+        }
+
+        @Override
+        void renderEntry(SettingsListWidget list, GuiGraphicsExtractor context,
+                         int mouseX, int mouseY, float deltaTicks) {
+            renderPart(context, this.controlRenderer, mouseX, mouseY, deltaTicks);
+        }
+
+        @Override
+        int preferredWidth(SettingsListWidget list) {
+            return VisualPositioning.getVisualWidth(this.control);
+        }
+
+        @Override
+        void visitWidgets(Consumer<AbstractWidget> consumer) {
+            this.control.visitWidgets(consumer);
         }
     }
 
