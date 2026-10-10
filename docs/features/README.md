@@ -6,6 +6,7 @@
 - [Cross-server waypoints](cross-server/) — discovery and teleportation over Velocity.
 - [GUI tooltips](gui-tooltips/) — themed tooltips in the mod's screens: surface, scheduling, placement and layering.
 - [Jar packaging](jar-packaging/) — what each release jar ships, the `cross-server` module boundary and the release gate's content checks.
+- [Theme editor](theme-editor/) — the color theme editor: raw key list, key editor, live preview with usage markers, Reset and Save.
 - [Upload transport](upload/) — chunked upload/download transport and startup fixes.
 - [VoxelMap sync](voxelmap-sync/) — VoxelMap waypoint sync on Fabric, Forge and NeoForge: target matrix, gating, mixin registration and checks.
 - [Waypoint form](waypoint-form/) — add and edit screens: layout, checks, feedback and keyboard use.
