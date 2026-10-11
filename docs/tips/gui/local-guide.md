@@ -732,6 +732,15 @@ the `minecraft:` namespace for vanilla dimensions but preserves namespaces for m
 and uses the shared dimension-color mapping in both grouped dimension roots and flat waypoint rows
 while list metadata remains muted. The dimension rail remains selectable in all-dimensions mode;
 its selection is retained for returning to selected-dimension scope.
+Scroll positions are retained within the current server or local-world session, independently for
+each selected dimension and for the all-dimensions view. Switching dimensions or reopening the
+manager restores that scope's position; reselecting the same dimension preserves it. Initial
+restoration waits until `setSelectedDimension` rebuilds the rows after the manager lays out its
+viewport, so constructor queries cannot overwrite remembered positions. `setScrollY` records the
+clamped position, including wheel scrolling, scrollbar dragging, row refreshes, and viewport
+resizing. A shortened or empty list therefore clamps the remembered position to its new bounds.
+`resetSessionStates()` clears every scope's scroll position and dimension expansion state on a
+new connection or local-world session.
 When a query leaves no rows, `WaypointListWidget.resolveEmptyReason(query, showAllDimensions)`
 picks a search-miss message, or a no-waypoints message for all dimensions or the selected one with
 a hint to use the + button, and the list renders it through a retained muted `ScalableText` at the

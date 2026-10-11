@@ -71,7 +71,8 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     private static final int metersPerKilometer = 1000;
     private static final String minecraftNamespace = "minecraft:";
     private static final Map<String, Boolean> DIMENSION_EXPANSION_STATES = new HashMap<>();
-    private static double sessionScrollPosition;
+    // The null key belongs to all-dimensions mode; dimension identifiers keep separate positions.
+    private static final Map<String, Double> SESSION_SCROLL_POSITIONS = new HashMap<>();
     private final WaypointManagerScreen parentScreen;
     private final WaypointQueryEngine queryEngine;
     private final Font textRenderer;
@@ -130,22 +131,20 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     /**
      * Clears scroll and dimension-node expansion state at the start of a new server or local-world
-     * session. Dimension expansion survives manager reconstruction within the session; scroll does
-     * so only while all-dimensions mode is active.
+     * session. Each dimension and the all-dimensions view retain independent scroll positions
+     * across manager reconstruction within that session.
      */
     public static void resetSessionStates() {
-        sessionScrollPosition = 0.0D;
+        SESSION_SCROLL_POSITIONS.clear();
         DIMENSION_EXPANSION_STATES.clear();
     }
 
-    static double getSessionScrollPosition() {
-        return sessionScrollPosition;
+    static double getSessionScrollPosition(boolean showAllDimensions, String dimensionName) {
+        return SESSION_SCROLL_POSITIONS.getOrDefault(showAllDimensions ? null : dimensionName, 0.0D);
     }
 
-    static void rememberSessionScrollPosition(boolean showAllDimensions, double scrollPosition) {
-        if (showAllDimensions) {
-            sessionScrollPosition = scrollPosition;
-        }
+    static void rememberSessionScrollPosition(boolean showAllDimensions, String dimensionName, double scrollPosition) {
+        SESSION_SCROLL_POSITIONS.put(showAllDimensions ? null : dimensionName, scrollPosition);
     }
 
     static boolean isDimensionExpanded(String dimensionName) {
@@ -182,15 +181,17 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
 
     /**
      * Changes the selected-dimension scope and immediately rebuilds the displayed rows. A
-     * {@code null} dimension clears the selected scope.
+     * {@code null} dimension clears the selected scope. Each dimension restores its own session
+     * scroll position, clamped to the rebuilt rows. Reselecting the same dimension preserves scroll.
      *
      * @param dimensionName the dimension to display in selected-dimension mode
      */
     public void setSelectedDimension(String dimensionName) {
-        this.selectedDimensionName = dimensionName == null ? "" : dimensionName;
-        if (!this.showAllDimensions) {
-            resetScrollPosition();
+        String selectedDimension = dimensionName == null ? "" : dimensionName;
+        if (!this.showAllDimensions && !this.selectedDimensionName.equals(selectedDimension)) {
+            this.sessionScrollRestorePending = true;
         }
+        this.selectedDimensionName = selectedDimension;
         applySearchAndSort();
         restoreSessionScrollPositionIfPending();
     }
@@ -239,13 +240,18 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         return this.sortMode == WaypointSorting.SortMode.DEFAULT || this.groupByLists;
     }
 
+    /** Switches query scope while retaining separate scroll positions for all and each dimension. */
     public void setShowAllDimensions(boolean showAllDimensions) {
-        this.showAllDimensions = showAllDimensions;
-        if (!showAllDimensions) {
-            resetScrollPosition();
-            this.sessionScrollRestorePending = false;
+        boolean wasRestorePending = this.sessionScrollRestorePending;
+        if (this.showAllDimensions != showAllDimensions) {
+            this.sessionScrollRestorePending = true;
         }
+        this.showAllDimensions = showAllDimensions;
         applySearchAndSort();
+        // Construction applies preferences before init() sets the final viewport and dimension.
+        if (!wasRestorePending) {
+            restoreSessionScrollPositionIfPending();
+        }
     }
 
     public boolean isShowingAllDimensions() {
@@ -359,17 +365,12 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     }
 
     private void restoreSessionScrollPositionIfPending() {
-        if (!this.sessionScrollRestorePending || !this.showAllDimensions) {
+        if (!this.sessionScrollRestorePending) {
             return;
         }
-        setScrollY(getSessionScrollPosition());
+        setScrollY(getSessionScrollPosition(this.showAllDimensions, this.selectedDimensionName));
         this.sessionScrollRestorePending = false;
-        rememberSessionScrollPosition(true, getScrollY());
-    }
-
-    private void resetScrollPosition() {
-        setScrollY(0.0D);
-        sessionScrollPosition = 0.0D;
+        rememberSessionScrollPosition(this.showAllDimensions, this.selectedDimensionName, getScrollY());
     }
 
     public void refreshDistanceSortIfPlayerMoved() {
@@ -665,9 +666,10 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
     }
 
     @Override
-    protected void onScrollChanged(double scrollY) {
+    public void setScrollY(double scrollY) {
+        super.setScrollY(scrollY);
         if (!this.sessionScrollRestorePending) {
-            rememberSessionScrollPosition(this.showAllDimensions, scrollY);
+            rememberSessionScrollPosition(this.showAllDimensions, this.selectedDimensionName, getScrollY());
         }
     }
 
