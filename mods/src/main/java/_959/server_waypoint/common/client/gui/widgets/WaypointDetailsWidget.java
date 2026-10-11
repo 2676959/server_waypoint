@@ -174,7 +174,7 @@ public final class WaypointDetailsWidget extends ShiftableScrollableWidget imple
         this.renderRows(context, this.rows);
         pop(context);
         context.disableScissor();
-        this.drawScrollbar(context);
+        this.drawScrollbar(context, mouseX, mouseY);
     }
 
     private void renderRows(GuiGraphicsExtractor context, List<DetailRow> rows) {

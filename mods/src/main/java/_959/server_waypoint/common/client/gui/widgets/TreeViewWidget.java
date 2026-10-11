@@ -240,7 +240,7 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
             renderEmpty(context, mouseX, mouseY, deltaTicks);
             pop(context);
             context.disableScissor();
-            this.drawScrollbar(context);
+            this.drawScrollbar(context, mouseX, mouseY);
             return;
         }
 
@@ -259,7 +259,7 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
 
         pop(context);
         context.disableScissor();
-        this.drawScrollbar(context);
+        this.drawScrollbar(context, mouseX, mouseY);
     }
 
     protected VisibleRowRange getVisibleRenderRange(double scrollY) {

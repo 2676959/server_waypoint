@@ -3,6 +3,11 @@ package _959.server_waypoint.common.client.util;
 import _959.server_waypoint.common.util.MathHelper;
 
 public final class ColorHelper {
+    public static int scaleAlpha(int argb, float scale) {
+        int alpha = MathHelper.clamp(Math.round((argb >>> 24) * scale), 0, 255);
+        return (alpha << 24) | (argb & 0x00FFFFFF);
+    }
+
     public static int scaleRgb(int argb, float scale) {
         int a = (argb >> 24) & 0xFF;
         int r = (argb >> 16) & 0xFF;

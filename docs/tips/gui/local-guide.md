@@ -1913,3 +1913,21 @@ Xaero's default set. `forScreen(...)` includes it only for installed Xaero Minim
 after its auto-sync setting. Use `createSettingRow(...)` for its toggle, tooltip and reset button.
 The Xaero Sync now dialog explains that direct mode replaces default-set contents, including
 personal waypoints. The choice changes the next synchronization rather than starting one itself.
+
+### Scrollbar visibility
+
+`ShiftableScrollableWidget.drawScrollbar(context, mouseX, mouseY)` takes screen-space pointer
+coordinates and fades the themed track and thumb with `ScrollbarFade` and `System.nanoTime()`.
+Hover anywhere in the panel's visual bounds, including `Padding`, fades in over 150 ms;
+dragging keeps it visible outside those bounds. Leaving holds the current opacity for 500 ms,
+then fades out over 300 ms. Re-hovering starts a 150 ms fade from the current opacity.
+Disabled, invisible and non-overflowing panels reset immediately to hidden. This also suppresses
+config-list scrollbars behind the Xaero sync dialog. Opacity does not change the existing 3px
+scrollbar strip, content width, text wrapping, or drag hit area.
+
+`ScrollbarFade.update(shouldShow, now)` accepts monotonic nanoseconds and returns opacity in
+`[0, 1]`; `reset()` immediately clears its state. The helper has no Minecraft dependencies.
+The shared visual-bounds lookup includes padding for trees and settings lists without widening
+row hover or input handling. The waypoint list, details, client settings and theme variable list
+all use this renderer. The theme gallery still has no scrollbar sample; hover the variable list
+to preview `scrollbar.*` colors.

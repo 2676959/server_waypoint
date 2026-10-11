@@ -304,7 +304,7 @@ public class SettingsListWidget extends ShiftableScrollableWidget implements Pad
             entry.renderEntry(this, context, mouseX, mouseY, deltaTicks);
         }
         context.disableScissor();
-        this.drawScrollbar(context);
+        this.drawScrollbar(context, mouseX, mouseY);
         this.scheduleRowTooltip(hovered, mouseX, mouseY);
     }
 
