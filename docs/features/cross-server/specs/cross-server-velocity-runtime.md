@@ -85,7 +85,7 @@ Example coordinator configuration (Velocity `plugins/server_waypoint/cross-serve
     "backends": {
         "survival": {
             "enabled": true,
-            "velocityServer": "survival",
+            "velocityServer": "survival-backend",
             "publicKey": "<canonical Base64 X25519 SPKI public key>"
         }
     }
@@ -95,6 +95,12 @@ Example coordinator configuration (Velocity `plugins/server_waypoint/cross-serve
 `proxyPermission` is optional; omission or an empty string disables this additional proxy check.
 The source's backend `remote.tp` permission and both destination `tp` and `remote.tp` permissions
 remain mandatory; source local `tp` permission is independent.
+The key `backends.survival` must match the backend's `serverId: "survival"`. Its
+`velocityServer: "survival-backend"` must match the name `survival-backend` under `[servers]`
+in `velocity.toml`; it can differ from the cross-server ID. Remote commands use `survival`,
+while Velocity's `/server` command uses `survival-backend`. Neither is the numeric `serverId`
+in the ordinary backend `config.json`.
+
 Mappings must be unique and refer to actual Velocity registered servers. Disabled registry entries
 are excluded from admission. Use normal Velocity authenticated player forwarding for deployment;
 source and destination UUIDs must match the proxy UUID. The test-only offline configuration in the

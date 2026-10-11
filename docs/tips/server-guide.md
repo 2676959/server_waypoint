@@ -39,11 +39,33 @@ On Minecraft 1.21.9 and later, player chat can show supported vanilla item icons
 
 Cross-server teleport is disabled by default and runs through Velocity. Install matching Server Waypoint versions on Velocity and at least two dedicated Paper, Fabric, Forge, or NeoForge backends. The Velocity plugin is `server_waypoint-<version>-velocity.jar`, available on [Modrinth](https://modrinth.com/plugin/server_waypoint/versions?l=velocity) and in the [GitHub releases](https://github.com/2676959/server_waypoint/releases). Velocity requires Java 25; use the Java version required by each backend. Players can use remote commands without a client mod. The remote GUI requires a matching client mod. Integrated servers do not participate.
 
+### Cross-server IDs and Velocity server names
+
+The cross-server ID and the server name in `velocity.toml` can be different. They are linked by `velocityServer` in Velocity's `cross-server.json`:
+
+| Setting | Purpose | Example |
+| --- | --- | --- |
+| Backend `cross-server.json`: `serverId` | Stable ID used by Server Waypoint's remote commands and catalogs | `survival` |
+| Velocity `cross-server.json`: key under `backends` | Must match that backend's `serverId` | `survival` |
+| Velocity `cross-server.json`: `velocityServer` | Must match a server name under `[servers]` in `velocity.toml` | `survival-backend` |
+
+For example, register the servers in `velocity.toml` as:
+
+```toml
+[servers]
+survival-backend = "127.0.0.1:25565"
+creative-backend = "127.0.0.1:25566"
+```
+
+The setup examples below map cross-server IDs `survival` and `creative` to Velocity names `survival-backend` and `creative-backend`. Use `/wp remote list survival` for Server Waypoint and `/server survival-backend` for an ordinary Velocity server switch.
+
+Cross-server IDs must be unique and stable: use 1–64 lowercase ASCII letters, digits, underscores or hyphens, starting with a letter or digit. This string `serverId` in `cross-server.json` is separate from the numeric `serverId` in the ordinary `config.json`.
+
 ### No encryption: PLAINTEXT (same host)
 
 This setup is for servers on the **same host**. It has no encryption or cryptographic backend authentication, so use it only when local processes are trusted.
 
-1. Register both backends in Velocity, for example `survival` and `creative`. Start Velocity and each backend once to create their disabled `cross-server.json` files, then stop them. The files are in `<velocity-root>/plugins/server_waypoint/`, `<paper-root>/plugins/ServerWaypoint/`, `<fabric-root>/config/server_waypoint/`, or `<forge-or-neoforge-root>/defaultconfigs/server_waypoint/`.
+1. Register both backends in Velocity, for example `survival-backend` and `creative-backend` as above. Start Velocity and each backend once to create their disabled `cross-server.json` files, then stop them. The files are in `<velocity-root>/plugins/server_waypoint/`, `<paper-root>/plugins/ServerWaypoint/`, `<fabric-root>/config/server_waypoint/`, or `<forge-or-neoforge-root>/defaultconfigs/server_waypoint/`.
 2. Set Velocity's `cross-server.json` to:
 
  ```json
@@ -54,17 +76,17 @@ This setup is for servers on the **same host**. It has no encryption or cryptogr
        "backends": {
            "survival": {
                "enabled": true,
-               "velocityServer": "survival"
+               "velocityServer": "survival-backend"
            },
            "creative": {
                "enabled": true,
-               "velocityServer": "creative"
+               "velocityServer": "creative-backend"
            }
        }
  }
  ```
 
- Each `velocityServer` must match a registered Velocity server name. Each backend ID must be unique and remain stable.
+ Each key under `backends` must match that backend's `serverId`. Each `velocityServer` must match its server name in `velocity.toml`; it does not have to match the cross-server ID.
 3. Set `survival`'s backend `cross-server.json` to:
 
  ```json
@@ -85,7 +107,7 @@ This setup is for servers on the **same host**. It has no encryption or cryptogr
 
 Use `NOISE_KK` when backends run on different hosts or when you want authenticated, encrypted backend connections on one host. Give the Velocity coordinator a private, reachable TCP address and allow its waypoint port only from backend hosts. This port is separate from Velocity's player port and the backends' Minecraft ports. The examples below use loopback for a same-host installation; replace `127.0.0.1` with the coordinator's private address on multiple hosts.
 
-1. Register `survival` and `creative` in Velocity. Start Velocity and each backend once to create their disabled `cross-server.json` files, then stop them. Use the configuration paths listed in the plaintext setup above.
+1. Register `survival-backend` and `creative-backend` in Velocity as above. Start Velocity and each backend once to create their disabled `cross-server.json` files, then stop them. Use the configuration paths listed in the plaintext setup above.
 2. Set Velocity's `cross-server.json` to the following **without** the `publicKey` fields for the first start:
 
  ```json
@@ -96,11 +118,11 @@ Use `NOISE_KK` when backends run on different hosts or when you want authenticat
        "backends": {
            "survival": {
                "enabled": true,
-               "velocityServer": "survival"
+               "velocityServer": "survival-backend"
            },
            "creative": {
                "enabled": true,
-               "velocityServer": "creative"
+               "velocityServer": "creative-backend"
            }
        }
  }
@@ -128,7 +150,7 @@ Use `NOISE_KK` when backends run on different hosts or when you want authenticat
  ```text
  "survival": {
        "enabled": true,
-       "velocityServer": "survival",
+       "velocityServer": "survival-backend",
        "publicKey": "<survival public key>"
  }
  ```

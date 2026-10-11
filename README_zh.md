@@ -89,9 +89,31 @@
 
 Velocity 和每台后端必须安装相匹配的 Server Waypoint 版本。Velocity 插件为 `server_waypoint-<版本>-velocity.jar`，可在 [Modrinth](https://modrinth.com/plugin/server_waypoint/versions?l=velocity) 或 [GitHub Releases](https://github.com/2676959/server_waypoint/releases) 下载。Velocity 需要 Java 25；后端使用对应版本要求的 Java。玩家使用远程命令无需安装客户端模组；使用远程图形界面则需要匹配的客户端模组。单人游戏不能使用跨服务器传送。
 
+### 跨服务器 ID 与 Velocity 服务器名称
+
+Server Waypoint 的跨服务器 ID 可以与 `velocity.toml` 中的服务器名称不同。Velocity 的 `cross-server.json` 通过 `velocityServer` 将两者对应起来：
+
+| 配置位置 | 用途 | 示例 |
+| --- | --- | --- |
+| 后端 `cross-server.json` 的 `serverId` | Server Waypoint 远程命令和路径点目录使用的固定 ID | `survival` |
+| Velocity `cross-server.json` 的 `backends` 下的键 | 必须与对应后端的 `serverId` 相同 | `survival` |
+| Velocity `cross-server.json` 的 `velocityServer` | 必须与 `velocity.toml` 的 `[servers]` 下的服务器名称相同 | `survival-backend` |
+
+例如，在 `velocity.toml` 中注册：
+
+```toml
+[servers]
+survival-backend = "127.0.0.1:25565"
+creative-backend = "127.0.0.1:25566"
+```
+
+下面的配置将跨服务器 ID `survival` 和 `creative` 分别对应到 Velocity 名称 `survival-backend` 和 `creative-backend`。Server Waypoint 命令使用 `/wp remote list survival`；Velocity 的普通切服命令使用 `/server survival-backend`。
+
+跨服务器 ID 必须唯一且保持稳定：长度为 1–64 个字符，仅使用小写英文字母、数字、下划线或连字符，并以字母或数字开头。`cross-server.json` 中的这个字符串 `serverId` 与普通 `config.json` 中的数字 `serverId` 是不同的配置。
+
 ### 开始前
 
-1. 在 Velocity 中注册 `survival` 和 `creative` 等后端服务器。先启动 Velocity 和每台后端一次，让 Server Waypoint 自动生成 `cross-server.json`，然后停止它们。
+1. 按上面的示例，在 Velocity 中注册 `survival-backend` 和 `creative-backend` 等后端服务器。先启动 Velocity 和每台后端一次，让 Server Waypoint 自动生成 `cross-server.json`，然后停止它们。
 2. 找到各自的配置文件：
    - Velocity：`<velocity-root>/plugins/server_waypoint/cross-server.json`
    - Paper：`<paper-root>/plugins/ServerWaypoint/cross-server.json`
@@ -113,17 +135,17 @@ Velocity 和每台后端必须安装相匹配的 Server Waypoint 版本。Veloci
        "backends": {
            "survival": {
                "enabled": true,
-               "velocityServer": "survival"
+               "velocityServer": "survival-backend"
            },
            "creative": {
                "enabled": true,
-               "velocityServer": "creative"
+               "velocityServer": "creative-backend"
            }
        }
    }
    ```
 
-   `velocityServer` 必须与 Velocity 中注册的服务器名称一致。`survival` 和 `creative` 是各后端的唯一 ID；设置后不要随意更改。
+   `backends` 下的键必须与对应后端的 `serverId` 相同；`velocityServer` 必须与 `velocity.toml` 中的服务器名称相同，无需与跨服务器 ID 相同。
 2. 将 `survival` 后端的 `cross-server.json` 改为：
 
    ```json
@@ -155,11 +177,11 @@ Velocity 和每台后端必须安装相匹配的 Server Waypoint 版本。Veloci
        "backends": {
            "survival": {
                "enabled": true,
-               "velocityServer": "survival"
+               "velocityServer": "survival-backend"
            },
            "creative": {
                "enabled": true,
-               "velocityServer": "creative"
+               "velocityServer": "creative-backend"
            }
        }
    }
@@ -205,12 +227,12 @@ Velocity 和每台后端必须安装相匹配的 Server Waypoint 版本。Veloci
        "backends": {
            "survival": {
                "enabled": true,
-               "velocityServer": "survival",
+               "velocityServer": "survival-backend",
                "publicKey": "<survival 的完整公钥>"
            },
            "creative": {
                "enabled": true,
-               "velocityServer": "creative",
+               "velocityServer": "creative-backend",
                "publicKey": "<creative 的完整公钥>"
            }
        }

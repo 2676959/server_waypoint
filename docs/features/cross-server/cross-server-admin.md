@@ -7,10 +7,22 @@ Integrated servers do not participate. Remote commands work with vanilla clients
 requires a matching protocol-2 client mod. Update the proxy and all participating backends together.
 See the [release verification record](validation/cross-server-release-readiness.md) before deploying.
 
+## Cross-server IDs and Velocity server names
+
+The backend's string `serverId` in `cross-server.json` must match its key under `backends` in
+Velocity's `cross-server.json`. The entry's `velocityServer` must match a server name under
+`[servers]` in `velocity.toml`. These two identifiers can be different: `serverId: "survival"`
+and `backends.survival.velocityServer: "survival-backend"` map the cross-server ID `survival`
+to the Velocity server `survival-backend`.
+
+Use the cross-server ID in `/wp remote list survival` and `/wp remote tp survival ...`;
+use the Velocity name in `/server survival-backend`. The numeric `serverId` in the ordinary
+`config.json` is separate from both. See the [setup guide's mapping examples](../../tips/server-guide.md#cross-server-ids-and-velocity-server-names).
+
 ## Pair two backends with KK
 
 1. Assign stable IDs, for example `survival` and `creative`. IDs contain 1–64 lowercase ASCII letters,
-   digits, `_` or `-`, starting with a letter or digit. Keep the IDs stable when changing display names.
+   digits, `_` or `-`, starting with a letter or digit. Keep the IDs stable when changing Velocity server names.
    Configure the two corresponding registered servers in Velocity. A stable ID maps to exactly one
    Velocity server name, and mappings cannot share a destination name.
 2. Start each component once to create its disabled `cross-server.json`, then stop it. On Paper the
