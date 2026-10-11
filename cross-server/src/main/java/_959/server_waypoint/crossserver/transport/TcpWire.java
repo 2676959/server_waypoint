@@ -19,8 +19,26 @@ final class TcpWire {
     static { TIMER.setRemoveOnCancelPolicy(true); }
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    static ScheduledFuture<?> deadline(Socket socket, int millis) {
-        return TIMER.schedule(() -> close(socket), millis, TimeUnit.MILLISECONDS);
+    static final class Deadline implements AutoCloseable {
+        private volatile boolean expired;
+        private final ScheduledFuture<?> task;
+        Deadline(Socket socket, int millis, Runnable onTimeout) {
+            task = TIMER.schedule(() -> {
+                expired = true;
+                onTimeout.run();
+                TcpWire.close(socket);
+            }, millis, TimeUnit.MILLISECONDS);
+        }
+        boolean expired() { return expired; }
+        @Override public void close() { task.cancel(false); }
+    }
+
+    static Deadline deadline(Socket socket, int millis) {
+        return deadline(socket, millis, () -> { });
+    }
+
+    static Deadline deadline(Socket socket, int millis, Runnable onTimeout) {
+        return new Deadline(socket, millis, onTimeout);
     }
 
     static void close(Socket socket) {
@@ -30,14 +48,14 @@ final class TcpWire {
     static byte[] read(Socket socket, int maximum) throws IOException {
         DataInputStream in = new DataInputStream(socket.getInputStream());
         int length = in.readInt();
-        if (length <= 0 || length > maximum) throw new IOException("Invalid frame length");
+        if (length <= 0 || length > maximum) throw new ConnectionFailureException(ConnectionFailureReason.INVALID_FRAME);
         byte[] result = new byte[length];
         in.readFully(result);
         return result;
     }
 
     static void write(Socket socket, byte[] bytes, int maximum) throws IOException {
-        if (bytes.length == 0 || bytes.length > maximum) throw new IOException("Invalid frame length");
+        if (bytes.length == 0 || bytes.length > maximum) throw new ConnectionFailureException(ConnectionFailureReason.INVALID_FRAME);
         DataOutputStream out = new DataOutputStream(socket.getOutputStream());
         out.writeInt(bytes.length);
         out.write(bytes);
@@ -72,9 +90,21 @@ final class TcpWire {
     }
 
     static Hello parse(byte[] bytes, TransportMode mode, boolean response) throws IOException {
+        try {
+            return parseHello(bytes, mode, response);
+        } catch (ConnectionFailureException failure) {
+            throw failure;
+        } catch (IOException | IllegalArgumentException failure) {
+            throw new ConnectionFailureException(ConnectionFailureReason.INVALID_PREFACE, failure);
+        }
+    }
+
+    private static Hello parseHello(byte[] bytes, TransportMode mode, boolean response) throws IOException {
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(bytes));
-        if (in.readInt() != 0x53575054 || in.readInt() != 1 || in.readInt() != mode.wireId
-                || in.readInt() != 1) throw new IOException("Transport mode or version mismatch");
+        if (in.readInt() != 0x53575054) throw new ConnectionFailureException(ConnectionFailureReason.INVALID_PREFACE);
+        if (in.readInt() != 1) throw new ConnectionFailureException(ConnectionFailureReason.TRANSPORT_VERSION_MISMATCH);
+        if (in.readInt() != mode.wireId) throw new ConnectionFailureException(ConnectionFailureReason.TRANSPORT_MODE_MISMATCH);
+        if (in.readInt() != 1) throw new ConnectionFailureException(ConnectionFailureReason.APPLICATION_VERSION_MISMATCH);
         int length = in.readInt();
         if (length < 1 || length > 64) throw new IOException("Invalid identity");
         byte[] name = new byte[length];
@@ -104,9 +134,10 @@ final class TcpWire {
             previous = suite; // unknown future IDs are parsed but never selected
         }
         int selected = in.readInt();
-        if (in.available() != 0 || (mode == TransportMode.NOISE_KK
-                ? !kk || selected != (response ? 1 : 0) : suites != 0 || selected != 0)) {
-            throw new IOException("Unsupported suite");
+        if (in.available() != 0) throw new ConnectionFailureException(ConnectionFailureReason.INVALID_PREFACE);
+        if (mode == TransportMode.NOISE_KK
+                ? !kk || selected != (response ? 1 : 0) : suites != 0 || selected != 0) {
+            throw new ConnectionFailureException(ConnectionFailureReason.CIPHER_SUITE_MISMATCH);
         }
         return new Hello(id, Set.copyOf(capabilities));
     }

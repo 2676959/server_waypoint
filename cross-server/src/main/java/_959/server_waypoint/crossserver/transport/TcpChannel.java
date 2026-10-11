@@ -34,6 +34,7 @@ public final class TcpChannel implements AutoCloseable {
     private final Runnable release;
     private final ScheduledFuture<?> expiry;
     private volatile boolean closed;
+    private volatile ConnectionFailureReason closeReason = ConnectionFailureReason.CHANNEL_CLOSED;
     private long activity = System.nanoTime();
 
     TcpChannel(Socket socket, TransportMode mode, TcpWire.Hello hello, NoiseRecordCipher cipher,
@@ -65,7 +66,8 @@ public final class TcpChannel implements AutoCloseable {
 
     public void send(UUID requestId, ApplicationMessage message) throws IOException {
         synchronized (writer) {
-            ScheduledFuture<?> deadline = TcpWire.deadline(socket, limits.operationMillis());
+            TcpWire.Deadline deadline = TcpWire.deadline(socket, limits.operationMillis(), this::timedOut);
+            ConnectionFailureReason phase = ConnectionFailureReason.PROTOCOL_VIOLATION;
             try {
                 byte[] frame;
                 synchronized (state) {
@@ -76,6 +78,7 @@ public final class TcpChannel implements AutoCloseable {
                     inbound.response(envelope);
                 }
                 int offset = 0;
+                phase = ConnectionFailureReason.IO_ERROR;
                 while (offset < frame.length) {
                     int count = Math.min(TcpWire.CLEAR - 8, frame.length - offset);
                     byte[] fragment = ByteBuffer.allocate(count + 8).putInt(frame.length).putInt(offset)
@@ -85,15 +88,15 @@ public final class TcpChannel implements AutoCloseable {
                 }
                 synchronized (state) { requireOpen(); activity = System.nanoTime(); }
             } catch (Exception failure) {
-                close();
-                throw new IOException("TCP send rejected");
-            } finally { deadline.cancel(false); }
+                throw reject(failure, deadline, phase);
+            } finally { deadline.close(); }
         }
     }
 
     public Received receive() throws IOException {
         synchronized (reader) {
-            ScheduledFuture<?> deadline = TcpWire.deadline(socket, limits.operationMillis());
+            TcpWire.Deadline deadline = TcpWire.deadline(socket, limits.operationMillis(), this::timedOut);
+            ConnectionFailureReason phase = ConnectionFailureReason.IO_ERROR;
             try {
                 synchronized (state) { requireOpen(); }
                 byte[] frame = null;
@@ -101,20 +104,21 @@ public final class TcpChannel implements AutoCloseable {
                 do {
                     byte[] record = TcpWire.read(socket, cipher == null ? TcpWire.CLEAR : TcpWire.RECORD);
                     byte[] clear = cipher == null ? record : cipher.decrypt(record);
-                    if (clear.length <= 8) throw new IOException("Empty fragment");
+                    if (clear.length <= 8) throw new ConnectionFailureException(ConnectionFailureReason.INVALID_FRAME);
                     ByteBuffer fragment = ByteBuffer.wrap(clear);
                     int total = fragment.getInt();
                     int position = fragment.getInt();
                     if (total < ApplicationCodec.HEADER_BYTES || total > protocol.frameBytes()
                             || position != offset || fragment.remaining() > total - offset) {
-                        throw new IOException("Invalid fragment");
+                        throw new ConnectionFailureException(ConnectionFailureReason.INVALID_FRAME);
                     }
                     if (frame == null) frame = new byte[total];
-                    if (frame.length != total) throw new IOException("Changed frame total");
+                    if (frame.length != total) throw new ConnectionFailureException(ConnectionFailureReason.INVALID_FRAME);
                     int count = fragment.remaining();
                     fragment.get(frame, offset, count);
                     offset += count;
                 } while (offset < frame.length);
+                phase = ConnectionFailureReason.PROTOCOL_VIOLATION;
                 ApplicationEnvelope envelope = codec.decode(frame);
                 synchronized (state) {
                     requireOpen();
@@ -124,24 +128,51 @@ public final class TcpChannel implements AutoCloseable {
                     return new Received(envelope, catalog);
                 }
             } catch (Exception failure) {
-                close();
-                throw new IOException("TCP receive rejected");
-            } finally { deadline.cancel(false); }
+                throw reject(failure, deadline, phase);
+            } finally { deadline.close(); }
         }
     }
 
+    private void timedOut() {
+        synchronized (state) {
+            if (!closed && closeReason == ConnectionFailureReason.CHANNEL_CLOSED) {
+                closeReason = ConnectionFailureReason.TIMEOUT;
+            }
+        }
+    }
+
+    private ConnectionFailureException reject(Exception failure, TcpWire.Deadline deadline,
+                                               ConnectionFailureReason phase) {
+        ConnectionFailureException diagnostic;
+        synchronized (state) {
+            if (closeReason != ConnectionFailureReason.CHANNEL_CLOSED) {
+                diagnostic = new ConnectionFailureException(closeReason, failure);
+            } else if (deadline.expired()) {
+                diagnostic = new ConnectionFailureException(ConnectionFailureReason.TIMEOUT, failure);
+            } else {
+                diagnostic = ConnectionFailureException.wrap(phase, failure);
+            }
+            closeReason = diagnostic.reason();
+        }
+        close();
+        return diagnostic;
+    }
+
     private void requireOpen() throws IOException {
-        if (isClosed()) throw new IOException("Channel closed");
+        if (isClosed()) throw new ConnectionFailureException(closeReason);
         long now = System.nanoTime();
-        if (inbound.expired(now) || outbound.expired(now)) throw new IOException("Request expired");
+        if (inbound.expired(now) || outbound.expired(now)) throw new ConnectionFailureException(ConnectionFailureReason.REQUEST_EXPIRED);
     }
 
     private void expire() {
         boolean expired;
         synchronized (state) {
             long now = System.nanoTime();
-            expired = socket.isClosed() || now - activity >= limits.operationMillis() * 1_000_000L
-                    || inbound.expired(now) || outbound.expired(now);
+            if (!closed && !socket.isClosed() && closeReason == ConnectionFailureReason.CHANNEL_CLOSED) {
+                if (inbound.expired(now) || outbound.expired(now)) closeReason = ConnectionFailureReason.REQUEST_EXPIRED;
+                else if (now - activity >= limits.operationMillis() * 1_000_000L) closeReason = ConnectionFailureReason.TIMEOUT;
+            }
+            expired = socket.isClosed() || closeReason != ConnectionFailureReason.CHANNEL_CLOSED;
         }
         if (expired) close();
     }

@@ -129,10 +129,14 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
                 current.send(request, new ApplicationMessage.RegisterServer(id, _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION, capabilities));
                 ApplicationEnvelope response = current.receive().envelope();
                 if (!request.equals(response.requestId()) || !(response.message() instanceof ApplicationMessage.RegisterResult result)
-                        || !id.equals(result.serverId()) || result.result() != ApplicationMessage.Result.SUCCESS) {
-                    throw new IOException("Registration rejected");
+                        || !id.equals(result.serverId())) {
+                    throw new ConnectionFailureException(ConnectionFailureReason.REGISTRATION_TRANSCRIPT_MISMATCH);
                 }
-                if (stopping || generation == Long.MAX_VALUE) throw new IOException("Agent stopped or exhausted");
+                if (result.result() != ApplicationMessage.Result.SUCCESS) {
+                    throw new ConnectionFailureException(ConnectionFailureReason.REGISTRATION_REJECTED);
+                }
+                if (stopping) throw new IOException("Agent stopped");
+                if (generation == Long.MAX_VALUE) throw new ConnectionFailureException(ConnectionFailureReason.GENERATION_EXHAUSTED);
                 for (RemoteServerId source : remoteCatalogs.serverIds()) remoteCatalogs.connected(source, current, null, protocol);
                 connectedAt = System.nanoTime();
                 presence = new BackendPresence(id, mode, capabilities, ++generation, Instant.now());
@@ -170,8 +174,8 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
                         else if (message instanceof ApplicationMessage.CatalogSnapshot m) source = m.serverId();
                         else if (message instanceof ApplicationMessage.CatalogDelta m) source = m.serverId();
                         else if (message instanceof ApplicationMessage.CatalogInvalidate m) source = m.serverId();
-                        else throw new IOException("Unexpected coordinator message");
-                        if (source.equals(id)) throw new IOException("Coordinator echoed local catalog");
+                        else throw new ConnectionFailureException(ConnectionFailureReason.PROTOCOL_VIOLATION);
+                        if (source.equals(id)) throw new ConnectionFailureException(ConnectionFailureReason.PROTOCOL_VIOLATION);
                         // The coordinator vouches for routing. This link's mode does not prove the source link's mode.
                         if (!remoteCatalogs.contains(source)) {
                             remoteCatalogs.connected(source, current, null, protocol);
@@ -189,7 +193,7 @@ public final class BackendAgent extends AsyncTransportLifecycle implements Backe
             } catch (Exception failure) {
                 if (!stopping) {
                     metrics.failed();
-                    TeleportCoordinatorLog.BACKEND.warn("connection_failed server={} cause={}", TeleportCoordinatorLog.safe(id.value()), failure.getClass().getSimpleName());
+                    TeleportCoordinatorLog.connectionFailure(TeleportCoordinatorLog.BACKEND, id, failure);
                 }
             } finally {
                 if (maintenance != null) maintenance.cancel(false);

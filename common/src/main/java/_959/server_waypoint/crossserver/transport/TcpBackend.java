@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ScheduledFuture;
 
 /** One explicit outbound connection attempt. Reconnect and platform lifecycle belong to step 8. */
 public final class TcpBackend {
@@ -30,11 +29,13 @@ public final class TcpBackend {
         }
         byte[] pin = coordinatorPin == null ? null : coordinatorPin.clone();
         Socket socket = new Socket();
-        ScheduledFuture<?> deadline = TcpWire.deadline(socket, limits.handshakeMillis());
+        TcpWire.Deadline deadline = TcpWire.deadline(socket, limits.handshakeMillis());
         NoiseRecordCipher cipher = null;
+        ConnectionFailureReason phase = ConnectionFailureReason.IO_ERROR;
         try {
             owner.accept(socket);
             socket.connect(address, limits.handshakeMillis());
+            phase = ConnectionFailureReason.HANDSHAKE_FAILED;
             socket.setTcpNoDelay(true);
             if (mode == TransportMode.PLAINTEXT && (!socket.getInetAddress().isLoopbackAddress()
                     || !socket.getLocalAddress().isLoopbackAddress())) throw new IOException("Non-loopback socket");
@@ -42,17 +43,21 @@ public final class TcpBackend {
             TcpWire.write(socket, first, 65_536);
             byte[] second = TcpWire.read(socket, 65_536);
             TcpWire.Hello hello = TcpWire.parse(second, mode, true);
-            if (!hello.serverId().equals(id) || !hello.capabilities().equals(capabilities)) throw new IOException("Preface changed");
+            if (!hello.serverId().equals(id) || !hello.capabilities().equals(capabilities)) {
+                throw new ConnectionFailureException(ConnectionFailureReason.HANDSHAKE_TRANSCRIPT_MISMATCH);
+            }
             if (mode == TransportMode.NOISE_KK) {
                 cipher = NoiseRecordCipher.handshake(socket, true, keys, pin, TcpWire.prologue(first, second));
             }
-            if (socket.isClosed()) throw new IOException("Handshake expired");
+            if (socket.isClosed()) throw new ConnectionFailureException(deadline.expired()
+                    ? ConnectionFailureReason.TIMEOUT : ConnectionFailureReason.CHANNEL_CLOSED);
             return new TcpChannel(socket, mode, hello, cipher, limits, protocol, () -> { });
         } catch (Exception failure) {
             TcpWire.close(socket);
             if (cipher != null) cipher.close();
-            throw new IOException("TCP connection rejected");
-        } finally { deadline.cancel(false); }
+            if (deadline.expired()) throw new ConnectionFailureException(ConnectionFailureReason.TIMEOUT, failure);
+            throw ConnectionFailureException.wrap(phase, failure);
+        } finally { deadline.close(); }
     }
 
     private TcpBackend() { }

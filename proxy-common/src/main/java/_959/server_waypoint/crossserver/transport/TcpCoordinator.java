@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
-import java.util.concurrent.ScheduledFuture;
 
 /**
  * Bounded blocking listener for use by a bounded worker owner. No accept loop or game lifecycle is
@@ -63,11 +62,12 @@ public final class TcpCoordinator implements AutoCloseable {
         synchronized (this) {
             if (closed || sockets.size() >= limits.connections()) {
                 TcpWire.close(socket);
-                throw new IOException("Connection limit or closed listener");
+                throw new ConnectionFailureException(closed ? ConnectionFailureReason.CHANNEL_CLOSED
+                        : ConnectionFailureReason.CONNECTION_LIMIT_REACHED);
             }
             sockets.put(socket, null); // count pre-authentication sockets too
         }
-        ScheduledFuture<?> deadline = TcpWire.deadline(socket, limits.handshakeMillis());
+        TcpWire.Deadline deadline = TcpWire.deadline(socket, limits.handshakeMillis());
         NoiseRecordCipher cipher = null;
         try {
             socket.setTcpNoDelay(true);
@@ -78,7 +78,9 @@ public final class TcpCoordinator implements AutoCloseable {
             byte[] pin;
             synchronized (this) {
                 pin = pins.get(hello.serverId());
-                if (closed || pin == null || identities.containsKey(hello.serverId())) throw new IOException("Identity not admitted");
+                if (closed) throw new ConnectionFailureException(ConnectionFailureReason.CHANNEL_CLOSED);
+                if (pin == null) throw new ConnectionFailureException(ConnectionFailureReason.IDENTITY_NOT_ADMITTED);
+                if (identities.containsKey(hello.serverId())) throw new ConnectionFailureException(ConnectionFailureReason.DUPLICATE_SERVER_ID);
                 identities.put(hello.serverId(), socket); // unauthenticated reservation, never published
             }
             byte[] second = TcpWire.hello(mode, hello.serverId(), hello.capabilities(), true);
@@ -87,7 +89,10 @@ public final class TcpCoordinator implements AutoCloseable {
                 cipher = NoiseRecordCipher.handshake(socket, false, keys, pin, TcpWire.prologue(first, second));
             }
             synchronized (this) {
-                if (closed || socket.isClosed() || pins.get(hello.serverId()) != pin) throw new IOException("Admission changed or expired");
+                if (deadline.expired()) throw new ConnectionFailureException(ConnectionFailureReason.TIMEOUT);
+                if (closed || socket.isClosed() || pins.get(hello.serverId()) != pin) {
+                    throw new ConnectionFailureException(ConnectionFailureReason.ADMISSION_CHANGED);
+                }
                 TcpChannel channel = new TcpChannel(socket, mode, hello, cipher, limits, protocol, () -> release(socket));
                 sockets.put(socket, channel);
                 return channel;
@@ -96,8 +101,9 @@ public final class TcpCoordinator implements AutoCloseable {
             TcpWire.close(socket);
             if (cipher != null) cipher.close();
             release(socket);
-            throw new IOException("TCP admission rejected");
-        } finally { deadline.cancel(false); }
+            if (deadline.expired()) throw new ConnectionFailureException(ConnectionFailureReason.TIMEOUT, failure);
+            throw ConnectionFailureException.wrap(ConnectionFailureReason.HANDSHAKE_FAILED, failure);
+        } finally { deadline.close(); }
     }
 
     private synchronized void release(Socket socket) {

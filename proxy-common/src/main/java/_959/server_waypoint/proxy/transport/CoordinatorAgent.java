@@ -100,14 +100,18 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
                 channel = listener.accept();
                 ApplicationEnvelope envelope = channel.receive().envelope();
                 if (!(envelope.message() instanceof ApplicationMessage.RegisterServer registration)
-                        || !registration.serverId().equals(channel.serverId()) || registration.protocolVersion() != _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION
+                        || !registration.serverId().equals(channel.serverId())
                         || !registration.capabilities().equals(channel.capabilities())) {
-                    throw new IOException("Registration does not match admitted transcript");
+                    throw new ConnectionFailureException(ConnectionFailureReason.REGISTRATION_TRANSCRIPT_MISMATCH);
+                }
+                if (registration.protocolVersion() != _959.server_waypoint.crossserver.CrossServerProtocol.PROTOCOL_VERSION) {
+                    throw new ConnectionFailureException(ConnectionFailureReason.APPLICATION_VERSION_MISMATCH);
                 }
                 long next = generation.updateAndGet(value -> value == Long.MAX_VALUE ? value : value + 1);
-                if (stopping || next == Long.MAX_VALUE) throw new IOException("Coordinator stopped or exhausted");
+                if (stopping) throw new IOException("Coordinator stopped");
+                if (next == Long.MAX_VALUE) throw new ConnectionFailureException(ConnectionFailureReason.GENERATION_EXHAUSTED);
                 live = new Live(channel, new BackendPresence(channel.serverId(), channel.mode(), channel.capabilities(), next, Instant.now()));
-                if (peers.putIfAbsent(channel.serverId(), live) != null) throw new IOException("Duplicate registered ID");
+                if (peers.putIfAbsent(channel.serverId(), live) != null) throw new ConnectionFailureException(ConnectionFailureReason.DUPLICATE_SERVER_ID);
                 catalogs.connected(channel.serverId(), channel, channel.mode(), channel.protocolLimits());
                 distributor = new CatalogDistributor(catalogs, channel);
                 channel.send(envelope.requestId(), new ApplicationMessage.RegisterResult(channel.serverId(), ApplicationMessage.Result.SUCCESS));
@@ -143,8 +147,8 @@ public final class CoordinatorAgent extends AsyncTransportLifecycle implements C
             } catch (Exception failure) {
                 if (!stopping && running) {
                     metrics.failed();
-                    TeleportCoordinatorLog.PROXY.warn("connection_failed server={} cause={}",
-                            channel == null ? "unidentified" : TeleportCoordinatorLog.safe(channel.serverId().value()), failure.getClass().getSimpleName());
+                    TeleportCoordinatorLog.connectionFailure(TeleportCoordinatorLog.PROXY,
+                            channel == null ? null : channel.serverId(), failure);
                 }
                 if (listener.isClosed()) running = false;
             } finally {

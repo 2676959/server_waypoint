@@ -42,11 +42,11 @@ final class NoiseRecordCipher implements AutoCloseable {
                 TcpWire.write(socket, cipher.encrypt(confirmation), TcpWire.RECORD);
                 confirmation[0] = 2;
                 if (!Arrays.equals(confirmation, cipher.decrypt(TcpWire.read(socket, TcpWire.RECORD)))) {
-                    throw new IOException("Invalid confirmation");
+                    throw new ConnectionFailureException(ConnectionFailureReason.AUTHENTICATION_FAILED);
                 }
             } else {
                 if (!Arrays.equals(confirmation, cipher.decrypt(TcpWire.read(socket, TcpWire.RECORD)))) {
-                    throw new IOException("Invalid confirmation");
+                    throw new ConnectionFailureException(ConnectionFailureReason.AUTHENTICATION_FAILED);
                 }
                 confirmation[0] = 2;
                 TcpWire.write(socket, cipher.encrypt(confirmation), TcpWire.RECORD);

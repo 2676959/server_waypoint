@@ -4,6 +4,7 @@ import _959.server_waypoint.crossserver.RemoteServerId;
 import _959.server_waypoint.crossserver.TeleportPermissionCheck;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage;
 import _959.server_waypoint.crossserver.protocol.ApplicationMessage.*;
+import _959.server_waypoint.crossserver.transport.ConnectionFailureReason;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.UUID;
@@ -14,6 +15,12 @@ public final class TeleportCoordinatorLog {
     public static final Logger PROXY = LoggerFactory.getLogger("server_waypoint.teleport_coordinator.proxy");
 
     private TeleportCoordinatorLog() { }
+
+    public static void connectionFailure(Logger logger, RemoteServerId server, Throwable failure) {
+        logger.warn("connection_failed server={} cause={} exception={}",
+                server == null ? "unidentified" : safe(server.value()), ConnectionFailureReason.from(failure),
+                safe(failure.getClass().getSimpleName()));
+    }
 
     public static String safe(Object value) {
         String text = String.valueOf(value);

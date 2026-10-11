@@ -133,7 +133,8 @@ class TcpTransportTest {
             assertThrows(IOException.class, () -> TcpBackend.connect(new TcpEndpoint("127.0.0.1", f.listener.port()),
                     other, ID, Set.of(), other == TransportMode.NOISE_KK ? f.backendKeys : null,
                     other == TransportMode.NOISE_KK ? f.coordinatorPublic : null, LIMITS, PROTOCOL));
-            assertThrows(ExecutionException.class, accepted::get);
+            assertEquals(ConnectionFailureReason.TRANSPORT_MODE_MISMATCH,
+                    ConnectionFailureReason.from(assertThrows(ExecutionException.class, accepted::get)));
             assertEquals(0, f.listener.connectionCount());
         }
     }
@@ -142,10 +143,14 @@ class TcpTransportTest {
         try (Fixture f = new Fixture(TransportMode.NOISE_KK)) {
             for (boolean wrongId : new boolean[]{false, true}) {
                 Future<TcpChannel> accepted = f.accept();
-                assertThrows(IOException.class, () -> TcpBackend.connect(new TcpEndpoint("127.0.0.1", f.listener.port()),
+                IOException failure = assertThrows(IOException.class, () -> TcpBackend.connect(new TcpEndpoint("127.0.0.1", f.listener.port()),
                         f.mode, wrongId ? new RemoteServerId("unknown") : ID, Set.of(), f.backendKeys,
                         wrongId ? f.coordinatorPublic : f.backendPublic, LIMITS, PROTOCOL));
-                assertThrows(ExecutionException.class, accepted::get);
+                ExecutionException rejection = assertThrows(ExecutionException.class, accepted::get);
+                assertEquals(wrongId ? ConnectionFailureReason.IDENTITY_NOT_ADMITTED
+                        : ConnectionFailureReason.AUTHENTICATION_FAILED, ConnectionFailureReason.from(rejection));
+                // Closing a rejected connection carries no remote reason on the wire.
+                assertEquals(ConnectionFailureReason.PEER_DISCONNECTED, ConnectionFailureReason.from(failure));
                 assertEquals(0, f.listener.connectionCount());
             }
         }
@@ -163,7 +168,8 @@ class TcpTransportTest {
                     assertThrows(ExecutionException.class, second::get);
                     assertEquals(-1, excess.getInputStream().read());
                 }
-                assertThrows(ExecutionException.class, first::get);
+                assertEquals(ConnectionFailureReason.TIMEOUT,
+                        ConnectionFailureReason.from(assertThrows(ExecutionException.class, first::get)));
                 assertEquals(-1, stalled.getInputStream().read());
                 assertEquals(0, f.listener.connectionCount());
             }
@@ -326,6 +332,28 @@ class TcpTransportTest {
         }
     }
 
+    @ParameterizedTest @org.junit.jupiter.params.provider.CsvSource({
+            "0, INVALID_PREFACE", "4, TRANSPORT_VERSION_MISMATCH",
+            "8, TRANSPORT_MODE_MISMATCH", "12, APPLICATION_VERSION_MISMATCH"})
+    void prefaceFailuresIdentifyTheRejectedField(int position, String reason) throws Exception {
+        byte[] hello = TcpWire.hello(TransportMode.NOISE_KK, ID, Set.of(), false);
+        ByteBuffer.wrap(hello).putInt(position, 99);
+        assertEquals(reason, assertThrows(IOException.class,
+                () -> TcpWire.parse(hello, TransportMode.NOISE_KK, false)).getMessage());
+    }
+
+    @Test void peerDisconnectRetainsUnderlyingFailure() throws Exception {
+        try (Fixture f = new Fixture(TransportMode.PLAINTEXT)) {
+            Future<TcpChannel> accepted = f.accept();
+            try (TcpChannel backend = f.connect(); TcpChannel coordinator = accepted.get()) {
+                coordinator.close();
+                IOException failure = assertThrows(IOException.class, backend::receive);
+                assertInstanceOf(EOFException.class, failure.getCause());
+                assertEquals(ConnectionFailureReason.PEER_DISCONNECTED, ConnectionFailureReason.from(failure));
+            }
+        }
+    }
+
     @ParameterizedTest @EnumSource(TransportMode.class)
     void idleAndIncompleteFramesExpire(TransportMode mode) throws Exception {
         TcpLimits limits = new TcpLimits(2, 1000, 150, 64, 4_194_304, 100);
@@ -333,7 +361,8 @@ class TcpTransportTest {
             Future<TcpChannel> accepted = f.accept();
             try (RawPeer peer = new RawPeer(f); TcpChannel channel = accepted.get()) {
                 peer.write(ByteBuffer.allocate(9).putInt(36).putInt(0).put((byte) 1).array());
-                assertThrows(IOException.class, channel::receive);
+                assertEquals(ConnectionFailureReason.TIMEOUT,
+                        ConnectionFailureReason.from(assertThrows(IOException.class, channel::receive)));
                 assertTrue(channel.isClosed());
             }
             Future<TcpChannel> next = f.accept();
@@ -375,12 +404,16 @@ class TcpTransportTest {
             Future<TcpChannel> accepted = f.accept();
             try (RawPeer peer = new RawPeer(f); TcpChannel channel = accepted.get()) {
                 peer.socket.setReceiveBufferSize(1024);
+                Future<?> reading = f.workers.submit(channel::receive);
                 Future<?> writing = f.workers.submit(() -> {
                     for (int i = 0; i < 1000; i++) channel.send(UUID.randomUUID(),
                             new ApplicationMessage.CatalogMetadata(ID, "x".repeat(60_000), new RemoteRevision(i), CatalogExportPolicy.PUBLIC, "minecraft:compass"));
                     return null;
                 });
-                assertThrows(ExecutionException.class, () -> writing.get(3, TimeUnit.SECONDS));
+                assertEquals(ConnectionFailureReason.TIMEOUT, ConnectionFailureReason.from(
+                        assertThrows(ExecutionException.class, () -> writing.get(3, TimeUnit.SECONDS))));
+                assertEquals(ConnectionFailureReason.TIMEOUT, ConnectionFailureReason.from(
+                        assertThrows(ExecutionException.class, () -> reading.get(3, TimeUnit.SECONDS))));
                 assertTrue(channel.isClosed());
             }
         }
