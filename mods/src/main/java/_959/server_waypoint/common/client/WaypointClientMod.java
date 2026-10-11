@@ -626,7 +626,9 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         this.synchronizationTracker.clearAll();
         OptimizedWaypointRenderer.loadScene(getCurrentWaypointLists());
         WaypointManagerScreen.updateAllWidgets();
-        MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.allSynced(), this);
+        if (!updates.isEmpty()) {
+            MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.allSynced(), this);
+        }
     }
 
     private void onWaypointList(DimensionWaypointData buffer) {
