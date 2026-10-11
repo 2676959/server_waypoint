@@ -594,25 +594,20 @@ class WaypointFilesManagerConcurrencyTest {
                                 }
                             }
                     ));
-            awaitCondition(
-                    () -> {
-                        WaypointFileManager fileManager =
-                                filesManager.getWaypointFileManager(targetDimension);
-                        if (fileManager == null) {
-                            return false;
-                        }
-                        WaypointList waypointList = fileManager.getWaypointListByName(LIST);
-                        return waypointList != null
-                                && waypointList.getWaypointByName("nested-failure") != null;
-                    },
-                    "Nested mutation did not commit"
-            );
-            releaseTargetCallback.countDown();
-
+            // Visible model state does not prove callback dispatch has chosen to defer.
+            // Keep the earlier target callback blocked until the nested call returns.
             assertTrue(
                     nestedCallerCompleted.await(FUTURE_TIMEOUT_SECONDS, TimeUnit.SECONDS),
                     "Nested mutation caller did not complete"
             );
+            assertTrue(
+                    nestedCallReturnedNormally.get(),
+                    "Deferred nested mutation did not return to let the outer callback release its turn"
+            );
+            assertNull(immediateNestedFailure.get());
+            assertEquals(1, nestedCallbackRan.getCount(), "Nested callback ran before its turn");
+            releaseTargetCallback.countDown();
+
             assertEquals(ADDED, awaitFuture(targetMutation).status());
             IllegalStateException propagatedFailure = assertThrows(
                     IllegalStateException.class,
@@ -622,17 +617,45 @@ class WaypointFilesManagerConcurrencyTest {
                     nestedCallbackRan.await(FUTURE_TIMEOUT_SECONDS, TimeUnit.SECONDS),
                     "Failing nested callback did not run"
             );
-            assertTrue(
-                    nestedCallReturnedNormally.get(),
-                    "Deferred nested mutation did not return to let the outer callback release its turn"
-            );
-            assertNull(immediateNestedFailure.get());
             assertSame(expectedFailure, propagatedFailure);
         } finally {
             releaseTargetCallback.countDown();
             executor.shutdownNow();
             executor.awaitTermination(FUTURE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         }
+    }
+
+    @Test
+    void nestedCallbackFailurePropagatesImmediatelyWhenTargetTurnIsAvailable() {
+        String targetDimension = "minecraft:the_nether";
+        WaypointFilesManagerCore filesManager = new WaypointFilesManagerCore(this.tempDir);
+        IllegalStateException expectedFailure =
+                new IllegalStateException("immediate nested callback failure");
+        AtomicBoolean nestedFailureCaught = new AtomicBoolean();
+
+        WaypointFilesManagerCore.AddWaypointResult sourceResult = filesManager.addWaypoint(
+                DIMENSION,
+                LIST,
+                waypoint("source-root", 0),
+                ignored -> {
+                    IllegalStateException immediateFailure = assertThrows(
+                            IllegalStateException.class,
+                            () -> filesManager.addWaypoint(
+                                    targetDimension,
+                                    LIST,
+                                    waypoint("nested-failure", 1),
+                                    nestedResult -> {
+                                        throw expectedFailure;
+                                    }
+                            )
+                    );
+                    assertSame(expectedFailure, immediateFailure);
+                    nestedFailureCaught.set(true);
+                }
+        );
+
+        assertTrue(nestedFailureCaught.get());
+        assertEquals(ADDED, sourceResult.status());
     }
 
     @Test
