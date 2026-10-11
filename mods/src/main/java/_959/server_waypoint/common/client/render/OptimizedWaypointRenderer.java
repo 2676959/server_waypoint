@@ -677,6 +677,7 @@ public final class OptimizedWaypointRenderer {
         }
 
         sortVisibleDepthKeys(renderCount);
+        int hoveredIconSlot = -1;
         for (int sortedIndex = renderCount - 1; sortedIndex >= 0; sortedIndex--) {
             int visibleSlot = unpackVisibleSlot(visibleDepthSortKey[sortedIndex]);
             int waypointIndex = visibleIndex[visibleSlot];
@@ -698,21 +699,40 @@ public final class OptimizedWaypointRenderer {
                     iconScale, initialsTextWidth[waypointIndex], initialsWidth,
                     backgroundColor, fgColor[waypointIndex]);
             if (kind != WaypointIconRenderer.Kind.INITIALS) {
-                float iconLeft = left + WorldWaypointMarkerLayout.iconLeft(initialsWidth) * iconScale;
-                if (DRAW_ICON_BACKGROUND) {
-                    drawIconFill(context, iconLeft, top, iconScale, backgroundColor);
-                }
-                int iconAlpha = waypointIndex == hoveredIndex ? 255 : WAYPOINT_BG_ALPHA_MASK >>> 24;
-                if (kind == WaypointIconRenderer.Kind.ITEM) {
-                    WaypointIconRenderer.drawScaledWorldItem(context, icon,
-                            iconLeft, top, iconScale, iconAlpha);
+                if (waypointIndex == hoveredIndex) {
+                    hoveredIconSlot = visibleSlot;
                 } else {
-                    WaypointIconRenderer.drawScaledVoxelMap(context, icon,
-                            iconLeft, top, iconScale, iconAlpha, bgColor[waypointIndex]);
+                    drawWaypointIcon(context, visibleSlot, WAYPOINT_BG_ALPHA_MASK >>> 24);
                 }
-                finishGuiLayer(context);
             }
         }
+
+        // Keep badges in distance order, but lift the hovered icon above every other marker.
+        if (hoveredIconSlot != -1) {
+            drawWaypointIcon(context, hoveredIconSlot, 255);
+        }
+    }
+
+    private static void drawWaypointIcon(GuiGraphicsExtractor context, int visibleSlot, int alpha) {
+        int waypointIndex = visibleIndex[visibleSlot];
+        WaypointIconRenderer.ResolvedIcon icon = icons[waypointIndex];
+        float iconScale = visibleIconScale[visibleSlot];
+        float initialsWidth = initialsTextBgWidth[waypointIndex];
+        int markerWidth = WorldWaypointMarkerLayout.width(icon.kind(), initialsWidth);
+        float left = getBoxLeft(visibleWinX[visibleSlot], markerWidth, iconScale)
+                + WorldWaypointMarkerLayout.iconLeft(initialsWidth) * iconScale;
+        float top = WorldWaypointMarkerLayout.markerTop(icon.kind(), textBgHeight,
+                visibleWinY[visibleSlot], iconScale);
+        if (DRAW_ICON_BACKGROUND) {
+            drawIconFill(context, left, top, iconScale, WAYPOINT_BG_ALPHA_MASK | bgColor[waypointIndex]);
+        }
+        if (icon.kind() == WaypointIconRenderer.Kind.ITEM) {
+            WaypointIconRenderer.drawScaledWorldItem(context, icon, left, top, iconScale, alpha);
+        } else {
+            WaypointIconRenderer.drawScaledVoxelMap(context, icon, left, top, iconScale, alpha,
+                    bgColor[waypointIndex]);
+        }
+        finishGuiLayer(context);
     }
 
     private static void drawIconFill(GuiGraphicsExtractor context, float left, float top,
