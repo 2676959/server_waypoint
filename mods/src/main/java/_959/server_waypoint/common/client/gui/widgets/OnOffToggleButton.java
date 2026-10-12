@@ -4,8 +4,8 @@ import _959.server_waypoint.common.client.gui.api.ToggleButtonCallback;
 
 import net.minecraft.network.chat.Component;
 
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DANGER_BACKGROUND;
-import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SUCCESS_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TOGGLE_OFF_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TOGGLE_ON_BACKGROUND;
 
 /** A 50×11 toggle that reads On or Off. */
 public class OnOffToggleButton extends ToggleButton {
@@ -17,8 +17,8 @@ public class OnOffToggleButton extends ToggleButton {
                 11,
                 Component.translatable("server_waypoint.config.off"),
                 Component.translatable("server_waypoint.config.on"),
-                DANGER_BACKGROUND,
-                SUCCESS_BACKGROUND,
+                TOGGLE_OFF_BACKGROUND,
+                TOGGLE_ON_BACKGROUND,
                 callback
         );
     }

@@ -34,6 +34,8 @@ public enum WidgetThemeVariable {
     SCROLLBAR_THUMB_ACTIVE("scrollbar.thumbActive"),
     SCROLLBAR_THUMB_DISABLED("scrollbar.thumbDisabled"),
     SLIDER_THUMB_DISABLED("slider.thumbDisabled"),
+    TOGGLE_ON_BACKGROUND("toggle.onBackground"),
+    TOGGLE_OFF_BACKGROUND("toggle.offBackground"),
     SUCCESS("status.success"),
     WARNING("status.warning"),
     DANGER("status.danger"),

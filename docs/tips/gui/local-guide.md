@@ -683,13 +683,18 @@ Use `withoutBackground()` to remove the fill in every state, including hover and
 as the reset and clear buttons do. Their outlines and icon tints still follow the theme.
 
 `ToggleButton` takes each state's fill either as a `WidgetThemeVariable`, which follows the theme (as
-`OnOffToggleButton` does with `SUCCESS_BACKGROUND` and `DANGER_BACKGROUND`), or as an int ARGB, which is
+`OnOffToggleButton` does with `TOGGLE_ON_BACKGROUND` and `TOGGLE_OFF_BACKGROUND`), or as an int ARGB, which is
 used as given and never follows the theme. The waypoint form's Visibility toggle uses fixed colors on
 purpose: Local is green and Global is blue in every theme, so keep it off the theme roles. A toggle paints
 only its one fill, so pass the alpha you want over the panel. The form's `LOCAL_TOGGLE_COLOR` and
 `GLOBAL_TOGGLE_COLOR` are the previous release's #04E500 and #005AE5 at 60% over its 53%-black button fill,
 flattened into one layer, and `WaypointFormToggleColorsTest` pins them to those pixels. The outline, the
 hover and focus ring, the label color and the disabled look still follow the theme.
+
+`OnOffToggleButton` uses `toggle.onBackground` for On and `toggle.offBackground` for Off. These are
+independent of the status fills, so editing a status chip's color does not recolor the toggle. Every preset
+starts with its previous On/Off colors. Both keys are editable and saved through the ordinary theme system,
+and selecting either key marks the On and Off preview samples because both samples can be toggled.
 
 The main base classes have distinct roles:
 
