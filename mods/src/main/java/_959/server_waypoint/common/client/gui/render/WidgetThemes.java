@@ -123,45 +123,6 @@ public final class WidgetThemes {
             .build();
 
     /**
-     * Pale glass surfaces with dark labels, blue focus highlights, and soft status fills.
-     */
-    public static final WidgetTheme LIGHT = WidgetTheme.builder()
-            .setColor(WidgetThemeVariable.TEXT_PRIMARY, 0xFF202830)
-            .setColor(WidgetThemeVariable.TEXT_MUTED, 0xFF465361)
-            .setColor(WidgetThemeVariable.TEXT_DISABLED, 0xFF687583)
-            .setColor(WidgetThemeVariable.TEXT_PLACEHOLDER, 0xFF465361)
-            .setColor(WidgetThemeVariable.TEXT_ON_ACCENT, 0xFF202830)
-            .setColor(WidgetThemeVariable.SCREEN_BACKGROUND, 0xD9F0F3F7)
-            .setColor(WidgetThemeVariable.PANEL_BACKGROUND, 0xCCF8FAFC)
-            .setColor(WidgetThemeVariable.POPUP_BACKGROUND, 0xFAF8FAFC)
-            .setColor(WidgetThemeVariable.DIALOG_BACKGROUND, 0xFCF8FAFC)
-            .setColor(WidgetThemeVariable.CONTROL_BACKGROUND, 0xD9FFFFFF)
-            .setColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND, 0xE6E1EAF3)
-            .setColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND, 0xD9E1E6ED)
-            .setColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND, 0xE6B8D7F5)
-            .setColor(WidgetThemeVariable.BORDER, 0x00202830)
-            .setColor(WidgetThemeVariable.DECOR_LINE, 0x40465361)
-            .setColor(WidgetThemeVariable.FOCUS_RING, 0xFF205E98)
-            .setColor(WidgetThemeVariable.ACCENT, 0xFFD0E3F5)
-            .setColor(WidgetThemeVariable.ACCENT_HOVER, 0xFFB8D7F5)
-            .setColor(WidgetThemeVariable.SELECTION_BACKGROUND, 0xE6B8D7F5)
-            .setColor(WidgetThemeVariable.ROW_HOVER_BACKGROUND, 0x66B8D7F5)
-            .setColor(WidgetThemeVariable.SCROLLBAR_TRACK, 0x00000000)
-            .setColor(WidgetThemeVariable.SCROLLBAR_THUMB, 0xFF687583)
-            .setColor(WidgetThemeVariable.SCROLLBAR_THUMB_ACTIVE, 0xFF205E98)
-            .setColor(WidgetThemeVariable.SCROLLBAR_THUMB_DISABLED, 0xFF8995A1)
-            .setColor(WidgetThemeVariable.SLIDER_THUMB_DISABLED, 0xFF8995A1)
-            .setColor(WidgetThemeVariable.TOGGLE_ON_BACKGROUND, 0xE6C4E5D2)
-            .setColor(WidgetThemeVariable.TOGGLE_OFF_BACKGROUND, 0xE6F0CDD0)
-            .setColor(WidgetThemeVariable.SUCCESS, 0xFF17643B)
-            .setColor(WidgetThemeVariable.WARNING, 0xFF745000)
-            .setColor(WidgetThemeVariable.DANGER, 0xFFA32732)
-            .setColor(WidgetThemeVariable.SUCCESS_BACKGROUND, 0xE6C4E5D2)
-            .setColor(WidgetThemeVariable.WARNING_BACKGROUND, 0xE6F4E0B5)
-            .setColor(WidgetThemeVariable.DANGER_BACKGROUND, 0xE6F0CDD0)
-            .build();
-
-    /**
      * Neutral translucent surfaces and bright status colors from the supplied widget theme.
      */
     public static final WidgetTheme CLASSIC = WidgetTheme.builder()

@@ -8,8 +8,7 @@ public enum WidgetThemeSelection {
     TRANSLUCENT_DARK(WidgetThemes.TRANSLUCENT_DARK),
     MODERN_DARK(WidgetThemes.MODERN_DARK),
     HIGH_CONTRAST(WidgetThemes.HIGH_CONTRAST),
-    CLASSIC(WidgetThemes.CLASSIC),
-    LIGHT(WidgetThemes.LIGHT);
+    CLASSIC(WidgetThemes.CLASSIC);
 
     private final WidgetTheme preset;
 

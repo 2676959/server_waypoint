@@ -47,13 +47,6 @@ class WidgetThemeTest {
         assertReadableAcrossWorlds(WidgetThemes.MODERN_DARK);
     }
 
-    @Test
-    void lightThemeRetainsReadableContrastAcrossBrightAndDarkWorlds() {
-        WidgetTheme light = WidgetThemeSelection.LIGHT.resolve(WidgetThemes.CLASSIC);
-
-        assertReadableAcrossWorlds(light);
-    }
-
     private static void assertReadableAcrossWorlds(WidgetTheme theme) {
         assertTrue(alpha(theme.getColor(WidgetThemeVariable.POPUP_BACKGROUND)) >= 250);
         for (int world : new int[]{0xFF000000, 0xFFFFFFFF, 0xFF87B9F0}) {

@@ -514,13 +514,6 @@ The pixel check in `WidgetThemeTest` pins the composed panel, control, scrollbar
 across black, white, and sky-blue world backgrounds. This palette retains its supplied colors exactly;
 its translucent hover, selected, and status fills do not guarantee the same contrast as the other presets.
 
-`WidgetThemes.LIGHT` uses pale translucent surfaces, dark primary/muted/placeholder text, blue focus and
-selection highlights, and soft green, amber, and red status fills with dark matching text. Its screen overlay
-is 85% opaque and panels 80% opaque; popups and dialogs are nearly opaque so underlying labels do not bleed
-through. Default borders and scrollbar tracks are transparent. Text, focus, disabled labels, and scrollbar
-contrast are checked after compositing over black, white, and sky-blue worlds. Select Light through the
-editor dropdown or `WidgetThemeManager.setTheme(WidgetThemes.LIGHT)`.
-
 `DIALOG_BACKGROUND` is reserved for `DialogWidget`, which always renders above other controls;
 presets can give it a stronger tint or opacity than `POPUP_BACKGROUND`. Keep suggestion lists, color-picker popups, and other
 non-modal floating surfaces on `POPUP_BACKGROUND`. Hovered controls and rows use lighter
@@ -1070,7 +1063,7 @@ clears it before and after.
 - **Look:** the `POPUP_BACKGROUND` fill, a one-pixel `BORDER` outline and `TEXT_PRIMARY` text with a
   shadow, all resolved each time the tooltip is drawn, so a theme change shows in the next frame. The
   text wraps at 170 pixels like vanilla's tooltip, and the box extends 4 pixels past the text on every
-  side. The dark themes, Classic, and Light have a transparent default border, so their tooltips have no
+  side. The dark themes and Classic have a transparent default border, so their tooltips have no
   outline.
 - **A control's tooltip:** call `setTooltip(Component)` on the control, and remove it with
   `setTooltip((Component) null)`: a bare `null` is ambiguous next to vanilla's `setTooltip(Tooltip)` and
@@ -1603,7 +1596,7 @@ its top, or its bottom after `setExpansionDirection(REVERSE)`. A subclass suppli
 leave the selected choice out of the popup, `getSelectedMenuItemIndex()`.
 
 - **Theme dropdown:** `ThemeSelector`, an inner class of the screen, offers Custom, Translucent Dark, Modern
-  Dark, High Contrast, Classic and Light (`WidgetThemeSelection`) and previews a choice at once. It is as wide as its
+  Dark, High Contrast and Classic (`WidgetThemeSelection`) and previews a choice at once. It is as wide as its
   widest label, so it keeps its width whichever theme is selected. The screen registers it once, routes
   clicks on its popup before the controls it covers and draws the popup after the footer. Its tooltip is
   hidden while the popup is open (`onExpandedChanged`), because the tooltip would sit on the popup's first
