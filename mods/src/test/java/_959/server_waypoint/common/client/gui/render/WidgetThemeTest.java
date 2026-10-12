@@ -9,6 +9,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WidgetThemeTest {
     @Test
+    void lightPresetKeepsTextReadableAcrossBrightAndDarkWorldsWithoutShadows() {
+        WidgetTheme theme = WidgetThemeSelection.LIGHT.resolve(WidgetThemes.DEFAULT);
+
+        assertEquals(false, theme.getBoolean(WidgetThemeVariable.TEXT_SHADOW));
+        assertReadableAcrossWorlds(theme);
+    }
+
+    @Test
     void modernDarkThemeDefinesEveryVariable() {
         WidgetTheme theme = WidgetTheme.modernDark();
 

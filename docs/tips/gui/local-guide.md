@@ -491,7 +491,7 @@ Theme colors are semantic ARGB roles, not widget-specific constants. Choose the 
 
 These roles apply to GUI chrome and state. A waypoint's user-selected color is domain data, and RGB/HSV picker gradients visualize a color space; those values can remain direct colors rather than theme roles.
 
-`TEXT_SHADOW` (`text.shadow`) is a boolean setting, enabled in every built-in theme.
+`TEXT_SHADOW` (`text.shadow`) is a boolean setting, disabled in Light and enabled in the other built-in themes.
 `WidgetThemeVariable.isBoolean()` distinguishes boolean settings from color roles. Use
 `WidgetTheme.getBoolean` / `withBoolean`, `WidgetTheme.Builder.setBoolean`, and
 `WidgetThemeManager.getBoolean` / `setBoolean` for these settings; color APIs reject boolean keys,
@@ -529,6 +529,14 @@ light labels readable, including the hovered accent state. Green, amber, and ros
 sits on darker matching fills. Both palettes are checked over black, white, and sky-blue
 world backgrounds, including status text on its matching background. Glassmorphism remains
 the shared design style; text, accents, and focus outlines stay crisp.
+
+`WidgetThemes.LIGHT` uses white glass with pale gray panels, dark slate text, sky blue (`#87CEEB`)
+accents, pale sky selection and hover fills, and deeper sky blue focus rings and scrollbar thumbs.
+Its screen overlay is 85% opaque and panels are 90% opaque;
+popups and dialogs are nearly opaque to suppress underlying labels. Green, amber, and red status
+text sits on matching pastel fills. `text.shadow` is false for this preset. Choose Light in the theme
+editor dropdown; its persistent preset ID is `light`. Text, focus, and scrollbar contrast are checked
+over black, white, and sky-blue world backgrounds.
 
 `WidgetThemes.HIGH_CONTRAST` uses stronger black and near-black glass tints, white primary
 text and borders, a yellow focus ring, and cyan accents. Its screen overlay is roughly 30%

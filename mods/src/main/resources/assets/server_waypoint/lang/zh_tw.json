@@ -205,6 +205,7 @@
   "server_waypoint.theme.preset.custom": "自訂",
   "server_waypoint.theme.preset.translucent_dark": "半透明深色",
   "server_waypoint.theme.preset.modern_dark": "現代深色",
+  "server_waypoint.theme.preset.light": "淺色",
   "server_waypoint.theme.preset.high_contrast": "高對比",
   "server_waypoint.theme.preset.classic": "經典",
   "server_waypoint.map.add_to_server": "新增至伺服器",

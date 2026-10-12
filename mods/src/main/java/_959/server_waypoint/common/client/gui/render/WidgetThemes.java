@@ -5,6 +5,48 @@ package _959.server_waypoint.common.client.gui.render;
  */
 public final class WidgetThemes {
     /**
+     * White glass with dark slate text, sky blue accents, and no text shadows.
+     */
+    public static final WidgetTheme LIGHT = WidgetTheme.builder()
+            .setBoolean(WidgetThemeVariable.TEXT_SHADOW, false)
+            .setColor(WidgetThemeVariable.TEXT_PRIMARY, 0xFF1F2937)
+            .setColor(WidgetThemeVariable.ICON_PRIMARY, 0xFF1F2937)
+            .setColor(WidgetThemeVariable.TEXT_MUTED, 0xFF475569)
+            .setColor(WidgetThemeVariable.TEXT_DISABLED, 0xFF64748B)
+            .setColor(WidgetThemeVariable.ICON_DISABLED, 0xFF64748B)
+            .setColor(WidgetThemeVariable.TEXT_PLACEHOLDER, 0xFF475569)
+            .setColor(WidgetThemeVariable.TEXT_ON_ACCENT, 0xFF1E293B)
+            .setColor(WidgetThemeVariable.SCREEN_BACKGROUND, 0xD9FFFFFF)
+            .setColor(WidgetThemeVariable.PANEL_BACKGROUND, 0xE6F5F7FA)
+            .setColor(WidgetThemeVariable.POPUP_BACKGROUND, 0xFAFFFFFF)
+            .setColor(WidgetThemeVariable.DIALOG_BACKGROUND, 0xFCFFFFFF)
+            .setColor(WidgetThemeVariable.CONTROL_BACKGROUND, 0xF2FFFFFF)
+            .setColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND, 0xF2F0F9FF)
+            .setColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND, 0xE6E8EDF3)
+            .setColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND, 0xF2E0F2FE)
+            .setColor(WidgetThemeVariable.BORDER, 0x0094A3B8)
+            .setColor(WidgetThemeVariable.DECOR_LINE, 0x8087CEEB)
+            .setColor(WidgetThemeVariable.FOCUS_RING, 0xFF0284C7)
+            .setColor(WidgetThemeVariable.ACCENT, 0xFF87CEEB)
+            .setColor(WidgetThemeVariable.ACCENT_HOVER, 0xFF7DD3FC)
+            .setColor(WidgetThemeVariable.SELECTION_BACKGROUND, 0xF2E0F2FE)
+            .setColor(WidgetThemeVariable.ROW_HOVER_BACKGROUND, 0xB3E0F2FE)
+            .setColor(WidgetThemeVariable.SCROLLBAR_TRACK, 0xE6E0F2FE)
+            .setColor(WidgetThemeVariable.SCROLLBAR_THUMB, 0xFF0284C7)
+            .setColor(WidgetThemeVariable.SCROLLBAR_THUMB_ACTIVE, 0xFF0369A1)
+            .setColor(WidgetThemeVariable.SCROLLBAR_THUMB_DISABLED, 0xFF94A3B8)
+            .setColor(WidgetThemeVariable.SLIDER_THUMB_DISABLED, 0xFF94A3B8)
+            .setColor(WidgetThemeVariable.TOGGLE_ON_BACKGROUND, 0xF2DCFCE7)
+            .setColor(WidgetThemeVariable.TOGGLE_OFF_BACKGROUND, 0xF2FEE2E2)
+            .setColor(WidgetThemeVariable.SUCCESS, 0xFF166534)
+            .setColor(WidgetThemeVariable.WARNING, 0xFF854D0E)
+            .setColor(WidgetThemeVariable.DANGER, 0xFF991B1B)
+            .setColor(WidgetThemeVariable.SUCCESS_BACKGROUND, 0xF2DCFCE7)
+            .setColor(WidgetThemeVariable.WARNING_BACKGROUND, 0xF2FEF3C7)
+            .setColor(WidgetThemeVariable.DANGER_BACKGROUND, 0xF2FEE2E2)
+            .build();
+
+    /**
      * Blue-gray glass with cyan focus highlights and dark teal accent fills for light text.
      */
     public static final WidgetTheme MODERN_DARK = WidgetTheme.builder()
