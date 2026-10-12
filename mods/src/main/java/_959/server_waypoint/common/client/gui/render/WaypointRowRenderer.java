@@ -31,10 +31,10 @@ public final class WaypointRowRenderer {
     }
 
     public static int icon(GuiGraphicsExtractor context, Font font, WaypointIconRenderer.ResolvedIcon icon,
-                           int x, int y, int size, int waypointColor) {
+                           int x, int y, int size, int waypointColor, int alpha) {
         int badgeWidth = font.lineHeight;
         WaypointIconRenderer.drawForWaypoint(context, icon, x + (badgeWidth - size) / 2, y, size,
-                waypointColor);
+                waypointColor, alpha);
         return size;
     }
 }

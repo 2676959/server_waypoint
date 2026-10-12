@@ -104,8 +104,16 @@ public final class WaypointIconRenderer {
     /** Draws a saved waypoint's icon, tinting VoxelMap images with its RGB color. */
     public static void drawForWaypoint(GuiGraphicsExtractor context, ResolvedIcon icon,
                                        int x, int y, int size, int waypointColor) {
+        drawForWaypoint(context, icon, x, y, size, waypointColor, 255);
+    }
+
+    /** Draws a saved waypoint's icon with its RGB color and caller-selected alpha. */
+    public static void drawForWaypoint(GuiGraphicsExtractor context, ResolvedIcon icon,
+                                       int x, int y, int size, int waypointColor, int alpha) {
         if (icon.kind() == Kind.VOXELMAP) {
-            drawScaledVoxelMap(context, icon, x, y, size / 16.0F, 255, waypointColor);
+            drawScaledVoxelMap(context, icon, x, y, size / 16.0F, alpha, waypointColor);
+        } else if (icon.kind() == Kind.ITEM && alpha < 255) {
+            drawScaledWorldItem(context, icon, x, y, size / 16.0F, alpha);
         } else {
             draw(context, icon, x, y, size);
         }
@@ -120,7 +128,7 @@ public final class WaypointIconRenderer {
         pop(context);
     }
 
-    /** Draws only the in-world item icon with the marker background alpha. */
+    /** Draws an item icon with caller-selected alpha, in world markers or GUI rows. */
     public static void drawScaledWorldItem(GuiGraphicsExtractor context, ResolvedIcon icon,
                                            float left, float top, float scale, int alpha) {
         //? if >= 1.21.6 {
