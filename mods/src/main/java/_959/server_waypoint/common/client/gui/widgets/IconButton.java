@@ -110,7 +110,7 @@ public class IconButton extends ShiftableButtonWidget implements Expandable {
                 iconWidth = Math.max(1, (int) Math.round(region.width() * scale));
                 iconHeight = Math.max(1, (int) Math.round(region.height() * scale));
             }
-            // An inactive icon takes the disabled text color, so it reads as unavailable.
+            // White source pixels take the current theme's normal or disabled icon color.
             texture(
                     context,
                     icon,

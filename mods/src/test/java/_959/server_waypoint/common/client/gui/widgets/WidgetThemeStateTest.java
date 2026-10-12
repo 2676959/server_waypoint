@@ -1,6 +1,7 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
+import _959.server_waypoint.common.client.gui.render.WidgetThemeJson;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -57,11 +58,26 @@ class WidgetThemeStateTest {
     }
 
     @Test
-    void inactiveIconsTakeTheDisabledTextColorAndActiveIconsKeepTheirOwn() {
-        WidgetThemeManager.setColor(WidgetThemeVariable.TEXT_DISABLED, 0xFF444444);
+    void iconColorsUpdateIndependentlyOfTextColors() {
+        WidgetThemeManager.setTheme(WidgetThemeJson.fromJson("""
+                {"formatVersion": 1, "colors": {
+                  "icon.primary": "#FF123456", "icon.disabled": "#80456789",
+                  "text.primary": "#FFABCDEF", "text.disabled": "#FF444444"
+                }}
+                """));
 
-        assertEquals(0xFF444444, WidgetThemeState.iconTint(false));
-        assertEquals(0xFFFFFFFF, WidgetThemeState.iconTint(true));
+        assertEquals(0xFF123456, WidgetThemeState.iconTint(true));
+        assertEquals(0x80456789, WidgetThemeState.iconTint(false));
+        assertEquals(0xFFABCDEF, WidgetThemeState.text(true));
+        assertEquals(0xFF444444, WidgetThemeState.text(false));
+
+        WidgetThemeManager.setTheme(WidgetThemeJson.fromJson("""
+                {"formatVersion": 1, "colors": {
+                  "icon.primary": "#FF987654", "icon.disabled": "#40345678"
+                }}
+                """));
+        assertEquals(0xFF987654, WidgetThemeState.iconTint(true));
+        assertEquals(0x40345678, WidgetThemeState.iconTint(false));
     }
 
     @Test

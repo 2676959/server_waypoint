@@ -74,6 +74,8 @@ public final class DrawContextHelper {
         *///?} else {
         /*context.flush();
         float[] previous = RenderSystem.getShaderColor().clone();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderColor(((color >> 16) & 0xFF) / 255.0F, ((color >> 8) & 0xFF) / 255.0F,
                 (color & 0xFF) / 255.0F, ((color >>> 24) & 0xFF) / 255.0F);
         try {
@@ -81,6 +83,7 @@ public final class DrawContextHelper {
             context.flush();
         } finally {
             RenderSystem.setShaderColor(previous[0], previous[1], previous[2], previous[3]);
+            RenderSystem.disableBlend();
         }
         *///?}
     }

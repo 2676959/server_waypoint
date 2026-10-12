@@ -161,7 +161,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
                 Component.translatable("server_waypoint.theme.reset_key"), WidgetTextures.RESET_ICON, this::revertKey)
                 .withoutBackground()
                 .withIconPadding(2)
-                .withIconRegion(7, 7, 34, 32, 48, 48);
+                .withIconRegion(9, 9, 46, 43, 64, 64);
         this.resetKeyButton.setTooltip(Component.translatable("server_waypoint.theme.reset_key"));
         this.alphaLabel = new ScalableText(0, 0, Component.translatable("server_waypoint.theme.alpha"),
                 ROW_SCALE, TEXT_PRIMARY, this.font);

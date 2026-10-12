@@ -198,7 +198,8 @@ class WidgetThemePreviewTest {
     @Test
     void theDisabledButtonAndTheSecondSliderAreNeverActive() {
         for (PreviewSample sample : PreviewSample.values()) {
-            boolean inactiveLook = sample == PreviewSample.DISABLED_BUTTON || sample == PreviewSample.DISABLED_SLIDER;
+            boolean inactiveLook = sample == PreviewSample.DISABLED_BUTTON || sample == PreviewSample.DISABLED_ICON_BUTTON
+                    || sample == PreviewSample.DISABLED_SLIDER;
             assertEquals(!inactiveLook, WidgetThemePreview.sampleActive(sample, true), sample.name());
             assertFalse(WidgetThemePreview.sampleActive(sample, false), sample.name());
         }

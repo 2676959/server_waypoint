@@ -788,7 +788,8 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
                 listIconSize,
                 listIconSize,
                 listIconSize,
-                listIconSize
+                listIconSize,
+                WidgetThemeState.iconTint(this.active)
         );
     }
 
@@ -812,32 +813,32 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         boolean isListEmpty = waypointList.isEmpty();
         if (hovered) {
             if (isListEmpty) {
-                texture(context, WidgetTextures.ADD_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                texture(context, WidgetTextures.ADD_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize, WidgetThemeState.iconTint(this.active));
                 if (removeClickedPos == getHoveredRow()) {
-                    texture(context, WidgetTextures.CONFIRM_REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    texture(context, WidgetTextures.CONFIRM_REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize, WidgetThemeState.iconTint(this.active));
                 } else {
-                    texture(context, WidgetTextures.REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    texture(context, WidgetTextures.REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize, WidgetThemeState.iconTint(this.active));
                     removeClickedPos = -1;
                 }
             } else {
                 if (canToggleVisibility(dimensionName)) {
                     if (isListShow) {
-                        texture(context, WidgetTextures.SHOW_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                        texture(context, WidgetTextures.SHOW_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize, WidgetThemeState.iconTint(this.active));
                     } else {
-                        texture(context, WidgetTextures.HIDE_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                        texture(context, WidgetTextures.HIDE_ICON, secondBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize, WidgetThemeState.iconTint(this.active));
                     }
                 }
-                texture(context, WidgetTextures.ADD_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                texture(context, WidgetTextures.ADD_ICON, thirdBtnXPos + buttonIconHrzOffset, centeredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize, WidgetThemeState.iconTint(this.active));
             }
         }
 
         drawText(context, textRenderer, parseFormattedText(waypointList.displayName()), indent + 18, rowY + textVertOffset, textColor, true);
         if (isListEmpty) {
-            texture(context, WidgetTextures.LIST_EMPTY, indent, rowY + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
+            texture(context, WidgetTextures.LIST_EMPTY, indent, rowY + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize, WidgetThemeState.iconTint(this.active));
         } else if (waypointList.isExpand()) {
-            texture(context, WidgetTextures.LIST_EXPAND_ICON, indent, rowY + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
+            texture(context, WidgetTextures.LIST_EXPAND_ICON, indent, rowY + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize, WidgetThemeState.iconTint(this.active));
         } else {
-            texture(context, WidgetTextures.LIST_COLLAPSE_ICON, indent, rowY + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize);
+            texture(context, WidgetTextures.LIST_COLLAPSE_ICON, indent, rowY + listIconVertOffset, 0, 0, listIconSize, listIconSize, listIconSize, listIconSize, WidgetThemeState.iconTint(this.active));
         }
     }
 
@@ -863,16 +864,16 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
             int wpCenteredBtnY = rowY + buttonIconVertOffset;
             if (canToggleVisibility(waypointNode.dimensionName())) {
                 if (wpRendered) {
-                    texture(context, WidgetTextures.SHOW_ICON, firstBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    texture(context, WidgetTextures.SHOW_ICON, firstBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize, WidgetThemeState.iconTint(this.active));
                 } else {
-                    texture(context, WidgetTextures.HIDE_ICON, firstBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                    texture(context, WidgetTextures.HIDE_ICON, firstBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize, WidgetThemeState.iconTint(this.active));
                 }
             }
-            texture(context, WidgetTextures.EDIT_ICON, secondBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+            texture(context, WidgetTextures.EDIT_ICON, secondBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize, WidgetThemeState.iconTint(this.active));
             if (removeClickedPos == getHoveredRow()) {
-                texture(context, WidgetTextures.CONFIRM_REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                texture(context, WidgetTextures.CONFIRM_REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize, WidgetThemeState.iconTint(this.active));
             } else {
-                texture(context, WidgetTextures.REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize);
+                texture(context, WidgetTextures.REMOVE_ICON, thirdBtnXPos + buttonIconHrzOffset, wpCenteredBtnY, 0, 0, buttonIconSize, buttonIconSize, buttonIconSize, buttonIconSize, WidgetThemeState.iconTint(this.active));
                 removeClickedPos = -1;
             }
         }

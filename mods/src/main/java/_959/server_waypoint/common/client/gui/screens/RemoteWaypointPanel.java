@@ -1,6 +1,8 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.screens;
 
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.getIconColor;
+
 import com.mojang.blaze3d.platform.InputConstants;
 import _959.server_waypoint.common.client.RemoteClientCatalogs;
 import _959.server_waypoint.common.client.WaypointClientMod;
@@ -340,7 +342,8 @@ final class RemoteWaypointPanel {
                 }
                 texture(context, node.children().isEmpty() ? WidgetTextures.LIST_EMPTY
                         : isExpanded(node) ? WidgetTextures.LIST_EXPAND_ICON : WidgetTextures.LIST_COLLAPSE_ICON,
-                        indent, rowY + 2, 0, 0, 16, 16, 16, 16);
+                        indent, rowY + 2, 0, 0, 16, 16, 16, 16,
+                        getIconColor(this.active));
                 Component label;
                 if (node.path().list() != null && view != null && view.snapshot() != null) {
                     var list = view.snapshot().dimensions().getOrDefault(node.path().dimension(), Map.of()).get(node.path().list());

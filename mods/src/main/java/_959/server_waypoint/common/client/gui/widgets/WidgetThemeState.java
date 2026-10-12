@@ -1,5 +1,7 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.getIconColor;
+
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.BORDER;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.CONTROL_BACKGROUND;
@@ -56,9 +58,9 @@ final class WidgetThemeState {
         return getColor(active ? TEXT_ON_ACCENT : TEXT_DISABLED);
     }
 
-    /** What an icon's pixels are multiplied by: white keeps an active icon's colors. */
+    /** What a white GUI icon's pixels are multiplied by in the current theme. */
     static int iconTint(boolean active) {
-        return active ? 0xFFFFFFFF : getColor(TEXT_DISABLED);
+        return getIconColor(active);
     }
 
     static int disabledOverlay() {

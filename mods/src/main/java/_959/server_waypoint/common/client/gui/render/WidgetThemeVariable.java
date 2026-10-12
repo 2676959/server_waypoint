@@ -14,6 +14,8 @@ public enum WidgetThemeVariable {
     TEXT_DISABLED("text.disabled"),
     TEXT_PLACEHOLDER("text.placeholder"),
     TEXT_ON_ACCENT("text.onAccent"),
+    ICON_PRIMARY("icon.primary"),
+    ICON_DISABLED("icon.disabled"),
     TEXT_SHADOW("text.shadow", true),
     SCREEN_BACKGROUND("background.screen"),
     PANEL_BACKGROUND("background.panel"),

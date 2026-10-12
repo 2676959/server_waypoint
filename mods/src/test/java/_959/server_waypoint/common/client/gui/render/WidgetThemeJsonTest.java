@@ -14,6 +14,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WidgetThemeJsonTest {
     @Test
+    void independentIconColorsRoundTripThroughJson() {
+        WidgetThemeVariable primary = WidgetThemeVariable.fromJsonName("icon.primary").orElseThrow();
+        WidgetThemeVariable disabled = WidgetThemeVariable.fromJsonName("icon.disabled").orElseThrow();
+        WidgetTheme theme = WidgetThemeJson.fromJson("""
+                {"formatVersion": 1, "colors": {
+                  "icon.primary": "#FF123456", "icon.disabled": "#80456789"
+                }}
+                """);
+        WidgetTheme restored = WidgetThemeJson.fromJson(WidgetThemeJson.toJson(theme));
+
+        assertEquals(0xFF123456, restored.getColor(primary));
+        assertEquals(0x80456789, restored.getColor(disabled));
+    }
+
+    @Test
     void textShadowRoundTripsAsABoolean() {
         WidgetTheme theme = WidgetThemeJson.fromJson("""
                 {"formatVersion": 1, "colors": {}, "booleans": {"text.shadow": false}}

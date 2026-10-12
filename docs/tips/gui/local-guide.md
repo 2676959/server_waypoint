@@ -439,11 +439,15 @@ over the dropdown's popup (see the manager's sort popup below). Disabling contro
 suppress hover or cursor requests during rendering.
 
 `DrawContextHelper.texture` has an overload with a trailing ARGB color that multiplies every pixel
-of the texture, as `IconButton` does to tint an inactive icon. It uses the colored blit on 1.21.2
+of the texture, as `IconButton` does to tint GUI icons. It uses the colored blit on 1.21.2
 and later, and a shader color around the blit before that.
 Its source-region overload takes separate source and destination dimensions for scaling a cropped
 region while preserving the same tint behavior.
-The manager's sidebar icon controls use `TEXT_DISABLED` for inactive icons and leave the panel
+GUI chrome icons use `ICON_PRIMARY` (`icon.primary`) while active and `ICON_DISABLED`
+(`icon.disabled`) while inactive, independently of text colors. `WidgetThemeColors.getIconColor(active)`
+resolves the appropriate role from the live theme on each draw. The manager's sidebar controls,
+`IconButton`, local list actions and expansion icons, and remote tree expansion icons use this tint.
+The manager's sidebar icon controls use `ICON_DISABLED` for inactive icons and leave the panel
 background visible, including the sort-order toggle when default sorting is selected. Popup rows
 keep their own disabled fill because they float over other controls.
 
@@ -458,6 +462,19 @@ Use the other render classes as follows:
 - `PaddingBackground` renders the background/outline associated with a padded widget or layout.
 - Small pure presentation calculations, such as `WaypointSortButtonLabel`, belong here when they are reusable and easy to unit test.
 
+The 25 reusable GUI textures are transparent 64×64 white masks downloaded from Google Material
+Symbols Sharp, with FILL 0, weight 400, grade 200 and optical size 48. White RGB preserves the exact
+selected ARGB tint; antialiasing remains in the alpha channel. The source URL follows
+`https://fonts.gstatic.com/s/i/short-term/release/materialsymbolssharp/<symbol>/grad200/48px.svg`;
+render that vector at 64×64 with `#FFFFFF` fill. Resource names map directly to symbol names except:
+`add` → `add_2`, `clear` → `close`, `confirm_delete` → `delete_forever`, `cube` → `deployed_code`,
+`edit` → `edit_square`, `hide` → `visibility_off`, `lan_servers` → `lan`,
+`list_collapse` → `keyboard_arrow_right`, `list_empty` → `check_indeterminate_small`,
+`list_expand` → `keyboard_arrow_down`, `placeholder` → `square`, `reset` → `redo`,
+`show` → `visibility`, and `synced` → `cloud_sync`. Cropped reset buttons use the visible region
+`(9, 9, 46, 43)` and the clear button uses `(13, 12, 38, 39)`, within a 64×64 texture.
+Item icons and waypoint-selected colors retain their own rendering rules.
+
 Rendering helpers should not own screen navigation, networking, or feature state.
 
 ### Runtime themes
@@ -465,6 +482,7 @@ Rendering helpers should not own screen navigation, networking, or feature state
 Theme colors are semantic ARGB roles, not widget-specific constants. Choose the role by what a pixel means:
 
 - Text uses roles such as `TEXT_PRIMARY`, `TEXT_MUTED`, `TEXT_DISABLED`, and `TEXT_ON_ACCENT`.
+- GUI chrome icons use `ICON_PRIMARY` and `ICON_DISABLED`, including both real icon-button samples in the theme preview.
 - Surfaces use `SCREEN_BACKGROUND`, `PANEL_BACKGROUND`, `POPUP_BACKGROUND`, `DIALOG_BACKGROUND`,
   and the control background roles.
 - Interaction states use `FOCUS_RING`, `SELECTION_BACKGROUND`, `ROW_HOVER_BACKGROUND`, and the scrollbar roles.

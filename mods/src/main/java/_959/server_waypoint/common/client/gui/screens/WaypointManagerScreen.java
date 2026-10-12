@@ -2,6 +2,8 @@
 //~ resource_location_import
 package _959.server_waypoint.common.client.gui.screens;
 
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeColors.getIconColor;
+
 import _959.server_waypoint.common.client.ClientConfig;
 import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
@@ -1349,7 +1351,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                     iconHeight,
                     iconWidth,
                     iconHeight,
-                    widget.active ? 0xFFFFFFFF : WidgetThemeManager.getColor(WidgetThemeVariable.TEXT_DISABLED)
+                    getIconColor(widget.active)
             );
         }
     }

@@ -370,7 +370,7 @@ public class ClientConfigScreen extends MovementAllowedScreen {
                 WidgetTextures.RESET_ICON, () -> this.resetSetting(setting, widget))
                 .withoutBackground()
                 .withIconPadding(2)
-                .withIconRegion(7, 7, 34, 32, 48, 48);
+                .withIconRegion(9, 9, 46, 43, 64, 64);
         resetButton.setTooltip(resetLabel);
         this.settingControls.add(new SettingControl(setting, widget, resetButton));
         return new SettingsListWidget.Row(setting.text().label(), widget)

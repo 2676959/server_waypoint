@@ -49,7 +49,7 @@ public final class WaypointIconPicker {
                 WidgetTextures.CLEAR_ICON, () -> select(null, true))
                 .withoutBackground()
                 .withIconPadding(3)
-                .withIconRegion(10, 9, 28, 29, 48, 48);
+                .withIconRegion(13, 12, 38, 39, 64, 64);
         this.clearButton.setTooltip(clearLabel);
         this.clearButton.active = false;
     }

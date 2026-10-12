@@ -6,10 +6,12 @@ import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import _959.server_waypoint.common.client.gui.layout.VisualPositioning;
 import _959.server_waypoint.common.client.gui.layout.WidgetPack;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
+import _959.server_waypoint.common.client.gui.render.WidgetTextures;
 import _959.server_waypoint.common.client.gui.screens.PreviewPacking.Placement;
 import _959.server_waypoint.common.client.gui.widgets.AbstractDropdownMenuWidget;
 import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
 import _959.server_waypoint.common.client.gui.widgets.IntegerSlider;
+import _959.server_waypoint.common.client.gui.widgets.IconButton;
 import _959.server_waypoint.common.client.gui.widgets.OnOffToggleButton;
 import _959.server_waypoint.common.client.gui.widgets.ScalableText;
 import _959.server_waypoint.common.client.gui.widgets.SettingsListWidget;
@@ -106,7 +108,7 @@ final class WidgetThemePreview {
             List.of("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end");
     /** The samples that show the inactive look, so they are never active. */
     private static final Set<PreviewSample> NEVER_ACTIVE =
-            EnumSet.of(PreviewSample.DISABLED_BUTTON, PreviewSample.DISABLED_SLIDER);
+            EnumSet.of(PreviewSample.DISABLED_BUTTON, PreviewSample.DISABLED_ICON_BUTTON, PreviewSample.DISABLED_SLIDER);
 
     private final Map<PreviewSample, Sample> samples = new EnumMap<>(PreviewSample.class);
     /** Each family's samples, in {@link PreviewSample.Family} order, as {@link PreviewPacking#pack} takes them. */
@@ -143,6 +145,12 @@ final class WidgetThemePreview {
                 }));
         this.put(PreviewSample.DISABLED_BUTTON, TranslucentButton.fitted(
                 Component.translatable("server_waypoint.theme.preview.disabled"), () -> {
+                }));
+        this.put(PreviewSample.ICON_BUTTON, new IconButton(0, 0, CONTROL_HEIGHT, CONTROL_HEIGHT,
+                Component.translatable("server_waypoint.theme.preview.button"), WidgetTextures.ADD_ICON, () -> {
+                }));
+        this.put(PreviewSample.DISABLED_ICON_BUTTON, new IconButton(0, 0, CONTROL_HEIGHT, CONTROL_HEIGHT,
+                Component.translatable("server_waypoint.theme.preview.disabled"), WidgetTextures.ADD_ICON, () -> {
                 }));
         this.put(PreviewSample.SELECTED_TOGGLE, new ToggleButton(0, 0, TOGGLE_WIDTH, CONTROL_HEIGHT,
                 Component.translatable("server_waypoint.theme.preview.normal"),
