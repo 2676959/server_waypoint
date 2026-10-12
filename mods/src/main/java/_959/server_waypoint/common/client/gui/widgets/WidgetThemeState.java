@@ -7,7 +7,9 @@ import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.CONTROL_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.CONTROL_HOVER_BACKGROUND;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DANGER;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.FOCUS_RING;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SUCCESS;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_DISABLED;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_ON_ACCENT;
 import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.TEXT_PRIMARY;
@@ -49,9 +51,9 @@ final class WidgetThemeState {
             return text(true);
         }
         if (!matched) {
-            return 0xFFFF5555;
+            return getColor(DANGER);
         }
-        return focused ? 0xFFFFFF55 : text(true);
+        return focused ? getColor(SUCCESS) : text(true);
     }
 
     static int textOnAccent(boolean active) {

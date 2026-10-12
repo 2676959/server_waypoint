@@ -6,6 +6,9 @@ import java.util.function.IntSupplier;
 import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.Test;
 
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DANGER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SUCCESS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ComboBoxMatchingColorTest {
@@ -17,7 +20,7 @@ class ComboBoxMatchingColorTest {
         combo.setValue("overworld");
         assertEquals("overworld", combo.getValue());
         assertEquals("minecraft:overworld", combo.getResolvedValue());
-        assertEquals(0xFFFFFF55, combo.color.getAsInt());
+        assertEquals(getColor(SUCCESS), combo.color.getAsInt());
         combo.focused = false;
         assertEquals(WidgetThemeState.text(true), combo.color.getAsInt());
     }
@@ -29,35 +32,35 @@ class ComboBoxMatchingColorTest {
         combo.setValues(List.of("examplemod:moon_base"));
         combo.focused = true;
         combo.setValue("moon_base");
-        assertEquals(0xFFFF5555, combo.color.getAsInt());
+        assertEquals(getColor(DANGER), combo.color.getAsInt());
         combo.setValue("examplemod:moon_base");
-        assertEquals(0xFFFFFF55, combo.color.getAsInt());
+        assertEquals(getColor(SUCCESS), combo.color.getAsInt());
         assertEquals("examplemod:moon_base", combo.getResolvedValue());
         combo.setValues(List.of("minecraft:overworld"));
-        assertEquals(0xFFFF5555, combo.color.getAsInt());
+        assertEquals(getColor(DANGER), combo.color.getAsInt());
     }
 
     @Test
-    void exactChoiceIsYellowWhenFocusedAndNormalWhenUnfocused() {
+    void exactChoiceUsesSuccessWhenFocusedAndNormalWhenUnfocused() {
         ColorRecordingCombo combo = new ColorRecordingCombo();
         combo.useMatchingValueColors();
         combo.setValue("minecraft:overworld");
         combo.focused = true;
-        assertEquals(0xFFFFFF55, combo.color.getAsInt());
+        assertEquals(getColor(SUCCESS), combo.color.getAsInt());
         combo.focused = false;
         assertEquals(WidgetThemeState.text(true), combo.color.getAsInt());
     }
 
     @Test
-    void unmatchedAndPartialValuesStayRedRegardlessOfFocus() {
+    void unmatchedAndPartialValuesUseDangerRegardlessOfFocus() {
         ColorRecordingCombo combo = new ColorRecordingCombo();
         combo.useMatchingValueColors();
         for (boolean focused : new boolean[]{true, false}) {
             combo.focused = focused;
             combo.setValue("minecraft:over");
-            assertEquals(0xFFFF5555, combo.color.getAsInt());
+            assertEquals(getColor(DANGER), combo.color.getAsInt());
             combo.setValue("new list");
-            assertEquals(0xFFFF5555, combo.color.getAsInt());
+            assertEquals(getColor(DANGER), combo.color.getAsInt());
             combo.setValue("");
             assertEquals(WidgetThemeState.text(true), combo.color.getAsInt());
         }
@@ -69,16 +72,16 @@ class ComboBoxMatchingColorTest {
         combo.useMatchingValueColors();
         combo.focused = true;
         combo.setValue("Home Base");
-        assertEquals(0xFFFFFF55, combo.color.getAsInt());
+        assertEquals(getColor(SUCCESS), combo.color.getAsInt());
 
         combo.setValues(List.of("Mining"));
         assertEquals("Home Base", combo.getValue());
-        assertEquals(0xFFFF5555, combo.color.getAsInt());
+        assertEquals(getColor(DANGER), combo.color.getAsInt());
 
         combo.setValues(List.of("Home Base"));
-        assertEquals(0xFFFFFF55, combo.color.getAsInt());
+        assertEquals(getColor(SUCCESS), combo.color.getAsInt());
         combo.setValue("home base");
-        assertEquals(0xFFFF5555, combo.color.getAsInt(), "list identities are case-sensitive");
+        assertEquals(getColor(DANGER), combo.color.getAsInt(), "list identities are case-sensitive");
     }
 
     /** Captures the real provider supplied to the input, without starting Minecraft text input. */

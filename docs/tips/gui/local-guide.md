@@ -296,8 +296,8 @@ the candidate starts with the current text.
 color on every render; disabled text and placeholder colors remain theme-owned. Use it for input
 validation feedback instead of calling vanilla `setTextColor` once, which a theme refresh replaces.
 `ComboBoxWidget.useMatchingValueColors()` opts into colors based on exact, case-sensitive membership
-in the current popup choice catalog: yellow (`#FFFF55`) for a matched value while focused,
-normal `TEXT_PRIMARY` when matched and unfocused, and red (`#FF5555`) for a non-empty unmatched
+in the current popup choice catalog: theme `SUCCESS` for a matched value while focused,
+normal `TEXT_PRIMARY` when matched and unfocused, and theme `DANGER` for a non-empty unmatched
 value regardless of focus. Empty text keeps its normal theme color, and disabled text keeps
 `TEXT_DISABLED`. Replacing choices with `setValues` automatically changes the color on the next
 render without altering the entered text. The waypoint-add list-name combobox uses standard
@@ -1770,9 +1770,9 @@ still includes VoxelMap icons. Typing `diam` suggests
 `minecraft:diamond`, and `sword` suggests `minecraft:diamond_sword`; acceptance inserts the full
 ID. All matches stay reachable through the suggestion list without a result cap.
 
-Complete known icon IDs use yellow input text (`#FFFF55`) while focused and the normal field text
+Complete known icon IDs use theme `SUCCESS` input text while focused and the normal field text
 color (`TEXT_PRIMARY`, white in the default theme) when unfocused. Invalid and partial non-empty
-inputs remain red (`#FF5555`) regardless of focus. Bare item IDs use the `minecraft` namespace,
+inputs use theme `DANGER` regardless of focus. Bare item IDs use the `minecraft` namespace,
 so `diamond` is valid while
 bare `star` does not select a VoxelMap icon. Empty input retains the normal themed placeholder.
 Valid typed text updates the selection without replacing the text, so entering `diamond_sword`

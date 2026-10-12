@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeManager.getColor;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.DANGER;
+import static _959.server_waypoint.common.client.gui.render.WidgetThemeVariable.SUCCESS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -44,13 +47,13 @@ class WaypointIconPickerTest {
     }
 
     @Test
-    void colorsValidIdsYellowAndInvalidOrPartialIdsRed() {
-        assertEquals(0xFFFFFF55, WaypointIconPicker.inputColor(ITEMS, "diamond", true));
-        assertEquals(0xFFFFFF55, WaypointIconPicker.inputColor(ITEMS, "voxelmap:star", true));
+    void colorsValidIdsWithSuccessAndInvalidOrPartialIdsWithDanger() {
+        assertEquals(getColor(SUCCESS), WaypointIconPicker.inputColor(ITEMS, "diamond", true));
+        assertEquals(getColor(SUCCESS), WaypointIconPicker.inputColor(ITEMS, "voxelmap:star", true));
         for (boolean focused : new boolean[]{true, false}) {
-            assertEquals(0xFFFF5555, WaypointIconPicker.inputColor(ITEMS, "diam", focused));
-            assertEquals(0xFFFF5555, WaypointIconPicker.inputColor(ITEMS, "voxelmap:", focused));
-            assertEquals(0xFFFF5555, WaypointIconPicker.inputColor(ITEMS, "missing", focused));
+            assertEquals(getColor(DANGER), WaypointIconPicker.inputColor(ITEMS, "diam", focused));
+            assertEquals(getColor(DANGER), WaypointIconPicker.inputColor(ITEMS, "voxelmap:", focused));
+            assertEquals(getColor(DANGER), WaypointIconPicker.inputColor(ITEMS, "missing", focused));
             assertEquals(WidgetThemeState.text(true), WaypointIconPicker.inputColor(ITEMS, "", focused));
         }
     }
