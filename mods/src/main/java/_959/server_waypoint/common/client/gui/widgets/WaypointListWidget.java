@@ -129,6 +129,11 @@ public class WaypointListWidget extends TreeViewWidget<WaypointListWidget.RowNod
         return 0;
     }
 
+    @Override
+    protected int getScrollbarX() {
+        return getX() + getWidth();
+    }
+
     /**
      * Clears scroll and dimension-node expansion state at the start of a new server or local-world
      * session. Each dimension and the all-dimensions view retain independent scroll positions

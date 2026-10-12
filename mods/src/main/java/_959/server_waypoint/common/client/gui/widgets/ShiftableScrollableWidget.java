@@ -43,15 +43,27 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
         return this.getContentHeight() > this.height;
     }
 
+    /** The screen-space left edge of the scrollbar, shared by drawing and input. */
+    protected int getScrollbarX() {
+        return this.getX() + this.width - SCROLLBAR_WIDTH;
+    }
+
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return super.isMouseOver(mouseX, mouseY)
+                || (this.active && this.visible && this.overflows()
+                && this.checkScrollbarDragged(mouseX, mouseY, InputConstants.MOUSE_BUTTON_LEFT));
+    }
+
     public boolean checkScrollbarDragged(double mouseX, double mouseY, int button) {
         if (!this.active || button != InputConstants.MOUSE_BUTTON_LEFT) {
             return false;
         }
-        int x = this.getX();
+        int scrollbarX = this.getScrollbarX();
         int y = this.getY();
-        int right = x + this.width;
         int bottom = y + this.height;
-        return mouseX >= (double)(right - SCROLLBAR_WIDTH) && mouseX <= (double)right && mouseY >= (double)y && mouseY <= (double)bottom;
+        return mouseX >= scrollbarX && mouseX <= scrollbarX + SCROLLBAR_WIDTH
+                && mouseY >= y && mouseY <= bottom;
     }
 
     final float scrollbarOpacity(double mouseX, double mouseY, long now) {
@@ -72,9 +84,9 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
         if (opacity <= 0) {
             return;
         }
-        int x = this.getX();
+        int scrollbarX = this.getScrollbarX();
         int y = this.getY();
-        int right = x + this.width;
+        int right = scrollbarX + SCROLLBAR_WIDTH;
         int bottom = y + this.height;
         int contentHeight = this.getContentHeight();
         int handleHeight = (int)((float)(this.height * this.height) / (float)contentHeight);
@@ -86,12 +98,12 @@ public abstract class ShiftableScrollableWidget extends ShiftableClickableWidget
         
         // Background
         int trackColor = ColorHelper.scaleAlpha(getColor(SCROLLBAR_TRACK), opacity);
-        context.fill(right - SCROLLBAR_WIDTH, y, right, bottom, trackColor);
+        context.fill(scrollbarX, y, right, bottom, trackColor);
         
         // Handle
         int handleColor = ColorHelper.scaleAlpha(
                 getColor(this.scrolling ? SCROLLBAR_THUMB_ACTIVE : SCROLLBAR_THUMB), opacity);
-        context.fill(right - SCROLLBAR_WIDTH, handleY, right, handleY + handleHeight, handleColor);
+        context.fill(scrollbarX, handleY, right, handleY + handleHeight, handleColor);
     }
 
     public void refreshScroll() {

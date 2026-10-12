@@ -1935,8 +1935,16 @@ Hover anywhere in the panel's visual bounds, including `Padding`, fades in over 
 dragging keeps it visible outside those bounds. Leaving holds the current opacity for 500 ms,
 then fades out over 300 ms. Re-hovering starts a 150 ms fade from the current opacity.
 Disabled, invisible and non-overflowing panels reset immediately to hidden. This also suppresses
-config-list scrollbars behind the Xaero sync dialog. Opacity does not change the existing 3px
-scrollbar strip, content width, text wrapping, or drag hit area.
+config-list scrollbars behind the Xaero sync dialog. Opacity does not change the 3px scrollbar
+width, content width, text wrapping, or drag hit area.
+
+`ShiftableScrollableWidget.getScrollbarX()` supplies the screen-space left edge for both drawing
+and dragging. By default the strip occupies the rightmost three pixels of the content rectangle.
+`WaypointListWidget` places it in its existing four-pixel right padding, leaving one pixel for the
+border. Its rows therefore keep equal left and right insets and the same width with or without
+overflow, including while the scrollbar fades. `TreeViewWidget.getContentWidth()` reserves only
+the part of the scrollbar inside the content rectangle. `isMouseOver(...)` includes an overflowing
+panel's scrollbar strip so screens can dispatch clicks to a scrollbar placed outside that rectangle.
 
 `ScrollbarFade.update(shouldShow, now)` accepts monotonic nanoseconds and returns opacity in
 `[0, 1]`; `reset()` immediately clears its state. The helper has no Minecraft dependencies.

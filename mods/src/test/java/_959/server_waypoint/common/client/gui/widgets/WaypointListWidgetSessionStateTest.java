@@ -145,8 +145,8 @@ class WaypointListWidgetSessionStateTest {
     void scrollbarDragIsRememberedEvenBeforeMouseRelease() {
         WaypointListWidget list = widget();
         list.setSelectedDimension(OVERWORLD);
-        assertTrue(list.mouseClicked(199, 10, InputConstants.MOUSE_BUTTON_LEFT));
-        assertTrue(list.mouseDragged(199, 30, InputConstants.MOUSE_BUTTON_LEFT, 0, 20));
+        assertTrue(list.mouseClicked(201, 10, InputConstants.MOUSE_BUTTON_LEFT));
+        assertTrue(list.mouseDragged(201, 30, InputConstants.MOUSE_BUTTON_LEFT, 0, 20));
         double draggedPosition = list.getScrollY();
         assertTrue(draggedPosition > 0);
 
@@ -226,6 +226,57 @@ class WaypointListWidgetSessionStateTest {
 
         assertFalse(WaypointListWidget.isDimensionExpanded(OVERWORLD));
         assertTrue(WaypointListWidget.isDimensionExpanded(NETHER));
+    }
+
+    @Test
+    void rowInsetsStaySymmetricThroughScrollbarFadeAndResize() {
+        WaypointListWidget list = widget();
+        list.setSelectedDimension(OVERWORLD);
+        assertTrue(list.overflows());
+        assertEquals(0, list.scrollbarOpacity(-20, -20, 0));
+        assertEquals(4, list.getX() - list.getVisualX());
+        assertEquals(4, list.getVisualX() + list.getVisualWidth()
+                - (list.getX() + list.getContentWidth()));
+
+        list.scrollbarOpacity(10, 10, 0);
+        assertEquals(1, list.scrollbarOpacity(10, 10, 150_000_000L));
+        assertEquals(200, list.getContentWidth());
+        list.scrollbarOpacity(-20, -20, 150_000_000L);
+        assertEquals(0, list.scrollbarOpacity(-20, -20, 950_000_000L));
+        assertEquals(200, list.getContentWidth());
+
+        list.setVisualWidth(128);
+        list.setHeight(1000);
+        assertFalse(list.overflows());
+        assertEquals(120, list.getContentWidth());
+        list.setHeight(60);
+        assertTrue(list.overflows());
+        assertEquals(120, list.getContentWidth());
+    }
+
+    @Test
+    void scrollbarInRightPaddingCanBeTargetedAndDraggedAfterMovingAndResizing() {
+        WaypointListWidget list = widget();
+        list.setSelectedDimension(OVERWORLD);
+        list.setPosition(30, 40);
+        list.setVisualWidth(128);
+        assertTrue(list.isMouseOver(151, 50));
+        assertFalse(list.checkScrollbarDragged(149, 50, InputConstants.MOUSE_BUTTON_LEFT));
+        assertTrue(list.checkScrollbarDragged(151, 50, InputConstants.MOUSE_BUTTON_LEFT));
+        assertFalse(list.checkScrollbarDragged(154, 50, InputConstants.MOUSE_BUTTON_LEFT));
+        assertTrue(list.mouseClicked(151, 50, InputConstants.MOUSE_BUTTON_LEFT));
+        assertTrue(list.mouseDragged(151, 55, InputConstants.MOUSE_BUTTON_LEFT, 0, 5));
+        assertTrue(list.getScrollY() > 0);
+        list.mouseReleased(151, 55, InputConstants.MOUSE_BUTTON_LEFT);
+
+        list.visible = false;
+        assertFalse(list.isMouseOver(151, 50));
+        list.visible = true;
+        list.active = false;
+        assertFalse(list.isMouseOver(151, 50));
+        list.active = true;
+        list.setHeight(1000);
+        assertFalse(list.isMouseOver(151, 50));
     }
 
     private WaypointListWidget widget() {

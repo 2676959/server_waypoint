@@ -138,7 +138,7 @@ public abstract class TreeViewWidget<T> extends ShiftableScrollableWidget implem
     }
 
     protected int getContentWidth() {
-        return overflows() ? this.width - SCROLLBAR_WIDTH : this.width;
+        return overflows() ? Math.min(this.width, getScrollbarX() - getX()) : this.width;
     }
 
     protected boolean isEmpty() {
