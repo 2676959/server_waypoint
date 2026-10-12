@@ -8,7 +8,6 @@ import _959.server_waypoint.common.client.gui.layout.VisualPositioning;
 import _959.server_waypoint.common.client.gui.layout.WidgetPack;
 import _959.server_waypoint.common.client.gui.render.WaypointIconRenderer;
 import _959.server_waypoint.common.client.gui.render.WaypointRowRenderer;
-import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import _959.server_waypoint.common.client.gui.screens.WaypointFormLayout.Arrangement;
 import _959.server_waypoint.common.client.gui.screens.WaypointFormLayout.Columns;
@@ -86,6 +85,7 @@ import static _959.server_waypoint.text.FormattedTextHelper.plainText;
 import static _959.server_waypoint.util.ColorUtils.BLUE;
 import static _959.server_waypoint.util.ColorUtils.GREEN;
 import static _959.server_waypoint.util.ColorUtils.RED;
+import static _959.server_waypoint.util.ColorUtils.getSafeTextColor;
 import static _959.server_waypoint.util.ColorUtils.randomColor;
 import static _959.server_waypoint.util.WaypointInitials.getInitialsCandidatesFromName;
 
@@ -1204,9 +1204,13 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         int previewX = this.iconPreview.getX();
         int previewY = this.iconPreview.getY();
         if (resolvedIcon.kind() == WaypointIconRenderer.Kind.INITIALS) {
-            WaypointRowRenderer.initials(context, font, this.initialsEditBox.getValue(), previewX,
+            String initials = this.initialsEditBox.getValue();
+            int badgeWidth = Math.max(font.width(initials) + 2, font.lineHeight);
+            int color = this.colorPickerButton.getColor();
+            // Keep the right edge fixed so long initials grow left, away from the input.
+            WaypointRowRenderer.initials(context, font, initials, previewX + PREVIEW_SIZE - badgeWidth,
                     previewY + (PREVIEW_SIZE - font.lineHeight) / 2,
-                    this.colorPickerButton.getColor(), WidgetThemeManager.getColor(TEXT_PRIMARY));
+                    color, getSafeTextColor(color));
         } else {
             WaypointIconRenderer.drawForWaypoint(context, resolvedIcon, previewX, previewY, PREVIEW_SIZE,
                     this.colorPickerButton.getColor());
