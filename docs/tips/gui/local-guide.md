@@ -257,7 +257,8 @@ completion (also shared by `TranslucentTextField`), and
 position, size, focus, input, and rendering. Click the text area to edit and the arrow to toggle the
 list. Arbitrary text is accepted, including values absent from the list. Choosing an item replaces
 the field text. Enter opens/selects, Up/Down navigates the open popup, and typing or losing focus
-closes it. Text scrolls with the cursor; popup labels are clipped. The control and choice rows do
+closes it. Unfocused text shows its prefix; focused text scrolls with the cursor, and popup labels
+are clipped. The control and choice rows do
 not show hover tooltips because their values are already presented by the input and suggestions.
 
 Pass choices, initial text, field label, font, and `Consumer<String>` to the constructor. Duplicate
@@ -329,10 +330,11 @@ open downward when the full choice list needs to open upward. Other comboboxes r
 explicit expansion direction until this method is used.
 
 `SuggestingTextInput` is the reusable surface-free input base. It owns editing, shifted layout,
-completion state, inline text, and suggestion rendering/hit testing; `TranslucentTextField` adds
-its themed surface, whose fill `surfaceColor()` returns for the field's state. Setting its value
-while unfocused or losing focus moves the cursor and viewport to the beginning, so long values
-show their prefix. While focused, editing and cursor movement retain vanilla horizontal scrolling.
+completion state, inline text, and suggestion rendering/hit testing. Setting its value while
+unfocused or losing focus moves the cursor and viewport to the beginning, so long values show their
+prefix. This also applies to combobox inputs and `TranslucentTextField` subclasses. While focused,
+editing and cursor movement retain vanilla horizontal scrolling. `TranslucentTextField` adds
+its themed surface, whose fill `surfaceColor()` returns for the field's state.
 A field on a panel that already paints a translucent fill overrides it to leave out the resting fill, as
 `WaypointSearchBarWidget` does on the manager's list panel; hovering and the disabled look still fill.
 Such a field shows its hint through `setPlaceholder`, as the search bar does, because vanilla's fixed

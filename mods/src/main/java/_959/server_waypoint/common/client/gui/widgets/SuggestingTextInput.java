@@ -453,6 +453,10 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
         this.tabCycles = false;
         this.suggestionsDismissed = false;
         this.updateSuggestions();
+        if (!this.isFocused()) {
+            this.setCursorPosition(0);
+            this.setHighlightPos(0);
+        }
     }
 
     @Override
@@ -471,6 +475,10 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
             this.updateSuggestions();
         } else {
             this.hideSuggestions();
+        }
+        if (!this.isFocused()) {
+            this.setCursorPosition(0);
+            this.setHighlightPos(0);
         }
     }
 
