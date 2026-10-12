@@ -9,7 +9,8 @@ A major release: navigation that works without the client mod, waypoint icons, u
 - **Update servers and clients together.** 4.0.0 changes the network protocol and doesn't sync with 3.x. Use matching builds on Velocity and every participating backend too.
 - **`/wp edit` has a new syntax.** It changes one property at a time: `/wp edit waypoint <dimension> <list> <waypoint> set <property> [<value>]`, or `clear <property>` for an optional one. The 3.x form that took every property at once is gone, so update command blocks and scripts that use it. `/wp add` still accepts its 3.x syntax.
 - **Paper now applies the `CommandPermission` levels.** In 3.x, players without an explicit permission node needed operator status. They now get the level set in `config.json`, so with the defaults every player can use `/wp add`, `/wp edit`, `/wp remove` and `/wp navigate`. To limit these to operators again, set their levels to 2 or deny the nodes in your permission plugin.
-- **Xaero's Minimap sets synced by 3.x stay behind.** Server Waypoint now marks the sets it creates and changes only those. Sets synced by 3.x have plain list names, so they remain next to the new ones as your own sets. Delete them in Xaero's Minimap if you don't need them.
+- **Xaero's Minimap sets synced by 3.x stay behind.** By default, Server Waypoint now marks the sets it creates and changes only those. Sets synced by 3.x have plain list names, so they remain next to the new ones as your own sets. Delete them in Xaero's Minimap if you don't need them.
+- **Direct sync into Xaero's Default set is optional and off by default.** Turning on **Sync into Xaero's default set** makes syncing the server list `gui.xaero_default` replace that set's contents, including personal waypoints. Leave it off to use a separate server-owned set.
 - **Custom translation files need updating.** Most server message keys were renamed, so language files made for 3.x no longer override them. Start a new file from the 4.0.0 `en_us.json`.
 - **Choose the Paper JAR for your Minecraft version.** The ranges are now 1.21–1.21.8, 1.21.9–1.21.10, 1.21.11 plus 26.1–26.1.2, and 26.2–26.3. The new 1.21.9 build provides native chat icons.
 - **NeoForge 1.21.6 and 1.21.7–1.21.8 have separate JARs.** Select the download for your exact version range.
@@ -47,7 +48,10 @@ A major release: navigation that works without the client mod, waypoint icons, u
 - **VoxelMap** (Fabric; Forge 1.21.11, 26.1-26.1.2 and 26.2; NeoForge 1.21.2-1.21.4, 1.21.11, 26.1-26.1.2, 26.2 and 26.3): server waypoints sync to VoxelMap. Its waypoint list marks them with a sync icon, and editing one opens Server Waypoint's manager.
 - **Upload:** `/wp upload <xaero|voxelmap>` imports waypoints from the map mod on your client. Add `force local` to overwrite conflicts with your copy, or `force local delete` to also remove what your map doesn't have. It also works in singleplayer and for the host of a LAN world. Uploading needs level 2 (`upload`) and deleting needs level 4 (`uploadDelete`).
 - **Xaero's World Map:** right-click the map to add a waypoint to the server at that spot, or right-click a waypoint to add it to the server or edit its server copy.
+- **Xaero's Minimap and VoxelMap:** editing a synced Minimap waypoint opens the server form. VoxelMap's map popup offers actions to add a waypoint to the server or edit its server copy.
+- Sharing a Xaero or VoxelMap waypoint in chat prompts the sender to add it to the server through a prefilled form. Waypoints already identified as server waypoints do not prompt again.
 - Xaero's Minimap and VoxelMap show synced sets and waypoints under their server names.
+- The server list `gui.xaero_default` syncs to a separate Xaero set by default. **Sync into Xaero's default set** applies on the next sync; other lists always use separate sets.
 - The client settings list each map mod with its auto sync setting and a **Sync now** button.
 - VoxelMap reports synchronized waypoint updates in chat.
 - Opening a singleplayer or LAN host world no longer automatically replaces its saved map-mod waypoints. Use **Sync now** for a full refresh; normal waypoint changes still sync when auto sync is enabled.
@@ -60,6 +64,7 @@ A major release: navigation that works without the client mod, waypoint icons, u
 - `/wp remote` shows the connected servers and their state. `/wp remote list` and `/wp remote details` browse the waypoints other servers share, and `/wp remote tp` teleports you to one. The destination checks the target and your permission before you switch and confirms your arrival. These commands work without the client mod.
 - With the client mod, the waypoint manager has a remote view with a server selector.
 - Servers connect over an encrypted channel authenticated with pinned public keys (`NOISE_KK`), or unencrypted over loopback on a single machine (`PLAINTEXT`).
+- Backend and proxy logs report specific connection failure reasons, including timeouts, protocol mismatches, authentication failures and duplicate server IDs.
 - `/serverwaypoint status` on Velocity reports the coordinator's state. `/sw-cross-server-keygen` on a backend console creates the backend's keys without a start-and-stop pass. `serverIconItem` sets the item a backend shows in the server selector.
 - New permissions: `remoteList` (default level 0) and `remoteTp` (default level 2).
 - Remote teleport checks `remote.tp` on the source player, independently of local `tp` and remote browsing permissions. The destination checks both its own `tp` and `remote.tp` before transfer and again on arrival.
@@ -70,6 +75,8 @@ A major release: navigation that works without the client mod, waypoint icons, u
 - New layout: a dimension rail, the waypoint list and a details panel.
 - Search by name; sort by name, distance or colour in either direction; group by list; show every dimension at once. Distances convert between Nether and Overworld coordinates.
 - The manager remembers its sorting, grouping and dimension view.
+- During the current server or world session, the manager also remembers scroll positions separately for each dimension and the all-dimensions view, restoring them when you switch views or reopen the screen.
+- Scrollbars in the waypoint list, details panel, client settings and theme variable list fade in on hover, stay visible while dragging and fade out after you leave.
 - Escape closes an open popup before the screen. Enter and Space press the focused button.
 - The current/remote scope control identifies which waypoints it shows and includes the current server name in its tooltip. Remote waypoints are read-only and show their server's availability.
 - In singleplayer, the manager keeps the world running; add, edit, client settings and theme screens pause it.
@@ -118,6 +125,10 @@ A major release: navigation that works without the client mod, waypoint icons, u
 - VoxelMap icons load from the correct version-specific resources, preserve transparency and display decoded waypoint labels. Item waypoint icons on Minecraft 1.21 also preserve transparency.
 - Map-mod sync keeps waypoints in their correct dimensions and preserves personal map data. World Map actions retain the exact server waypoint identity and metadata.
 - Combobox selection on older Minecraft versions restores focus correctly. Saving a waypoint in singleplayer refreshes the waypoint manager and map integrations.
+- Suggestions and inline completions stay aligned when long input text scrolls horizontally.
+- On Minecraft 1.20.1, respawning preserves the player's language for server feedback and navigation. A failed chat broadcast to one player no longer prevents waypoint synchronization or delivery to other players.
+- A connection handshake with no waypoint updates no longer triggers an unnecessary full map-mod sync.
+- Hovered in-world waypoint icons render above overlapping markers so they remain visible.
 - Xaero dependency pins were aligned with the versions required by each map mod, including XaeroLib on Forge 1.20.1.
 - Language loading no longer closes a JAR filesystem owned by the mod loader.
 
