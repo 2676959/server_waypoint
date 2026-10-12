@@ -27,6 +27,7 @@ public final class WidgetThemeJson {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final String FORMAT_VERSION_PROPERTY = "formatVersion";
     private static final String COLORS_PROPERTY = "colors";
+    private static final String BOOLEANS_PROPERTY = "booleans";
 
     private WidgetThemeJson() {
     }
@@ -37,10 +38,16 @@ public final class WidgetThemeJson {
         root.addProperty(FORMAT_VERSION_PROPERTY, FORMAT_VERSION);
 
         JsonObject colors = new JsonObject();
+        JsonObject booleans = new JsonObject();
         for (WidgetThemeVariable variable : WidgetThemeVariable.values()) {
-            colors.addProperty(variable.getJsonName(), formatColor(theme.getColor(variable)));
+            if (variable.isBoolean()) {
+                booleans.addProperty(variable.getJsonName(), theme.getBoolean(variable));
+            } else {
+                colors.addProperty(variable.getJsonName(), formatColor(theme.getColor(variable)));
+            }
         }
         root.add(COLORS_PROPERTY, colors);
+        root.add(BOOLEANS_PROPERTY, booleans);
         return GSON.toJson(root);
     }
 
@@ -95,16 +102,34 @@ public final class WidgetThemeJson {
         }
         WidgetTheme.Builder builder = WidgetTheme.builder(fallbackTheme);
         JsonElement colorsElement = root.get(COLORS_PROPERTY);
-        if (colorsElement == null) {
-            return new Settings(selection, builder.build());
-        }
-        if (!colorsElement.isJsonObject()) {
+        if (colorsElement != null && !colorsElement.isJsonObject()) {
             throw new JsonParseException("Widget theme colors must be a JSON object");
         }
 
-        for (Map.Entry<String, JsonElement> entry : colorsElement.getAsJsonObject().entrySet()) {
-            WidgetThemeVariable.fromJsonName(entry.getKey()).ifPresent(variable ->
-                    builder.setColor(variable, parseColor(entry.getKey(), entry.getValue())));
+        if (colorsElement != null) {
+            for (Map.Entry<String, JsonElement> entry : colorsElement.getAsJsonObject().entrySet()) {
+                WidgetThemeVariable.fromJsonName(entry.getKey()).ifPresent(variable -> {
+                    if (variable.isBoolean()) {
+                        throw new JsonParseException("Boolean widget theme variable in colors: " + entry.getKey());
+                    }
+                    builder.setColor(variable, parseColor(entry.getKey(), entry.getValue()));
+                });
+            }
+        }
+        JsonElement booleansElement = root.get(BOOLEANS_PROPERTY);
+        if (booleansElement != null) {
+            if (!booleansElement.isJsonObject()) {
+                throw new JsonParseException("Widget theme booleans must be a JSON object");
+            }
+            for (Map.Entry<String, JsonElement> entry : booleansElement.getAsJsonObject().entrySet()) {
+                WidgetThemeVariable.fromJsonName(entry.getKey()).ifPresent(variable -> {
+                    if (!variable.isBoolean() || !(entry.getValue() instanceof JsonPrimitive primitive)
+                            || !primitive.isBoolean()) {
+                        throw new JsonParseException("Widget theme boolean '" + entry.getKey() + "' must be a boolean");
+                    }
+                    builder.setBoolean(variable, primitive.getAsBoolean());
+                });
+            }
         }
         return new Settings(selection, builder.build());
     }

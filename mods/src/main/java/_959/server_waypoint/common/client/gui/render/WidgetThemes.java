@@ -8,6 +8,7 @@ public final class WidgetThemes {
      * Blue-gray glass with cyan focus highlights and dark teal accent fills for light text.
      */
     public static final WidgetTheme MODERN_DARK = WidgetTheme.builder()
+            .setBoolean(WidgetThemeVariable.TEXT_SHADOW, true)
             .setColor(WidgetThemeVariable.TEXT_PRIMARY, 0xFFE8F0F7)
             .setColor(WidgetThemeVariable.TEXT_MUTED, 0xFFBFCCD8)
             .setColor(WidgetThemeVariable.TEXT_DISABLED, 0xFF95A5B5)
@@ -48,6 +49,7 @@ public final class WidgetThemes {
      * Floating surfaces are nearly opaque to suppress text showing through from below.
      */
     public static final WidgetTheme TRANSLUCENT_DARK = WidgetTheme.builder()
+            .setBoolean(WidgetThemeVariable.TEXT_SHADOW, true)
             .setColor(WidgetThemeVariable.TEXT_PRIMARY, 0xFFE8E8E8)
             .setColor(WidgetThemeVariable.TEXT_MUTED, 0xFFC4C4C4)
             .setColor(WidgetThemeVariable.TEXT_DISABLED, 0xFF999999)
@@ -87,6 +89,7 @@ public final class WidgetThemes {
      * Stronger glass tint with bright text, crisp outlines, and a yellow keyboard focus ring.
      */
     public static final WidgetTheme HIGH_CONTRAST = WidgetTheme.builder()
+            .setBoolean(WidgetThemeVariable.TEXT_SHADOW, true)
             .setColor(WidgetThemeVariable.TEXT_PRIMARY, 0xFFFFFFFF)
             .setColor(WidgetThemeVariable.TEXT_MUTED, 0xFFE0E0E0)
             .setColor(WidgetThemeVariable.TEXT_DISABLED, 0xFFB0B0B0)
@@ -126,6 +129,7 @@ public final class WidgetThemes {
      * Neutral translucent surfaces and bright status colors from the supplied widget theme.
      */
     public static final WidgetTheme CLASSIC = WidgetTheme.builder()
+            .setBoolean(WidgetThemeVariable.TEXT_SHADOW, true)
             .setColor(WidgetThemeVariable.TEXT_PRIMARY, 0xFFFFFFFF)
             .setColor(WidgetThemeVariable.TEXT_MUTED, 0xFFA0A0A0)
             .setColor(WidgetThemeVariable.TEXT_DISABLED, 0xBF7F7F7F)

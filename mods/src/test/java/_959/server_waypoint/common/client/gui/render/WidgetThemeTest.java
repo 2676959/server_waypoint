@@ -12,7 +12,7 @@ class WidgetThemeTest {
     void modernDarkThemeDefinesEveryVariable() {
         WidgetTheme theme = WidgetTheme.modernDark();
 
-        assertEquals(WidgetThemeVariable.values().length, theme.getColors().size());
+        assertEquals(WidgetThemeVariable.values().length, theme.getColors().size() + theme.getBooleans().size());
         assertEquals(0xFFE8F0F7, theme.getColor(WidgetThemeVariable.TEXT_PRIMARY));
         assertEquals(0xA60B1016, theme.getColor(WidgetThemeVariable.SCREEN_BACKGROUND));
         assertEquals(0xE61F4C60, theme.getColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND));
@@ -23,7 +23,7 @@ class WidgetThemeTest {
     void translucentDarkThemeDefinesEveryVariableAndSurfaceDepth() {
         WidgetTheme theme = WidgetThemes.TRANSLUCENT_DARK;
 
-        assertEquals(WidgetThemeVariable.values().length, theme.getColors().size());
+        assertEquals(WidgetThemeVariable.values().length, theme.getColors().size() + theme.getBooleans().size());
         assertEquals(0xFFE8E8E8, theme.getColor(WidgetThemeVariable.TEXT_PRIMARY));
         assertTrue(alpha(theme.getColor(WidgetThemeVariable.SCREEN_BACKGROUND))
                 < alpha(theme.getColor(WidgetThemeVariable.PANEL_BACKGROUND)));

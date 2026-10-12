@@ -39,7 +39,7 @@ class PreviewSampleTest {
         assertTrue(PreviewSample.BUTTON.uses(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND));
         assertFalse(PreviewSample.BUTTON.uses(WidgetThemeVariable.TEXT_DISABLED));
         assertEquals(Set.of(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND, WidgetThemeVariable.BORDER,
-                WidgetThemeVariable.TEXT_DISABLED), PreviewSample.DISABLED_BUTTON.keys());
+                WidgetThemeVariable.TEXT_DISABLED, WidgetThemeVariable.TEXT_SHADOW), PreviewSample.DISABLED_BUTTON.keys());
         // The combobox hovers in control.hoverBackground, never row.hoverBackground, and typed text brings
         // suggestions and an inline completion; the dropdown's choices hover in row.hoverBackground.
         assertTrue(PreviewSample.COMBOBOX.uses(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND));
@@ -58,7 +58,7 @@ class PreviewSampleTest {
             assertTrue(chip.uses(WidgetThemeVariable.BORDER), chip.name());
         }
         assertEquals(Set.of(WidgetThemeVariable.POPUP_BACKGROUND, WidgetThemeVariable.BORDER,
-                WidgetThemeVariable.TEXT_PRIMARY), PreviewSample.POPUP_CHIP.keys());
+                WidgetThemeVariable.TEXT_PRIMARY, WidgetThemeVariable.TEXT_SHADOW), PreviewSample.POPUP_CHIP.keys());
         // A click toggles the toggles, so they declare both of their states.
         assertTrue(PreviewSample.SELECTED_TOGGLE.uses(WidgetThemeVariable.CONTROL_BACKGROUND));
         assertEquals(PreviewSample.ON_TOGGLE.keys(), PreviewSample.OFF_TOGGLE.keys());

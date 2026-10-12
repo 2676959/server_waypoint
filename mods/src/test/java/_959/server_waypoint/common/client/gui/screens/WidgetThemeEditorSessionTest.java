@@ -23,6 +23,48 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WidgetThemeEditorSessionTest {
+    @Test
+    void booleanEditsPreviewRevertAndSaveWithTheCustomTheme() throws IOException {
+        Path path = this.tempDirectory.resolve("widget-theme.json");
+        WidgetThemeEditorSession session = new WidgetThemeEditorSession(WidgetThemes.CLASSIC, path,
+                new WidgetThemeJson.Settings(WidgetThemeSelection.CLASSIC, WidgetThemes.MODERN_DARK));
+
+        session.setBoolean(WidgetThemeVariable.TEXT_SHADOW, false);
+        assertEquals(WidgetThemeSelection.CUSTOM, session.getSelection());
+        assertFalse(WidgetThemeManager.getBoolean(WidgetThemeVariable.TEXT_SHADOW));
+        assertTrue(session.isChanged(WidgetThemeVariable.TEXT_SHADOW));
+        assertTrue(session.isDirty());
+
+        session.revert(WidgetThemeVariable.TEXT_SHADOW);
+        assertTrue(WidgetThemeManager.getBoolean(WidgetThemeVariable.TEXT_SHADOW));
+        assertFalse(session.isChanged(WidgetThemeVariable.TEXT_SHADOW));
+
+        session.setBoolean(WidgetThemeVariable.TEXT_SHADOW, false);
+        session.save();
+        session.cancel();
+        assertFalse(WidgetThemeJson.load(path).getBoolean(WidgetThemeVariable.TEXT_SHADOW));
+        assertFalse(WidgetThemeManager.getBoolean(WidgetThemeVariable.TEXT_SHADOW));
+    }
+
+    @Test
+    void unchangedBooleanKeepsPresetAndCancelRestoresTheOpeningValue() {
+        WidgetThemeEditorSession session = new WidgetThemeEditorSession(WidgetThemes.CLASSIC,
+                this.tempDirectory.resolve("widget-theme.json"),
+                new WidgetThemeJson.Settings(WidgetThemeSelection.CLASSIC, WidgetThemes.CLASSIC));
+        session.setBoolean(WidgetThemeVariable.TEXT_SHADOW, true);
+        assertEquals(WidgetThemeSelection.CLASSIC, session.getSelection());
+        assertFalse(session.isDirty());
+
+        session.setBoolean(WidgetThemeVariable.TEXT_SHADOW, false);
+        session.revertAll();
+        assertTrue(WidgetThemeManager.getBoolean(WidgetThemeVariable.TEXT_SHADOW));
+        assertFalse(session.isDirty());
+
+        session.setBoolean(WidgetThemeVariable.TEXT_SHADOW, false);
+        session.cancel();
+        assertTrue(WidgetThemeManager.getBoolean(WidgetThemeVariable.TEXT_SHADOW));
+    }
+
     @TempDir
     Path tempDirectory;
 

@@ -98,6 +98,7 @@ public final class DrawContextHelper {
     }
 
     public static void drawText(GuiGraphicsExtractor context, Font font, String text, int x, int y, int color, boolean shadow) {
+        shadow = shadow && WidgetThemeManager.getBoolean(WidgetThemeVariable.TEXT_SHADOW);
         //? if >= 26 {
         context.text(font, text, x, y, color, shadow);
         //?} else {
@@ -110,6 +111,7 @@ public final class DrawContextHelper {
     }
 
     public static void drawText(GuiGraphicsExtractor context, Font font, Component text, int x, int y, int color, boolean shadow) {
+        shadow = shadow && WidgetThemeManager.getBoolean(WidgetThemeVariable.TEXT_SHADOW);
         //? if >= 26 {
         context.text(font, text, x, y, color, shadow);
         //?} else {
@@ -122,6 +124,7 @@ public final class DrawContextHelper {
     }
 
     public static void drawText(GuiGraphicsExtractor context, Font font, FormattedCharSequence text, int x, int y, int color, boolean shadow) {
+        shadow = shadow && WidgetThemeManager.getBoolean(WidgetThemeVariable.TEXT_SHADOW);
         //? if >= 26 {
         context.text(font, text, x, y, color, shadow);
         //?} else {

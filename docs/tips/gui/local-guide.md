@@ -449,7 +449,7 @@ keep their own disabled fill because they float over other controls.
 
 Use the other render classes as follows:
 
-- `WidgetThemeVariable`, `WidgetTheme`, `WidgetThemes`, and `WidgetThemeManager` define and expose the runtime color theme.
+- `WidgetThemeVariable`, `WidgetTheme`, `WidgetThemes`, and `WidgetThemeManager` define and expose the runtime theme.
 - `WidgetThemeColors` is a compatibility facade over `WidgetThemeManager`; it does not hold fixed color constants.
 - `WidgetThemeJson` serializes complete theme snapshots and performs file persistence with GSON.
 - `WidgetTextures` owns identifiers for reusable GUI icons, including the Waypoint Manager's
@@ -460,7 +460,7 @@ Use the other render classes as follows:
 
 Rendering helpers should not own screen navigation, networking, or feature state.
 
-### Runtime color themes
+### Runtime themes
 
 Theme colors are semantic ARGB roles, not widget-specific constants. Choose the role by what a pixel means:
 
@@ -472,6 +472,21 @@ Theme colors are semantic ARGB roles, not widget-specific constants. Choose the 
 - Feedback uses `SUCCESS`, `WARNING`, `DANGER`, and their background variants.
 
 These roles apply to GUI chrome and state. A waypoint's user-selected color is domain data, and RGB/HSV picker gradients visualize a color space; those values can remain direct colors rather than theme roles.
+
+`TEXT_SHADOW` (`text.shadow`) is a boolean setting, enabled in every built-in theme.
+`WidgetThemeVariable.isBoolean()` distinguishes boolean settings from color roles. Use
+`WidgetTheme.getBoolean` / `withBoolean`, `WidgetTheme.Builder.setBoolean`, and
+`WidgetThemeManager.getBoolean` / `setBoolean` for these settings; color APIs reject boolean keys,
+and boolean APIs reject color keys. `getColors()` and `getBooleans()` return separate immutable maps.
+`DrawContextHelper.drawText` resolves `text.shadow` on each call for String, Component and
+FormattedCharSequence text, including scaled text and wrapped `ScalableText` lines. A caller's
+explicit `shadow=false` stays false; `shadow=true` is enabled only while the theme setting is true.
+`EditBoxTextShadowMixin` also applies this setting to vanilla-rendered text in `SuggestingTextInput`
+and its subclasses, including `TranslucentTextField`, numeric/hex fields, search bars and the combobox
+input. It covers typed text, placeholders and the append cursor, while vanilla and other mods' EditBox
+instances retain their original shadow setting. On Minecraft 1.21.6 and newer the hook filters reads of
+vanilla's `textShadow` field and wraps the placeholder call; older versions wrap the text calls that
+implicitly enable shadows. Suggestion popup and inline-completion text use the drawing helper.
 
 `WidgetThemeVariable.getJsonName()` is the stable external name for a role. Use it in JSON. The theme editor shows it raw, so theme keys have no translations. Do not persist enum names or introduce a raw color constant when an existing semantic role already fits.
 
@@ -554,7 +569,7 @@ When adding a theme variable, update all of these together:
 
 ### Theme JSON persistence
 
-`WidgetThemeJson` is the only theme JSON/file-I/O seam. The current format uses `formatVersion: 1`, a `colors` object, semantic JSON names, and `#AARRGGBB` strings:
+`WidgetThemeJson` is the only theme JSON/file-I/O seam. The current format uses `formatVersion: 1`, a `colors` object with `#AARRGGBB` strings and a `booleans` object with JSON booleans, both keyed by semantic JSON names:
 
 ```json
 {
@@ -563,11 +578,14 @@ When adding a theme variable, update all of these together:
     "text.primary": "#FFE8F0F7",
     "background.screen": "#FF0B1016",
     "accent.default": "#FF5BC3DF"
+  },
+  "booleans": {
+    "text.shadow": true
   }
 }
 ```
 
-The parser also accepts `#RRGGBB` and supplies opaque alpha. Missing known roles inherit from the fallback theme, and unknown roles are ignored for forward compatibility. Invalid structure, versions, or color strings fail parsing instead of silently applying a damaged theme. Serialization writes every known role.
+The parser also accepts `#RRGGBB` and supplies opaque alpha. Missing known roles inherit from the fallback theme, and unknown roles are ignored for forward compatibility. Invalid structure, versions, or color strings fail parsing instead of silently applying a damaged theme. Serialization writes every known role and boolean setting. Missing boolean settings inherit from the fallback theme; strings and numbers are rejected as boolean values.
 
 Use `toJson`/`fromJson` for strings, `save`/`load` for snapshots, `saveCurrent` for the active theme, and `loadAndApply` when a successfully loaded theme should become active. `save` writes through a temporary file and then replaces the destination. In normal client startup, `WaypointClientMod` loads:
 
@@ -1367,9 +1385,14 @@ The example translation keys are placeholders; add real keys to the language fil
 
 ### In-game theme editor
 
+Selecting a boolean key such as `text.shadow` shows the reusable `OnOffToggleButton` in place of
+the color swatch, ARGB field and alpha slider. Its edit follows the same Custom-theme copy, live
+preview, dirty tracking, per-key reset, Reset, save and cancel lifecycle as a color edit. Boolean
+rows have no color chip. Preview markers include the text samples that use the drawing helper.
+
 The Configure button in the Appearance section of `ClientConfigScreen` opens `WidgetThemeConfigScreen`, a
 developer tool for the runtime theme. It lists the theme's raw keys (`WidgetThemeVariable.getJsonName()`)
-with their `#AARRGGBB` values, as `widget-theme.json` stores them, and draws a live preview of the mod's
+with their `#AARRGGBB` color values or `true`/`false` boolean values, as `widget-theme.json` stores them, and draws a live preview of the mod's
 widgets that marks where the selected key is used. Edits preview at once through `WidgetThemeManager` and are
 undone unless the player saves. The keys have no translations; the rest of the screen's text exists in every
 locale.

@@ -13,6 +13,25 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WidgetThemeJsonTest {
+    @Test
+    void textShadowRoundTripsAsABoolean() {
+        WidgetTheme theme = WidgetThemeJson.fromJson("""
+                {"formatVersion": 1, "colors": {}, "booleans": {"text.shadow": false}}
+                """);
+
+        String json = WidgetThemeJson.toJson(theme);
+        assertTrue(json.contains("\"text.shadow\": false"));
+        assertEquals(theme, WidgetThemeJson.fromJson(json));
+    }
+
+    @Test
+    void textShadowRejectsStringAndNumericValues() {
+        for (String value : new String[]{"\"false\"", "0", "null"}) {
+            assertThrows(JsonParseException.class, () -> WidgetThemeJson.fromJson(
+                    "{\"formatVersion\":1,\"booleans\":{\"text.shadow\":" + value + "}}"));
+        }
+    }
+
     @TempDir
     Path tempDirectory;
 

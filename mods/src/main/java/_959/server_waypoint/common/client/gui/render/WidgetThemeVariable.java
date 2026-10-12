@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Semantic color roles shared by the project's GUI components.
+ * Semantic color and boolean settings shared by the project's GUI components.
  */
 public enum WidgetThemeVariable {
     TEXT_PRIMARY("text.primary"),
@@ -14,6 +14,7 @@ public enum WidgetThemeVariable {
     TEXT_DISABLED("text.disabled"),
     TEXT_PLACEHOLDER("text.placeholder"),
     TEXT_ON_ACCENT("text.onAccent"),
+    TEXT_SHADOW("text.shadow", true),
     SCREEN_BACKGROUND("background.screen"),
     PANEL_BACKGROUND("background.panel"),
     POPUP_BACKGROUND("background.popup"),
@@ -46,9 +47,19 @@ public enum WidgetThemeVariable {
     private static final Map<String, WidgetThemeVariable> BY_JSON_NAME = createJsonNameLookup();
 
     private final String jsonName;
+    private final boolean booleanVariable;
 
     WidgetThemeVariable(String jsonName) {
+        this(jsonName, false);
+    }
+
+    WidgetThemeVariable(String jsonName, boolean booleanVariable) {
         this.jsonName = jsonName;
+        this.booleanVariable = booleanVariable;
+    }
+
+    public boolean isBoolean() {
+        return this.booleanVariable;
     }
 
     public String getJsonName() {

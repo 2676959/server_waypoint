@@ -16,6 +16,7 @@ import _959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayout.Ar
 import _959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayout.Rect;
 import _959.server_waypoint.common.client.gui.widgets.AbstractDropdownMenuWidget;
 import _959.server_waypoint.common.client.gui.widgets.ColorHexCodeField;
+import _959.server_waypoint.common.client.gui.widgets.OnOffToggleButton;
 import _959.server_waypoint.common.client.gui.widgets.ColorSquareButton;
 import _959.server_waypoint.common.client.gui.widgets.IconButton;
 import _959.server_waypoint.common.client.gui.widgets.IntegerSlider;
@@ -110,6 +111,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     private SeparatorWidget keyLine = new SeparatorWidget(0, 0, 0, 1);
     private final ColorSquareButton colorButton;
     private final ColorHexCodeField argbField;
+    private final OnOffToggleButton booleanToggle;
     private final IconButton resetKeyButton;
     private final ScalableText alphaLabel;
     private final IntegerSlider alphaSlider;
@@ -148,6 +150,13 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         this.colorButton.setTooltip(Component.translatable("server_waypoint.theme.color_picker"));
         this.argbField = ColorHexCodeField.argb(0, 0, Component.literal("ARGB"), this.font);
         this.argbField.setResponder(this::onArgbChanged);
+        this.booleanToggle = new OnOffToggleButton(0, 0, value -> {
+            if (!this.updatingControls && this.selectedKey != null && this.selectedKey.isBoolean()) {
+                this.session.setBoolean(this.selectedKey, value).ifPresent(this::showCustomReplaced);
+                this.syncControls(null);
+                this.refreshControlStates();
+            }
+        });
         this.resetKeyButton = new IconButton(0, 0, RESET_KEY_SIZE, RESET_KEY_SIZE,
                 Component.translatable("server_waypoint.theme.reset_key"), WidgetTextures.RESET_ICON, this::revertKey)
                 .withoutBackground()
@@ -219,6 +228,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         this.addRenderableWidget(this.keyList);
         this.addRenderableWidget(this.colorButton);
         this.addRenderableWidget(this.argbField);
+        this.addRenderableWidget(this.booleanToggle);
         this.addRenderableWidget(this.resetKeyButton);
         this.addRenderableWidget(this.alphaSlider);
         this.preview.visitWidgets(this::addRenderableWidget);
@@ -304,6 +314,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         this.keyText.setPosition(x, y);
         this.colorRow.setDimensions(width, EDITOR_ROW_HEIGHT);
         this.colorRow.setPosition(x, y + COLOR_ROW_Y);
+        this.booleanToggle.setPosition(x, y + COLOR_ROW_Y);
         this.alphaRow.setDimensions(width, EDITOR_ROW_HEIGHT);
         this.alphaRow.setPosition(x, y + ALPHA_ROW_Y);
         this.hintText.setWidth(width);
@@ -332,16 +343,19 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         boolean modal = this.swatchWidget.visible;
         WidgetThemeVariable key = this.selectedKey;
         boolean editing = key != null;
+        boolean editingColor = editing && !key.isBoolean();
         boolean changed = this.session.isDirty();
         this.themeSelector.active = !modal;
         this.keyList.active = !modal;
-        this.colorButton.visible = editing;
+        this.colorButton.visible = editingColor;
         this.colorButton.active = !modal;
-        this.argbField.visible = editing;
+        this.argbField.visible = editingColor;
         AbstractWaypointPropertiesScreen.setControlActive(this.argbField, !modal);
         this.resetKeyButton.visible = editing && this.session.isChanged(key);
         this.resetKeyButton.active = !modal;
-        this.alphaSlider.visible = editing;
+        this.booleanToggle.visible = editing && key.isBoolean();
+        this.booleanToggle.active = !modal;
+        this.alphaSlider.visible = editingColor;
         this.alphaSlider.active = !modal;
         this.preview.setActive(!modal);
         this.resetButton.active = !modal && changed;
@@ -381,19 +395,23 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
                 this.keyText.setText(Component.translatable("server_waypoint.theme.no_key"));
                 this.keyText.setColor(TEXT_MUTED);
             } else {
-                int color = this.colorOf(key);
                 this.keyText.setText(key.getJsonName());
                 this.keyText.setColor(TEXT_PRIMARY);
-                this.colorButton.setColor(color);
-                if (source != this.argbField) {
-                    this.argbField.setColor(color);
-                }
-                if (source != this.alphaSlider) {
-                    this.alphaSlider.setValue(color >>> 24);
-                }
-                if (source != this.swatchWidget) {
-                    this.swatchWidget.setColor(color);
-                    this.swatchWidget.setPreviousColor(color);
+                if (key.isBoolean()) {
+                    this.booleanToggle.setState(this.session.getDraftTheme().getBoolean(key));
+                } else {
+                    int color = this.colorOf(key);
+                    this.colorButton.setColor(color);
+                    if (source != this.argbField) {
+                        this.argbField.setColor(color);
+                    }
+                    if (source != this.alphaSlider) {
+                        this.alphaSlider.setValue(color >>> 24);
+                    }
+                    if (source != this.swatchWidget) {
+                        this.swatchWidget.setColor(color);
+                        this.swatchWidget.setPreviousColor(color);
+                    }
                 }
             }
             this.placeKeyLine();
@@ -412,7 +430,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
      */
     private void applyColor(int color, AbstractWidget source) {
         WidgetThemeVariable key = this.selectedKey;
-        if (key == null) {
+        if (key == null || key.isBoolean()) {
             return;
         }
         this.session.setColor(key, color).ifPresent(this::showCustomReplaced);
@@ -431,7 +449,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     /** The slider changes the alpha and keeps the RGB. */
     private void onAlphaChanged(int alpha) {
         WidgetThemeVariable key = this.selectedKey;
-        if (this.updatingControls || key == null) {
+        if (this.updatingControls || key == null || key.isBoolean()) {
             return;
         }
         this.applyColor((alpha << 24) | (this.colorOf(key) & 0x00FFFFFF), this.alphaSlider);
@@ -440,7 +458,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     /** The color picker changes the RGB and keeps the alpha. */
     private void onSwatchConfirmed(int rgb) {
         WidgetThemeVariable key = this.selectedKey;
-        if (key != null) {
+        if (key != null && !key.isBoolean()) {
             this.applyColor((this.colorOf(key) & 0xFF000000) | (rgb & 0x00FFFFFF), this.swatchWidget);
         }
         this.closeSwatch();
@@ -557,7 +575,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
 
     private void openSwatch() {
         WidgetThemeVariable key = this.selectedKey;
-        if (key == null) {
+        if (key == null || key.isBoolean()) {
             return;
         }
         this.closePopups();
@@ -890,15 +908,22 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
                     (context, mouseX, mouseY, deltaTicks);
             return;
         }
+        this.resetKeyButton.
+        //$ render_method_swap
+        extractRenderState
+                (context, mouseX, mouseY, deltaTicks);
+        if (this.selectedKey.isBoolean()) {
+            this.booleanToggle.
+            //$ render_method_swap
+            extractRenderState
+                    (context, mouseX, mouseY, deltaTicks);
+            return;
+        }
         this.colorButton.
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
         this.argbField.
-        //$ render_method_swap
-        extractRenderState
-                (context, mouseX, mouseY, deltaTicks);
-        this.resetKeyButton.
         //$ render_method_swap
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
@@ -1139,12 +1164,13 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
             } else if (hovered) {
                 context.fill(0, rowY, contentWidth, rowY + KEY_ROW_HEIGHT, getColor(ROW_HOVER_BACKGROUND));
             }
-            int color = getColor(key);
-            drawChip(context, CHIP_X, rowY + (KEY_ROW_HEIGHT - CHIP_SIZE) / 2, color);
+            if (!key.isBoolean()) {
+                drawChip(context, CHIP_X, rowY + (KEY_ROW_HEIGHT - CHIP_SIZE) / 2, getColor(key));
+            }
             drawScaledText(context, this.font, Component.literal(key.getJsonName()), KEY_X, rowY + TEXT_Y,
                     getColor(TEXT_PRIMARY), ROW_SCALE);
             if (this.showValues) {
-                String value = valueText(color);
+                String value = key.isBoolean() ? Boolean.toString(WidgetThemeManager.getBoolean(key)) : valueText(getColor(key));
                 drawScaledText(context, this.font, Component.literal(value),
                         contentWidth - VALUE_INSET - scaledWidth(this.font, value), rowY + TEXT_Y,
                         getColor(TEXT_MUTED), ROW_SCALE);

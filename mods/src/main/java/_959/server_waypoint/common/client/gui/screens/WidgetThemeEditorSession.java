@@ -62,10 +62,23 @@ final class WidgetThemeEditorSession {
         if (draft.getColor(variable) == color) {
             return Optional.empty();
         }
+        return this.applyDraft(draft.withColor(variable, color));
+    }
+
+    Optional<WidgetThemeSelection> setBoolean(WidgetThemeVariable variable, boolean value) {
+        this.ensureOpen();
+        WidgetTheme draft = this.getDraftTheme();
+        if (draft.getBoolean(variable) == value) {
+            return Optional.empty();
+        }
+        return this.applyDraft(draft.withBoolean(variable, value));
+    }
+
+    private Optional<WidgetThemeSelection> applyDraft(WidgetTheme updated) {
         WidgetThemeSelection previous = this.settings.selection();
         boolean replacesDifferingCustom = previous != WidgetThemeSelection.CUSTOM
-                && !draft.equals(this.settings.customTheme());
-        this.settings = new WidgetThemeJson.Settings(WidgetThemeSelection.CUSTOM, draft.withColor(variable, color));
+                && !this.getDraftTheme().equals(this.settings.customTheme());
+        this.settings = new WidgetThemeJson.Settings(WidgetThemeSelection.CUSTOM, updated);
         WidgetThemeManager.setTheme(this.getDraftTheme());
         return replacesDifferingCustom ? Optional.of(previous) : Optional.empty();
     }
@@ -76,6 +89,9 @@ final class WidgetThemeEditorSession {
      * @return what {@link #setColor} returns for that change
      */
     Optional<WidgetThemeSelection> revert(WidgetThemeVariable variable) {
+        if (variable.isBoolean()) {
+            return this.setBoolean(variable, this.originalSettings.theme().getBoolean(variable));
+        }
         return this.setColor(variable, this.originalSettings.theme().getColor(variable));
     }
 
@@ -92,6 +108,9 @@ final class WidgetThemeEditorSession {
      * Whether the draft's color for the key differs from the theme in effect when the editor opened.
      */
     boolean isChanged(WidgetThemeVariable variable) {
+        if (variable.isBoolean()) {
+            return this.getDraftTheme().getBoolean(variable) != this.originalSettings.theme().getBoolean(variable);
+        }
         return this.getDraftTheme().getColor(variable) != this.originalSettings.theme().getColor(variable);
     }
 
