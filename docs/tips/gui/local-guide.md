@@ -107,6 +107,11 @@ Some widgets draw borders or backgrounds outside their Minecraft content rectang
 - `VisualPositioning.getVisualX`, `getVisualY`, `getVisualWidth` and `getVisualHeight` read any
   `LayoutElement`'s visual bounds: a `Padding` element's complete drawn rectangle, and any other
   element's own bounds. Use them instead of repeating the `instanceof Padding` check.
+- `VisualPositioning.setVisualPosition(element, visualX, visualY)` places those drawn bounds.
+  It converts the requested position to the element's setter anchor by measuring the difference
+  after placement. This applies to every element, including shifted widgets and comboboxes whose
+  setters take a text anchor while their getters report the outer control. `Padding` only determines
+  which drawn bounds are measured; it does not determine whether anchor conversion is necessary.
 - `PaddingBackground` draws a padded background and optionally a border around a `LayoutElement`.
 
 Implement `Padding` whenever pixels extend outside the content bounds and the widget may participate in layout. If the widget can be resized by a container, also implement `Expandable` and make `setVisualWidth`, `setVisualHeight`, or `setVisualDimensions` convert the requested outer size back to the content size.
@@ -194,7 +199,20 @@ input and rendered by their owning screen or composite.
 Children touch the top of a horizontal pack, or the left of a vertical pack. Call
 `setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER)` to center them across the pack by
 their visual bounds instead, rounding toward the start; changing the alignment lays the children out
-again. `SettingsListWidget` rows use this to line up labels and controls of different heights.
+again. In horizontal rows, a child implementing `VerticalAlignment.getVerticalAlignmentCenter()`
+is centered by its visible content instead. The center is measured in screen pixels below its visual
+top, and positioning rounds to the nearest pixel. `ScalableText`, text inputs, text buttons, toggles
+and comboboxes report their text block's center excluding the font line box's two empty trailing pixels;
+`IntegerSlider` reports its number field's center. Scaled fields include their render scale in this
+measurement. This aligns row text at different control sizes and scales without changing standalone
+rendering, dimensions or wrapping.
+Scaled integer fields round their text inset to a whole GUI pixel, matching the origins of scaled
+labels. The number, caret and inline completion use that rounded origin; the field's surface and
+pointer bounds keep their existing transform. Its reported content center includes the same rounding.
+`SettingsListWidget` rows use this to line up labels and controls of different heights. For manually
+placed rows, use `VisualPositioning.setCenteredRowPosition(element, visualX, rowTop, rowHeight)`;
+the waypoint form uses the same calculation. Vertical packs and start-aligned packs use visual bounds
+without this content alignment.
 
 Use `IconListLayout` for the geometry of an oriented, scrollable icon strip shared by dimension
 and server lists.
@@ -387,6 +405,8 @@ The widget derives its default height from `font.lineHeight + 2`, matching `Tran
 and places the outline two pixels above and left of the text. Callers supply width, not height.
 `getX`/`getY` and their shifted equivalents report the outer control position used for drawing,
 hit testing, and popup placement. Offsets and height changes preserve the text anchor.
+Containers must position it through `VisualPositioning` to convert from outer bounds to that text
+anchor; do not compensate with a screen-specific offset.
 Width and height describe the complete control, including its outline;
 the popup is excluded from layout dimensions.
 Treat a focused combobox as text entry when deciding whether to forward movement keys, as
@@ -1499,9 +1519,8 @@ status chips, and scrollbars at rest, dragged and inactive.
   `WideRow` adds the 3-pixel padding itself; sizing it with `wideRowHeight` too would pad every row twice.
   `SampleRow.visitWidgets` reports the samples' widgets, so the wide row owns them: each is visible only
   while entirely in view, and the row is a Tab stop while one is active.
-- **Combobox placement:** `ComboBoxWidget.setX` and `setY` place its text, not its outline, and it isn't a
-  `Padding`, so a `WidgetPack` would draw its outline 2 px up and left of its slot. The preview calls
-  `setOffsets(2, 2)` on it to place it by its outline like the other samples.
+- **Combobox placement:** `WidgetPack` uses `VisualPositioning` to place the combobox's outline,
+  converting to its text anchor. The preview supplies no compensating offsets.
 
 #### Markers and sample keys
 

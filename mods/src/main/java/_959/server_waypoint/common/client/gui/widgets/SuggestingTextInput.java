@@ -6,6 +6,7 @@ import _959.server_waypoint.common.client.gui.layout.AnchorMode;
 import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.Padding;
 import _959.server_waypoint.common.client.gui.layout.Shiftable;
+import _959.server_waypoint.common.client.gui.layout.VerticalAlignment;
 import _959.server_waypoint.mixin.EditBoxAccessor;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawText;
@@ -49,7 +50,7 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 /** Surface-free editable input with shared completion, popup, and layout behavior. */
-public class SuggestingTextInput extends EditBox implements Shiftable, Expandable, Padding, PopupOwner {
+public class SuggestingTextInput extends EditBox implements Shiftable, Expandable, Padding, PopupOwner, VerticalAlignment {
     static final int OUTLINE_PADDING = 2;
     private static final int SUGGESTION_LINE_HEIGHT = 12;
     private static final int MAX_VISIBLE_SUGGESTIONS = 5;
@@ -330,6 +331,11 @@ public class SuggestingTextInput extends EditBox implements Shiftable, Expandabl
     @Override
     public int getVisualHeight() {
         return this.backgroundHeight;
+    }
+
+    @Override
+    public float getVerticalAlignmentCenter() {
+        return OUTLINE_PADDING + (this.textRenderer.lineHeight - 2) / 2.0F;
     }
 
     @Override

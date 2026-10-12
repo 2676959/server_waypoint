@@ -57,9 +57,9 @@ class WidgetThemePreviewTest {
         assertEquals(10, text.getX());
         assertEquals(10 + 12 + 12, combobox.getX());
         assertEquals(10 + 12 + 12 + 112 + 12, button.getX());
-        // Centered on the 20-pixel button, rounding toward the top.
-        assertEquals(40 + 5, text.getY());
-        assertEquals(40 + 4, combobox.getY());
+        // Text content is centered on the 20-pixel button; the combobox has a two-pixel inset.
+        assertEquals(40 + 7, text.getY());
+        assertEquals(text.getY(), combobox.getY() + 2);
         assertEquals(40, button.getY());
     }
 
@@ -235,13 +235,12 @@ class WidgetThemePreviewTest {
         return new Fixture(list, combobox, dropdown);
     }
 
-    /** The preview's combobox: 112 wide, moved back by its 2-pixel text inset so it is placed by its outline. */
+    /** The preview's combobox: 112 wide, using its ordinary text anchor without compensating offsets. */
     private static ComboBoxWidget combobox(TestFont font) {
         ComboBoxWidget combobox = new ComboBoxWidget(0, 0, 112, Component.empty(), font,
                 List.of("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"), "minecraft:overworld",
                 value -> {
                 });
-        combobox.setOffsets(2, 2);
         return combobox;
     }
 

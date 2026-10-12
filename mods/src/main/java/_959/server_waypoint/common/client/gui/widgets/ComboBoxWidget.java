@@ -2,6 +2,7 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
+import _959.server_waypoint.common.client.gui.layout.VerticalAlignment;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -24,7 +25,7 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.ne
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.previousLayer;
 
 /** Editable text input with a separately opened list of choices. */
-public class ComboBoxWidget extends AbstractDropdownMenuWidget {
+public class ComboBoxWidget extends AbstractDropdownMenuWidget implements VerticalAlignment {
     private static final int TEXT_INSET = SuggestingTextInput.OUTLINE_PADDING;
     private List<String> values = List.of();
     private final Component label;
@@ -35,6 +36,12 @@ public class ComboBoxWidget extends AbstractDropdownMenuWidget {
     private boolean settingValue;
     private boolean resourceIdMatching;
     private int popupScreenHeight = -1;
+
+    @Override
+    public float getVerticalAlignmentCenter() {
+        // Rendering keeps the input at this inset even when the surrounding control is resized.
+        return TEXT_INSET + (this.font.lineHeight - 2) / 2.0F;
+    }
 
     static boolean shouldOpenUp(int y, int controlHeight, int popupHeight, int screenHeight) {
         int above = Math.max(0, y - 4);

@@ -5,6 +5,7 @@ import _959.server_waypoint.common.client.gui.api.ToggleButtonCallback;
 import _959.server_waypoint.common.client.gui.layout.AnchorMode;
 import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.Padding;
+import _959.server_waypoint.common.client.gui.layout.VerticalAlignment;
 import _959.server_waypoint.common.client.gui.layout.VisualBounds;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
@@ -21,7 +22,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public class ToggleButton extends ShiftableButtonWidget implements Expandable, Padding {
+public class ToggleButton extends ShiftableButtonWidget implements Expandable, Padding, VerticalAlignment {
     private static final int DEFAULT_Y_OFFSET = -1;
     private static final VisualBounds VISUAL_BOUNDS = new VisualBounds(0, 1, 0, -1);
     static final int OUTLINE_LEFT_PADDING = 1;
@@ -181,6 +182,12 @@ public class ToggleButton extends ShiftableButtonWidget implements Expandable, P
     @Override
     public int getVisualY() {
         return VISUAL_BOUNDS.y(getY());
+    }
+
+    @Override
+    public float getVerticalAlignmentCenter() {
+        return VISUAL_BOUNDS.topPadding() + centered(this.height, Math.round(this.textRenderer.lineHeight * this.textScale))
+                + (this.textRenderer.lineHeight - 2) * this.textScale / 2.0F;
     }
 
     @Override

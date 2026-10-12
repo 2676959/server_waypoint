@@ -1,6 +1,7 @@
 //~ gui_graphics_26
 package _959.server_waypoint.common.client.gui.widgets;
 
+import _959.server_waypoint.common.client.gui.layout.VerticalAlignment;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -13,7 +14,7 @@ import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.pu
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.scale;
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.translate;
 
-public class IntegerSlider extends ShiftableClickableWidget {
+public class IntegerSlider extends ShiftableClickableWidget implements VerticalAlignment {
     private static final int padding = 5;
     private final Consumer<Integer> onChange;
     private final IntegerField integerField;
@@ -96,6 +97,11 @@ public class IntegerSlider extends ShiftableClickableWidget {
      */
     public boolean isEditingNumber() {
         return this.integerField.isFocused();
+    }
+
+    @Override
+    public float getVerticalAlignmentCenter() {
+        return this.integerField.getVisualY() - this.getY() + this.integerField.getVerticalAlignmentCenter();
     }
 
     @Override
@@ -234,6 +240,29 @@ public class IntegerSlider extends ShiftableClickableWidget {
         @Override
         public int getVisualHeight() {
             return Math.round(super.getVisualHeight() * this.controlScale);
+        }
+
+        @Override
+        public float getVerticalAlignmentCenter() {
+            return super.getVerticalAlignmentCenter() * this.controlScale + this.textRoundingOffset();
+        }
+
+        private float textRoundingOffset() {
+            float inset = OUTLINE_PADDING * this.controlScale;
+            return Math.round(inset) - inset;
+        }
+
+        @Override
+        public void renderTextField(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+            // Scaling the whole field makes its native text inset fractional. Standalone scaled
+            // labels start on a whole GUI pixel; use the same origin for the number and its caret.
+            push(context);
+            translate(context, 0, this.textRoundingOffset() / this.controlScale);
+            try {
+                super.renderTextField(context, mouseX, mouseY, deltaTicks);
+            } finally {
+                pop(context);
+            }
         }
 
         @Override

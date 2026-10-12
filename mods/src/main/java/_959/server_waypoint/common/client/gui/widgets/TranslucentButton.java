@@ -5,6 +5,7 @@ import _959.server_waypoint.common.client.gui.api.ButtonClickCallback;
 import _959.server_waypoint.common.client.gui.layout.AnchorMode;
 import _959.server_waypoint.common.client.gui.layout.Expandable;
 import _959.server_waypoint.common.client.gui.layout.Padding;
+import _959.server_waypoint.common.client.gui.layout.VerticalAlignment;
 import _959.server_waypoint.common.client.gui.layout.VisualBounds;
 
 import static _959.server_waypoint.common.client.gui.render.DrawContextHelper.drawScaledText;
@@ -17,7 +18,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public class TranslucentButton extends ShiftableButtonWidget implements Expandable, Padding {
+public class TranslucentButton extends ShiftableButtonWidget implements Expandable, Padding, VerticalAlignment {
     private static final int DEFAULT_Y_OFFSET = -1;
     static final int OUTLINE_LEFT_PADDING = 1;
     static final int OUTLINE_TOP_PADDING = 2;
@@ -152,6 +153,12 @@ public class TranslucentButton extends ShiftableButtonWidget implements Expandab
     @Override
     public int getVisualY() {
         return VISUAL_BOUNDS.y(getY());
+    }
+
+    @Override
+    public float getVerticalAlignmentCenter() {
+        return VISUAL_BOUNDS.topPadding() + centered(this.height, Math.round(this.textRenderer.lineHeight * this.textScale))
+                + (this.textRenderer.lineHeight - 2) * this.textScale / 2.0F;
     }
 
     @Override

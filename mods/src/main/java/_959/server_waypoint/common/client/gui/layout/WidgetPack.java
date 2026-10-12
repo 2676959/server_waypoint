@@ -185,13 +185,18 @@ public class WidgetPack implements LayoutElement, Expandable {
 
         for (Entry entry : this.children) {
             int childWidth = getVisualWidth(entry.widget());
-            int childY = this.y + this.crossOffset(this.height, getVisualHeight(entry.widget()));
+            int childX;
             if (entry.anchor() == Direction.FORWARD) {
-                setVisualPosition(entry.widget(), startX, childY);
+                childX = startX;
                 startX += childWidth;
             } else {
                 endX -= childWidth;
-                setVisualPosition(entry.widget(), endX, childY);
+                childX = endX;
+            }
+            if (this.crossAxisAlignment == CrossAxisAlignment.CENTER) {
+                VisualPositioning.setCenteredRowPosition(entry.widget(), childX, this.y, this.height);
+            } else {
+                setVisualPosition(entry.widget(), childX, this.y);
             }
         }
     }
@@ -223,7 +228,7 @@ public class WidgetPack implements LayoutElement, Expandable {
     public enum CrossAxisAlignment {
         /** At the top of a horizontal pack or the left of a vertical pack. */
         START,
-        /** Centered by visual bounds, rounding toward the start. */
+        /** Centered by visual bounds, or by visible content in horizontal rows when supplied. */
         CENTER
     }
 

@@ -102,8 +102,6 @@ final class WidgetThemePreview {
     private static final int DROPDOWN_POPUP_ROWS = 3;
     /** The room a popup leaves at the screen's edge, as {@link ComboBoxWidget#layoutPopup} leaves. */
     private static final int POPUP_SCREEN_MARGIN = 4;
-    /** {@link ComboBoxWidget} puts its text, two pixels inside its outline, at the position it is given. */
-    private static final int COMBOBOX_TEXT_INSET = 2;
     private static final List<String> DIMENSIONS =
             List.of("minecraft:overworld", "minecraft:the_nether", "minecraft:the_end");
     /** The samples that show the inactive look, so they are never active. */
@@ -124,8 +122,6 @@ final class WidgetThemePreview {
         this.combobox = new ComboBoxWidget(0, 0, COMBOBOX_WIDTH, Component.empty(), font, DIMENSIONS, DIMENSIONS.get(0),
                 value -> {
                 });
-        // Moved back by the inset, so a row places the combobox by its outline, like every other sample.
-        this.combobox.setOffsets(COMBOBOX_TEXT_INSET, COMBOBOX_TEXT_INSET);
         this.combobox.setRenderPopupSeparately(true);
         this.dropdown = new SampleDropdown(font);
         this.dropdown.setRenderPopupSeparately(true);

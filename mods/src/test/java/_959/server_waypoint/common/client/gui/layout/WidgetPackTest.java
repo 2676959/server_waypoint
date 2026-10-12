@@ -1,13 +1,76 @@
 package _959.server_waypoint.common.client.gui.layout;
 
+import _959.server_waypoint.common.client.gui.TestFont;
+import _959.server_waypoint.common.client.gui.widgets.ComboBoxWidget;
+import _959.server_waypoint.common.client.gui.widgets.ScalableText;
+import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.layouts.LayoutElement;
+import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class WidgetPackTest {
+    @Test
+    void centeredPackAlignsUncompensatedComboboxTextWithLabels() {
+        TestFont font = new TestFont();
+        ScalableText label = new ScalableText(0, 0, Component.literal("Icon"), 0xFFFFFFFF, font);
+        ComboBoxWidget menu = new ComboBoxWidget(0, 0, 100, Component.empty(), font,
+                List.of("minecraft:oak_boat"), "minecraft:oak_boat", value -> { });
+        WidgetPack pack = new WidgetPack(10, 30, 140, 13, LayoutFlow.Orientation.HORIZONTAL);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        pack.addChild(label);
+        pack.addChild(menu, LayoutFlow.Direction.REVERSE);
+
+        assertEquals(50, menu.getX());
+        assertEquals(label.getY(), menu.getY() + 2);
+        pack.setDimensions(180, 20);
+        pack.setPosition(20, 50);
+        assertEquals(100, menu.getX());
+        assertEquals(label.getY(), menu.getY() + 2);
+        menu.setHeight(15);
+        pack.setHeight(22);
+        assertEquals(label.getY(), menu.getY() + 2, "the input inset stays two pixels when the control grows");
+    }
+
+    @Test
+    void centeredRowAlignsLabelTextWithFieldTextAfterResizeAndReposition() {
+        TestFont font = new TestFont();
+        ScalableText label = new ScalableText(0, 0, Component.literal("Name"), 0xFFFFFFFF, font);
+        TranslucentTextField field = new TranslucentTextField(0, 0, 40, Component.empty(), font);
+        WidgetPack pack = new WidgetPack(0, 10, 100, 11, LayoutFlow.Orientation.HORIZONTAL);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        pack.addChild(label);
+        pack.addChild(field, LayoutFlow.Direction.REVERSE);
+
+        assertEquals(field.getY(), label.getY());
+        pack.setHeight(13);
+        pack.setPosition(20, 30);
+        assertEquals(field.getY(), label.getY());
+        assertEquals(31, field.getVisualY());
+        for (int height = 11; height <= 22; height++) {
+            pack.setHeight(height);
+            assertEquals(field.getY(), label.getY(), "row height " + height);
+        }
+    }
+
+    @Test
+    void centeredRowKeepsTwoTextLabelsAligned() {
+        TestFont font = new TestFont();
+        ScalableText label = new ScalableText(0, 0, Component.literal("Map mod"), 0xFFFFFFFF, font);
+        ScalableText value = new ScalableText(0, 0, Component.literal("Not installed"), 0xFFFFFFFF, font);
+        WidgetPack pack = new WidgetPack(100, 11);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        pack.addChild(label);
+        pack.addChild(value, LayoutFlow.Direction.REVERSE);
+
+        assertEquals(value.getY(), label.getY());
+        assertEquals(9, label.getHeight());
+    }
+
     @Test
     void horizontalChildrenStackInwardFromTheirAnchoredSides() {
         WidgetPack pack = new WidgetPack(10, 20, 100, 30, LayoutFlow.Orientation.HORIZONTAL);

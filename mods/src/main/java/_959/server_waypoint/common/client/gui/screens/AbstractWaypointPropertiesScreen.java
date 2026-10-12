@@ -694,16 +694,9 @@ public abstract class AbstractWaypointPropertiesScreen extends MovementAllowedSc
         });
     }
 
-    /** Moves an element so the top-left corner of its outline is at ({@code x}, {@code y}). */
-    private static void placeOutline(LayoutElement element, int x, int y) {
-        element.setPosition(x, y);
-        // Padded widgets anchor their content, not their outline; move them by the difference.
-        element.setPosition(x + (x - VisualPositioning.getVisualX(element)), y + (y - VisualPositioning.getVisualY(element)));
-    }
-
     /** Places an element at {@code x}, centered vertically on a row. */
     private static void placeInRow(LayoutElement element, int x, int rowTop, int rowHeight) {
-        placeOutline(element, x, rowTop + ((rowHeight - VisualPositioning.getVisualHeight(element)) >> 1));
+        VisualPositioning.setCenteredRowPosition(element, x, rowTop, rowHeight);
     }
 
     /** {@code text} cut to fit {@code width}, ending in an ellipsis when it doesn't fit. */

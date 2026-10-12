@@ -1,6 +1,8 @@
 package _959.server_waypoint.common.client.gui.widgets;
 
 import _959.server_waypoint.common.client.gui.TestFont;
+import _959.server_waypoint.common.client.gui.layout.LayoutFlow;
+import _959.server_waypoint.common.client.gui.layout.WidgetPack;
 import com.mojang.blaze3d.platform.InputConstants;
 //? if >= 1.21.9 {
 import net.minecraft.client.input.MouseButtonEvent;
@@ -18,6 +20,33 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * {@link SettingsListWidget} hides must ignore input itself.
  */
 class IntegerSliderTest {
+    @Test
+    void scaledSettingsRowAlignsLabelWithSliderNumberText() {
+        TestFont font = new TestFont();
+        float scale = SettingsListWidget.ROW_TEXT_SCALE;
+        IntegerSlider.ScaledIntegerField field = new IntegerSlider.ScaledIntegerField(
+                0, 0, 30, 0, 200, 100, font, scale);
+        field.setYOffset(2);
+        IntegerSlider slider = new IntegerSlider(0, 0, 100, field, value -> { });
+        ScalableText label = new ScalableText(0, 0, Component.literal("Scale"), scale, 0xFFFFFFFF, font);
+        WidgetPack pack = new WidgetPack(0, 10, 200, 21, LayoutFlow.Orientation.HORIZONTAL);
+        pack.setCrossAxisAlignment(WidgetPack.CrossAxisAlignment.CENTER);
+        pack.addChild(label);
+        pack.addChild(slider, LayoutFlow.Direction.REVERSE);
+
+        // The field rounds its scaled native text inset to the same whole-pixel origin as the label.
+        assertEquals(field.getVisualY() + Math.round(2 * scale), label.getY());
+        assertEquals(label.getY() + label.getVerticalAlignmentCenter(),
+                slider.getY() + slider.getVerticalAlignmentCenter(), 0.001F,
+                "scaled label and number text must share the same content center");
+        assertEquals(9, slider.getHeight());
+        assertEquals(8, label.getHeight());
+        pack.setPosition(20, 30);
+        assertEquals(field.getVisualY() + Math.round(2 * scale), label.getY());
+        assertEquals(label.getY() + label.getVerticalAlignmentCenter(),
+                slider.getY() + slider.getVerticalAlignmentCenter(), 0.001F);
+    }
+
     //? if >= 1.21.9 {
     @Test
     void scaledNumberFieldMatchesItsVisibleBoundsAndPlacesTheCursorAtTheClickedDigit() {
