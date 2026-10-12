@@ -6,10 +6,12 @@ import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import _959.server_waypoint.common.client.gui.layout.WidgetPack;
 import _959.server_waypoint.common.client.gui.render.WidgetTextures;
+import _959.server_waypoint.common.client.gui.render.WidgetTheme;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeJson;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeManager;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeSelection;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeVariable;
+import _959.server_waypoint.common.client.gui.render.WidgetThemes;
 import _959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayout.Arrangement;
 import _959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayout.Rect;
 import _959.server_waypoint.common.client.gui.widgets.AbstractDropdownMenuWidget;
@@ -200,7 +202,10 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
                 WaypointClientMod.LOGGER.error("Failed to load widget theme settings", exception);
             }
         }
-        return new WidgetThemeJson.Settings(WidgetThemeSelection.CUSTOM, WidgetThemeManager.getTheme());
+        WidgetTheme theme = WidgetThemeManager.getTheme();
+        WidgetThemeSelection selection = theme.equals(WidgetThemes.DEFAULT)
+                ? WidgetThemeSelection.CLASSIC : WidgetThemeSelection.CUSTOM;
+        return new WidgetThemeJson.Settings(selection, theme);
     }
 
     @Override

@@ -477,8 +477,11 @@ These roles apply to GUI chrome and state. A waypoint's user-selected color is d
 
 `WidgetTheme` is an immutable, complete snapshot. A builder created with `WidgetTheme.builder()` must assign every variable before `build()`. For a partial change, start from an existing theme or use `withColor`:
 
-`WidgetThemes.DEFAULT` points to `WidgetThemes.TRANSLUCENT_DARK`, the built-in neutral grayscale
-glass palette. The screen overlay is 65% opaque and panels are 70% opaque, preserving a
+`WidgetThemes.DEFAULT` points to `WidgetThemes.CLASSIC`, the neutral translucent palette described
+below. Initial state, manager resets, and missing/invalid theme-file fallbacks all use Classic.
+
+`WidgetThemes.TRANSLUCENT_DARK` is the built-in neutral grayscale glass palette. The screen overlay is
+65% opaque and panels are 70% opaque, preserving a
 view of the world while limiting bright-scene washout. Controls use 85–90% opacity and
 lighter charcoal fills so their shape remains visible at night. Default borders are transparent;
 a brighter focus ring identifies keyboard focus. Popups are
@@ -502,22 +505,24 @@ translucent; contrast varies with the world behind the glass. Selected controls 
 preset through the editor dropdown or `WidgetThemeManager.setTheme(WidgetThemes.HIGH_CONTRAST)`;
 it does not change the default theme.
 
-`WidgetThemes.CLASSIC` retains the previous release's (3.0.4) translucent surfaces:
-panels are 60% black and controls 53% black, with transparent default borders, and it is more translucent than
-Translucent Dark and Modern Dark on every surface. Nothing dims the world behind a screen. Popups, dialogs
-and scrollbar tracks are as translucent as the panels, so labels beneath a popup show through.
-Hovering and selecting are white washes (`ROW_HOVER_BACKGROUND` 19%, `SELECTION_BACKGROUND` 35%,
-`CONTROL_HOVER_BACKGROUND` 40%). The selected and On/Off fills are the old blue, green and red toggle
-colors laid over the old control fill and flattened into one layer, because a toggle paints a single
-fill. Status text uses Minecraft's own light green, yellow and red, and the accent is a neutral gray
-that keeps white `TEXT_ON_ACCENT` readable. Contrast is as low as it was on a bright world, where muted
-text and hovered controls fade, so only the main text and the toggle labels are tested for
-readability. The `WidgetThemeTest` pixel check pins its panel, control, scrollbar and row-hover
-layers to the previous release's pixels and checks that default borders leave panel pixels unchanged. Apply it through the editor dropdown; it does not change the
-default theme.
+`WidgetThemes.CLASSIC` uses the supplied custom palette as the default: a 33% black screen overlay,
+50% black panels, 60% black popups/dialogs, and 25% black controls. Default borders and scrollbar tracks
+are transparent; dividers and focus rings use translucent white. Hovered controls and rows use white
+washes, selected controls use translucent blue, and accents use neutral gray. Toggles use translucent
+green/red fills, with bright green, yellow, and orange-red status text and matching status backgrounds.
+The pixel check in `WidgetThemeTest` pins the composed panel, control, scrollbar, and row-hover layers
+across black, white, and sky-blue world backgrounds. This palette retains its supplied colors exactly;
+its translucent hover, selected, and status fills do not guarantee the same contrast as the other presets.
 
-`DIALOG_BACKGROUND` is darker and more opaque than `POPUP_BACKGROUND` because `DialogWidget`
-always renders above other controls. Keep suggestion lists, color-picker popups, and other
+`WidgetThemes.LIGHT` uses pale translucent surfaces, dark primary/muted/placeholder text, blue focus and
+selection highlights, and soft green, amber, and red status fills with dark matching text. Its screen overlay
+is 85% opaque and panels 80% opaque; popups and dialogs are nearly opaque so underlying labels do not bleed
+through. Default borders and scrollbar tracks are transparent. Text, focus, disabled labels, and scrollbar
+contrast are checked after compositing over black, white, and sky-blue worlds. Select Light through the
+editor dropdown or `WidgetThemeManager.setTheme(WidgetThemes.LIGHT)`.
+
+`DIALOG_BACKGROUND` is reserved for `DialogWidget`, which always renders above other controls;
+presets can give it a stronger tint or opacity than `POPUP_BACKGROUND`. Keep suggestion lists, color-picker popups, and other
 non-modal floating surfaces on `POPUP_BACKGROUND`. Hovered controls and rows use lighter
 translucent gray fills than their resting surfaces so hover remains visible against the dark theme.
 
@@ -577,7 +582,8 @@ Use `toJson`/`fromJson` for strings, `save`/`load` for snapshots, `saveCurrent` 
 config/server_waypoint/widget-theme.json
 ```
 
-A missing file leaves `WidgetThemes.DEFAULT` active. An unreadable or invalid file is logged and
+A missing file leaves `WidgetThemes.DEFAULT` active and the editor selects Classic when that default
+is active. An unreadable or invalid file is logged and
 the manager is reset to `WidgetThemes.DEFAULT`.
 
 ## `widgets`: choosing and extending components
@@ -1064,7 +1070,7 @@ clears it before and after.
 - **Look:** the `POPUP_BACKGROUND` fill, a one-pixel `BORDER` outline and `TEXT_PRIMARY` text with a
   shadow, all resolved each time the tooltip is drawn, so a theme change shows in the next frame. The
   text wraps at 170 pixels like vanilla's tooltip, and the box extends 4 pixels past the text on every
-  side. The two dark themes and Classic have a transparent default border, so their tooltips have no
+  side. The dark themes, Classic, and Light have a transparent default border, so their tooltips have no
   outline.
 - **A control's tooltip:** call `setTooltip(Component)` on the control, and remove it with
   `setTooltip((Component) null)`: a bare `null` is ambiguous next to vanilla's `setTooltip(Tooltip)` and
@@ -1597,7 +1603,7 @@ its top, or its bottom after `setExpansionDirection(REVERSE)`. A subclass suppli
 leave the selected choice out of the popup, `getSelectedMenuItemIndex()`.
 
 - **Theme dropdown:** `ThemeSelector`, an inner class of the screen, offers Custom, Translucent Dark, Modern
-  Dark, High Contrast and Classic (`WidgetThemeSelection`) and previews a choice at once. It is as wide as its
+  Dark, High Contrast, Classic and Light (`WidgetThemeSelection`) and previews a choice at once. It is as wide as its
   widest label, so it keeps its width whichever theme is selected. The screen registers it once, routes
   clicks on its popup before the controls it covers and draws the popup after the footer. Its tooltip is
   hidden while the popup is open (`onExpandedChanged`), because the tooltip would sit on the popup's first

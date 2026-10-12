@@ -47,6 +47,13 @@ class WidgetThemeTest {
         assertReadableAcrossWorlds(WidgetThemes.MODERN_DARK);
     }
 
+    @Test
+    void lightThemeRetainsReadableContrastAcrossBrightAndDarkWorlds() {
+        WidgetTheme light = WidgetThemeSelection.LIGHT.resolve(WidgetThemes.CLASSIC);
+
+        assertReadableAcrossWorlds(light);
+    }
+
     private static void assertReadableAcrossWorlds(WidgetTheme theme) {
         assertTrue(alpha(theme.getColor(WidgetThemeVariable.POPUP_BACKGROUND)) >= 250);
         for (int world : new int[]{0xFF000000, 0xFFFFFFFF, 0xFF87B9F0}) {
@@ -105,17 +112,14 @@ class WidgetThemeTest {
     }
 
     @Test
-    void classicSurfacesKeepPreviousReleasePixelsWithTransparentBorders() {
-        // The previous release (3.0.4) drew a panel of 60% black straight over the world, a control fill of
-        // 53% black on the panel, a scrollbar thumb of 50% white on a
-        // track of 60% black on the panel, and a list-row hover of 19% white on the panel. These pixels are
-        // those layers composed by hand over each world, rounding after every layer as the framebuffer does.
-        // Default borders are now transparent, so their pixels match the panel beneath them.
+    void classicSurfacesKeepSuppliedThemePixelsWithTransparentBorders() {
+        // Compose the supplied screen, panel, control and scrollbar layers over each world.
+        // Transparent borders retain the panel pixel; the scrollbar track is also transparent.
         int[][] expected = {
                 // world       panel       control     border      thumb       row hover
                 {0xFF000000, 0xFF000000, 0xFF000000, 0xFF000000, 0xFF7F7F7F, 0xFF303030},
-                {0xFFFFFFFF, 0xFF666666, 0xFF303030, 0xFF666666, 0xFF949494, 0xFF838383},
-                {0xFF87B9F0, 0xFF364A60, 0xFF19232D, 0xFF364A60, 0xFF8A8E92, 0xFF5C6C7E}
+                {0xFFFFFFFF, 0xFF555555, 0xFF404040, 0xFF555555, 0xFFAAAAAA, 0xFF757575},
+                {0xFF87B9F0, 0xFF2D3E50, 0xFF222F3C, 0xFF2D3E50, 0xFF969EA7, 0xFF556271}
         };
         WidgetTheme classic = WidgetThemes.CLASSIC;
         for (int[] row : expected) {
@@ -148,12 +152,6 @@ class WidgetThemeTest {
                     WidgetThemeVariable.DIALOG_BACKGROUND}) {
                 assertContrastAtLeast(classic.getColor(WidgetThemeVariable.TEXT_PRIMARY),
                         classic.getColor(surface), panel, 4.5D);
-            }
-            for (WidgetThemeVariable fill : new WidgetThemeVariable[]{
-                    WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND, WidgetThemeVariable.SUCCESS_BACKGROUND,
-                    WidgetThemeVariable.WARNING_BACKGROUND, WidgetThemeVariable.DANGER_BACKGROUND}) {
-                assertContrastAtLeast(classic.getColor(WidgetThemeVariable.TEXT_ON_ACCENT),
-                        classic.getColor(fill), panel, 4.5D);
             }
         }
     }

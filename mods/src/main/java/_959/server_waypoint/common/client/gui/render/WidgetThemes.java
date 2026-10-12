@@ -123,52 +123,87 @@ public final class WidgetThemes {
             .build();
 
     /**
-     * The surfaces of the previous release: a panel of 60% black and controls of 53% black, with
-     * transparent default borders and no screen dimming, so the world shows through every surface. Popups and dialogs
-     * are as translucent as the panels, so labels under them show through. The toggle and status fills
-     * are the old green, blue and red toggle colors laid over the old control fill, flattened into one
-     * layer. Contrast is as low as it was on a bright world, where muted text and hovered controls fade.
+     * Pale glass surfaces with dark labels, blue focus highlights, and soft status fills.
+     */
+    public static final WidgetTheme LIGHT = WidgetTheme.builder()
+            .setColor(WidgetThemeVariable.TEXT_PRIMARY, 0xFF202830)
+            .setColor(WidgetThemeVariable.TEXT_MUTED, 0xFF465361)
+            .setColor(WidgetThemeVariable.TEXT_DISABLED, 0xFF687583)
+            .setColor(WidgetThemeVariable.TEXT_PLACEHOLDER, 0xFF465361)
+            .setColor(WidgetThemeVariable.TEXT_ON_ACCENT, 0xFF202830)
+            .setColor(WidgetThemeVariable.SCREEN_BACKGROUND, 0xD9F0F3F7)
+            .setColor(WidgetThemeVariable.PANEL_BACKGROUND, 0xCCF8FAFC)
+            .setColor(WidgetThemeVariable.POPUP_BACKGROUND, 0xFAF8FAFC)
+            .setColor(WidgetThemeVariable.DIALOG_BACKGROUND, 0xFCF8FAFC)
+            .setColor(WidgetThemeVariable.CONTROL_BACKGROUND, 0xD9FFFFFF)
+            .setColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND, 0xE6E1EAF3)
+            .setColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND, 0xD9E1E6ED)
+            .setColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND, 0xE6B8D7F5)
+            .setColor(WidgetThemeVariable.BORDER, 0x00202830)
+            .setColor(WidgetThemeVariable.DECOR_LINE, 0x40465361)
+            .setColor(WidgetThemeVariable.FOCUS_RING, 0xFF205E98)
+            .setColor(WidgetThemeVariable.ACCENT, 0xFFD0E3F5)
+            .setColor(WidgetThemeVariable.ACCENT_HOVER, 0xFFB8D7F5)
+            .setColor(WidgetThemeVariable.SELECTION_BACKGROUND, 0xE6B8D7F5)
+            .setColor(WidgetThemeVariable.ROW_HOVER_BACKGROUND, 0x66B8D7F5)
+            .setColor(WidgetThemeVariable.SCROLLBAR_TRACK, 0x00000000)
+            .setColor(WidgetThemeVariable.SCROLLBAR_THUMB, 0xFF687583)
+            .setColor(WidgetThemeVariable.SCROLLBAR_THUMB_ACTIVE, 0xFF205E98)
+            .setColor(WidgetThemeVariable.SCROLLBAR_THUMB_DISABLED, 0xFF8995A1)
+            .setColor(WidgetThemeVariable.SLIDER_THUMB_DISABLED, 0xFF8995A1)
+            .setColor(WidgetThemeVariable.TOGGLE_ON_BACKGROUND, 0xE6C4E5D2)
+            .setColor(WidgetThemeVariable.TOGGLE_OFF_BACKGROUND, 0xE6F0CDD0)
+            .setColor(WidgetThemeVariable.SUCCESS, 0xFF17643B)
+            .setColor(WidgetThemeVariable.WARNING, 0xFF745000)
+            .setColor(WidgetThemeVariable.DANGER, 0xFFA32732)
+            .setColor(WidgetThemeVariable.SUCCESS_BACKGROUND, 0xE6C4E5D2)
+            .setColor(WidgetThemeVariable.WARNING_BACKGROUND, 0xE6F4E0B5)
+            .setColor(WidgetThemeVariable.DANGER_BACKGROUND, 0xE6F0CDD0)
+            .build();
+
+    /**
+     * Neutral translucent surfaces and bright status colors from the supplied widget theme.
      */
     public static final WidgetTheme CLASSIC = WidgetTheme.builder()
             .setColor(WidgetThemeVariable.TEXT_PRIMARY, 0xFFFFFFFF)
             .setColor(WidgetThemeVariable.TEXT_MUTED, 0xFFA0A0A0)
-            .setColor(WidgetThemeVariable.TEXT_DISABLED, 0xFF909090)
+            .setColor(WidgetThemeVariable.TEXT_DISABLED, 0xBF7F7F7F)
             .setColor(WidgetThemeVariable.TEXT_PLACEHOLDER, 0xFFA0A0A0)
             .setColor(WidgetThemeVariable.TEXT_ON_ACCENT, 0xFFFFFFFF)
-            .setColor(WidgetThemeVariable.SCREEN_BACKGROUND, 0x00000000)
-            .setColor(WidgetThemeVariable.PANEL_BACKGROUND, 0x99000000)
+            .setColor(WidgetThemeVariable.SCREEN_BACKGROUND, 0x55000000)
+            .setColor(WidgetThemeVariable.PANEL_BACKGROUND, 0x7F000000)
             .setColor(WidgetThemeVariable.POPUP_BACKGROUND, 0x99000000)
             .setColor(WidgetThemeVariable.DIALOG_BACKGROUND, 0x99000000)
-            .setColor(WidgetThemeVariable.CONTROL_BACKGROUND, 0x88000000)
+            .setColor(WidgetThemeVariable.CONTROL_BACKGROUND, 0x3F000000)
             .setColor(WidgetThemeVariable.CONTROL_HOVER_BACKGROUND, 0x66FFFFFF)
             .setColor(WidgetThemeVariable.CONTROL_DISABLED_BACKGROUND, 0x55000000)
-            .setColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND, 0xCF0043A9)
+            .setColor(WidgetThemeVariable.CONTROL_SELECTED_BACKGROUND, 0x7F3384FF)
             .setColor(WidgetThemeVariable.BORDER, 0x00FFFFFF)
             .setColor(WidgetThemeVariable.DECOR_LINE, 0x40FFFFFF)
-            .setColor(WidgetThemeVariable.FOCUS_RING, 0xFFFFFFFF)
-            .setColor(WidgetThemeVariable.ACCENT, 0xFF808080)
-            .setColor(WidgetThemeVariable.ACCENT_HOVER, 0xFF959595)
+            .setColor(WidgetThemeVariable.FOCUS_RING, 0xBFFFFFFF)
+            .setColor(WidgetThemeVariable.ACCENT, 0xCCBFBFBF)
+            .setColor(WidgetThemeVariable.ACCENT_HOVER, 0x7F7F7F7F)
             .setColor(WidgetThemeVariable.SELECTION_BACKGROUND, 0x59FFFFFF)
             .setColor(WidgetThemeVariable.ROW_HOVER_BACKGROUND, 0x30FFFFFF)
-            .setColor(WidgetThemeVariable.SCROLLBAR_TRACK, 0x99000000)
+            .setColor(WidgetThemeVariable.SCROLLBAR_TRACK, 0x00000000)
             .setColor(WidgetThemeVariable.SCROLLBAR_THUMB, 0x7FFFFFFF)
-            .setColor(WidgetThemeVariable.SCROLLBAR_THUMB_ACTIVE, 0xFFFFFFFF)
+            .setColor(WidgetThemeVariable.SCROLLBAR_THUMB_ACTIVE, 0xCCFFFFFF)
             .setColor(WidgetThemeVariable.SCROLLBAR_THUMB_DISABLED, 0x40FFFFFF)
-            .setColor(WidgetThemeVariable.SLIDER_THUMB_DISABLED, 0xFF606060)
-            .setColor(WidgetThemeVariable.TOGGLE_ON_BACKGROUND, 0xCF007D00)
-            .setColor(WidgetThemeVariable.TOGGLE_OFF_BACKGROUND, 0xCF7D0000)
-            .setColor(WidgetThemeVariable.SUCCESS, 0xFF55FF55)
-            .setColor(WidgetThemeVariable.WARNING, 0xFFFFFF55)
-            .setColor(WidgetThemeVariable.DANGER, 0xFFFF5555)
-            .setColor(WidgetThemeVariable.SUCCESS_BACKGROUND, 0xCF007D00)
-            .setColor(WidgetThemeVariable.WARNING_BACKGROUND, 0xCF7E3F00)
-            .setColor(WidgetThemeVariable.DANGER_BACKGROUND, 0xCF7D0000)
+            .setColor(WidgetThemeVariable.SLIDER_THUMB_DISABLED, 0xBF606060)
+            .setColor(WidgetThemeVariable.TOGGLE_ON_BACKGROUND, 0x7F00FF00)
+            .setColor(WidgetThemeVariable.TOGGLE_OFF_BACKGROUND, 0x7FFF0000)
+            .setColor(WidgetThemeVariable.SUCCESS, 0xFF00FF3E)
+            .setColor(WidgetThemeVariable.WARNING, 0xFFFFFF39)
+            .setColor(WidgetThemeVariable.DANGER, 0xFFFF4700)
+            .setColor(WidgetThemeVariable.SUCCESS_BACKGROUND, 0xCC00BF2F)
+            .setColor(WidgetThemeVariable.WARNING_BACKGROUND, 0xCCBFBF2A)
+            .setColor(WidgetThemeVariable.DANGER_BACKGROUND, 0xCCBF3600)
             .build();
 
     /**
      * Theme used by initial state, resets, and persistence fallbacks.
      */
-    public static final WidgetTheme DEFAULT = TRANSLUCENT_DARK;
+    public static final WidgetTheme DEFAULT = CLASSIC;
 
     private WidgetThemes() {
     }

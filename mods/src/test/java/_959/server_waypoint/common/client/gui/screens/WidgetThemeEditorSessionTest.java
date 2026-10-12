@@ -9,6 +9,8 @@ import _959.server_waypoint.common.client.gui.render.WidgetThemes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -72,8 +74,9 @@ class WidgetThemeEditorSessionTest {
                 () -> session.setColor(WidgetThemeVariable.ACCENT, 0xFF000000));
     }
 
-    @Test
-    void presetSwitchingRetainsCustomEditsAcrossSaveAndReopen() throws IOException {
+    @ParameterizedTest
+    @EnumSource(value = WidgetThemeSelection.class, names = "CUSTOM", mode = EnumSource.Mode.EXCLUDE)
+    void presetSwitchingRetainsCustomEditsAcrossSaveAndReopen(WidgetThemeSelection preset) throws IOException {
         Path path = this.tempDirectory.resolve("widget-theme.json");
         WidgetTheme original = WidgetThemes.DEFAULT;
         WidgetThemeEditorSession session = new WidgetThemeEditorSession(original, path);
@@ -81,23 +84,23 @@ class WidgetThemeEditorSessionTest {
         WidgetTheme custom = session.getDraftTheme();
         session.select(WidgetThemeSelection.MODERN_DARK);
         assertEquals(WidgetThemes.MODERN_DARK, WidgetThemeManager.getTheme());
-        session.select(WidgetThemeSelection.HIGH_CONTRAST);
+        session.select(preset);
         session.select(WidgetThemeSelection.CUSTOM);
         assertEquals(custom, session.getDraftTheme());
-        session.select(WidgetThemeSelection.HIGH_CONTRAST);
+        session.select(preset);
         session.save();
         session.cancel();
-        assertEquals(WidgetThemes.HIGH_CONTRAST, WidgetThemeJson.loadAndApply(path));
+        assertEquals(preset.resolve(custom), WidgetThemeJson.loadAndApply(path));
 
         WidgetThemeEditorSession reopened = new WidgetThemeEditorSession(
                 WidgetThemeManager.getTheme(), path, WidgetThemeJson.loadSettings(path));
-        assertEquals(WidgetThemeSelection.HIGH_CONTRAST, reopened.getSelection());
+        assertEquals(preset, reopened.getSelection());
         assertFalse(reopened.isDirty());
         reopened.select(WidgetThemeSelection.CUSTOM);
         assertEquals(custom, reopened.getDraftTheme());
         reopened.cancel();
-        assertEquals(WidgetThemes.HIGH_CONTRAST, WidgetThemeManager.getTheme());
-        assertEquals(WidgetThemeSelection.HIGH_CONTRAST, WidgetThemeJson.loadSettings(path).selection());
+        assertEquals(preset.resolve(custom), WidgetThemeManager.getTheme());
+        assertEquals(preset, WidgetThemeJson.loadSettings(path).selection());
     }
 
     @Test
