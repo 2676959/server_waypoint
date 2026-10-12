@@ -330,8 +330,10 @@ explicit expansion direction until this method is used.
 
 `SuggestingTextInput` is the reusable surface-free input base. It owns editing, shifted layout,
 completion state, inline text, and suggestion rendering/hit testing; `TranslucentTextField` adds
-only its themed surface, whose fill `surfaceColor()` returns for the field's state. A field on a panel
-that already paints a translucent fill overrides it to leave out the resting fill, as
+its themed surface, whose fill `surfaceColor()` returns for the field's state. Setting its value
+while unfocused or losing focus moves the cursor and viewport to the beginning, so long values
+show their prefix. While focused, editing and cursor movement retain vanilla horizontal scrolling.
+A field on a panel that already paints a translucent fill overrides it to leave out the resting fill, as
 `WaypointSearchBarWidget` does on the manager's list panel; hovering and the disabled look still fill.
 Such a field shows its hint through `setPlaceholder`, as the search bar does, because vanilla's fixed
 dark gray hint is unreadable on a bare panel (1.2:1 against a light world). By default the list takes the field's outline: it starts at `getVisualX()`

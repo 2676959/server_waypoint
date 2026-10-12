@@ -22,6 +22,24 @@ public class TranslucentTextField extends SuggestingTextInput {
         super(x, y, width, text, textRenderer, anchorMode);
     }
 
+    @Override
+    public void setValue(String value) {
+        super.setValue(value);
+        if (!this.isFocused()) {
+            this.setCursorPosition(0);
+            this.setHighlightPos(0);
+        }
+    }
+
+    @Override
+    public void setFocused(boolean focused) {
+        super.setFocused(focused);
+        if (!this.isFocused()) {
+            this.setCursorPosition(0);
+            this.setHighlightPos(0);
+        }
+    }
+
     /** The fill painted beneath the outline, for the field's current state. */
     protected int surfaceColor() {
         return WidgetThemeState.controlBackground(this.active, isHovered());
