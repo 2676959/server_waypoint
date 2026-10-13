@@ -5,6 +5,7 @@ import _959.server_waypoint.common.client.WaypointClientMod;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Direction;
 import _959.server_waypoint.common.client.gui.layout.LayoutFlow.Orientation;
 import _959.server_waypoint.common.client.gui.layout.WidgetPack;
+import _959.server_waypoint.common.client.gui.layout.WidgetStack;
 import _959.server_waypoint.common.client.gui.render.WidgetTextures;
 import _959.server_waypoint.common.client.gui.render.WidgetTheme;
 import _959.server_waypoint.common.client.gui.render.WidgetThemeJson;
@@ -16,6 +17,7 @@ import _959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayout.Ar
 import _959.server_waypoint.common.client.gui.screens.WidgetThemeEditorLayout.Rect;
 import _959.server_waypoint.common.client.gui.widgets.AbstractDropdownMenuWidget;
 import _959.server_waypoint.common.client.gui.widgets.ColorHexCodeField;
+import _959.server_waypoint.common.client.gui.widgets.ConfirmationDialog;
 import _959.server_waypoint.common.client.gui.widgets.OnOffToggleButton;
 import _959.server_waypoint.common.client.gui.widgets.ColorSquareButton;
 import _959.server_waypoint.common.client.gui.widgets.IconButton;
@@ -32,6 +34,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.BooleanSupplier;
@@ -119,6 +122,8 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     private final WidgetPack colorRow = new WidgetPack(Orientation.HORIZONTAL);
     private final WidgetPack alphaRow = new WidgetPack(Orientation.HORIZONTAL);
     private final WidgetThemePreview preview;
+    private final ConfirmationDialog previewDialog;
+    private final List<AbstractWidget> previewDialogButtons = new ArrayList<>();
     private final TranslucentButton resetButton;
     private final TranslucentButton cancelButton;
     private final TranslucentButton saveButton;
@@ -180,7 +185,15 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         this.alphaRow.addChild(SpacerElement.width(ALPHA_LABEL_GAP), Direction.FORWARD);
         this.alphaRow.addChild(this.alphaSlider, Direction.FORWARD);
 
-        this.preview = new WidgetThemePreview(this.font);
+        this.preview = new WidgetThemePreview(this.font, this::openPreviewDialog);
+        WidgetStack dialogContent = new WidgetStack(0, 0, 0, true, false);
+        dialogContent.addChild(new ScalableText(0, 0,
+                Component.translatable("server_waypoint.theme.preview.title"), TEXT_PRIMARY, this.font), 0);
+        this.previewDialog = new ConfirmationDialog(0, 0,
+                Component.translatable("server_waypoint.theme.preview.dialog"), dialogContent,
+                this::closePreviewDialog, this::closePreviewDialog, this.font);
+        this.previewDialog.visible = false;
+        this.previewDialog.visitWidgets(this.previewDialogButtons::add);
 
         this.resetButton = TranslucentButton.fitted(Component.translatable("waypoint.reset.button"), this::revertAll);
         this.resetButton.setTooltip(Component.translatable("server_waypoint.theme.reset.tooltip"));
@@ -236,16 +249,15 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         this.addRenderableWidget(this.cancelButton);
         this.addRenderableWidget(this.saveButton);
         this.addRenderableWidget(this.swatchWidget);
+        this.previewDialog.visitWidgets(this::addRenderableWidget);
         this.refreshControlStates();
-        if (this.swatchWidget.visible) {
-            this.setFocused(this.swatchWidget);
-        }
+        this.normalizeModalFocus();
     }
 
-    /** An open color picker keeps focus through a resize; {@link #init} focuses it. */
+    /** An open modal keeps focus through a resize; {@link #init} focuses it. */
     @Override
     protected boolean hasOpenModal() {
-        return this.swatchWidget.visible;
+        return this.swatchWidget.visible || this.previewDialog.visible;
     }
 
     @Override
@@ -340,7 +352,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
      * the selected key and whether anything changed since the editor opened.
      */
     private void refreshControlStates() {
-        boolean modal = this.swatchWidget.visible;
+        boolean modal = this.hasOpenModal();
         WidgetThemeVariable key = this.selectedKey;
         boolean editing = key != null;
         boolean editingColor = editing && !key.isBoolean();
@@ -361,6 +373,10 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         this.resetButton.active = !modal && changed;
         this.cancelButton.active = !modal;
         this.saveButton.active = !modal && changed;
+        this.previewDialog.visitWidgets(widget -> {
+            widget.visible = this.previewDialog.visible;
+            widget.active = this.previewDialog.visible;
+        });
     }
 
     private void onKeyClicked(WidgetThemeVariable key) {
@@ -593,6 +609,22 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         this.setFocused(this.colorButton);
     }
 
+    private void openPreviewDialog() {
+        this.finishEditing();
+        this.closePopups();
+        this.previewDialog.setPosition(centered(this.width, this.previewDialog.getWidth()),
+                centered(this.height, this.previewDialog.getHeight()));
+        this.previewDialog.visible = true;
+        this.refreshControlStates();
+        this.setFocused(this.previewDialog.getCancelButton());
+    }
+
+    private void closePreviewDialog() {
+        this.previewDialog.visible = false;
+        this.refreshControlStates();
+        this.setFocused(this.preview.dialogButton());
+    }
+
     // ------------------------------------------------------------------ input
 
     /** Keeps click targets stationary until dispatch finishes, then applies a pending status layout. */
@@ -689,6 +721,9 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     //? if <= 1.20.1 {
     /*@Override
     public boolean mouseScrolled(double mouseX, double mouseY, double verticalAmount) {
+        if (this.previewDialog.visible) {
+            return true;
+        }
         if (this.scrollFocusedPopup(mouseX, mouseY, verticalAmount)
                 || this.scrollPopupOrPreview(mouseX, mouseY, 0, verticalAmount)) {
             return true;
@@ -698,6 +733,9 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
     *///?} else {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (this.previewDialog.visible) {
+            return true;
+        }
         if (this.scrollFocusedPopup(mouseX, mouseY, verticalAmount)
                 || this.scrollPopupOrPreview(mouseX, mouseY, horizontalAmount, verticalAmount)) {
             return true;
@@ -725,10 +763,16 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         return true;
     }
 
-    /** Vanilla focuses the clicked widget after its callback runs, which can take focus out of the color picker. */
+    /** Restores modal focus after vanilla focuses a clicked control, including a button that closed the dialog. */
     private void normalizeModalFocus() {
-        if (this.swatchWidget.visible) {
+        if (this.previewDialog.visible) {
+            if (!(this.getFocused() instanceof AbstractWidget widget) || !widget.active) {
+                this.setFocused(this.previewDialog.getCancelButton());
+            }
+        } else if (this.swatchWidget.visible) {
             this.setFocused(this.swatchWidget);
+        } else if (this.previewDialogButtons.contains(this.getFocused())) {
+            this.setFocused(this.preview.dialogButton());
         } else if (this.getFocused() == this.swatchWidget) {
             this.setFocused(this.colorButton);
         }
@@ -736,6 +780,10 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == InputConstants.KEY_ESCAPE && this.previewDialog.visible) {
+            this.closePreviewDialog();
+            return true;
+        }
         if (keyCode == InputConstants.KEY_ESCAPE) {
             if (this.dismissFocusedInput()) {
                 return true;
@@ -788,7 +836,7 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         // The preview's popups go where they fit before anything asks whether the pointer is over one.
         this.preview.layoutPopups(this.height);
         // Under the color picker, and under an open popup, nothing reacts to the mouse or shows a tooltip.
-        boolean modal = this.swatchWidget.visible;
+        boolean modal = this.hasOpenModal();
         boolean covered = modal || this.isMouseOverPopup(mouseX, mouseY);
         int contentMouseX = covered ? NO_MOUSE : mouseX;
         int contentMouseY = covered ? NO_MOUSE : mouseY;
@@ -838,6 +886,16 @@ public final class WidgetThemeConfigScreen extends MovementAllowedScreen {
         extractRenderState
                 (context, mouseX, mouseY, deltaTicks);
         previousLayer(context);
+        if (this.previewDialog.visible) {
+            this.previewDialog.setPosition(centered(this.width, this.previewDialog.getWidth()),
+                    centered(this.height, this.previewDialog.getHeight()));
+            nextLayer(context);
+            this.previewDialog.
+            //$ render_method_swap
+            extractRenderState
+                    (context, mouseX, mouseY, deltaTicks);
+            previousLayer(context);
+        }
     }
 
     /**

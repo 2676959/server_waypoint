@@ -17,6 +17,7 @@ import _959.server_waypoint.common.client.gui.widgets.ScalableText;
 import _959.server_waypoint.common.client.gui.widgets.SettingsListWidget;
 import _959.server_waypoint.common.client.gui.widgets.ShiftableWidget;
 import _959.server_waypoint.common.client.gui.widgets.ToggleButton;
+import _959.server_waypoint.common.client.gui.widgets.TooltipLayer;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentButton;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentTextField;
 import _959.server_waypoint.common.client.gui.widgets.TranslucentTooltip;
@@ -115,19 +116,23 @@ final class WidgetThemePreview {
     private final List<List<Sample>> families = new ArrayList<>();
     private final ComboBoxWidget combobox;
     private final SampleDropdown dropdown;
+    private final SurfacePopup popup;
+    private final TranslucentButton dialogButton;
     private final SettingsListWidget.Header header;
     private final PreviewList list;
     /** The row width the rows were packed for, or -1 before the first layout. */
     private int packedWidth = -1;
 
-    WidgetThemePreview(Font font) {
+    WidgetThemePreview(Font font, Runnable openDialog) {
         this.combobox = new ComboBoxWidget(0, 0, COMBOBOX_WIDTH, Component.empty(), font, DIMENSIONS, DIMENSIONS.get(0),
                 value -> {
                 });
         this.combobox.setRenderPopupSeparately(true);
         this.dropdown = new SampleDropdown(font);
         this.dropdown.setRenderPopupSeparately(true);
-        this.list = new PreviewList(font, List.of(this.combobox, this.dropdown));
+        this.popup = new SurfacePopup(font);
+        this.popup.setRenderPopupSeparately(true);
+        this.list = new PreviewList(font, List.of(this.combobox, this.dropdown, this.popup));
 
         this.put(PreviewSample.PRIMARY_TEXT, new ScalableText(0, 0,
                 Component.translatable("server_waypoint.theme.preview.primary"), TEXT_PRIMARY, font));
@@ -147,10 +152,10 @@ final class WidgetThemePreview {
                 Component.translatable("server_waypoint.theme.preview.disabled"), () -> {
                 }));
         this.put(PreviewSample.ICON_BUTTON, new IconButton(0, 0, CONTROL_HEIGHT, CONTROL_HEIGHT,
-                Component.translatable("server_waypoint.theme.preview.button"), WidgetTextures.ADD_ICON, () -> {
+                Component.translatable("server_waypoint.theme.preview.button"), WidgetTextures.PLACEHOLDER_ICON, () -> {
                 }));
         this.put(PreviewSample.DISABLED_ICON_BUTTON, new IconButton(0, 0, CONTROL_HEIGHT, CONTROL_HEIGHT,
-                Component.translatable("server_waypoint.theme.preview.disabled"), WidgetTextures.ADD_ICON, () -> {
+                Component.translatable("server_waypoint.theme.preview.disabled"), WidgetTextures.PLACEHOLDER_ICON, () -> {
                 }));
         this.put(PreviewSample.SELECTED_TOGGLE, new ToggleButton(0, 0, TOGGLE_WIDTH, CONTROL_HEIGHT,
                 Component.translatable("server_waypoint.theme.preview.normal"),
@@ -170,14 +175,35 @@ final class WidgetThemePreview {
         this.put(PreviewSample.HOVERED_ACCENT_CHIP, new Chip(font,
                 Component.translatable("server_waypoint.theme.preview.hover"), ACCENT_HOVER, TEXT_ON_ACCENT,
                 CHIP_HEIGHT));
-        this.put(PreviewSample.TOOLTIP, new TranslucentTooltip(font))
-                .setMessage(Component.translatable("server_waypoint.theme.preview.tooltip"));
-        this.put(PreviewSample.POPUP_CHIP, new Chip(font,
-                Component.translatable("server_waypoint.theme.preview.popup"), POPUP_BACKGROUND, TEXT_PRIMARY,
-                SURFACE_CHIP_HEIGHT));
-        this.put(PreviewSample.DIALOG_CHIP, new Chip(font,
-                Component.translatable("server_waypoint.theme.preview.dialog"), DIALOG_BACKGROUND, TEXT_PRIMARY,
-                SURFACE_CHIP_HEIGHT));
+        Component tooltipMessage = Component.translatable("server_waypoint.theme.preview.tooltip");
+        TranslucentTooltip tooltip = new TranslucentTooltip(font);
+        tooltip.setMessage(tooltipMessage);
+        this.samples.put(PreviewSample.TOOLTIP, new Sample(tooltip, (context, mouseX, mouseY, delta) -> {
+            tooltip.
+            //$ render_method_swap
+            extractRenderState
+                    (context, mouseX, mouseY, delta);
+            if (this.list.active && tooltip.getVisualY() >= this.list.getY()
+                    && tooltip.getVisualY() + tooltip.getVisualHeight() <= this.list.getY() + this.list.getHeight()
+                    && mouseX >= tooltip.getVisualX()
+                    && mouseX < tooltip.getVisualX() + tooltip.getVisualWidth()
+                    && mouseY >= tooltip.getVisualY() && mouseY < tooltip.getVisualY() + tooltip.getVisualHeight()) {
+                TooltipLayer.scheduleAtPointer(tooltipMessage, mouseX, mouseY);
+            }
+        }));
+        this.put(PreviewSample.POPUP_CHIP, this.popup);
+        Component dialogLabel = Component.translatable("server_waypoint.theme.preview.dialog");
+        this.dialogButton = this.put(PreviewSample.DIALOG_CHIP, new TranslucentButton(0, 0,
+                font.width(dialogLabel) + 12, SURFACE_CHIP_HEIGHT, dialogLabel, openDialog::run) {
+            @Override
+            public void
+            //$ render_widget_method_swap
+            extractWidgetRenderState
+                    (GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+                drawSurface(context, font, this.text, this.getVisualX(), this.getVisualY(),
+                        this.getWidth(), this.getHeight(), DIALOG_BACKGROUND, this.isFocused());
+            }
+        });
         this.put(PreviewSample.SUCCESS_CHIP, new Chip(font,
                 Component.translatable("server_waypoint.theme.preview.success"), SUCCESS_BACKGROUND, SUCCESS,
                 CHIP_HEIGHT));
@@ -220,6 +246,10 @@ final class WidgetThemePreview {
     /** The list that scrolls the preview, for Tab and focus handling. */
     SettingsListWidget list() {
         return this.list;
+    }
+
+    AbstractWidget dialogButton() {
+        return this.dialogButton;
     }
 
     /**
@@ -334,6 +364,9 @@ final class WidgetThemePreview {
         this.combobox.layoutPopup(screenHeight, COMBOBOX_POPUP_ROWS);
         int rowsBottom = this.dropdown.getY() + this.dropdown.getHeight() * (1 + DROPDOWN_POPUP_ROWS);
         this.dropdown.setExpansionDirection(rowsBottom > screenHeight - POPUP_SCREEN_MARGIN
+                ? Direction.REVERSE : Direction.FORWARD);
+        int popupBottom = this.popup.getY() + this.popup.getHeight() * 2;
+        this.popup.setExpansionDirection(popupBottom > screenHeight - POPUP_SCREEN_MARGIN
                 ? Direction.REVERSE : Direction.FORWARD);
     }
 
@@ -577,6 +610,41 @@ final class WidgetThemePreview {
         protected int getSelectedMenuItemIndex() {
             return this.chosen;
         }
+    }
+
+    /** The Popup surface opens a real choice popup without changing its preview label. */
+    static final class SurfacePopup extends TextChoiceDropdown {
+        SurfacePopup(Font font) {
+            super(Math.max(font.width(Component.translatable("server_waypoint.theme.preview.popup")) + 12,
+                    font.width(SampleDropdown.choiceLabel(0)) + 4),
+                    Component.translatable("server_waypoint.theme.preview.popup"), font);
+            this.setHeight(SURFACE_CHIP_HEIGHT);
+            this.addMenuItem(new TextChoice(SampleDropdown.choiceLabel(0), () -> {
+            }));
+            this.font = font;
+        }
+
+        private final Font font;
+
+        @Override
+        protected Component triggerLabel() {
+            return this.getMessage();
+        }
+
+        @Override
+        protected void renderDropdownControl(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
+            drawSurface(context, this.font, this.getMessage(), this.getX(), this.getY(),
+                    this.getWidth(), this.getHeight(), POPUP_BACKGROUND, this.isFocused());
+        }
+    }
+
+    private static void drawSurface(GuiGraphicsExtractor context, Font font, Component label,
+                                    int x, int y, int width, int height, WidgetThemeVariable fill, boolean focused) {
+        context.fill(x, y, x + width, y + height, getColor(fill));
+        renderOutline(context, x, y, width, height,
+                getColor(focused ? WidgetThemeVariable.FOCUS_RING : BORDER));
+        drawText(context, font, label, x + MovementAllowedScreen.centered(width, font.width(label)),
+                y + MovementAllowedScreen.centered(height, font.lineHeight) + 1, getColor(TEXT_PRIMARY));
     }
 
     /**

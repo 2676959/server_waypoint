@@ -57,7 +57,8 @@ class PreviewSampleTest {
                 PreviewSample.WARNING_CHIP, PreviewSample.DANGER_CHIP)) {
             assertTrue(chip.uses(WidgetThemeVariable.BORDER), chip.name());
         }
-        assertEquals(Set.of(WidgetThemeVariable.POPUP_BACKGROUND, WidgetThemeVariable.BORDER,
+        assertEquals(Set.of(WidgetThemeVariable.POPUP_BACKGROUND, WidgetThemeVariable.ROW_HOVER_BACKGROUND,
+                WidgetThemeVariable.BORDER, WidgetThemeVariable.FOCUS_RING,
                 WidgetThemeVariable.TEXT_PRIMARY, WidgetThemeVariable.TEXT_SHADOW), PreviewSample.POPUP_CHIP.keys());
         // A click toggles the toggles, so they declare both of their states.
         assertTrue(PreviewSample.SELECTED_TOGGLE.uses(WidgetThemeVariable.CONTROL_BACKGROUND));

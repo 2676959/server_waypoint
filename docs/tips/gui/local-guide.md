@@ -1429,12 +1429,12 @@ tests of their own.
 
 | Part | Responsibility |
 | --- | --- |
-| `WidgetThemeConfigScreen` | Builds every widget once, in its constructor, so they survive resizes; owns the selected key, the status and the color picker; routes input. Its nested `KeyList` is the key list |
+| `WidgetThemeConfigScreen` | Builds every widget once, in its constructor, so they survive resizes; owns the selected key, the status, the color picker and the preview confirmation dialog; routes input. Its nested `KeyList` is the key list |
 | `WidgetThemeEditorLayout` | The geometry, and whether the key list shows values |
 | `KeySelection` | The key list's selection rules |
 | `WidgetThemePreview` | The preview panel, its markers and its popups |
 | `PreviewPacking`, `PreviewSample` | How the samples are packed into rows; the theme keys each sample and marked element draws |
-| `TextChoiceDropdown` | A dropdown of text choices, for the theme dropdown and a preview sample |
+| `TextChoiceDropdown` | A dropdown of text choices, for the theme selector, choice sample and Popup surface |
 | `WidgetThemeEditorSession` | The editing transaction |
 
 #### Layout
@@ -1549,10 +1549,15 @@ combobox and a dropdown, buttons, toggles, sliders, accent chips, a tooltip with
 status chips, and scrollbars at rest, dragged and inactive.
 
 - **Widgets:** the samples are the mod's own widgets, so they react to the pointer, take focus and show the
-  focus ring. Their callbacks do nothing; the toggles still toggle, and the combobox and the dropdown keep
-  the value chosen. The chips and the scrollbars are private, non-interactive `ShiftableWidget`s that resolve
-  their keys each time they are drawn, and the tooltip is a real `TranslucentTooltip`, drawn in place rather
-  than through `TooltipLayer`. No sample has a tooltip of its own. While the color picker is open,
+  focus ring. The icon buttons use `WidgetTextures.PLACEHOLDER_ICON`. Toggles toggle, and the combobox
+  and dropdown keep the value chosen. Accent/status chips and scrollbars are non-interactive.
+  The tooltip remains a real `TranslucentTooltip` drawn in place; hovering its visual bounds schedules
+  the same message through `TooltipLayer`, unless the preview is disabled or the row is clipped.
+  Clicking Popup opens a `TextChoiceDropdown` choice popup through the existing separate popup pass.
+  Clicking Dialog opens a screen-owned `ConfirmationDialog`; both buttons and Escape dismiss it without
+  changing the theme. The screen disables underlying controls, blocks wheel scrolling, keeps focus in
+  the dialog through clicks and resize, and restores focus to the sample when it closes.
+  While the color picker or preview dialog is open,
   `setActive(false)` makes every sample inactive through `AbstractWaypointPropertiesScreen.setControlActive`,
   which also stops a text field from taking typing; `sampleActive` keeps the Disabled button and the second
   slider inactive whatever the picker does.
@@ -1610,13 +1615,14 @@ not a theme color, so that it shows in every theme. With no key selected, nothin
 
 #### Popups in the preview
 
-`SettingsListWidget` rows can't draw popups, because the list's scissor would clip them. The combobox and the
-dropdown sample therefore call `setRenderPopupSeparately(true)` and draw their popups after the screen's
+`SettingsListWidget` rows can't draw popups, because the list's scissor would clip them. The combobox, dropdown and Popup surface
+samples therefore call `setRenderPopupSeparately(true)` and draw their popups after the screen's
 content, as the waypoint form does:
 
 - **Drawing:** the screen calls `preview.layoutPopups(height)` at the start of every render, so the pointer
   and clicks find the popups where they are drawn: it gives the combobox `layoutPopup(height, 6)` and opens
   the dropdown's popup upward when three rows below it would pass the screen's bottom margin.
+  The Popup surface opens upward when its single choice would pass that margin.
   `preview.renderPopups(...)` draws the open popups after the footer and the theme dropdown's popup, before
   the color picker. While the pointer is over an open popup, the content beneath it is drawn with `NO_MOUSE`;
   the popups keep the real pointer.
