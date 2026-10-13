@@ -168,6 +168,7 @@ public class WaypointManagerScreen extends MovementAllowedScreen {
                 WidgetTextures.ADD_ICON,
                 this::openAddWaypointScreen
         ).withoutRestingFill();
+        addWaypointButton.setTooltip(addWaypointButton.getMessage());
         allDimensionsToggle = new IconToggleButton(
                 Component.translatable("waypoint.dimension.show_selected"),
                 Component.translatable("waypoint.dimension.show_all"),
