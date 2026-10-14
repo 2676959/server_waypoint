@@ -55,5 +55,11 @@ builds/
 /plans/
 /TODO.md
 
+# Local gallery annotation tools
+/tools/gallery/
+
+# Local demo waypoint data
+/docs/demo-waypoints/
+
 # zed editor
 /.zed/
