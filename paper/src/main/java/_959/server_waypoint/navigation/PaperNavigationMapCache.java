@@ -1,9 +1,15 @@
 package _959.server_waypoint.navigation;
 
 import _959.server_waypoint.ModInfo;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import net.minecraft.world.level.storage.LevelResource;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Server;
 import org.bukkit.World;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Player;
 import org.bukkit.map.MapView;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -21,12 +27,17 @@ public final class PaperNavigationMapCache implements AutoCloseable {
     private static final int MAP_SPAN = 128 * BLOCKS_PER_PIXEL;
 
     private final Server server;
+    private final NavigationMapTerrainStore terrain;
     private final NamespacedKey navigationMapIdKey;
     private final Map<UUID, CachedMap> maps = new ConcurrentHashMap<>();
     private volatile boolean closed;
 
     public PaperNavigationMapCache(JavaPlugin plugin) {
         this.server = plugin.getServer();
+        this.terrain = new NavigationMapTerrainStore(
+                ((CraftServer) this.server).getServer().getWorldPath(LevelResource.ROOT)
+                        .resolve(ModInfo.MOD_ID).resolve("navigation-map-terrain")
+        );
         this.navigationMapIdKey = new NamespacedKey(ModInfo.MOD_ID, "navigation_map_id");
     }
 
@@ -44,7 +55,7 @@ public final class PaperNavigationMapCache implements AutoCloseable {
             cached = this.loadOrCreate(player, world, key);
             this.maps.put(playerUuid, cached);
         } else {
-            configure(cached.view, world, key);
+            configure(cached.view, world, key, this.terrain);
         }
 
         cached.renderer.setTarget(
@@ -79,7 +90,7 @@ public final class PaperNavigationMapCache implements AutoCloseable {
             view = this.server.createMap(world);
             data.set(this.navigationMapIdKey, PersistentDataType.INTEGER, view.getId());
         }
-        configure(view, world, key);
+        configure(view, world, key, this.terrain);
         PaperNavigationMapRenderer renderer = new PaperNavigationMapRenderer();
         view.addRenderer(renderer);
         return new CachedMap(view, renderer);
@@ -93,7 +104,7 @@ public final class PaperNavigationMapCache implements AutoCloseable {
             return false;
         }
         MapCacheKey key = MapCacheKey.from(target);
-        configure(lease.cached.view, world, key);
+        configure(lease.cached.view, world, key, this.terrain);
         lease.cached.renderer.setTarget(
                 lease.playerUuid,
                 target,
@@ -120,7 +131,31 @@ public final class PaperNavigationMapCache implements AutoCloseable {
         return key == null ? null : this.server.getWorld(key);
     }
 
-    private static void configure(MapView view, World world, MapCacheKey key) {
+    private static void configure(
+            MapView view,
+            World world,
+            MapCacheKey key,
+            NavigationMapTerrainStore terrain
+    ) {
+        ServerLevel level = ((CraftWorld) world).getHandle();
+        MapItemSavedData savedData = level.getMapData(new MapId(view.getId()));
+        if (savedData == null) {
+            throw new IllegalStateException("Navigation map has no saved data");
+        }
+        NavigationMapTerrainStore.Region current = new NavigationMapTerrainStore.Region(
+                savedData.dimension./*? if >=1.21.11 {*/identifier()/*?} else {*//*location()*//*?}*/.toString(),
+                savedData.centerX, savedData.centerZ, savedData.scale);
+        NavigationMapTerrainStore.Region target = new NavigationMapTerrainStore.Region(
+                level.dimension()./*? if >=1.21.11 {*/identifier()/*?} else {*//*location()*//*?}*/.toString(),
+                key.centerX(), key.centerZ(), key.scale().ordinal());
+        if (!current.equals(target)) {
+            byte[] colors = terrain.switchRegion(view.getId(), current, savedData.colors, target);
+            System.arraycopy(colors, 0, savedData.colors, 0, savedData.colors.length);
+            // The client keeps terrain by map ID. Dirty opposite corners so
+            // the next update replaces all 128 x 128 pixels, including blanks.
+            savedData.setColor(0, 0, savedData.colors[0]);
+            savedData.setColor(127, 127, savedData.colors[savedData.colors.length - 1]);
+        }
         view.setWorld(world);
         view.setCenterX(key.centerX());
         view.setCenterZ(key.centerZ());

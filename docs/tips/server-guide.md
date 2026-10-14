@@ -22,6 +22,7 @@ On Minecraft 1.21.9 and later, player chat can show supported vanilla item icons
     - `/wp list dimensions [page <number>]` lists every dimension with its waypoint count.
 - `/wp navigate` shows the navigation panel. `/wp navigate <dimension> <list> <waypoint> [<method>|default|all]` starts navigating, `/wp navigate use|disable <method>` turns one method on or off, `/wp navigate disable` stops, and `/wp navigate config text_display` adjusts the floating text.
     - Method IDs are `compass`, `map`, `bossbar`, `actionbar` and `text_display`. Use `default` to select the server's `defaultNavigationMethods`, or `all` for every supported method.
+    - Navigation maps retain explored terrain for each region and dimension. Returning to a previously mapped region restores its terrain even when you are elsewhere; new regions stay blank until explored. Terrain history survives server restarts.
 - `/wp remote` shows the remote servers and their state; `/wp remote page <number>` pages it.
 - `/wp remote list [<server> [<dimension> [<list>]]]` browses cached remote waypoints with the same options as `/wp list`. Quote exact identities, including names matching option words. Distance sorting reports that cross-server distances are unavailable.
     - Results are read-only and work through ordinary server chat. A coloured dot shows each server's state: available, stale, unreachable or no access. `/wp remote details <server> <dimension> <list> <waypoint>` shows one waypoint. Run `/wp help remote` for help.
