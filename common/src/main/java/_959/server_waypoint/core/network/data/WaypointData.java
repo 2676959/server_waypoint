@@ -4,6 +4,7 @@ import _959.server_waypoint.core.network.ChunkedMessage;
 import _959.server_waypoint.core.network.ChunkedMessageRegistry;
 import _959.server_waypoint.core.network.ChunkedMessageType;
 import _959.server_waypoint.core.network.upload.UploadStatus;
+import _959.server_waypoint.core.waypoint.SimpleWaypoint;
 import _959.server_waypoint.core.waypoint.WaypointList;
 
 import java.util.Collection;
@@ -31,11 +32,14 @@ public record WaypointData(
             if (upload != null) {
                 throw new IllegalArgumentException("Only upload data can contain upload metadata");
             }
-            if ((type == Type.DIMENSION || type == Type.WAYPOINT_LIST) && dimensions.size() != 1) {
+            if ((type == Type.DIMENSION || type == Type.WAYPOINT_LIST || type == Type.WAYPOINT) && dimensions.size() != 1) {
                 throw new IllegalArgumentException(type + " data must contain exactly one dimension");
             }
-            if (type == Type.WAYPOINT_LIST && dimensions.get(0).waypointLists().size() != 1) {
+            if ((type == Type.WAYPOINT_LIST || type == Type.WAYPOINT) && dimensions.get(0).waypointLists().size() != 1) {
                 throw new IllegalArgumentException("Waypoint-list data must contain exactly one list");
+            }
+            if (type == Type.WAYPOINT && dimensions.get(0).waypointLists().get(0).size() != 1) {
+                throw new IllegalArgumentException("Waypoint data must contain exactly one waypoint");
             }
         }
     }
@@ -56,6 +60,13 @@ public record WaypointData(
         return new WaypointData(Type.WORLD, List.copyOf(dimensions), null);
     }
 
+    /** A manual single-waypoint snapshot, independent of incremental revision checks. */
+    public static WaypointData waypoint(String dimensionName, WaypointList list, SimpleWaypoint waypoint) {
+        return dimension(Type.WAYPOINT, new DimensionWaypointData(dimensionName, List.of(
+                new WaypointList(list.name(), list.displayName(), list.getSyncNum(), List.of(waypoint))
+        )));
+    }
+
     public static WaypointData upload(
             UUID requestId,
             UploadStatus status,
@@ -73,7 +84,7 @@ public record WaypointData(
     }
 
     public DimensionWaypointData singleDimension() {
-        if (this.type != Type.DIMENSION && this.type != Type.WAYPOINT_LIST) {
+        if (this.type != Type.DIMENSION && this.type != Type.WAYPOINT_LIST && this.type != Type.WAYPOINT) {
             throw new IllegalStateException(this.type + " data does not have one dimension");
         }
         return this.dimensions.get(0);
@@ -96,7 +107,8 @@ public record WaypointData(
         DIMENSION,
         WAYPOINT_LIST,
         WORLD,
-        UPLOAD
+        UPLOAD,
+        WAYPOINT
     }
 
     public record Upload(

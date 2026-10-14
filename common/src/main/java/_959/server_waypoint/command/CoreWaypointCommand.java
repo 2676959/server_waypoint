@@ -2007,14 +2007,8 @@ public abstract class CoreWaypointCommand<S, K, P, D, B, I> {
 
     private void executeDownload(S source, D dimensionArgument, String listName, String name) {
         runWithSelectorTarget(source, dimensionArgument, listName, name, (fileManager, waypointList, waypoint) ->
-                this.sendDownload(source, new WaypointModificationMessage(
-                        fileManager.getDimensionName(),
-                        listName,
-                        waypointList.displayName(),
-                        name,
-                        waypoint,
-                        WaypointModificationType.ADD,
-                        waypointList.getSyncNum()
+                this.sendDownload(source, WaypointData.waypoint(
+                        fileManager.getDimensionName(), waypointList, waypoint
                 ), 1));
     }
 

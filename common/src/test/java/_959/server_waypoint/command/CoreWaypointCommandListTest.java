@@ -207,6 +207,22 @@ class CoreWaypointCommandListTest {
     }
 
     @Test
+    void singleWaypointDownloadSendsAnAuthoritativeSnapshot() throws CommandSyntaxException {
+        this.dispatcher.execute("wp download overworld bases \"base 1\"", this.source);
+
+        assertTrue(this.sender.download instanceof WaypointData);
+        WaypointData data = (WaypointData) this.sender.download;
+        assertEquals(WaypointData.Type.WAYPOINT, data.type());
+        assertEquals(1, data.dimensions().size());
+        assertEquals("overworld", data.dimensions().get(0).dimensionName());
+        assertEquals(1, data.dimensions().get(0).waypointLists().size());
+        WaypointList list = data.dimensions().get(0).waypointLists().get(0);
+        assertEquals("bases", list.name());
+        assertEquals(1, list.size());
+        assertEquals("base 1", list.simpleWaypoints().get(0).name());
+    }
+
+    @Test
     void downloadReportsSuccessOnlyAfterFinalDelivery() throws CommandSyntaxException {
         CompletableFuture<ChunkedMessageSendResult> completion = new CompletableFuture<>();
         this.sender.chunkedDelivery = ChunkedMessageDelivery.queued(completion);
@@ -935,6 +951,7 @@ class CoreWaypointCommandListTest {
         private Object failedChatPlayer;
         private final List<String> broadcastEvents = new ArrayList<>();
         private final List<ChunkedMessage> broadcastUpdates = new ArrayList<>();
+        private ChunkedMessage download;
 
         @Override
         public boolean canSendChunkedMessage(Object player) {
@@ -980,6 +997,7 @@ class CoreWaypointCommandListTest {
                 TestSource source,
                 ChunkedMessage message
         ) {
+            this.download = message;
             return this.chunkedDelivery;
         }
 

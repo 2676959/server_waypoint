@@ -8,6 +8,7 @@ import _959.server_waypoint.core.network.upload.UploadStatus;
 import io.netty.buffer.ByteBuf;
 
 import java.util.UUID;
+import java.util.List;
 
 public final class WaypointDataCodec {
     private WaypointDataCodec() {
@@ -18,7 +19,7 @@ public final class WaypointDataCodec {
         switch (waypointData.type()) {
             case UPDATES, WORLD ->
                     DimensionWaypointsListCodec.encode(buf, waypointData.dimensions(), context);
-            case DIMENSION, WAYPOINT_LIST ->
+            case DIMENSION, WAYPOINT_LIST, WAYPOINT ->
                     DimensionWaypointCodec.encode(buf, waypointData.singleDimension(), context);
             case UPLOAD -> encodeUpload(buf, waypointData, context);
         }
@@ -42,6 +43,9 @@ public final class WaypointDataCodec {
             }
             case WORLD -> WaypointData.world(DimensionWaypointsListCodec.decode(buf, context));
             case UPLOAD -> decodeUpload(buf, context);
+            case WAYPOINT -> new WaypointData(
+                    WaypointData.Type.WAYPOINT, List.of(DimensionWaypointCodec.decode(buf, context)), null
+            );
         };
     }
 

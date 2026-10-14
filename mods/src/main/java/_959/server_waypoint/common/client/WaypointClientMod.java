@@ -563,6 +563,7 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
             case DIMENSION -> this.onDimensionWaypoint(waypointData.singleDimension());
             case WAYPOINT_LIST -> this.onWaypointList(waypointData.singleDimension());
             case WORLD -> this.onWorldWaypoint(waypointData.dimensions());
+            case WAYPOINT -> this.onWaypointDownload(waypointData.singleDimension());
             case UPLOAD -> LOGGER.warn("Ignoring upload waypoint data received from server");
         }
     }
@@ -632,7 +633,11 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
     }
 
     private void onWaypointList(DimensionWaypointData buffer) {
-        if (WaypointServerMod.runsWithClient()) return;
+        if (WaypointServerMod.runsWithClient()) {
+            MapModIntegrations.onClientWaypointDownload(
+                    ClientWaypointSyncEvent.listReplaced(buffer.dimensionName(), buffer.waypointLists().get(0)), this);
+            return;
+        }
         String dimensionName = buffer.dimensionName();
         boolean inCurrentDimension = currentDimensionName.equals(dimensionName);
         WaypointFileManager fileManager = this.getWaypointFileManager(dimensionName);
@@ -655,11 +660,15 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         }
         this.synchronizationTracker.clearList(dimensionName, newList.name());
         updateWaypointManagerView(dimensionName, dimensionListChanged);
-        MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.listReplaced(dimensionName, newList), this);
+        MapModIntegrations.onClientWaypointDownload(ClientWaypointSyncEvent.listReplaced(dimensionName, newList), this);
     }
 
     private void onDimensionWaypoint(DimensionWaypointData buffer) {
-        if (WaypointServerMod.runsWithClient()) return;
+        if (WaypointServerMod.runsWithClient()) {
+            MapModIntegrations.onClientWaypointDownload(
+                    ClientWaypointSyncEvent.dimensionReplaced(buffer.dimensionName(), buffer.waypointLists()), this);
+            return;
+        }
         String dimensionName = buffer.dimensionName();
         WaypointFileManager fileManager = this.fileManagerMap.get(dimensionName);
         boolean dimensionListChanged = fileManager == null;
@@ -689,14 +698,17 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         }
         this.synchronizationTracker.clearDimension(dimensionName);
         updateWaypointManagerView(dimensionName, dimensionListChanged && fileManager != null);
-        MapModIntegrations.onClientWaypointSync(
+        MapModIntegrations.onClientWaypointDownload(
                 ClientWaypointSyncEvent.dimensionReplaced(dimensionName, currentLists),
                 this
         );
     }
 
     private void onWorldWaypoint(List<DimensionWaypointData> dimensions) {
-        if (WaypointServerMod.runsWithClient()) return;
+        if (WaypointServerMod.runsWithClient()) {
+            MapModIntegrations.onClientWaypointDownload(ClientWaypointSyncEvent.worldReplaced(), this);
+            return;
+        }
         if (this.mc.level == null) {
             LOGGER.error("ClientLevel is null at this time");
             return;
@@ -719,7 +731,40 @@ public class WaypointClientMod extends WaypointFilesManagerCore implements Messa
         networkState = ClientNetworkState.SYNC_FINISHED;
         this.synchronizationTracker.clearAll();
         WaypointManagerScreen.updateAllWidgets();
-        MapModIntegrations.onClientWaypointSync(ClientWaypointSyncEvent.worldReplaced(), this);
+        MapModIntegrations.onClientWaypointDownload(ClientWaypointSyncEvent.worldReplaced(), this);
+    }
+
+    private void onWaypointDownload(DimensionWaypointData buffer) {
+        String dimensionName = buffer.dimensionName();
+        WaypointList snapshot = buffer.waypointLists().get(0);
+        SimpleWaypoint waypoint = snapshot.simpleWaypoints().get(0);
+        if (!WaypointServerMod.runsWithClient()) {
+            WaypointFileManager manager = this.getWaypointFileManager(dimensionName);
+            boolean dimensionListChanged = manager == null;
+            WaypointList cachedList = manager == null ? null : manager.getWaypointListByName(snapshot.name());
+            // One waypoint cannot certify the revision of the rest of its list.
+            if (cachedList == null || cachedList.getSyncNum() != snapshot.getSyncNum()) {
+                this.synchronizationTracker.markOutOfSync(dimensionName, snapshot.name());
+            }
+            int revision = cachedList == null ? WaypointList.SERVER_N - 1 : cachedList.getSyncNum();
+            SimpleWaypoint liveWaypoint = this.addWaypointFromRemoteServer(
+                    dimensionName, snapshot.name(), snapshot.displayName(), waypoint, revision);
+            try {
+                this.saveWaypointFile(this.getWaypointFileManager(dimensionName));
+            } catch (IOException exception) {
+                LOGGER.error("Failed to save downloaded waypoint in dimension {}", dimensionName, exception);
+            }
+            if (dimensionName.equals(currentDimensionName)) {
+                if (liveWaypoint.renderId == -1) {
+                    OptimizedWaypointRenderer.add(liveWaypoint);
+                } else {
+                    OptimizedWaypointRenderer.updateWaypoint(liveWaypoint);
+                }
+            }
+            updateWaypointManagerView(dimensionName, dimensionListChanged);
+        }
+        MapModIntegrations.onClientWaypointDownload(ClientWaypointSyncEvent.waypointModified(
+                dimensionName, snapshot.name(), WaypointModificationType.ADD, waypoint, waypoint.name()), this);
     }
 
     private void updateDimensionName() {

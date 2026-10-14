@@ -38,6 +38,15 @@ public final class MapModIntegrations {
         }
     }
 
+    /** Manual recovery ignores auto-sync preferences and always rewrites installed, ready maps. */
+    public static void onClientWaypointDownload(ClientWaypointSyncEvent event, WaypointClientMod waypointClientMod) {
+        for (MapModIntegration integration : INTEGRATIONS) {
+            if (integration.isInstalled() && integration.isReady()) {
+                integration.onClientWaypointSync(event, waypointClientMod);
+            }
+        }
+    }
+
     /** The integration for {@code target}, or empty when this loader has none. */
     public static Optional<MapModIntegration> find(UploadTarget target) {
         return INTEGRATIONS.stream()

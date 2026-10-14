@@ -266,6 +266,39 @@ class NetworkCodecTest {
     }
 
     @Test
+    void manualWaypointSnapshotRoundTripsWithoutBecomingAnIncrementalUpdate() {
+        SimpleWaypoint waypoint = waypoint("Spawn");
+        WaypointList list = new WaypointList("Bases", "Server bases", 17, List.of(waypoint));
+        ByteBuf buffer = Unpooled.buffer();
+        WaypointDataCodec.encode(buffer, WaypointData.waypoint("minecraft:overworld", list, waypoint), encoding());
+
+        WaypointData decoded = WaypointDataCodec.decode(buffer, decoding());
+
+        assertEquals(WaypointData.Type.WAYPOINT, decoded.type());
+        assertEquals("minecraft:overworld", decoded.singleDimension().dimensionName());
+        WaypointList decodedList = decoded.singleDimension().waypointLists().get(0);
+        assertEquals("Bases", decodedList.name());
+        assertEquals("Server bases", decodedList.displayName());
+        assertEquals(17, decodedList.getSyncNum());
+        assertEquals(1, decodedList.size());
+        assertEquals("Spawn", decodedList.simpleWaypoints().get(0).name());
+    }
+
+    @Test
+    void manualWaypointSnapshotRejectsIncompleteOrWidenedScopes() {
+        for (List<WaypointList> lists : List.of(
+                List.<WaypointList>of(),
+                List.of(WaypointList.build("empty", 17)),
+                List.of(new WaypointList("two", 17, List.of(waypoint("first"), waypoint("second")))),
+                List.of(new WaypointList("first", 17, List.of(waypoint("first"))),
+                        new WaypointList("second", 17, List.of(waypoint("second"))))
+        )) {
+            assertThrows(IllegalArgumentException.class, () -> new WaypointData(
+                    WaypointData.Type.WAYPOINT, List.of(new DimensionWaypointData("minecraft:overworld", lists)), null));
+        }
+    }
+
+    @Test
     void waypointDataAndUploadRequestRoundTrip() {
         List<SimpleWaypoint> waypoints = new ArrayList<>();
         for (int index = 0; index < 65; index++) {
