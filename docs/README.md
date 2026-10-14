@@ -5,6 +5,7 @@
 | [Features](features/) | Feature contracts, plans, progress and validation |
 | [Tips](tips/) | Shared implementation guidance |
 | [Architecture](architecture/) | Whole-project architecture material |
+| [Project description](project-description.md) | Markdown showcase for Modrinth and CurseForge |
 
 ## Conventions
 
