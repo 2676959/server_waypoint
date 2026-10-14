@@ -951,9 +951,10 @@ a `ScalableText` footer shows the selected server's display name in `TEXT_MUTED`
 `RemoteRefs.stateColor`; `RemoteWaypointPanel.splitListArea` gives the tree the rest of the
 list area and hides the footer when no server is selected or the tree would drop below one row.
 Both lists use 20-pixel rows and `WaypointRowRenderer.background(...)` / `initials(...)` for waypoint
-color washes, hover/selection outlines and initials badges. The initials method returns the badge
-width for label placement. `WaypointRowRenderer.icon(...)` centers a 16-pixel item or VoxelMap image
-over the minimum initials badge width so icon centers stay aligned across rows. Pass the waypoint
+color washes, hover/selection outlines and initials badges. The initials method always draws text
+without a shadow, matching in-world badges, including when reused by the form preview and details.
+It returns the badge width for label placement. `WaypointRowRenderer.icon(...)` centers a 16-pixel
+item or VoxelMap image over the minimum initials badge width so icon centers stay aligned across rows. Pass the waypoint
 RGB to tint VoxelMap images in both local and remote rows, and an alpha in `[0, 255]`.
 Local rows use 255 for enabled waypoints and 128 for disabled waypoints, matching the half-opacity
 name, distance and initials badge; remote rows use 255. The remote tree

@@ -26,7 +26,7 @@ public final class WaypointRowRenderer {
         int width = Math.max(textWidth + 2, font.lineHeight);
         int textX = (width - Math.max(0, textWidth - 1)) / 2;
         context.fill(x, y, x + width, y + font.lineHeight, backgroundColor);
-        drawText(context, font, initials, x + textX, y + 1, textColor, true);
+        drawText(context, font, initials, x + textX, y + 1, textColor, false);
         return width;
     }
 
