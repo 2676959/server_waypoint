@@ -1,5 +1,12 @@
 # Server Waypoint
 
+[![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
+[![Forge](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=Forge&labelColor=959eef)](https://modrinth.com/plugin/server_waypoint/versions?l=forge)
+[![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
+[![Paper](https://img.shields.io/badge/1.21.x%20%2026.1--26.3-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
+[![Folia](https://img.shields.io/badge/1.21.x%20%2026.1--26.3-555555?style=flat-square&label=Folia&labelColor=a5e388)](https://modrinth.com/plugin/server_waypoint/versions?l=folia)
+[![Velocity](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Velocity&labelColor=8ec9ea)](https://modrinth.com/plugin/server_waypoint/versions?l=velocity)
+
 [![discord-singular](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/social/discord-singular_vector.svg)](https://discord.com/invite/tKtSSYDkHx)
 
 ## Make your world easier to explore.
@@ -14,11 +21,11 @@ Server Waypoint provides shared destinations, cross-server teleportation, naviga
 
 The optional **Velocity** integration lets players browse shared waypoints on connected servers and teleport between them when permitted. Cross-server browsing and teleportation are available through clickable chat without the client mod.
 
-![Clickable chat browser showing four connected remote servers](https://raw.githubusercontent.com/2676959/server_waypoint/4.0.0/docs/gallery/4.0.0/cross-server-chat-browser.png)
+![Clickable chat browser showing four connected remote servers](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/cross-server-chat-browser.png)
 
 **Use chat across the network.** Run `/wp remote` to browse without the client mod. The chat view lists connected servers with availability indicators and waypoint counts, with an **All servers** option for browsing them together.
 
-![Cross-server waypoint manager showing the building server catalog and teleport action](https://raw.githubusercontent.com/2676959/server_waypoint/4.0.0/docs/gallery/4.0.0/cross-server-waypoint-manager.png)
+![Cross-server waypoint manager showing the building server catalog and teleport action](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/cross-server-waypoint-manager.png)
 
 **Browse another server's places.** In the client manager, choose a remote server and explore its lists. Here, the building server's Collaborative Build Sites list contains Public Bridge Works. The details panel shows the server's availability, the destination's properties and a **Teleport** action.
 
@@ -30,7 +37,7 @@ Cross-server teleportation follows the server's permissions. To edit a remote wa
 
 Choose the guidance that feels comfortable as you travel. The labeled example shows all five server navigation methods pointing to **Festival Green** at the same time.
 
-![All five server navigation methods with labels for the compass, map, boss bar, action bar and floating label](https://raw.githubusercontent.com/2676959/server_waypoint/4.0.0/docs/gallery/4.0.0/server-navigation-labeled.png)
+![All five server navigation methods with labels for the compass, map, boss bar, action bar and floating label](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/server-navigation-labeled.png)
 
 - **Compass and map:** follow the compass toward the destination or find its marker on the navigation map.
 - **Boss bar and action bar:** keep the destination's name, direction, distance and height difference on screen.
@@ -42,9 +49,9 @@ Use `/wp navigate` to change your navigation methods or stop navigation. All fiv
 
 Browse and manage waypoints from Minecraft's chat. The server provides clickable lists, hover details and waypoint actions, so players can get started with a vanilla client.
 
-![Interactive chat waypoint browser with a destination tooltip](https://raw.githubusercontent.com/2676959/server_waypoint/4.0.0/docs/gallery/4.0.0/interactive-chat-waypoint-browser.png)
+![Interactive chat waypoint browser with a destination tooltip](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/interactive-chat-waypoint-browser.png)
 
-![Waypoint details with clickable edit, navigation and teleport controls](https://raw.githubusercontent.com/2676959/server_waypoint/4.0.0/docs/gallery/4.0.0/interactive-chat-waypoint-details.png)
+![Waypoint details with clickable edit, navigation and teleport controls](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/interactive-chat-waypoint-details.png)
 
 **Browse before you travel.** Open `/wp` to view waypoints grouped by dimension and list, with icons and distances beside their names. Search or change the sort order, and hover over a destination to read its description and coordinates. The example shows Slime Foundry in the Industrial Quarter list.
 
@@ -58,9 +65,9 @@ The server's permissions determine which actions each player can use. Messages f
 
 Shared waypoint display names and descriptions support **JSON text components**, so you can combine colors and text styles for each destination. The screenshots show how the client mod displays that shared formatting in the manager and in-world markers.
 
-![Waypoint manager with a JSON-styled display name and multicolored description](https://raw.githubusercontent.com/2676959/server_waypoint/4.0.0/docs/gallery/4.0.0/json-styled-waypoint-details.png)
+![Waypoint manager with a JSON-styled display name and multicolored description](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/json-styled-waypoint-details.png)
 
-![Colorful bold italic waypoint display name rendered in the world](https://raw.githubusercontent.com/2676959/server_waypoint/4.0.0/docs/gallery/4.0.0/json-styled-waypoint-marker.png)
+![Colorful bold italic waypoint display name rendered in the world](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/json-styled-waypoint-marker.png)
 
 **Styled names in the manager and the world.** The example uses **Fancy Waypoint**, with a blue-to-purple display name in bold italics. Its formatting appears in the waypoint list, the details panel and the in-world marker.
 
@@ -74,7 +81,7 @@ Shared waypoint display names and descriptions support **JSON text components**,
 
 The client manager brings waypoint lists and destination details into one view. Choose a dimension, search by name or expand a list to browse its places.
 
-![Waypoint manager with Harbour Town expanded and Lantern Market selected](https://raw.githubusercontent.com/2676959/server_waypoint/4.0.0/docs/gallery/4.0.0/waypoint-manager.png)
+![Waypoint manager with Harbour Town expanded and Lantern Market selected](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/waypoint-manager.png)
 
 **Lists for the places you share.** Harbour Town is expanded here, with Lantern Market selected alongside Harbour Square, Mapmakers Library and other destinations. Item icons and distances help distinguish entries. The details panel shows the selected waypoint's identifier, display name, initials, coordinates, visibility, color and keywords.
 
@@ -84,9 +91,9 @@ Open the manager with **Right Shift** or `/wp_gui`. Hover over a local waypoint 
 
 Use shared destinations with **Xaero's Minimap** or supported **VoxelMap-Updated** builds. The example shows **Shared Waypoint** in both minimaps alongside its in-world markers.
 
-![Shared waypoint displayed in the world and in Xaero and VoxelMap minimaps](https://raw.githubusercontent.com/2676959/server_waypoint/4.0.0/docs/gallery/4.0.0/shared-waypoint-map-integrations.png)
+![Shared waypoint displayed in the world and in Xaero and VoxelMap minimaps](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/shared-waypoint-map-integrations.png)
 
-![Client settings with Xaero and VoxelMap automatic and manual synchronization controls](https://raw.githubusercontent.com/2676959/server_waypoint/4.0.0/docs/gallery/4.0.0/map-integration-sync-settings.png)
+![Client settings with Xaero and VoxelMap automatic and manual synchronization controls](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/map-integration-sync-settings.png)
 
 **Choose when to sync.** Press **C** in the waypoint manager to open the client configuration screen. Client settings provide separate automatic synchronization toggles and manual **Sync** buttons for Xaero and VoxelMap. The screenshot has automatic sync enabled for both, while syncing into Xaero's default set is disabled.
 
@@ -96,7 +103,7 @@ You can also upload map waypoints when you have permission. **Xaero's World Map*
 
 ## Shared places, visible as you explore
 
-![Server Waypoint in-world markers with item icons over a village](https://raw.githubusercontent.com/2676959/server_waypoint/4.0.0/docs/gallery/4.0.0/in-world-waypoint-markers.png)
+![Server Waypoint in-world markers with item icons over a village](https://raw.githubusercontent.com/2676959/server_waypoint/master/docs/gallery/4.0.0/in-world-waypoint-markers.png)
 
 The client mod shows waypoints in the world with item icons, colors and initials. Look toward a marker to see its display name and distance.
 
