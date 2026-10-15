@@ -17,14 +17,18 @@ import java.util.UUID;
 /** Object API references are absent from builds before Minecraft 1.21.9. */
 public final class CommandChatIcons {
     //? if >=1.21.9 {
+    private static final ModdedChatSprites MODDED_SPRITES = new ModdedChatSprites(
+            CommandChatIcons.class.getClassLoader()::getResourceAsStream);
+
     public static final ChatIcons INSTANCE = new ChatIcons() {
         @Override
         public @Nullable Component item(NamespacedId id) {
             String sprite = VanillaChatSprites.sprite(id);
+            if (sprite == null) sprite = MODDED_SPRITES.sprite(id);
             if (sprite == null) return null;
             String atlas = "minecraft:blocks";
             //? if >=1.21.11
-            if (sprite.startsWith("minecraft:item/")) atlas = "minecraft:items";
+            if (NamespacedId.parse(sprite).path().startsWith("item/")) atlas = "minecraft:items";
             return Component.object(ObjectContents.sprite(Key.key(atlas), Key.key(sprite)));
         }
 

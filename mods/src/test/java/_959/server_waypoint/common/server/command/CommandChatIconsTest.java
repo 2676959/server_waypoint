@@ -39,6 +39,38 @@ class CommandChatIconsTest {
     }
 
     @Test
+    void moddedItemsResolveInheritedTexturesBeforeAddingAChatObject() {
+        Component icon = CommandChatIcons.INSTANCE.item(NamespacedId.parse("server_waypoint_chat_test:tool"));
+        //? if >=1.21.9 {
+        assertNotNull(icon);
+        var sprite = TextHelper.JSON.serializeToTree(icon).getAsJsonObject();
+        assertEquals("server_waypoint_chat_test:item/materials/tool", sprite.get("sprite").getAsString());
+        //? if >=1.21.11 {
+        assertEquals("minecraft:items", sprite.get("atlas").getAsString());
+        //?} else {
+        /*assertEquals("minecraft:blocks", ((net.kyori.adventure.text.object.SpriteObjectContents)
+                ((net.kyori.adventure.text.ObjectComponent) icon).contents()).atlas().asString());
+        *///?}
+        //?} else {
+        /*assertNull(icon);
+        *///?}
+    }
+
+    @Test
+    void moddedBlockTexturesStayOnTheBlocksAtlas() {
+        Component icon = CommandChatIcons.INSTANCE.item(NamespacedId.parse("server_waypoint_chat_test:marble"));
+        //? if >=1.21.9 {
+        assertNotNull(icon);
+        var contents = (net.kyori.adventure.text.object.SpriteObjectContents)
+                ((net.kyori.adventure.text.ObjectComponent) icon).contents();
+        assertEquals("server_waypoint_chat_test:block/marble", contents.sprite().asString());
+        assertEquals("minecraft:blocks", contents.atlas().asString());
+        //?} else {
+        /*assertNull(icon);
+        *///?}
+    }
+
+    @Test
     void plainTextReadersGetTheViewWithoutObjectsOrTheSpacesAfterThem() {
         Component name = Component.text("[MH] Main Home");
         //? if >=1.21.9 {

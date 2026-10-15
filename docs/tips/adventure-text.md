@@ -73,8 +73,27 @@ Static special models (beds, chests, shulker boxes, conduits, shields and copper
 use their base model's representative texture: beds show their wool colour, chests their material,
 and shulker boxes their shell. These are flat textures, not the full inventory model silhouette.
 Textures an item tints (potions, leaves, grass, dyed leather), dynamic special models (heads and
-banners), special models without a supported flat texture, unmapped newer items, custom items,
+banners), special models without a supported flat texture, unmapped newer vanilla items,
 and VoxelMap icons retain initials/text. No resource pack is required.
+
+On the mod backend, `ModdedChatSprites` falls back to installed mod assets for non-vanilla item
+IDs missing from the table. It follows item definitions (including GUI selectors, default
+conditions/ranges and composites), model parents, texture aliases and material objects, then
+checks that the PNG exists.
+If no item definition exists, it tries conventional item/block models and texture paths.
+Only `item/` and `block/` textures qualify because vanilla stitches these directories for every
+namespace. Missing, malformed, cyclic or unsupported assets leave the icon out; chat text stays
+available. Both successful and failed lookups are cached. This reads assets from loaded mod JARs,
+not client resource-pack overrides, and uses a representative flat, untinted texture rather than
+a rendered inventory model. Paper retains the vanilla table because it has no installed client
+mod assets.
+
+The modded fallback does not resolve `minecraft:special` item models or custom renderers.
+Modded beds, chests and similar blocks using these renderers therefore omit the chat icon,
+even if their special model declares a `base` model with a usable texture. Equivalent modded
+items using regular JSON models can resolve normally. The vanilla beds and chests described
+above still have icons through the predefined mapping; all of these icons are flat textures.
+
 The platform factories use the blocks atlas through 1.21.10 and the separate items atlas from
 1.21.11 onward. Regenerate the mapping with `python3 tools/generate_chat_sprites.py
 <1.21.9 client.jar> <every newer supported client.jar...>
