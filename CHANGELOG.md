@@ -46,7 +46,7 @@ A major release: navigation that works without the client mod, waypoint icons, u
 
 ### Map mods
 
-- **VoxelMap** (Fabric; Forge 1.21.11, 26.1-26.1.2 and 26.2; NeoForge 1.21.2-1.21.4, 1.21.11, 26.1-26.1.2, 26.2 and 26.3): server waypoints sync to VoxelMap. Its waypoint list marks them with a sync icon, and editing one opens Server Waypoint's manager.
+- **VoxelMap** (Fabric; Forge 1.21.11, 26.1-26.1.2, 26.2 and 26.3; NeoForge 1.21.2-1.21.4, 1.21.11, 26.1-26.1.2, 26.2 and 26.3): server waypoints sync to VoxelMap. Its waypoint list marks them with a sync icon, and editing one opens Server Waypoint's manager.
 - **Upload:** `/wp upload <xaero|voxelmap>` imports waypoints from the map mod on your client. Add `force local` to overwrite conflicts with your copy, or `force local delete` to also remove what your map doesn't have. It also works in singleplayer and for the host of a LAN world. Uploading needs level 2 (`upload`) and deleting needs level 4 (`uploadDelete`).
 - **Xaero's World Map:** right-click the map to add a waypoint to the server at that spot, or right-click a waypoint to add it to the server or edit its server copy.
 - **Xaero's Minimap and VoxelMap:** editing a synced Minimap waypoint opens the server form. VoxelMap's map popup offers actions to add a waypoint to the server or edit its server copy.
@@ -103,7 +103,7 @@ A major release: navigation that works without the client mod, waypoint icons, u
 
 ### Platforms
 
-- Minecraft 26.3 on Fabric, NeoForge and Paper. This branch's Forge builds cover versions through 26.2.
+- Minecraft 26.3 on Fabric, Forge, NeoForge and Paper.
 - Folia support.
 - Waypoint sync, downloads and uploads use a new chunked network transport. `compressChunkedMessages` (default `true`) compresses its messages.
 - The Velocity plugin reports anonymous usage statistics to bStats, as the Paper plugin already does.

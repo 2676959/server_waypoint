@@ -76,7 +76,7 @@ public class ServerWaypointForgeClient {
     private static void registerKeyBindings(RegisterKeyMappingsEvent event) {
         keyBinding = new KeyMapping(
                 "server_waypoint.waypoint_manager_gui.keybind",
-                InputConstants.Type.KEYSYM,
+                InputConstants.UNKNOWN.getType(),
                 InputConstants.KEY_RSHIFT,
                 /*? if >= 1.21.9 {*/ KeyMapping.Category.register(modId("mod_name")) /*?} else {*/ /*"key.category.server_waypoint.mod_name" *//*?}*/
         );

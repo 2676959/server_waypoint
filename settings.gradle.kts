@@ -36,11 +36,10 @@ stonecutter {
             "1.21", "1.21.2", "1.21.3", "1.21.5", "1.21.6", "1.21.7", "1.21.9", "1.21.11",
             "26.1.2", "26.2", "26.3")
         // Forge does not publish a 1.21.2 loader, so there is no resolvable 1.21.2-forge target.
-        // Forge has not published a Minecraft 26.3 loader yet.
         mc("forge",
             "1.20.1", "1.20.2", "1.20.4", "1.20.6",
             "1.21", "1.21.3", "1.21.5", "1.21.6", "1.21.9", "1.21.11",
-            "26.1.2", "26.2")
+            "26.1.2", "26.2", "26.3")
 
         mapBuilds { _, data ->
             val loader = data.project.substringAfterLast('-')

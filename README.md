@@ -9,7 +9,7 @@
 [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1416929?style=flat-square&logo=curseforge&logoColor=%23F16436&label=CurseForge%20Downloads&color=%23F16436)](https://www.curseforge.com/minecraft/mc-mods/server-waypoint)
 
 [![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
-[![Forge](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=Forge&labelColor=959eef)](https://modrinth.com/plugin/server_waypoint/versions?l=forge)
+[![Forge](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Forge&labelColor=959eef)](https://modrinth.com/plugin/server_waypoint/versions?l=forge)
 [![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
 [![Paper](https://img.shields.io/badge/1.21.x%20%2026.1--26.3-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
 [![Folia](https://img.shields.io/badge/1.21.x%20%2026.1--26.3-555555?style=flat-square&label=Folia&labelColor=a5e388)](https://modrinth.com/plugin/server_waypoint/versions?l=folia)
@@ -40,9 +40,9 @@ These ranges apply to the supported **4.0.0** builds. Always use the JAR for you
 | --- | --- | --- | --- |
 | Waypoint item icons in chat | Fabric, Forge, NeoForge, Paper/Folia/Purpur | 1.21.9 and later, within each platform's supported versions | Before 1.21.9, waypoints use text or initials. Only mapped vanilla item/block textures appear as chat icons; custom and VoxelMap icons use text or initials. |
 | Player heads in chat feedback | Fabric, Forge, NeoForge, Paper/Folia/Purpur | 1.21.9 and later, within each platform's supported versions | Before 1.21.9, feedback uses text without player heads. |
-| Text-display entity navigation (`text_display`, the floating label) | Fabric, Forge, NeoForge, Paper/Folia/Purpur | Every supported target: Fabric 1.20–26.3, Forge 1.20–26.2, NeoForge 1.20.2–26.3, Paper/Folia/Purpur 1.21–26.3 | No version exclusions within the supported targets. |
+| Text-display entity navigation (`text_display`, the floating label) | Fabric, Forge, NeoForge, Paper/Folia/Purpur | Every supported target: Fabric 1.20–26.3, Forge 1.20–26.3, NeoForge 1.20.2–26.3, Paper/Folia/Purpur 1.21–26.3 | No version exclusions within the supported targets. |
 | VoxelMap sync, upload and editing | Fabric client | Every supported Fabric version, 1.20–26.3 | Requires a matching VoxelMap-Updated build and the Server Waypoint client mod. |
-| VoxelMap sync, upload and editing | Forge client | 1.21.11, 26.1–26.1.2, 26.2 | Unavailable on supported Forge versions before 1.21.11. Requires VoxelMap-Updated and the Server Waypoint client mod. |
+| VoxelMap sync, upload and editing | Forge client | 1.21.11, 26.1–26.1.2, 26.2, 26.3 | Unavailable on supported Forge versions before 1.21.11. Requires VoxelMap-Updated and the Server Waypoint client mod. |
 | VoxelMap sync, upload and editing | NeoForge client | 1.21.2–1.21.4, 1.21.11, 26.1–26.1.2, 26.2, 26.3 | Unavailable on 1.20.2–1.21.1 and 1.21.5–1.21.10. Requires VoxelMap-Updated and the Server Waypoint client mod. |
 
 Chat icons, player heads and text-display navigation do not require the client mod. The waypoint manager, in-world client markers and Xaero integrations are available on every supported client-mod target; Xaero's World Map actions also require Xaero's Minimap. These client features can connect to a server running any supported backend, including Paper, Folia or Purpur.
@@ -83,7 +83,7 @@ Map mods are optional and go on your client alongside Server Waypoint:
 | VoxelMap integration | Supported Minecraft versions in 4.0.0 |
 | --- | --- |
 | Fabric | Every supported Fabric target |
-| Forge | 1.21.11, 26.1–26.1.2, 26.2 |
+| Forge | 1.21.11, 26.1–26.1.2, 26.2, 26.3 |
 | NeoForge | 1.21.2–1.21.4, 1.21.11, 26.1–26.1.2, 26.2, 26.3 |
 
 On multiplayer servers, automatic sync keeps shared waypoints up to date. Your personal map waypoints are kept separately. In singleplayer, opening a world does not automatically replace the map's saved waypoints; use **Sync now** in client settings when you want a full refresh. Synced waypoints can be edited through Server Waypoint's screens.

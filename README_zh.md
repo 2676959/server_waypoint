@@ -9,7 +9,7 @@
 [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1416929?style=flat-square&logo=curseforge&logoColor=%23F16436&label=CurseForge%20Downloads&color=%23F16436)](https://www.curseforge.com/minecraft/mc-mods/server-waypoint)
 
 [![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
-[![Forge](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=Forge&labelColor=959eef)](https://modrinth.com/plugin/server_waypoint/versions?l=forge)
+[![Forge](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Forge&labelColor=959eef)](https://modrinth.com/plugin/server_waypoint/versions?l=forge)
 [![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
 [![Paper](https://img.shields.io/badge/1.21.x%20%2026.1--26.3-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
 [![Folia](https://img.shields.io/badge/1.21.x%20%2026.1--26.3-555555?style=flat-square&label=Folia&labelColor=a5e388)](https://modrinth.com/plugin/server_waypoint/versions?l=folia)
@@ -40,9 +40,9 @@
 | --- | --- | --- | --- |
 | 聊天中的路径点物品图标 | Fabric、Forge、NeoForge、Paper/Folia/Purpur | 各平台支持范围内的 1.21.9 及以上版本 | 1.21.9 之前使用文字或缩写。只有已建立映射的原版物品/方块纹理可显示为聊天图标；自定义图标和 VoxelMap 图标使用文字或缩写。 |
 | 聊天反馈中的玩家头像 | Fabric、Forge、NeoForge、Paper/Folia/Purpur | 各平台支持范围内的 1.21.9 及以上版本 | 1.21.9 之前仅显示文字，不显示玩家头像。 |
-| 文本展示实体导航（`text_display`，即悬浮文字） | Fabric、Forge、NeoForge、Paper/Folia/Purpur | 所有受支持的版本：Fabric 1.20–26.3、Forge 1.20–26.2、NeoForge 1.20.2–26.3、Paper/Folia/Purpur 1.21–26.3 | 在受支持的版本中没有额外的版本限制。 |
+| 文本展示实体导航（`text_display`，即悬浮文字） | Fabric、Forge、NeoForge、Paper/Folia/Purpur | 所有受支持的版本：Fabric 1.20–26.3、Forge 1.20–26.3、NeoForge 1.20.2–26.3、Paper/Folia/Purpur 1.21–26.3 | 在受支持的版本中没有额外的版本限制。 |
 | VoxelMap 同步、上传和编辑 | Fabric 客户端 | 所有受支持的 Fabric 版本，1.20–26.3 | 需要对应版本的 VoxelMap-Updated 和 Server Waypoint 客户端模组。 |
-| VoxelMap 同步、上传和编辑 | Forge 客户端 | 1.21.11、26.1–26.1.2、26.2 | 受支持的 Forge 版本中，1.21.11 之前不可用。需要 VoxelMap-Updated 和 Server Waypoint 客户端模组。 |
+| VoxelMap 同步、上传和编辑 | Forge 客户端 | 1.21.11、26.1–26.1.2、26.2、26.3 | 受支持的 Forge 版本中，1.21.11 之前不可用。需要 VoxelMap-Updated 和 Server Waypoint 客户端模组。 |
 | VoxelMap 同步、上传和编辑 | NeoForge 客户端 | 1.21.2–1.21.4、1.21.11、26.1–26.1.2、26.2、26.3 | 1.20.2–1.21.1 和 1.21.5–1.21.10 不可用。需要 VoxelMap-Updated 和 Server Waypoint 客户端模组。 |
 
 聊天图标、玩家头像和悬浮文字导航无需客户端模组。路径点管理界面、世界内客户端标记和 Xaero 集成适用于所有受支持的客户端模组版本；Xaero 世界地图中的操作还需要安装 Xaero 小地图。这些客户端功能可以连接任何受支持的服务端，包括 Paper、Folia 和 Purpur。
@@ -83,7 +83,7 @@
 | VoxelMap 集成 | 4.0.0 支持的 Minecraft 版本 |
 | --- | --- |
 | Fabric | 所有受支持的 Fabric 版本 |
-| Forge | 1.21.11、26.1–26.1.2、26.2 |
+| Forge | 1.21.11、26.1–26.1.2、26.2、26.3 |
 | NeoForge | 1.21.2–1.21.4、1.21.11、26.1–26.1.2、26.2、26.3 |
 
 在多人服务器中，自动同步会让共享路径点保持最新。你的个人地图路径点会单独保留。在单人游戏中，打开世界不会自动替换地图已保存的路径点；需要完整刷新时，请使用客户端设置中的 **立即同步**。已同步的路径点可通过 Server Waypoint 的界面编辑。
