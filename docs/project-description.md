@@ -13,7 +13,7 @@
 
 Share useful places with your community and help players find their way around your world.
 
-[Get started](https://github.com/2676959/server_waypoint/blob/4.0.0/README.md#your-first-waypoint) | [Source code](https://github.com/2676959/server_waypoint)
+[Get started](https://github.com/2676959/server_waypoint/blob/master/README.md#your-first-waypoint) | [Source code](https://github.com/2676959/server_waypoint)
 
 Server Waypoint provides shared destinations, cross-server teleportation, navigation and clickable chat commands. Players can use the server features with a vanilla client. The optional client mod adds in-world markers, a waypoint manager and map integrations.
 
@@ -31,7 +31,7 @@ The optional **Velocity** integration lets players browse shared waypoints on co
 
 Cross-server teleportation follows the server's permissions. To edit a remote waypoint, join the server that owns it.
 
-[Set up cross-server waypoints](https://github.com/2676959/server_waypoint/blob/4.0.0/docs/tips/server-guide.md#cross-server-teleport-setup)
+[Set up cross-server waypoints](https://github.com/2676959/server_waypoint/blob/master/docs/tips/server-guide.md#cross-server-teleport-setup)
 
 ## Follow the route your way
 
@@ -59,7 +59,7 @@ Browse and manage waypoints from Minecraft's chat. The server provides clickable
 
 The server's permissions determine which actions each player can use. Messages follow each player's Minecraft language setting.
 
-[Explore server commands](https://github.com/2676959/server_waypoint/blob/4.0.0/docs/tips/server-guide.md#commands)
+[Explore server commands](https://github.com/2676959/server_waypoint/blob/master/docs/tips/server-guide.md#commands)
 
 ## Give every destination its own style
 
@@ -75,7 +75,7 @@ Shared waypoint display names and descriptions support **JSON text components**,
 
 **A separate identifier for commands.** The styled display name belongs to the waypoint identified as `fancy_wp`. You can keep a simple identifier for commands while editing the display name and description through the waypoint's edit controls or `/wp edit`.
 
-[Learn about identifiers and display names](https://github.com/2676959/server_waypoint/blob/4.0.0/docs/tips/server-guide.md#identifiers-and-display-names)
+[Learn about identifiers and display names](https://github.com/2676959/server_waypoint/blob/master/docs/tips/server-guide.md#identifiers-and-display-names)
 
 ## A whole world, neatly organized
 
@@ -99,7 +99,7 @@ Use shared destinations with **Xaero's Minimap** or supported **VoxelMap-Updated
 
 You can also upload map waypoints when you have permission. **Xaero's World Map** offers actions for adding and editing server waypoints when installed alongside Xaero's Minimap.
 
-[Check map and version compatibility](https://github.com/2676959/server_waypoint/blob/4.0.0/README.md#feature-availability-by-minecraft-version)
+[Check map and version compatibility](https://github.com/2676959/server_waypoint/blob/master/README.md#feature-availability-by-minecraft-version)
 
 ## Shared places, visible as you explore
 
@@ -123,11 +123,11 @@ Install the optional **Velocity** plugin and configure the backend servers to sh
 
 Install the client mod with the dependencies listed for your download. Fabric requires Fabric API. You can also use the mod in singleplayer.
 
-[Server setup and permissions](https://github.com/2676959/server_waypoint/blob/4.0.0/docs/tips/server-guide.md)
+[Server setup and permissions](https://github.com/2676959/server_waypoint/blob/master/docs/tips/server-guide.md)
 
 ## Migrate your MCDR waypoints
 
-Moving from the MCDReforged (MCDR) plugins **Locations** or **LocationMarker**? Use [locations2waypoints.py](https://github.com/2676959/server_waypoint/blob/4.0.0/locations2waypoints.py) to convert your `locations.json`. It requires Python 3 with no extra packages.
+Moving from the MCDReforged (MCDR) plugins **Locations** or **LocationMarker**? Use [locations2waypoints.py](https://github.com/2676959/server_waypoint/blob/master/locations2waypoints.py) to convert your `locations.json`. It requires Python 3 with no extra packages.
 
 1. Back up `locations.json` and your existing Server Waypoint files, then stop the server.
 2. Download the script, open a terminal in its folder and run:
@@ -155,4 +155,4 @@ Invalid entries and duplicate names within a dimension are skipped with a messag
 
 [Community Discord](https://discord.com/invite/tKtSSYDkHx) | [Report a bug](https://github.com/2676959/server_waypoint/issues)
 
-You're welcome to join the community, report an issue or help translate. Messages follow each player's Minecraft language setting; see the [translation credits and review status](https://github.com/2676959/server_waypoint/blob/4.0.0/TRANSLATOR_CREDITS.md) for language coverage.
+You're welcome to join the community, report an issue or help translate. Messages follow each player's Minecraft language setting; see the [translation credits and review status](https://github.com/2676959/server_waypoint/blob/master/TRANSLATOR_CREDITS.md) for language coverage.
