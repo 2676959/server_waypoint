@@ -6,6 +6,7 @@
 | [Tips](tips/) | Shared implementation guidance |
 | [Architecture](architecture/) | Whole-project architecture material |
 | [Project description](project-description.md) | Markdown showcase for Modrinth and CurseForge |
+| [Publishing](features/publishing/) | Release metadata, platform upload procedure and 4.0.0 preparation evidence |
 
 ## Conventions
 

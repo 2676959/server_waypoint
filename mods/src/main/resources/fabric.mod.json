@@ -3,7 +3,7 @@
     "id": "server_waypoint",
     "version": "${version}",
     "name": "Server Waypoint",
-    "description": "Share and manage waypoints with chat commands and navigation. Add client screens, in-world markers and Xaero or VoxelMap sync with the optional client mod. Supports cross-server waypoints through Velocity.",
+    "description": "${description}",
     "authors": [
         "2676959"
     ],

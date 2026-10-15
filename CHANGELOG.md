@@ -22,6 +22,7 @@ A major release: navigation that works without the client mod, waypoint icons, u
 - `/wp navigate` shows your target and switches methods on and off. `/wp navigate config text_display` moves, turns and resizes the floating label.
 - `defaultNavigationMethods` in `config.json` chooses the methods a new session starts with (default: `actionbar`). `CommandPermission.navigate` sets who can navigate (default: level 0).
 - Navigation resumes when you rejoin, and the compass, map and label follow edits to the waypoint.
+- Navigation maps remember explored terrain when you change targets or regions. Returning to a previously visited region restores its terrain, including after a server restart; unexplored regions start blank.
 - Compass and map tooltips show the waypoint and dimension with clearer formatting.
 
 ### Waypoints
@@ -53,6 +54,7 @@ A major release: navigation that works without the client mod, waypoint icons, u
 - Xaero's Minimap and VoxelMap show synced sets and waypoints under their server names.
 - The server list `gui.xaero_default` syncs to a separate Xaero set by default. **Sync into Xaero's default set** applies on the next sync; other lists always use separate sets.
 - The client settings list each map mod with its auto sync setting and a **Sync now** button.
+- `/wp download` explicitly refreshes map-mod waypoints even when automatic sync is disabled or the server revision has not changed. Downloading one waypoint refreshes that waypoint without treating the rest of its list as synchronized.
 - VoxelMap reports synchronized waypoint updates in chat.
 - Opening a singleplayer or LAN host world no longer automatically replaces its saved map-mod waypoints. Use **Sync now** for a full refresh; normal waypoint changes still sync when auto sync is enabled.
 - World Map editing resolves the waypoint's own dimension and server-owned list, preserving display names, icons, keywords and descriptions. Unresolved VoxelMap markers keep their normal VoxelMap edit screen.
@@ -90,7 +92,8 @@ A major release: navigation that works without the client mod, waypoint icons, u
 
 - A rebuilt settings screen: hover a row to see what it does and its default, ↺ resets one setting and **Reset to defaults…** resets them all. Mod Menu (Fabric) and the Mods screen (Forge and NeoForge) open it.
 - New setting: **Render waypoints under F1** (off by default). Waypoints are hidden on loading screens.
-- Colour themes: pick Translucent Dark, Modern Dark, High Contrast or the new Classic preset, or edit the colours in game. The default theme is now translucent dark. The colour theme editor is a developer tool: it lists the theme's raw keys with their `#AARRGGBB` values, edits a key in an ARGB field, with the colour picker or with an Alpha slider, and shows a live preview of the mod's widgets that marks where the selected key is used. **Reset** undoes every change since you opened the editor, and **Save** is available only when something changed.
+- Colour themes: pick Classic (the default), Translucent Dark, Modern Dark, High Contrast or Light, with white glass surfaces and sky-blue accents, or edit the colours in game. The colour theme editor is a developer tool: it lists the theme's raw colour keys with their `#AARRGGBB` values, edits a key in an ARGB field, with the colour picker or with an Alpha slider, and shows an interactive preview of the mod's widgets that marks where the selected key is used. **Reset** undoes every change since you opened the editor, and **Save** is available only when something changed.
+- Themes can enable or disable text shadows, including in text fields and suggestions. GUI icons, matching-input feedback and On/Off toggles follow the selected theme's colours. Waypoint initials badges remain shadow-free for readability.
 - Tooltips in the mod's screens follow the colour theme.
 
 ### Action logging
@@ -131,6 +134,9 @@ A major release: navigation that works without the client mod, waypoint icons, u
 - Hovered in-world waypoint icons render above overlapping markers so they remain visible.
 - Xaero dependency pins were aligned with the versions required by each map mod, including XaeroLib on Forge 1.20.1.
 - Language loading no longer closes a JAR filesystem owned by the mod loader.
+- Chat item icons resolve installed mod assets on supported Minecraft versions, so modded item sprites can appear alongside vanilla icons.
+- Text fields and comboboxes reset their horizontal view correctly when focus changes. Widget text alignment, waypoint initials contrast and disabled-icon visibility are more consistent.
+- The theme editor's preview supports its controls, popups, tooltips and confirmation dialogs interactively.
 
 ### Tools
 

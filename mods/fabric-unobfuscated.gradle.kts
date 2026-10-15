@@ -11,6 +11,7 @@ val targetJavaVersion = 25
 val mcVersionRange: String by project
 val mod_id: String by project
 val mod_name: String by project
+val mod_description: String by project
 val mod_version: String by project
 val maven_group: String by project
 
@@ -122,6 +123,7 @@ dependencies {
 tasks.processResources {
     inputs.property("id", mod_id)
     inputs.property("name", mod_name)
+    inputs.property("description", mod_description)
     inputs.property("version", mod_version)
     inputs.property("java_version", targetJavaVersion)
 
@@ -146,6 +148,7 @@ tasks.processResources {
         expand(mapOf(
             "id" to mod_id,
             "name" to mod_name,
+            "description" to mod_description,
             "version" to mod_version,
             "fabricloader_dependency" to ">=$fabric_loader",
             "minecraft_dependency" to mcVersionFabric,

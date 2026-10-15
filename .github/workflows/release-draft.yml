@@ -67,6 +67,6 @@ jobs:
           gh release create "$release_tag" \
             "${release_assets[@]}" \
             --draft \
-            --generate-notes \
+            --notes-file CHANGELOG.md \
             --target "$GITHUB_SHA" \
             --title "Server Waypoint $release_tag"

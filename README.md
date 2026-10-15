@@ -8,6 +8,14 @@
 [![Modrinth Downloads](https://img.shields.io/modrinth/dt/server_waypoint?style=flat-square&logo=modrinth&logoColor=%2300AF5C&label=Modrinth%20Downloads&color=%2300AF5C)](https://modrinth.com/plugin/server_waypoint)
 [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1416929?style=flat-square&logo=curseforge&logoColor=%23F16436&label=CurseForge%20Downloads&color=%23F16436)](https://www.curseforge.com/minecraft/mc-mods/server-waypoint)
 
+[![Fabric](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Fabric&labelColor=dbb69b)](https://modrinth.com/plugin/server_waypoint/versions?l=fabric)
+[![Forge](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.2-555555?style=flat-square&label=Forge&labelColor=959eef)](https://modrinth.com/plugin/server_waypoint/versions?l=forge)
+[![NeoForge](https://img.shields.io/badge/1.20.2--1.20.6%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=NeoForge&labelColor=f99e6b)](https://modrinth.com/plugin/server_waypoint/versions?l=neoforge)
+[![Paper](https://img.shields.io/badge/1.21.x%20%2026.1--26.3-555555?style=flat-square&label=Paper&labelColor=eeaaaa)](https://modrinth.com/plugin/server_waypoint/versions?l=paper)
+[![Velocity](https://img.shields.io/badge/1.20.x%20%201.21.x%20%2026.1--26.3-555555?style=flat-square&label=Velocity&labelColor=8ec9ea)](https://modrinth.com/plugin/server_waypoint/versions?l=velocity)
+
+[![discord-singular](https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/social/discord-singular_vector.svg)](https://discord.com/invite/tKtSSYDkHx)
+
 Save useful places, share them with other players and find your way back. Server Waypoint works on Fabric, Forge, NeoForge, Paper, Folia and Purpur. An optional Velocity plugin connects waypoints across servers.
 
 **Players can use commands, clickable chat and navigation without installing a client mod.** Install the client mod for a waypoint manager, in-world markers and map mod integration. You can also use it in singleplayer.

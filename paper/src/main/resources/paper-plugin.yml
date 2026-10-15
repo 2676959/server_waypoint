@@ -4,7 +4,7 @@ main: _959.server_waypoint.ServerWaypointPaperMC
 api-version: '${mcVersion}'
 folia-supported: true
 author: 2676959
-description: Share and manage waypoints with chat commands and navigation, optional client screens and map mod sync, and cross-server waypoints through Velocity.
+description: Shared waypoints, navigation and teleportation through commands and clickable chat, no client mod required. The optional client mod adds a GUI waypoint manager, in-world waypoints HUD rendering and automatic syncing to supported map mods.
 website: https://modrinth.com/plugin/server_waypoint
 prefix: server_waypoint_plugin
 

@@ -1,0 +1,808 @@
+{
+    "release": "4.0.0",
+    "prepared_date": "2026-10-15",
+    "source_head": "d83bde2257745de2f764acfb91aa1a4cb67fd599",
+    "source_state": "Working tree includes uncommitted metadata and documentation changes. Not a committed release candidate.",
+    "modrinth_project_id": "UyBaYBa7",
+    "curseforge_project_id": "1416929",
+    "modrinth_files": 43,
+    "curseforge_files": 38,
+    "artifacts": [
+        {
+            "target": "1.20.1-fabric",
+            "loader": "fabric",
+            "range": "1.20-1.20.1",
+            "game_versions": [
+                "1.20",
+                "1.20.1"
+            ],
+            "jar": "server_waypoint-4.0.0-fabric-mc1.20-1.20.1.jar",
+            "voxelmap": true,
+            "size_bytes": 2520241,
+            "sha1": "cdfe3d83a3703fe0c1d3e9898d44447689ad2076",
+            "sha512": "d4f34c4b76eba3e3aafc31712634106c8e0eacebd4718b62fc1332583491e18770ead2d0b56cf79c2fe868109f06b720ac3319bdb8b24089b2060c72b598fb14",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Fabric (Minecraft 1.20-1.20.1)"
+        },
+        {
+            "target": "1.20.1-forge",
+            "loader": "forge",
+            "range": "1.20-1.20.1",
+            "game_versions": [
+                "1.20",
+                "1.20.1"
+            ],
+            "jar": "server_waypoint-4.0.0-forge-mc1.20-1.20.1.jar",
+            "voxelmap": false,
+            "size_bytes": 3117407,
+            "sha1": "d2421730869ee593e435dad3c467564008b9c462",
+            "sha512": "5d25144572dfabe3bd1f8d9ea65aac95fac9723f1c9fc24546cf69071d0aba25065e6a8daaf7e7fbc270431e75addf7119fb59cff24f127d625e7be376cf001d",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Forge (Minecraft 1.20-1.20.1)"
+        },
+        {
+            "target": "1.20.2-fabric",
+            "loader": "fabric",
+            "range": "1.20.2",
+            "game_versions": [
+                "1.20.2"
+            ],
+            "jar": "server_waypoint-4.0.0-fabric-mc1.20.2.jar",
+            "voxelmap": true,
+            "size_bytes": 2519960,
+            "sha1": "03313553911efbd4a8a1610801c9d937b9db1758",
+            "sha512": "1212b1e926ffe9847b7d50ce398270a8860d13d751425fac1a75aed07e6f18d776bd96db455b4112da473742442670a812ae3fadbea2797ef59279820cd53cd0",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Fabric (Minecraft 1.20.2)"
+        },
+        {
+            "target": "1.20.2-forge",
+            "loader": "forge",
+            "range": "1.20.2",
+            "game_versions": [
+                "1.20.2"
+            ],
+            "jar": "server_waypoint-4.0.0-forge-mc1.20.2.jar",
+            "voxelmap": false,
+            "size_bytes": 3116447,
+            "sha1": "66f51e0e42d9413fe04e703b16749eb03aab0e5d",
+            "sha512": "c1b1a28bc3cb543ff2eb66622cfa5d8b33498dcc45795a6476419472c86be2c41ca9fa37ad64a5d00464e4277fb7bf4dc578e64229ccf37f1d8105d2939c64f6",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Forge (Minecraft 1.20.2)"
+        },
+        {
+            "target": "1.20.2-neoforge",
+            "loader": "neoforge",
+            "range": "1.20.2",
+            "game_versions": [
+                "1.20.2"
+            ],
+            "jar": "server_waypoint-4.0.0-neoforge-mc1.20.2.jar",
+            "voxelmap": false,
+            "size_bytes": 2551758,
+            "sha1": "fbad4782db5550e64e93a148b8e9330ccb6b538e",
+            "sha512": "6c576677020e4e3428ac0861c8ec38e8f0bae1491e0d63498d4bb18733b663d34aec08384fc825b7fb3fec9fe0c68357939f33b426882eaff80690c907c3edfa",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 NeoForge (Minecraft 1.20.2)"
+        },
+        {
+            "target": "1.20.4-fabric",
+            "loader": "fabric",
+            "range": "1.20.3-1.20.4",
+            "game_versions": [
+                "1.20.3",
+                "1.20.4"
+            ],
+            "jar": "server_waypoint-4.0.0-fabric-mc1.20.3-1.20.4.jar",
+            "voxelmap": true,
+            "size_bytes": 2521556,
+            "sha1": "811b7401c8ae60a95bf38e3864a19a808ea858b0",
+            "sha512": "ea46d53469aab1ea52ade904be5600f60570bde28f1ced0a6105cf83384c696521087a1d94cd9f3345fe03f64c642aa7ead0decdd44411e8377da8a428ec9622",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Fabric (Minecraft 1.20.3-1.20.4)"
+        },
+        {
+            "target": "1.20.4-forge",
+            "loader": "forge",
+            "range": "1.20.3-1.20.4",
+            "game_versions": [
+                "1.20.3",
+                "1.20.4"
+            ],
+            "jar": "server_waypoint-4.0.0-forge-mc1.20.3-1.20.4.jar",
+            "voxelmap": false,
+            "size_bytes": 3117919,
+            "sha1": "d58648c1bb72d46827fc59a5baa70939c1c2267d",
+            "sha512": "661c9c9d92a775be8f9d06030ea9b535b7fd9034d16ff94ad5ef4149247de4114e3437f5a5e4aeb1e4017dc0efba33367f86e6720aa7f99aa011f0aedfa1ef43",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Forge (Minecraft 1.20.3-1.20.4)"
+        },
+        {
+            "target": "1.20.4-neoforge",
+            "loader": "neoforge",
+            "range": "1.20.3-1.20.4",
+            "game_versions": [
+                "1.20.3",
+                "1.20.4"
+            ],
+            "jar": "server_waypoint-4.0.0-neoforge-mc1.20.3-1.20.4.jar",
+            "voxelmap": false,
+            "size_bytes": 2555170,
+            "sha1": "0bede9a602df14d736146399f15724f7b5d36f62",
+            "sha512": "e437742bb073a3a5f4defdb6103f237a1efdbde5ffea180667cd61c3bf7bf4d4fe3d107c245fc298293cb35449b37d7d2cfbdbbfa7904c0ee6cede212effb4e7",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 NeoForge (Minecraft 1.20.3-1.20.4)"
+        },
+        {
+            "target": "1.20.6-fabric",
+            "loader": "fabric",
+            "range": "1.20.5-1.20.6",
+            "game_versions": [
+                "1.20.5",
+                "1.20.6"
+            ],
+            "jar": "server_waypoint-4.0.0-fabric-mc1.20.5-1.20.6.jar",
+            "voxelmap": true,
+            "size_bytes": 2558672,
+            "sha1": "f420a5ce5e189c6914092f07ca940281754de0fd",
+            "sha512": "4c23f9b199cbdbe4b59d4bcd83af877da594d3579416430bbfbcb53f6e1ab44722994debdc180c631f34f14e17587e3e452cefc532ba7924b19f0379c27acb3e",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Fabric (Minecraft 1.20.5-1.20.6)"
+        },
+        {
+            "target": "1.20.6-forge",
+            "loader": "forge",
+            "range": "1.20.6",
+            "game_versions": [
+                "1.20.6"
+            ],
+            "jar": "server_waypoint-4.0.0-forge-mc1.20.6.jar",
+            "voxelmap": false,
+            "size_bytes": 3130618,
+            "sha1": "3ec7e0b1f40fb42839ecedd07ccf4402c889adf9",
+            "sha512": "891d90aa6e49350081e5229791386c9c200caa16611d338ea1e475efc1211cada93d505a2010160c63e160abc8daf50c99900b0889a8eba71c141bdeb459c86b",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Forge (Minecraft 1.20.6)"
+        },
+        {
+            "target": "1.20.6-neoforge",
+            "loader": "neoforge",
+            "range": "1.20.5-1.20.6",
+            "game_versions": [
+                "1.20.5",
+                "1.20.6"
+            ],
+            "jar": "server_waypoint-4.0.0-neoforge-mc1.20.5-1.20.6.jar",
+            "voxelmap": false,
+            "size_bytes": 2593692,
+            "sha1": "d4682718c1306bb617da5e6e86ffcbbcee6f5519",
+            "sha512": "7bffc420e7945e409706a7fed80910d09ceb04ffe68c5cb2563b9592b91c53cdc7f8971d71a5e109fe5efa28c31b4cc4466580aac4ca2804d13fc6bb8e2029ed",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 NeoForge (Minecraft 1.20.5-1.20.6)"
+        },
+        {
+            "target": "1.21-fabric",
+            "loader": "fabric",
+            "range": "1.21-1.21.1",
+            "game_versions": [
+                "1.21",
+                "1.21.1"
+            ],
+            "jar": "server_waypoint-4.0.0-fabric-mc1.21-1.21.1.jar",
+            "voxelmap": true,
+            "size_bytes": 2558808,
+            "sha1": "cd3a45eb3ad11e38c4d064b1c7ed3a43c5f40042",
+            "sha512": "5955f2cbb26a8be62933908a0e6f1f8326f7ff302a2a14462e277423ee427dd65c021cdf7517eab80248727e4d8b35d5d8395b676f30bf5c515aa37534702bc6",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Fabric (Minecraft 1.21-1.21.1)"
+        },
+        {
+            "target": "1.21-forge",
+            "loader": "forge",
+            "range": "1.21-1.21.1",
+            "game_versions": [
+                "1.21",
+                "1.21.1"
+            ],
+            "jar": "server_waypoint-4.0.0-forge-mc1.21-1.21.1.jar",
+            "voxelmap": false,
+            "size_bytes": 3130792,
+            "sha1": "24f903f59261cbfc27ab76391c10b781b7749ec7",
+            "sha512": "3f9a08a099b76347486cc5bbf4a8f4942a2c2c96e14fd2c2f4a27d6f6b40adbcbd0d7494b5311cf6fa6abaa69e9e9228de090591b2755156ad3e627cfbc0fc04",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Forge (Minecraft 1.21-1.21.1)"
+        },
+        {
+            "target": "1.21-neoforge",
+            "loader": "neoforge",
+            "range": "1.21-1.21.1",
+            "game_versions": [
+                "1.21",
+                "1.21.1"
+            ],
+            "jar": "server_waypoint-4.0.0-neoforge-mc1.21-1.21.1.jar",
+            "voxelmap": false,
+            "size_bytes": 2593880,
+            "sha1": "f682048d9c38f6e76cb498e7551f26cae9030493",
+            "sha512": "852a9272da2476c6ef9bde7c1633e49d303c170a6e0593edcf48576af5256de9facdacda46040e9c890b98301f921a62095e0c75055ec043656c16715b39d827",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 NeoForge (Minecraft 1.21-1.21.1)"
+        },
+        {
+            "target": "1.21.11-fabric",
+            "loader": "fabric",
+            "range": "1.21.11",
+            "game_versions": [
+                "1.21.11"
+            ],
+            "jar": "server_waypoint-4.0.0-fabric-mc1.21.11.jar",
+            "voxelmap": true,
+            "size_bytes": 2666900,
+            "sha1": "5c40d36b0e8cca399f907145107191d2de2fe74f",
+            "sha512": "c9d80d1fd1bd70253913a3ef87576a005bbabde66f1c42b3bc4097581fb680c1216fd27756d3b5f7a0e23fb35b88beee23c3ac2d3c66c1c23eff33201d27168a",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Fabric (Minecraft 1.21.11)"
+        },
+        {
+            "target": "1.21.11-forge",
+            "loader": "forge",
+            "range": "1.21.11",
+            "game_versions": [
+                "1.21.11"
+            ],
+            "jar": "server_waypoint-4.0.0-forge-mc1.21.11.jar",
+            "voxelmap": true,
+            "size_bytes": 2632736,
+            "sha1": "9d962469894a08915f4da0c6aa4e02a590eea289",
+            "sha512": "4a74c449350c9a658072f6904ba0ef1e8d45983ac83e5b8ed19ad0a8a30974a3bbecfcdc9c3a41cfb5a67bd979da5fbcca7a16d560bb886d6edc237fa8cd5c39",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Forge (Minecraft 1.21.11)"
+        },
+        {
+            "target": "1.21.11-neoforge",
+            "loader": "neoforge",
+            "range": "1.21.11",
+            "game_versions": [
+                "1.21.11"
+            ],
+            "jar": "server_waypoint-4.0.0-neoforge-mc1.21.11.jar",
+            "voxelmap": true,
+            "size_bytes": 2730518,
+            "sha1": "8b0c85e8f8601ec4c88c4d09b50295c70e4055b0",
+            "sha512": "540e007ec7d22cb16b3fa57a543e29212201649419dcfb0386d182de25079856b35b59f96a076da87daf69838d3de7f70c6ab6b3f7da1980314fa6452ca615e0",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 NeoForge (Minecraft 1.21.11)"
+        },
+        {
+            "target": "1.21.2-fabric",
+            "loader": "fabric",
+            "range": "1.21.2-1.21.4",
+            "game_versions": [
+                "1.21.2",
+                "1.21.3",
+                "1.21.4"
+            ],
+            "jar": "server_waypoint-4.0.0-fabric-mc1.21.2-1.21.4.jar",
+            "voxelmap": true,
+            "size_bytes": 2524822,
+            "sha1": "45fe2e67f8c5ee36f0d851bbd6a3e5f93c863c55",
+            "sha512": "3e6617920f9b28434d6de85d0aef62d891d14e957eed770299b2b7294c0ea7e5af9cbe54d93080ffbc81e737e4f66de14e73f485c0cdda4e7dfd1332ddd0c99e",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Fabric (Minecraft 1.21.2-1.21.4)"
+        },
+        {
+            "target": "1.21.2-neoforge",
+            "loader": "neoforge",
+            "range": "1.21.2-1.21.4",
+            "game_versions": [
+                "1.21.2",
+                "1.21.3",
+                "1.21.4"
+            ],
+            "jar": "server_waypoint-4.0.0-neoforge-mc1.21.2-1.21.4.jar",
+            "voxelmap": true,
+            "size_bytes": 2584292,
+            "sha1": "e4d000e573555f1e9e5659bf352e8ab317f7ca3d",
+            "sha512": "0d9007a7889735ce7f913e72360ea1578db2c769bb8735e23ea0bd7ddbb71ab2baf06b2587f53e734d4069bf1b7484e57a7dee013d540dfecc94c93ee43cbd67",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 NeoForge (Minecraft 1.21.2-1.21.4)"
+        },
+        {
+            "target": "1.21.3-forge",
+            "loader": "forge",
+            "range": "1.21.3-1.21.4",
+            "game_versions": [
+                "1.21.3",
+                "1.21.4"
+            ],
+            "jar": "server_waypoint-4.0.0-forge-mc1.21.3-1.21.4.jar",
+            "voxelmap": false,
+            "size_bytes": 3179400,
+            "sha1": "ebd82cc9a7897d929020ba81ff9ff1ed94de926b",
+            "sha512": "ab0d9cffb5389b0c79ce63bcf54c854d85a1de54d12aef1289368c91987d203699d33bab5eebfcd1e685debb8d30163b0d6e9029a757aa5507f597bb099965d6",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Forge (Minecraft 1.21.3-1.21.4)"
+        },
+        {
+            "target": "1.21.5-fabric",
+            "loader": "fabric",
+            "range": "1.21.5",
+            "game_versions": [
+                "1.21.5"
+            ],
+            "jar": "server_waypoint-4.0.0-fabric-mc1.21.5.jar",
+            "voxelmap": true,
+            "size_bytes": 2624807,
+            "sha1": "0a557c3c350182f24bd871631c2b7167ed626c76",
+            "sha512": "7f1b0464657ff735412a8e71c672365d49aaca4cf898fe96f5762926a85576c792636d3314358d0e91384676b2ecf18c6295c76be5a841e938a19a343b0e3c3a",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Fabric (Minecraft 1.21.5)"
+        },
+        {
+            "target": "1.21.5-forge",
+            "loader": "forge",
+            "range": "1.21.5",
+            "game_versions": [
+                "1.21.5"
+            ],
+            "jar": "server_waypoint-4.0.0-forge-mc1.21.5.jar",
+            "voxelmap": false,
+            "size_bytes": 3201056,
+            "sha1": "ab86b5d969b1b005799ef1e31f4be161f5f42b18",
+            "sha512": "ae0b159ad4998a68fff136b89358883b816f7122bf7561841f9520292291826f583d33bab14db1e5e669533a9af2351ec2e22d46601cdf13035896dffcfc7900",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Forge (Minecraft 1.21.5)"
+        },
+        {
+            "target": "1.21.5-neoforge",
+            "loader": "neoforge",
+            "range": "1.21.5",
+            "game_versions": [
+                "1.21.5"
+            ],
+            "jar": "server_waypoint-4.0.0-neoforge-mc1.21.5.jar",
+            "voxelmap": false,
+            "size_bytes": 2665023,
+            "sha1": "a6aa17d1485378a256b6751e4eae1af77cc708d8",
+            "sha512": "327ca6b4c31a4e0c2200c32085e388f9bddfdf0660fa6c7409114a0b1cce98f4e9bb2faf383be5c93607a791eb4440de31a8e94bd01f6bd7351fea2c7e61778d",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 NeoForge (Minecraft 1.21.5)"
+        },
+        {
+            "target": "1.21.6-fabric",
+            "loader": "fabric",
+            "range": "1.21.6-1.21.8",
+            "game_versions": [
+                "1.21.6",
+                "1.21.7",
+                "1.21.8"
+            ],
+            "jar": "server_waypoint-4.0.0-fabric-mc1.21.6-1.21.8.jar",
+            "voxelmap": true,
+            "size_bytes": 2650368,
+            "sha1": "529143ffd9da9dddbe9320237dc0914a4851724d",
+            "sha512": "c2fc819c0d6620101b811c6dd89612d292f2c7811482df38b432545fa5bd3d908e4771b2919cd2e8c2de528a3e40fd924281524d57d2ac9a4525858389973dbc",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Fabric (Minecraft 1.21.6-1.21.8)"
+        },
+        {
+            "target": "1.21.6-forge",
+            "loader": "forge",
+            "range": "1.21.6-1.21.8",
+            "game_versions": [
+                "1.21.6",
+                "1.21.7",
+                "1.21.8"
+            ],
+            "jar": "server_waypoint-4.0.0-forge-mc1.21.6-1.21.8.jar",
+            "voxelmap": false,
+            "size_bytes": 3226676,
+            "sha1": "162b989c53f837d6f7a8ca402a2533fe6bd1412b",
+            "sha512": "b7f2d994906b2c94e945aad3380442c5ae3fb66edf912d235a88d3bf38b2009df70569453a41ec09ab30e16ebc913454a9bb7896521fd47711d6935075dbe9cf",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Forge (Minecraft 1.21.6-1.21.8)"
+        },
+        {
+            "target": "1.21.6-neoforge",
+            "loader": "neoforge",
+            "range": "1.21.6",
+            "game_versions": [
+                "1.21.6"
+            ],
+            "jar": "server_waypoint-4.0.0-neoforge-mc1.21.6.jar",
+            "voxelmap": false,
+            "size_bytes": 2690816,
+            "sha1": "aa73e04341552bae2aea3ca0859be6a0fa069ce3",
+            "sha512": "7c97f7e2241cfa16c4a9d26b961ed0ffb4ca695849c07a19596b5840abffcdef2c62bfa82f32a8d7cb7159de2169ae65d4a2370885e28bb1d3b5c7b80ade5b68",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 NeoForge (Minecraft 1.21.6)"
+        },
+        {
+            "target": "1.21.7-neoforge",
+            "loader": "neoforge",
+            "range": "1.21.7-1.21.8",
+            "game_versions": [
+                "1.21.7",
+                "1.21.8"
+            ],
+            "jar": "server_waypoint-4.0.0-neoforge-mc1.21.7-1.21.8.jar",
+            "voxelmap": false,
+            "size_bytes": 2690573,
+            "sha1": "083be64393080fbbc7fe28c48c2e85763a1038c6",
+            "sha512": "685a0bb981faa2823f91997df53dfd308b5ee66aa1ce8612ed46f4d29ff43398791c0b57d054357ddc030fdadee3ea44c82b9a85583539e0bdd425ad4aa33772",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 NeoForge (Minecraft 1.21.7-1.21.8)"
+        },
+        {
+            "target": "1.21.9-fabric",
+            "loader": "fabric",
+            "range": "1.21.9-1.21.10",
+            "game_versions": [
+                "1.21.9",
+                "1.21.10"
+            ],
+            "jar": "server_waypoint-4.0.0-fabric-mc1.21.9-1.21.10.jar",
+            "voxelmap": true,
+            "size_bytes": 2666528,
+            "sha1": "2f68c804501b70c8f33e9886afad5e919a0607d8",
+            "sha512": "ac7060bc5f18899c09e4d559b26a0c035ddc108f53b82d56e1e0b4323d7e028c3f41cfb4dcbc687c2ab76d6037fb220ec4009e4369b28e8f79bf0e0344e6f525",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Fabric (Minecraft 1.21.9-1.21.10)"
+        },
+        {
+            "target": "1.21.9-forge",
+            "loader": "forge",
+            "range": "1.21.9-1.21.10",
+            "game_versions": [
+                "1.21.9",
+                "1.21.10"
+            ],
+            "jar": "server_waypoint-4.0.0-forge-mc1.21.9-1.21.10.jar",
+            "voxelmap": false,
+            "size_bytes": 3242418,
+            "sha1": "655886dc0143fced6ef001f08291e4204d998aad",
+            "sha512": "7b189d4dce3ae6bc17d0c7f37c4c4d768e0cfb5554f0eafa12b1060d946b1466a64c30e7eb0424089982fcb7753f347b72486d558ebb6c10e8895e3133fbdec7",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Forge (Minecraft 1.21.9-1.21.10)"
+        },
+        {
+            "target": "1.21.9-neoforge",
+            "loader": "neoforge",
+            "range": "1.21.9-1.21.10",
+            "game_versions": [
+                "1.21.9",
+                "1.21.10"
+            ],
+            "jar": "server_waypoint-4.0.0-neoforge-mc1.21.9-1.21.10.jar",
+            "voxelmap": false,
+            "size_bytes": 2706404,
+            "sha1": "08e4b17b7036cc4d578eb1a5abd15347c4b3cfb2",
+            "sha512": "732817dfa5ca3659d71e1b6a952bab8023a7bc6ca41b424c70e0acdf3551d642487daa38a757c3480dbdc16af8b0ec32a23d250e67b829248cf3f8b6e7ee869d",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 NeoForge (Minecraft 1.21.9-1.21.10)"
+        },
+        {
+            "target": "26.1.2-fabric",
+            "loader": "fabric",
+            "range": "26.1-26.1.2",
+            "game_versions": [
+                "26.1",
+                "26.1.1",
+                "26.1.2"
+            ],
+            "jar": "server_waypoint-4.0.0-fabric-mc26.1-26.1.2.jar",
+            "voxelmap": true,
+            "size_bytes": 2656506,
+            "sha1": "66645f9e03879fe6c25199f6671d79225047cd3d",
+            "sha512": "ff14ec3f3a0592a9fd5d5b307e4b2d7b972cfe1db327f687e4802cd491f8d8a8405893ae5b5ec02746c4b8b3f6d6bac54e674488c6b8caaa07562b305bb77d34",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Fabric (Minecraft 26.1-26.1.2)"
+        },
+        {
+            "target": "26.1.2-forge",
+            "loader": "forge",
+            "range": "26.1-26.1.2",
+            "game_versions": [
+                "26.1",
+                "26.1.1",
+                "26.1.2"
+            ],
+            "jar": "server_waypoint-4.0.0-forge-mc26.1-26.1.2.jar",
+            "voxelmap": true,
+            "size_bytes": 2636161,
+            "sha1": "3ba9cea08af8526894c739b5d3b561491333bd1f",
+            "sha512": "fe335e0382440e6a2213c268e1a71bc58806f13d433c60bf8ae12ec6616ba6af01745f68cd76624c778771a5e4989b0be92bb1e67cf0f23b1ffc914cdd4c1c2f",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Forge (Minecraft 26.1-26.1.2)"
+        },
+        {
+            "target": "26.1.2-neoforge",
+            "loader": "neoforge",
+            "range": "26.1-26.1.2",
+            "game_versions": [
+                "26.1",
+                "26.1.1",
+                "26.1.2"
+            ],
+            "jar": "server_waypoint-4.0.0-neoforge-mc26.1-26.1.2.jar",
+            "voxelmap": true,
+            "size_bytes": 2734030,
+            "sha1": "07147355f400245ea454bc49752efa79c03aabb6",
+            "sha512": "2bad29416620c3a2593b0d35e238d10caef16e4039b813e037be58fef1704701034517185ad23d32e6669d0d160e644ce16343927543b27deffe56353864cd4a",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 NeoForge (Minecraft 26.1-26.1.2)"
+        },
+        {
+            "target": "26.2-fabric",
+            "loader": "fabric",
+            "range": "26.2",
+            "game_versions": [
+                "26.2"
+            ],
+            "jar": "server_waypoint-4.0.0-fabric-mc26.2.jar",
+            "voxelmap": true,
+            "size_bytes": 2656662,
+            "sha1": "aa6267da8183fcdadcf6ff9fe7015f01e1713b52",
+            "sha512": "23dcbb7b1c06dd7f60ef0938d5a87862191f226f430e6327910ec594abe8ab9010fb1200ad3d0b8abdcf1c98085a6f5276b8e1fb6eb0218c437eb30dc9734db6",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Fabric (Minecraft 26.2)"
+        },
+        {
+            "target": "26.2-forge",
+            "loader": "forge",
+            "range": "26.2",
+            "game_versions": [
+                "26.2"
+            ],
+            "jar": "server_waypoint-4.0.0-forge-mc26.2.jar",
+            "voxelmap": true,
+            "size_bytes": 2636324,
+            "sha1": "bb621aaf52040b35643c2d5b24c33d34adb178cb",
+            "sha512": "87c89ef12be2d7ba0f3df5ac43f4e72825b5806bde145725a725f64668879da926653323e8ef348d5ca3ae564a5e23bd91e009c988892136f0b9ed912a22673a",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Forge (Minecraft 26.2)"
+        },
+        {
+            "target": "26.2-neoforge",
+            "loader": "neoforge",
+            "range": "26.2",
+            "game_versions": [
+                "26.2"
+            ],
+            "jar": "server_waypoint-4.0.0-neoforge-mc26.2.jar",
+            "voxelmap": true,
+            "size_bytes": 2734193,
+            "sha1": "a539baabac23ba9324e4a77715b65800c83c2a10",
+            "sha512": "76e2ce74b43c8a350346254e300cf20c4cb3ff3d30b8101ef65cc7aa832ff88750ac243d63f5a21a9a6e36bbed2a57696b2cc8d0898dd15a9d468c9daac520aa",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 NeoForge (Minecraft 26.2)"
+        },
+        {
+            "target": "26.3-fabric",
+            "loader": "fabric",
+            "range": "26.3",
+            "game_versions": [
+                "26.3"
+            ],
+            "jar": "server_waypoint-4.0.0-fabric-mc26.3.jar",
+            "voxelmap": true,
+            "size_bytes": 2656576,
+            "sha1": "882c9bc52629c2ee328cef6d6a697f49ed8a9679",
+            "sha512": "d599743396e5dc9277ba4dcee040ce73be6a3842b93f5449116f5c1d518e8fdd3896516fdb8e91c57b16c3b0a13aa3e27d96d61c12e28e78ba521acb7562a162",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 Fabric (Minecraft 26.3)"
+        },
+        {
+            "target": "26.3-neoforge",
+            "loader": "neoforge",
+            "range": "26.3",
+            "game_versions": [
+                "26.3"
+            ],
+            "jar": "server_waypoint-4.0.0-neoforge-mc26.3.jar",
+            "voxelmap": true,
+            "size_bytes": 2734112,
+            "sha1": "203386cbfd05dbbda31955f16ca640e3c1ef5425",
+            "sha512": "cbcf710d3c03b78fbbd540a01bdc862105fb3382b0702c54710c5c49e7242e2d471d7515127fd4aed16c6d153ac335fa2f784f88864e99300521cc36e55a3f70",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": true,
+            "display_name": "Server Waypoint 4.0.0 NeoForge (Minecraft 26.3)"
+        },
+        {
+            "target": "1.21-paper",
+            "loader": "paper",
+            "range": "1.21-1.21.8",
+            "game_versions": [
+                "1.21",
+                "1.21.1",
+                "1.21.2",
+                "1.21.3",
+                "1.21.4",
+                "1.21.5",
+                "1.21.6",
+                "1.21.7",
+                "1.21.8"
+            ],
+            "jar": "server_waypoint-4.0.0-paper-mc1.21-1.21.8.jar",
+            "voxelmap": false,
+            "size_bytes": 1196401,
+            "sha1": "d00111c873fbacfaa4309f5db881973768c70b9f",
+            "sha512": "995acf43b912ee4b197605abbc28d4d23e71c494b64c09f1bceef1d818d4212dcefb1946ee657fa455e9c39b785c2923bfc6364c5484a51971035984eef8f0c4",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": false,
+            "display_name": "Server Waypoint 4.0.0 Paper (Minecraft 1.21-1.21.8)"
+        },
+        {
+            "target": "1.21.11-paper",
+            "loader": "paper",
+            "range": "1.21.11-26.1.2",
+            "game_versions": [
+                "1.21.11",
+                "26.1",
+                "26.1.1",
+                "26.1.2"
+            ],
+            "jar": "server_waypoint-4.0.0-paper-mc1.21.11-26.1.2.jar",
+            "voxelmap": false,
+            "size_bytes": 1210434,
+            "sha1": "1daa338509d05f8bd39cb59280e0672c5f1ca985",
+            "sha512": "de996cfacacaacd5a906f125c29fbfa774d2e3a0e540ce139d29d2d2ede614e63f5a87dd98c03facc51b7f498fcea83b28374107f2a3e077a222bf2fa44a12a2",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": false,
+            "display_name": "Server Waypoint 4.0.0 Paper (Minecraft 1.21.11-26.1.2)"
+        },
+        {
+            "target": "1.21.9-paper",
+            "loader": "paper",
+            "range": "1.21.9-1.21.10",
+            "game_versions": [
+                "1.21.9",
+                "1.21.10"
+            ],
+            "jar": "server_waypoint-4.0.0-paper-mc1.21.9-1.21.10.jar",
+            "voxelmap": false,
+            "size_bytes": 1210025,
+            "sha1": "cc1255f3c28a64a81333af3c684deb8997022399",
+            "sha512": "c3a4d060ff5ef0e6e6d25910ab04a1b6af8ecbc19bf0ac1926a329c80d7f9258cfba95e5d4c6f693cdab2ad659f31e5d59303cddeae0a6a30c3d623e9ef5c250",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": false,
+            "display_name": "Server Waypoint 4.0.0 Paper (Minecraft 1.21.9-1.21.10)"
+        },
+        {
+            "target": "26.2-paper",
+            "loader": "paper",
+            "range": "26.2-26.3",
+            "game_versions": [
+                "26.2",
+                "26.3"
+            ],
+            "jar": "server_waypoint-4.0.0-paper-mc26.2-26.3.jar",
+            "voxelmap": false,
+            "size_bytes": 1210453,
+            "sha1": "b84bb9f71eeeada74edae68fc9da72367f25305d",
+            "sha512": "fbc6aeec209a3d017c75adfce1c217742d79b26f0079a059a59f76d7c52f932f78b235c5a095b3c7e9dd802d8ef2414189e165ff310f724ecb2d7e4d4b685031",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": false,
+            "display_name": "Server Waypoint 4.0.0 Paper (Minecraft 26.2-26.3)"
+        },
+        {
+            "target": "velocity",
+            "loader": "velocity",
+            "range": "all published backend versions",
+            "game_versions": [
+                "1.20",
+                "1.20.1",
+                "1.20.2",
+                "1.20.3",
+                "1.20.4",
+                "1.20.5",
+                "1.20.6",
+                "1.21",
+                "1.21.1",
+                "1.21.10",
+                "1.21.11",
+                "1.21.2",
+                "1.21.3",
+                "1.21.4",
+                "1.21.5",
+                "1.21.6",
+                "1.21.7",
+                "1.21.8",
+                "1.21.9",
+                "26.1",
+                "26.1.1",
+                "26.1.2",
+                "26.2",
+                "26.3"
+            ],
+            "jar": "server_waypoint-4.0.0-velocity.jar",
+            "voxelmap": false,
+            "size_bytes": 395538,
+            "sha1": "c19376abc8a0f6fa3551b15da43f6ffc0f3c47fc",
+            "sha512": "f40f178ff4604468bac4aaf49122ce8c8f874724060eafa585bb2f5237da3c54765465c9249b52fa7b8fc84f8b0ebcc3d34e6610a0b113077bf0a83df745288c",
+            "embedded_version": "4.0.0",
+            "modrinth": true,
+            "curseforge": false,
+            "display_name": "Server Waypoint 4.0.0 Velocity"
+        }
+    ]
+}

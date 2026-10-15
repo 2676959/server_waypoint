@@ -26,6 +26,7 @@ val targetJavaVersion = when {
 val mcVersionRange: String by project
 val mod_id: String by project
 val mod_name: String by project
+val mod_description: String by project
 val mod_version: String by project
 val maven_group: String by project
 val forge_loader: String by project
@@ -331,6 +332,7 @@ tasks.processResources {
     val replaceProperties = mapOf(
         "id" to mod_id,
         "name" to mod_name,
+        "description" to mod_description,
         "version" to mod_version,
         "java_version" to targetJavaVersion,
         "minecraft_dependency" to mcVersionForge,

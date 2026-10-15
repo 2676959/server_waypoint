@@ -28,4 +28,4 @@ The local annotation tool is intentionally excluded from Git.
 
 ## Publishing
 
-The description uses relative links to this gallery for repository previews. Upload the selected images to the destination platform or public image hosting and replace those links when publishing outside this repository.
+The description uses absolute raw GitHub image URLs under the `4.0.0` ref so the same Markdown can be pasted into Modrinth and CurseForge. Publish the gallery and documentation at that ref before saving the platform descriptions, then check both platform previews. Alternatively, upload these images to each platform and replace the URLs with its hosted image URLs.

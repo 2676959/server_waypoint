@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 
 @Plugin(id = "server_waypoint", name = "Server Waypoint", version = ModInfo.MOD_VERSION,
         authors = {"2676959"},
-        description = "Connect Server Waypoint backends for cross-server waypoint browsing and teleportation.",
+        description = "Connect servers installed with Server Waypoint mod/plugin for cross-server teleportation feature. No client mod required.",
         url = "https://modrinth.com/plugin/server_waypoint")
 public final class ServerWaypointVelocity {
     static final MinecraftChannelIdentifier RESERVED = MinecraftChannelIdentifier.create("server_waypoint", "handoff");
