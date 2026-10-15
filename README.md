@@ -91,6 +91,32 @@ On multiplayer servers, automatic sync keeps shared waypoints up to date. Your p
 
 To copy your map waypoints to the server, run `/wp upload xaero` or `/wp upload voxelmap`. Upload needs permission from the administrator. A normal upload adds missing waypoints and keeps the server's version when there is a conflict. See the [upload guide](docs/tips/server-guide.md#uploading-from-client-map-mods) before using overwrite or delete options.
 
+## Migrate waypoints from MCDR plugins
+
+If you use the MCDReforged (MCDR) plugins **Locations** or **LocationMarker**, you can convert their `locations.json` with [`locations2waypoints.py`](locations2waypoints.py). You need Python 3; no extra packages are required.
+
+1. Back up your plugin's `locations.json` and any existing Server Waypoint files, then stop the server.
+2. Download the script, open a terminal in its folder and run it with the path to your locations file:
+
+    ```sh
+    python3 locations2waypoints.py "/path/to/locations.json"
+    ```
+
+    You can also run `python3 locations2waypoints.py` without an argument and enter the file path when prompted.
+3. Check the output for skipped entries. The script creates a `waypoints/` folder beside `locations.json`, with one JSON file per dimension, such as `minecraft$overworld.json`. Each file contains a list named `locations`. Names and descriptions are kept, coordinates are rounded down to block positions, and the waypoints are shared with all players.
+4. Copy the generated JSON files into your server's waypoint folder, relative to the server root:
+
+    | Server platform | Waypoint folder |
+    | --- | --- |
+    | Fabric | `config/server_waypoint/waypoints/` |
+    | Forge or NeoForge | `defaultconfigs/server_waypoint/waypoints/` |
+    | Paper, Folia or Purpur | `plugins/ServerWaypoint/waypoints/` |
+
+    If a destination file already exists, merge the generated `locations` list into its JSON array manually, using a different list name if `locations` is already taken. Replacing the file would remove its existing waypoint lists. The converter does not merge files and refuses to overwrite its own existing output files.
+5. Start the server and run `/wp list` to find the imported `locations` lists. `/wp reload` does not reload waypoint files.
+
+Invalid entries and duplicate names within the same dimension are skipped with a message. Keep your source file and review these messages before finishing the migration.
+
 ## Useful commands
 
 `/waypoint` and `/wp` are interchangeable. Most actions are available from the `/wp` menu.

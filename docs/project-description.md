@@ -118,6 +118,32 @@ Install the client mod with the dependencies listed for your download. Fabric re
 
 [Server setup and permissions](https://github.com/2676959/server_waypoint/blob/4.0.0/docs/tips/server-guide.md)
 
+## Migrate your MCDR waypoints
+
+Moving from the MCDReforged (MCDR) plugins **Locations** or **LocationMarker**? Use [locations2waypoints.py](https://github.com/2676959/server_waypoint/blob/4.0.0/locations2waypoints.py) to convert your `locations.json`. It requires Python 3 with no extra packages.
+
+1. Back up `locations.json` and your existing Server Waypoint files, then stop the server.
+2. Download the script, open a terminal in its folder and run:
+
+    ```sh
+    python3 locations2waypoints.py "/path/to/locations.json"
+    ```
+
+    Without a file argument, the script prompts you for the path.
+3. Review any messages about skipped entries. The script creates a `waypoints/` folder beside your source file, with a `locations` list for each dimension in files such as `minecraft$overworld.json`. It keeps names and descriptions, rounds coordinates down to block positions and makes the waypoints shared with all players.
+4. Copy the generated JSON files into the appropriate folder under your server root:
+
+    | Server platform | Waypoint folder |
+    | --- | --- |
+    | Fabric | `config/server_waypoint/waypoints/` |
+    | Forge or NeoForge | `defaultconfigs/server_waypoint/waypoints/` |
+    | Paper, Folia or Purpur | `plugins/ServerWaypoint/waypoints/` |
+
+    If a destination file already exists, manually merge the generated `locations` list into its JSON array; choose another list name if `locations` is already taken. Replacing a dimension file removes its existing waypoint lists. The converter does not merge files and refuses to overwrite its own existing output files.
+5. Start the server and run `/wp list` to browse the imported lists. Waypoint files require a restart; `/wp reload` does not reload them.
+
+Invalid entries and duplicate names within a dimension are skipped with a message. Keep your source file and review the conversion output before finishing.
+
 ## Build somewhere worth finding
 
 [Community Discord](https://discord.com/invite/tKtSSYDkHx) | [Report a bug](https://github.com/2676959/server_waypoint/issues)
